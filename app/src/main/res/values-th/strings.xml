@@ -26,10 +26,6 @@
     <!-- Widget Settings -->
     <string name="settings_widget">วิดเจ็ต</string>
     <string name="settings_widget_desc">วิดเจ็ตบนหน้าจอหลัก</string>
-    <string name="widget_preview_title">ดูตัวอย่างวิดเจ็ต</string>
-    <string name="widget_preview_desc">การเปลี่ยนแปลงจะมีผลกับวิดเจ็ตที่ใช้งานอยู่ทั้งหมดบนหน้าจอหลักของคุณ กดวิดเจ็ตค้างไว้เพื่อปรับขนาดและดูเค้าโครงต่างๆ</string>
-    <string name="widget_refresh_all">รีเฟรชวิดเจ็ตทั้งหมด</string>
-    <string name="widget_display_options">ตัวเลือกการแสดงผล</string>
     <string name="widget_show_album_art">แสดงปกอัลบั้ม</string>
     <string name="widget_show_album_art_desc">แสดงปกอัลบั้มในวิดเจ็ต</string>
     <string name="widget_show_artist">แสดงชื่อศิลปิน</string>
@@ -37,36 +33,19 @@
     <string name="widget_show_album">แสดงชื่ออัลบั้ม</string>
     <string name="widget_show_album_desc">แสดงข้อมูลอัลบั้ม</string>
     <string name="widget_appearance">การปรากฏตัว</string>
-    <string name="widget_use_system_colors">ใช้สีของระบบ</string>
-    <string name="widget_use_system_colors_desc">ติดตาม Material คุณชุดสี</string>
-    <string name="widget_background_blur">พื้นหลังเบลอ</string>
-    <string name="widget_background_blur_desc">ใช้เอฟเฟกต์เบลอกับพื้นหลังวิดเจ็ต</string>
     <string name="widget_corner_radius">รัศมีมุม</string>
-    <string name="widget_transparency">ความโปร่งใส</string>
-    <string name="widget_behavior">พฤติกรรม</string>
     <string name="widget_auto_update">อัปเดตอัตโนมัติ</string>
-    <string name="widget_auto_update_desc">อัปเดตวิดเจ็ตโดยอัตโนมัติเมื่อเพลงเปลี่ยน</string>
-    <string name="widget_tips_title">เคล็ดลับวิดเจ็ต</string>
-    <string name="widget_tip_sizes">Rhythm รองรับวิดเจ็ตหลายขนาดตั้งแต่ 2x1 ถึง 5x5</string>
-    <string name="widget_tip_types">มีทั้งวิดเจ็ต Glance แบบเดิมและสมัยใหม่พร้อมใช้งาน</string>
     <string name="widget_tip_controls">แตะวิดเจ็ตเพื่อเปิดแอป ปุ่มควบคุมการเล่น</string>
-    <string name="widget_tip_resize">กดแบบยาวและปรับขนาดสำหรับรูปแบบต่างๆ</string>
     
     <!-- Content Descriptions -->
     <string name="cd_navigate">นำทาง</string>
-    <string name="cd_configure">กำหนดค่า</string>
     
     <!-- Settings - Notifications -->
     <string name="settings_notifications">การแจ้งเตือน</string>
-    <string name="settings_notification_style">รูปแบบการแจ้งเตือน</string>
-    <string name="settings_custom_notifications">การแจ้งเตือนที่กำหนดเอง</string>
-    <string name="settings_custom_notifications_desc">ใช้รูปแบบการแจ้งเตือนที่กำหนดเองของแอปแทนการแจ้งเตือนสื่อของระบบ</string>
     <string name="settings_notifications_updates_group">อัปเดตแอป</string>
     <string name="settings_notifications_rhythm_guard_group">Rhythm ยาม</string>
     <string name="settings_notifications_rhythm_pulse_group">Rhythm เคล็ดลับ</string>
     <string name="settings_update_notifications_merged_desc">รับการแจ้งเตือนสำหรับเวอร์ชันใหม่และผลการตรวจสอบการอัปเดตเบื้องหลัง</string>
-    <string name="settings_update_status_notifications">อัปเดตสถานะการแจ้งเตือน</string>
-    <string name="settings_update_status_notifications_desc">รับผลการตรวจสอบประวัติ เช่น ข้อมูลล่าสุดและตรวจสอบข้อผิดพลาด</string>
     <string name="settings_rhythm_guard_alert_notifications">การแจ้งเตือนความปลอดภัย</string>
     <string name="settings_rhythm_guard_alert_notifications_desc">แสดงการแจ้งเตือนเมื่อ Rhythm Guard ตรวจพบปริมาณหรือความเสี่ยงที่มีความเสี่ยง</string>
     <string name="settings_rhythm_guard_timer_notifications">การแจ้งเตือนตัวจับเวลาพัก</string>
@@ -77,7 +56,6 @@
     <string name="settings_rhythm_pulse_interval_dialog_title">Rhythm ช่วงเคล็ดลับ</string>
     
     <!-- Settings - Queue & Playback -->
-    <string name="settings_queue_playback">คิวและการเล่น</string>
     <!-- Settings - Queue -->
     <string name="settings_queue">คิว</string>
     <string name="settings_queue_desc">กฎคิว, การสร้างอัตโนมัติ, พฤติกรรม</string>
@@ -96,13 +74,10 @@
     <string name="settings_context_queue_preference_desc">เลือกข้อมูลเมตาที่คิวบริบทควรจัดลำดับความสำคัญก่อน</string>
     <string name="settings_context_pref_artist_first">ศิลปินก่อน</string>
     <string name="settings_context_pref_genre_first">ประเภทก่อน</string>
-    <string name="settings_context_pref_artist_then_genre">ศิลปินแล้วประเภท</string>
     <string name="settings_context_queue_persistence">ความคงอยู่ของคิวบริบท</string>
     <string name="settings_context_queue_persistence_desc">เลือกว่าคิวบริบทควรยังคงอยู่หลังจากการเล่นสิ้นสุดลงหรือไม่</string>
     <string name="settings_context_persistence_persistent">ถาวร</string>
     <string name="settings_context_persistence_ephemeral">ชั่วคราว</string>
-    <string name="settings_context_queue_size">ขนาดคิวบริบท</string>
-    <string name="settings_context_queue_size_desc">%1$d เพลง</string>
     <string name="settings_clear_queue_on_new_song">แทนที่คิวในการเล่น</string>
     <string name="settings_clear_queue_on_new_song_desc">การเริ่มแทร็กจะแทนที่คิวปัจจุบัน</string>
     <string name="settings_playback_persistence">สถานะการเล่น</string>
@@ -164,7 +139,6 @@
     <string name="notification_media_scan_stage_songs">กำลังสแกนที่เก็บข้อมูลอุปกรณ์เพื่อหาแทร็กเสียง…</string>
     <string name="notification_media_scan_stage_saving">การเพิ่มประสิทธิภาพและการบันทึกฐานข้อมูลแทร็กเสียง…</string>
     <string name="notification_media_scan_stage_finishing">กำลังจัดทำดัชนีเสียงให้เสร็จสิ้น…</string>
-    <string name="notification_media_scan_complete_summary">การสแกนไลบรารีเสร็จสมบูรณ์: %1$d แทร็ก, %2$d อัลบั้ม, %3$d ศิลปินที่จัดทำดัชนี</string>
     <string name="notification_media_scan_complete_pending_setup">การสแกนเสียงเสร็จสิ้น กำลังเริ่มต้นงานพื้นหลัง…</string>
     <string name="notification_media_scan_cancelled">การสแกนไลบรารีถูกยกเลิก</string>
     <string name="notification_media_scan_failed">การสแกนไลบรารีล้มเหลว ตรวจสอบสิทธิ์ในการจัดเก็บข้อมูลแล้วลองอีกครั้ง</string>
@@ -220,13 +194,10 @@
     <string name="notification_streaming_playlist_created">เพลย์ลิสต์ใหม่ \"%1$s\" สร้างเมื่อ %2$s</string>
     <string name="notification_streaming_playlist_updated">เพลย์ลิสต์ \"%1$s\" อัปเดตเมื่อ %2$s</string>
     <string name="notification_streaming_playlist_deleted">เพลย์ลิสต์ \"%1$s\" ถูกลบออกจาก %2$s</string>
-    <string name="notification_streaming_playlist_song_added">เพิ่มเพลงใน \"%1$s\"</string>
-    <string name="notification_streaming_playlist_song_removed">ลบเพลงออกจาก \"%1$s\"</string>
     
     <!-- Streaming Network/Quality -->
     <string name="notification_streaming_quality_title">คุณภาพการสตรีม</string>
     <string name="notification_streaming_quality_switched">เปลี่ยนคุณภาพเป็น %1$s เนื่องจากการเปลี่ยนแปลงเครือข่าย</string>
-    <string name="notification_streaming_network_slow">เครือข่ายช้า คุณภาพการสตรีมลดลง</string>
     <string name="notification_streaming_buffering">กำลังบัฟเฟอร์… กำลังเล่นจาก %1$s</string>
     <string name="notification_streaming_buffering_complete">พร้อมเล่นแล้ว!</string>
     
@@ -249,7 +220,6 @@
     <string name="dialog_delete_playlist_message">คุณแน่ใจหรือไม่ว่าต้องการลบ \"%1$s\"? การดำเนินการนี้ไม่สามารถยกเลิกได้</string>
     <string name="dialog_delete">ลบ</string>
     <string name="dialog_cancel">ยกเลิก</string>
-    <string name="dialog_save">บันทึก</string>
     <string name="streaming_settings_switch_provider_confirm_title">สลับผู้ให้บริการสตรีมมิ่งหรือไม่</string>
     <string name="streaming_settings_switch_provider_confirm_desc">ผู้ให้บริการปัจจุบัน: %1$s\nเปลี่ยนเป็น: %2$s? การดำเนินการนี้จะยกเลิกการเชื่อมต่อผู้ให้บริการที่ใช้งานอยู่ในปัจจุบัน</string>
     <string name="action_switch">สลับ</string>
@@ -263,34 +233,13 @@
     <string name="playlist_more_options">ตัวเลือกเพิ่มเติม</string>
     <string name="playlist_done_reordering">เรียงลำดับใหม่เสร็จแล้ว</string>
     <string name="playlist_reorder_songs">เรียงลำดับเพลงใหม่</string>
-    <string name="playlist_cancel_selection">ยกเลิกการเลือก</string>
-    <string name="playlist_select_songs">เลือกเพลง</string>
-    <string name="playlist_sort_songs">เรียงลำดับเพลง</string>
-    <string name="playlist_export">ส่งออกเพลย์ลิสต์</string>
-    <string name="playlist_import">นำเข้าเพลย์ลิสต์</string>
-    <string name="playlist_rename">เปลี่ยนชื่อเพลย์ลิสต์</string>
-    <string name="playlist_delete">ลบเพลย์ลิสต์</string>
-    <string name="playlist_play_all">เล่นทั้งหมด</string>
-    <string name="playlist_shuffle_play">สุ่มเล่น</string>
-    <string name="playlist_search_songs">เลือกเพลง...</string>
-    <string name="playlist_search_in_playlist">ค้นหาในเพลย์ลิสต์นี้</string>
-    <string name="playlist_clear_search">ล้างการค้นหา</string>
-    <string name="playlist_add_songs">เพิ่มเพลง</string>
-    <string name="playlist_add_songs_to_playlist">เพิ่มเพลงลงในเพลย์ลิสต์</string>
     <string name="playlist_reorder_songs_title">เรียงลำดับเพลงใหม่</string>
     <string name="playlist_remove_song">ลบเพลง</string>
     <string name="playlist_remove_song_confirm">ลบ \'%1$s\' ออกจากเพลย์ลิสต์นี้หรือไม่</string>
     <string name="playlist_remove_songs_count">ลบเพลง %1$d</string>
     <string name="playlist_removed_from_playlist">ลบ %1$s ออกจากเพลย์ลิสต์</string>
-    <string name="playlist_move_up">เลื่อนขึ้น</string>
-    <string name="playlist_move_down">เลื่อนลง</string>
-    <string name="playlist_remove">ลบ</string>
-    <string name="playlist_exporting">กำลังส่งออก</string>
-    <string name="playlist_importing">การนำเข้า</string>
     
     <!-- Restart Dialog -->
-    <string name="restart_recommended">แนะนำให้รีสตาร์ท</string>
-    <string name="restart_default_playlists_message">หากต้องการใช้การเปลี่ยนแปลงกับเพลย์ลิสต์เริ่มต้น เราขอแนะนำให้รีสตาร์ทแอป คุณสามารถใช้แอปต่อไปได้ แต่เพลย์ลิสต์บางรายการอาจแสดงไม่ถูกต้องจนกว่าจะรีสตาร์ท</string>
     <string name="restart_now">รีสตาร์ททันที</string>
     <string name="continue_without_restart">รีสตาร์ทในภายหลัง</string>
     
@@ -335,66 +284,31 @@
     <string name="settings_include_hidden_whitelisted_media_desc">เปิดใช้งานการสแกนเส้นทางเสียงที่ซ่อนอยู่และ .nomedia ในระหว่างการสแกนสื่อแบบเต็ม (เอฟเฟกต์ที่แข็งแกร่งที่สุดในโฟลเดอร์ไวท์ลิสต์)</string>
     
     <!-- Settings - Spotify -->
-    <string name="settings_spotify_api_config">Spotify API การกำหนดค่า</string>
-    <string name="settings_spotify_api_config_desc">ป้อนข้อมูลรับรอง Spotify API ของคุณเพื่อเปิดใช้งานการค้นหาแทร็กและวิดีโอ Canvas</string>
-    <string name="settings_spotify_default_keys_warning">ขณะนี้คุณกำลังใช้คีย์ Spotify เริ่มต้นของแอป เพื่อการใช้งานเต็มรูปแบบและเพื่อหลีกเลี่ยงการจำกัดอัตรา โปรดป้อนรหัสลูกค้าและข้อมูลลับของคุณเอง</string>
-    <string name="settings_spotify_client_id">รหัสลูกค้า</string>
-    <string name="settings_spotify_client_id_placeholder">รหัสลูกค้า Spotify ของคุณ</string>
-    <string name="settings_spotify_client_secret">ความลับของลูกค้า</string>
-    <string name="settings_spotify_client_secret_placeholder">Spotify รหัสลับลูกค้าของคุณ</string>
-    <string name="settings_spotify_test_connection">ทดสอบการเชื่อมต่อ</string>
-    <string name="settings_spotify_testing">การทดสอบ…</string>
-    <string name="settings_spotify_error">ข้อผิดพลาด: %1$s</string>
-    <string name="settings_spotify_instructions">วิธีรับข้อมูลประจำตัว Spotify API ของคุณ:\n• ไปที่ Developer.spotify.com\n• สร้างแอปใหม่\n• คัดลอก ID ไคลเอ็นต์และความลับของลูกค้า</string>
     
     <!-- Settings - About -->
-    <string name="settings_about">เกี่ยวกับ</string>
     <string name="settings_about_music_player">เครื่องเล่นเพลง</string>
-    <string name="settings_about_version">v%1$s</string>
-    <string name="settings_about_description">เครื่องเล่นเพลงที่ทันสมัยและเต็มไปด้วยฟีเจอร์สำหรับ Android</string>
     <string name="settings_about_project_details">รายละเอียดโครงการ</string>
     <string name="settings_about_version_label">เวอร์ชัน</string>
     <string name="settings_about_build">สร้าง</string>
     <string name="settings_about_target_sdk">SDK เป้าหมาย</string>
     <string name="settings_about_architecture">สถาปัตยกรรม</string>
-    <string name="settings_about_architecture_value">ARM64 &amp; ARM32</string>
-    <string name="settings_about_built_with">สร้างขึ้นด้วยเทคโนโลยี Android ที่ทันสมัย ​​และ Material การออกแบบ 3</string>
+    <string name="settings_about_architecture_value">ARM64 และ ARM32</string>
     <string name="settings_about_credits">นักพัฒนา</string>
-    <string name="settings_about_developer_name">อันจิษณุ นันดี</string>
-    <string name="settings_about_developer_role">หัวหน้านักพัฒนาและสถาปนิกโครงการ</string>
-    <string name="settings_about_team">ทีม ChromaHub</string>
     <string name="settings_about_team_desc">นักพัฒนาที่มีความหลงใหลในการสร้างสรรค์ประสบการณ์ที่เป็นนวัตกรรมใหม่</string>
     <string name="settings_about_team_chromahub">ทีม ChromaHub</string>
-    <string name="settings_about_special_thanks">ขอขอบคุณเป็นพิเศษ</string>
     <string name="settings_about_community">ชุมชน</string>
-    <string name="settings_about_community_desc">ขอขอบคุณเป็นพิเศษสำหรับสมาชิกชุมชนที่น่าทึ่งของเราที่ได้มีส่วนทำให้ Rhythm ดีขึ้นผ่านการทดสอบ ข้อเสนอแนะ คำแนะนำ และการทำงานร่วมกัน</string>
-    <string name="settings_about_contributor_izzy_name">อิซซี่</string>
-    <string name="settings_about_contributor_izzy_role">จัดการการอัปเดตบน IzzyOnDroid</string>
-    <string name="settings_about_contributor_christian_name">คริสเตียน</string>
-    <string name="settings_about_contributor_christian_role">การทำงานร่วมกันและหัวหน้าฝ่ายพัฒนาของ Project Booming</string>
-    <string name="settings_about_contributor_alex_name">อเล็กซ์</string>
-    <string name="settings_about_contributor_alex_role">Spotify Canvas API บูรณาการ</string>
-    <string name="settings_about_want_featured">อยากถูกนำเสนอที่นี่ไหม?</string>
-    <string name="settings_about_contribute">ร่วมสนับสนุน Rhythm ผ่านการทดสอบ แสดงความคิดเห็น หรือเขียนโค้ด แล้วเข้าร่วมชุมชนที่น่าทึ่งของเรา!</string>
-    <string name="settings_about_open_source_libraries">ไลบรารีโอเพ่นซอร์ส</string>
+    <string name="about_community_group_maintainers">ผู้ดูแลแพ็คเกจ</string>
+    <string name="about_community_group_collaborators">ผู้ทำงานร่วมกันและผู้มีส่วนร่วม</string>
+    <string name="about_community_group_design_testing">การออกแบบและการทดสอบ</string>
     <string name="settings_about_open_source_libs">ไลบรารีโอเพ่นซอร์ส</string>
     <string name="settings_about_view_dependencies">ดูการอ้างอิง</string>
-    <string name="settings_about_view_licenses">ดูการอ้างอิงและใบอนุญาตทั้งหมด</string>
     <string name="settings_about_actions">การกระทำ</string>
     <string name="settings_about_check_updates">ตรวจสอบการอัปเดต</string>
     <string name="settings_about_visit_website">เยี่ยมชมเว็บไซต์</string>
     <string name="settings_about_view_github">ดูบน GitHub</string>
     <string name="settings_about_report_bug">รายงานข้อบกพร่องหรือแนะนำคุณสมบัติ</string>
-    <string name="settings_about_telegram_support">กลุ่มสนับสนุนโทรเลข</string>
     
     <!-- Settings - Updates -->
-    <string name="settings_updates">อัปเดต</string>
-    <string name="settings_updates_error">ข้อผิดพลาด</string>
-    <string name="settings_updates_checking">กำลังตรวจสอบ…</string>
-    <string name="settings_updates_available">มีการอัปเดต</string>
-    <string name="settings_updates_disabled">ปิดใช้งานการอัปเดต</string>
-    <string name="settings_updates_manual_check">ตรวจสอบด้วยตนเอง</string>
-    <string name="settings_updates_up_to_date">อัปเดต</string>
     
     <!-- Status Labels -->
     <string name="status_disabled">ปิดการใช้งาน</string>
@@ -402,7 +316,6 @@
     <!-- HomeScreen -->
     <string name="home_title">Rhythm</string>
     <string name="home_settings_cd">การตั้งค่า</string>
-    <string name="home_discover_albums">ค้นพบอัลบั้ม</string>
     <string name="home_explore_music">สำรวจเพลงที่น่าทึ่ง</string>
     <string name="home_no_featured_albums">ไม่มีอัลบั้มเด่น</string>
     <string name="home_no_featured_albums_desc">เพิ่มอัลบั้มลงในห้องสมุดของคุณเพื่อดูเนื้อหาเด่น</string>
@@ -450,9 +363,6 @@
     <string name="home_quote_night_4">โอบกอดความสงบแห่งราตรี 😴</string>
     
     <!-- Personalized messages -->
-    <string name="home_continue_song">ดำเนินการต่อจากจุดที่คุณค้างไว้ด้วย \"%1$s\"</string>
-    <string name="home_adventure_continues">การผจญภัยทางดนตรีของคุณดำเนินต่อไป</string>
-    <string name="home_discover_next_favorite">พร้อมที่จะค้นพบเพลงโปรดถัดไปของคุณแล้วหรือยัง?</string>
     
     <!-- Recommended Section -->
     <string name="home_recommended_title">แนะนำสำหรับคุณ</string>
@@ -462,21 +372,8 @@
     
     <!-- Listening Stats -->
     <string name="home_listening_stats">Rhythm สถิติของคุณ</string>
-    <string name="home_listening_stats_subtitle">การเดินทางทางดนตรีของสัปดาห์นี้</string>
-    <string name="home_stat_listening_time">เวลาฟัง</string>
-    <string name="home_stat_listening_time_short">น้อยกว่า 1 ชม.</string>
-    <string name="home_stat_songs_played">เพลงที่เล่น</string>
-    <string name="home_stat_artists">ศิลปิน</string>
     
     <!-- Mood & Moments -->
-    <string name="home_mood_title">อารมณ์และช่วงเวลา</string>
-    <string name="home_mood_subtitle">เพลงสำหรับทุกความรู้สึก</string>
-    <string name="home_mood_energize">เพิ่มพลัง</string>
-    <string name="home_mood_energize_desc">เพิ่มพลังของคุณ</string>
-    <string name="home_mood_relax">ผ่อนคลาย</string>
-    <string name="home_mood_relax_desc">ผ่อนคลายและหายใจ</string>
-    <string name="home_mood_focus">โฟกัส</string>
-    <string name="home_mood_focus_desc">โหมดความเข้มข้น</string>
     
     <!-- Recently Played -->
     <string name="home_recently_played">เพิ่งเล่น</string>
@@ -486,16 +383,13 @@
     
     <!-- UI Actions -->
     <string name="ui_view_all">ดูทั้งหมด</string>
-    <string name="ui_play_action">เล่น %1$s</string>
     <string name="ui_songs_count">%1$d เพลง</string>
     
     <!-- Updates -->
-    <string name="update_available_cd">มีการอัปเดต</string>
     <string name="update_available_title">มีการอัปเดต</string>
     <string name="update_version">เวอร์ชัน %1$s</string>
     <string name="update_whats_new">มีอะไรใหม่:</string>
     <string name="update_now">อัปเดตทันที</string>
-    <string name="update_downloading">กำลังดาวน์โหลด…</string>
     
     <!-- LibraryScreen -->
     <string name="library_title">ห้องสมุด</string>
@@ -507,7 +401,6 @@
     <string name="library_loading_playlists">กำลังโหลดเพลย์ลิสต์…</string>
     <string name="library_loading_albums">กำลังโหลดอัลบั้ม…</string>
     <string name="library_loading_artists">กำลังโหลดศิลปิน…</string>
-    <string name="library_tracks_count">%1$d จาก %2$d แทร็ก</string>
     
     <!-- Background Processing States -->
     <string name="scanning_media">กำลังจัดทำดัชนีไฟล์เสียง…</string>
@@ -518,10 +411,8 @@
     
     <string name="library_no_songs">ยังไม่มีเพลง</string>
     <string name="library_no_artists">ไม่พบศิลปิน</string>
-    <string name="library_no_artists_desc">เพิ่มเพลงเพื่อดูศิลปินของคุณที่นี่</string>
     <string name="library_start_collection">เริ่มสร้างคอลเลคชันเพลงของคุณ</string>
     <string name="library_sort_artists">จัดเรียงศิลปินตาม</string>
-    <string name="library_explore">สำรวจ</string>
     <string name="library_storage_locations">สถานที่จัดเก็บ</string>
     <string name="library_pinned_folders">โฟลเดอร์ที่ปักหมุด</string>
     <string name="library_go_back">ย้อนกลับ</string>
@@ -532,11 +423,8 @@
     <string name="library_creating_playlist">การสร้างเพลย์ลิสต์และเพิ่ม %1$d เพลง…</string>
     <string name="library_playlist_name_empty">ชื่อเพลย์ลิสต์ต้องไม่เว้นว่าง</string>
     <string name="library_no_playlists">ยังไม่มีเพลย์ลิสต์</string>
-    <string name="library_no_playlists_desc">สร้างเพลย์ลิสต์แรกของคุณโดยใช้ปุ่ม +</string>
     <string name="library_no_albums">ยังไม่มีอัลบั้ม</string>
-    <string name="library_playlist_count">%1$d เพลย์ลิสต์</string>
     <string name="library_playlists_count">%1$d เพลย์ลิสต์</string>
-    <string name="library_album_count">%1$d อัลบั้ม</string>
     <string name="library_albums_count">%1$d อัลบั้ม</string>
     
     <!-- Sort Options -->
@@ -545,10 +433,6 @@
     <string name="sort_song_count">จำนวนเพลง</string>
     <string name="sort_title">หัวข้อ</string>
     <string name="sort_artist">ศิลปิน</string>
-    <string name="sort_date_added">เพิ่มวันที่</string>
-    <string name="sort_date_modified">วันที่แก้ไข</string>
-    <string name="sort_ascending">จากน้อยไปมาก</string>
-    <string name="sort_descending">จากมากไปน้อย</string>
     
     <!-- Storage Permission -->
     <string name="storage_permission_required">ต้องได้รับอนุญาตจากพื้นที่เก็บข้อมูล</string>
@@ -556,14 +440,8 @@
     <string name="storage_permission_audio_only">อนุญาตให้เข้าถึงเฉพาะไฟล์เสียงและโฟลเดอร์ที่มีเพลงเท่านั้น</string>
     
     <!-- PlayerScreen -->
-    <string name="player_now_playing">กำลังเล่น</string>
     <string name="player_loading_lyrics">กำลังโหลดเนื้อเพลง…</string>
-    <string name="player_shuffle">สุ่ม</string>
-    <string name="player_lyrics">เนื้อเพลง</string>
-    <string name="player_repeat">ทำซ้ำ</string>
     <string name="player_queue">คิว</string>
-    <string name="player_playback_speed">ความเร็วและระดับเสียง</string>
-    <string name="player_playback_speed_desc">ปรับความเร็วและระดับเสียงของการเล่นเสียง</string>
     <string name="player_speed_label">ความเร็ว</string>
     <string name="player_pitch_label">พิทช์</string>
     <string name="playback_speed">ความเร็วในการเล่น</string>
@@ -571,47 +449,15 @@
     <string name="sync_with_speed">ซิงค์ด้วยความเร็ว</string>
     
     <!-- SearchScreen -->
-    <string name="search_filter_results">ผลลัพธ์ตัวกรอง</string>
-    <string name="search_results">ผลการค้นหา</string>
-    <string name="search_songs">เพลง</string>
-    <string name="search_albums">อัลบั้ม</string>
-    <string name="search_artists">ศิลปิน</string>
-    <string name="search_playlists">เพลย์ลิสต์</string>
     <string name="search_view_all_songs">ดูเพลงทั้งหมด</string>
-    <string name="search_see_all_songs">ดูเพลง %1$d ทั้งหมด</string>
-    <string name="search_recently_searched">ค้นหาล่าสุด</string>
     <string name="search_recent_searches">การค้นหาล่าสุด</string>
-    <string name="search_clear">ล้าง</string>
-    <string name="search_no_recent_searches">ไม่มีการค้นหาล่าสุด</string>
-    <string name="search_no_recent_searches_desc">ประวัติการค้นหาของคุณจะปรากฏที่นี่</string>
-    <string name="search_recently_played">เพิ่งเล่น</string>
-    <string name="search_no_recently_played">ไม่มีการเล่นล่าสุด</string>
-    <string name="search_no_recently_played_desc">เพลงที่คุณเล่นจะปรากฏที่นี่</string>
-    <string name="search_recommended">แนะนำสำหรับคุณ</string>
-    <string name="search_recommended_desc">ขึ้นอยู่กับประวัติการฟังของคุณ</string>
-    <string name="search_all_songs">เพลงทั้งหมด (%1$d)</string>
     <string name="search_browse_by_genre">เรียกดูตามประเภท</string>
-    <string name="search_detecting_genres">กำลังตรวจจับแนวเพลง…</string>
-    <string name="search_genre_suggestions">คำแนะนำประเภทจะปรากฏที่นี่เมื่อตรวจพบ</string>
-    <string name="search_no_genres">ไม่พบแนวเพลงในห้องสมุดของคุณ</string>
-    <string name="search_no_recent">ไม่มีการค้นหาล่าสุด</string>
     
     <!-- Common UI -->
-    <string name="ui_play">เล่น</string>
-    <string name="ui_or">หรือ</string>
-    <string name="ui_skip_for_now">ข้ามไปก่อน</string>
     <string name="ui_dismiss">ยกเลิก</string>
-    <string name="ui_retry">ลองอีกครั้ง</string>
-    <string name="ui_get_started">เริ่มต้น</string>
-    <string name="ui_enable_updates">เปิดใช้งานการอัปเดต</string>
-    <string name="ui_check_now">ตรวจสอบเลย</string>
-    <string name="ui_download_update">ดาวน์โหลดอัปเดต</string>
-    <string name="ui_install_update">ติดตั้งอัปเดต</string>
-    <string name="ui_cancel_download">ยกเลิกการดาวน์โหลด</string>
     
     <!-- Common Terms -->
     <string name="common_rhythm">Rhythm</string>
-    <string name="common_songs">เพลง</string>
     <string name="common_home">หน้าแรก</string>
     <string name="common_library">ห้องสมุด</string>
     
@@ -622,16 +468,12 @@
     <string name="splash_ready">พร้อมกรู๊ฟ!</string>
     
     <!-- Audio Quality -->
-    <string name="badge_studio_master">สตูดิโอมาสเตอร์</string>
-    <string name="badge_lossless">สูญเสีย</string>
     
     <!-- Navigation -->
     <string name="nav_no_matching_songs">ไม่พบเพลงที่ตรงกัน</string>
     <string name="nav_try_different">ลองใช้คำค้นหาอื่น</string>
     
     <!-- Updates Section -->
-    <string name="updates_title">อัปเดต</string>
-    <string name="updates_error">ข้อผิดพลาด</string>
     <string name="updates_checking">กำลังตรวจสอบการอัปเดต…</string>
     <string name="updates_available">มีการอัปเดต</string>
     <string name="updates_disabled">ปิดใช้งานการอัปเดต</string>
@@ -643,31 +485,20 @@
     <string name="updates_download_complete">ดาวน์โหลดเสร็จสมบูรณ์</string>
     <string name="updates_check_failed">การตรวจสอบการอัปเดตล้มเหลว</string>
     <string name="updates_settings">อัปเดตการตั้งค่า</string>
-    <string name="updates_released">เปิดตัว: %1$s</string>
-    <string name="updates_version">เวอร์ชัน %1$s</string>
     <string name="updates_enable">เปิดใช้งานการอัปเดต</string>
-    <string name="updates_check_now">ตรวจสอบเลย</string>
     <string name="updates_download_update">ดาวน์โหลดอัปเดต</string>
     <string name="updates_install_update">ติดตั้งอัปเดต</string>
     <string name="updates_cancel_download">ยกเลิกการดาวน์โหลด</string>
     <string name="cancel_download">ยกเลิกการดาวน์โหลด</string>
     <string name="download_update">ดาวน์โหลดอัปเดต</string>
-    <string name="updates_auto_check_disabled">การตรวจสอบการอัปเดตอัตโนมัติถูกปิดใช้งาน คุณยังสามารถตรวจสอบด้วยตนเองได้</string>
-    <string name="updates_disabled_desc">การอัปเดตแอปถูกปิดใช้งานในการตั้งค่า</string>
     <string name="updates_smart_polling">การโพลอัจฉริยะใช้งานอยู่</string>
     <string name="updates_smart_polling_desc">การใช้การตรวจสอบ HTTP ที่มีประสิทธิภาพเพื่อตรวจจับการอัปเดตในขณะที่ลดการเรียก GitHub API ให้เหลือน้อยที่สุด คุณจะได้รับการแจ้งเตือนทันทีเมื่อมีการเปิดตัวเวอร์ชันใหม่</string>
     <string name="updates_channel_desc">เลือกช่องทางการอัปเดตที่จะติดตาม:</string>
     
     <!-- Onboarding -->
     <string name="onboarding_welcome_to">ยินดีต้อนรับสู่</string>
-    <string name="onboarding_welcome_title">Rhythm</string>
     <string name="onboarding_welcome_subtitle">เพลงของคุณ Rhythm</string>
-    <string name="onboarding_welcome_desc">ปรับแต่งทุกแง่มุมของประสบการณ์การฟังของคุณด้วยคุณสมบัติอันทรงพลังและความเป็นส่วนตัวที่สมบูรณ์ เล่นเพลงของคุณแบบออฟไลน์ ไร้โฆษณา พร้อมการควบคุมเต็มรูปแบบ</string>
     <string name="onboarding_get_started">เริ่มต้น</string>
-    <string name="onboarding_offline">ออฟไลน์</string>
-    <string name="onboarding_customizable">ปรับแต่งได้</string>
-    <string name="onboarding_private">ส่วนตัว</string>
-    <string name="onboarding_tagline">เครื่องเล่นเพลง • ออกแบบมาสำหรับ Android</string>
     <string name="onboarding_android13_notice">Android 13+ ประกาศ</string>
     <string name="onboarding_android13_desc">ในเวอร์ชัน Android ที่ใหม่กว่า คุณจะเห็นคำขอสิทธิ์หลายรายการ โปรดให้สิทธิ์การเข้าถึงไฟล์เสียงและการแจ้งเตือนเพื่อประสบการณ์ที่ดีที่สุด</string>
     <string name="onboarding_granted">✓ ได้รับ</string>
@@ -676,7 +507,6 @@
     <string name="onboarding_auto_backup">สำรองข้อมูลอัตโนมัติ</string>
     <string name="onboarding_auto_backup_desc">สำรองข้อมูลการตั้งค่าของคุณโดยอัตโนมัติทุกสัปดาห์</string>
     <string name="onboarding_backup_center">ศูนย์สำรองข้อมูลและคืนค่า</string>
-    <string name="onboarding_backup_center_desc">สร้างการสำรองข้อมูลหรือกู้คืนจากไฟล์สำรองที่มีอยู่</string>
     <string name="onboarding_manual_backup_info">คุณสามารถสร้างการสำรองข้อมูลด้วยตนเองได้ทุกเมื่อในการตั้งค่า &gt; การสำรองข้อมูลและการกู้คืน</string>
     <string name="onboarding_what_backed_up">มีการสำรองข้อมูลอะไรบ้าง?</string>
     <string name="onboarding_backed_up_1">การตั้งค่า เพลย์ลิสต์ ธีม และการปรับแต่งไลบรารีทั้งหมด</string>
@@ -704,11 +534,6 @@
     <string name="onboarding_theme_title">ทำให้ Rhythm เป็นของคุณ</string>
     <string name="onboarding_theme_desc">ปรับแต่งรูปลักษณ์ของ Rhythm ให้เข้ากับสไตล์ของคุณ เลือกธีมระบบ แบบอักษร หรือ Material สีไดนามิกของคุณ (Android 12+)</string>
     <string name="onboarding_live_preview">ดูตัวอย่างสด</string>
-    <string name="onboarding_primary">ประถม</string>
-    <string name="onboarding_container">คอนเทนเนอร์</string>
-    <string name="onboarding_accent">สำเนียง</string>
-    <string name="onboarding_advanced_custom">การปรับแต่งขั้นสูง</string>
-    <string name="onboarding_advanced_custom_desc">รูปแบบสีที่กำหนดเอง สีปกอัลบั้ม และแบบอักษร</string>
     <string name="onboarding_more_tuner">การปรับแต่งเพิ่มเติมในการตั้งค่า</string>
     <string name="onboarding_tuner_1">โทนสีที่กำหนดเองและการแยกสีปกอัลบั้ม</string>
     <string name="onboarding_tuner_2">การปรับแต่งแบบอักษรและการตั้งค่าการพิมพ์</string>
@@ -728,19 +553,13 @@
     <string name="onboarding_continue_full_tour">ทัวร์ชมต่อแบบเต็ม</string>
     <string name="onboarding_finish_now">ตั้งค่าให้เสร็จสิ้นทันที</string>
     <string name="onboarding_step_progress">%1$d จาก %2$d</string>
-    <string name="onboarding_advanced_customization">การปรับแต่งขั้นสูง</string>
-    <string name="onboarding_advanced_customization_desc">รูปแบบสีที่กำหนดเอง สีปกอัลบั้ม และแบบอักษร</string>
     
     <string name="onboarding_media_scan_title">กรองคลังเพลงของคุณ</string>
     <string name="onboarding_media_scan_desc">ควบคุมว่าไฟล์เสียงใดที่จะปรากฏในไลบรารีของคุณ ใช้โหมดบัญชีดำเพื่อซ่อนไฟล์ที่ไม่ต้องการ (เสียงเรียกเข้า การแจ้งเตือน) หรือโหมดบัญชีขาวเพื่อแสดงเฉพาะโฟลเดอร์เพลงที่ต้องการ</string>
-    <string name="onboarding_media_scan_configure">กำหนดค่าการสแกนสื่อ</string>
     <string name="onboarding_media_scan_current_mode">เลือกโหมดบัญชีดำหรือบัญชีขาว</string>
-    <string name="onboarding_media_scan_settings">การตั้งค่าการสแกนสื่อ</string>
     <string name="onboarding_media_scan_blacklist">โหมดบัญชีดำ: ซ่อนเพลงและโฟลเดอร์เฉพาะ (เสียงเรียกเข้า, การแจ้งเตือน)</string>
     <string name="onboarding_media_scan_whitelist">โหมดไวท์ลิสต์: แสดงเฉพาะเพลงจากโฟลเดอร์ที่เลือก</string>
     <string name="onboarding_media_scan_configure_in_tuner">กำหนดค่าการสแกนในการตั้งค่า &gt; การสแกนสื่อ</string>
-    <string name="onboarding_storage_title">การจัดการพื้นที่เก็บข้อมูล</string>
-    <string name="onboarding_storage_desc">จัดการขนาดแคชและพื้นที่เก็บข้อมูลในการตั้งค่า &gt; การจัดการแคช</string>
     
     <string name="onboarding_complete_title">คุณพร้อมแล้ว!</string>
     <string name="onboarding_complete_desc">Rhythm พร้อมเล่นแล้ว! คลังเพลงของคุณกำลังถูกสแกนในเบื้องหลัง นี่คือสิ่งที่กำหนดค่าไว้:</string>
@@ -760,7 +579,6 @@
     <string name="onboarding_continue">ดำเนินการต่อ</string>
     <string name="onboarding_open_settings">เปิดการตั้งค่า</string>
     <string name="onboarding_grant_access">ให้สิทธิ์การเข้าถึง</string>
-    <string name="onboarding_language">ภาษา</string>
     
     <!-- Onboarding Permission Screen -->
     <string name="onboarding_permissions_granted_title">ได้รับอนุญาตแล้ว!</string>
@@ -785,36 +603,20 @@
     <string name="onboarding_permission_tip_3">Rhythm เคารพความเป็นส่วนตัวและข้อมูลของคุณ</string>
     
     <!-- Onboarding Audio &amp; Playback -->
-    <string name="onboarding_haptic_title">การตอบสนองแบบสัมผัส</string>
-    <string name="onboarding_haptic_desc">เปิดใช้งานการสั่นสะเทือนเล็กน้อยในการโต้ตอบเพื่อประสบการณ์สัมผัสที่มากขึ้น</string>
     <string name="onboarding_default_screen_title">หน้าจอเริ่มต้น</string>
     <string name="onboarding_default_screen_desc">เลือกหน้าจอที่จะเปิดเมื่อคุณเปิด Rhythm</string>
     <string name="onboarding_system_volume_title">การควบคุมระดับเสียงของระบบ</string>
     <string name="onboarding_system_volume_desc">อนุญาตให้ปุ่มปรับระดับเสียงของอุปกรณ์ควบคุมระดับเสียงการเล่นของ Rhythm</string>
     <string name="onboarding_auto_queue_title">เพิ่มลงในคิวอัตโนมัติ</string>
     <string name="onboarding_auto_queue_desc">สร้างคิวตามบริบทจากอัลบั้ม/ศิลปินโดยอัตโนมัติเมื่อเล่นเพลง</string>
-    <string name="onboarding_clear_queue_title">ล้างคิวเพลงใหม่</string>
-    <string name="onboarding_clear_queue_desc">แทนที่คิวทั้งหมดเมื่อเล่นเพลงใหม่แทนที่จะเพิ่มเข้าไป</string>
-    <string name="onboarding_repeat_mode_title">จำโหมดเล่นซ้ำ</string>
-    <string name="onboarding_repeat_mode_desc">คงการตั้งค่าโหมดเล่นซ้ำไว้ตลอดการรีสตาร์ทแอป</string>
-    <string name="onboarding_shuffle_mode_title">จำโหมดสุ่ม</string>
-    <string name="onboarding_shuffle_mode_desc">คงสถานะเปิด/ปิดการสับเปลี่ยนของคุณตลอดการรีสตาร์ทแอป</string>
-    <string name="onboarding_exoplayer_shuffle_title">ใช้ ExoPlayer สับเปลี่ยน</string>
-    <string name="onboarding_exoplayer_shuffle_desc">ปล่อยให้เครื่องเล่นสื่อจัดการสับเปลี่ยน (แนะนำ: ปิดสำหรับการสับเปลี่ยนด้วยตนเอง)</string>
     <string name="onboarding_show_lyrics_title">แสดงเนื้อเพลง</string>
     <string name="onboarding_show_lyrics_desc">แสดงเนื้อเพลงที่ซิงโครไนซ์เมื่อมีเพลงโปรดของคุณ</string>
     <string name="onboarding_lyrics_source_title">ลำดับความสำคัญของเนื้อเพลง</string>
     <string name="onboarding_lyrics_source_desc">เลือกแหล่งที่มาของเนื้อเพลงที่จะลองก่อน (พร้อมทางเลือกอื่นโดยอัตโนมัติ)</string>
     
     <!-- Onboarding Library Setup -->
-    <string name="onboarding_tab_order_title">ลำดับแท็บไลบรารี</string>
-    <string name="onboarding_tab_order_desc">เรียงลำดับเพลง เพลย์ลิสต์ อัลบั้ม ศิลปิน และแท็บ Explorer ใหม่</string>
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_follow_system_title">ติดตามธีมของระบบ</string>
-    <string name="onboarding_follow_system_desc">สลับระหว่างธีมสว่างและธีมมืดโดยอัตโนมัติตามการตั้งค่าระบบของอุปกรณ์ของคุณ</string>
-    <string name="onboarding_dark_mode_title">โหมดมืด</string>
-    <string name="onboarding_dark_mode_desc">เปิดใช้งานหรือปิดใช้งานโหมดมืดด้วยตนเองสำหรับแอปพลิเคชัน</string>
     <string name="onboarding_dynamic_colors_title">สีไดนามิก (Material คุณ)</string>
     <string name="onboarding_dynamic_colors_desc">ใช้สีที่ดึงมาจากวอลเปเปอร์ของอุปกรณ์เพื่อให้ดูกลมกลืน</string>
     <string name="onboarding_player_theme_title">การเล่นและธีมเครื่องเล่นขนาดเล็ก</string>
@@ -836,18 +638,12 @@
     <string name="onboarding_update_notifications_desc">รับการแจ้งเตือนเมื่อมีเวอร์ชันใหม่</string>
     <string name="onboarding_smart_polling_title">การโพลอัจฉริยะ</string>
     <string name="onboarding_smart_polling_desc">ใช้การตรวจสอบที่มีประสิทธิภาพเพื่อบันทึกการโทร GitHub API</string>
-    <string name="onboarding_check_interval_title">ตรวจสอบช่วงเวลา</string>
     <string name="onboarding_check_interval_desc">ความถี่ในการตรวจสอบการอัปเดต</string>
     <string name="onboarding_update_channel_title">อัพเดตช่อง</string>
     <string name="onboarding_update_channel_desc">เวอร์ชันเสถียรหรือเบต้า</string>
     <string name="fetching_latest_version">กำลังดึงข้อมูลเวอร์ชันล่าสุดจาก GitHub...</string>
     
     <!-- Onboarding Update Options -->
-    <string name="option_every_hour">ทุกชั่วโมง</string>
-    <string name="option_every_3_hours">ทุก 3 ชั่วโมง</string>
-    <string name="option_every_6_hours">ทุก 6 ชั่วโมง</string>
-    <string name="option_every_12_hours">ทุก 12 ชั่วโมง</string>
-    <string name="option_daily">รายวัน</string>
     <string name="option_stable">เสถียร</string>
     <string name="option_beta">เบต้า</string>
     <string name="option_home">หน้าแรก</string>
@@ -872,8 +668,6 @@
     <!-- Onboarding: Notifications Step -->
     <string name="onboarding_notifications_title">การแจ้งเตือนการเล่น</string>
     <string name="onboarding_notifications_desc">ควบคุมวิธีที่ Rhythm แสดงการเล่นเพลงในหน้าต่างแจ้งเตือนของคุณ เลือกระหว่างการแจ้งเตือนสไตล์ที่กำหนดเองหรือการควบคุมสื่อของระบบมาตรฐาน</string>
-    <string name="onboarding_custom_notifications">รูปแบบการแจ้งเตือนที่กำหนดเอง</string>
-    <string name="onboarding_custom_notifications_desc">ใช้การออกแบบการแจ้งเตือนที่ได้รับการปรับปรุงของ Rhythm พร้อมการควบคุมและรูปแบบเพิ่มเติม</string>
     <string name="onboarding_notifications_info_title">คุณสมบัติการแจ้งเตือน</string>
     <string name="onboarding_notification_tip_1">ดูข้อมูลแทร็กปัจจุบันได้อย่างรวดเร็ว</string>
     <string name="onboarding_notification_tip_2">ควบคุมการเล่นด้วยการดำเนินการด่วน</string>
@@ -905,8 +699,6 @@
     <string name="onboarding_widget_artist_desc">แสดงศิลปินปัจจุบันในวิดเจ็ต</string>
     <string name="onboarding_widget_album">แสดงชื่ออัลบั้ม</string>
     <string name="onboarding_widget_album_desc">แสดงชื่ออัลบั้มในวิดเจ็ต</string>
-    <string name="onboarding_widget_auto_update">วิดเจ็ตอัปเดตอัตโนมัติ</string>
-    <string name="onboarding_widget_auto_update_desc">อัปเดตวิดเจ็ตโดยอัตโนมัติเมื่อเพลงเปลี่ยน</string>
     <string name="onboarding_widgets_tips_title">เคล็ดลับวิดเจ็ต</string>
     <string name="onboarding_widget_tip_1">แตะวิดเจ็ตเพื่อเปิดแอป</string>
     <string name="onboarding_widget_tip_2">ปรับขนาดวิดเจ็ตสำหรับเค้าโครงที่แตกต่างกัน (2x1 ถึง 5x5)</string>
@@ -916,19 +708,12 @@
     <string name="onboarding_integrations_title">เชื่อมต่อบริการของคุณ</string>
     <string name="onboarding_integrations_desc">ยกระดับประสบการณ์การฟังของคุณด้วยการเชื่อมต่อกับบริการภายนอก รับปกอัลบั้ม เนื้อเพลง เขียนบทละครของคุณ และแบ่งปันสิ่งที่คุณกำลังฟัง</string>
     <string name="onboarding_integrations_apis">API บริการ</string>
-    <string name="onboarding_integrations_social">คุณลักษณะทางสังคม</string>
     <string name="onboarding_integration_deezer">Deezer</string>
     <string name="onboarding_integration_deezer_desc">รับอาร์ตเวิร์กอัลบั้มและข้อมูลเมตาคุณภาพสูง</string>
     <string name="onboarding_integration_lrclib">LrcLib</string>
     <string name="onboarding_integration_lrclib_desc">ดาวน์โหลดเนื้อเพลงที่ซิงโครไนซ์สำหรับเพลงของคุณ</string>
     <string name="onboarding_integration_ytmusic">YouTube ดนตรี</string>
     <string name="onboarding_integration_ytmusic_desc">เข้าถึงข้อมูลเมตาและคำแนะนำจาก YouTube เพลง</string>
-    <string name="onboarding_integration_spotify">Canvas</string>
-    <string name="onboarding_integration_spotify_desc">ดึงปกอัลบั้มและข้อมูลเมตาจาก Spotify</string>
-    <string name="onboarding_integration_scrobbling">Last.fm Scrobbling</string>
-    <string name="onboarding_integration_scrobbling_desc">ติดตามประวัติการฟังของคุณบน Last.fm</string>
-    <string name="onboarding_integration_discord">การแสดงตนที่หลากหลายไม่ลงรอยกัน</string>
-    <string name="onboarding_integration_discord_desc">แสดงสิ่งที่คุณกำลังฟังบน Discord</string>
     <string name="onboarding_integration_broadcast">สถานะการออกอากาศ</string>
     <string name="onboarding_integration_broadcast_desc">แชร์สถานะการเล่นกับแอปอื่น</string>
     <string name="onboarding_integrations_info_title">หมายเหตุความเป็นส่วนตัว</string>
@@ -965,7 +750,6 @@
     
     <!-- Settings -->
     <string name="settings_tip_theme">ปรับแต่งธีมของคุณด้วยสี แบบอักษร และเอฟเฟกต์เทศกาล</string>
-    <string name="settings_tip_haptic">เปิดใช้งานการตอบสนองแบบสัมผัสสำหรับการตอบสนองด้วยการสัมผัส</string>
     <string name="settings_tip_gestures">ควบคุมการเล่นได้เร็วขึ้นด้วยการปัดและแตะอย่างเป็นธรรมชาติ ไม่จำเป็นต้องใช้เมนูเพิ่มเติม</string>
     <string name="settings_tip_gestures_swipe">ปัดขึ้นบนมินิเพลเยอร์เพื่อเปิดโปรแกรมเล่นแบบเต็ม จากนั้นปัดลงเพื่อปิดเมื่อเสร็จสิ้น</string>
     <string name="settings_tip_gestures_artwork">ปัดอาร์ตเวิร์กเพื่อสลับแทร็กและแตะสองครั้งที่ปกอัลบั้มเพื่อเล่นหรือหยุดชั่วคราวอย่างรวดเร็ว</string>
@@ -980,15 +764,12 @@
     
     <!-- Cache Management -->
     <string name="cache_current_status">สถานะแคชปัจจุบัน</string>
-    <string name="cache_calculating">กำลังคำนวณขนาดแคช…</string>
     <string name="cache_total_size">ขนาดแคชทั้งหมด:</string>
-    <string name="cache_limit">ขีดจำกัดแคช:</string>
     <string name="cache_max_size">ขนาดแคชสูงสุด</string>
     <string name="cache_max_size_desc">กำหนดขนาดสูงสุดสำหรับข้อมูลที่แคช</string>
     <string name="cache_about">เกี่ยวกับแคช</string>
     <string name="cache_size_limit">ขีดจำกัดขนาดแคช</string>
     <string name="cache_clear_on_exit">ล้างแคชเมื่อออก</string>
-    <string name="cache_clear_on_exit_desc">ล้างข้อมูลแคชโดยอัตโนมัติเมื่อแอปปิด</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">ลำดับความสำคัญของเนื้อเพลง</string>
@@ -1023,31 +804,9 @@
     <string name="playlist_no_songs_yet">ยังไม่มีเพลง</string>
     
     <!-- Components: Backup & Restore -->
-    <string name="backup_title">สำรองและกู้คืน</string>
-    <string name="backup_desc">ปกป้องการตั้งค่า เพลย์ลิสต์ และค่ากำหนดส่วนตัวของคุณ สร้างการสำรองข้อมูลด้วยตนเองหรือเปิดใช้งานการสำรองข้อมูลอัตโนมัติรายสัปดาห์เพื่อความอุ่นใจ</string>
-    <string name="backup_auto_weekly">สำรองข้อมูลการตั้งค่าอัตโนมัติทุกสัปดาห์</string>
-    <string name="backup_choose_save_location">เลือกตำแหน่งที่จะบันทึกไฟล์สำรอง</string>
-    <string name="backup_paste_data">วางข้อมูลสำรอง</string>
-    <string name="backup_select_file">เลือกไฟล์สำรอง</string>
-    <string name="backup_whats_included">มีอะไรรวมอยู่ในการสำรองข้อมูลบ้าง?</string>
-    <string name="backup_included_1">การตั้งค่า เพลย์ลิสต์ ธีม และการปรับแต่งไลบรารีทั้งหมด</string>
-    <string name="backup_included_2">กู้คืนจากไฟล์หรือคลิปบอร์ดด้วยการแตะเพียงครั้งเดียว</string>
-    <string name="backup_included_3">ข้อมูลสำรองที่จัดเก็บไว้ในอุปกรณ์ของคุณเพื่อความเป็นส่วนตัว</string>
-    <string name="backup_manage">จัดการการสำรองข้อมูล</string>
     <string name="backup_restore">คืนค่าการสำรองข้อมูล</string>
     
     <!-- Components: Blacklist Management -->
-    <string name="blacklist_title">การจัดการบัญชีดำ</string>
-    <string name="blacklist_desc">เพลงและโฟลเดอร์ที่ถูกบล็อกจะไม่ปรากฏในผลการค้นหา คำแนะนำ หรือคิวเล่นอัตโนมัติ</string>
-    <string name="blacklist_songs">เพลงที่อยู่ในบัญชีดำ</string>
-    <string name="blacklist_no_songs">ไม่มีเพลงขึ้นบัญชีดำ</string>
-    <string name="blacklist_all_available">เพลงทั้งหมดของคุณพร้อมให้เล่นแล้ว</string>
-    <string name="blacklist_add_folder">เพิ่มโฟลเดอร์ในบัญชีดำ</string>
-    <string name="blacklist_folders">โฟลเดอร์ที่อยู่ในบัญชีดำ</string>
-    <string name="blacklist_no_folders">ไม่มีโฟลเดอร์ที่อยู่ในบัญชีดำ</string>
-    <string name="blacklist_tap_to_add">แตะปุ่มด้านบนเพื่อเพิ่มโฟลเดอร์ลงในบัญชีดำ</string>
-    <string name="blacklist_blocked_songs">เพลงที่ถูกบล็อก</string>
-    <string name="blacklist_available_songs">เพลงที่มีอยู่</string>
     
     <!-- Components: Queue -->
     <string name="queue_empty">คิวของคุณว่างเปล่า</string>
@@ -1059,8 +818,6 @@
     <string name="playlist_create">สร้างเพลย์ลิสต์</string>
     <string name="playlist_name_empty">ชื่อเพลย์ลิสต์ต้องไม่เว้นว่าง</string>
     <string name="playlist_queue_not_empty">คิวไม่ว่าง</string>
-    <string name="playlist_queue_songs">คุณมี %1$d เพลง%2$s อยู่ในคิวปัจจุบัน</string>
-    <string name="playlist_how_play">คุณต้องการเล่น \"%1$s\" อย่างไร?</string>
     
     <!-- Components: Licenses -->
     <string name="licenses_title">ใบอนุญาตโอเพ่นซอร์ส</string>
@@ -1071,7 +828,6 @@
     <!-- Components: Player Chip Order -->
     <string name="player_chip_order_title">คำสั่งซื้อชิปผู้เล่น</string>
     <string name="player_chip_order_desc">ปรับแต่งชิปผู้เล่น</string>
-    <string name="player_chip_reset">รีเซ็ตเป็นค่าเริ่มต้น</string>
     <string name="player_chip_order_saved">บันทึกลำดับชิปของผู้เล่นและการมองเห็นแล้ว</string>
     
     <!-- Components: Library Tab Order -->
@@ -1079,45 +835,30 @@
     <string name="library_tab_order_desc">เรียงลำดับใหม่และสลับการมองเห็น</string>
     
     <!-- Components: Playback Bottom Sheet -->
-    <string name="playback_lyrics_priority">ลำดับความสำคัญของเนื้อเพลง</string>
     <string name="playback_lyrics_priority_desc">กำหนดค่าแหล่งที่มา พฤติกรรม เลย์เอาต์ ขนาด และสไตล์ของเนื้อเพลง</string>
     <string name="playback_settings">การตั้งค่าการเล่น</string>
-    <string name="playback_audio_settings">การตั้งค่าเสียง</string>
-    <string name="playback_active_device">อุปกรณ์ที่ใช้งาน</string>
-    <string name="playback_no_device">ไม่มีอุปกรณ์เชื่อมต่อ</string>
-    <string name="playback_tap_output">แตะเพื่อเลือกเอาต์พุต</string>
     
     <!-- Components: Lyrics Editor -->
-    <string name="lyrics_sync_adjustment">การปรับการซิงค์</string>
     <string name="lyrics_sync_note">การปรับการซิงค์ใช้งานได้กับเนื้อเพลงที่ซิงค์เวลาเท่านั้น (รูปแบบ LRC) ใช้รีเซ็ตเพื่อดึงเนื้อเพลงที่ซิงค์หากมี</string>
     <string name="lyrics_placeholder">ป้อนเนื้อเพลงที่นี่…\n\nคุณสามารถใช้รูปแบบ LRC:\n[00:12.00] บรรทัดหนึ่ง\n[00:17.00] บรรทัดที่สอง</string>
     <string name="lyrics_editor_title">ตัวแก้ไขเนื้อเพลง</string>
     
     <!-- Components: Song Info -->
     <string name="song_info_title">ข้อมูลเพลง</string>
-    <string name="song_info_no_metadata">ไม่มีข้อมูลเมตา</string>
-    <string name="song_info_permission">Rhythm ต้องการสิทธิ์ในการแก้ไขข้อมูลเมตาของไฟล์เสียงนี้ คุณอาจเห็นกล่องโต้ตอบของระบบขอสิทธิ์เข้าถึง - โปรดอนุญาตให้ระบบบันทึกการเปลี่ยนแปลงของคุณ</string>
     <string name="rhythm_stats">Rhythm สถิติ</string>
     <string name="file_info">ข้อมูลไฟล์</string>
     
     <!-- Components: Add to Playlist -->
     <string name="add_to_playlists">เพิ่มลงในเพลย์ลิสต์</string>
-    <string name="add_to_playlist_action">เพิ่มไปยังเพลย์ลิสต์</string>
     <string name="playlist_create_new">สร้างเพลย์ลิสต์ใหม่</string>
     <string name="playlist_create_first">สร้างเพลย์ลิสต์แรกของคุณเพื่อเพิ่มเพลง</string>
     
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">แคช</string>
-    <string name="cache_manage_desc">จัดการข้อมูลที่แคชไว้ รวมถึงรูปภาพ ไฟล์ชั่วคราว และข้อมูลแอปอื่นๆ</string>
     
     <!-- Components: Beta Program -->
-    <string name="beta_welcome">ยินดีต้อนรับสู่โปรแกรมเบต้า!</string>
-    <string name="beta_desc">คุณกำลังใช้รุ่นเบต้าของ Rhythm เวอร์ชันนี้ยังอยู่ในการพัฒนาและอาจมีข้อบกพร่อง คุณลักษณะที่ไม่สมบูรณ์ หรือลักษณะการทำงานที่ไม่คาดคิด</string>
     
     <!-- Components: Equalizer -->
-    <string name="equalizer_disabled">อีควอไลเซอร์ถูกปิดใช้งาน</string>
-    <string name="equalizer_enable_desc">เปิดใช้งานอีควอไลเซอร์เพื่อปรับแต่งประสบการณ์เสียงของคุณ</string>
-    <string name="equalizer_open_system">อีควอไลเซอร์ระบบเปิด</string>
     
     <!-- Theme Customization Notes -->
     <string name="theme_color_schemes_unavailable">รูปแบบสีจะใช้ได้เฉพาะเมื่อใช้แหล่งสีแบบกำหนดเองเท่านั้น</string>
@@ -1135,44 +876,26 @@
     <string name="library_reorder_tabs">เรียงลำดับแท็บใหม่เพื่อปรับแต่งประสบการณ์ห้องสมุดของคุณ</string>
     <string name="external_services_desc">ควบคุมบริการ API ภายนอกที่ใช้งานอยู่เพื่อปรับปรุงประสบการณ์ทางดนตรีของคุณ สลับเปิด/ปิดบริการเพื่อจัดการการใช้ข้อมูลและฟังก์ชันการทำงาน</string>
     <string name="lyrics_source_priority_title">ลำดับความสำคัญของเนื้อเพลง</string>
-    <string name="lyrics_source_priority_desc_placeholder">เลือกตำแหน่งที่ Rhythm ควรค้นหาเนื้อเพลงก่อน</string>
     <string name="playlist_action_title">เพลย์ลิสต์แตะการกระทำ</string>
     <string name="playlist_action_desc">พฤติกรรมเริ่มต้นสำหรับการแตะเพลย์ลิสต์</string>
-    <string name="playlist_action_choose">เลือกการดำเนินการแตะเพลย์ลิสต์เริ่มต้น</string>
-    <string name="playlist_action_ask_title">ถามทุกครั้ง</string>
-    <string name="playlist_action_ask_desc">แสดงตัวเลือกการดำเนินการทุกครั้ง</string>
     <string name="playlist_action_load_title">โหลดเพลย์ลิสต์ทั้งหมด</string>
     <string name="playlist_action_load_desc">โหลดเพลย์ลิสต์และเริ่มจากแทร็กที่เลือก</string>
     <string name="playlist_action_single_title">เล่นเฉพาะเพลงนี้</string>
     <string name="playlist_action_single_desc">เล่นเฉพาะแทร็กที่เลือก</string>
     <string name="queue_action_title">การดำเนินการขัดแย้งกับคิว</string>
-    <string name="queue_action_desc">พฤติกรรมเริ่มต้นเมื่อคิวมีแทร็กอยู่แล้ว</string>
     <string name="queue_action_choose">เลือกการดำเนินการข้อขัดแย้งของคิวเริ่มต้น</string>
     <string name="queue_action_ask_title">ถามทุกครั้ง</string>
     <string name="queue_action_ask_desc">แสดงตัวเลือกการดำเนินการทุกครั้ง</string>
-    <string name="queue_action_replace_title">แทนที่คิว</string>
-    <string name="queue_action_replace_desc">ล้างคิวและเล่นเพลงที่เลือก</string>
-    <string name="queue_action_next_title">เล่นต่อไป</string>
-    <string name="queue_action_next_desc">เพิ่มหลังจากเล่นเพลงอยู่</string>
-    <string name="queue_action_add_title">เพิ่มในคิว</string>
-    <string name="queue_action_add_desc">เพิ่มเพลงที่ท้ายคิว</string>
     <string name="queue_action_always_add_title">เพิ่มในคิวเสมอ</string>
     <string name="queue_action_always_add_desc">เพิ่มแทร็กที่เลือกลงในคิวเสมอ</string>
     
     <!-- Additional UI Elements -->
     <string name="now_playing">กำลังเล่น</string>
-    <string name="skip_for_now">ข้ามไปก่อน</string>
     <string name="install_update_now">ติดตั้งอัปเดตทันที</string>
     <string name="audio_settings">การตั้งค่าเสียง</string>
     <string name="active_device">อุปกรณ์ที่ใช้งาน</string>
-    <string name="tap_select_output">แตะเพื่อเลือกเอาต์พุต</string>
     <string name="browse_library">เรียกดูห้องสมุด</string>
     <string name="add_more_songs">เพิ่มเพลงเพิ่มเติม</string>
-    <string name="blocked_folders">โฟลเดอร์ที่ถูกบล็อก</string>
-    <string name="last_backup">สำรองข้อมูลล่าสุด</string>
-    <string name="auto_backup">การสำรองข้อมูลอัตโนมัติ</string>
-    <string name="manage_backup">จัดการการสำรองข้อมูล</string>
-    <string name="restore_backup">คืนค่าการสำรองข้อมูล</string>
     <string name="edit_metadata">แก้ไขข้อมูลเพลง</string>
     
     <!-- Updates Messages -->
@@ -1185,66 +908,32 @@
     <string name="settings_interval_every_72_hours">ทุก 72 ชั่วโมง</string>
     
     <!-- Cache -->
-    <string name="cache_total_size_label">ขนาดแคชทั้งหมด:</string>
-    <string name="cache_limit_label">ขีดจำกัดแคช:</string>
     
     <!-- Theme -->
     <string name="theme_featured_schemes">แบบแผนเด่น</string>
     <string name="theme_more_schemes">รูปแบบเพิ่มเติม</string>
     <string name="theme_quick_presets">ค่าที่ตั้งล่วงหน้าด่วน</string>
     <string name="theme_advanced_rgb">การควบคุม RGB ขั้นสูง</string>
-    <string name="theme_font_preview">สุนัขจิ้งจอกสีน้ำตาลกระโดดข้ามสุนัขขี้เกียจ</string>
     
     <!-- Services -->
     <string name="external_services">บริการภายนอก</string>
     <string name="api_services">API แบบรวม</string>
     
     <!-- Scrobbling -->
-    <string name="scrobbling_title">สนับสนุน Scrobbling</string>
-    <string name="scrobbling_enabled">เปิดใช้งาน Scrobbling</string>
-    <string name="scrobbling_desc">ส่งข้อมูลการเล่นไปที่ Last.fm, Pano Scrobbler และแอปที่รองรับ</string>
-    <string name="scrobbling_info_title">Scrobbling คืออะไร?</string>
-    <string name="scrobbling_info_desc">ช่วยให้คุณติดตามประวัติการฟัง ค้นพบเพลงใหม่ และแบ่งปันรสนิยมทางดนตรีของคุณกับเพื่อน ๆ</string>
-    <string name="scrobbling_compatible_apps">แอปที่เข้ากันได้</string>
-    <string name="scrobbling_apps_list">• Last.fm สำหรับ Android\n• Pano Scrobbler\n• Last.fm Scrobbler แบบธรรมดา\n• SLS อื่นๆ API แอปที่เข้ากันได้</string>
-    <string name="scrobbling_how_to">วิธีใช้งาน</string>
-    <string name="scrobbling_setup_steps">1. ติดตั้งแอป scrobbling (เช่น Pano Scrobbler จาก F-Droid)\n2. เปิดใช้งาน scrobbling ที่นี่\n3. กิจกรรมการฟังของคุณจะถูกติดตามโดยอัตโนมัติ!</string>
     
     <!-- Discord Rich Presence -->
-    <string name="discord_title">การแสดงตนที่หลากหลายไม่ลงรอยกัน</string>
-    <string name="discord_enabled">เปิดใช้งาน Discord Rich Presence</string>
-    <string name="discord_desc">แสดงสิ่งที่คุณกำลังฟังในสถานะ Discord ของคุณ</string>
-    <string name="discord_info_title">Discord Rich Presence คืออะไร?</string>
-    <string name="discord_info_desc">แสดงชื่อเพลง ศิลปิน อัลบั้ม และความคืบหน้าในการเล่น</string>
-    <string name="discord_compatible_apps">ข้อกำหนด</string>
-    <string name="discord_apps_list">• Discord สำหรับ Android\n• Discord ต้องทำงานอยู่\n• ต้องเปิดใช้งานสถานะเพลงในการตั้งค่า Discord</string>
-    <string name="discord_how_to">วิธีใช้งาน</string>
-    <string name="discord_setup_steps">1. ติดตั้ง Discord สำหรับ Android\n2. เปิดใช้งานการตั้งค่านี้ใน Rhythm\n3. เปิด Discord และเปิดใช้งาน \"แสดงกิจกรรมปัจจุบัน\" ในการตั้งค่าผู้ใช้ → สถานะกิจกรรม\n4. ข้อมูลที่กำลังเล่นอยู่ของคุณจะปรากฏในสถานะ Discord ของคุณ!</string>
-    <string name="discord_privacy_note">หมายเหตุความเป็นส่วนตัว</string>
-    <string name="discord_privacy_desc">ออกอากาศเฉพาะเมื่อมีการเล่นเพลงเท่านั้น คุณสามารถเปิด/ปิดสิ่งนี้ได้ตลอดเวลา Discord ควบคุมผู้ที่สามารถดูสถานะกิจกรรมของคุณได้</string>
     
     <!-- Broadcast Status (Tasker/KWGT) -->
-    <string name="broadcast_status_title">สถานะการออกอากาศ</string>
     <string name="broadcast_status_enabled">เปิดใช้งานการถ่ายทอดสถานะ</string>
     <string name="broadcast_status_desc">ส่งข้อมูลการเล่นไปยังแอป Tasker, KWGT และการทำงานอัตโนมัติ</string>
     <string name="bluetooth_lyrics_enabled">โหมดเนื้อเพลงบลูทูธ</string>
     <string name="bluetooth_lyrics_desc">ส่งเนื้อเพลงที่ซิงค์เป็นชื่อแทร็ก Bluetooth และย้ายเพลง - ศิลปินไปยังข้อมูลเมตาของศิลปิน</string>
-    <string name="broadcast_status_info_title">การออกอากาศสถานะคืออะไร?</string>
-    <string name="broadcast_status_info_desc">การออกอากาศสถานะจะส่งเจตนาเครื่องเล่นเพลง Android มาตรฐานที่แอปอัตโนมัติและวิดเจ็ตรับฟัง ซึ่งช่วยให้แอปของบุคคลที่สามสามารถแสดงข้อมูลที่กำลังเล่นอยู่หรือเรียกใช้การทำงานอัตโนมัติตามสิ่งที่คุณกำลังฟัง</string>
-    <string name="broadcast_compatible_apps">แอปที่เข้ากันได้</string>
-    <string name="broadcast_apps_list">• Tasker (อัตโนมัติ)\n• KWGT/KLWP (วิดเจ็ต Kustom)\n• MacroDroid\n• แอปอัตโนมัติ\n• Zooper Widget\n• แอปใดๆ ที่ฟังเจตนาของเครื่องเล่นเพลง</string>
-    <string name="broadcast_how_to">วิธีใช้งาน</string>
-    <string name="broadcast_setup_steps">1. ติดตั้งแอปอัตโนมัติ/วิดเจ็ตของคุณ (เช่น Tasker, KWGT)\n2. เปิดใช้งานการตั้งค่านี้\n3. กำหนดค่าแอปของคุณให้ฟัง:\n• com.android.music.metachanged (การเปลี่ยนแปลงแทร็ก)\n• com.android.music.playstatechanged (เล่น/หยุดชั่วคราว)\n4. เข้าถึงข้อมูลเพลงด้วยเจตนามาตรฐาน!</string>
-    <string name="broadcast_use_cases">กรณีการใช้งาน</string>
-    <string name="broadcast_use_cases_list">• กำลังเล่นการแสดงผลในวิดเจ็ตที่กำหนดเอง\n• เรียกใช้ฉากในบ้านอัจฉริยะตามเพลง\n• หยุดเพลงอัตโนมัติเมื่อบางแอปเปิด\n• บันทึกประวัติการฟังของคุณ\n• ควบคุมแอปอื่นๆ ตามสถานะการเล่น</string>
     
     <!-- Equalizer -->
     <string name="equalizer">อีควอไลเซอร์</string>
     <string name="frequency_bands">คลื่นความถี่</string>
-    <string name="frequency_response">การตอบสนองความถี่</string>
     <string name="audio_effects">เอฟเฟกต์เสียง</string>
     <string name="audio_normalization">การปรับเสียงให้เป็นมาตรฐาน</string>
-    <string name="audio_normalization_desc">ปรับระดับเสียงข้ามแทร็กให้เป็นปกติ</string>
     <string name="replay_gain">เล่นซ้ำได้</string>
     <string name="replay_gain_desc">ใช้แท็กเกนการเล่นซ้ำแบบฝังสำหรับโวลุ่ม</string>
     <string name="bass_boost">เพิ่มเสียงเบส</string>
@@ -1254,27 +943,20 @@
     <string name="strength">ความแรง</string>
     <string name="open_equalizer_settings">เปิดการตั้งค่าอีควอไลเซอร์</string>
     <string name="system_equalizer">ระบบอีควอไลเซอร์</string>
-    <string name="system_equalizer_desc">เข้าถึงอีควอไลเซอร์ในตัวอุปกรณ์ของคุณ</string>
     <string name="no_equalizer">ไม่พบอีควอไลเซอร์ของระบบ</string>
     <string name="no_audio_ID">ไม่มีรหัสเซสชันเสียง</string>
     <!-- Sleep Timer -->
     <string name="sleep_timer">ตัวตั้งเวลาปิด</string>
-    <string name="sleep_timer_coming_soon">การควบคุมตัวตั้งเวลาปิดเครื่องจะถูกนำมาใช้ที่นี่</string>
     <string name="sleep_timer_quick">ตัวจับเวลาด่วน</string>
     <string name="sleep_timer_custom">ตัวจับเวลาแบบกำหนดเอง</string>
-    <string name="sleep_timer_custom_desc">กำหนดระยะเวลาที่ต้องการ</string>
     <string name="sleep_timer_action">การดำเนินการจับเวลา</string>
     <string name="sleep_timer_action_desc">จะเกิดอะไรขึ้นเมื่อหมดเวลา</string>
     <string name="sleep_timer_select_duration">เลือกระยะเวลาตัวจับเวลา</string>
-    <string name="sleep_timer_set_hours_minutes">ตั้งเวลาและนาทีสำหรับตัวตั้งเวลาปิดเครื่อง</string>
-    <string name="coming_soon">เร็วๆ นี้</string>
     
     <!-- Crash Reports -->
     <string name="crash_reports">รายงานข้อขัดข้อง</string>
-    <string name="crashed_on">ขัดข้องเมื่อ: %1$s</string>
     
     <!-- Lyrics -->
-    <string name="about_lyrics_sources">เกี่ยวกับแหล่งที่มาของเนื้อเพลง</string>
     <string name="sync_adjustment">การปรับการซิงค์</string>
     <string name="synced_lyrics_unavailable">เนื้อเพลงที่ซิงโครไนซ์ไม่พร้อมใช้งานสำหรับรูปแบบนี้</string>
     <string name="word_by_word_unavailable">ไม่มีเนื้อเพลงแบบคำต่อคำ</string>
@@ -1288,7 +970,6 @@
     <string name="restart_app">รีสตาร์ทแอปใช่ไหม</string>
     <string name="export_playlist">ส่งออกเพลย์ลิสต์</string>
     <string name="export_all_playlists">ส่งออกเพลย์ลิสต์ทั้งหมด</string>
-    <string name="export_count_playlists">ส่งออกเพลย์ลิสต์ %1$d ไปที่:</string>
     <string name="include_default_playlists">รวมเพลย์ลิสต์เริ่มต้น (รายการโปรด, เพิ่มล่าสุด, เล่นมากที่สุด)</string>
     <string name="import_playlist">นำเข้าเพลย์ลิสต์</string>
     <string name="select_playlist_file">เลือกไฟล์เพลย์ลิสต์ที่จะนำเข้า:</string>
@@ -1296,45 +977,21 @@
     <string name="may_take_moments">การดำเนินการนี้อาจใช้เวลาสักครู่…</string>
     
     <!-- Canvas Video Player -->
-    <string name="canvas_unavailable">Canvas ไม่พร้อมใช้งาน</string>
-    <string name="canvas_couldnt_load">Canvas ไม่สามารถโหลด</string>
     
     <!-- Beta Program -->
     <string name="beta_program">โปรแกรมเบต้า</string>
-    <string name="lets_go">ไปกันเลย! 🎵</string>
     
     <!-- Special Thanks -->
-    <string name="special_thanks">ขอขอบคุณเป็นพิเศษ</string>
     
     <!-- Plural Support -->
-    <plurals name="playlist_count">
-        <item quantity="one">เพลย์ลิสต์</item>
-        <item quantity="other">เพลย์ลิสต์</item>
-    </plurals>
     
     <!-- Common Actions -->
     <string name="action_ok">ตกลง</string>
     <string name="action_cancel">ยกเลิก</string>
-    <string name="action_save">บันทึก</string>
     <string name="action_create">สร้าง</string>
-    <string name="action_delete">ลบ</string>
-    <string name="action_remove">ลบ</string>
-    <string name="action_export">ส่งออก</string>
     <string name="action_export_all">ส่งออกทั้งหมด</string>
-    <string name="action_import">นำเข้า</string>
     <string name="action_browse_files">เรียกดูไฟล์</string>
-    <string name="action_close">ปิด</string>
-    <string name="action_reset">รีเซ็ต</string>
-    <string name="action_apply">สมัคร</string>
-    <string name="action_continue">ดำเนินการต่อ</string>
-    <string name="action_proceed">ดำเนินการต่อ</string>
-    <string name="action_later">ต่อมา</string>
-    <string name="action_retry">ลองอีกครั้ง</string>
-    <string name="action_add">เพิ่ม</string>
-    <string name="action_edit">แก้ไข</string>
-    <string name="action_change">เปลี่ยน</string>
     <string name="action_choose">เลือก</string>
-    <string name="action_default">ค่าเริ่มต้น</string>
     <string name="action_play">เล่น</string>
     <string name="action_shuffle">สับเปลี่ยน</string>
     
@@ -1365,11 +1022,7 @@
     <string name="settings_queue_playback_desc">เพิ่มอัตโนมัติ ทำซ้ำ</string>
     <string name="settings_equalizer_title">อีควอไลเซอร์</string>
     <string name="settings_equalizer_desc">เบส เสียงแหลม</string>
-    <string name="settings_sleep_timer_title">ตัวตั้งเวลาปิด</string>
-    <string name="settings_sleep_timer_desc">หยุดเล่นอัตโนมัติ</string>
     <string name="settings_section_library_content">ห้องสมุดและสื่อ</string>
-    <string name="settings_group_by_album_artist">กลุ่มโดยศิลปินอัลบั้ม</string>
-    <string name="settings_group_by_album_artist_desc">จัดกลุ่มการทำงานร่วมกันภายใต้ศิลปินอัลบั้ม</string>
     <string name="settings_media_scan_title">สแกนสื่อ</string>
     <string name="settings_media_scan_desc">สแกนโฟลเดอร์</string>
     <string name="settings_playlists_title">เพลย์ลิสต์</string>
@@ -1381,7 +1034,6 @@
     <string name="settings_cache_management_desc">รูปภาพ, เนื้อเพลง</string>
     <string name="settings_backup_restore_title">สำรองและกู้คืน</string>
     <string name="settings_backup_restore_desc">ส่งออก นำเข้า</string>
-    <string name="settings_section_services">บริการ</string>
     <string name="settings_api_management">บูรณาการ</string>
     <string name="settings_api_management_desc">API, การขัดถู</string>
     <string name="settings_section_updates_info">อัปเดตและข้อมูล</string>
@@ -1398,43 +1050,24 @@
     <string name="settings_select_option_desc">เลือกการตั้งค่าจากรายการเพื่อกำหนดค่า</string>
     
     <!-- Playlist Actions -->
-    <string name="playlist_rename_action">เปลี่ยนชื่อเพลย์ลิสต์</string>
-    <string name="playlist_delete_action">ลบเพลย์ลิสต์</string>
-    <string name="playlist_search">ค้นหาเพลง...</string>
-    <string name="playlist_search_in">ค้นหาในเพลย์ลิสต์นี้</string>
     <string name="playlist_no_songs_available">ไม่มีเพลงให้ใช้</string>
     <string name="playlist_all_in_playlist">เพลงทั้งหมดอยู่ในเพลย์ลิสต์นี้แล้ว</string>
     <string name="playlist_name_field">ชื่อเพลย์ลิสต์</string>
-    <string name="playlist_delete_confirm">คุณแน่ใจหรือไม่ว่าต้องการลบ \'%1$s\'? การดำเนินการนี้ไม่สามารถยกเลิกได้</string>
     
     <!-- Player Actions -->
-    <string name="player_load_lyrics">โหลดเนื้อเพลง</string>
-    <string name="player_retry_canvas">ลองอีกครั้ง Canvas</string>
     
     <!-- Search -->
-    <string name="search_songs_count">เพลง (%1$d)</string>
-    <string name="search_albums_count">อัลบั้ม (%1$d)</string>
-    <string name="search_artists_count">ศิลปิน (%1$d)</string>
-    <string name="search_playlists_count">เพลย์ลิสต์ (%1$d)</string>
     
     <!-- Song Metadata -->
-    <string name="metadata_title">หัวข้อ</string>
-    <string name="metadata_artist">ศิลปิน</string>
     <string name="metadata_album">อัลบั้ม</string>
     <string name="metadata_genre">ประเภท</string>
     <string name="metadata_year">ปี</string>
     <string name="metadata_track">ติดตาม</string>
     <string name="metadata_saving">กำลังบันทึก...</string>
-    <string name="metadata_save_changes">บันทึกการเปลี่ยนแปลง</string>
-    <string name="metadata_irreversible_changes">การเปลี่ยนแปลงที่ไม่สามารถย้อนกลับได้</string>
-    <string name="metadata_media_access_required">จำเป็นต้องเข้าถึงสื่อ</string>
     
     <!-- Updates Actions -->
     <string name="updates_check_now_action">ตรวจสอบเลย</string>
     <string name="updates_check_again">ตรวจสอบอีกครั้ง</string>
-    <string name="updates_download">ดาวน์โหลดอัปเดต</string>
-    <string name="updates_install">ติดตั้งอัปเดต</string>
-    <string name="updates_cancel">ยกเลิกการดาวน์โหลด</string>
     <string name="updates_enable_auto_check">ตรวจสอบอัตโนมัติ</string>
     <string name="updates_channel_title">อัพเดตช่อง</string>
     <string name="updates_source_title">แหล่งอัปเดต</string>
@@ -1448,59 +1081,28 @@
     <string name="updates_check_interval_title">ตรวจสอบช่วงเวลาอัปเดต</string>
     
     <!-- Cache Actions -->
-    <string name="cache_clearing">กำลังล้างแคช…</string>
-    <string name="cache_cleared">ล้างแคชแล้ว!</string>
-    <string name="cache_clear_all">ล้างแคชทั้งหมด</string>
-    <string name="cache_clearing_lyrics">กำลังล้างเนื้อเพลง…</string>
-    <string name="cache_lyrics_cleared">ล้างแคชเนื้อเพลงแล้ว!</string>
-    <string name="cache_clear_lyrics_only">ล้างแคชเนื้อเพลงเท่านั้น</string>
     
     <!-- Backup Actions -->
-    <string name="backup_created_success">สร้างการสำรองข้อมูลสำเร็จ</string>
-    <string name="backup_restore_success">การคืนค่าเสร็จสมบูรณ์</string>
-    <string name="backup_restart_now">รีสตาร์ททันที</string>
-    <string name="backup_continue_without_restart">ดำเนินการต่อโดยไม่รีสตาร์ท</string>
-    <string name="backup_error_title">ข้อผิดพลาด</string>
     
     <!-- Import/Export -->
-    <string name="import_export_json_format">JSON รูปแบบ</string>
-    <string name="import_export_pls_format">PLS เพลย์ลิสต์</string>
     <string name="import_complete_title">การนำเข้าเสร็จสมบูรณ์</string>
-    <string name="import_complete_message">นำเข้าเพลย์ลิสต์ %1$d สำเร็จแล้ว\n%2$s\n\nรีสตาร์ทแอปเพื่อใช้การเปลี่ยนแปลง</string>
-    <string name="import_restart_app">รีสตาร์ทแอป</string>
     
     <!-- Sleep Timer -->
-    <string name="sleep_timer_set_custom">ตั้งเวลาเอง</string>
-    <string name="sleep_timer_set">ตั้งเวลา</string>
     
     <!-- Crash Logs -->
-    <string name="crash_logs_clear_all">ล้างบันทึกทั้งหมด</string>
-    <string name="crash_logs_test">การทดสอบข้อขัดข้อง</string>
-    <string name="crash_logs_copy">คัดลอกบันทึก</string>
-    <string name="crash_logs_details_title">รายละเอียดบันทึกข้อขัดข้อง</string>
     
     <!-- Accessibility - Content Descriptions -->
     <string name="cd_back">กลับ</string>
-    <string name="cd_navigate_back">กลับไป</string>
     <string name="cd_play">เล่น</string>
-    <string name="cd_play_all">เล่นทั้งหมด</string>
     <string name="cd_shuffle">สับเปลี่ยน</string>
     <string name="cd_play_album">เล่นอัลบั้ม</string>
-    <string name="cd_shuffle_play">สุ่มเล่น</string>
     <string name="cd_previous_track">เพลงก่อนหน้า</string>
     <string name="cd_next_track">เพลงถัดไป</string>
-    <string name="cd_seek_back">ขอย้อนกลับไป 10 วินาที</string>
-    <string name="cd_seek_forward">ไปข้างหน้า 10 วินาที</string>
-    <string name="cd_more_options">ตัวเลือกเพิ่มเติม</string>
     <string name="cd_filters">ตัวกรอง</string>
-    <string name="cd_clear_search">ล้างการค้นหา</string>
     <string name="cd_refresh">รีเฟรช</string>
     <string name="cd_reorder_tabs">เรียงลำดับแท็บใหม่</string>
     <string name="cd_toggle_view_type">สลับประเภทมุมมอง</string>
     <string name="cd_open_playlist">เปิดเพลย์ลิสต์</string>
-    <string name="cd_ascending">จากน้อยไปมาก</string>
-    <string name="cd_descending">จากมากไปน้อย</string>
-    <string name="cd_artist_image">ศิลปิน %1$s</string>
     <string name="cd_play_artist">เล่น %1$s</string>
     <string name="cd_storage">ที่เก็บข้อมูล</string>
     <string name="cd_pinned">ปักหมุด</string>
@@ -1510,73 +1112,24 @@
     <string name="cd_export_playlists">ส่งออกเพลย์ลิสต์</string>
     <string name="cd_import_playlist">นำเข้าเพลย์ลิสต์</string>
     <string name="cd_create_playlist">สร้างเพลย์ลิสต์</string>
-    <string name="cd_create_new_playlist">สร้างเพลย์ลิสต์ใหม่</string>
-    <string name="cd_home">หน้าแรก</string>
     <string name="cd_current_location">ตำแหน่งปัจจุบัน</string>
-    <string name="cd_item_icon">%1$s ไอคอน</string>
-    <string name="cd_open_storage">พื้นที่เก็บข้อมูลแบบเปิด</string>
-    <string name="cd_minimize">ย่อ</string>
     <string name="cd_song_info">ข้อมูลเพลง</string>
-    <string name="cd_album_artwork">ปกอัลบั้มสำหรับ %1$s</string>
     <string name="cd_no_song_playing">ไม่มีเพลงเล่น</string>
-    <string name="cd_toggle_shuffle">สลับสลับ</string>
-    <string name="cd_toggle_lyrics">สลับเนื้อเพลง</string>
-    <string name="cd_toggle_repeat_mode">สลับโหมดเล่นซ้ำ</string>
     <string name="cd_show_actions">แสดงการกระทำ</string>
-    <string name="cd_add_to_playlist_action">เพิ่มไปยังเพลย์ลิสต์</string>
     <string name="cd_toggle_favorite">สลับรายการโปรด</string>
-    <string name="cd_playback_speed_action">ความเร็วในการเล่น</string>
     <string name="cd_show_album">แสดงอัลบั้ม</string>
     <string name="cd_show_artist">แสดงศิลปิน</string>
     <string name="cd_reorder_chips">สั่งซื้อชิปใหม่</string>
     <string name="cd_search">ค้นหา</string>
     <string name="cd_view_all">ดูทั้งหมด</string>
-    <string name="cd_albums">อัลบั้ม</string>
-    <string name="cd_artists">ศิลปิน</string>
-    <string name="cd_songs">เพลง</string>
     <string name="cd_rhythm_splash">Rhythm</string>
-    <string name="cd_search_in_playlist">ค้นหาเพลงในเพลย์ลิสต์</string>
-    <string name="cd_shuffle_play_action">สุ่มเล่น</string>
-    <string name="cd_add_songs_to_playlist">เพิ่มเพลงลงในเพลย์ลิสต์</string>
     <string name="cd_remove_from_playlist">ลบออกจากเพลย์ลิสต์</string>
     <string name="cd_change_language">เปลี่ยนภาษา</string>
-    <string name="cd_permissions">สิทธิ์</string>
-    <string name="cd_backup_restore">สำรองและกู้คืน</string>
-    <string name="cd_open_backup_restore">เปิดการสำรองข้อมูลและเรียกคืน</string>
-    <string name="cd_audio_playback_settings">การตั้งค่าเสียงและการเล่น</string>
-    <string name="cd_library_setup">การตั้งค่าไลบรารี</string>
     <string name="cd_open_settings">เปิด</string>
-    <string name="cd_theming">ธีม</string>
-    <string name="cd_open_theme_customization">เปิดการปรับแต่งธีม</string>
     <string name="cd_show_options">แสดงตัวเลือก</string>
     <string name="cd_app_updates">อัปเดตแอป</string>
     <string name="cd_completed">เสร็จสิ้น</string>
-    <string name="cd_media_scan_filtering">การกรองการสแกนสื่อ</string>
-    <string name="cd_open_media_scan_settings">เปิดการตั้งค่าการสแกนสื่อ</string>
-    <string name="cd_close">ปิด</string>
-    <string name="cd_album_artwork_generic">ปกอัลบั้ม</string>
     <string name="cd_language">ภาษา</string>
-    <string name="cd_view_license">ดูใบอนุญาต</string>
-    <string name="cd_refresh_devices">รีเฟรชอุปกรณ์</string>
-    <string name="cd_switch_device">สลับอุปกรณ์</string>
-    <string name="cd_volume">ปริมาณ</string>
-    <string name="cd_decrease_volume">ลดระดับเสียง</string>
-    <string name="cd_increase_volume">เพิ่มระดับเสียง</string>
-    <string name="cd_playback_speed">ความเร็วในการเล่น</string>
-    <string name="cd_playback_settings">การตั้งค่าการเล่น</string>
-    <string name="cd_move_up">เลื่อนขึ้น</string>
-    <string name="cd_move_down">เลื่อนลง</string>
-    <string name="cd_add_songs">เพิ่มเพลง</string>
-    <string name="cd_clear_queue">ล้างคิว</string>
-    <string name="cd_now_playing">กำลังเล่น</string>
-    <string name="cd_drag_to_reorder">ลากเพื่อเรียงลำดับใหม่</string>
-    <string name="cd_remove_from_queue">ลบออกจากคิว</string>
-    <string name="cd_edit_metadata">แก้ไขข้อมูลเมตา</string>
-    <string name="cd_reset_to_original">รีเซ็ตเป็นต้นฉบับ</string>
-    <string name="cd_remove_from_blacklist">ลบออกจากบัญชีดำ</string>
-    <string name="cd_remove_folder_from_blacklist">ลบโฟลเดอร์ออกจากบัญชีดำ</string>
-    <string name="cd_beta_program_warning">คำเตือนโปรแกรมเบต้า</string>
-    <string name="cd_sort_songs">เรียงลำดับเพลง</string>
     <string name="cd_add_selected_songs">เพิ่มเพลงที่เลือก</string>
     <string name="cd_toggle_multi_select">สลับการเลือกหลายรายการ</string>
     <string name="cd_add_song">เพิ่มเพลง</string>
@@ -1584,8 +1137,6 @@
     <!-- Bottom Sheet Titles -->
     <string name="bottomsheet_add_to_playlist">เพิ่มไปยังเพลย์ลิสต์</string>
     <string name="bottomsheet_no_playlists">ยังไม่มีเพลย์ลิสต์</string>
-    <string name="bottomsheet_actions">การกระทำ</string>
-    <string name="bottomsheet_metadata">ข้อมูลเมตา</string>
     <string name="bottomsheet_queue">คิว</string>
     <string name="bottomsheet_up_next">ต่อไป</string>
     <string name="bottomsheet_albums">อัลบั้ม</string>
@@ -1595,12 +1146,6 @@
     <string name="bottomsheet_reset">รีเซ็ต</string>
     <string name="bottomsheet_save">บันทึก</string>
     <string name="bottomsheet_cancel">ยกเลิก</string>
-    <string name="bottomsheet_close">ปิด</string>
-    <string name="bottomsheet_delete">ลบ</string>
-    <string name="bottomsheet_clear_all">ล้างทั้งหมด</string>
-    <string name="bottomsheet_add">เพิ่ม</string>
-    <string name="bottomsheet_import">นำเข้า</string>
-    <string name="bottomsheet_export">ส่งออก</string>
     
     <!-- Bottom Sheet: Lyrics Editor -->
     <string name="bottomsheet_lyrics_earlier">ก่อนหน้า</string>
@@ -1638,110 +1183,36 @@
     <string name="bottomsheet_reorder_toggle_visibility">เรียงลำดับใหม่และสลับการมองเห็น</string>
     
     <!-- Bottom Sheet: Cast -->
-    <string name="bottomsheet_cast_stream">แคสต์และสตรีม</string>
-    <string name="bottomsheet_playing_now">กำลังเล่นอยู่</string>
-    <string name="bottomsheet_switch_output">สลับอุปกรณ์เอาท์พุต</string>
-    <string name="bottomsheet_connect_devices">เชื่อมต่อกับบลูทูธ แคสต์ หรืออุปกรณ์อื่นๆ</string>
-    <string name="bottomsheet_open_switcher">เปิดสวิตช์เอาต์พุต</string>
-    <string name="bottomsheet_about_casting">เกี่ยวกับการแคสต์</string>
-    <string name="bottomsheet_casting_info">ใช้ตัวสลับเอาต์พุตเพื่อแคสต์เพลงของคุณไปยังอุปกรณ์บลูทูธ, Chromecast หรืออุปกรณ์อื่นๆ ที่เข้ากันได้ การกำหนดเส้นทางสื่อเนทีฟของ Android จัดการการถ่ายโอนการเล่นที่ราบรื่น</string>
-    <string name="bottomsheet_cast_to_tv">แคสต์ไปยังทีวีหรือลำโพง</string>
-    <string name="bottomsheet_cast_description">สตรีมเพลงไปยัง Chromecast, สมาร์ททีวี หรือลำโพง</string>
-    <string name="bottomsheet_find_devices">ค้นหาอุปกรณ์แคสต์</string>
-    <string name="bottomsheet_tap_disconnect">แตะเพื่อยกเลิกการเชื่อมต่อจากอุปกรณ์นี้</string>
-    <string name="bottomsheet_disconnect">ตัดการเชื่อมต่อ</string>
-    <string name="bottomsheet_stream_to_devices">สตรีมไปยังอุปกรณ์ของคุณ</string>
-    <string name="bottomsheet_this_phone">โทรศัพท์เครื่องนี้</string>
-    <string name="bottomsheet_opening_switcher">กำลังเปิดตัวสลับเอาต์พุต…</string>
-    <string name="bottomsheet_disconnected_cast">ถูกตัดการเชื่อมต่อจากอุปกรณ์แคสต์</string>
-    <string name="bottomsheet_cast_unavailable">ไม่สามารถแสดงได้: %1$s</string>
-    <string name="bottomsheet_connected_to_device">เชื่อมต่อกับ %1$s</string>
     <string name="bottomsheet_active_device">ใช้งาน</string>
-    <string name="device_type_television">โทรทัศน์</string>
-    <string name="device_type_smart_speaker">ลำโพงอัจฉริยะ</string>
-    <string name="device_type_soundbar">ซาวด์บาร์</string>
-    <string name="device_type_phone">โทรศัพท์</string>
-    <string name="device_type_cast_device">อุปกรณ์ส่ง</string>
     
     <!-- Bottom Sheet: Backup/Restore -->
-    <string name="bottomsheet_backup_success_title">สร้างการสำรองข้อมูลสำเร็จ</string>
-    <string name="bottomsheet_backup_success_msg">การสำรองข้อมูล Rhythm ของคุณเสร็จสมบูรณ์แล้ว รวมถึง:\n\n• เพลย์ลิสต์และเพลงทั้งหมด\n• รายการโปรดและประวัติการเล่น\n• การตั้งค่าและการตั้งค่าแอป\n• การกำหนดค่าอีควอไลเซอร์\n• การปรับแต่งธีม</string>
-    <string name="bottomsheet_restore_success_title">การคืนค่าเสร็จสมบูรณ์</string>
-    <string name="bottomsheet_restore_success_msg">ข้อมูล Rhythm ของคุณได้รับการกู้คืนเรียบร้อยแล้ว รวมถึง:\n\n• เพลย์ลิสต์และเพลงทั้งหมด\n• รายการโปรดและประวัติการเล่น\n• การตั้งค่าและการตั้งค่าแอป\n• การกำหนดค่าอีควอไลเซอร์\n• การปรับแต่งธีม</string>
-    <string name="bottomsheet_restart_now">รีสตาร์ททันที</string>
-    <string name="bottomsheet_ok">ตกลง</string>
-    <string name="bottomsheet_error">ข้อผิดพลาด</string>
     
     <!-- Bottom Sheet: Cache Management -->
-    <string name="bottomsheet_clearing_cache">กำลังล้างแคช…</string>
-    <string name="bottomsheet_cache_cleared">ล้างแคชแล้ว!</string>
-    <string name="bottomsheet_clear_all_cache">ล้างแคชทั้งหมด</string>
     
     <!-- Bottom Sheet: Blacklist -->
-    <string name="bottomsheet_blacklist_close">ปิด</string>
     
     <!-- Bottom Sheet: Library Tab Order -->
-    <string name="bottomsheet_library_tab_order">ลำดับแท็บไลบรารี</string>
     
     <!-- Bottom Sheet: Device Configuration / AutoEQ -->
-    <string name="bottomsheet_manage_autoeq">จัดการ AutoEQ</string>
-    <string name="bottomsheet_autoeq_desc">กำหนดค่าอุปกรณ์เสียงของคุณด้วยโปรไฟล์ AutoEQ ที่ปรับให้เหมาะสมเพื่อประสบการณ์การฟังที่ดีที่สุด</string>
-    <string name="bottomsheet_no_devices">ไม่มีการกำหนดค่าอุปกรณ์</string>
-    <string name="bottomsheet_add_device_hint">เพิ่มหูฟังหรือลำโพงของคุณเพื่อรับการตั้งค่า EQ ในแบบของคุณ</string>
-    <string name="bottomsheet_import_eq">นำเข้าโปรไฟล์ EQ</string>
-    <string name="bottomsheet_paste_eq">วางการตั้งค่า EQ จาก autoeq.app หรือแหล่งอื่น ๆ</string>
-    <string name="bottomsheet_supported_formats">รูปแบบที่รองรับ:\n• ข้อความ FixBandEQ (AutoEQ)\n• รูปแบบ JSON\n• CSV (ค่าแบนด์ 10 ค่า)</string>
     <string name="bottomsheet_export_eq">แบ่งปันการตั้งค่า EQ ของคุณกับผู้อื่นหรือบันทึกไว้เป็นข้อมูลสำรอง</string>
-    <string name="bottomsheet_active_profile">โปรไฟล์ที่ใช้งานอยู่: %1$s</string>
     <string name="bottomsheet_no_eq_export">ไม่มีการตั้งค่า EQ ที่ใช้งานอยู่ที่จะส่งออก โปรดเปิดใช้งานอีควอไลเซอร์และกำหนดค่าก่อน</string>
     <string name="bottomsheet_device_type">ประเภทอุปกรณ์</string>
-    <string name="bottomsheet_choose_profile">เลือกโปรไฟล์ AutoEQ สำหรับ %1$s</string>
-    <string name="bottomsheet_delete_device">ลบอุปกรณ์</string>
-    <string name="bottomsheet_delete_device_confirm">คุณแน่ใจหรือไม่ว่าต้องการลบ \'%1$s\'? การดำเนินการนี้ไม่สามารถยกเลิกได้</string>
     
     <!-- Bottom Sheet: Song Info / Metadata Editor -->
-    <string name="bottomsheet_change">เปลี่ยน</string>
-    <string name="bottomsheet_remove">ลบ</string>
     <string name="bottomsheet_title">หัวข้อ</string>
-    <string name="bottomsheet_artist">ศิลปิน</string>
-    <string name="bottomsheet_album">อัลบั้ม</string>
     <string name="bottomsheet_genre">ประเภท</string>
     <string name="bottomsheet_year">ปี</string>
     <string name="bottomsheet_track">ติดตาม</string>
-    <string name="bottomsheet_saving">กำลังบันทึก…</string>
-    <string name="bottomsheet_save_changes">บันทึกการเปลี่ยนแปลง</string>
     <string name="bottomsheet_irreversible">การเปลี่ยนแปลงที่ไม่สามารถย้อนกลับได้</string>
     <string name="bottomsheet_proceed">ดำเนินการต่อ</string>
     
     <!-- Bottom Sheet: Player Chip Order -->
-    <string name="bottomsheet_player_chip_order">คำสั่งซื้อชิปผู้เล่น</string>
     
     <!-- Audio Quality Labels -->
-    <string name="audio_quality_dolby_atmos">ระบบเสียง Dolby Atmos</string>
-    <string name="audio_quality_dolby_truehd">ดอลบี้ TrueHD</string>
-    <string name="audio_quality_dolby_digital">ดอลบี้ดิจิตอล</string>
-    <string name="audio_quality_apple_lossless">แอปเปิ้ลลอสเลส</string>
-    <string name="audio_quality_flac_lossless">FLAC แบบไม่สูญเสีย</string>
-    <string name="audio_quality_ogg_vorbis">OGG วอร์บิส</string>
-    <string name="audio_quality_dts_audio">เสียง DTS</string>
-    <string name="audio_quality_hi_res_lossless">ความละเอียดสูงแบบไม่สูญเสีย</string>
-    <string name="audio_quality_cd_quality">คุณภาพซีดี</string>
-    <string name="audio_quality_studio_master">สตูดิโอมาสเตอร์</string>
-    <string name="audio_quality_lossless_surround">เสียงเซอร์ราวด์แบบไม่สูญเสีย</string>
-    <string name="audio_quality_lossy_surround">เสียงเซอร์ราวด์ที่สูญเสีย</string>
-    <string name="audio_quality_dolby_surround">ระบบเสียงรอบทิศทาง Dolby</string>
     
     <!-- Device Names -->
-    <string name="device_phone_speaker">ลำโพงโทรศัพท์</string>
-    <string name="device_wired_headphones">หูฟังแบบมีสาย</string>
-    <string name="device_wired_headset">ชุดหูฟังแบบมีสาย</string>
-    <string name="device_bluetooth_audio">เสียงบลูทูธ</string>
-    <string name="device_unknown">อุปกรณ์ที่ไม่รู้จัก</string>
     
     <!-- Fallback Metadata -->
-    <string name="fallback_unknown_artist">ศิลปินที่ไม่รู้จัก</string>
-    <string name="fallback_unknown_album">อัลบั้มที่ไม่รู้จัก</string>
-    <string name="fallback_unknown_file">ไฟล์ที่ไม่รู้จัก</string>
     
     <!-- Service Notifications -->
     <string name="service_app_updates">Rhythm อัปเดต</string>
@@ -1769,20 +1240,13 @@
     <string name="crash_restart_app">รีสตาร์ทแอป</string>
     
     <!-- Genre Detection -->
-    <string name="genre_hip_hop">ฮิปฮอป</string>
     
     <!-- Cache Details -->
-    <string name="cache_internal">แคชภายใน</string>
-    <string name="cache_external">แคชภายนอก</string>
-    <string name="cache_canvas">Canvas แคช</string>
     
     <!-- Default Playlists -->
-    <string name="default_playlist_recently_added">เพิ่มล่าสุด</string>
-    <string name="default_playlist_most_played">เล่นมากที่สุด</string>
     
     <!-- Misc UI -->
     <string name="ui_clear_all">ล้างทั้งหมด</string>
-    <string name="ui_error_generic">ข้อผิดพลาด</string>
     
     <!-- Settings Screen - Complete -->
     <string name="settings_home_customization">หน้าแรก</string>
@@ -1801,127 +1265,42 @@
     <string name="settings_lossless_artwork_desc">แสดงอาร์ตเวิร์กเพลงที่ฝังความละเอียดเต็มโดยไม่มีการบีบอัด</string>
     <string name="settings_song_artwork_restart_required">โหมดอาร์ตเวิร์กเปลี่ยนไป รีสตาร์ทแอปเพื่อล้างแคชและเรียกใช้การสแกนสื่อแบบเต็มอีกครั้งด้วยแหล่งอาร์ตเวิร์กที่อัปเดต</string>
     <string name="settings_artwork_cache_size">ขนาดแคชอาร์ตเวิร์ก</string>
-    <string name="settings_artwork_cache_size_loading">กำลังคำนวณการใช้แคชอาร์ตเวิร์คที่ฝังไว้...</string>
-    <string name="settings_artwork_cache_size_desc">แคชอาร์ตเวิร์คที่ฝังอยู่ในปัจจุบันใช้ %1$s ในไฟล์ %2$d</string>
-    <string name="settings_artwork_cache_trim_now">ตัดอาร์ตเวิร์กแคชทันที</string>
-    <string name="settings_artwork_cache_trim_now_desc">ตัดรายการอาร์ตเวิร์คเก่าโดยใช้ขีดจำกัดแคช</string>
-    <string name="settings_artwork_cache_trim_in_progress">กำลังตัดแคชอาร์ตเวิร์ก...</string>
-    <string name="settings_artwork_cache_trim_success">แคชอาร์ตเวิร์กถูกตัดแต่ง การใช้งานปัจจุบัน: %1$s</string>
-    <string name="settings_artwork_cache_trim_failed">ไม่สามารถตัดแคชอาร์ตเวิร์ค</string>
     <string name="settings_artist_parsing">ศิลปิน</string>
     <string name="settings_artist_parsing_desc">ตัวคั่น แสดงผล</string>
     <string name="settings_rhythm_stats">Rhythm สถิติ</string>
     <string name="settings_rhythm_stats_desc">เวลาในการฟัง เพลงยอดนิยม และเทรนด์</string>
-    <string name="settings_rhythm_aura">Rhythm ยาม</string>
     <string name="settings_rhythm_guard">Rhythm ยาม</string>
-    <string name="settings_rhythm_aura_list_desc">รั้วด้านสุขภาพในการฟังขับเคลื่อนโดย Rhythm Stats</string>
     <string name="settings_rhythm_guard_list_desc">รั้วด้านสุขภาพในการฟังขับเคลื่อนโดย Rhythm Stats</string>
-    <string name="settings_rhythm_aura_subtitle">เครื่องตรวจสุขภาพการฟัง</string>
-    <string name="settings_rhythm_guard_subtitle">เครื่องตรวจสุขภาพการฟัง</string>
-    <string name="settings_rhythm_aura_desc">ใช้กิจกรรมสถิติ Rhythm ของคุณเพื่อรักษานิสัยการฟังให้ปลอดภัยยิ่งขึ้นด้วยคำแนะนำที่คำนึงถึงอายุและคำเตือนด้วยตนเอง</string>
-    <string name="settings_rhythm_guard_desc">ใช้กิจกรรมสถิติ Rhythm ของคุณเพื่อรักษานิสัยการฟังให้ปลอดภัยยิ่งขึ้นด้วยคำแนะนำที่คำนึงถึงอายุและคำเตือนด้วยตนเอง</string>
-    <string name="settings_rhythm_aura_mode_title">โหมดการป้องกัน</string>
     <string name="settings_rhythm_guard_mode_title">โหมดการป้องกัน</string>
-    <string name="settings_rhythm_aura_mode_desc">เลือกวิธีที่ Rhythm Guard จัดการสุขภาพการฟัง</string>
     <string name="settings_rhythm_guard_mode_desc">เลือกวิธีที่ Rhythm Guard จัดการสุขภาพการฟัง</string>
-    <string name="settings_rhythm_aura_mode_auto">อัตโนมัติ</string>
     <string name="settings_rhythm_guard_mode_auto">อัตโนมัติ</string>
-    <string name="settings_rhythm_aura_mode_manual">คู่มือ</string>
     <string name="settings_rhythm_guard_mode_manual">คู่มือ</string>
-    <string name="settings_rhythm_aura_mode_off">ปิด</string>
-    <string name="settings_rhythm_guard_mode_off">ปิด</string>
-    <string name="settings_rhythm_aura_age_label">โปรไฟล์อายุ: %1$d</string>
     <string name="settings_rhythm_guard_age_label">โปรไฟล์อายุ: %1$d</string>
-    <string name="settings_rhythm_aura_age_desc">ปริมาณที่ปลอดภัยที่แนะนำสูงสุด %1$d%% และประมาณ %2$d นาทีต่อวัน</string>
     <string name="settings_rhythm_guard_age_desc">ปริมาณที่ปลอดภัยที่แนะนำสูงสุด %1$d%% และประมาณ %2$d นาทีต่อวัน</string>
-    <string name="settings_rhythm_aura_auto_policy_table_title">คู่มือการฟังอย่างปลอดภัย (อายุ -&gt; ปริมาณ / วัน)</string>
     <string name="settings_rhythm_guard_auto_policy_table_title">คู่มือการฟังอย่างปลอดภัย (อายุ -&gt; ปริมาณ / วัน)</string>
-    <string name="settings_rhythm_aura_auto_policy_band">อายุ %1$d-%2$d</string>
     <string name="settings_rhythm_guard_auto_policy_band">อายุ %1$d-%2$d</string>
-    <string name="settings_rhythm_aura_auto_policy_value">%1$d%% / %2$d นาที</string>
     <string name="settings_rhythm_guard_auto_policy_value">%1$d%% / %2$d นาที</string>
-    <string name="settings_rhythm_aura_health_overview_title">ภาพรวมสุขภาพ</string>
-    <string name="settings_rhythm_guard_health_overview_title">ภาพรวมสุขภาพ</string>
-    <string name="settings_rhythm_aura_health_overview_subtitle">ภาพรวมความปลอดภัยในการได้ยินแบบสดโดยอิงตามระดับเสียงของระบบแบบเรียลไทม์และปริมาณการฟังของวันนี้</string>
-    <string name="settings_rhythm_guard_health_overview_subtitle">ภาพรวมความปลอดภัยในการได้ยินแบบสดโดยอิงตามระดับเสียงของระบบแบบเรียลไทม์และปริมาณการฟังของวันนี้</string>
-    <string name="settings_rhythm_aura_health_snapshot">ภาพรวมสุขภาพ</string>
-    <string name="settings_rhythm_guard_health_snapshot">ภาพรวมสุขภาพ</string>
-    <string name="settings_rhythm_aura_snapshot_volume_title">ความดันปริมาตร</string>
     <string name="settings_rhythm_guard_snapshot_volume_title">ความดันปริมาตร</string>
-    <string name="settings_rhythm_aura_snapshot_volume_value">%1$d%% ตอนนี้ (เป้าหมาย %2$d%%)</string>
-    <string name="settings_rhythm_guard_snapshot_volume_value">%1$d%% ตอนนี้ (เป้าหมาย %2$d%%)</string>
-    <string name="settings_rhythm_aura_snapshot_exposure_title">การเปิดรับทั้งหมด</string>
     <string name="settings_rhythm_guard_snapshot_exposure_title">การเปิดรับทั้งหมด</string>
-    <string name="settings_rhythm_aura_snapshot_exposure_value">%1$s ประมาณการ / %2$s เป้าหมาย</string>
-    <string name="settings_rhythm_guard_snapshot_exposure_value">%1$s วันนี้ / %2$s ขีดจำกัด</string>
-    <string name="settings_rhythm_aura_snapshot_lifetime_title">โหลดตลอดอายุการใช้งาน</string>
-    <string name="settings_rhythm_guard_snapshot_lifetime_title">โหลดตลอดอายุการใช้งาน</string>
-    <string name="settings_rhythm_aura_snapshot_lifetime_value">%1$s ฟังทั้งหมด</string>
-    <string name="settings_rhythm_guard_snapshot_lifetime_value">%1$s ฟังทั้งหมด</string>
-    <string name="settings_rhythm_aura_snapshot_sessions_title">Rhythm ความหนาแน่น</string>
-    <string name="settings_rhythm_guard_snapshot_sessions_title">Rhythm ความหนาแน่น</string>
-    <string name="settings_rhythm_aura_snapshot_sessions_value">%1$s เซสชัน/วัน (เฉลี่ย 7 วัน)</string>
-    <string name="settings_rhythm_guard_snapshot_sessions_value">%1$s เซสชัน/วัน (เฉลี่ย 7 วัน)</string>
-    <string name="settings_rhythm_aura_lifetime_hours">การฟังตลอดชีพ: %1$s ชั่วโมง</string>
-    <string name="settings_rhythm_guard_lifetime_hours">การฟังตลอดชีพ: %1$s ชั่วโมง</string>
-    <string name="settings_rhythm_aura_songs_played">เพลงที่เล่น: %1$d</string>
-    <string name="settings_rhythm_guard_songs_played">เพลงที่เล่น: %1$d</string>
-    <string name="settings_rhythm_aura_weekly_sessions">เซสชันเฉลี่ย 7 วัน/วัน: %1$s</string>
-    <string name="settings_rhythm_guard_weekly_sessions">เซสชันเฉลี่ย 7 วัน/วัน: %1$s</string>
-    <string name="settings_rhythm_aura_live_volume">ปริมาณสด: %1$d%% (คำเตือนสูงกว่า %2$d%%)</string>
-    <string name="settings_rhythm_guard_live_volume">ปริมาณสด: %1$d%% (คำเตือนสูงกว่า %2$d%%)</string>
-    <string name="settings_rhythm_aura_auto_applied_title">Rhythm โปรไฟล์ยามอัตโนมัติใช้งานอยู่</string>
-    <string name="settings_rhythm_guard_auto_applied_title">Rhythm โปรไฟล์ยามอัตโนมัติใช้งานอยู่</string>
-    <string name="settings_rhythm_aura_auto_applied_desc">Rhythm Guard จะรักษาค่าเริ่มต้นการเล่นที่ปลอดภัยขึ้นโดยอัตโนมัติตามโปรไฟล์อายุของคุณ</string>
-    <string name="settings_rhythm_guard_auto_applied_desc">Rhythm Guard จะรักษาค่าเริ่มต้นการเล่นที่ปลอดภัยขึ้นโดยอัตโนมัติตามโปรไฟล์อายุของคุณ</string>
-    <string name="settings_rhythm_aura_auto_state">ระดับเสียงของระบบ: %1$s หยุดชั่วคราวที่ศูนย์: %2$s การทำให้เป็นมาตรฐาน: %3$s, ReplayGain: %4$s</string>
-    <string name="settings_rhythm_guard_auto_state">ระดับเสียงของระบบ: %1$s หยุดชั่วคราวที่ศูนย์: %2$s การทำให้เป็นมาตรฐาน: %3$s, ReplayGain: %4$s</string>
-    <string name="settings_rhythm_aura_last_auto_applied">การปรับอัตโนมัติครั้งล่าสุด: %1$s</string>
-    <string name="settings_rhythm_guard_last_auto_applied">การปรับอัตโนมัติครั้งล่าสุด: %1$s</string>
-    <string name="settings_rhythm_aura_never">ไม่เคย</string>
-    <string name="settings_rhythm_guard_never">ไม่เคย</string>
-    <string name="settings_rhythm_aura_manual_controls_title">ราวกั้นแบบแมนนวล</string>
     <string name="settings_rhythm_guard_manual_controls_title">ราวกั้นแบบแมนนวล</string>
-    <string name="settings_rhythm_aura_manual_warning_toggle">แสดงคำเตือนด้านความปลอดภัย</string>
     <string name="settings_rhythm_guard_manual_warning_toggle">แสดงคำเตือนด้านความปลอดภัย</string>
-    <string name="settings_rhythm_aura_manual_warning_toggle_desc">เตือนเมื่อรายการสดหรือการสลับด้วยตนเองอาจมีความเสี่ยง</string>
     <string name="settings_rhythm_guard_manual_warning_toggle_desc">เตือนเมื่อรายการสดหรือการสลับด้วยตนเองอาจมีความเสี่ยง</string>
-    <string name="settings_rhythm_aura_manual_threshold_title">เกณฑ์คำเตือนปริมาณสูง: %1$d%%</string>
     <string name="settings_rhythm_guard_manual_threshold_title">เกณฑ์คำเตือนปริมาณสูง: %1$d%%</string>
-    <string name="settings_rhythm_aura_manual_threshold_desc">ตั้งเวลา Rhythm Guard ควรเตือนเกี่ยวกับระดับเสียงที่อาจเป็นอันตราย</string>
     <string name="settings_rhythm_guard_manual_threshold_desc">ตั้งเวลา Rhythm Guard ควรเตือนเกี่ยวกับระดับเสียงที่อาจเป็นอันตราย</string>
-    <string name="settings_rhythm_aura_device_controls_title">การควบคุมเอาต์พุต</string>
     <string name="settings_rhythm_guard_device_controls_title">การควบคุมเอาต์พุต</string>
-    <string name="settings_rhythm_aura_device_controls_speaker_limit_title">ใช้การจำกัดระดับเสียงบนลำโพงโทรศัพท์</string>
     <string name="settings_rhythm_guard_device_controls_speaker_limit_title">ใช้การจำกัดระดับเสียงบนลำโพงโทรศัพท์</string>
-    <string name="settings_rhythm_aura_device_controls_speaker_limit_desc">เมื่อปิด Rhythm Guard จะข้ามการหนีบระดับเสียงและการเตือนระดับเสียงบนเอาต์พุตลำโพงในตัว</string>
     <string name="settings_rhythm_guard_device_controls_speaker_limit_desc">เมื่อปิด Rhythm Guard จะข้ามการหนีบระดับเสียงและการเตือนระดับเสียงบนเอาต์พุตลำโพงในตัว</string>
     <string name="settings_rhythm_guard_alert_controls_title">การควบคุมการแจ้งเตือนการฟัง</string>
-    <string name="settings_rhythm_guard_alert_controls_desc">ปรับแต่งการแจ้งเตือนการสัมผัส การหมดเวลาเตือน และช่วงเวลาพักเริ่มต้นต่อ</string>
     <string name="settings_rhythm_guard_alert_threshold_title">เกณฑ์การแจ้งเตือนความเสี่ยงต่อการติดเชื้อ: %1$s</string>
     <string name="settings_rhythm_guard_alert_threshold_policy_default">ค่าเริ่มต้นของนโยบาย</string>
     <string name="settings_rhythm_guard_alert_timeout_title">หมดเวลาการแจ้งเตือน: %1$s</string>
     <string name="settings_rhythm_guard_post_timeout_cooldown_title">คูลดาวน์หลังหมดเวลา: %1$s</string>
     <string name="settings_rhythm_guard_break_resume_default_title">ประวัติย่อเริ่มต้นต่อ: %1$s</string>
-    <string name="settings_rhythm_guard_auto_controls_hidden_desc">โหมดอัตโนมัติจัดการเกณฑ์การฟังและช่วงเวลาสำหรับคุณ นโยบายปัจจุบัน: %1$s เป้าหมายรายวัน, %2$s คำเตือนคูลดาวน์, %3$s การหมดเวลาเริ่มต้น</string>
-    <string name="settings_rhythm_aura_warning_title">คำเตือนเพื่อความปลอดภัยในการฟัง</string>
     <string name="settings_rhythm_guard_warning_title">คำเตือนเพื่อความปลอดภัยในการฟัง</string>
-    <string name="settings_rhythm_aura_warning_high_volume">ปริมาณปัจจุบันสูงกว่าเกณฑ์คำเตือนของคุณ (%1$d%%) พิจารณาลดระดับเสียง</string>
     <string name="settings_rhythm_guard_warning_high_volume">ปริมาณปัจจุบันสูงกว่าเกณฑ์คำเตือนของคุณ (%1$d%%) พิจารณาลดระดับเสียง</string>
-    <string name="settings_rhythm_aura_warning_daily_exposure">คุณมาถึง %1$s วันนี้ ซึ่งสูงกว่า %2$s ที่แนะนำ ลองหยุดพักการฟัง</string>
     <string name="settings_rhythm_guard_warning_daily_exposure">คุณมาถึง %1$s วันนี้ ซึ่งสูงกว่า %2$s ที่แนะนำ ลองหยุดพักการฟัง</string>
-    <string name="settings_rhythm_aura_warning_disable_normalization">การปิดการทำให้เสียงเป็นมาตรฐานอาจเพิ่มความผันผวนของความดัง</string>
-    <string name="settings_rhythm_guard_warning_disable_normalization">การปิดการทำให้เสียงเป็นมาตรฐานอาจเพิ่มความผันผวนของความดัง</string>
-    <string name="settings_rhythm_aura_warning_disable_replay_gain">การปิด ReplayGain สามารถเพิ่มระดับเสียงสูงสุดโดยไม่คาดคิด</string>
-    <string name="settings_rhythm_guard_warning_disable_replay_gain">การปิด ReplayGain สามารถเพิ่มระดับเสียงสูงสุดโดยไม่คาดคิด</string>
-    <string name="settings_rhythm_aura_warning_disable_zero_volume">การปิดใช้งานการหยุดชั่วคราวเมื่อเป็นศูนย์จะลบการป้องกันแบบป้องกันออก</string>
-    <string name="settings_rhythm_guard_warning_disable_zero_volume">การปิดใช้งานการหยุดชั่วคราวเมื่อเป็นศูนย์จะลบการป้องกันแบบป้องกันออก</string>
-    <string name="settings_rhythm_aura_warning_dialog_title">Rhythm การแจ้งเตือนการป้องกัน</string>
     <string name="settings_rhythm_guard_warning_dialog_title">Rhythm การแจ้งเตือนการป้องกัน</string>
-    <string name="settings_rhythm_aura_warning_dialog_volume_message">ปริมาณสื่อของระบบคือ %1$d%% แบบเรียลไทม์ ซึ่งสูงกว่าขีดจำกัดการป้องกันปัจจุบันของคุณที่ %2$d%% ลดระดับเสียงเพื่อลดความเสี่ยงในการได้ยิน</string>
     <string name="settings_rhythm_guard_warning_dialog_volume_message">ปริมาณสื่อของระบบคือ %1$d%% แบบเรียลไทม์ ซึ่งสูงกว่าขีดจำกัดการป้องกันปัจจุบันของคุณที่ %2$d%% ลดระดับเสียงเพื่อลดความเสี่ยงในการได้ยิน</string>
-    <string name="settings_rhythm_aura_warning_dialog_exposure_message">การฟังโดยประมาณในวันนี้คือ %1$d นาที ซึ่งสูงกว่า %2$d นาทีที่แนะนำของคุณ พิจารณาการพักระยะสั้นและลดระดับเสียงสำหรับเซสชั่นถัดไป</string>
-    <string name="settings_rhythm_guard_warning_dialog_exposure_message">การฟังโดยประมาณในวันนี้คือ %1$d นาที ซึ่งสูงกว่า %2$d นาทีที่แนะนำของคุณ พิจารณาการพักระยะสั้นและลดระดับเสียงสำหรับเซสชั่นถัดไป</string>
     <string name="settings_rhythm_guard_risk_level_label">ระดับความรุนแรงของความเสี่ยง: %1$s</string>
     <string name="settings_rhythm_guard_risk_action_label">การดำเนินการที่แนะนำ: %1$s</string>
     <string name="settings_rhythm_guard_risk_level_low">ต่ำ</string>
@@ -1932,49 +1311,25 @@
     <string name="settings_rhythm_guard_risk_action_moderate">ลดระดับเสียงลงเร็วๆ นี้และหลีกเลี่ยงเซสชันที่ยาว</string>
     <string name="settings_rhythm_guard_risk_action_high">ลดระดับเสียงตอนนี้และพักสักครู่</string>
     <string name="settings_rhythm_guard_risk_action_severe">หยุดเล่นชั่วคราวตอนนี้และเล่นต่อในระดับที่ปลอดภัยยิ่งขึ้น</string>
-    <string name="settings_rhythm_aura_warning_dialog_apply">ลดระดับลงสู่ระดับปลอดภัย</string>
     <string name="settings_rhythm_guard_warning_dialog_apply">ลดระดับลงสู่ระดับปลอดภัย</string>
-    <string name="settings_rhythm_aura_warning_dialog_dismiss">ไม่ต้องสนใจตอนนี้</string>
     <string name="settings_rhythm_guard_warning_dialog_dismiss">ไม่ต้องสนใจตอนนี้</string>
-    <string name="settings_rhythm_aura_break_dialog_title">ถึงเวลาพักฟัง</string>
     <string name="settings_rhythm_guard_break_dialog_title">ถึงเวลาพักฟัง</string>
-    <string name="settings_rhythm_aura_break_dialog_message">วันนี้คุณได้ฟัง %1$s แล้ว (แนะนำ %2$s) หยุดพักสั้นๆ เพื่อปกป้องการได้ยินของคุณ</string>
     <string name="settings_rhythm_guard_break_dialog_message">วันนี้คุณได้ฟัง %1$s แล้ว (แนะนำ %2$s) หยุดพักสั้นๆ เพื่อปกป้องการได้ยินของคุณ</string>
-    <string name="settings_rhythm_aura_break_dialog_pause_only">พักสมอง</string>
     <string name="settings_rhythm_guard_break_dialog_pause_only">พักสมอง</string>
-    <string name="settings_rhythm_aura_break_dialog_pause_close">การหน่วงเวลา</string>
     <string name="settings_rhythm_guard_break_dialog_pause_close">การหน่วงเวลา</string>
-    <string name="settings_rhythm_aura_break_dialog_schedule_title">ความยาวตัวแบ่ง</string>
     <string name="settings_rhythm_guard_break_dialog_schedule_title">ความยาวตัวแบ่ง</string>
-    <string name="settings_rhythm_aura_break_dialog_delay_title">ความยาวล่าช้า</string>
-    <string name="settings_rhythm_guard_break_dialog_delay_title">ความยาวล่าช้า</string>
-    <string name="settings_rhythm_aura_break_dialog_pick_time">เลือกเวลา</string>
     <string name="settings_rhythm_guard_break_dialog_pick_time">เลือกเวลา</string>
-    <string name="settings_rhythm_aura_break_dialog_picker_extend_title">เลือกความยาวตัวแบ่ง</string>
     <string name="settings_rhythm_guard_break_dialog_picker_extend_title">เลือกความยาวตัวแบ่ง</string>
-    <string name="settings_rhythm_aura_break_dialog_picker_delay_title">เลือกความยาวการหน่วงเวลา</string>
     <string name="settings_rhythm_guard_break_dialog_picker_delay_title">เลือกความยาวการหน่วงเวลา</string>
-    <string name="settings_rhythm_aura_break_dialog_delay_action">การหน่วงเวลาล่าช้าโดย %1$s</string>
-    <string name="settings_rhythm_guard_break_dialog_delay_action">การหน่วงเวลาล่าช้าโดย %1$s</string>
-    <string name="settings_rhythm_aura_break_dialog_schedule_action">หยุดชั่วคราวและเล่นต่อใน %1$s</string>
-    <string name="settings_rhythm_guard_break_dialog_schedule_action">หยุดชั่วคราวและเล่นต่อใน %1$s</string>
     <string name="settings_rhythm_guard_timeout_reason_auto">ทริกเกอร์การพักการฟัง: วันนี้ %1$s เกินที่แนะนำ %2$s</string>
     <string name="settings_rhythm_guard_timeout_reason_manual">เริ่มพักฟัง</string>
     <string name="settings_rhythm_guard_resume_countdown_label">หมดเวลาการฟัง</string>
     <string name="settings_rhythm_guard_resume_countdown_value">ดำเนินการต่อใน %1$s</string>
     <string name="settings_rhythm_guard_delay_break_countdown_label">เริ่มพักเร็วๆ นี้</string>
     <string name="settings_rhythm_guard_start_countdown_value">เริ่มใน %1$s</string>
-    <string name="settings_rhythm_guard_timeout_cooldown_label">คูลดาวน์การกู้คืน</string>
-    <string name="settings_rhythm_guard_timeout_cooldown_value">ตรวจสอบการหมดเวลาครั้งต่อไปใน %1$s</string>
     <string name="settings_rhythm_guard_snapshot_widget_above_limit">สูงกว่าขีดจำกัดที่แนะนำ</string>
     <string name="settings_rhythm_guard_snapshot_widget_within_limit">ภายในขีดจำกัดที่แนะนำ</string>
     <string name="settings_rhythm_guard_snapshot_widget_load_label">ตัวบ่งชี้การโหลดปัจจุบัน</string>
-    <string name="settings_rhythm_guard_overall_health_title">ตัวบ่งชี้สุขภาพโดยรวม</string>
-    <string name="settings_rhythm_guard_overall_health_summary">ปริมาณ %1$d%%/%2$d%% • ความเสี่ยง %3$s/%4$s • Rhythm %5$s เซสชัน/วัน</string>
-    <string name="settings_rhythm_guard_health_good">ดี</string>
-    <string name="settings_rhythm_guard_health_fair">ต้องการความสนใจ</string>
-    <string name="settings_rhythm_guard_health_risk">เสี่ยง</string>
-    <string name="settings_rhythm_guard_health_off">ป้องกัน</string>
     <string name="settings_rhythm_guard_state_active">Rhythm ยามทำงาน</string>
     <string name="settings_rhythm_guard_state_inactive">Rhythm ยามไม่ทำงาน</string>
     <string name="settings_rhythm_guard_state_timeout_active">อยู่ระหว่างการหมดเวลาการฟัง</string>
@@ -1991,21 +1346,12 @@
     <string name="settings_rhythm_guard_timeout_activity_title">หมดเวลาการฟังที่ใช้งานอยู่</string>
     <string name="settings_rhythm_guard_timeout_activity_default_reason">โครงเรื่องหักมุม: หูของคุณเริ่มประสานกันและเรียกร้องให้พักทานอาหารว่าง Rhythm Guard หยุดการเล่นชั่วคราวเพื่อให้ทุกคนคูลดาวน์ได้</string>
     <string name="settings_rhythm_guard_timeout_activity_comic_desc">โครงเรื่องหักมุม: หูของคุณเริ่มประสานกันและเรียกร้องให้พักทานอาหารว่าง Rhythm Guard หยุดการเล่นชั่วคราวเพื่อให้ทุกคนคูลดาวน์ได้</string>
-    <string name="settings_rhythm_guard_timeout_activity_countdown">ดำเนินการต่อใน %1$s</string>
     <string name="settings_rhythm_guard_timeout_activity_extend">ขยายช่วงพัก (+%1$d นาที)</string>
     <string name="settings_rhythm_guard_timeout_activity_exit">ปิดหน้าจอการหมดเวลา</string>
     <string name="settings_rhythm_guard_timeout_activity_close_app">ปิดแอป</string>
-    <string name="settings_rhythm_aura_off_title">Rhythm ยามปิดอยู่</string>
-    <string name="settings_rhythm_guard_off_title">Rhythm ยามปิดอยู่</string>
-    <string name="settings_rhythm_aura_off_desc">ไม่มีการปรับหรือคำเตือนอัตโนมัติ ลักษณะการเล่นยังคงไม่เปลี่ยนแปลง</string>
-    <string name="settings_rhythm_guard_off_desc">ไม่มีการปรับหรือคำเตือนอัตโนมัติ ลักษณะการเล่นยังคงไม่เปลี่ยนแปลง</string>
-    <string name="settings_rhythm_aura_age_search_title">โปรไฟล์อายุ</string>
     <string name="settings_rhythm_guard_age_search_title">โปรไฟล์อายุ</string>
-    <string name="settings_rhythm_aura_age_search_desc">ตั้งค่าโปรไฟล์ความปลอดภัยในการได้ยินตามอายุ</string>
     <string name="settings_rhythm_guard_age_search_desc">ตั้งค่าโปรไฟล์ความปลอดภัยในการได้ยินตามอายุ</string>
-    <string name="settings_rhythm_aura_manual_threshold_search_title">เกณฑ์คำเตือนด้วยตนเอง</string>
     <string name="settings_rhythm_guard_manual_threshold_search_title">เกณฑ์คำเตือนด้วยตนเอง</string>
-    <string name="settings_rhythm_aura_manual_threshold_search_desc">เลือกขีดจำกัดคำเตือนระดับเสียงสูง</string>
     <string name="settings_rhythm_guard_manual_threshold_search_desc">เลือกขีดจำกัดคำเตือนระดับเสียงสูง</string>
     <string name="settings_rhythm_guard_alert_threshold_search_title">เกณฑ์การแจ้งเตือนความเสี่ยงต่อการติดเชื้อ</string>
     <string name="settings_rhythm_guard_alert_threshold_search_desc">กำหนดว่าการฟังในแต่ละวันจะทำให้เกิดการแจ้งเตือนเรื่องความปลอดภัย</string>
@@ -2025,8 +1371,6 @@
     <string name="settings_rhythm_guard_notification_timer_scheduled_title">Rhythm กำหนดการพักยาม</string>
     <string name="settings_rhythm_guard_notification_timer_scheduled_text">การพักฟังจะเริ่มใน %1$s</string>
     <string name="settings_rhythm_guard_notification_tap_open">แตะเพื่อดูรายละเอียดการหมดเวลา</string>
-    <string name="label_enabled">เปิดใช้งาน</string>
-    <string name="label_disabled">ปิดการใช้งาน</string>
     
     <!-- Rhythm Stats Screen -->
     <string name="stats_title">Rhythm สถิติ</string>
@@ -2035,121 +1379,37 @@
     <string name="stats_this_month">เดือนนี้</string>
     <string name="stats_all_time">ตลอดเวลา</string>
     <string name="stats_total_listening_time">เวลาฟังทั้งหมด</string>
-    <string name="stats_total_plays">จำนวนการเล่นทั้งหมด</string>
-    <string name="stats_unique_tracks">เพลงที่ไม่ซ้ำ</string>
-    <string name="stats_top_vibes">ความรู้สึกยอดนิยม</string>
-    <string name="stats_star_artists">ศิลปินดารา</string>
-    <string name="stats_genre_mix">ประเภทมิกซ์</string>
-    <string name="stats_beat_timeline">เอาชนะไทม์ไลน์</string>
-    <string name="stats_musical_journey">การเดินทางทางดนตรีของคุณ</string>
-    <string name="stats_no_data">ยังไม่มีข้อมูลการฟัง</string>
-    <string name="stats_start_listening">เริ่มเล่นเพลงเพื่อดูสถิติของคุณ</string>
-    <string name="stats_rise_rhythm">เพิ่มขึ้น &amp; Rhythm</string>
-    <string name="stats_midday_beats">จังหวะเที่ยงวัน</string>
-    <string name="stats_evening_vibes">ความรู้สึกยามเย็น</string>
-    <string name="stats_night_grooves">ร่องกลางคืน</string>
-    <string name="stats_just_started">เพิ่งเริ่มต้น! 🎵</string>
-    <string name="stats_nice_rhythm">จังหวะเยี่ยมเลย! 🎸</string>
-    <string name="stats_jamming">คุณติดขัด! 🎶</string>
-    <string name="stats_enthusiast">ผู้ชื่นชอบดนตรี! 🎹</string>
-    <string name="stats_legendary">ผู้ฟังระดับตำนาน! 🌟</string>
-    <string name="stats_maestro">นักดนตรีระดับปรมาจารย์! 🎼</string>
-    <string name="stats_sage">สุดยอดนักปราชญ์ทางดนตรี! 👑</string>
     
     <!-- Cache Management Complete -->
-    <string name="cache_artwork_images">รูปภาพงานศิลปะ</string>
-    <string name="cache_artwork_images_desc">ปกอัลบั้ม รูปภาพศิลปิน และภาพขนาดย่อ</string>
-    <string name="cache_lyrics">เนื้อเพลงแคช</string>
-    <string name="cache_lyrics_desc">ดาวน์โหลดและซิงค์ข้อมูลเนื้อเพลง</string>
-    <string name="cache_canvas_videos">Canvas วิดีโอ</string>
-    <string name="cache_canvas_videos_desc">พื้นหลังเพลงเคลื่อนไหว</string>
-    <string name="cache_misc_temp">เบ็ดเตล็ด &amp; ชั่วคราว</string>
-    <string name="cache_misc_temp_desc">ไฟล์ชั่วคราวและไฟล์เบ็ดเตล็ด</string>
-    <string name="cache_clear_artwork">ล้างแคชอาร์ตเวิร์ก</string>
-    <string name="cache_clear_lyrics">ล้างแคชเนื้อเพลง</string>
-    <string name="cache_clear_canvas">ล้าง Canvas แคช</string>
-    <string name="cache_remove_all_data">ลบข้อมูลแคชทั้งหมด</string>
-    <string name="cache_good_to_know">เรื่องน่ารู้</string>
-    <string name="cache_tip_auto">Cache ช่วยให้โหลดเนื้อหาเร็วขึ้นและลดการใช้ข้อมูล</string>
-    <string name="cache_tip_limit">กำหนดขีดจำกัดแคชเพื่อจัดการพื้นที่เก็บข้อมูลโดยอัตโนมัติ</string>
-    <string name="cache_tip_clear">การล้างแคชจะไม่ลบเพลงหรือเพลย์ลิสต์ของคุณ</string>
     
     <!-- Queue Playback Settings -->
-    <string name="queue_use_exoplayer_shuffle">ใช้ ExoPlayer สับเปลี่ยน</string>
-    <string name="queue_use_exoplayer_shuffle_desc">ให้โปรแกรมเล่นสื่อจัดการสับเปลี่ยน</string>
     <string name="queue_auto_add">เพิ่มลงในคิวอัตโนมัติ</string>
-    <string name="queue_auto_add_desc">เพิ่มเพลงที่เกี่ยวข้องโดยอัตโนมัติเมื่อเล่น</string>
     <string name="queue_clear_on_new">แทนที่คิวเพลงใหม่</string>
-    <string name="queue_clear_on_new_desc">การเล่นเพลงจะเป็นการล้างคิวปัจจุบันโดยตรง</string>
-    <string name="queue_remember_repeat">จำโหมดเล่นซ้ำ</string>
-    <string name="queue_remember_repeat_desc">บันทึกโหมดทำซ้ำระหว่างการรีสตาร์ทแอป</string>
-    <string name="queue_remember_shuffle">จำโหมดสุ่ม</string>
-    <string name="queue_remember_shuffle_desc">บันทึกสถานะสับเปลี่ยนระหว่างการรีสตาร์ทแอป</string>
-    <string name="queue_playback_speed">ความเร็วในการเล่น</string>
     <string name="queue_playback_speed_desc">ปรับความเร็วในการเล่น</string>
 
     <!-- Gestures Settings -->
-    <string name="gestures_player_swipe_dismiss">ปัดลงเพื่อปิด</string>
-    <string name="gestures_player_swipe_dismiss_desc">ปัดลงบนเครื่องเล่นเพื่อปิด</string>
-    <string name="gestures_player_swipe_tracks">ปัดเพื่อเปลี่ยนแทร็ก</string>
-    <string name="gestures_player_swipe_tracks_desc">ปัดไปทางซ้าย/ขวาบนอาร์ตเวิร์คเพื่อข้ามแทร็ก</string>
-    <string name="gestures_artwork_double_tap">งานศิลปะการแตะสองครั้ง</string>
-    <string name="gestures_artwork_double_tap_desc">แตะสองครั้งที่อาร์ตเวิร์คเพื่อเล่น/หยุดชั่วคราว</string>
     
     <!-- Playlist Settings Toggle -->
     <string name="playlist_ask_each_time">ถามทุกครั้ง</string>
     <string name="playlist_ask_each_time_desc">แสดงกล่องโต้ตอบพร้อมตัวเลือก</string>
-    <string name="playlist_load_entire">โหลดเพลย์ลิสต์ทั้งหมด</string>
-    <string name="playlist_load_entire_desc">แทนที่คิวและเล่นจากเพลงที่เลือก</string>
-    <string name="playlist_play_single">เล่นเฉพาะเพลงนี้</string>
-    <string name="playlist_play_single_desc">อย่าเปลี่ยนคิว</string>
-    <string name="queue_always_add">เพิ่มในคิวเสมอ</string>
-    <string name="queue_always_add_desc">เพิ่มเพลงลงในคิวโดยอัตโนมัติโดยไม่ต้องถาม</string>
     
     <!-- About Multi-Artist Parsing -->
-    <string name="artist_parsing_about">เกี่ยวกับการแยกวิเคราะห์หลายศิลปิน</string>
-    <string name="artist_parsing_tip_1">เพลงที่มีศิลปินหลายคนจะถูกแยกโดยใช้ตัวคั่น</string>
-    <string name="artist_parsing_tip_2">ศิลปินแต่ละคนจะปรากฏแยกกันในห้องสมุดของคุณ</string>
-    <string name="artist_parsing_tip_3">ใช้ตัวคั่นที่กำหนดเองเพื่อการจัดระเบียบที่ดีขึ้น</string>
     
     <!-- Home Screen Greetings -->
-    <string name="home_greeting_night">ราตรีสวัสดิ์</string>
-    <string name="home_greeting_morning">สวัสดีตอนเช้า</string>
-    <string name="home_greeting_afternoon">สวัสดีตอนบ่าย</string>
-    <string name="home_greeting_evening">สวัสดีตอนเย็น</string>
-    <string name="home_greeting_christmas">สุขสันต์วันคริสต์มาส</string>
-    <string name="home_greeting_new_year">สวัสดีปีใหม่</string>
-    <string name="home_greeting_halloween">สุขสันต์วันฮาโลวีน</string>
-    <string name="home_greeting_valentines">สุขสันต์วันวาเลนไทน์</string>
     
     <!-- Home Screen Section Titles -->
     <string name="home_top_artists">ศิลปิน</string>
     <string name="home_top_artists_subtitle">นักดนตรีคนโปรดของคุณ</string>
-    <string name="home_no_top_artists">ยังไม่มีศิลปิน</string>
     
     <!-- Content Descriptions (additional) -->
     <string name="cd_reorder_home_sections">เรียงลำดับส่วนหน้าแรกใหม่</string>
-    <string name="cd_artist">ศิลปิน %1$s</string>
-    <string name="cd_view_detailed_stats">ดูสถิติโดยละเอียด</string>
-    <string name="cd_selected">เลือกแล้ว</string>
     <string name="cd_remove">ลบ</string>
-    <string name="cd_delete_playlist">ลบเพลย์ลิสต์</string>
     <string name="cd_rhythm_logo">Rhythm โลโก้</string>
-    <string name="cd_report_bug">รายงานข้อผิดพลาด</string>
     <string name="cd_telegram_support">การสนับสนุนโทรเลข</string>
-    <string name="cd_view_github_profile">ดูโปรไฟล์ GitHub</string>
-    <string name="cd_error">ข้อผิดพลาด</string>
-    <string name="cd_updates_disabled">ปิดใช้งานการอัปเดต</string>
-    <string name="cd_update_available">มีการอัปเดต</string>
-    <string name="cd_manual_check_only">ตรวจสอบด้วยตนเองเท่านั้น</string>
-    <string name="cd_up_to_date">อัปเดต</string>
     
     <!-- Queue &amp; Playlist Dialogs -->
     <string name="queue_action_dialog">กล่องโต้ตอบการดำเนินการคิว</string>
-    <string name="queue_ask_when_not_empty">ถามว่าจะทำอย่างไรเมื่อคิวไม่ว่าง</string>
     <string name="playlist_action_dialog">กล่องโต้ตอบการดำเนินการเพลย์ลิสต์</string>
-    <string name="playlist_load_entire_queue">โหลดเพลย์ลิสต์ทั้งหมดไปที่คิว</string>
-    <string name="playlist_play_only_selected">เล่นเฉพาะเพลงที่เลือก</string>
     
     <!-- Artist Settings -->
     <string name="artists_title">ศิลปิน</string>
@@ -2161,80 +1421,33 @@
     <string name="artist_library_organization">องค์กรห้องสมุด</string>
     <string name="artist_group_by_album_artist">กลุ่มโดยศิลปินอัลบั้ม</string>
     <string name="artist_group_by_album_artist_desc">แสดงอัลบั้มที่ร่วมงานกับศิลปินหลัก</string>
-    <string name="artist_about_multi_parsing">เกี่ยวกับการแยกวิเคราะห์หลายศิลปิน</string>
-    <string name="artist_parsing_description">เมื่อเปิดใช้งาน Rhythm จะแยกแท็กศิลปินที่มีศิลปินหลายคนโดยอัตโนมัติ สิ่งนี้มีประโยชน์สำหรับเพลงที่ดาวน์โหลดด้วย yt-dlp หรือเครื่องมืออื่นๆ ที่ใช้ตัวคั่น เช่น \'/\' เพื่อแยกศิลปิน\n\nแบ็กสแลช (\\\\) สามารถใช้เพื่อหลีกตัวคั่น</string>
-    <string name="artist_examples">ตัวอย่าง</string>
-    <string name="artist_select_separators">เลือกตัวคั่นศิลปิน</string>
-    <string name="artist_delimiter_slash">เฉือน</string>
-    <string name="artist_delimiter_semicolon">อัฒภาค</string>
-    <string name="artist_delimiter_comma">จุลภาค</string>
-    <string name="artist_delimiter_plus">บวก</string>
-    <string name="artist_delimiter_ampersand">เครื่องหมาย</string>
-    <string name="save_changes">บันทึกการเปลี่ยนแปลง</string>
     
     <!-- About Screen -->
-    <string name="about_title">เกี่ยวกับ</string>
-    <string name="about_version">เวอร์ชัน</string>
-    <string name="about_build">สร้าง</string>
-    <string name="about_target_sdk">SDK เป้าหมาย</string>
-    <string name="about_architecture">สถาปัตยกรรม</string>
-    <string name="about_arm_arch">ARM64 &amp; ARM32</string>
-    <string name="about_lead_developer">หัวหน้านักพัฒนาและสถาปนิกโครงการ</string>
-    <string name="about_manages_izzyondroid">จัดการการอัปเดตบน IzzyOnDroid</string>
-    <string name="about_collab_lead">การทำงานร่วมกันและหัวหน้าฝ่ายพัฒนาของ Project Booming</string>
-    <string name="about_canvas_api">Spotify Canvas API บูรณาการ</string>
     
     <!-- Equalizer -->
-    <string name="equalizer_title">อีควอไลเซอร์</string>
-    <string name="equalizer_my_devices">อุปกรณ์ของฉัน</string>
     
     <!-- Common Actions & Dialogs -->
-    <string name="action_save_changes">บันทึกการเปลี่ยนแปลง</string>
-    <string name="content_desc_selected">เลือกแล้ว</string>
     <string name="content_desc_remove">ลบ</string>
-    <string name="content_desc_delete_playlist">ลบเพลย์ลิสต์</string>
     <string name="content_desc_refresh_devices">รีเฟรชอุปกรณ์</string>
     <string name="content_desc_switch_device">สลับอุปกรณ์</string>
     <string name="content_desc_volume">ปริมาณ</string>
     <string name="content_desc_decrease_volume">ลดระดับเสียง</string>
     <string name="content_desc_increase_volume">เพิ่มระดับเสียง</string>
-    <string name="content_desc_mute">ปิดเสียง</string>
-    <string name="content_desc_unmute">เปิดเสียง</string>
-    <string name="content_desc_playback_speed">ความเร็วในการเล่น</string>
-    <string name="content_desc_playback_settings">การตั้งค่าการเล่น</string>
     <string name="content_desc_shuffle_play">สุ่มเล่น</string>
     <string name="content_desc_sort_songs">เรียงลำดับเพลง</string>
-    <string name="content_desc_ascending">จากน้อยไปมาก</string>
-    <string name="content_desc_descending">จากมากไปน้อย</string>
     <string name="content_desc_more_options">ตัวเลือกเพิ่มเติม</string>
     <string name="content_desc_add_to_playlist">เพิ่มลงในเพลย์ลิสต์</string>
-    <string name="content_desc_favorite">รายการโปรด</string>
     <string name="content_desc_now_playing">กำลังเล่น</string>
     <string name="content_desc_drag_reorder">ลากเพื่อเรียงลำดับ</string>
     <string name="content_desc_remove_from_queue">ลบออกจากคิว</string>
     <string name="content_desc_add_songs">เพิ่มเพลง</string>
     <string name="content_desc_clear_queue">ล้างคิว</string>
     <string name="content_desc_play_album">เล่นอัลบั้ม</string>
-    <string name="content_desc_move_up">เลื่อนขึ้น</string>
-    <string name="content_desc_move_down">เลื่อนลง</string>
-    <string name="content_desc_show_hide">แสดง/ซ่อน</string>
-    <string name="content_desc_hide_section">ซ่อนส่วน</string>
-    <string name="content_desc_show_section">แสดงส่วน</string>
-    <string name="content_desc_hide_tab">ซ่อนแท็บ</string>
-    <string name="content_desc_show_tab">แสดงแท็บ</string>
-    <string name="content_desc_hide_chip">ซ่อนชิป</string>
-    <string name="content_desc_show_chip">แสดงชิป</string>
-    <string name="content_desc_edit_metadata">แก้ไขข้อมูลเมตา</string>
     <string name="content_desc_album_artwork">ปกอัลบั้ม</string>
     
     <!-- Additional UI strings -->
-    <string name="playlist_play_one">เล่นเฉพาะเพลงที่เลือก</string>
-    <string name="up_next_section">ต่อไป</string>
     
     <!-- Sort Orders -->
-    <string name="sort_track_number">หมายเลขแทร็ก</string>
-    <string name="sort_title_asc">ชื่อ (A-Z)</string>
-    <string name="sort_title_desc">ชื่อ (Z-A)</string>
     <string name="sort_duration_short_first">ระยะเวลา (สั้นก่อน)</string>
     <string name="sort_duration_long_first">ระยะเวลา (ยาวก่อน)</string>
     
@@ -2245,43 +1458,15 @@
     <string name="action_add_to_favorites">เพิ่มในรายการโปรด</string>
     <string name="action_song_info">ข้อมูลเพลง</string>
     <string name="action_add_to_blacklist">เพิ่มไปยังบัญชีดำ</string>
-    <string name="action_hide_song">ซ่อนเพลง</string>
     <string name="action_play_all">เล่นทั้งหมด</string>
     
     <!-- Blacklist/Whitelist -->
-    <string name="blacklist_track">บัญชีดำติดตาม</string>
-    <string name="unblacklist_track">ยกเลิกการติดบัญชีดำ</string>
-    <string name="blacklist_folder">โฟลเดอร์บัญชีดำ</string>
-    <string name="unblacklist_folder">โฟลเดอร์ยกเลิกบัญชีดำ</string>
-    <string name="whitelist_track">รายการที่อนุญาต</string>
-    <string name="unwhitelist_track">ยกเลิกการอนุญาตแทร็ก</string>
-    <string name="whitelist_folder">โฟลเดอร์ไวท์ลิสต์</string>
-    <string name="unwhitelist_folder">ยกเลิกการอนุญาตโฟลเดอร์</string>
-    <string name="song_added_to_blacklist">เพิ่มเพลงในบัญชีดำ</string>
-    <string name="song_removed_from_blacklist">เพลงถูกลบออกจากบัญชีดำ</string>
-    <string name="folder_added_to_blacklist">เพิ่มโฟลเดอร์ในบัญชีดำ</string>
-    <string name="folder_removed_from_blacklist">โฟลเดอร์ถูกลบออกจากบัญชีดำ</string>
     
     <!-- Device & Audio -->
-    <string name="device_bluetooth">อุปกรณ์บลูทูธ</string>
-    <string name="device_wired_headphones_alt">หูฟังแบบมีสาย</string>
-    <string name="device_speaker">ลำโพงโทรศัพท์</string>
-    <string name="device_audio_generic">อุปกรณ์เสียง</string>
-    <string name="volume_system">ระดับเสียงของระบบ</string>
-    <string name="volume_app">ปริมาณแอป</string>
-    <string name="volume_switch_hint">แตะเพื่อสลับระหว่างระดับเสียงของแอปและระบบ</string>
     <string name="playback_use_system_volume">ใช้ระดับเสียงของระบบ</string>
     <string name="playback_use_system_volume_desc">ควบคุมระดับเสียงของระบบแทนระดับเสียงของแอป</string>
-    <string name="playback_gapless_title">การเล่นแบบไม่มีช่องว่าง</string>
-    <string name="eq_profile_applied">ใช้โปรไฟล์ %1$s</string>
     
     <!-- Multi-Artist Parsing -->
-    <string name="multi_artist_parsing_title">การแยกวิเคราะห์หลายศิลปิน</string>
-    <string name="multi_artist_parsing_about">เกี่ยวกับการแยกวิเคราะห์หลายศิลปิน</string>
-    <string name="multi_artist_parsing_desc">เมื่อเปิดใช้งาน Rhythm จะแยกแท็กศิลปินที่มีศิลปินหลายคนโดยอัตโนมัติ สิ่งนี้มีประโยชน์สำหรับเพลงที่ดาวน์โหลดด้วย yt-dlp หรือเครื่องมืออื่นๆ ที่ใช้ตัวคั่น เช่น \'/\' เพื่อแยกศิลปิน\\n\\nเครื่องหมายแบ็กสแลช (\\\\) สามารถใช้เพื่อหลีกตัวคั่นได้</string>
-    <string name="multi_artist_parsing_examples">ตัวอย่าง</string>
-    <string name="multi_artist_parsing_configure">กำหนดค่าตัวคั่น</string>
-    <string name="multi_artist_parsing_select_separators">เลือกตัวคั่นศิลปิน</string>
     <string name="delimiter_slash">เฉือน</string>
     <string name="delimiter_semicolon">อัฒภาค</string>
     <string name="delimiter_comma">จุลภาค</string>
@@ -2289,29 +1474,14 @@
     <string name="delimiter_ampersand">เครื่องหมาย</string>
     
     <!-- About Screen (additional strings) -->
-    <string name="about_app_description">เครื่องเล่นเพลงที่ทันสมัยและเต็มไปด้วยฟีเจอร์สำหรับ Android</string>
-    <string name="about_arch_value">ARM64 &amp; ARM32</string>
-    <string name="about_lead_dev">หัวหน้านักพัฒนาและสถาปนิกโครงการ</string>
-    <string name="about_izzy_role">จัดการการอัปเดตบน IzzyOnDroid</string>
     
     <!-- Sleep Timer -->
-    <string name="sleep_timer_active_status">ใช้งานอยู่ \u2022 %1$s เหลืออยู่</string>
-    <string name="sleep_timer_no_music">ไม่มีเพลงเล่น</string>
     <string name="sleep_timer_set_control">ตั้งค่าการควบคุมการเล่นอัตโนมัติ</string>
-    <string name="sleep_timer_fade_out">จางหายไป</string>
-    <string name="sleep_timer_pause">หยุดชั่วคราว</string>
-    <string name="sleep_timer_stop">หยุด</string>
     
     <!-- Home Sections -->
-    <string name="home_section_greeting">สวัสดี</string>
     <string name="home_section_recently_played">เพิ่งเล่น</string>
     <string name="home_section_discover">ค้นพบม้าหมุน</string>
-    <string name="home_section_top_artists">ศิลปินยอดนิยม</string>
     <string name="home_section_new_releases">ออกใหม่</string>
-    <string name="home_section_recently_added">เพิ่มล่าสุด</string>
-    <string name="home_section_recommended">แนะนำ</string>
-    <string name="home_section_listening_stats">สถิติการฟัง</string>
-    <string name="home_section_mood">ส่วนอารมณ์</string>
     <string name="home_section_one_visible">ต้องมองเห็นอย่างน้อยหนึ่งส่วน</string>
     
     <!-- Library Tabs -->
@@ -2319,7 +1489,6 @@
     <string name="library_tab_playlists">เพลย์ลิสต์</string>
     <string name="library_tab_albums">อัลบั้ม</string>
     <string name="library_tab_artists">ศิลปิน</string>
-    <string name="library_tab_explorer">สำรวจ</string>
     <string name="library_tab_one_visible">ต้องมองเห็นอย่างน้อยหนึ่งแท็บ</string>
     <string name="library_tab_order_reset">ลำดับแท็บและการมองเห็นถูกรีเซ็ตเป็นค่าเริ่มต้น</string>
     <string name="library_tab_order_saved">บันทึกลำดับแท็บและการมองเห็นแล้ว</string>
@@ -2328,154 +1497,61 @@
     <string name="player_chip_favorite">รายการโปรด</string>
     <string name="player_chip_speed">ความเร็วในการเล่น</string>
     <string name="player_chip_equalizer">อีควอไลเซอร์</string>
-    <string name="player_chip_sleep_timer">ตัวตั้งเวลาปิด</string>
     <string name="player_chip_lyrics">เนื้อเพลง</string>
     <string name="player_chip_album">อัลบั้ม</string>
     <string name="player_chip_artist">ศิลปิน</string>
-    <string name="player_chip_cast">นักแสดง</string>
     <string name="player_chip_one_visible">ต้องมองเห็นชิปอย่างน้อยหนึ่งตัว</string>
     <string name="player_chip_order_reset">รีเซ็ตเป็นลำดับเริ่มต้นและการมองเห็น</string>
     
     <!-- AutoEQ & Device Configuration -->
     <string name="autoeq_manage">จัดการ AutoEQ</string>
     <string name="autoeq_configure_desc">กำหนดค่าอุปกรณ์เสียงของคุณด้วยโปรไฟล์ AutoEQ ที่ปรับให้เหมาะสมเพื่อประสบการณ์การฟังที่ดีที่สุด</string>
-    <string name="autoeq_device_recognized">รู้จักอุปกรณ์แล้ว</string>
-    <string name="autoeq_new_device">ตรวจพบอุปกรณ์ใหม่</string>
     <string name="autoeq_no_devices">ไม่มีการกำหนดค่าอุปกรณ์</string>
     <string name="autoeq_add_prompt">เพิ่มหูฟังหรือลำโพงของคุณเพื่อรับการตั้งค่า EQ ในแบบของคุณ</string>
     <string name="autoeq_delete_device_title">ลบอุปกรณ์</string>
-    <string name="autoeq_delete_device_msg">คุณแน่ใจหรือไม่ว่าต้องการลบ \'%1$s\'? การดำเนินการนี้ไม่สามารถยกเลิกได้</string>
     <string name="autoeq_import_profile">นำเข้าโปรไฟล์ EQ</string>
     <string name="autoeq_import_paste_hint">วางการตั้งค่า EQ จาก autoeq.app หรือแหล่งอื่น ๆ</string>
-    <string name="autoeq_supported_formats">รูปแบบที่รองรับ:\\n\u2022 ข้อความ FixBandEQ (AutoEQ)\\n\u2022 JSON รูปแบบ\\n\u2022 CSV (10 ค่าแบนด์)</string>
     <string name="autoeq_eq_settings_label">การตั้งค่า EQ</string>
-    <string name="autoeq_paste_placeholder">วางข้อมูล EQ ที่นี่\u2026</string>
-    <string name="autoeq_button_file">ไฟล์</string>
-    <string name="autoeq_button_paste">วาง</string>
-    <string name="autoeq_button_add">เพิ่ม</string>
-    <string name="autoeq_button_import">นำเข้า</string>
-    <string name="autoeq_button_export">ส่งออก</string>
     <string name="autoeq_failed_read_file">ไม่สามารถอ่านไฟล์</string>
     
     <!-- Backup/Restore -->
     <string name="backup_invalid_format">รูปแบบการสำรองข้อมูลไม่ถูกต้องหรือข้อมูลที่เสียหาย</string>
     <string name="backup_unable_to_read">ไม่สามารถอ่านไฟล์สำรอง</string>
-    <string name="backup_restore_failed">ไม่สามารถกู้คืนจากไฟล์: %1$s</string>
-    <string name="backup_create_failed">ไม่สามารถสร้างข้อมูลสำรอง: %1$s</string>
-    <string name="backup_clipboard_label">Rhythm สำรอง</string>
-    <string name="backup_status_never">ไม่เคย</string>
-    <string name="backup_status_enabled">เปิดใช้งาน</string>
-    <string name="backup_status_manual">คู่มือ</string>
-    <string name="backup_creating">กำลังสร้างข้อมูลสำรอง\u2026</string>
-    <string name="backup_create_button">สร้างการสำรองข้อมูล</string>
-    <string name="backup_restoring">กำลังกู้คืน\u2026</string>
-    <string name="backup_from_clipboard">จากคลิปบอร์ด</string>
-    <string name="backup_from_file">จากไฟล์</string>
-    <string name="backup_opening">กำลังเปิด\u2026</string>
-    <string name="backup_no_clipboard_data">ไม่พบข้อมูลสำรองในคลิปบอร์ด กรุณาคัดลอกข้อมูลสำรองก่อน</string>
-    <string name="backup_restore_clipboard_failed">ไม่สามารถกู้คืนข้อมูลสำรอง: %1$s</string>
     
     <!-- Licenses -->
     <string name="license_autoeq_name">อีคิวอัตโนมัติ</string>
-    <string name="license_autoeq_desc">การปรับสมดุลหูฟังอัตโนมัติจากการตอบสนองความถี่โดย Jaakko Pasanen</string>
-    <string name="license_mit">ใบอนุญาต MIT</string>
-    <string name="license_jetpack_name">เขียน Jetpack</string>
-    <string name="license_jetpack_desc">Android ชุดเครื่องมือที่ทันสมัยสำหรับการสร้าง UI ดั้งเดิม</string>
-    <string name="license_apache">ใบอนุญาต Apache 2.0</string>
-    <string name="license_gpl3">ใบอนุญาตสาธารณะทั่วไปของ GNU v3.0</string>
-    <string name="license_material3_name">Material 3 ส่วนประกอบ</string>
-    <string name="license_material3_desc">Material ออกแบบ 3 ส่วนประกอบสำหรับ Android</string>
-    <string name="license_media3_name">สื่อ3 ExoPlayer</string>
-    <string name="license_media3_desc">ไลบรารีการเล่นสื่อที่ทันสมัยสำหรับ Android</string>
-    <string name="license_coroutines_name">โคทลิน โครูทีน</string>
-    <string name="license_coroutines_desc">เฟรมเวิร์กการเขียนโปรแกรมแบบอะซิงโครนัสสำหรับ Kotlin</string>
-    <string name="license_coil_name">คอยล์</string>
-    <string name="license_coil_desc">ไลบรารีการโหลดรูปภาพสำหรับ Android สนับสนุนโดย Kotlin Coroutines</string>
-    <string name="license_retrofit_name">ชุดติดตั้งเพิ่ม</string>
-    <string name="license_retrofit_desc">ไคลเอ็นต์ HTTP ที่ปลอดภัยสำหรับ Android และ Java</string>
     
     <!-- Lyrics Editor -->
     <string name="lyrics_loaded_success">โหลดเนื้อเพลง  สำเร็จแล้ว</string>
-    <string name="lyrics_load_error">เกิดข้อผิดพลาดในการโหลดเนื้อเพลง: %1$s</string>
     <string name="lyrics_saved_success">บันทึกเนื้อเพลงเรียบร้อยแล้ว</string>
-    <string name="lyrics_save_error">เกิดข้อผิดพลาดในการบันทึกเนื้อเพลง: %1$s</string>
     
     <!-- Media Scan -->
-    <string name="media_scan_error_parsing_folder">เกิดข้อผิดพลาดในการแยกวิเคราะห์เส้นทางโฟลเดอร์</string>
     
     <!-- Song Info -->
-    <string name="song_info_unknown">ไม่ทราบ</string>
-    <string name="song_info_quality_hires_lossless">ความละเอียดสูงแบบไม่สูญเสีย</string>
-    <string name="song_info_quality_cd">คุณภาพซีดี</string>
-    <string name="song_info_quality_type">ประเภทคุณภาพ</string>
-    <string name="song_info_quality_label">ป้ายกำกับคุณภาพ</string>
-    <string name="song_info_quality_category">หมวดหมู่คุณภาพ</string>
-    <string name="song_info_category_lossless">ไร้การสูญเสีย</string>
-    <string name="song_info_category_lossy">สูญเสีย</string>
-    <string name="song_info_category_surround">เซอร์ราวด์</string>
     
     <!-- Common UI Text -->
-    <string name="exoplayer_settings">ExoPlayer การตั้งค่า</string>
     <string name="button_add">เพิ่ม</string>
     <string name="button_delete">ลบ</string>
     <string name="button_import">นำเข้า</string>
     <string name="button_export">ส่งออก</string>
     <string name="text_file">ไฟล์</string>
     <string name="text_paste">วาง</string>
-    <string name="logo_content_desc">Rhythm โลโก้</string>
     
     <!-- PlaceholderScreens - Settings Labels -->
-    <string name="settings_about_lyrics">เกี่ยวกับแหล่งที่มาของเนื้อเพลง</string>
-    <string name="settings_adjust_decorations">ปรับจำนวนการตกแต่งตามเทศกาลที่แสดง</string>
-    <string name="settings_artwork_corner_radius">ปรับความกลมของมุมปกอัลบั้ม</string>
-    <string name="settings_canvas_backgrounds_desc">ภาพเคลื่อนไหว</string>
-    <string name="settings_choose_header">เลือกสิ่งที่จะแสดงในส่วนหัว</string>
-    <string name="settings_customize_compact_player">ปรับแต่งเครื่องเล่นขนาดกะทัดรัดที่ปรากฏที่ด้านล่างของหน้าจอ</string>
-    <string name="settings_enable_auto_scroll">เปิดใช้งานการเลื่อนอัตโนมัติ</string>
-    <string name="settings_enable_bass_boost">เปิดใช้งาน Bass Boost</string>
-    <string name="settings_enable_canvas">เปิดใช้งาน Canvas</string>
-    <string name="settings_enable_disco_mode">เปิดใช้งานโหมดดิสโก้</string>
-    <string name="settings_enable_festive_theme">เปิดใช้งานธีมเทศกาล</string>
-    <string name="settings_enable_virtualizer">เปิดใช้งาน Virtualizer</string>
-    <string name="settings_festive_theme">ธีมรื่นเริง</string>
-    <string name="settings_mini_player">เครื่องเล่นขนาดเล็ก</string>
-    <string name="settings_toggle_decorations">สลับองค์ประกอบการตกแต่งแต่ละรายการตามตำแหน่ง</string>
-    <string name="settings_virtualizer">เครื่องเสมือน</string>
-    <string name="settings_custom_separators">ตัวคั่นแบบกำหนดเอง</string>
-    <string name="settings_enable_parsing">เปิดใช้งานการแยกวิเคราะห์</string>
-    <string name="settings_show_examples">แสดงตัวอย่าง</string>
-    <string name="settings_example_original">ต้นฉบับ</string>
-    <string name="settings_example_result">ผลลัพธ์</string>
     
     <!-- Cache & Storage -->
-    <string name="cache_mb_format">%1$.1f เมกะไบต์</string>
-    <string name="cache_size_64mb">64 เมกะไบต์</string>
-    <string name="cache_size_2gb">2 กิกะไบต์</string>
-    <string name="cache_clear_all_desc">ลบข้อมูลแคชทั้งหมด</string>
     
     <!-- Version Info -->
-    <string name="version_format">วี %1$s</string>
-    <string name="version_with_code">v%1$s</string>
-    <string name="released_date">เปิดตัว: %1$s</string>
-    <string name="crashed_on_date">ขัดข้องเมื่อ: %1$s</string>
-    <string name="file_size_format">(%1$s)</string>
     <string name="download_progress">%1$d%%</string>
     
     <!-- GitHub & Links -->
-    <string name="github_username_format">\@%1$s</string>
-    <string name="bullet_point">\u2022</string>
-    <string name="original_quoted">\"%1$s\"</string>
     
     <!-- Contributors -->
-    <string name="credits_material_design">Google Material ทีมออกแบบสำหรับหลักการออกแบบ</string>
     
     <!-- Counts & Numbers -->
-    <string name="count_format">%1$d</string>
-    <string name="index_number">%1$d</string>
     
     <!-- More PlaceholderScreens Strings -->
     <string name="settings_double_tap_artwork_tip">แตะสองครั้งเพื่อเล่น/หยุดชั่วคราว</string>
-    <string name="settings_enable_lyrics_hint">เปิดใช้งานเนื้อเพลงเพื่อดูเนื้อเพลงที่ซิงโครไนซ์ขณะเล่น</string>
     <string name="settings_full_player">ผู้เล่นเต็ม</string>
     <string name="settings_header_customization">การปรับแต่งส่วนหัว</string>
     <string name="settings_header_display">การแสดงส่วนหัว</string>
@@ -2484,46 +1560,31 @@
     <string name="settings_lightness">ความเบา</string>
     <string name="settings_miniplayer">มินิเพลเยอร์</string>
     <string name="settings_no_crash_logs">ไม่พบบันทึกข้อขัดข้อง ทำได้ดีมาก!</string>
-    <string name="settings_personalize_player">ปรับแต่งประสบการณ์ผู้เล่นของคุณด้วยรูปแบบชิปที่กำหนดเอง เอฟเฟ็กต์ภาพ และการตั้งค่าการแสดงผล</string>
     <string name="settings_player_controls">การควบคุมผู้เล่น</string>
     <string name="settings_player_screen">หน้าจอผู้เล่น</string>
-    <string name="settings_player_tips">เคล็ดลับผู้เล่น</string>
     <string name="settings_presets">ค่าที่ตั้งไว้</string>
     <string name="settings_progress_display">การแสดงความคืบหน้า</string>
     <string name="settings_progress_hidden">ซ่อนความคืบหน้า</string>
-    <string name="settings_quick_actions">การดำเนินการด่วน</string>
     <string name="settings_reorder_toggle_sections">เรียงลำดับใหม่และสลับส่วน</string>
     <string name="settings_saturation">ความอิ่มตัว</string>
     <string name="settings_section_order_visibility">ลำดับส่วนและการมองเห็น</string>
-    <string name="settings_sleep_timer_placeholder">การควบคุมตัวตั้งเวลาปิดเครื่องจะถูกนำมาใช้ที่นี่</string>
     <string name="settings_start_collapsed">เริ่มหน้าจอทั้งหมดโดยยุบส่วนหัว</string>
     <string name="settings_statistics_update">อัปเดตสถิติตามพฤติกรรมการฟัง</string>
     <string name="settings_swipe_down_dismiss_tip">ปัดลงบนเครื่องเล่นขนาดเล็กหรือเครื่องเล่นแบบเต็มเพื่อปิด</string>
     <string name="settings_swipe_up_open">ปัดขึ้นบนเครื่องเล่นขนาดเล็กเพื่อเปิดเครื่องเล่นแบบเต็ม</string>
-    <string name="settings_tap_chip_order">แตะ \'ลำดับชิปและการมองเห็น\' เพื่อปรับแต่งชิปแอคชั่น</string>
     <string name="settings_text_alignment">การจัดตำแหน่งข้อความ</string>
     <string name="settings_quick_brown_fox">สุนัขจิ้งจอกสีน้ำตาลที่รวดเร็วกระโดดข้ามสุนัขขี้เกียจ</string>
     <string name="settings_toggle_widgets">สลับวิดเจ็ตเพื่อปรับแต่งหน้าจอหลักของคุณ</string>
     <string name="settings_visibility">การมองเห็น</string>
-    <string name="settings_when_show_header">เมื่อใดที่จะแสดง %1$s ในส่วนหัว</string>
     <string name="settings_widget_item_counts">จำนวนรายการวิดเจ็ต</string>
     
     <!-- Playlist Management -->
-    <string name="playlist_user_count">%1$d</string>
-    <string name="playlist_default_count">%1$d</string>
-    <string name="playlist_total_count">%1$d</string>
     
     <!-- Media Scan -->
-    <string name="media_filtered_count">%1$d</string>
-    <string name="media_all_songs_count">%1$d</string>
-    <string name="media_folders_count">%1$d</string>
     
     <!-- Time Formats -->
-    <string name="time_half_second">0.5 วินาที</string>
-    <string name="time_twelve_seconds">12 วินาที</string>
     
     <!-- Additional PlaceholderScreens UI Strings -->
-    <string name="settings_modern_music_player">เครื่องเล่นเพลงที่ทันสมัยและเต็มไปด้วยฟีเจอร์สำหรับ Android</string>
     <string name="settings_about_lyrics_sources">เกี่ยวกับแหล่งที่มาของเนื้อเพลง</string>
     <string name="settings_about_multi_artist">เกี่ยวกับการแยกวิเคราะห์หลายศิลปิน</string>
     <string name="settings_adjust_snowflake_size">ปรับขนาดเกล็ดหิมะ (ขนาดเล็กลง = เกล็ดหิมะมากขึ้น)</string>
@@ -2531,17 +1592,11 @@
     <string name="settings_adjust_artwork_corners">ปรับความกลมของมุมปกอัลบั้ม</string>
     <string name="settings_always_start_collapsed">เริ่มยุบเสมอ</string>
     <string name="settings_artwork">งานศิลปะ</string>
-    <string name="settings_artwork_size">ขนาดงานศิลปะ</string>
     <string name="settings_bass_boost">เพิ่มเสียงเบส</string>
-    <string name="settings_canvas_backgrounds_info">Canvas พื้นหลังเพิ่มภาพเคลื่อนไหวให้กับเพลงที่รองรับ</string>
     <string name="settings_carousel_style">สไตล์ม้าหมุน</string>
     <string name="settings_choose_festive_theme">เลือกธีมเทศกาล</string>
-    <string name="settings_choose_album_display">เลือกวิธีแสดงอัลบั้ม</string>
     <string name="settings_choose_header_content">เลือกสิ่งที่จะแสดงในส่วนหัว</string>
-    <string name="settings_coming_soon">เร็วๆ นี้</string>
-    <string name="settings_coming_soon_lowercase">เร็วๆ นี้</string>
     <string name="settings_configure_delimiters">กำหนดค่าตัวคั่น</string>
-    <string name="settings_corner_radius">รัศมีมุม</string>
     <string name="settings_customize_home_layout">ปรับแต่งเค้าโครงหน้าจอหลัก</string>
     <string name="settings_customize_miniplayer">ปรับแต่งเครื่องเล่นขนาดกะทัดรัดที่ปรากฏที่ด้านล่างของหน้าจอ</string>
     <string name="settings_decoration_elements">องค์ประกอบการตกแต่ง</string>
@@ -2554,31 +1609,16 @@
     <string name="settings_examples">ตัวอย่าง</string>
     <string name="settings_intensity">ความเข้ม</string>
     <string name="settings_more_festivals">เทศกาลอื่น ๆ จะถูกเพิ่มเข้ามาในการอัพเดตในอนาคต</string>
-    <string name="settings_remove_all_cache">ลบข้อมูลแคชทั้งหมด</string>
-    <string name="settings_save_changes">บันทึกการเปลี่ยนแปลง</string>
     <string name="settings_select_festival">เลือกเทศกาล</string>
     <string name="settings_select_artist_separators">เลือกตัวคั่นศิลปิน</string>
     <string name="settings_snowflake_display_area">พื้นที่แสดงเกล็ดหิมะ</string>
     <string name="settings_snowflake_size">ขนาดเกล็ดหิมะ</string>
     <string name="settings_toggle_decoration_elements">สลับองค์ประกอบการตกแต่งแต่ละรายการตามตำแหน่ง</string>
     <string name="settings_multi_artist_parsing_info">เมื่อเปิดใช้งาน Rhythm จะแยกแท็กศิลปินที่มีศิลปินหลายคนโดยอัตโนมัติ สิ่งนี้มีประโยชน์สำหรับเพลงที่ดาวน์โหลดด้วย yt-dlp หรือเครื่องมืออื่นๆ ที่ใช้ตัวคั่น เช่น \'/\' เพื่อแยกศิลปิน\n\nแบ็กสแลช (\\) สามารถใช้เพื่อหลีกตัวคั่น</string>
-    <string name="settings_embedded_lyrics_info">• เนื้อเพลงที่ฝังไว้จะถูกจัดเก็บไว้ในไฟล์เสียงของคุณ\n</string>
-    <string name="settings_material_design_credit">• Google Material ทีมออกแบบสำหรับหลักการออกแบบ\n</string>
-    <string name="settings_bullet_point">•</string>
-    <string name="settings_backslash">\\</string>
-    <string name="settings_db_unit">เดซิเบล</string>
     
     <!-- Format Strings with Placeholders -->
-    <string name="settings_crashed_on">ขัดข้องเมื่อ: %1$s</string>
-    <string name="settings_released_format">เปิดตัว: %1$s</string>
-    <string name="settings_version_prefix">วี %1$s</string>
-    <string name="settings_version_format">เวอร์ชัน %1$s</string>
-    <string name="settings_app_version">v%1$s</string>
-    <string name="settings_github_username">\@%1$s</string>
-    <string name="settings_readable_size">%1$s</string>
     <string name="settings_cache_size_2gb">2 กิกะไบต์</string>
     <string name="settings_cache_size_64mb">64 เมกะไบต์</string>
-    <string name="settings_list_item_prefix">• %1$s:</string>
     
     <!-- Common UI strings -->
     <string name="ui_close">ปิด</string>
@@ -2643,25 +1683,11 @@
     <string name="settings_audio_routing_default_desc">Android ตัดสินใจเลือกวิธีกำหนดเส้นทางเสียง การสุ่มตัวอย่างใหม่ขึ้นอยู่กับการตั้งค่าระบบ</string>
 
     <!-- Library Storage -->
-    <string name="settings_library_storage">พื้นที่เก็บข้อมูลห้องสมุด</string>
     <string name="settings_cache_backend">แบ็กเอนด์แคช</string>
-    <string name="settings_cache_backend_desc">วิธีจัดเก็บข้อมูลห้องสมุดของคุณไว้ในเครื่อง</string>
-    <string name="settings_storage_json">JSON</string>
-    <string name="settings_storage_room">ห้อง DB</string>
-    <string name="settings_storage_room_desc">ใช้ฐานข้อมูล Room สำหรับการจัดเก็บข้อมูลที่มีโครงสร้าง ดีกว่าสำหรับห้องสมุดขนาดใหญ่ จำเป็นต้องรีสตาร์ท</string>
-    <string name="settings_storage_json_desc">ใช้ไฟล์ JSON เพื่อการจัดเก็บข้อมูลที่เรียบง่ายและพกพาได้ ตัวเลือกเริ่มต้น</string>
-    <string name="settings_storage_export_json">ส่งออกไลบรารีเป็น JSON</string>
-    <string name="settings_storage_export_json_desc">บันทึกแคชไลบรารีปัจจุบันลงในไฟล์ JSON ที่สามารถแชร์ได้</string>
-    <string name="settings_storage_import_json">นำเข้าไลบรารีจาก JSON</string>
-    <string name="settings_storage_import_json_desc">โหลดข้อมูลเพลงจากไฟล์สำรอง JSON</string>
     <string name="settings_storage_rebuild_room">สร้างฐานข้อมูลห้องใหม่</string>
     <string name="settings_storage_rebuild_room_desc">ซิงค์ฐานข้อมูลห้องอีกครั้งจากข้อมูลห้องสมุดปัจจุบัน</string>
     <string name="settings_storage_room_stats">สถิติฐานข้อมูลห้อง</string>
-    <string name="settings_storage_room_stats_desc">ดูจำนวนและขนาดฐานข้อมูลห้อง</string>
-    <string name="settings_storage_json_stats">JSON สถิติแคช</string>
-    <string name="settings_storage_json_stats_desc">ดู JSON ขนาดไฟล์แคชและจำนวนเพลง</string>
     <string name="settings_storage_song_count">%1$d เพลงที่เก็บไว้</string>
-    <string name="settings_storage_file_size">ขนาดไฟล์: %1$s</string>
     <string name="settings_storage_not_available">ไม่สามารถใช้ได้ในโหมดปัจจุบัน</string>
     <string name="settings_storage_rebuild_success">สร้างฐานข้อมูลห้องใหม่สำเร็จแล้ว</string>
     <string name="settings_storage_rebuild_failed">ไม่สามารถสร้างฐานข้อมูลห้องใหม่</string>
@@ -2686,13 +1712,7 @@
     <string name="settings_cache_info_4">การล้างอัตโนมัติช่วยรักษาประสิทธิภาพสูงสุด</string>
 
     <!-- Updates Settings -->
-    <string name="settings_updates_screen_title">อัปเดต</string>
     <string name="updates_status_error">ข้อผิดพลาด</string>
-    <string name="updates_status_checking">กำลังตรวจสอบ…</string>
-    <string name="updates_status_update_available">มีการอัปเดต</string>
-    <string name="updates_status_disabled">ปิดใช้งานการอัปเดต</string>
-    <string name="updates_status_manual">ตรวจสอบด้วยตนเอง</string>
-    <string name="updates_status_up_to_date">อัปเดต</string>
     <string name="updates_rhythm_logo_cd">Rhythm โลโก้</string>
     <string name="updates_version_prefix">วี %1$s</string>
     <string name="updates_released_prefix">เปิดตัว: %1$s</string>
@@ -2700,22 +1720,8 @@
     <string name="updates_open_settings">เปิดการตั้งค่า</string>
     <string name="updates_retry">ลองอีกครั้ง</string>
     <string name="updates_enable_updates">เปิดใช้งานการอัปเดต</string>
-    <string name="updates_version_label">เวอร์ชัน %1$s</string>
-    <string name="settings_enable_updates">เปิดใช้งานการอัปเดต</string>
-    <string name="settings_enable_updates_desc">อนุญาตให้แอปตรวจสอบและดาวน์โหลดอัปเดต</string>
-    <string name="settings_periodic_check">ตรวจสอบเป็นระยะ</string>
-    <string name="settings_periodic_check_desc">ตรวจสอบการอัปเดตโดยอัตโนมัติจาก repo GitHub ของ Rhythm</string>
     <string name="settings_update_notifications">การแจ้งเตือนการอัปเดต</string>
-    <string name="settings_update_notifications_desc">รับการแจ้งเตือนเมื่อมีเวอร์ชันใหม่</string>
-    <string name="settings_smart_polling">การโพลอัจฉริยะ</string>
-    <string name="settings_smart_polling_desc">ใช้การตรวจสอบที่มีประสิทธิภาพเพื่อบันทึกการโทร GitHub API</string>
-    <string name="settings_update_channel">อัพเดตช่อง</string>
-    <string name="settings_update_channel_suffix">- แตะเพื่อเปลี่ยน</string>
-    <string name="settings_check_interval">ตรวจสอบช่วงเวลา</string>
     <string name="settings_check_interval_value">ทุก %1$d ชั่วโมง</string>
-    <string name="settings_channel_stable_desc">เสถียร - รุ่นที่ผ่านการทดสอบและเชื่อถือได้</string>
-    <string name="settings_channel_beta_desc">เบต้า - เข้าถึงคุณสมบัติใหม่ก่อนกำหนด</string>
-    <string name="settings_check_interval_dialog">ตรวจสอบช่วงเวลาอัปเดต</string>
     <string name="settings_interval_every_hour">ทุกชั่วโมง</string>
     <string name="settings_interval_every_6_hours">ทุก 6 ชั่วโมง</string>
     <string name="settings_interval_every_12_hours">ทุก 12 ชั่วโมง</string>
@@ -2723,20 +1729,11 @@
     <string name="settings_interval_once_a_week">สัปดาห์ละครั้ง</string>
 
     <!-- Experimental Features -->
-    <string name="settings_music_source">แหล่งเพลง</string>
-    <string name="settings_music_mode">โหมดเพลง</string>
-    <string name="settings_music_mode_local">ไฟล์ในเครื่องจากอุปกรณ์</string>
-    <string name="settings_music_mode_streaming">บริการสตรีมมิ่ง</string>
-    <string name="settings_allow_cellular_streaming">อนุญาตการสตรีมผ่านมือถือ</string>
-    <string name="settings_allow_cellular_streaming_desc">สตรีมเพลงผ่านข้อมูลมือถือ</string>
-    <string name="settings_streaming_coming_soon">คุณสมบัติการสตรีมจะมาเร็ว ๆ นี้</string>
     <string name="streaming_integration_title">Rhythm ไป</string>
     <string name="streaming_integration_services">บริการบูรณาการ</string>
     <string name="streaming_integration_services_empty">ยังไม่มีการเชื่อมต่อบริการ</string>
-    <string name="streaming_home_subtitle">เชื่อมต่อบริการอย่างน้อยหนึ่งรายการเพื่อเข้าสู่ Rhythm ไปที่การนำทางแบบสตรีม</string>
     <string name="streaming_settings_title">การตั้งค่า</string>
     <string name="streaming_settings_group_services">บริการ</string>
-    <string name="streaming_settings_group_network">เครือข่ายและการเล่น</string>
     <string name="streaming_settings_group_actions">การกระทำ</string>
     <string name="streaming_settings_preferred_service">บริการที่ต้องการ</string>
     <string name="streaming_settings_quality">คุณภาพการสตรีม</string>
@@ -2750,8 +1747,6 @@
     <string name="streaming_quality_normal_desc">คุณภาพและการใช้ข้อมูลที่สมดุล (~ 160 kbps)</string>
     <string name="streaming_quality_high_desc">เสียงคุณภาพสูง (~ 320 kbps)</string>
     <string name="streaming_quality_lossless_desc">คุณภาพดีที่สุดที่รองรับ (FLAC/ALAC)</string>
-    <string name="streaming_settings_offline_mode">โหมดออฟไลน์</string>
-    <string name="streaming_settings_offline_mode_desc">เล่นแทร็กที่ดาวน์โหลดเมื่อเปิดใช้งาน</string>
     <string name="streaming_settings_group_wellbeing">Rhythm ข้อมูลเชิงลึก</string>
     <string name="streaming_open_full_settings">เปิดการตั้งค่าแบบเต็ม</string>
     <string name="streaming_open_full_settings_desc">เปิดการตั้งค่าทั้งแอปที่แชร์ระหว่างโหมด</string>
@@ -2762,18 +1757,14 @@
     <string name="streaming_status_connected">เชื่อมต่อบัญชีแล้ว</string>
     <string name="streaming_status_not_connected">รอการตรวจสอบสิทธิ์</string>
     <string name="streaming_status_loading">ฟีดสตรีมมิ่งที่รีเฟรช…</string>
-    <string name="streaming_status_ready">พร้อมกำหนดค่าและเชื่อมต่อ</string>
     <string name="streaming_status_badge_connected">เชื่อมต่อแล้ว</string>
     <string name="streaming_status_badge_pending">รอดำเนินการ</string>
     <string name="streaming_status_badge_refreshing">สดชื่น</string>
     <string name="streaming_status_connect_hint">จัดการบริการที่เลือกด้านล่างเพื่อเชื่อมต่อบัญชีของคุณ</string>
-    <string name="streaming_service_setup_coming_soon">%1$s กำลังดำเนินการตั้งค่า</string>
     <string name="streaming_selected">เลือกแล้ว</string>
     <string name="streaming_connect">เชื่อมต่อ</string>
     <string name="streaming_manage">จัดการ</string>
     <string name="streaming_manage_service">จัดการบริการที่เลือก</string>
-    <string name="streaming_service_setup_title">%1$s ตั้งค่า</string>
-    <string name="streaming_service_setup_subtitle">เชื่อมต่อบัญชีของคุณเพื่อเริ่มการสตรีมใน Rhythm Go</string>
     <string name="streaming_service_setup_server_url">URL เซิร์ฟเวอร์</string>
     <string name="streaming_service_setup_server_url_hint">https://your-server.example.com</string>
     <string name="streaming_service_setup_server_url_supporting">จำเป็นสำหรับผู้ให้บริการที่ต้องการที่อยู่เซิร์ฟเวอร์</string>
@@ -2789,86 +1780,34 @@
     <string name="streaming_service_setup_reconnect">เชื่อมต่อใหม่</string>
     <string name="streaming_service_setup_disconnect">ตัดการเชื่อมต่อ</string>
     <string name="streaming_service_setup_connected_as">เชื่อมต่อเป็น %1$s</string>
-    <string name="streaming_dashboard_subtitle">กำลังแสดงเนื้อหาสตรีมมิ่งสำหรับ %1$s</string>
     <string name="streaming_home_selected_service_unavailable">บริการที่เลือกไม่ได้เชื่อมต่อ</string>
     <string name="streaming_home_connect_selected_service">เชื่อมต่อ %1$s เพื่อโหลดหน้าแรกและการค้นหา</string>
-    <string name="streaming_home_open_settings">เปิดการตั้งค่าการสตรีม</string>
-    <string name="streaming_home_connected_service">บริการที่เชื่อมต่อ: %1$s</string>
-    <string name="streaming_home_for_service">สำหรับ %1$s</string>
-    <string name="streaming_home_section_fixed_hint">ปักหมุดไว้ที่ด้านบน</string>
-    <string name="streaming_home_widget_greeting_subtitle">เชื่อมต่อกับ %1$s</string>
-    <string name="streaming_home_widget_recently_played_subtitle">ต่อจาก %1$s เซสชัน</string>
-    <string name="streaming_home_widget_recommended_title">ค้นพบ</string>
-    <string name="streaming_home_widget_recommended_subtitle">ค้นพบสิ่งที่คัดสรรจาก %1$s</string>
     <string name="streaming_home_widget_recommended_empty">ยังไม่มีอะไรให้ค้นพบ</string>
     <string name="streaming_home_widget_new_releases_title">ออกใหม่</string>
     <string name="streaming_home_widget_new_releases_subtitle">อัลบั้มที่เพิ่มล่าสุดจาก %1$s</string>
     <string name="streaming_home_widget_new_releases_empty">ไม่มีการออกใหม่</string>
-    <string name="streaming_home_widget_playlists_title">เพลย์ลิสต์เด่น</string>
-    <string name="streaming_home_widget_playlists_subtitle">เพลย์ลิสต์คัดสรรจาก %1$s</string>
-    <string name="streaming_home_widget_playlists_empty">ไม่พบเพลย์ลิสต์เด่น</string>
     <string name="streaming_home_widget_empty_hint">การดำเนินการนี้อาจใช้เวลาสักครู่หลังจากที่คุณเชื่อมต่อหรือรีเฟรช</string>
     <string name="streaming_library_syncing">กำลังโหลดฟีดสตรีมมิ่งของคุณ…</string>
     <string name="streaming_library_empty">ยังไม่มีเนื้อหาในห้องสมุด</string>
     <string name="streaming_home_no_content_title">ยังไม่มีเนื้อหาเกี่ยวกับบ้าน</string>
     <string name="streaming_home_no_content_hint">ลองรีเฟรชหลังจากที่บริการของคุณซิงค์เสร็จแล้ว</string>
     <string name="streaming_home_widget_playlist_track_count">%1$d เพลง</string>
-    <string name="streaming_library_overview_title">%1$s ห้องสมุด</string>
-    <string name="streaming_library_overview_stats">%1$d เพลง · %2$d อัลบั้ม · %3$d ศิลปิน · %4$d เพลย์ลิสต์</string>
-    <string name="streaming_library_play_all">เล่นเพลงทั้งหมด</string>
     <string name="streaming_home_guard_break_active">หยุดทำงาน: %1$s เหลือ</string>
     <string name="streaming_home_guard_exposure">วันนี้: %1$d / %2$d นาที</string>
-    <string name="streaming_search_subtitle">การค้นหากำหนดขอบเขตไว้ที่ %1$s</string>
-    <string name="streaming_search_discovery_title">ค้นพบจาก %1$s</string>
-    <string name="streaming_search_hint">ค้นหาเพลง ศิลปิน หรืออัลบั้ม</string>
-    <string name="streaming_search_unavailable_title">การค้นหาไม่พร้อมใช้งาน</string>
-    <string name="streaming_search_suggestions_title">คำแนะนำการบริการ</string>
-    <string name="streaming_search_results_empty">ยังไม่มีผลลัพธ์จาก %1$s กำลังโหลดการรวมระบบ</string>
     <string name="streaming_not_selected">ไม่ได้เลือก</string>
     <string name="streaming_service_subsonic">เปรี้ยงปร้าง</string>
     <string name="streaming_service_subsonic_desc">เชื่อมต่อ Navidrome และเซิร์ฟเวอร์ Subsonic ที่เข้ากันได้</string>
     <string name="streaming_service_jellyfin">เจลลี่ฟิน</string>
     <string name="streaming_service_jellyfin_desc">สตรีมจากไลบรารี Jellyfin ส่วนตัวของคุณ</string>
-    <string name="streaming_service_netease_cloud_music">เพลงคลาวด์ของ Netease</string>
-    <string name="streaming_service_netease_cloud_music_desc">ลงชื่อเข้าใช้และสตรีมคอลเลคชันเพลงบนคลาวด์ของคุณ</string>
-    <string name="streaming_service_qq_music">เพลง QQ</string>
-    <string name="streaming_service_qq_music_desc">ลงชื่อเข้าใช้และสตรีมเนื้อหา QQ Music ของคุณ</string>
-    <string name="settings_developer_debugging">นักพัฒนาและการดีบัก</string>
-    <string name="settings_codec_monitoring">การตรวจสอบตัวแปลงสัญญาณ</string>
-    <string name="settings_codec_monitoring_desc">บันทึกตัวแปลงสัญญาณเสียงและข้อมูลรูปแบบสำหรับการดีบัก ดูใน Logcat พร้อมแท็ก \'CodecMonitor\'</string>
-    <string name="settings_audio_device_logging">การบันทึกอุปกรณ์เสียง</string>
-    <string name="settings_audio_device_logging_desc">บันทึกการเปลี่ยนแปลงอุปกรณ์เสียง (บลูทูธ หูฟัง ฯลฯ)</string>
-    <string name="settings_launch_onboarding">เปิดตัว Rhythm ทัวร์</string>
-    <string name="settings_launch_onboarding_desc">รีเซ็ตและเปิดประสบการณ์ Rhythm ทัวร์อีกครั้ง</string>
-    <string name="settings_test_crash">การทดสอบข้อขัดข้อง</string>
-    <string name="settings_test_crash_desc">บังคับให้แอปขัดข้องเพื่อทดสอบการจัดการและการรายงานข้อขัดข้อง</string>
-    <string name="settings_music_mode_dialog_desc">เลือกแหล่งเพลงของคุณ</string>
-    <string name="settings_local_files">ไฟล์ในเครื่อง</string>
-    <string name="settings_local_files_desc">เล่นเพลงจากที่เก็บข้อมูลอุปกรณ์ของคุณ</string>
-    <string name="settings_streaming_services">บริการสตรีมมิ่ง</string>
-    <string name="settings_streaming_services_desc">สตรีมจาก Spotify และอื่นๆ (เร็วๆ นี้)</string>
-    <string name="settings_note">หมายเหตุ</string>
 
     <!-- Backup &amp; Restore -->
     <string name="settings_backup_restore">สำรองและกู้คืน</string>
-    <string name="settings_backup_never">ไม่เคย</string>
-    <string name="settings_backup_auto_enabled">เปิดใช้งาน</string>
-    <string name="settings_backup_auto_manual">คู่มือ</string>
-    <string name="settings_backup_group_settings">การตั้งค่า</string>
     <string name="settings_auto_backup">สำรองข้อมูลอัตโนมัติ</string>
     <string name="settings_auto_backup_desc">สำรองข้อมูลการตั้งค่าอัตโนมัติทุกสัปดาห์</string>
-    <string name="settings_backup_actions">การดำเนินการสำรองข้อมูล</string>
-    <string name="settings_create_backup_file">สร้างการสำรองข้อมูลไปยังไฟล์</string>
-    <string name="settings_create_backup_file_desc">ส่งออกการสำรองข้อมูลทั้งหมดไปยังไฟล์ JSON</string>
-    <string name="settings_restore_actions">คืนค่าการดำเนินการ</string>
     <string name="settings_restore_clipboard">กู้คืนจากคลิปบอร์ด</string>
     <string name="settings_restore_clipboard_desc">นำเข้าข้อมูลสำรองจากคลิปบอร์ด</string>
     <string name="settings_restore_file">กู้คืนจากไฟล์</string>
     <string name="settings_restore_file_desc">นำเข้าข้อมูลสำรองจากไฟล์ JSON</string>
-    <string name="settings_backup_success_title">สร้างการสำรองข้อมูลสำเร็จ</string>
-    <string name="settings_backup_success_message">การสำรองข้อมูล Rhythm ของคุณเสร็จสมบูรณ์แล้ว รวมถึง:\n\n• การตั้งค่าและการตั้งค่าแอปทั้งหมด\n• การกำหนดค่าไลบรารี\n• การปรับแต่งธีม\n\nข้อมูลสำรองได้รับการบันทึกแล้วและยังคัดลอกไปยังคลิปบอร์ดของคุณเพื่อให้แชร์ได้ง่าย</string>
-    <string name="settings_restore_success_title">การคืนค่าเสร็จสมบูรณ์</string>
-    <string name="settings_restore_success_message">ข้อมูล Rhythm ของคุณได้รับการกู้คืนสำเร็จแล้ว รวมถึง:\n\n• การตั้งค่าและการตั้งค่าแอปทั้งหมด\n• การกำหนดค่าไลบรารี\n• การปรับแต่งธีม\n\nโปรดรีสตาร์ทแอปเพื่อให้การเปลี่ยนแปลงทั้งหมดมีผลสมบูรณ์</string>
     <string name="settings_restart_now">รีสตาร์ททันที</string>
 
     <!-- Library Tab Order -->
@@ -2883,41 +1822,28 @@
     <string name="settings_move_down">เลื่อนลง</string>
 
     <!-- Gestures Settings -->
-    <string name="settings_gestures_header">ท่าทาง</string>
-    <string name="settings_gestures_mini_player">เครื่องเล่นขนาดเล็ก</string>
     <string name="settings_swipe_gestures">ท่าทางปัด</string>
     <string name="settings_swipe_gestures_desc">ปัดขึ้น/ลงเพื่อเปิด/ปิด ซ้าย/ขวาเพื่อข้ามแทร็ก</string>
-    <string name="settings_gestures_full_player">ผู้เล่นเต็ม</string>
     <string name="settings_swipe_down_dismiss">ปัดลงเพื่อปิด</string>
     <string name="settings_swipe_down_dismiss_desc">ปิดเครื่องเล่นโดยปัดลงบนหน้าจอ</string>
     <string name="settings_swipe_artwork_tracks">ปัดอาร์ตเวิร์กสำหรับแทร็ก</string>
     <string name="settings_swipe_artwork_tracks_desc">ปัดไปทางซ้าย/ขวาบนปกอัลบั้มเพื่อข้ามแทร็ก</string>
     <string name="settings_double_tap_artwork">งานศิลปะการแตะสองครั้ง</string>
     <string name="settings_double_tap_artwork_desc">แตะสองครั้งที่ปกอัลบั้มเพื่อเล่น/หยุดชั่วคราว</string>
-    <string name="settings_gesture_tip_swipe_up">ปัดขึ้นบนมินิเพลเยอร์เพื่อเปิดผู้เล่นแบบเต็ม</string>
-    <string name="settings_gesture_tip_swipe_down">ปัดลงบนเครื่องเล่นขนาดเล็กหรือเครื่องเล่นแบบเต็มเพื่อปิด</string>
-    <string name="settings_gesture_tip_double_tap">แตะสองครั้งเพื่อเล่น/หยุดชั่วคราว</string>
-    <string name="settings_gesture_tip_disable">ปิดการใช้งานท่าทางที่ไม่ได้ใช้เพื่อให้ตอบสนองเร็วขึ้น</string>
 
     <!-- MiniPlayer Customization -->
     <string name="settings_miniplayer_header">มินิเพลเยอร์</string>
     <string name="settings_show_progress">แสดงความคืบหน้า</string>
     <string name="settings_show_progress_desc">แสดงตัวบ่งชี้ความคืบหน้า</string>
     <string name="settings_progress_mode">โหมดความคืบหน้า</string>
-    <string name="settings_progress_mode_desc">เลือกรูปแบบตัวบ่งชี้ความคืบหน้า</string>
-    <string name="settings_progress_linear">เชิงเส้น</string>
-    <string name="settings_progress_circular">หนังสือเวียน</string>
-    <string name="settings_progress_style">รูปแบบความคืบหน้า</string>
     <string name="settings_show_artwork">แสดงอาร์ตเวิร์ก</string>
     <string name="settings_show_artwork_desc">แสดงปกอัลบั้ม</string>
     <string name="settings_show_time">เวลาแสดง</string>
     <string name="settings_show_time_desc">แสดงเวลาการเล่น</string>
     <string name="settings_tablet_layout">เค้าโครงแท็บเล็ตบนโทรศัพท์</string>
     <string name="settings_tablet_layout_desc">ใช้มินิเพลเยอร์แบบแท็บเล็ตบนโทรศัพท์</string>
-    <string name="settings_miniplayer_info">ปรับแต่งเครื่องเล่นขนาดกะทัดรัดที่ปรากฏที่ด้านล่างของหน้าจอ</string>
 
     <!-- Player Customization -->
-    <string name="settings_player_header">ผู้เล่น</string>
     <string name="settings_chip_order">ลำดับชิปและการมองเห็น</string>
     <string name="settings_chip_order_desc">ปรับแต่งและจัดลำดับชิปการกระทำของผู้เล่นใหม่</string>
     <string name="settings_artwork_overlay">ภาพซ้อนทับอาร์ตเวิร์ก</string>
@@ -2931,31 +1857,16 @@
     <string name="settings_show_lyrics_player_desc">แสดงเนื้อเพลงที่ซิงโครไนซ์ในเครื่องเล่น</string>
     <string name="settings_lyrics_transition">การเปลี่ยนแปลงเนื้อเพลง</string>
     <string name="settings_lyrics_transition_desc">Art ↔ เนื้อเพลงสลับแอนิเมชั่น</string>
-    <string name="settings_transition_slide">สไลด์</string>
-    <string name="settings_transition_fade">จาง</string>
-    <string name="settings_transition_scale">สเกล</string>
-    <string name="settings_transition_up">ขึ้น</string>
     <string name="settings_lyrics_text_size">ขนาดตัวอักษรเนื้อเพลง</string>
-    <string name="settings_lyrics_text_size_value">ขนาด: %1$d%%</string>
-    <string name="settings_lyrics_size_min">50%%</string>
-    <string name="settings_lyrics_size_max">200%%</string>
     <string name="settings_lyrics_alignment">การจัดตำแหน่งเนื้อเพลง</string>
     <string name="settings_lyrics_alignment_desc">การจัดตำแหน่งข้อความแนวนอน</string>
-    <string name="settings_align_left">ซ้าย</string>
-    <string name="settings_align_center">เซ็นเตอร์</string>
-    <string name="settings_align_right">ขวา</string>
     <string name="settings_show_art_below_lyrics">แสดงศิลปะด้านล่างเนื้อเพลง</string>
     <string name="settings_show_art_below_lyrics_desc">แสดงภาพใต้เนื้อเพลงซ้อนทับ</string>
     <string name="settings_seek_buttons">ปุ่มค้นหา</string>
     <string name="settings_seek_buttons_desc">แสดงปุ่มข้ามไปข้างหน้า/ย้อนกลับ 10 วินาที</string>
-    <string name="settings_text_align_left">จัดชิดซ้าย</string>
-    <string name="settings_text_align_right">จัดชิดขวา</string>
-    <string name="settings_text_align_center">จัดกึ่งกลาง</string>
     <string name="settings_thumb_style">รูปแบบนิ้วหัวแม่มือ</string>
-    <string name="settings_player_screen_desc">ปรับแต่งประสบการณ์ผู้เล่นของคุณด้วยรูปแบบชิปที่กำหนดเอง เอฟเฟ็กต์ภาพ และการตั้งค่าการแสดงผล</string>
 
     <!-- Theme Customization -->
-    <string name="settings_theme_header">ธีม</string>
     <string name="settings_display_mode">โหมดการแสดงผล</string>
     <string name="settings_theme_mode">โหมดธีม</string>
     <string name="settings_theme_mode_desc">เลือกธีมที่คุณต้องการ</string>
@@ -2975,16 +1886,12 @@
     <string name="settings_font_source">แหล่งที่มาของแบบอักษร</string>
     <string name="settings_font_source_system">แบบอักษรของระบบ - %1$s</string>
     <string name="settings_font_source_custom">แบบอักษรที่กำหนดเอง - %1$s</string>
-    <string name="settings_font_not_imported">ไม่ได้นำเข้า</string>
     <string name="settings_font_selection">การเลือกแบบอักษร</string>
     <string name="settings_font_selection_desc">เลือกจากตัวเลือกแบบอักษรในตัว</string>
     <string name="settings_system_font_only">ใช้ได้เฉพาะกับแหล่งแบบอักษรของระบบเท่านั้น</string>
     <string name="settings_import_custom_font">นำเข้าแบบอักษรที่กำหนดเอง</string>
     <string name="settings_font_imported_name">นำเข้า: %1$s</string>
     <string name="settings_import_font_desc">นำเข้าไฟล์ฟอนต์ของคุณเอง (.ttf, .otf)</string>
-    <string name="settings_font_imported">นำเข้าแบบอักษรสำเร็จแล้ว</string>
-    <string name="settings_font_invalid">รูปแบบไฟล์ฟอนต์ไม่ถูกต้อง</string>
-    <string name="settings_font_import_failed">ไม่สามารถนำเข้าไฟล์ฟอนต์</string>
     <string name="settings_festive_themes">ธีมงานรื่นเริง</string>
     <string name="settings_enable_festive">เปิดใช้งานธีมเทศกาล</string>
     <string name="settings_enable_festive_desc">แสดงการตกแต่งตามเทศกาลทั่วทั้งแอป</string>
@@ -2993,13 +1900,8 @@
     <string name="settings_theme_system">__ระบบ TXT__</string>
     <string name="settings_theme_light">แสง</string>
     <string name="settings_theme_dark">มืด</string>
-    <string name="settings_festive_settings">การตั้งค่าธีมงานรื่นเริง</string>
     <string name="settings_festival_christmas">คริสต์มาส</string>
     <string name="settings_festival_new_year">ปีใหม่</string>
-    <string name="settings_festival_halloween">วันฮาโลวีน</string>
-    <string name="settings_festival_valentines">วันวาเลนไทน์</string>
-    <string name="settings_festival_diwali">ดิวาลี</string>
-    <string name="settings_snowflake_area">พื้นที่แสดงเกล็ดหิมะ</string>
     <string name="settings_area_full">เต็ม</string>
     <string name="settings_area_sides">ด้านข้าง</string>
     <string name="settings_area_top_third">อันดับสูงสุด ⅓</string>
@@ -3014,63 +1916,29 @@
 
     <!-- Crash Log History -->
     <string name="settings_crash_log_details">รายละเอียดบันทึกข้อขัดข้อง</string>
-    <string name="settings_no_log_details">ไม่มีรายละเอียดบันทึก</string>
     <string name="settings_log_copied">คัดลอกบันทึกไปยังคลิปบอร์ด</string>
     <string name="settings_copy_log">คัดลอกบันทึก</string>
     <string name="settings_clear_all_logs">ล้างบันทึกทั้งหมด</string>
-    <string name="settings_no_details">ไม่มีรายละเอียด</string>
 
     <!-- Home Screen Customization -->
-    <string name="settings_home_header">หน้าแรก</string>
-    <string name="settings_always_collapsed">เริ่มยุบเสมอ</string>
-    <string name="settings_always_collapsed_desc">เริ่มหน้าจอทั้งหมดโดยยุบส่วนหัว</string>
-    <string name="settings_header_display_desc">เลือกสิ่งที่จะแสดงในส่วนหัว</string>
-    <string name="settings_header_icon">ไอคอน</string>
-    <string name="settings_header_name">ชื่อ</string>
-    <string name="settings_header_both">ทั้งสอง</string>
     <string name="settings_visibility_desc">เมื่อใดจะแสดง %1$s ในส่วนหัว</string>
-    <string name="settings_visibility_always">เสมอ</string>
-    <string name="settings_visibility_expanded">ขยาย</string>
-    <string name="settings_visibility_collapsed">ยุบ</string>
-    <string name="settings_greeting">สวัสดี</string>
-    <string name="settings_show_greeting">แสดงคำทักทาย</string>
-    <string name="settings_show_greeting_desc">แสดงคำทักทายและค้นพบส่วนหัวของส่วน</string>
-    <string name="settings_section_order">ลำดับส่วนและการมองเห็น</string>
-    <string name="settings_reorder_sections">เรียงลำดับใหม่และสลับส่วน</string>
-    <string name="settings_reorder_sections_desc">ปรับแต่งเค้าโครงหน้าจอหลัก</string>
-    <string name="settings_recently_played">เพิ่งเล่น</string>
     <string name="settings_top_artists">ศิลปินยอดนิยม</string>
     <string name="settings_new_releases">ออกใหม่</string>
     <string name="settings_recently_added">เพิ่มล่าสุด</string>
     <string name="settings_recommended">แนะนำ</string>
     <string name="settings_carousel_style_desc">เลือกวิธีแสดงอัลบั้ม</string>
     <string name="settings_carousel_default">ค่าเริ่มต้น</string>
-    <string name="settings_carousel_hero">ฮีโร่</string>
-    <string name="settings_auto_scroll">เลื่อนอัตโนมัติ</string>
 
     <!-- Expressive Shapes -->
-    <string name="settings_shapes_header">รูปร่าง</string>
-    <string name="settings_shapes_enabled">รูปร่างที่แสดงออก</string>
-    <string name="settings_shapes_enabled_desc">ใช้รูปทรงโค้งมนแบบออร์แกนิกทั่วแอป</string>
-    <string name="settings_shapes_preset">ตั้งค่ารูปร่างล่วงหน้า</string>
-    <string name="settings_shapes_preset_desc">เลือกรูปแบบรูปร่างที่ทำไว้ล่วงหน้า</string>
-    <string name="settings_shapes_individual">รูปร่างส่วนบุคคล</string>
     <string name="settings_shapes_album_art">หน้าปกอัลบั้ม</string>
-    <string name="settings_shapes_player_art">ศิลปะของผู้เล่น</string>
-    <string name="settings_shapes_song_art">เพลงศิลปะ</string>
-    <string name="settings_shapes_playlist_art">ศิลปะเพลย์ลิสต์</string>
-    <string name="settings_shapes_artist_art">ศิลปะของศิลปิน</string>
     <string name="settings_shapes_player_controls">การควบคุมผู้เล่น</string>
     <string name="settings_shapes_mini_player">เครื่องเล่นขนาดเล็ก</string>
 
     <!-- Lyrics Source -->
-    <string name="settings_lyrics_source_header">แหล่งที่มาของเนื้อเพลง</string>
 
     <!-- API Management / Integrations -->
-    <string name="settings_integrations_header">บูรณาการ</string>
 
     <!-- Settings Screen -->
-    <string name="settings_header_title">การตั้งค่า</string>
     <string name="settings_shapes">รูปร่าง</string>
     <string name="settings_shapes_desc">รูปร่างที่แสดงออก</string>
     <string name="settings_skip_silence">ข้ามความเงียบ</string>
@@ -3113,8 +1981,6 @@
 
 
     <!-- Experimental Features Search Strings -->
-    <string name="settings_exp_music_mode">โหมดเพลง</string>
-    <string name="settings_exp_music_mode_desc">ไฟล์ในเครื่องหรือการสตรีม</string>
     <string name="settings_exp_festive_theme">ธีมรื่นเริง</string>
     <string name="settings_exp_festive_theme_desc">ของประดับตกแต่งตามเทศกาล</string>
     <string name="settings_exp_auto_detect_holidays">ตรวจจับวันหยุดอัตโนมัติ</string>
@@ -3129,16 +1995,10 @@
     <string name="settings_exp_launch_onboarding_desc">เปิดตัวอีกครั้ง Rhythm ทัวร์</string>
     <string name="settings_exp_test_crash">การทดสอบข้อขัดข้อง</string>
     <string name="settings_exp_test_crash_desc">บังคับให้แอปขัดข้อง</string>
-    <string name="settings_scrobbling_enabled">เปิดใช้งาน Scrobbling</string>
-    <string name="settings_scrobbling_enabled_desc">บูรณาการ Last.fm</string>
-    <string name="settings_discord_enabled_search">เปิดใช้งาน Discord Rich Presence</string>
-    <string name="settings_discord_enabled_search_desc">สถานะกิจกรรมที่ไม่ลงรอยกัน</string>
     <string name="settings_broadcast_status_enabled">เปิดใช้งานการถ่ายทอดสถานะ</string>
     <string name="settings_broadcast_status_enabled_desc">สถานะการเล่นแบบออกอากาศ</string>
     <string name="settings_bluetooth_lyrics_enabled">โหมดเนื้อเพลงบลูทูธ</string>
     <string name="settings_bluetooth_lyrics_enabled_desc">ออกอากาศเนื้อเพลงปัจจุบันผ่านข้อมูลเมตาของ Bluetooth</string>
-    <string name="settings_exp_cellular_streaming">อนุญาตการสตรีมผ่านมือถือ</string>
-    <string name="settings_exp_cellular_streaming_desc">การสตรีมข้อมูลมือถือ</string>
     <string name="exp_go_mode">ไปโหมด</string>
     <string name="exp_go_mode_desc">เปลี่ยนเป็น Rhythm ไปที่โหมดสตรีมมิ่ง</string>
 
@@ -3155,12 +2015,6 @@
     <string name="settings_home_carousel_auto_scroll_desc">ม้าหมุนเลื่อนอัตโนมัติ</string>
 
     <!-- Notifications Search Strings -->
-    <string name="settings_notifications_custom">การแจ้งเตือนที่กำหนดเอง</string>
-    <string name="settings_notifications_custom_desc">สไตล์ที่กำหนดเองสำหรับการควบคุม</string>
-    <string name="settings_notifications_update_available">อัปเดตการแจ้งเตือนที่มีอยู่</string>
-    <string name="settings_notifications_update_available_desc">แจ้งเตือนเมื่อมีแอปเวอร์ชันใหม่ให้ใช้งาน</string>
-    <string name="settings_notifications_update_status">อัปเดตสถานะการแจ้งเตือน</string>
-    <string name="settings_notifications_update_status_desc">การแจ้งเตือนผลการตรวจสอบประวัติ</string>
     <string name="settings_notifications_rhythm_guard_alerts">Rhythm การแจ้งเตือนความปลอดภัยของเจ้าหน้าที่</string>
     <string name="settings_notifications_rhythm_guard_alerts_desc">แจ้งเตือนเมื่อมีการเรียกใช้คำเตือนความเสี่ยงในการฟัง</string>
     <string name="settings_notifications_rhythm_guard_timers">Rhythm ตัวตั้งเวลาหยุดยาม</string>
@@ -3224,7 +2078,6 @@
     <string name="settings_embed_lyrics_in_file">ฝังเนื้อเพลงในไฟล์</string>
     <string name="settings_embed_lyrics_in_file_desc">เขียนเนื้อเพลงลงในข้อมูลเมตาของไฟล์เสียงโดยตรง</string>
     <string name="settings_playback_pitch">ระยะการเล่น</string>
-    <string name="settings_playback_pitch_desc">ปรับระดับเสียงให้เป็นอิสระจากความเร็ว</string>
 
     <string name="settings_player_gradient">การซ้อนทับแบบไล่ระดับสี</string>
     <string name="settings_player_gradient_desc">แสดงการซ้อนทับแบบไล่ระดับสีบนปกอัลบั้ม</string>
@@ -3260,12 +2113,6 @@
 
     <!-- Library Screen scanning overlay -->
     <string name="settings_scanning">กำลังสแกน</string>
-    <string name="scan_songs">กำลังสแกนเพลง…</string>
-    <string name="scan_albums">กำลังประมวลผลอัลบั้ม…</string>
-    <string name="scan_artists">กำลังประมวลผลศิลปิน…</string>
-    <string name="scan_genres">กำลังตรวจจับแนวเพลง…</string>
-    <string name="scan_media">กำลังสแกนสื่อ…</string>
-    <string name="scan_progress">%1$d / %2$d</string>
 
     <!-- Settings Search -->
     <string name="search_settings_hint">ค้นหา Rhythm การตั้งค่า…</string>
@@ -3278,30 +2125,17 @@
     <string name="exp_audio_device_logging">การบันทึกอุปกรณ์เสียง</string>
     <string name="exp_audio_device_logging_desc">บันทึกการเปลี่ยนแปลงอุปกรณ์เสียง (บลูทูธ หูฟัง ฯลฯ)</string>
     <string name="exp_cellular_streaming">อนุญาตการสตรีมผ่านมือถือ</string>
-    <string name="exp_cellular_streaming_desc">สตรีมเพลงผ่านข้อมูลมือถือ</string>
-    <string name="exp_choose_music_source">เลือกแหล่งเพลงของคุณ</string>
     <string name="exp_codec_monitoring">การตรวจสอบตัวแปลงสัญญาณ</string>
     <string name="exp_codec_monitoring_desc">บันทึกตัวแปลงสัญญาณเสียงและข้อมูลรูปแบบสำหรับการดีบัก</string>
     <string name="exp_developer_debugging">นักพัฒนาและการดีบัก</string>
     <string name="exp_launch_onboarding">เปิดตัว Rhythm ทัวร์</string>
     <string name="exp_launch_onboarding_desc">รีเซ็ตและเปิดประสบการณ์ Rhythm ทัวร์อีกครั้ง</string>
-    <string name="exp_local_files">ไฟล์ในเครื่อง</string>
-    <string name="exp_local_files_desc">ไฟล์ในเครื่องจากอุปกรณ์</string>
-    <string name="exp_music_mode">โหมดเพลง</string>
-    <string name="exp_music_source">แหล่งเพลง</string>
-    <string name="exp_note">หมายเหตุ</string>
-    <string name="exp_streaming_coming_soon">คุณสมบัติการสตรีมจะมาเร็ว ๆ นี้</string>
-    <string name="exp_streaming_desc">บริการสตรีมมิ่ง (เร็วๆ นี้)</string>
-    <string name="exp_streaming_services">บริการสตรีมมิ่ง</string>
     <string name="exp_test_crash">การทดสอบข้อขัดข้อง</string>
     <string name="exp_test_crash_desc">บังคับให้แอปขัดข้องเพื่อทดสอบการจัดการและการรายงานข้อขัดข้อง</string>
     <string name="exp_force_player_compact_mode">โหมดกระชับผู้เล่นบังคับ</string>
     <string name="exp_force_player_compact_mode_desc">บังคับให้หน้าจอเครื่องเล่นใช้โหมดกะทัดรัด</string>
     <string name="exp_third_party_integrations">การบูรณาการของบุคคลที่สาม</string>
     <string name="settings_backup_created">สร้างการสำรองข้อมูลสำเร็จ</string>
-    <string name="settings_backup_created_body">การสำรองข้อมูล Rhythm ของคุณเสร็จสมบูรณ์แล้ว</string>
-    <string name="settings_backup_enabled">เปิดใช้งาน</string>
-    <string name="settings_backup_manual">คู่มือ</string>
     <string name="settings_backup_settings">การตั้งค่า</string>
     <string name="settings_center_aligned">จัดกึ่งกลาง</string>
     <string name="settings_choose_progress_style">เลือกรูปแบบตัวบ่งชี้ความคืบหน้า</string>
@@ -3313,7 +2147,6 @@
     <string name="settings_left_aligned">จัดชิดซ้าย</string>
     <string name="settings_player">ผู้เล่น</string>
     <string name="settings_restore_completed">การคืนค่าเสร็จสมบูรณ์</string>
-    <string name="settings_restore_completed_body">กู้คืนข้อมูล Rhythm ของคุณสำเร็จแล้ว</string>
     <string name="settings_right_aligned">จัดชิดขวา</string>
     <string name="settings_tab_order">ลำดับแท็บไลบรารี</string>
 
@@ -3323,24 +2156,14 @@
     <string name="settings_home_screen">หน้าแรก</string>
     <string name="settings_lyrics_source">เนื้อเพลง</string>
     <string name="settings_theme">ธีม</string>
-    <string name="theme_amoled">ธีม OLED</string>
-    <string name="theme_amoled_desc">ธีมสีดำล้วนสำหรับจอแสดงผล OLED</string>
     <string name="theme_auto_detect">ตรวจจับวันหยุดอัตโนมัติ</string>
-    <string name="theme_auto_detect_desc">แสดงการตกแต่งสำหรับวันหยุดโดยอัตโนมัติ</string>
-    <string name="theme_color_customization">การปรับแต่งสี</string>
     <string name="theme_colors_applied">ใช้สีที่กำหนดเองแล้ว!</string>
-    <string name="theme_display_mode">โหมดการแสดงผล</string>
     <string name="theme_enable_festive">เปิดใช้งานธีมเทศกาล</string>
-    <string name="theme_enable_festive_desc">แสดงการตกแต่งตามเทศกาลทั่วทั้งแอป</string>
     <string name="theme_festive_settings">การตั้งค่าธีมงานรื่นเริง</string>
-    <string name="theme_festive_themes">ธีมงานรื่นเริง</string>
-    <string name="theme_font_customization">การปรับแต่งแบบอักษร</string>
     <string name="theme_font_import_failed">ไม่สามารถนำเข้าไฟล์ฟอนต์</string>
     <string name="theme_font_imported">นำเข้าแบบอักษรสำเร็จแล้ว</string>
     <string name="theme_font_invalid">รูปแบบไฟล์ฟอนต์ไม่ถูกต้อง</string>
     <string name="theme_import_font">นำเข้าแบบอักษรที่กำหนดเอง</string>
-    <string name="theme_mode">โหมดธีม</string>
-    <string name="theme_mode_desc">เลือกธีมที่คุณต้องการ</string>
     <string name="ui_apply">สมัคร</string>
 
     <string name="crashactivity_uh_oh_looks_like">เอ่อ! ดูเหมือน Rhythm จะโดนโน้ตเปรี้ยวๆ นะ!</string>
@@ -3411,7 +2234,6 @@
     <string name="explorertabcontent_add_all_to_queue">เพิ่มทั้งหมดลงในคิว</string>
     <string name="homescreen_view_all_stats">ดูสถิติทั้งหมด</string>
     <string name="homescreen_plays">เล่น</string>
-    <string name="libraryscreen_shuffle_selected">เลือกสุ่มแล้ว</string>
     <string name="libraryscreen_more_actions">การดำเนินการเพิ่มเติม</string>
     <string name="libraryscreen_shuffle_artists">ศิลปินสุ่ม</string>
     <string name="libraryscreen_clear_selection">ล้างการเลือก</string>
@@ -3420,7 +2242,6 @@
     <string name="onboardingscreen_enable_festive_decorations_and">เปิดใช้งานการตกแต่งตามเทศกาลและธีมตามฤดูกาล</string>
     <string name="onboardingscreen_interaction">การโต้ตอบ</string>
     <string name="onboardingscreen_choose_your_playback_mode">เลือกโหมดการเล่นของคุณ</string>
-    <string name="onboardingscreen_select_how_youd_like">เลือกวิธีที่คุณต้องการสัมผัสประสบการณ์เพลงของคุณ คุณสามารถเปลี่ยนแปลงได้ตลอดเวลาในการตั้งค่า</string>
     <string name="onboardingscreen_local_offline_player">ผู้เล่นออฟไลน์ในพื้นที่</string>
     <string name="onboardingscreen_play_audio_files_stored">เล่นไฟล์เสียงที่จัดเก็บไว้ในอุปกรณ์ของคุณโดยตรง รองรับการสแกนไดเร็กทอรีท้องถิ่นขั้นสูง สถิติ และการจับคู่ธีม</string>
     <string name="onboardingscreen_rhythm_go_streaming">Rhythm ไปกันเลย! (สตรีมมิ่ง)</string>
@@ -3462,19 +2283,8 @@
     <string name="streamingsettingsscreen_streaming_restricted">จำกัดการสตรีม</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">ไม่สามารถเล่นถัดไป: ไม่สามารถแก้ไข URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">ไม่สามารถเพิ่มลงในคิว: ไม่สามารถแก้ไข URL</string>
-    <string name="legacywidgetpreview_rhythm_legacy_widget_previews">Rhythm ตัวอย่างวิดเจ็ตแบบเดิม</string>
-    <string name="legacywidgetpreview_remoteviewsbased_widgets_for_maximum">วิดเจ็ตที่ใช้ RemoteViews เพื่อความเข้ากันได้สูงสุด</string>
-    <string name="legacywidgetpreview_str_11_extra_small_widget">1×1 วิดเจ็ตขนาดเล็กพิเศษ</string>
-    <string name="legacywidgetpreview_str_21_small_horizontal_widget">2×1 วิดเจ็ตแนวนอนขนาดเล็ก</string>
     <string name="legacywidgetpreview_str_12_vertical_widget">วิดเจ็ตแนวตั้ง 1 × 2</string>
     <string name="legacywidgetpreview_str_32_medium_widget">วิดเจ็ตขนาดกลาง 3×2</string>
-    <string name="legacywidgetpreview_str_41_wide_widget">วิดเจ็ตแบบกว้าง 4×1</string>
-    <string name="legacywidgetpreview_str_33_large_widget">วิดเจ็ตขนาดใหญ่ 3 × 3</string>
-    <string name="legacywidgetpreview_str_43_extra_large_widget">4×3 วิดเจ็ตขนาดใหญ่พิเศษ</string>
-    <string name="legacywidgetpreview_str_55_premium_widget">วิดเจ็ตพรีเมียม 5×5</string>
-    <string name="legacywidgetpreview_legacy_widget_features">คุณสมบัติวิดเจ็ตดั้งเดิม</string>
-    <string name="legacywidgetpreview_migration_to_glance">การย้ายไปยัง Glance</string>
-    <string name="legacywidgetpreview_consider_using_glance_widgets">พิจารณาใช้วิดเจ็ต Glance เพื่อให้ได้ธีม Material 3 ที่ดีขึ้น สีไดนามิก และตัวเลือกการปรับแต่งเพิ่มเติม</string>
     <string name="rhythmmusicwidget_album_art_placeholder">ตัวยึดตำแหน่งปกอัลบั้ม</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance ตัวอย่างวิดเจ็ต</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">วิดเจ็ตขนาดกะทัดรัด 1 × 1</string>
@@ -3488,7 +2298,6 @@
     <string name="rhythmwidgetpreview_playing">กำลังเล่น</string>
     <string name="rhythmwidgetpreview_paused">หยุดชั่วคราว</string>
     <string name="rhythmwidgetpreview_design_features">คุณสมบัติการออกแบบ</string>
-    <string name="audioqualitybadges_str_320k">320K</string>
     <string name="licensesbottomsheet_license_notes">หมายเหตุใบอนุญาต</string>
     <string name="playbackbottomsheet_str_025x">0.25x</string>
     <string name="playbackbottomsheet_str_30x">3.0x</string>
@@ -3570,10 +2379,7 @@
     <string name="playerscreen_select_artist">เลือกศิลปิน</string>
     <string name="playerscreen_open_artist">ศิลปินเปิด</string>
     <string name="aboutscreen_support_development">สนับสนุนการพัฒนา</string>
-    <string name="aboutscreen_sponsors">ผู้สนับสนุน</string>
-    <string name="aboutscreen_thanks_to_everyone_supporting">ขอบคุณทุกคนที่สนับสนุนการพัฒนาของ Rhythm</string>
     <string name="aboutscreen_discord_community">ชุมชนที่ไม่ลงรอยกัน</string>
-    <string name="aboutscreen_support">สนับสนุน</string>
     <string name="apimanagementsettingsscreen_apple_music">แอปเปิ้ลมิวสิค</string>
     <string name="apimanagementsettingsscreen_github">GitHub</string>
     <string name="apimanagementsettingsscreen_app_updates_and_release">การอัปเดตแอปและข้อมูลการเผยแพร่</string>
@@ -3691,7 +2497,6 @@
     <string name="error_loading_lyrics">เกิดข้อผิดพลาดในการโหลดเนื้อเพลง: %1$s</string>
     <string name="error_saving_lyrics">เกิดข้อผิดพลาดในการบันทึกเนื้อเพลง: %1$s</string>
     <string name="song_metadata_details">%1$s\nศิลปิน: %2$s\nอัลบั้ม: %3$s</string>
-    <string name="about_avatar_description">อวตารของ %1$s</string>
     <string name="crash_log_title">ขัดข้องเมื่อ: %1$s</string>
     <string name="widget_settings_radius_desc">%1$ddp (Glance วิดเจ็ตเท่านั้น)</string>
     <string name="equalizer_open_error">ไม่สามารถเปิดอีควอไลเซอร์ได้: %1$s</string>
@@ -3907,15 +2712,10 @@
 
     <!-- Common UI element strings -->
     <string name="common_none">ไม่มี</string>
-    <string name="common_cancel">ยกเลิก</string>
     <string name="common_back">ย้อนกลับ</string>
-    <string name="common_remove">ลบ</string>
-    <string name="common_add">เพิ่ม</string>
     <string name="common_active">ใช้งานอยู่</string>
     <string name="common_disabled">ปิดการใช้งาน</string>
     <string name="common_unavailable">ไม่พร้อมใช้งาน</string>
-    <string name="common_success">สำเร็จ</string>
-    <string name="common_error">เกิดข้อผิดพลาด</string>
     <string name="common_unknown">ไม่ทราบ</string>
 
     <!-- Blacklist UI additions -->
@@ -3948,8 +2748,6 @@
     <string name="dialog_restart_warning_message">เพื่อให้แน่ใจว่าเพลย์ลิสต์ที่นำเข้าทั้งหมดทำงานอย่างถูกต้อง เราขอแนะนำให้รีสตาร์ทแอป คุณสามารถใช้แอปต่อไปได้ตามปกติ แต่ฟีเจอร์บางอย่างอาจไม่ทำงานตามที่คาดไว้จนกว่าจะรีสตาร์ท</string>
     <string name="dialog_export_playlist_to">ส่งออก \"%1$s\" ไปที่:</string>
     <string name="dialog_export_playlists_to">ส่งออกเพลย์ลิสต์ %1$d ไปที่:</string>
-    <string name="dialog_operation_importing">กำลังนำเข้า</string>
-    <string name="dialog_operation_exporting">กำลังส่งออก</string>
 
     <!-- Mode dialog strings -->
     <string name="dialog_switch_to_go">เปลี่ยนเป็น Rhythm ไปไหม</string>
@@ -3958,22 +2756,10 @@
     <string name="dialog_switch_to_local_desc">รายการนี้เป็นของห้องสมุดท้องถิ่นของคุณ เปลี่ยนเป็นโหมด Local ตอนนี้เพื่อเล่นแทร็กแบบออฟไลน์ของคุณไหม</string>
 
     <!-- Section order content descriptions -->
-    <string name="home_section_hide_carousel">ซ่อนภาพหมุน</string>
-    <string name="home_section_show_carousel">แสดงภาพหมุน</string>
-    <string name="home_section_hide_section">ซ่อนส่วน</string>
-    <string name="home_section_show_section">แสดงส่วน</string>
-    <string name="library_tab_show">แสดงแท็บ</string>
-    <string name="library_tab_hide">ซ่อนแท็บ</string>
 
     <!-- Add To Playlist additions -->
-    <string name="add_to_playlist_selected_count">%1$d เลือกแล้ว</string>
-    <string name="add_to_playlist_title">เพิ่มใน %1$s</string>
-    <string name="add_to_playlist_no_songs">ไม่มีเพลง</string>
-    <string name="add_to_playlist_all_songs_present">เพลงทั้งหมดอยู่ในเพลย์ลิสต์นี้แล้ว</string>
 
     <!-- Artist details -->
-    <string name="artist_detail_albums_count">%1$d อัลบั้ม</string>
-    <string name="artist_detail_songs_count">%1$d เพลง</string>
 
     <!-- Equalizer presets & UI -->
     <string name="eq_preset_flat">แบน</string>
@@ -3989,7 +2775,6 @@
     <string name="eq_preset_v_shape">รูปตัว V</string>
     <string name="eq_preset_harman">ฮาร์แมน</string>
     <string name="eq_preset_custom">กำหนดเอง</string>
-    <string name="eq_autoeq_profiles">โปรไฟล์ AutoEQ</string>
     <string name="eq_manage_device">จัดการอุปกรณ์</string>
     <string name="eq_system_equalizer">ระบบอีควอไลเซอร์</string>
     <string name="eq_enhance_lows">เพิ่มระดับต่ำ</string>
@@ -3997,27 +2782,18 @@
     <string name="eq_mono_only">โมโนเท่านั้น</string>
 
     <!-- Library updates, sorting & categories -->
-    <string name="library_updated_songs_success">อัปเดตเพลง %1$d</string>
-    <string name="library_updated_songs_failed">อัปเดตเพลง %1$d %2$d ล้มเหลว</string>
-    <string name="library_switch_to_grid">สลับไปที่มุมมองตาราง</string>
-    <string name="library_switch_to_list">สลับไปที่มุมมองรายการ</string>
     <string name="library_sort_title">หัวข้อ</string>
     <string name="library_sort_artist">ศิลปิน</string>
+    <string name="library_sort_album">อัลบั้ม</string>
     <string name="library_sort_date_added">เพิ่มวันที่แล้ว</string>
     <string name="library_sort_date_modified">วันที่แก้ไข</string>
     <string name="library_sort_ascending">จากน้อยไปมาก</string>
     <string name="library_sort_descending">จากมากไปน้อย</string>
-    <string name="library_sort_name_asc">ชื่อ (ก-ฮ)</string>
-    <string name="library_sort_name_desc">ชื่อ (Z-A)</string>
-    <string name="library_sort_songs_desc">เพลง (สูงไปต่ำ)</string>
-    <string name="library_sort_albums_desc">อัลบั้ม (สูงไปต่ำ)</string>
     <string name="library_scan_songs">กำลังสแกนเพลง...</string>
     <string name="library_scan_albums">กำลังประมวลผลอัลบั้ม...</string>
     <string name="library_scan_artists">กำลังประมวลผลศิลปิน...</string>
     <string name="library_scan_genres">กำลังตรวจหาแนวเพลง...</string>
     <string name="library_scan_media">กำลังสแกนสื่อ...</string>
-    <string name="library_export_failed">การส่งออกล้มเหลว</string>
-    <string name="library_import_failed">การนำเข้าล้มเหลว</string>
     <string name="library_category_all">ทั้งหมด</string>
     <string name="library_category_favorites">❤️ รายการโปรด</string>
     <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ รายการโปรดที่แน่นอน</string>
@@ -4028,56 +2804,17 @@
     <string name="library_category_short">สั้น (&lt; 3 นาที)</string>
     <string name="library_category_medium">ปานกลาง (3-5 นาที)</string>
     <string name="library_category_long">ยาว (&gt; 5 นาที)</string>
-    <string name="library_category_hi_res_lossless">ความละเอียดสูงแบบไม่สูญเสีย</string>
-    <string name="library_category_lossless">ไร้การสูญเสีย</string>
-    <string name="library_category_dolby">ดอลบี้</string>
     <string name="library_category_mono">โมโน</string>
     <string name="library_category_stereo">สเตอริโอ</string>
-    <string name="library_category_high_quality">คุณภาพสูง</string>
-    <string name="library_category_standard">มาตรฐาน</string>
-    <string name="library_removed_from_favorites">ลบ %1$d ออกจากรายการโปรด</string>
-    <string name="library_added_to_favorites">เพิ่ม %1$d ในรายการโปรด</string>
-    <string name="library_unlike_all">ไม่เหมือนทั้งหมด</string>
-    <string name="library_like_all">ชอบทั้งหมด</string>
-    <string name="library_tracks_count_format">%1$d จาก %2$d แทร็ก</string>
     <string name="library_no_playlists_yet">ยังไม่มีเพลย์ลิสต์\nสร้างเพลย์ลิสต์แรกของคุณโดยใช้ปุ่ม +</string>
     <string name="library_no_albums_yet">ยังไม่มีอัลบั้ม</string>
     <string name="library_no_artists_yet">ยังไม่มีศิลปินเลย</string>
-    <string name="library_action_play_next">เล่นต่อไป</string>
-    <string name="library_action_add_to_queue">เพิ่มลงในคิว</string>
-    <string name="library_action_add_to_blacklist">เพิ่มไปยังบัญชีดำ</string>
-    <string name="library_action_song_info">ข้อมูลเพลง</string>
     <string name="library_action_add_to_playlist">เพิ่มลงในเพลย์ลิสต์</string>
     <string name="library_action_rate_song">อัตราเพลง</string>
-    <string name="library_menu_new_playlist">เพลย์ลิสต์ใหม่</string>
-    <string name="library_menu_import_playlist">นำเข้าเพลย์ลิสต์</string>
-    <string name="library_menu_export_playlists">ส่งออกเพลย์ลิสต์</string>
-    <string name="library_menu_close_playlist">ปิดเมนูเพลย์ลิสต์</string>
-    <string name="library_menu_open_playlist">เปิดเมนูเพลย์ลิสต์</string>
-    <string name="library_menu_close">ปิดเมนู</string>
     <string name="library_selected_count_format">%1$d เลือกแล้ว</string>
     <string name="library_from_tracks_format">จากเพลง %1$d</string>
-    <string name="library_playlist_count_singular">%1$d เพลย์ลิสต์</string>
-    <string name="library_playlist_count_plural">%1$d เพลย์ลิสต์</string>
-    <string name="library_album_count_singular">%1$d อัลบั้ม</string>
-    <string name="library_album_count_plural">%1$d อัลบั้ม</string>
-    <string name="library_artist_count_singular">%1$d ศิลปิน</string>
-    <string name="library_artist_count_plural">%1$d ศิลปิน</string>
-    <string name="library_duration_hours_minutes">%1$dh %2$dm</string>
-    <string name="library_duration_minutes">%1$dm</string>
 
     <!-- Onboarding, Backup & Settings additions -->
-    <string name="onboarding_blacklist_label">บัญชีดำ</string>
-    <string name="onboarding_whitelist_label">ไวท์ลิสต์</string>
-    <string name="onboarding_full_player_label">ผู้เล่นเต็ม</string>
-    <string name="onboarding_mini_player_label">เครื่องเล่นขนาดเล็ก</string>
-    <string name="onboarding_blocked_folders">%1$d โฟลเดอร์ที่ถูกบล็อก</string>
-    <string name="onboarding_whitelisted_folders">%1$d โฟลเดอร์ที่อนุญาตพิเศษ</string>
-    <string name="onboarding_sample_button">ปุ่มตัวอย่าง</string>
-    <string name="onboarding_primary_label">ประถม</string>
-    <string name="onboarding_secondary_label">รอง</string>
-    <string name="onboarding_tertiary_label">ระดับอุดมศึกษา</string>
-    <string name="onboarding_rhythm_material">Rhythm (Material)</string>
     
     <string name="backup_restored_success">กู้คืนข้อมูลสำรองสำเร็จแล้ว รีสตาร์ทแอปเพื่อใช้การเปลี่ยนแปลงทั้งหมด</string>
     <string name="backup_copied_to_clipboard">สร้างข้อมูลสำรองและคัดลอกไปยังคลิปบอร์ดแล้ว</string>
@@ -4090,8 +2827,6 @@
     <string name="updater_download_progress">%1$d%% • %2$s / %3$s</string>
     <string name="updater_version_info">เวอร์ชัน %1$s • %2$s</string>
     <string name="updater_error_occurred">เกิดข้อผิดพลาด</string>
-    <string name="updater_channel_stable">เสถียร</string>
-    <string name="updater_channel_beta">เบต้า</string>
 
     <!-- Expressive shape preset & group names -->
     <string name="shape_preset_default">ค่าเริ่มต้น</string>
@@ -4126,10 +2861,6 @@
     <string name="shape_option_pentagon_desc">รูปหลายเหลี่ยมห้าด้าน</string>
     <string name="shape_option_flower">ดอกไม้</string>
     <string name="shape_option_flower_desc">ดอกไม้ที่มีกลีบดอก</string>
-    <string name="shape_option_clover4">โคลเวอร์ 4 ลีฟ</string>
-    <string name="shape_option_clover4_desc">โคลเวอร์สี่แฉก</string>
-    <string name="shape_option_clover8">โคลเวอร์ 8 ลีฟ</string>
-    <string name="shape_option_clover8_desc">โคลเวอร์แปดแฉก</string>
     <string name="shape_option_heart">หัวใจ</string>
     <string name="shape_option_heart_desc">รูปหัวใจ</string>
     <string name="shape_option_bun">บุญ</string>
@@ -4200,8 +2931,6 @@
     <string name="option_collapsed">ยุบแล้ว</string>
     <string name="option_linear">เชิงเส้น</string>
     <string name="option_circular">หนังสือเวียน</string>
-    <string name="option_auto">อัตโนมัติ</string>
-    <string name="option_manual">คู่มือ</string>
     <string name="option_both">ทั้งคู่</string>
     <string name="option_icon">ไอคอน</string>
     <string name="option_name">ชื่อ</string>
@@ -4210,46 +2939,12 @@
     <string name="theme_color_red">สีแดง</string>
     <string name="theme_color_green">สีเขียว</string>
     <string name="theme_color_blue">สีฟ้า</string>
-    <string name="theme_font_restart_warning">เปลี่ยนแบบอักษรแล้ว รีสตาร์ทแอปเพื่อใช้แบบอักษรใหม่</string>
-    <string name="theme_source_album_art">ปกอัลบั้ม</string>
-    <string name="theme_source_album_art_desc">แยกสีจากปกอัลบั้มที่กำลังเล่นอยู่</string>
-    <string name="theme_source_system_colors">สีของระบบ</string>
-    <string name="theme_source_system_colors_desc">ใช้ Material คุณระบายสีจากวอลเปเปอร์ของคุณ</string>
-    <string name="theme_source_custom_scheme">รูปแบบที่กำหนดเอง</string>
-    <string name="theme_source_custom_scheme_desc">เลือกจากโทนสีที่กำหนดไว้ล่วงหน้า</string>
-    <string name="theme_font_system">แบบอักษรของระบบ</string>
-    <string name="theme_font_system_desc">ใช้แบบอักษรเริ่มต้นของอุปกรณ์</string>
-    <string name="theme_font_custom">แบบอักษรที่กำหนดเอง</string>
-    <string name="theme_font_custom_desc">นำเข้าและใช้ไฟล์แบบอักษรที่กำหนดเอง</string>
 
     <!-- Color Scheme names -->
-    <string name="scheme_default">ค่าเริ่มต้น</string>
-    <string name="scheme_warm">อบอุ่น</string>
-    <string name="scheme_cool">เจ๋งเลย</string>
-    <string name="scheme_forest">ป่า</string>
-    <string name="scheme_rose">โรส</string>
-    <string name="scheme_monochrome">ขาวดำ</string>
-    <string name="scheme_lavender">ลาเวนเดอร์</string>
-    <string name="scheme_ocean">มหาสมุทร</string>
-    <string name="scheme_aurora">ออโรร่า</string>
-    <string name="scheme_amber">แอมเบอร์</string>
-    <string name="scheme_crimson">สีแดงเข้ม</string>
-    <string name="scheme_emerald">มรกต</string>
-    <string name="scheme_mint">มิ้นท์</string>
 
     <!-- Shape Utils category and descriptions -->
-    <string name="shape_utils_fab">ปุ่มการดำเนินการแบบลอยตัว</string>
-    <string name="shape_utils_fab_desc">รูปร่างสำหรับปุ่ม FAB</string>
-    <string name="shape_utils_cards">การ์ด</string>
-    <string name="shape_utils_cards_desc">รูปร่างสำหรับการ์ดและคอนเทนเนอร์</string>
-    <string name="shape_utils_buttons">ปุ่ม</string>
-    <string name="shape_utils_buttons_desc">รูปร่างของปุ่ม</string>
-    <string name="shape_utils_chips">ชิป</string>
-    <string name="shape_utils_chips_desc">รูปร่างสำหรับชิปและแท็ก</string>
     <string name="shape_utils_player_controls">การควบคุมผู้เล่น</string>
-    <string name="shape_utils_player_controls_desc">รูปร่างสำหรับปุ่มควบคุมเครื่องเล่น</string>
     <string name="shape_utils_mini_player">เครื่องเล่นขนาดเล็ก</string>
-    <string name="shape_utils_mini_player_desc">รูปร่างสำหรับอาร์ตเวิร์กของเครื่องเล่นขนาดเล็ก</string>
 
     <!-- Metadata properties and labels -->
     <string name="metadata_duration">ระยะเวลา</string>
@@ -4272,10 +2967,6 @@
     <string name="metadata_date_added">เพิ่มวันที่แล้ว</string>
     <string name="metadata_modified">แก้ไขแล้ว</string>
     <string name="metadata_lyrics_available">ว่างครับ</string>
-    <string name="metadata_dts">ดีทีเอส</string>
-    <string name="metadata_hi_res">ความละเอียดสูง</string>
-    <string name="metadata_dolby">ดอลบี้</string>
-    <string name="metadata_lossless">ไร้การสูญเสีย</string>
 
     <!-- Discover settings specific -->
     <string name="settings_discover_album_name">ชื่ออัลบั้ม</string>
@@ -4302,15 +2993,20 @@
 
     <!-- Shape targets -->
     <string name="shape_target_album_art">อาร์ตเวิร์กอัลบั้ม</string>
-    <string name="shape_target_album_art_desc">รูปร่างสำหรับปกอัลบั้ม</string>
     <string name="shape_target_player_art">งานศิลปะของผู้เล่น</string>
-    <string name="shape_target_player_art_desc">รูปร่างสำหรับงานศิลปะหน้าจอผู้เล่น</string>
     <string name="shape_target_song_art">งานศิลปะเพลง</string>
-    <string name="shape_target_song_art_desc">รูปร่างสำหรับอาร์ตเวิร์กเพลงในรายการ</string>
     <string name="shape_target_playlist_art">อาร์ตเวิร์กเพลย์ลิสต์</string>
-    <string name="shape_target_playlist_art_desc">รูปร่างสำหรับหน้าปกเพลย์ลิสต์</string>
     <string name="shape_target_artist_art">งานศิลปะของศิลปิน</string>
-    <string name="shape_target_artist_art_desc">รูปร่างสำหรับภาพศิลปิน</string>
     <string name="settings_shape_for">รูปร่างสำหรับ %1$s</string>
+    <string name="lyric_widget_description">Widget ที่แสดงเนื้อเพลงของสื่อที่กำลังเล่นอยู่</string>
+    <string name="edit_album_title">แก้ไขอัลบั้ม</string>
+    <string name="edit_album_desc">แก้ไขแท็กและอาร์ตเวิร์คสำหรับเพลงทั้งหมดในอัลบั้มนี้</string>
+    <string name="edit_album_saving">กำลังอัปเดตข้อมูลเมตาของอัลบั้ม...</string>
+    <string name="streaming_service_setup_auto_detect">ตรวจจับอัตโนมัติ</string>
+    <string name="nearby_server_discovery_title">เซิร์ฟเวอร์ใกล้เคียง</string>
+    <string name="nearby_server_discovery_desc">เลือกเซิร์ฟเวอร์ที่พบในเครือข่ายท้องถิ่นของคุณ</string>
+    <string name="nearby_server_discovery_scanning">กำลังสแกนหาเซิร์ฟเวอร์ใกล้เคียง...</string>
+    <string name="nearby_server_discovery_empty">ไม่พบเซิร์ฟเวอร์ใกล้เคียง ตรวจสอบให้แน่ใจว่าเซิร์ฟเวอร์ของคุณทำงานและเชื่อมต่อกับเครือข่าย Wi-Fi เดียวกัน</string>
+    <string name="nearby_server_discovery_rescan">สแกนใหม่</string>
 </resources>
 

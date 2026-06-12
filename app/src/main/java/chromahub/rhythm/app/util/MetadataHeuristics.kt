@@ -159,7 +159,7 @@ object MetadataHeuristics {
         }
 
         return runCatching {
-            val repaired = String(raw.toByteArray(Charsets.ISO_8859_1), Charsets.UTF_8)
+            val repaired = String(raw.toByteArray(java.nio.charset.Charset.forName("windows-1252")), Charsets.UTF_8)
             val repairedHasMoreReplacementChars =
                 repaired.count { it == '\uFFFD' } > raw.count { it == '\uFFFD' }
             if (repaired.isBlank() || repairedHasMoreReplacementChars) raw else repaired

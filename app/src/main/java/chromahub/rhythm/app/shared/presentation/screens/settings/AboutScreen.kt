@@ -28,6 +28,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import chromahub.rhythm.app.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -176,6 +178,14 @@ fun AboutScreen(
         context.startActivity(intent)
     }
 
+    val copyToClipboard: (String, String) -> Unit = { label, text ->
+        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText(label, text)
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(context, "$label copied!", Toast.LENGTH_SHORT).show()
+    }
+
     CollapsibleHeaderScreen(
         title = context.getString(R.string.settings_about_title),
         showBackButton = true,
@@ -318,22 +328,77 @@ fun AboutScreen(
                     Material3SettingsItem(
                         icon = RhythmIcons.Info,
                         title = { Text(context.getString(R.string.settings_about_version_label)) },
-                        description = { Text(BuildConfig.VERSION_NAME) }
+                        description = { Text(BuildConfig.VERSION_NAME) },
+                        onClick = { copyToClipboard("Version", BuildConfig.VERSION_NAME) },
+                        trailingContent = {
+                            Icon(
+                                imageVector = MaterialSymbolIcon("content_copy"),
+                                contentDescription = "Copy",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     ),
                     Material3SettingsItem(
                         icon = MaterialSymbolIcon("build"),
                         title = { Text(context.getString(R.string.settings_about_build)) },
-                        description = { Text("${BuildConfig.VERSION_CODE} • $buildVariant") }
+                        description = { Text("${BuildConfig.VERSION_CODE} • $buildVariant") },
+                        onClick = { copyToClipboard("Build Info", "${BuildConfig.VERSION_CODE} • $buildVariant") },
+                        trailingContent = {
+                            Icon(
+                                imageVector = MaterialSymbolIcon("content_copy"),
+                                contentDescription = "Copy",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     ),
                     Material3SettingsItem(
                         icon = MaterialSymbolIcon("developer_mode"),
                         title = { Text(context.getString(R.string.settings_about_target_sdk)) },
-                        description = { Text(appInfo.targetSdkVersion.toString()) }
+                        description = { Text(appInfo.targetSdkVersion.toString()) },
+                        onClick = { copyToClipboard("Target SDK", appInfo.targetSdkVersion.toString()) },
+                        trailingContent = {
+                            Icon(
+                                imageVector = MaterialSymbolIcon("content_copy"),
+                                contentDescription = "Copy",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     ),
                     Material3SettingsItem(
                         icon = MaterialSymbolIcon("memory"),
                         title = { Text(context.getString(R.string.settings_about_architecture)) },
-                        description = { Text(detectedAbis) }
+                        description = { Text(detectedAbis) },
+                        onClick = { copyToClipboard("Architecture", detectedAbis) },
+                        trailingContent = {
+                            Icon(
+                                imageVector = MaterialSymbolIcon("content_copy"),
+                                contentDescription = "Copy",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    ),
+                    Material3SettingsItem(
+                        icon = MaterialSymbolIcon("content_copy"),
+                        title = { Text("Copy System Info") },
+                        description = { Text("Copy all version and hardware details to clipboard") },
+                        onClick = {
+                            val allInfo = """
+                                App: Rhythm
+                                Version: ${BuildConfig.VERSION_NAME}
+                                Build: ${BuildConfig.VERSION_CODE} ($buildVariant)
+                                Target SDK: ${appInfo.targetSdkVersion}
+                                Device OS: Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})
+                                Brand/Manufacturer: ${Build.BRAND} / ${Build.MANUFACTURER}
+                                Model (Product): ${Build.MODEL} (${Build.PRODUCT})
+                                Board/Hardware: ${Build.BOARD} / ${Build.HARDWARE}
+                                Architecture (ABIs): ${Build.SUPPORTED_ABIS.joinToString(", ")}
+                            """.trimIndent()
+                            copyToClipboard("System Info", allInfo)
+                        }
                     )
                 )
 
@@ -345,170 +410,173 @@ fun AboutScreen(
             }
 
             item {
+                Text(
+                    text = context.getString(R.string.settings_about_credits),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 8.dp, top = 18.dp)
+                )
+
+                DeveloperCard(
+                    name = "Anjishnu Nandi",
+                    role = "Lead Developer & Project Architect",
+                    githubUsername = "cromaguy",
+                    avatarUrl = "https://github.com/cromaguy.png",
+                    supportUrl = "https://ko-fi.com/anjishnunandi",
+                    openUrl = openUrl
+                )
+                
+                Spacer(modifier = Modifier.height(10.dp))
+
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
+                    ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = ExpressiveShapes.Large,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon("diversity_3", filled = true),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = context.getString(R.string.settings_about_credits),
+                            text = context.getString(R.string.settings_about_team_chromahub),
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(bottom = 10.dp)
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
-
-                        CommunityMember(
-                            name = "Anjishnu Nandi",
-                            role = "Lead Developer & Project Architect",
-                            githubUsername = "cromaguy",
-                            avatarUrl = "https://github.com/cromaguy.png",
-                            supportUrl = "https://ko-fi.com/anjishnunandi",
-                            context = context
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = context.getString(R.string.settings_about_team_desc),
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
                         )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        OutlinedButton(
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                openUrl("https://ko-fi.com/anjishnunandi")
-                            },
-                            shape = RoundedCornerShape(14.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = MaterialSymbolIcon("local_cafe", filled = true),
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(R.string.aboutscreen_support_development))
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
-                            ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(12.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = context.getString(R.string.settings_about_team_chromahub),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    text = context.getString(R.string.settings_about_team_desc),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
                     }
                 }
             }
 
             item {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = context.getString(R.string.settings_about_community),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                Text(
+                    text = context.getString(R.string.settings_about_community),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 8.dp, top = 18.dp)
+                )
+                
+                val maintainerItems = remember(context, haptics) {
+                    listOf(
+                        createCommunityMemberItem(
+                            context = context,
+                            haptics = haptics,
+                            name = "Izzy",
+                            role = "Manages updates on IzzyOnDroid",
+                            githubUsername = "IzzySoft",
+                            avatarUrl = "https://github.com/IzzySoft.png"
+                        ),
+                        createCommunityMemberItem(
+                            context = context,
+                            haptics = haptics,
+                            name = "linsui",
+                            role = "Manages updates on F-Droid",
+                            githubUsername = "linsui",
+                            avatarUrl = "https://github.com/linsui.png"
+                        ),
+                        createCommunityMemberItem(
+                            context = context,
+                            haptics = haptics,
+                            name = "Licaon_Kter",
+                            role = "Manages updates on F-Droid",
+                            githubUsername = "licaon-kter",
+                            avatarUrl = "https://github.com/licaon-kter.png"
                         )
-                        Text(
-                            text = context.getString(R.string.settings_about_community_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 10.dp)
-                        )
-
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            CommunityMember(
-                                name = "Izzy",
-                                role = "Manages updates on IzzyOnDroid",
-                                githubUsername = "IzzySoft",
-                                avatarUrl = "https://github.com/IzzySoft.png",
-                                context = context
-                            )
-                            CommunityMember(
-                                name = "linsui",
-                                role = "Manages updates on F-Droid",
-                                githubUsername = "linsui",
-                                avatarUrl = "https://github.com/linsui.png",
-                                context = context
-                            )
-                            CommunityMember(
-                                name = "Licaon_Kter",
-                                role = "Manages updates on F-Droid",
-                                githubUsername = "licaon-kter",
-                                avatarUrl = "https://github.com/licaon-kter.png",
-                                context = context
-                            )
-                            CommunityMember(
-                                name = "Christian",
-                                role = "Collab & Project Booming's Lead Dev",
-                                githubUsername = "mardous",
-                                avatarUrl = "https://github.com/mardous.png",
-                                context = context
-                            )
-                            CommunityMember(
-                                name = "theovilardo",
-                                role = "Collab & Project PixelPlayer's Lead Dev",
-                                githubUsername = "theovilardo",
-                                avatarUrl = "https://github.com/theovilardo.png",
-                                context = context
-                            )
-                            CommunityMember(
-                                name = "Nick",
-                                role = "Gramophone project's maintainer (testing, suggestions & code)",
-                                githubUsername = "nift4",
-                                avatarUrl = "https://github.com/nift4.png",
-                                context = context
-                            )
-                            CommunityMember(
-                                name = "Alex",
-                                role = "Network API integrations",
-                                githubUsername = "Paxsenix0",
-                                avatarUrl = "https://github.com/Paxsenix0.png",
-                                context = context
-                            )
-                            CommunityMember(
-                                name = "itzKane",
-                                role = "UI Concept Designer",
-                                githubUsername = "soykane",
-                                avatarUrl = "https://github.com/soykane.png",
-                                context = context
-                            )
-                            CommunityMember(
-                                name = "firefly-sylestia",
-                                role = "Beta Tester & QA",
-                                githubUsername = "firefly-sylestia",
-                                avatarUrl = "https://github.com/firefly-sylestia.png",
-                                context = context
-                            )
-                        }
-                    }
+                    )
                 }
+                Material3SettingsGroup(
+                    title = context.getString(R.string.about_community_group_maintainers),
+                    items = maintainerItems,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                val collaboratorItems = remember(context, haptics) {
+                    listOf(
+                        createCommunityMemberItem(
+                            context = context,
+                            haptics = haptics,
+                            name = "Christian",
+                            role = "Collab & Project Booming's Lead Dev",
+                            githubUsername = "mardous",
+                            avatarUrl = "https://github.com/mardous.png"
+                        ),
+                        createCommunityMemberItem(
+                            context = context,
+                            haptics = haptics,
+                            name = "theovilardo",
+                            role = "Collab & Project PixelPlayer's Lead Dev",
+                            githubUsername = "theovilardo",
+                            avatarUrl = "https://github.com/theovilardo.png"
+                        ),
+                        createCommunityMemberItem(
+                            context = context,
+                            haptics = haptics,
+                            name = "Nick",
+                            role = "Gramophone project's maintainer (testing & code)",
+                            githubUsername = "nift4",
+                            avatarUrl = "https://github.com/nift4.png"
+                        ),
+                        createCommunityMemberItem(
+                            context = context,
+                            haptics = haptics,
+                            name = "Alex",
+                            role = "Network API integrations",
+                            githubUsername = "Paxsenix0",
+                            avatarUrl = "https://github.com/Paxsenix0.png"
+                        )
+                    )
+                }
+                Material3SettingsGroup(
+                    title = context.getString(R.string.about_community_group_collaborators),
+                    items = collaboratorItems,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                val designTestingItems = remember(context, haptics) {
+                    listOf(
+                        createCommunityMemberItem(
+                            context = context,
+                            haptics = haptics,
+                            name = "itzKane",
+                            role = "UI Concept Designer",
+                            githubUsername = "soykane",
+                            avatarUrl = "https://github.com/soykane.png"
+                        ),
+                        createCommunityMemberItem(
+                            context = context,
+                            haptics = haptics,
+                            name = "firefly-sylestia",
+                            role = "Beta Tester & QA",
+                            githubUsername = "firefly-sylestia",
+                            avatarUrl = "https://github.com/firefly-sylestia.png"
+                        )
+                    )
+                }
+                Material3SettingsGroup(
+                    title = context.getString(R.string.about_community_group_design_testing),
+                    items = designTestingItems,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
             }
 
 
@@ -608,105 +676,200 @@ fun AboutScreen(
     }
 }
 
-
-
-@Composable
-fun CommunityMember(
+@Composable
+fun DeveloperCard(
     name: String,
     role: String,
     githubUsername: String,
     avatarUrl: String,
-    supportUrl: String? = null,
-    context: android.content.Context
+    supportUrl: String,
+    openUrl: (String) -> Unit
 ) {
+    val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
+    
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+        label = "press_scale"
+    )
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable {
-                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/$githubUsername"))
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            }
-            .background(
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(10.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
+        shape = ExpressiveShapes.ExtraLarge,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
     ) {
-        // Avatar with fallback
-        val fallbackPainter = painterResource(id = chromahub.rhythm.app.R.drawable.ic_music_note)
-
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(avatarUrl)
-                .crossfade(true)
-                .build(),
-            contentDescription = stringResource(R.string.about_avatar_description, name),
+        Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            error = fallbackPainter,
-            placeholder = fallbackPainter
-        )
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        Column(
-            modifier = Modifier.weight(1f)
+                .padding(20.dp)
         ) {
-            Text(
-                text = name,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = role,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.padding(top = 4.dp)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = RhythmIcons.Link,
-                    contentDescription = null,
-                    modifier = Modifier.size(12.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                val fallbackPainter = painterResource(id = R.drawable.ic_music_note)
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(avatarUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = name,
+                    modifier = Modifier
+                        .size(88.dp)
+                        .clip(ExpressiveShapes.SquircleLarge)
+                        .background(MaterialTheme.colorScheme.surface),
+                    error = fallbackPainter,
+                    placeholder = fallbackPainter
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
-                    text = "@$githubUsername",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
+                    text = name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
                 )
-                if (supportUrl != null) {
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Surface(
+                    shape = ExpressiveShapes.Full,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
+                ) {
+                    Text(
+                        text = role,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                            openUrl("https://github.com/$githubUsername")
+                        }
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.Link,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "@$githubUsername",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Button(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        openUrl(supportUrl)
+                    },
+                    shape = ExpressiveShapes.Full,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(vertical = 12.dp)
+                ) {
                     Icon(
                         imageVector = MaterialSymbolIcon("local_cafe", filled = true),
-                        contentDescription = stringResource(R.string.aboutscreen_support),
-                        modifier = Modifier.size(12.dp),
-                        tint = Color(0xFF13C3FF)
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.aboutscreen_support_development),
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             }
         }
-
-        Icon(
-            imageVector = RhythmIcons.ArtistFilled,
-            contentDescription = stringResource(R.string.cd_view_github_profile),
-            
-            modifier = Modifier.size(18.dp)
-        )
     }
+}
+
+private fun createCommunityMemberItem(
+    context: Context,
+    haptics: HapticFeedback,
+    name: String,
+    role: String,
+    githubUsername: String,
+    avatarUrl: String
+): Material3SettingsItem {
+    return Material3SettingsItem(
+        leadingContent = {
+            val fallbackPainter = painterResource(id = R.drawable.ic_music_note)
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(avatarUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(ExpressiveShapes.SquircleMedium)
+                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)),
+                error = fallbackPainter,
+                placeholder = fallbackPainter
+            )
+        },
+        title = {
+            Text(
+                text = name,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        description = {
+            Text(
+                text = role,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        trailingContent = {
+            Icon(
+                imageVector = MaterialSymbolIcon("chevron_right"),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                modifier = Modifier.size(16.dp)
+            )
+        },
+        onClick = {
+            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/$githubUsername")).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        }
+    )
 }
 
 

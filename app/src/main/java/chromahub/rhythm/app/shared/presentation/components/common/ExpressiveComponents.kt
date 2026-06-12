@@ -4,6 +4,9 @@ package chromahub.rhythm.app.shared.presentation.components.common
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.SelectableChipColors
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -762,6 +765,14 @@ fun ExpressiveFilterChip(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     shape: Shape = ExpressiveShapes.Full,
+    colors: SelectableChipColors = FilterChipDefaults.filterChipColors(
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        selectedContainerColor = MaterialTheme.colorScheme.primary,
+        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
+    ),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
 ) {
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -787,6 +798,7 @@ fun ExpressiveFilterChip(
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         shape = shape,
+        colors = colors,
         interactionSource = interactionSource
     )
 }

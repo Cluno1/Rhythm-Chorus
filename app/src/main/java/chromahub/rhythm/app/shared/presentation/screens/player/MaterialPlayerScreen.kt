@@ -539,18 +539,31 @@ fun MaterialPlayerScreen(
         contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
         if (result.resultCode == android.app.Activity.RESULT_OK) {
-            // User granted permission, complete the write
-            musicViewModel.completeMetadataWriteAfterPermission(
-                onSuccess = {
-                    Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
-                },
-                onError = { errorMessage ->
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                }
-            )
+            if (musicViewModel.pendingBatchWriteRequest.value != null) {
+                musicViewModel.completeBatchMetadataWriteAfterPermission(
+                    onSuccess = {
+                        Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                )
+            } else {
+                musicViewModel.completeMetadataWriteAfterPermission(
+                    onSuccess = {
+                        Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                )
+            }
         } else {
-            // User denied permission
-            musicViewModel.cancelPendingMetadataWrite()
+            if (musicViewModel.pendingBatchWriteRequest.value != null) {
+                musicViewModel.cancelPendingBatchMetadataWrite()
+            } else {
+                musicViewModel.cancelPendingMetadataWrite()
+            }
             Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, Toast.LENGTH_LONG).show()
         }
     }
@@ -1069,7 +1082,37 @@ fun MaterialPlayerScreen(
                 Toast.makeText(context, context.getString(R.string.song_added_to_blacklist_format, song.title), Toast.LENGTH_SHORT).show()
             },
             currentSong = song,
-            isPlaying = isPlaying
+            isPlaying = isPlaying,
+            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
+                musicViewModel.batchEditMetadata(
+                    songs = selectedAlbum!!.songs,
+                    artist = artist,
+                    album = title,
+                    genre = null,
+                    year = null,
+                    artworkUri = artworkUri,
+                    removeArtwork = removeArtwork,
+                    onProgress = onProgress,
+                    onComplete = { successCount, failCount ->
+                        onComplete(successCount, failCount)
+                    },
+                    onPermissionRequired = { pendingRequest ->
+                        try {
+                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
+                                pendingRequest.intentSender
+                            ).build()
+                            writePermissionLauncher.launch(intentSenderRequest)
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                context,
+                                "Failed to request permission: ${e.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            musicViewModel.cancelPendingBatchMetadataWrite()
+                        }
+                    }
+                )
+            }
         )
     }
 

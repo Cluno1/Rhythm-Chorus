@@ -78,6 +78,7 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import chromahub.rhythm.app.shared.data.model.LyricsData // Import LyricsData
 import chromahub.rhythm.app.util.PendingWriteRequest // Import for metadata write requests
+import chromahub.rhythm.app.util.PendingBatchWriteRequest
 import chromahub.rhythm.app.util.PendingLyricsWriteRequest
 import chromahub.rhythm.app.util.QueueUtils
 import chromahub.rhythm.app.util.GenreUtils
@@ -136,8 +137,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         getCurrentSong = { _currentSong.value },
         updateCurrentSongMetadata = { updatedSong -> updateCurrentSongMetadata(updatedSong) },
         bulkUpdateSongs = { updatedSongsMap ->
-            _songs.value = _songs.value.map { song ->
+            val newSongs = _songs.value.map { song ->
                 updatedSongsMap[song.id] ?: song
+            }
+            _songs.value = newSongs
+            repository.updateAndPersistSongs(newSongs)
+            viewModelScope.launch {
+                _albums.value = repository.loadAlbums()
+                _artists.value = repository.loadArtists()
             }
         }
     )
@@ -581,6 +588,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     
     private fun normalizeStoragePath(path: String): String {
         var normalized = path.trim().replace('\\', '/')
+        while (normalized.contains("//")) {
+            normalized = normalized.replace("//", "/")
+        }
         if (normalized.length > 1 && normalized.endsWith('/')) {
             normalized = normalized.substring(0, normalized.length - 1)
         }
@@ -625,7 +635,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     ) { albums, filteredSongs ->
         albums.filter { album ->
             // Include album if it has at least one non-blacklisted song
-            filteredSongs.any { song -> song.album == album.title && song.artist == album.artist }
+            filteredSongs.any { song ->
+                val albumTitleMatch = song.album.trim().equals(album.title.trim(), ignoreCase = true)
+                val songAlbumArtist = song.albumArtist?.trim()?.takeIf { it.isNotBlank() }
+                    ?: song.artist.trim()
+                val albumArtistMatch = songAlbumArtist.equals(album.artist.trim(), ignoreCase = true)
+                albumTitleMatch && albumArtistMatch
+            }
         }.distinctBy { it.id }
     }.flowOn(Dispatchers.Default).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
 
@@ -772,6 +788,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     // Pending write request for metadata editing (Android 11+ permission flow)
     val pendingWriteRequest: StateFlow<PendingWriteRequest?>
         get() = metadataManagerHelper.pendingWriteRequest
+
+    // Pending batch write request for metadata editing (Android 11+ permission flow)
+    val pendingBatchWriteRequest: StateFlow<PendingBatchWriteRequest?>
+        get() = metadataManagerHelper.pendingBatchWriteRequest
 
     // Sort library functionality - Load saved sort order from AppSettings
     private val _sortOrder = MutableStateFlow(
@@ -953,6 +973,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         TITLE_DESC,
         ARTIST_ASC,
         ARTIST_DESC,
+        ALBUM_ASC,
+        ALBUM_DESC,
         DATE_ADDED_ASC,
         DATE_ADDED_DESC,
         DATE_MODIFIED_ASC,
@@ -993,6 +1015,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 if (_isInitialized.value) {
                     Log.d(TAG, "Blacklist/Whitelist changed, refreshing playlists to remove filtered songs")
                     refreshPlaylists()
+                    removeBlacklistedSongsFromQueue()
                 }
             }
         }
@@ -2384,7 +2407,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         artworkUri: Uri? = null,
         removeArtwork: Boolean = false,
         onProgress: (Int, Int) -> Unit,
-        onComplete: (successCount: Int, failCount: Int) -> Unit
+        onComplete: (successCount: Int, failCount: Int) -> Unit,
+        onPermissionRequired: ((PendingBatchWriteRequest) -> Unit)? = null
     ) {
         metadataManagerHelper.batchEditMetadata(
             songs = songs,
@@ -2395,8 +2419,26 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             artworkUri = artworkUri,
             removeArtwork = removeArtwork,
             onProgress = onProgress,
-            onComplete = onComplete
+            onComplete = onComplete,
+            onPermissionRequired = onPermissionRequired
         )
+    }
+
+    /**
+     * Completes pending batch metadata write after user grants permission.
+     */
+    fun completeBatchMetadataWriteAfterPermission(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        metadataManagerHelper.completeBatchMetadataWriteAfterPermission(onSuccess, onError)
+    }
+
+    /**
+     * Cancels pending batch metadata write request.
+     */
+    fun cancelPendingBatchMetadataWrite() {
+        metadataManagerHelper.cancelPendingBatchMetadataWrite()
     }
     
     /**
@@ -3139,6 +3181,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val args = Bundle().apply {
                     putStringArrayList("lyric_texts", ArrayList(cachedParsedSyncedLyrics.map { it.text }))
+                    putStringArrayList("lyric_translations", ArrayList(cachedParsedSyncedLyrics.map { it.translation ?: "" }))
+                    putStringArrayList("lyric_romanizations", ArrayList(cachedParsedSyncedLyrics.map { it.romanization ?: "" }))
                     putLongArray("lyric_timestamps", cachedParsedSyncedLyrics.map { it.timestamp }.toLongArray())
                     val plain = currentLyricsVal?.plainLyrics
                     if (plain != null) {
@@ -6047,7 +6091,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 SortOrder.TITLE_ASC -> SortOrder.TITLE_DESC
                 SortOrder.TITLE_DESC -> SortOrder.ARTIST_ASC
                 SortOrder.ARTIST_ASC -> SortOrder.ARTIST_DESC
-                SortOrder.ARTIST_DESC -> SortOrder.DATE_ADDED_ASC
+                SortOrder.ARTIST_DESC -> SortOrder.ALBUM_ASC
+                SortOrder.ALBUM_ASC -> SortOrder.ALBUM_DESC
+                SortOrder.ALBUM_DESC -> SortOrder.DATE_ADDED_ASC
                 SortOrder.DATE_ADDED_ASC -> SortOrder.DATE_ADDED_DESC
                 SortOrder.DATE_ADDED_DESC -> SortOrder.DATE_MODIFIED_ASC
                 SortOrder.DATE_MODIFIED_ASC -> SortOrder.DATE_MODIFIED_DESC
@@ -6060,6 +6106,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 SortOrder.TITLE_DESC -> _songs.value.sortedByDescending { it.title }
                 SortOrder.ARTIST_ASC -> _songs.value.sortedBy { it.artist }
                 SortOrder.ARTIST_DESC -> _songs.value.sortedByDescending { it.artist }
+                SortOrder.ALBUM_ASC -> _songs.value.sortedBy { it.album }
+                SortOrder.ALBUM_DESC -> _songs.value.sortedByDescending { it.album }
                 SortOrder.DATE_ADDED_ASC -> _songs.value.sortedBy { it.dateAdded }
                 SortOrder.DATE_ADDED_DESC -> _songs.value.sortedByDescending { it.dateAdded }
                 SortOrder.DATE_MODIFIED_ASC -> _songs.value.sortedBy { it.dateModified }
@@ -6072,6 +6120,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 SortOrder.TITLE_DESC -> _albums.value.sortedByDescending { it.title }
                 SortOrder.ARTIST_ASC -> _albums.value.sortedBy { it.artist }
                 SortOrder.ARTIST_DESC -> _albums.value.sortedByDescending { it.artist }
+                SortOrder.ALBUM_ASC -> _albums.value.sortedBy { it.title }
+                SortOrder.ALBUM_DESC -> _albums.value.sortedByDescending { it.title }
                 SortOrder.DATE_ADDED_ASC -> _albums.value.sortedBy { it.id.toLongOrNull() ?: 0L } // Placeholder for date added
                 SortOrder.DATE_ADDED_DESC -> _albums.value.sortedByDescending { it.id.toLongOrNull() ?: 0L } // Placeholder for date added
                 SortOrder.DATE_MODIFIED_ASC -> _albums.value.sortedBy { it.dateModified }
@@ -6091,8 +6141,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 }.thenBy { 
                     // Then sort by name according to current sort order
                     when (_sortOrder.value) {
-                        SortOrder.TITLE_ASC, SortOrder.ARTIST_ASC, SortOrder.DATE_ADDED_ASC, SortOrder.DATE_MODIFIED_ASC -> it.name
-                        SortOrder.TITLE_DESC, SortOrder.ARTIST_DESC, SortOrder.DATE_ADDED_DESC, SortOrder.DATE_MODIFIED_DESC -> it.name.reversed()
+                        SortOrder.TITLE_ASC, SortOrder.ARTIST_ASC, SortOrder.ALBUM_ASC, SortOrder.DATE_ADDED_ASC, SortOrder.DATE_MODIFIED_ASC -> it.name
+                        SortOrder.TITLE_DESC, SortOrder.ARTIST_DESC, SortOrder.ALBUM_DESC, SortOrder.DATE_ADDED_DESC, SortOrder.DATE_MODIFIED_DESC -> it.name.reversed()
                     }
                 }
             )
@@ -6115,6 +6165,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     SortOrder.TITLE_DESC -> _songs.value.sortedByDescending { it.title }
                     SortOrder.ARTIST_ASC -> _songs.value.sortedBy { it.artist }
                     SortOrder.ARTIST_DESC -> _songs.value.sortedByDescending { it.artist }
+                    SortOrder.ALBUM_ASC -> _songs.value.sortedBy { it.album }
+                    SortOrder.ALBUM_DESC -> _songs.value.sortedByDescending { it.album }
                     SortOrder.DATE_ADDED_ASC -> _songs.value.sortedBy { it.dateAdded }
                     SortOrder.DATE_ADDED_DESC -> _songs.value.sortedByDescending { it.dateAdded }
                     SortOrder.DATE_MODIFIED_ASC -> _songs.value.sortedBy { it.dateModified }
@@ -6127,6 +6179,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     SortOrder.TITLE_DESC -> _albums.value.sortedByDescending { it.title }
                     SortOrder.ARTIST_ASC -> _albums.value.sortedBy { it.artist }
                     SortOrder.ARTIST_DESC -> _albums.value.sortedByDescending { it.artist }
+                    SortOrder.ALBUM_ASC -> _albums.value.sortedBy { it.title }
+                    SortOrder.ALBUM_DESC -> _albums.value.sortedByDescending { it.title }
                     SortOrder.DATE_ADDED_ASC -> _albums.value.sortedBy { it.id.toLongOrNull() ?: 0L } // Placeholder for date added
                     SortOrder.DATE_ADDED_DESC -> _albums.value.sortedByDescending { it.id.toLongOrNull() ?: 0L } // Placeholder for date added
                     SortOrder.DATE_MODIFIED_ASC -> _albums.value.sortedBy { it.dateModified }
@@ -6146,8 +6200,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     }.thenBy { 
                         // Then sort by name according to current sort order
                         when (newSortOrder) {
-                            SortOrder.TITLE_ASC, SortOrder.ARTIST_ASC -> it.name
-                            SortOrder.TITLE_DESC, SortOrder.ARTIST_DESC -> it.name.reversed()
+                            SortOrder.TITLE_ASC, SortOrder.ARTIST_ASC, SortOrder.ALBUM_ASC -> it.name
+                            SortOrder.TITLE_DESC, SortOrder.ARTIST_DESC, SortOrder.ALBUM_DESC -> it.name.reversed()
                             SortOrder.DATE_ADDED_ASC -> it.dateCreated
                             SortOrder.DATE_ADDED_DESC -> -it.dateCreated // Descending
                             SortOrder.DATE_MODIFIED_ASC -> it.dateModified
@@ -7792,6 +7846,65 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
         } ?: run {
             Log.w(TAG, "Cannot sync queue - MediaController is null")
+        }
+    }
+
+    /**
+     * Remove any blacklisted or unwhitelisted songs from the active playback queue.
+     */
+    fun removeBlacklistedSongsFromQueue() {
+        mediaController?.let { controller ->
+            val mediaScanMode = appSettings.mediaScanMode.value
+            val useBlacklist = mediaScanMode == "blacklist"
+            val useWhitelist = mediaScanMode == "whitelist"
+            val blacklistedIds = appSettings.blacklistedSongs.value
+            val blacklistedFolders = appSettings.blacklistedFolders.value
+            val whitelistedIds = appSettings.whitelistedSongs.value
+            val whitelistedFolders = appSettings.whitelistedFolders.value
+            
+            val hasBlacklist = blacklistedIds.isNotEmpty() || blacklistedFolders.isNotEmpty()
+            val hasWhitelist = whitelistedIds.isNotEmpty() || whitelistedFolders.isNotEmpty()
+            
+            if (useBlacklist && !hasBlacklist) return@let
+            if (useWhitelist && !hasWhitelist) return@let
+            
+            val count = controller.mediaItemCount
+            if (count == 0) return@let
+            
+            Log.d(TAG, "Checking active queue for blacklisted or unwhitelisted songs. Total items: $count")
+            
+            // Remove items starting from the end of the queue to keep indices stable
+            for (i in count - 1 downTo 0) {
+                val mediaItem = controller.getMediaItemAt(i)
+                val songId = mediaItem.mediaId
+                val song = _songs.value.find { it.id == songId }
+                val songPath = song?.path ?: if (song?.uri?.scheme == "file") song.uri.path else getPathFromUriCached(song?.uri ?: android.net.Uri.EMPTY)
+                
+                var shouldInclude = true
+                if (useBlacklist && hasBlacklist) {
+                    if (blacklistedIds.contains(songId)) {
+                        shouldInclude = false
+                    } else if (blacklistedFolders.isNotEmpty() && songPath != null) {
+                        shouldInclude = !isPathBlacklisted(songPath, blacklistedFolders)
+                    }
+                } else if (useWhitelist && hasWhitelist) {
+                    if (whitelistedIds.contains(songId)) {
+                        shouldInclude = true
+                    } else if (whitelistedFolders.isNotEmpty() && songPath != null) {
+                        shouldInclude = isPathWhitelisted(songPath, whitelistedFolders)
+                    } else {
+                        shouldInclude = false
+                    }
+                }
+                
+                if (!shouldInclude) {
+                    controller.removeMediaItem(i)
+                    Log.d(TAG, "Removed blacklisted/unwhitelisted song from active queue: $songId at index $i")
+                }
+            }
+            
+            // Re-sync local representation
+            syncQueueWithMediaController()
         }
     }
 

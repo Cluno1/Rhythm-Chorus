@@ -794,6 +794,11 @@ fun UniversalSearchScreen(
                     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val songsCornerRadius by animateDpAsState(
+                        targetValue = if (filterSongs) 24.dp else 12.dp,
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                        label = "songsCornerRadius"
+                    )
                     FilterChip(
                         selected = filterSongs,
                         onClick = {
@@ -801,9 +806,30 @@ fun UniversalSearchScreen(
                             filterSongs = !filterSongs
                         },
                         label = { Text(stringResource(R.string.settings_tab_songs), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold) },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh, selectedContainerColor = MaterialTheme.colorScheme.primaryContainer),
+                        leadingIcon = if (filterSongs) {
+                            {
+                                Icon(
+                                    imageVector = RhythmIcons.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else null,
+                        shape = RoundedCornerShape(songsCornerRadius),
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         border = null
+                    )
+                    val albumsCornerRadius by animateDpAsState(
+                        targetValue = if (filterAlbums) 24.dp else 12.dp,
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                        label = "albumsCornerRadius"
                     )
                     FilterChip(
                         selected = filterAlbums,
@@ -812,9 +838,30 @@ fun UniversalSearchScreen(
                             filterAlbums = !filterAlbums
                         },
                         label = { Text(stringResource(R.string.settings_tab_albums), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold) },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh, selectedContainerColor = MaterialTheme.colorScheme.primaryContainer),
+                        leadingIcon = if (filterAlbums) {
+                            {
+                                Icon(
+                                    imageVector = RhythmIcons.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else null,
+                        shape = RoundedCornerShape(albumsCornerRadius),
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         border = null
+                    )
+                    val artistsCornerRadius by animateDpAsState(
+                        targetValue = if (filterArtists) 24.dp else 12.dp,
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                        label = "artistsCornerRadius"
                     )
                     FilterChip(
                         selected = filterArtists,
@@ -823,9 +870,30 @@ fun UniversalSearchScreen(
                             filterArtists = !filterArtists
                         },
                         label = { Text(stringResource(R.string.settings_tab_artists), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold) },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh, selectedContainerColor = MaterialTheme.colorScheme.primaryContainer),
+                        leadingIcon = if (filterArtists) {
+                            {
+                                Icon(
+                                    imageVector = RhythmIcons.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else null,
+                        shape = RoundedCornerShape(artistsCornerRadius),
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         border = null
+                    )
+                    val playlistsCornerRadius by animateDpAsState(
+                        targetValue = if (filterPlaylists) 24.dp else 12.dp,
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                        label = "playlistsCornerRadius"
                     )
                     FilterChip(
                         selected = filterPlaylists,
@@ -834,8 +902,24 @@ fun UniversalSearchScreen(
                             filterPlaylists = !filterPlaylists
                         },
                         label = { Text(stringResource(R.string.settings_tab_playlists), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold) },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh, selectedContainerColor = MaterialTheme.colorScheme.primaryContainer),
+                        leadingIcon = if (filterPlaylists) {
+                            {
+                                Icon(
+                                    imageVector = RhythmIcons.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else null,
+                        shape = RoundedCornerShape(playlistsCornerRadius),
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         border = null
                     )
                 }

@@ -18,6 +18,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -1094,20 +1095,31 @@ private fun AddEditDeviceDialog(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(UserAudioDevice.DeviceType.entries.toList()) { type ->
+                        val isSelected = selectedType == type
+                        val cornerRadius by animateDpAsState(
+                            targetValue = if (isSelected) 24.dp else 12.dp,
+                            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                            label = "chipCornerRadius"
+                        )
                         FilterChip(
-                            selected = selectedType == type,
+                            selected = isSelected,
                             onClick = { selectedType = type },
                             label = { Text(type.displayName) },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = getDeviceIcon(type),
+                                    imageVector = if (isSelected) RhythmIcons.Check else getDeviceIcon(type),
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
                             },
+                            shape = RoundedCornerShape(cornerRadius),
                             colors = FilterChipDefaults.filterChipColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                                 selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
                     }

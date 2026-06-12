@@ -20,7 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
+import android.net.Uri
 import chromahub.rhythm.app.shared.data.model.Song
+import chromahub.rhythm.app.features.streaming.domain.model.StreamingSong
 import chromahub.rhythm.app.util.AudioQualityDetector
 import chromahub.rhythm.app.util.AudioFormatDetector
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +52,72 @@ private enum class QualityLevel {
  * - High-Resolution Lossless: 24-bit/96kHz+ - shows "HI-RES LOSSLESS" badge
  * - Bit depth is calculated from bitrate or explicitly provided by the codec
  */
+@Composable
+fun AudioQualityIcon(
+    song: StreamingSong,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    var audioQuality by remember(song.id) { mutableStateOf<AudioQualityDetector.AudioQuality?>(null) }
+
+    LaunchedEffect(song.id) {
+        val playbackUri = song.getPlaybackUri()
+        if (playbackUri.isEmpty()) return@LaunchedEffect
+
+        withContext(Dispatchers.IO) {
+            try {
+                val uri = Uri.parse(playbackUri)
+                val formatInfo = AudioFormatDetector.detectFormat(context, uri)
+
+                val bitrateKbps = if (formatInfo.bitrateKbps > 0) formatInfo.bitrateKbps else 0
+                val sampleRateHz = if (formatInfo.sampleRateHz > 0) formatInfo.sampleRateHz else 0
+                val channelCount = if (formatInfo.channelCount > 0) formatInfo.channelCount else 2
+
+                audioQuality = AudioQualityDetector.detectQuality(
+                    codec = formatInfo.codec,
+                    sampleRateHz = sampleRateHz,
+                    bitrateKbps = bitrateKbps,
+                    bitDepth = formatInfo.bitDepth,
+                    channelCount = channelCount
+                )
+            } catch (e: Exception) {
+                Log.e("AudioQualityIcon", "Failed to detect audio quality for streaming song", e)
+            }
+        }
+    }
+
+    audioQuality?.let { quality ->
+        val shouldShowIcon = quality.isLossless || quality.isDolby || quality.isDTS || quality.isHiRes ||
+                           quality.qualityType != AudioQualityDetector.QualityType.LOSSY_COMPRESSED
+
+        if (shouldShowIcon) {
+            val iconRes = when (quality.qualityType) {
+                AudioQualityDetector.QualityType.DSD_HIGH_RES,
+                AudioQualityDetector.QualityType.HI_RES_STUDIO_MASTER,
+                AudioQualityDetector.QualityType.HI_RES_LOSSLESS -> R.drawable.ic_high_res
+                AudioQualityDetector.QualityType.DOLBY_LOSSLESS,
+                AudioQualityDetector.QualityType.DOLBY_LOSSY_SURROUND -> R.drawable.ic_dolby
+                AudioQualityDetector.QualityType.DTS_SURROUND -> R.drawable.ic_dts
+                AudioQualityDetector.QualityType.LOSSLESS_SURROUND -> R.drawable.ic_surround_sound
+                AudioQualityDetector.QualityType.CD_QUALITY_LOSSLESS -> R.drawable.ic_cd
+                AudioQualityDetector.QualityType.LOSSY_COMPRESSED -> if (quality.qualityDescription.contains("320")) R.drawable.ic_hq else null
+                else -> null
+            }
+
+            iconRes?.let { res ->
+                Icon(
+                    painter = painterResource(id = res),
+                    contentDescription = quality.qualityLabel,
+                    modifier = modifier
+                        .padding(8.dp)
+                        .size(32.dp),
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun AudioQualityIcon(
     song: Song,

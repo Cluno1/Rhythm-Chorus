@@ -26,10 +26,6 @@
     <!-- Widget Settings -->
     <string name="settings_widget">القطعة</string>
     <string name="settings_widget_desc">أدوات الشاشة الرئيسية</string>
-    <string name="widget_preview_title">معاينة القطعة</string>
-    <string name="widget_preview_desc">سيتم تطبيق التغييرات على جميع الأدوات النشطة على شاشتك الرئيسية. اضغط لفترة طويلة على الأداة لتغيير حجمها ورؤية التخطيطات المختلفة.</string>
-    <string name="widget_refresh_all">تحديث كافة الحاجيات</string>
-    <string name="widget_display_options">خيارات العرض</string>
     <string name="widget_show_album_art">عرض صورة الألبوم</string>
     <string name="widget_show_album_art_desc">عرض العمل الفني للألبوم في القطعة</string>
     <string name="widget_show_artist">إظهار اسم الفنان</string>
@@ -37,36 +33,19 @@
     <string name="widget_show_album">عرض اسم الألبوم</string>
     <string name="widget_show_album_desc">عرض معلومات الألبوم</string>
     <string name="widget_appearance">المظهر</string>
-    <string name="widget_use_system_colors">استخدام ألوان النظام</string>
-    <string name="widget_use_system_colors_desc">اتبع Material نظام الألوان</string>
-    <string name="widget_background_blur">طمس الخلفية</string>
-    <string name="widget_background_blur_desc">تطبيق تأثير التمويه على خلفية القطعة</string>
     <string name="widget_corner_radius">نصف قطر الزاوية</string>
-    <string name="widget_transparency">الشفافية</string>
-    <string name="widget_behavior">السلوك</string>
     <string name="widget_auto_update">التحديث التلقائي</string>
-    <string name="widget_auto_update_desc">تحديث القطعة تلقائيا عندما تتغير الأغنية</string>
-    <string name="widget_tips_title">نصائح القطعة</string>
-    <string name="widget_tip_sizes">Rhythm يدعم أحجام الأدوات المتعددة من 2x1 إلى 5x5</string>
-    <string name="widget_tip_types">تتوفر كل من عناصر واجهة المستخدم Glance القديمة والحديثة</string>
     <string name="widget_tip_controls">اضغط على القطعة لفتح التطبيق، وأزرار التحكم في التشغيل</string>
-    <string name="widget_tip_resize">الضغط لفترة طويلة وتغيير الحجم لتخطيطات مختلفة</string>
     
     <!-- Content Descriptions -->
     <string name="cd_navigate">التنقل</string>
-    <string name="cd_configure">تكوين</string>
     
     <!-- Settings - Notifications -->
     <string name="settings_notifications">الإخطارات</string>
-    <string name="settings_notification_style">نمط الإخطار</string>
-    <string name="settings_custom_notifications">الإخطارات المخصصة</string>
-    <string name="settings_custom_notifications_desc">استخدم نمط الإعلام المخصص للتطبيق بدلاً من إعلام وسائط النظام</string>
     <string name="settings_notifications_updates_group">تحديثات التطبيق</string>
     <string name="settings_notifications_rhythm_guard_group">Rhythm حارس</string>
     <string name="settings_notifications_rhythm_pulse_group">Rhythm نصائح</string>
     <string name="settings_update_notifications_merged_desc">احصل على تنبيهات للإصدارات الجديدة ونتائج فحص التحديث في الخلفية</string>
-    <string name="settings_update_status_notifications">تحديث إشعارات الحالة</string>
-    <string name="settings_update_status_notifications_desc">احصل على نتائج فحص الخلفية مثل التحديثات والتحقق من الأخطاء</string>
     <string name="settings_rhythm_guard_alert_notifications">إشعارات تنبيه السلامة</string>
     <string name="settings_rhythm_guard_alert_notifications_desc">إظهار إشعار عندما يكتشف Rhythm Guard حجمًا أو تعرضًا خطيرًا</string>
     <string name="settings_rhythm_guard_timer_notifications">إخطارات مؤقت التوقف</string>
@@ -77,7 +56,6 @@
     <string name="settings_rhythm_pulse_interval_dialog_title">Rhythm الفاصل الزمني للنصائح</string>
     
     <!-- Settings - Queue & Playback -->
-    <string name="settings_queue_playback">قائمة الانتظار والتشغيل</string>
     <!-- Settings - Queue -->
     <string name="settings_queue">قائمة الانتظار</string>
     <string name="settings_queue_desc">قواعد الانتظار، التوليد التلقائي، السلوك</string>
@@ -96,13 +74,10 @@
     <string name="settings_context_queue_preference_desc">اختر البيانات الوصفية التي يجب أن تعطيها قائمة انتظار السياق الأولوية أولاً.</string>
     <string name="settings_context_pref_artist_first">الفنان أولا</string>
     <string name="settings_context_pref_genre_first">النوع أولا</string>
-    <string name="settings_context_pref_artist_then_genre">الفنان ثم النوع</string>
     <string name="settings_context_queue_persistence">استمرار قائمة انتظار السياق</string>
     <string name="settings_context_queue_persistence_desc">اختر ما إذا كان يجب أن تظل قائمة انتظار السياق متاحة بعد انتهاء التشغيل.</string>
     <string name="settings_context_persistence_persistent">مستمر</string>
     <string name="settings_context_persistence_ephemeral">سريع الزوال</string>
-    <string name="settings_context_queue_size">حجم قائمة انتظار السياق</string>
-    <string name="settings_context_queue_size_desc">%1$d المسارات</string>
     <string name="settings_clear_queue_on_new_song">استبدال قائمة الانتظار عند التشغيل</string>
     <string name="settings_clear_queue_on_new_song_desc">يؤدي بدء المسار إلى استبدال قائمة الانتظار الحالية.</string>
     <string name="settings_playback_persistence">حالة التشغيل</string>
@@ -164,7 +139,6 @@
     <string name="notification_media_scan_stage_songs">مسح مساحة تخزين الجهاز للمسارات الصوتية…</string>
     <string name="notification_media_scan_stage_saving">تحسين وحفظ قاعدة بيانات المسارات الصوتية...</string>
     <string name="notification_media_scan_stage_finishing">استكمال الفهرسة الصوتية…</string>
-    <string name="notification_media_scan_complete_summary">اكتمل فحص المكتبة: %1$d مسارات، %2$d ألبومات، %3$d فنانون مفهرسون</string>
     <string name="notification_media_scan_complete_pending_setup">انتهى المسح الصوتي، وتهيئة مهام الخلفية...</string>
     <string name="notification_media_scan_cancelled">تم إلغاء فحص المكتبة.</string>
     <string name="notification_media_scan_failed">فشل فحص المكتبة. تحقق من أذونات التخزين وحاول مرة أخرى.</string>
@@ -220,13 +194,10 @@
     <string name="notification_streaming_playlist_created">قائمة التشغيل الجديدة \"%1$s\" تم إنشاؤها على %2$s</string>
     <string name="notification_streaming_playlist_updated">تم تحديث قائمة التشغيل \"%1$s\" على %2$s</string>
     <string name="notification_streaming_playlist_deleted">تم حذف قائمة التشغيل \"%1$s\" من %2$s</string>
-    <string name="notification_streaming_playlist_song_added">تمت إضافة الأغنية إلى \"%1$s\"</string>
-    <string name="notification_streaming_playlist_song_removed">تمت إزالة الأغنية من \"%1$s\"</string>
     
     <!-- Streaming Network/Quality -->
     <string name="notification_streaming_quality_title">جودة البث</string>
     <string name="notification_streaming_quality_switched">تم تحويل الجودة إلى %1$s بسبب تغييرات الشبكة</string>
-    <string name="notification_streaming_network_slow">الشبكة بطيئة. تم تقليل جودة البث.</string>
     <string name="notification_streaming_buffering">جارٍ التخزين المؤقت... التشغيل من %1$s</string>
     <string name="notification_streaming_buffering_complete">جاهز للعب!</string>
     
@@ -249,7 +220,6 @@
     <string name="dialog_delete_playlist_message">هل أنت متأكد أنك تريد حذف \"%1$s\"؟ لا يمكن التراجع عن هذا الإجراء.</string>
     <string name="dialog_delete">حذف</string>
     <string name="dialog_cancel">إلغاء</string>
-    <string name="dialog_save">حفظ</string>
     <string name="streaming_settings_switch_provider_confirm_title">تبديل مزود البث؟</string>
     <string name="streaming_settings_switch_provider_confirm_desc">الموفر الحالي: %1$s\nهل تريد التبديل إلى: %2$s؟ سيؤدي هذا إلى قطع اتصال الموفر النشط حاليًا.</string>
     <string name="action_switch">التبديل</string>
@@ -263,34 +233,13 @@
     <string name="playlist_more_options">المزيد من الخيارات</string>
     <string name="playlist_done_reordering">تم إعادة الترتيب</string>
     <string name="playlist_reorder_songs">إعادة ترتيب الأغاني</string>
-    <string name="playlist_cancel_selection">إلغاء الاختيار</string>
-    <string name="playlist_select_songs">اختر الأغاني</string>
-    <string name="playlist_sort_songs">ترتيب الأغاني</string>
-    <string name="playlist_export">تصدير قائمة التشغيل</string>
-    <string name="playlist_import">استيراد قائمة التشغيل</string>
-    <string name="playlist_rename">إعادة تسمية قائمة التشغيل</string>
-    <string name="playlist_delete">حذف قائمة التشغيل</string>
-    <string name="playlist_play_all">تشغيل الكل</string>
-    <string name="playlist_shuffle_play">تشغيل عشوائي</string>
-    <string name="playlist_search_songs">اختر نغمة...</string>
-    <string name="playlist_search_in_playlist">ابحث في قائمة التشغيل هذه</string>
-    <string name="playlist_clear_search">مسح البحث</string>
-    <string name="playlist_add_songs">اضافة اغاني</string>
-    <string name="playlist_add_songs_to_playlist">إضافة الأغاني إلى قائمة التشغيل</string>
     <string name="playlist_reorder_songs_title">إعادة ترتيب الأغاني</string>
     <string name="playlist_remove_song">إزالة الأغنية</string>
     <string name="playlist_remove_song_confirm">هل تريد إزالة \"%1$s\" من قائمة التشغيل هذه؟</string>
     <string name="playlist_remove_songs_count">إزالة أغاني %1$d</string>
     <string name="playlist_removed_from_playlist">تمت إزالة %1$s من قائمة التشغيل</string>
-    <string name="playlist_move_up">تحرك للأعلى</string>
-    <string name="playlist_move_down">تحرك للأسفل</string>
-    <string name="playlist_remove">إزالة</string>
-    <string name="playlist_exporting">تصدير</string>
-    <string name="playlist_importing">استيراد</string>
     
     <!-- Restart Dialog -->
-    <string name="restart_recommended">يوصى بإعادة التشغيل</string>
-    <string name="restart_default_playlists_message">لتطبيق التغييرات على قوائم التشغيل الافتراضية، نوصي بإعادة تشغيل التطبيق. يمكنك الاستمرار في استخدام التطبيق، ولكن قد لا تظهر بعض قوائم التشغيل بشكل صحيح حتى يتم إعادة التشغيل.</string>
     <string name="restart_now">أعد التشغيل الآن</string>
     <string name="continue_without_restart">أعد التشغيل لاحقًا</string>
     
@@ -335,66 +284,32 @@
     <string name="settings_include_hidden_whitelisted_media_desc">تمكين فحص المسارات الصوتية المخفية و.nomedia أثناء عمليات فحص الوسائط الكاملة (أقوى تأثير في مجلدات القائمة البيضاء).</string>
     
     <!-- Settings - Spotify -->
-    <string name="settings_spotify_api_config">Spotify API التكوين</string>
-    <string name="settings_spotify_api_config_desc">أدخل بيانات اعتماد Spotify API الخاصة بك لتمكين البحث عن المسار ومقاطع الفيديو Canvas.</string>
-    <string name="settings_spotify_default_keys_warning">أنت تستخدم حاليًا مفاتيح Spotify الافتراضية للتطبيق. للحصول على الوظائف الكاملة وتجنب حدود الأسعار، يرجى إدخال معرف العميل والسر الخاص بك.</string>
-    <string name="settings_spotify_client_id">معرف العميل</string>
-    <string name="settings_spotify_client_id_placeholder">معرف العميل Spotify الخاص بك</string>
-    <string name="settings_spotify_client_secret">سر العميل</string>
-    <string name="settings_spotify_client_secret_placeholder">سر عميلك Spotify</string>
-    <string name="settings_spotify_test_connection">اختبار الاتصال</string>
-    <string name="settings_spotify_testing">اختبار…</string>
-    <string name="settings_spotify_error">خطأ: %1$s</string>
-    <string name="settings_spotify_instructions">للحصول على بيانات اعتماد Spotify API الخاصة بك:\n• انتقل إلى Developer.spotify.com\n• أنشئ تطبيقًا جديدًا\n• انسخ معرف العميل وسر العميل</string>
     
     <!-- Settings - About -->
-    <string name="settings_about">حول</string>
     <string name="settings_about_music_player">مشغل الموسيقى</string>
-    <string name="settings_about_version">v%1$s</string>
-    <string name="settings_about_description">مشغل موسيقى حديث وغني بالميزات لـ Android</string>
     <string name="settings_about_project_details">تفاصيل المشروع</string>
     <string name="settings_about_version_label">النسخة</string>
     <string name="settings_about_build">بناء</string>
     <string name="settings_about_target_sdk">الهدف SDK</string>
     <string name="settings_about_architecture">الهندسة المعمارية</string>
     <string name="settings_about_architecture_value">ARM64 و ARM32</string>
-    <string name="settings_about_built_with">تم تصميمه باستخدام تقنيات Android الحديثة وMaterial التصميم 3</string>
     <string name="settings_about_credits">المطور</string>
-    <string name="settings_about_developer_name">أنجيشنو ناندي</string>
-    <string name="settings_about_developer_role">المطور الرئيسي ومهندس المشروع</string>
-    <string name="settings_about_team">فريق ChromaHub</string>
     <string name="settings_about_team_desc">مطورون متحمسون يخلقون تجارب مبتكرة</string>
     <string name="settings_about_team_chromahub">فريق ChromaHub</string>
-    <string name="settings_about_special_thanks">شكر خاص</string>
     <string name="settings_about_community">المجتمع</string>
-    <string name="settings_about_community_desc">شكر خاص لأعضاء مجتمعنا الرائعين الذين ساهموا في تحسين Rhythm من خلال الاختبار والتعليقات والاقتراحات والتعاون.</string>
-    <string name="settings_about_contributor_izzy_name">عزي</string>
-    <string name="settings_about_contributor_izzy_role">يدير التحديثات على IzzyOnDroid</string>
-    <string name="settings_about_contributor_christian_name">مسيحي</string>
-    <string name="settings_about_contributor_christian_role">فريق تطوير Collab &amp; Project Booming</string>
-    <string name="settings_about_contributor_alex_name">اليكس</string>
-    <string name="settings_about_contributor_alex_role">Spotify Canvas API التكامل</string>
-    <string name="settings_about_want_featured">هل تريد أن تكون واردة هنا؟</string>
-    <string name="settings_about_contribute">ساهم في Rhythm من خلال الاختبار أو التعليقات أو مساهمات التعليمات البرمجية وانضم إلى مجتمعنا المذهل!</string>
-    <string name="settings_about_open_source_libraries">مكتبات مفتوحة المصدر</string>
+    <string name="about_community_group_maintainers">مشرفو الحزمة
+المتعاونون والمساهمون في</string>
+    <string name="about_community_group_collaborators">.</string>
+    <string name="about_community_group_design_testing">التصميم والاختبار</string>
     <string name="settings_about_open_source_libs">مكتبات مفتوحة المصدر</string>
     <string name="settings_about_view_dependencies">عرض التبعيات</string>
-    <string name="settings_about_view_licenses">عرض كافة التبعيات والتراخيص</string>
     <string name="settings_about_actions">الإجراءات</string>
     <string name="settings_about_check_updates">التحقق من وجود تحديثات</string>
     <string name="settings_about_visit_website">زيارة الموقع</string>
     <string name="settings_about_view_github">عرض على جيثب</string>
     <string name="settings_about_report_bug">الإبلاغ عن خطأ أو اقتراح ميزة</string>
-    <string name="settings_about_telegram_support">مجموعة دعم تيليجرام</string>
     
     <!-- Settings - Updates -->
-    <string name="settings_updates">التحديثات</string>
-    <string name="settings_updates_error">خطأ</string>
-    <string name="settings_updates_checking">جاري التحقق…</string>
-    <string name="settings_updates_available">التحديث متاح</string>
-    <string name="settings_updates_disabled">التحديثات معطلة</string>
-    <string name="settings_updates_manual_check">فحص يدوي</string>
-    <string name="settings_updates_up_to_date">محدث</string>
     
     <!-- Status Labels -->
     <string name="status_disabled">معطل</string>
@@ -402,7 +317,6 @@
     <!-- HomeScreen -->
     <string name="home_title">Rhythm</string>
     <string name="home_settings_cd">الإعدادات</string>
-    <string name="home_discover_albums">اكتشف الألبومات</string>
     <string name="home_explore_music">اكتشف الموسيقى المذهلة</string>
     <string name="home_no_featured_albums">لا توجد ألبومات مميزة</string>
     <string name="home_no_featured_albums_desc">أضف بعض الألبومات إلى مكتبتك لرؤية المحتوى المميز</string>
@@ -450,9 +364,6 @@
     <string name="home_quote_night_4">احتضن هدوء الليل 😴</string>
     
     <!-- Personalized messages -->
-    <string name="home_continue_song">تابع من حيث توقفت مع \"%1$s\"</string>
-    <string name="home_adventure_continues">مغامرتك الموسيقية مستمرة</string>
-    <string name="home_discover_next_favorite">هل أنت مستعد لاكتشاف أغنيتك المفضلة التالية؟</string>
     
     <!-- Recommended Section -->
     <string name="home_recommended_title">موصى به لك</string>
@@ -462,21 +373,8 @@
     
     <!-- Listening Stats -->
     <string name="home_listening_stats">إحصائيات Rhythm الخاصة بك</string>
-    <string name="home_listening_stats_subtitle">الرحلة الموسيقية لهذا الأسبوع</string>
-    <string name="home_stat_listening_time">وقت الاستماع</string>
-    <string name="home_stat_listening_time_short">أقل من ساعة</string>
-    <string name="home_stat_songs_played">الأغاني التي تم تشغيلها</string>
-    <string name="home_stat_artists">الفنانين</string>
     
     <!-- Mood & Moments -->
-    <string name="home_mood_title">المزاج واللحظات</string>
-    <string name="home_mood_subtitle">موسيقى لكل شعور</string>
-    <string name="home_mood_energize">تنشيط</string>
-    <string name="home_mood_energize_desc">عزز طاقتك</string>
-    <string name="home_mood_relax">استرخ</string>
-    <string name="home_mood_relax_desc">استرخِ وتنفس</string>
-    <string name="home_mood_focus">التركيز</string>
-    <string name="home_mood_focus_desc">وضع التركيز</string>
     
     <!-- Recently Played -->
     <string name="home_recently_played">تم تشغيلها مؤخرًا</string>
@@ -486,16 +384,13 @@
     
     <!-- UI Actions -->
     <string name="ui_view_all">عرض الكل</string>
-    <string name="ui_play_action">تشغيل %1$s</string>
     <string name="ui_songs_count">%1$d أغاني</string>
     
     <!-- Updates -->
-    <string name="update_available_cd">التحديث متاح</string>
     <string name="update_available_title">التحديث متاح</string>
     <string name="update_version">الإصدار %1$s</string>
     <string name="update_whats_new">الجديد:</string>
     <string name="update_now">التحديث الآن</string>
-    <string name="update_downloading">جاري التحميل…</string>
     
     <!-- LibraryScreen -->
     <string name="library_title">مكتبة</string>
@@ -507,7 +402,6 @@
     <string name="library_loading_playlists">جارٍ تحميل قوائم التشغيل…</string>
     <string name="library_loading_albums">جارٍ تحميل الألبومات…</string>
     <string name="library_loading_artists">جارٍ تحميل الفنانين…</string>
-    <string name="library_tracks_count">%1$d من %2$d المسارات</string>
     
     <!-- Background Processing States -->
     <string name="scanning_media">فهرسة الملفات الصوتية…</string>
@@ -518,10 +412,8 @@
     
     <string name="library_no_songs">لا توجد أغاني بعد</string>
     <string name="library_no_artists">لم يتم العثور على فنانين</string>
-    <string name="library_no_artists_desc">أضف بعض الموسيقى لترى فنانيك هنا</string>
     <string name="library_start_collection">ابدأ في إنشاء مجموعتك الموسيقية</string>
     <string name="library_sort_artists">فرز الفنانين حسب</string>
-    <string name="library_explore">اكتشف</string>
     <string name="library_storage_locations">مواقع التخزين</string>
     <string name="library_pinned_folders">المجلدات المثبتة</string>
     <string name="library_go_back">العودة</string>
@@ -532,11 +424,8 @@
     <string name="library_creating_playlist">إنشاء قائمة تشغيل وإضافة أغاني %1$d…</string>
     <string name="library_playlist_name_empty">لا يمكن أن يكون اسم قائمة التشغيل فارغًا</string>
     <string name="library_no_playlists">لا توجد قوائم تشغيل بعد</string>
-    <string name="library_no_playlists_desc">قم بإنشاء قائمة التشغيل الأولى الخاصة بك باستخدام الزر +</string>
     <string name="library_no_albums">لا يوجد ألبومات بعد</string>
-    <string name="library_playlist_count">%1$d قائمة التشغيل</string>
     <string name="library_playlists_count">%1$d قوائم التشغيل</string>
-    <string name="library_album_count">%1$d البوم</string>
     <string name="library_albums_count">%1$d ألبومات</string>
     
     <!-- Sort Options -->
@@ -545,10 +434,6 @@
     <string name="sort_song_count">عدد الاغاني</string>
     <string name="sort_title">العنوان</string>
     <string name="sort_artist">فنان</string>
-    <string name="sort_date_added">تاريخ الإضافة</string>
-    <string name="sort_date_modified">تاريخ التعديل</string>
-    <string name="sort_ascending">تصاعدي</string>
-    <string name="sort_descending">تنازلي</string>
     
     <!-- Storage Permission -->
     <string name="storage_permission_required">مطلوب إذن التخزين</string>
@@ -556,14 +441,8 @@
     <string name="storage_permission_audio_only">يسمح هذا بالوصول فقط إلى الملفات الصوتية والمجلدات التي تحتوي على موسيقى.</string>
     
     <!-- PlayerScreen -->
-    <string name="player_now_playing">العب الآن</string>
     <string name="player_loading_lyrics">جارٍ تحميل الكلمات…</string>
-    <string name="player_shuffle">خلط</string>
-    <string name="player_lyrics">كلمات الاغاني</string>
-    <string name="player_repeat">كرر</string>
     <string name="player_queue">قائمة الانتظار</string>
-    <string name="player_playback_speed">السرعة ودرجة الصوت</string>
-    <string name="player_playback_speed_desc">ضبط سرعة ودرجة تشغيل الصوت.</string>
     <string name="player_speed_label">السرعة</string>
     <string name="player_pitch_label">الملعب</string>
     <string name="playback_speed">سرعة التشغيل</string>
@@ -571,47 +450,15 @@
     <string name="sync_with_speed">المزامنة مع السرعة</string>
     
     <!-- SearchScreen -->
-    <string name="search_filter_results">تصفية النتائج</string>
-    <string name="search_results">نتائج البحث</string>
-    <string name="search_songs">أغاني</string>
-    <string name="search_albums">الالبومات</string>
-    <string name="search_artists">الفنانين</string>
-    <string name="search_playlists">قوائم التشغيل</string>
     <string name="search_view_all_songs">مشاهدة جميع الأغاني</string>
-    <string name="search_see_all_songs">شاهد جميع أغاني %1$d</string>
-    <string name="search_recently_searched">تم البحث عنها مؤخرًا</string>
     <string name="search_recent_searches">عمليات البحث الأخيرة</string>
-    <string name="search_clear">مسح</string>
-    <string name="search_no_recent_searches">لا توجد عمليات بحث حديثة</string>
-    <string name="search_no_recent_searches_desc">سيظهر سجل البحث الخاص بك هنا</string>
-    <string name="search_recently_played">تم تشغيلها مؤخرًا</string>
-    <string name="search_no_recently_played">لم يتم تشغيلها مؤخرًا</string>
-    <string name="search_no_recently_played_desc">ستظهر هنا الأغاني التي تقوم بتشغيلها</string>
-    <string name="search_recommended">موصى به لك</string>
-    <string name="search_recommended_desc">بناءً على سجل الاستماع الخاص بك</string>
-    <string name="search_all_songs">جميع الأغاني (%1$d)</string>
     <string name="search_browse_by_genre">تصفح حسب النوع</string>
-    <string name="search_detecting_genres">الكشف عن الأنواع…</string>
-    <string name="search_genre_suggestions">ستظهر اقتراحات النوع هنا بمجرد اكتشافها</string>
-    <string name="search_no_genres">لم يتم اكتشاف أي أنواع في مكتبتك</string>
-    <string name="search_no_recent">لا توجد عمليات بحث حديثة</string>
     
     <!-- Common UI -->
-    <string name="ui_play">لعب</string>
-    <string name="ui_or">أو</string>
-    <string name="ui_skip_for_now">تخطي الآن</string>
     <string name="ui_dismiss">استبعاد</string>
-    <string name="ui_retry">أعد المحاولة</string>
-    <string name="ui_get_started">ابدأ</string>
-    <string name="ui_enable_updates">تمكين التحديثات</string>
-    <string name="ui_check_now">تحقق الآن</string>
-    <string name="ui_download_update">تنزيل التحديث</string>
-    <string name="ui_install_update">تثبيت التحديث</string>
-    <string name="ui_cancel_download">إلغاء التنزيل</string>
     
     <!-- Common Terms -->
     <string name="common_rhythm">Rhythm</string>
-    <string name="common_songs">أغاني</string>
     <string name="common_home">الصفحة الرئيسية</string>
     <string name="common_library">مكتبة</string>
     
@@ -622,16 +469,12 @@
     <string name="splash_ready">على استعداد للأخدود!</string>
     
     <!-- Audio Quality -->
-    <string name="badge_studio_master">استديو ماستر</string>
-    <string name="badge_lossless">ضياع</string>
     
     <!-- Navigation -->
     <string name="nav_no_matching_songs">لم يتم العثور على أغانٍ مطابقة</string>
     <string name="nav_try_different">جرب استعلام بحث مختلف</string>
     
     <!-- Updates Section -->
-    <string name="updates_title">التحديثات</string>
-    <string name="updates_error">خطأ</string>
     <string name="updates_checking">التحقق من وجود تحديثات...</string>
     <string name="updates_available">التحديث متاح</string>
     <string name="updates_disabled">التحديثات معطلة</string>
@@ -643,31 +486,20 @@
     <string name="updates_download_complete">اكتمل التحميل</string>
     <string name="updates_check_failed">فشل التحقق من التحديث</string>
     <string name="updates_settings">تحديث الإعدادات</string>
-    <string name="updates_released">صدر: %1$s</string>
-    <string name="updates_version">الإصدار %1$s</string>
     <string name="updates_enable">تمكين التحديثات</string>
-    <string name="updates_check_now">تحقق الآن</string>
     <string name="updates_download_update">تنزيل التحديث</string>
     <string name="updates_install_update">تثبيت التحديث</string>
     <string name="updates_cancel_download">إلغاء التنزيل</string>
     <string name="cancel_download">إلغاء التنزيل</string>
     <string name="download_update">تنزيل التحديث</string>
-    <string name="updates_auto_check_disabled">تم تعطيل التحقق من التحديث التلقائي. لا يزال بإمكانك التحقق يدويًا.</string>
-    <string name="updates_disabled_desc">تم تعطيل تحديثات التطبيق في الإعدادات</string>
     <string name="updates_smart_polling">الاقتراع الذكي نشط</string>
     <string name="updates_smart_polling_desc">استخدام عمليات فحص HTTP الفعالة لاكتشاف التحديثات مع تقليل مكالمات GitHub API. ستتلقى إشعارات فورية عند إصدار إصدارات جديدة.</string>
     <string name="updates_channel_desc">اختر قناة التحديث التي تريد متابعتها:</string>
     
     <!-- Onboarding -->
     <string name="onboarding_welcome_to">مرحبا بكم في</string>
-    <string name="onboarding_welcome_title">Rhythm</string>
     <string name="onboarding_welcome_subtitle">موسيقاك، Rhythm</string>
-    <string name="onboarding_welcome_desc">قم بتخصيص كل جانب من جوانب تجربة الاستماع لديك من خلال الميزات القوية والخصوصية الكاملة. قم بتشغيل الموسيقى الخاصة بك دون اتصال بالإنترنت، بدون إعلانات، مع التحكم الكامل.</string>
     <string name="onboarding_get_started">ابدأ</string>
-    <string name="onboarding_offline">غير متصل</string>
-    <string name="onboarding_customizable">للتخصيص</string>
-    <string name="onboarding_private">خاص</string>
-    <string name="onboarding_tagline">مشغل موسيقى • مصمم لـ Android</string>
     <string name="onboarding_android13_notice">Android 13+ إشعار</string>
     <string name="onboarding_android13_desc">في الإصدارات الأحدث من Android، سترى طلبات أذونات متعددة. يرجى منح حق الوصول إلى الملفات الصوتية والإخطارات للحصول على أفضل تجربة.</string>
     <string name="onboarding_granted">✓ منح</string>
@@ -676,7 +508,6 @@
     <string name="onboarding_auto_backup">النسخ الاحتياطي التلقائي</string>
     <string name="onboarding_auto_backup_desc">قم بعمل نسخة احتياطية تلقائيًا لإعداداتك أسبوعيًا</string>
     <string name="onboarding_backup_center">مركز النسخ الاحتياطي والاستعادة</string>
-    <string name="onboarding_backup_center_desc">إنشاء نسخ احتياطية أو استعادة من ملفات النسخ الاحتياطي الموجودة</string>
     <string name="onboarding_manual_backup_info">يمكنك إنشاء نسخ احتياطية يدويًا في أي وقت من خلال الإعدادات &gt; النسخ الاحتياطي والاستعادة</string>
     <string name="onboarding_what_backed_up">ما الذي يتم نسخه احتياطيًا؟</string>
     <string name="onboarding_backed_up_1">جميع الإعدادات وقوائم التشغيل والموضوعات وتخصيص المكتبة</string>
@@ -704,11 +535,6 @@
     <string name="onboarding_theme_title">اجعل Rhythm لك</string>
     <string name="onboarding_theme_desc">قم بتخصيص مظهر Rhythm ليتناسب مع ذوقك. اختر سمة النظام أو الخط أو Material الألوان الديناميكية (Android 12+).</string>
     <string name="onboarding_live_preview">معاينة مباشرة</string>
-    <string name="onboarding_primary">أساسي</string>
-    <string name="onboarding_container">حاوية</string>
-    <string name="onboarding_accent">لهجة</string>
-    <string name="onboarding_advanced_custom">التخصيص المتقدم</string>
-    <string name="onboarding_advanced_custom_desc">أنظمة الألوان المخصصة وألوان الألبوم والخطوط</string>
     <string name="onboarding_more_tuner">المزيد من التخصيص في الإعدادات</string>
     <string name="onboarding_tuner_1">أنظمة ألوان مخصصة واستخراج ألوان صورة الألبوم</string>
     <string name="onboarding_tuner_2">إعدادات تخصيص الخط والطباعة</string>
@@ -728,19 +554,13 @@
     <string name="onboarding_continue_full_tour">مواصلة الجولة الكاملة</string>
     <string name="onboarding_finish_now">إنهاء الإعداد الآن</string>
     <string name="onboarding_step_progress">%1$d من %2$d</string>
-    <string name="onboarding_advanced_customization">التخصيص المتقدم</string>
-    <string name="onboarding_advanced_customization_desc">أنظمة الألوان المخصصة وألوان الألبوم والخطوط</string>
     
     <string name="onboarding_media_scan_title">تصفية مكتبة الموسيقى الخاصة بك</string>
     <string name="onboarding_media_scan_desc">التحكم في الملفات الصوتية التي تظهر في مكتبتك. استخدم وضع القائمة السوداء لإخفاء الملفات غير المرغوب فيها (نغمات الرنين والإشعارات)، أو وضع القائمة البيضاء لإظهار مجلدات موسيقى محددة فقط.</string>
-    <string name="onboarding_media_scan_configure">تكوين فحص الوسائط</string>
     <string name="onboarding_media_scan_current_mode">اختر وضع القائمة السوداء أو القائمة البيضاء</string>
-    <string name="onboarding_media_scan_settings">إعدادات مسح الوسائط</string>
     <string name="onboarding_media_scan_blacklist">وضع القائمة السوداء: إخفاء أغاني ومجلدات معينة (نغمات رنين، إشعارات)</string>
     <string name="onboarding_media_scan_whitelist">وضع القائمة البيضاء: عرض الأغاني من المجلدات المحددة فقط</string>
     <string name="onboarding_media_scan_configure_in_tuner">قم بتكوين المسح الضوئي في الإعدادات &gt; فحص الوسائط</string>
-    <string name="onboarding_storage_title">إدارة التخزين</string>
-    <string name="onboarding_storage_desc">إدارة حجم ذاكرة التخزين المؤقت والتخزين في الإعدادات &gt; إدارة ذاكرة التخزين المؤقت</string>
     
     <string name="onboarding_complete_title">أنت جاهز تمامًا!</string>
     <string name="onboarding_complete_desc">Rhythm جاهز للعب! يتم الآن فحص مكتبة الموسيقى الخاصة بك في الخلفية. إليك ما تم تكوينه:</string>
@@ -760,7 +580,6 @@
     <string name="onboarding_continue">متابعة</string>
     <string name="onboarding_open_settings">افتح الإعدادات</string>
     <string name="onboarding_grant_access">منح الوصول</string>
-    <string name="onboarding_language">اللغة</string>
     
     <!-- Onboarding Permission Screen -->
     <string name="onboarding_permissions_granted_title">تم منح الأذونات!</string>
@@ -785,36 +604,20 @@
     <string name="onboarding_permission_tip_3">Rhythm يحترم خصوصيتك وبياناتك</string>
     
     <!-- Onboarding Audio &amp; Playback -->
-    <string name="onboarding_haptic_title">ردود الفعل اللمسية</string>
-    <string name="onboarding_haptic_desc">تمكين الاهتزازات الدقيقة على التفاعلات للحصول على تجربة لمسية أكثر.</string>
     <string name="onboarding_default_screen_title">الشاشة المقصودة الافتراضية</string>
     <string name="onboarding_default_screen_desc">اختر الشاشة التي سيتم فتحها عند تشغيل Rhythm</string>
     <string name="onboarding_system_volume_title">التحكم في مستوى صوت النظام</string>
     <string name="onboarding_system_volume_desc">اسمح لأزرار الصوت الفعلية بجهازك بالتحكم في مستوى صوت تشغيل Rhythm.</string>
     <string name="onboarding_auto_queue_title">إضافة تلقائية إلى قائمة الانتظار</string>
     <string name="onboarding_auto_queue_desc">إنشاء قائمة انتظار سياقية تلقائيًا من الألبوم/الفنان عند تشغيل أغنية.</string>
-    <string name="onboarding_clear_queue_title">مسح قائمة الانتظار على الأغنية الجديدة</string>
-    <string name="onboarding_clear_queue_desc">استبدل قائمة الانتظار بأكملها عند تشغيل أغنية جديدة بدلاً من الإضافة إليها.</string>
-    <string name="onboarding_repeat_mode_title">تذكر وضع التكرار</string>
-    <string name="onboarding_repeat_mode_desc">احتفظ بإعدادات وضع التكرار عبر عمليات إعادة تشغيل التطبيق.</string>
-    <string name="onboarding_shuffle_mode_title">تذكر الوضع العشوائي</string>
-    <string name="onboarding_shuffle_mode_desc">حافظ على حالة التشغيل/الإيقاف العشوائي خلال عمليات إعادة تشغيل التطبيق.</string>
-    <string name="onboarding_exoplayer_shuffle_title">استخدم ExoPlayer خلط ورق اللعب</string>
-    <string name="onboarding_exoplayer_shuffle_desc">اسمح لمشغل الوسائط بالتعامل مع التبديل العشوائي (موصى به: إيقاف التشغيل للتبديل العشوائي اليدوي).</string>
     <string name="onboarding_show_lyrics_title">عرض الأغاني</string>
     <string name="onboarding_show_lyrics_desc">عرض كلمات الأغاني المتزامنة عندما تكون متاحة لأغانيك المفضلة.</string>
     <string name="onboarding_lyrics_source_title">أولوية مصدر الكلمات</string>
     <string name="onboarding_lyrics_source_desc">اختر مصدر الكلمات الذي تريد تجربته أولاً (مع الرجوع التلقائي للآخرين)</string>
     
     <!-- Onboarding Library Setup -->
-    <string name="onboarding_tab_order_title">ترتيب علامة تبويب المكتبة</string>
-    <string name="onboarding_tab_order_desc">إعادة ترتيب علامات التبويب الأغاني وقوائم التشغيل والألبومات والفنانين والمستكشف</string>
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_follow_system_title">اتبع موضوع النظام</string>
-    <string name="onboarding_follow_system_desc">يمكنك التبديل تلقائيًا بين السمات الفاتحة والداكنة بناءً على إعدادات نظام جهازك.</string>
-    <string name="onboarding_dark_mode_title">الوضع الداكن</string>
-    <string name="onboarding_dark_mode_desc">تمكين أو تعطيل الوضع المظلم يدويًا للتطبيق.</string>
     <string name="onboarding_dynamic_colors_title">الألوان الديناميكية (Material أنت)</string>
     <string name="onboarding_dynamic_colors_desc">قم بتطبيق الألوان المستخرجة من خلفية جهازك للحصول على مظهر متماسك.</string>
     <string name="onboarding_player_theme_title">التشغيل وموضوعات المشغل الصغير</string>
@@ -836,18 +639,12 @@
     <string name="onboarding_update_notifications_desc">احصل على إشعار عند توفر إصدارات جديدة</string>
     <string name="onboarding_smart_polling_title">الاقتراع الذكي</string>
     <string name="onboarding_smart_polling_desc">استخدم عمليات التحقق الفعالة لحفظ مكالمات GitHub API</string>
-    <string name="onboarding_check_interval_title">التحقق من الفاصل الزمني</string>
     <string name="onboarding_check_interval_desc">كم مرة يجب التحقق من وجود تحديثات</string>
     <string name="onboarding_update_channel_title">تحديث القناة</string>
     <string name="onboarding_update_channel_desc">الإصدارات الثابتة أو التجريبية.</string>
     <string name="fetching_latest_version">جارٍ جلب أحدث إصدار من GitHub...</string>
     
     <!-- Onboarding Update Options -->
-    <string name="option_every_hour">كل ساعة</string>
-    <string name="option_every_3_hours">كل 3 ساعات</string>
-    <string name="option_every_6_hours">كل 6 ساعات</string>
-    <string name="option_every_12_hours">كل 12 ساعة</string>
-    <string name="option_daily">يوميا</string>
     <string name="option_stable">مستقرة</string>
     <string name="option_beta">بيتا</string>
     <string name="option_home">الصفحة الرئيسية</string>
@@ -872,8 +669,6 @@
     <!-- Onboarding: Notifications Step -->
     <string name="onboarding_notifications_title">إخطارات التشغيل</string>
     <string name="onboarding_notifications_desc">التحكم في كيفية عرض Rhythm لتشغيل الموسيقى في مركز الإشعارات لديك. اختر بين الإشعارات المخصصة أو عناصر التحكم القياسية في وسائط النظام.</string>
-    <string name="onboarding_custom_notifications">نمط الإخطار المخصص</string>
-    <string name="onboarding_custom_notifications_desc">استخدم تصميم الإشعارات المحسّن لـ Rhythm مع عناصر تحكم وتصميم إضافية</string>
     <string name="onboarding_notifications_info_title">مميزات الإشعارات</string>
     <string name="onboarding_notification_tip_1">انظر معلومات المسار الحالي في لمحة</string>
     <string name="onboarding_notification_tip_2">التحكم في التشغيل من خلال الإجراءات السريعة</string>
@@ -905,8 +700,6 @@
     <string name="onboarding_widget_artist_desc">عرض الفنان الحالي في القطعة</string>
     <string name="onboarding_widget_album">عرض اسم الألبوم</string>
     <string name="onboarding_widget_album_desc">عرض عنوان الألبوم في القطعة</string>
-    <string name="onboarding_widget_auto_update">أداة التحديث التلقائي</string>
-    <string name="onboarding_widget_auto_update_desc">تحديث القطعة تلقائيا عندما تتغير الأغنية</string>
     <string name="onboarding_widgets_tips_title">نصائح القطعة</string>
     <string name="onboarding_widget_tip_1">اضغط على القطعة لفتح التطبيق</string>
     <string name="onboarding_widget_tip_2">تغيير حجم الأدوات لتخطيطات مختلفة (2x1 إلى 5x5)</string>
@@ -916,19 +709,12 @@
     <string name="onboarding_integrations_title">قم بتوصيل خدماتك</string>
     <string name="onboarding_integrations_desc">عزز تجربة الاستماع الخاصة بك عن طريق الاتصال بالخدمات الخارجية. احصل على صورة الألبوم، وكلمات الأغاني، وقم بتمرير الأغاني، وشارك ما تستمع إليه.</string>
     <string name="onboarding_integrations_apis">API الخدمات</string>
-    <string name="onboarding_integrations_social">الميزات الاجتماعية</string>
     <string name="onboarding_integration_deezer">Deezer</string>
     <string name="onboarding_integration_deezer_desc">جلب أعمال فنية وبيانات وصفية عالية الجودة للألبوم</string>
     <string name="onboarding_integration_lrclib">LrcLib</string>
     <string name="onboarding_integration_lrclib_desc">تحميل كلمات متزامنة لأغانيك</string>
     <string name="onboarding_integration_ytmusic">YouTube موسيقى</string>
     <string name="onboarding_integration_ytmusic_desc">الوصول إلى البيانات الوصفية والتوصيات من YouTube Music</string>
-    <string name="onboarding_integration_spotify">Canvas</string>
-    <string name="onboarding_integration_spotify_desc">جلب صورة الألبوم والبيانات الوصفية من Spotify</string>
-    <string name="onboarding_integration_scrobbling">Last.fm التمرير</string>
-    <string name="onboarding_integration_scrobbling_desc">تتبع سجل الاستماع الخاص بك على Last.fm</string>
-    <string name="onboarding_integration_discord">حضور ديسكورد الغني</string>
-    <string name="onboarding_integration_discord_desc">اعرض ما تستمع إليه على Discord</string>
     <string name="onboarding_integration_broadcast">حالة البث</string>
     <string name="onboarding_integration_broadcast_desc">مشاركة حالة التشغيل مع تطبيقات أخرى</string>
     <string name="onboarding_integrations_info_title">ملاحظة الخصوصية</string>
@@ -965,7 +751,6 @@
     
     <!-- Settings -->
     <string name="settings_tip_theme">قم بتخصيص المظهر الخاص بك باستخدام الألوان والخطوط والتأثيرات الاحتفالية</string>
-    <string name="settings_tip_haptic">تمكين ردود الفعل اللمسية للاستجابات اللمسية</string>
     <string name="settings_tip_gestures">تحكم في التشغيل بشكل أسرع من خلال التمريرات والنقرات البديهية، دون الحاجة إلى قوائم إضافية.</string>
     <string name="settings_tip_gestures_swipe">اسحب لأعلى على المشغل الصغير لفتح المشغل الكامل، ثم اسحب لأسفل للرفض عند الانتهاء.</string>
     <string name="settings_tip_gestures_artwork">قم بتمرير العمل الفني لتبديل المسارات وانقر نقرًا مزدوجًا على صورة الألبوم للتشغيل السريع أو الإيقاف المؤقت.</string>
@@ -980,15 +765,12 @@
     
     <!-- Cache Management -->
     <string name="cache_current_status">حالة ذاكرة التخزين المؤقت الحالية</string>
-    <string name="cache_calculating">حساب حجم ذاكرة التخزين المؤقت…</string>
     <string name="cache_total_size">إجمالي حجم ذاكرة التخزين المؤقت:</string>
-    <string name="cache_limit">حد ذاكرة التخزين المؤقت:</string>
     <string name="cache_max_size">الحد الأقصى لحجم ذاكرة التخزين المؤقت</string>
     <string name="cache_max_size_desc">قم بتعيين الحد الأقصى لحجم البيانات المخزنة مؤقتًا</string>
     <string name="cache_about">حول ذاكرة التخزين المؤقت</string>
     <string name="cache_size_limit">الحد الأقصى لحجم ذاكرة التخزين المؤقت</string>
     <string name="cache_clear_on_exit">مسح ذاكرة التخزين المؤقت عند الخروج</string>
-    <string name="cache_clear_on_exit_desc">مسح البيانات المخزنة مؤقتًا تلقائيًا عند إغلاق التطبيق</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">أولوية مصدر الكلمات</string>
@@ -1023,31 +805,9 @@
     <string name="playlist_no_songs_yet">لا توجد أغاني بعد</string>
     
     <!-- Components: Backup & Restore -->
-    <string name="backup_title">النسخ الاحتياطي والاستعادة</string>
-    <string name="backup_desc">قم بحماية إعداداتك الشخصية وقوائم التشغيل والتفضيلات. قم بإنشاء نسخ احتياطية يدويًا أو قم بتمكين النسخ الاحتياطية الأسبوعية التلقائية لراحة البال.</string>
-    <string name="backup_auto_weekly">النسخ الاحتياطي للإعدادات تلقائيًا أسبوعيًا</string>
-    <string name="backup_choose_save_location">اختر مكان حفظ ملف النسخة الاحتياطية</string>
-    <string name="backup_paste_data">لصق بيانات النسخ الاحتياطي</string>
-    <string name="backup_select_file">حدد ملف النسخ الاحتياطي</string>
-    <string name="backup_whats_included">ما الذي يتضمنه النسخ الاحتياطي؟</string>
-    <string name="backup_included_1">جميع الإعدادات وقوائم التشغيل والموضوعات وتخصيص المكتبة</string>
-    <string name="backup_included_2">الاستعادة من الملفات أو الحافظة بنقرة واحدة</string>
-    <string name="backup_included_3">النسخ الاحتياطية المخزنة محليًا على جهازك للخصوصية</string>
-    <string name="backup_manage">إدارة النسخ الاحتياطي</string>
     <string name="backup_restore">استعادة النسخة الاحتياطية</string>
     
     <!-- Components: Blacklist Management -->
-    <string name="blacklist_title">إدارة القائمة السوداء</string>
-    <string name="blacklist_desc">لن تظهر الأغاني والمجلدات المحظورة في نتائج البحث أو التوصيات أو قوائم انتظار التشغيل التلقائي</string>
-    <string name="blacklist_songs">الأغاني المدرجة في القائمة السوداء</string>
-    <string name="blacklist_no_songs">لا توجد أغاني مدرجة في القائمة السوداء</string>
-    <string name="blacklist_all_available">جميع أغانيك متاحة للتشغيل</string>
-    <string name="blacklist_add_folder">إضافة مجلد إلى القائمة السوداء</string>
-    <string name="blacklist_folders">المجلدات المدرجة في القائمة السوداء</string>
-    <string name="blacklist_no_folders">لا توجد مجلدات مدرجة في القائمة السوداء</string>
-    <string name="blacklist_tap_to_add">اضغط على الزر أعلاه لإضافة مجلدات إلى القائمة السوداء</string>
-    <string name="blacklist_blocked_songs">الأغاني المحظورة</string>
-    <string name="blacklist_available_songs">الأغاني المتوفرة</string>
     
     <!-- Components: Queue -->
     <string name="queue_empty">قائمة الانتظار الخاصة بك فارغة</string>
@@ -1059,8 +819,6 @@
     <string name="playlist_create">إنشاء قائمة تشغيل</string>
     <string name="playlist_name_empty">لا يمكن أن يكون اسم قائمة التشغيل فارغًا</string>
     <string name="playlist_queue_not_empty">قائمة الانتظار ليست فارغة</string>
-    <string name="playlist_queue_songs">لديك %1$d أغنية%2$s في قائمة الانتظار الحالية.</string>
-    <string name="playlist_how_play">كيف تريد أن تلعب \"%1$s\"؟</string>
     
     <!-- Components: Licenses -->
     <string name="licenses_title">تراخيص مفتوحة المصدر</string>
@@ -1071,7 +829,6 @@
     <!-- Components: Player Chip Order -->
     <string name="player_chip_order_title">ترتيب شرائح اللاعب</string>
     <string name="player_chip_order_desc">تخصيص رقائق اللاعب</string>
-    <string name="player_chip_reset">إعادة التعيين إلى الافتراضي</string>
     <string name="player_chip_order_saved">تم حفظ ترتيب شرائح اللاعب وإمكانية رؤيته</string>
     
     <!-- Components: Library Tab Order -->
@@ -1079,45 +836,30 @@
     <string name="library_tab_order_desc">إعادة ترتيب وتبديل الرؤية</string>
     
     <!-- Components: Playback Bottom Sheet -->
-    <string name="playback_lyrics_priority">أولوية مصدر الكلمات</string>
     <string name="playback_lyrics_priority_desc">تكوين المصادر والسلوكيات والتخطيط والحجم وتصميم كلمات الأغاني</string>
     <string name="playback_settings">إعدادات التشغيل</string>
-    <string name="playback_audio_settings">إعدادات الصوت</string>
-    <string name="playback_active_device">جهاز نشط</string>
-    <string name="playback_no_device">لا يوجد جهاز متصل</string>
-    <string name="playback_tap_output">انقر لتحديد الإخراج</string>
     
     <!-- Components: Lyrics Editor -->
-    <string name="lyrics_sync_adjustment">تعديل المزامنة</string>
     <string name="lyrics_sync_note">يعمل ضبط المزامنة فقط مع كلمات الأغاني المتزامنة مع الوقت (تنسيق LRC). استخدم \"إعادة التعيين\" لجلب كلمات الأغاني المتزامنة إذا كانت متوفرة.</string>
     <string name="lyrics_placeholder">أدخل كلمات الأغاني هنا...\n\nيمكنك استخدام تنسيق LRC:\n[00:12.00] السطر الأول\n[00:17.00] السطر الثاني</string>
     <string name="lyrics_editor_title">محرر كلمات</string>
     
     <!-- Components: Song Info -->
     <string name="song_info_title">معلومات الاغنية</string>
-    <string name="song_info_no_metadata">لا توجد بيانات وصفية متاحة</string>
-    <string name="song_info_permission">يحتاج Rhythm إلى إذن لتعديل البيانات التعريفية لهذا الملف الصوتي. قد ترى مربع حوار للنظام يطلب منك الوصول - يرجى السماح له بحفظ تغييراتك.</string>
     <string name="rhythm_stats">Rhythm إحصائيات</string>
     <string name="file_info">معلومات الملف</string>
     
     <!-- Components: Add to Playlist -->
     <string name="add_to_playlists">أضف إلى قوائم التشغيل</string>
-    <string name="add_to_playlist_action">أضف إلى قائمة التشغيل</string>
     <string name="playlist_create_new">إنشاء قائمة تشغيل جديدة</string>
     <string name="playlist_create_first">قم بإنشاء قائمة التشغيل الأولى لإضافة الأغاني</string>
     
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">ذاكرة التخزين المؤقت</string>
-    <string name="cache_manage_desc">إدارة البيانات المخزنة مؤقتًا بما في ذلك الصور والملفات المؤقتة وبيانات التطبيق الأخرى.</string>
     
     <!-- Components: Beta Program -->
-    <string name="beta_welcome">مرحبًا بك في البرنامج التجريبي!</string>
-    <string name="beta_desc">أنت تستخدم حاليًا الإصدار التجريبي من Rhythm. لا يزال هذا الإصدار قيد التطوير وقد يحتوي على أخطاء أو ميزات غير مكتملة أو سلوك غير متوقع.</string>
     
     <!-- Components: Equalizer -->
-    <string name="equalizer_disabled">المعادل معطل</string>
-    <string name="equalizer_enable_desc">قم بتمكين المعادل لتخصيص تجربتك الصوتية.</string>
-    <string name="equalizer_open_system">افتح معادل النظام</string>
     
     <!-- Theme Customization Notes -->
     <string name="theme_color_schemes_unavailable">تتوفر أنظمة الألوان فقط عند استخدام مصدر ألوان مخصص.</string>
@@ -1135,44 +877,26 @@
     <string name="library_reorder_tabs">أعد ترتيب علامات التبويب لتخصيص تجربة مكتبتك</string>
     <string name="external_services_desc">تحكم في خدمات API الخارجية النشطة لتحسين تجربتك الموسيقية. قم بتبديل تشغيل/إيقاف الخدمات لإدارة استخدام البيانات ووظائفها.</string>
     <string name="lyrics_source_priority_title">أولوية مصدر الكلمات</string>
-    <string name="lyrics_source_priority_desc_placeholder">اختر المكان الذي يجب أن يبحث فيه Rhythm عن كلمات الأغاني أولاً</string>
     <string name="playlist_action_title">قائمة التشغيل اضغط على الإجراء</string>
     <string name="playlist_action_desc">السلوك الافتراضي لنقرات قائمة التشغيل</string>
-    <string name="playlist_action_choose">حدد إجراء النقر في قائمة التشغيل الافتراضية</string>
-    <string name="playlist_action_ask_title">اسأل في كل مرة</string>
-    <string name="playlist_action_ask_desc">إظهار منتقي الإجراءات في كل مرة</string>
     <string name="playlist_action_load_title">تحميل قائمة التشغيل بأكملها</string>
     <string name="playlist_action_load_desc">قم بتحميل قائمة التشغيل وابدأ من المسار المحدد</string>
     <string name="playlist_action_single_title">تشغيل هذه الأغنية فقط</string>
     <string name="playlist_action_single_desc">تشغيل المسار المحدد فقط</string>
     <string name="queue_action_title">إجراء تعارض قائمة الانتظار</string>
-    <string name="queue_action_desc">السلوك الافتراضي عندما تحتوي قائمة الانتظار على مسارات</string>
     <string name="queue_action_choose">بالفعل حدد إجراء تعارض قائمة الانتظار الافتراضي</string>
     <string name="queue_action_ask_title">اسأل في كل مرة</string>
     <string name="queue_action_ask_desc">إظهار منتقي الإجراءات في كل مرة</string>
-    <string name="queue_action_replace_title">استبدال قائمة الانتظار</string>
-    <string name="queue_action_replace_desc">مسح قائمة الانتظار وتشغيل الأغنية المحددة</string>
-    <string name="queue_action_next_title">العب التالي</string>
-    <string name="queue_action_next_desc">أضف بعد تشغيل الأغنية حاليًا</string>
-    <string name="queue_action_add_title">أضف إلى قائمة الانتظار</string>
-    <string name="queue_action_add_desc">أضف أغنية في نهاية قائمة الانتظار</string>
     <string name="queue_action_always_add_title">أضف دائمًا إلى قائمة الانتظار</string>
     <string name="queue_action_always_add_desc">قم دائمًا بإضافة المسار المحدد إلى قائمة الانتظار</string>
     
     <!-- Additional UI Elements -->
     <string name="now_playing">العب الآن</string>
-    <string name="skip_for_now">تخطي الآن</string>
     <string name="install_update_now">قم بتثبيت التحديث الآن</string>
     <string name="audio_settings">إعدادات الصوت</string>
     <string name="active_device">جهاز نشط</string>
-    <string name="tap_select_output">انقر لتحديد الإخراج</string>
     <string name="browse_library">تصفح المكتبة</string>
     <string name="add_more_songs">إضافة المزيد من الأغاني</string>
-    <string name="blocked_folders">المجلدات المحظورة</string>
-    <string name="last_backup">آخر نسخة احتياطية</string>
-    <string name="auto_backup">النسخ الاحتياطي التلقائي</string>
-    <string name="manage_backup">إدارة النسخ الاحتياطي</string>
-    <string name="restore_backup">استعادة النسخة الاحتياطية</string>
     <string name="edit_metadata">تحرير معلومات الأغنية</string>
     
     <!-- Updates Messages -->
@@ -1185,66 +909,32 @@
     <string name="settings_interval_every_72_hours">كل 72 ساعة</string>
     
     <!-- Cache -->
-    <string name="cache_total_size_label">إجمالي حجم ذاكرة التخزين المؤقت:</string>
-    <string name="cache_limit_label">حد ذاكرة التخزين المؤقت:</string>
     
     <!-- Theme -->
     <string name="theme_featured_schemes">المخططات المميزة</string>
     <string name="theme_more_schemes">المزيد من المخططات</string>
     <string name="theme_quick_presets">الإعدادات المسبقة السريعة</string>
     <string name="theme_advanced_rgb">ضوابط RGB المتقدمة</string>
-    <string name="theme_font_preview">الثعلب البني السريع يقفز فوق الكلب الكسول</string>
     
     <!-- Services -->
     <string name="external_services">خدمات خارجية</string>
     <string name="api_services">واجهات برمجة التطبيقات المتكاملة</string>
     
     <!-- Scrobbling -->
-    <string name="scrobbling_title">دعم التمرير</string>
-    <string name="scrobbling_enabled">تمكين التمرير</string>
-    <string name="scrobbling_desc">أرسل معلومات التشغيل إلى Last.fm وPano Scrobbler والتطبيقات المتوافقة</string>
-    <string name="scrobbling_info_title">ما هو التمرير؟</string>
-    <string name="scrobbling_info_desc">يتيح لك ذلك تتبع سجل الاستماع الخاص بك واكتشاف موسيقى جديدة ومشاركة ذوقك الموسيقي مع الأصدقاء.</string>
-    <string name="scrobbling_compatible_apps">التطبيقات المتوافقة</string>
-    <string name="scrobbling_apps_list">• Last.fm لـ Android\n• Pano Scrobbler\n• Simple Last.fm Scrobbler\n• تطبيقات أخرى متوافقة مع SLS API</string>
-    <string name="scrobbling_how_to">كيفية الاستخدام</string>
-    <string name="scrobbling_setup_steps">1. ثبّت أحد تطبيقات التمرير (على سبيل المثال، Pano Scrobbler من F-Droid)\n2. تفعيل التمرير هنا\n3. سيتم تتبع نشاط الاستماع الخاص بك تلقائيًا!</string>
     
     <!-- Discord Rich Presence -->
-    <string name="discord_title">حضور ديسكورد الغني</string>
-    <string name="discord_enabled">تمكين الحضور الغني للديسكورد</string>
-    <string name="discord_desc">أظهر ما تستمع إليه في حالة Discord</string>
-    <string name="discord_info_title">ما هو الحضور الغني للديسكورد؟</string>
-    <string name="discord_info_desc">يعرض عنوان الأغنية والفنان والألبوم وتقدم التشغيل.</string>
-    <string name="discord_compatible_apps">المتطلبات</string>
-    <string name="discord_apps_list">• Discord لـ Android\n• يجب أن يكون Discord قيد التشغيل\n• يجب تمكين حالة الموسيقى في إعدادات Discord</string>
-    <string name="discord_how_to">كيفية الاستخدام</string>
-    <string name="discord_setup_steps">1. قم بتثبيت Discord لـ Android\n2. قم بتمكين هذا الإعداد في Rhythm\n3. افتح Discord وقم بتمكين \"عرض النشاط الحالي\" في إعدادات المستخدم → حالة النشاط\n4. ستظهر معلومات اللعب الخاصة بك الآن في حالة Discord الخاصة بك!</string>
-    <string name="discord_privacy_note">ملاحظة الخصوصية</string>
-    <string name="discord_privacy_desc">يتم البث فقط عند تشغيل الموسيقى. يمكنك تشغيل/إيقاف هذا في أي وقت. يتحكم Discord في من يمكنه رؤية حالة نشاطك.</string>
     
     <!-- Broadcast Status (Tasker/KWGT) -->
-    <string name="broadcast_status_title">حالة البث</string>
     <string name="broadcast_status_enabled">تمكين بث الحالة</string>
     <string name="broadcast_status_desc">إرسال معلومات التشغيل إلى تاسكر، KWGT، وتطبيقات الأتمتة</string>
     <string name="bluetooth_lyrics_enabled">وضع كلمات البلوتوث</string>
     <string name="bluetooth_lyrics_desc">أرسل سطرًا غنائيًا متزامنًا كعنوان مسار Bluetooth وانقل الأغنية - الفنان إلى البيانات التعريفية للفنان</string>
-    <string name="broadcast_status_info_title">ما هو بث الحالة؟</string>
-    <string name="broadcast_status_info_desc">يرسل بث الحالة نوايا مشغل الموسيقى القياسية Android التي تستمع إليها تطبيقات الأتمتة والأدوات. يتيح ذلك لتطبيقات الجهات الخارجية عرض معلومات التشغيل الخاصة بك الآن أو تشغيل عمليات التشغيل التلقائي بناءً على ما تستمع إليه.</string>
-    <string name="broadcast_compatible_apps">التطبيقات المتوافقة</string>
-    <string name="broadcast_apps_list">• تاسكر (أتمتة)\n• KWGT/KLWP (أدوات مخصصة)\n• MacroDroid\n• AutoApps\n• Zooper Widget\n• أي تطبيق يستمع إلى نوايا مشغل الموسيقى</string>
-    <string name="broadcast_how_to">كيفية الاستخدام</string>
-    <string name="broadcast_setup_steps">1. ثبّت تطبيق التشغيل الآلي/التطبيق المصغر (على سبيل المثال، Tasker، KWGT)\n2. تمكين هذا الإعداد\n3. قم بتكوين تطبيقك للاستماع إلى:\n • com.android.music.metachanged (تتبع التغييرات)\n • com.android.music.playstatechanged (تشغيل/إيقاف مؤقت)\n4. الوصول إلى بيانات الأغنية عبر النوايا القياسية!</string>
-    <string name="broadcast_use_cases">حالات الاستخدام</string>
-    <string name="broadcast_use_cases_list">• العرض قيد التشغيل الآن في أدوات مخصصة\n• تشغيل مشاهد المنزل الذكي بناءً على الموسيقى\n• إيقاف الموسيقى مؤقتًا تلقائيًا عند فتح تطبيقات معينة\n• تسجيل سجل الاستماع\n• التحكم في التطبيقات الأخرى بناءً على حالة التشغيل</string>
     
     <!-- Equalizer -->
     <string name="equalizer">المعادل</string>
     <string name="frequency_bands">نطاقات التردد</string>
-    <string name="frequency_response">استجابة التردد</string>
     <string name="audio_effects">تأثيرات صوتية</string>
     <string name="audio_normalization">تطبيع الصوت</string>
-    <string name="audio_normalization_desc">تطبيع مستويات الصوت عبر المسارات</string>
     <string name="replay_gain">كسب الإعادة</string>
     <string name="replay_gain_desc">استخدم علامات كسب إعادة التشغيل المضمنة لحجم الصوت</string>
     <string name="bass_boost">تعزيز الجهير</string>
@@ -1254,27 +944,20 @@
     <string name="strength">القوة</string>
     <string name="open_equalizer_settings">افتح إعدادات المعادل</string>
     <string name="system_equalizer">معادل النظام</string>
-    <string name="system_equalizer_desc">قم بالوصول إلى المعادل المدمج في جهازك</string>
     <string name="no_equalizer">لم يتم العثور على معادل النظام</string>
     <string name="no_audio_ID">لا يتوفر معرف جلسة صوتية</string>
     <!-- Sleep Timer -->
     <string name="sleep_timer">مؤقت النوم</string>
-    <string name="sleep_timer_coming_soon">سيتم تنفيذ عناصر التحكم في مؤقت النوم هنا</string>
     <string name="sleep_timer_quick">مؤقت سريع</string>
     <string name="sleep_timer_custom">مؤقت مخصص</string>
-    <string name="sleep_timer_custom_desc">تحديد مدة زمنية محددة</string>
     <string name="sleep_timer_action">عمل الموقت</string>
     <string name="sleep_timer_action_desc">ماذا يحدث عندما ينتهي المؤقت</string>
     <string name="sleep_timer_select_duration">حدد مدة المؤقت</string>
-    <string name="sleep_timer_set_hours_minutes">ضبط الساعات والدقائق لمؤقت النوم</string>
-    <string name="coming_soon">قريبا</string>
     
     <!-- Crash Reports -->
     <string name="crash_reports">تقارير الأعطال</string>
-    <string name="crashed_on">تعطلت على: %1$s</string>
     
     <!-- Lyrics -->
-    <string name="about_lyrics_sources">حول مصادر كلمات الأغاني</string>
     <string name="sync_adjustment">تعديل المزامنة</string>
     <string name="synced_lyrics_unavailable">الكلمات المتزامنة غير متوفرة لهذا التنسيق.</string>
     <string name="word_by_word_unavailable">كلمات الأغاني كلمة بكلمة غير متوفرة.</string>
@@ -1288,7 +971,6 @@
     <string name="restart_app">هل تريد إعادة تشغيل التطبيق؟</string>
     <string name="export_playlist">تصدير قائمة التشغيل</string>
     <string name="export_all_playlists">تصدير كافة قوائم التشغيل</string>
-    <string name="export_count_playlists">تصدير قوائم التشغيل %1$d إلى:</string>
     <string name="include_default_playlists">تضمين قوائم التشغيل الافتراضية (المفضلة، المضافة مؤخرًا، الأكثر تشغيلًا)</string>
     <string name="import_playlist">استيراد قائمة التشغيل</string>
     <string name="select_playlist_file">حدد ملف قائمة التشغيل لاستيراده:</string>
@@ -1296,45 +978,21 @@
     <string name="may_take_moments">قد يستغرق هذا بضع لحظات...</string>
     
     <!-- Canvas Video Player -->
-    <string name="canvas_unavailable">Canvas غير متاح</string>
-    <string name="canvas_couldnt_load">تعذر تحميل Canvas</string>
     
     <!-- Beta Program -->
     <string name="beta_program">برنامج بيتا</string>
-    <string name="lets_go">دعنا نذهب! 🎵</string>
     
     <!-- Special Thanks -->
-    <string name="special_thanks">شكر خاص</string>
     
     <!-- Plural Support -->
-    <plurals name="playlist_count">
-        <item quantity="one">قائمة التشغيل</item>
-        <item quantity="other">قوائم التشغيل</item>
-    </plurals>
     
     <!-- Common Actions -->
     <string name="action_ok">موافق</string>
     <string name="action_cancel">إلغاء</string>
-    <string name="action_save">حفظ</string>
     <string name="action_create">إنشاء</string>
-    <string name="action_delete">حذف</string>
-    <string name="action_remove">إزالة</string>
-    <string name="action_export">تصدير</string>
     <string name="action_export_all">تصدير الكل</string>
-    <string name="action_import">استيراد</string>
     <string name="action_browse_files">تصفح الملفات</string>
-    <string name="action_close">إغلاق</string>
-    <string name="action_reset">إعادة تعيين</string>
-    <string name="action_apply">قدم</string>
-    <string name="action_continue">متابعة</string>
-    <string name="action_proceed">تابع</string>
-    <string name="action_later">لاحقا</string>
-    <string name="action_retry">أعد المحاولة</string>
-    <string name="action_add">أضف</string>
-    <string name="action_edit">تحرير</string>
-    <string name="action_change">التغيير</string>
     <string name="action_choose">اختر</string>
-    <string name="action_default">الافتراضي</string>
     <string name="action_play">لعب</string>
     <string name="action_shuffle">خلط ورق اللعب</string>
     
@@ -1365,11 +1023,7 @@
     <string name="settings_queue_playback_desc">إضافة تلقائية، تكرار</string>
     <string name="settings_equalizer_title">المعادل</string>
     <string name="settings_equalizer_desc">باس، ثلاثة أضعاف</string>
-    <string name="settings_sleep_timer_title">مؤقت النوم</string>
-    <string name="settings_sleep_timer_desc">إيقاف التشغيل التلقائي</string>
     <string name="settings_section_library_content">المكتبة والوسائط</string>
-    <string name="settings_group_by_album_artist">المجموعة حسب فنان الألبوم</string>
-    <string name="settings_group_by_album_artist_desc">احتفظ بالتعاونات مجمعة ضمن فناني الألبوم</string>
     <string name="settings_media_scan_title">مسح الوسائط</string>
     <string name="settings_media_scan_desc">مسح المجلدات</string>
     <string name="settings_playlists_title">قوائم التشغيل</string>
@@ -1381,7 +1035,6 @@
     <string name="settings_cache_management_desc">صور، كلمات</string>
     <string name="settings_backup_restore_title">النسخ الاحتياطي والاستعادة</string>
     <string name="settings_backup_restore_desc">تصدير، استيراد</string>
-    <string name="settings_section_services">الخدمات</string>
     <string name="settings_api_management">التكامل</string>
     <string name="settings_api_management_desc">API، التمرير</string>
     <string name="settings_section_updates_info">التحديثات والمعلومات</string>
@@ -1398,43 +1051,24 @@
     <string name="settings_select_option_desc">اختر إعدادًا من القائمة لتكوينه</string>
     
     <!-- Playlist Actions -->
-    <string name="playlist_rename_action">إعادة تسمية قائمة التشغيل</string>
-    <string name="playlist_delete_action">حذف قائمة التشغيل</string>
-    <string name="playlist_search">ابحث عن مسار...</string>
-    <string name="playlist_search_in">ابحث في قائمة التشغيل هذه</string>
     <string name="playlist_no_songs_available">لا توجد أغاني متاحة</string>
     <string name="playlist_all_in_playlist">جميع الأغاني موجودة بالفعل في قائمة التشغيل هذه.</string>
     <string name="playlist_name_field">اسم قائمة التشغيل</string>
-    <string name="playlist_delete_confirm">هل أنت متأكد أنك تريد حذف \'%1$s\'؟ لا يمكن التراجع عن هذا الإجراء.</string>
     
     <!-- Player Actions -->
-    <string name="player_load_lyrics">تحميل الأغاني</string>
-    <string name="player_retry_canvas">أعد المحاولة Canvas</string>
     
     <!-- Search -->
-    <string name="search_songs_count">أغاني (%1$d)</string>
-    <string name="search_albums_count">الالبومات (%1$d)</string>
-    <string name="search_artists_count">الفنانين (%1$d)</string>
-    <string name="search_playlists_count">قوائم التشغيل (%1$d)</string>
     
     <!-- Song Metadata -->
-    <string name="metadata_title">العنوان</string>
-    <string name="metadata_artist">فنان</string>
     <string name="metadata_album">الالبوم</string>
     <string name="metadata_genre">النوع</string>
     <string name="metadata_year">سنة</string>
     <string name="metadata_track">المسار</string>
     <string name="metadata_saving">جاري الحفظ...</string>
-    <string name="metadata_save_changes">حفظ التغييرات</string>
-    <string name="metadata_irreversible_changes">تغييرات لا رجعة فيها</string>
-    <string name="metadata_media_access_required">مطلوب الوصول إلى الوسائط</string>
     
     <!-- Updates Actions -->
     <string name="updates_check_now_action">تحقق الآن</string>
     <string name="updates_check_again">تحقق مرة أخرى</string>
-    <string name="updates_download">تنزيل التحديث</string>
-    <string name="updates_install">تثبيت التحديث</string>
-    <string name="updates_cancel">إلغاء التنزيل</string>
     <string name="updates_enable_auto_check">الفحص التلقائي</string>
     <string name="updates_channel_title">تحديث القناة</string>
     <string name="updates_source_title">تحديث المصدر</string>
@@ -1448,59 +1082,28 @@
     <string name="updates_check_interval_title">تحديث الفاصل الزمني</string>
     
     <!-- Cache Actions -->
-    <string name="cache_clearing">مسح ذاكرة التخزين المؤقت…</string>
-    <string name="cache_cleared">تم مسح ذاكرة التخزين المؤقت!</string>
-    <string name="cache_clear_all">مسح كافة ذاكرة التخزين المؤقت</string>
-    <string name="cache_clearing_lyrics">مسح الكلمات…</string>
-    <string name="cache_lyrics_cleared">تم مسح ذاكرة التخزين المؤقت للكلمات!</string>
-    <string name="cache_clear_lyrics_only">مسح ذاكرة التخزين المؤقت للكلمات فقط</string>
     
     <!-- Backup Actions -->
-    <string name="backup_created_success">تم إنشاء النسخة الاحتياطية بنجاح</string>
-    <string name="backup_restore_success">تمت عملية الاستعادة بنجاح</string>
-    <string name="backup_restart_now">أعد التشغيل الآن</string>
-    <string name="backup_continue_without_restart">المتابعة بدون إعادة التشغيل</string>
-    <string name="backup_error_title">خطأ</string>
     
     <!-- Import/Export -->
-    <string name="import_export_json_format">JSON التنسيق</string>
-    <string name="import_export_pls_format">PLS قائمة التشغيل</string>
     <string name="import_complete_title">اكتمل الاستيراد</string>
-    <string name="import_complete_message">تم استيراد قوائم تشغيل %1$d بنجاح.\n%2$s\n\nأعد تشغيل التطبيق لتطبيق التغييرات.</string>
-    <string name="import_restart_app">إعادة تشغيل التطبيق</string>
     
     <!-- Sleep Timer -->
-    <string name="sleep_timer_set_custom">ضبط الوقت المخصص</string>
-    <string name="sleep_timer_set">ضبط المؤقت</string>
     
     <!-- Crash Logs -->
-    <string name="crash_logs_clear_all">مسح كافة السجلات</string>
-    <string name="crash_logs_test">اختبار التصادم</string>
-    <string name="crash_logs_copy">نسخ السجل</string>
-    <string name="crash_logs_details_title">تفاصيل سجل الأعطال</string>
     
     <!-- Accessibility - Content Descriptions -->
     <string name="cd_back">العودة</string>
-    <string name="cd_navigate_back">ارجع</string>
     <string name="cd_play">لعب</string>
-    <string name="cd_play_all">تشغيل الكل</string>
     <string name="cd_shuffle">خلط ورق اللعب</string>
     <string name="cd_play_album">تشغيل الألبوم</string>
-    <string name="cd_shuffle_play">تشغيل عشوائي</string>
     <string name="cd_previous_track">الأغنية السابقة</string>
     <string name="cd_next_track">المسار التالي</string>
-    <string name="cd_seek_back">تسعى 10 ثانية إلى الوراء</string>
-    <string name="cd_seek_forward">تقدم بمقدار 10 ثوانٍ</string>
-    <string name="cd_more_options">المزيد من الخيارات</string>
     <string name="cd_filters">مرشحات</string>
-    <string name="cd_clear_search">مسح البحث</string>
     <string name="cd_refresh">تحديث</string>
     <string name="cd_reorder_tabs">إعادة ترتيب علامات التبويب</string>
     <string name="cd_toggle_view_type">تبديل نوع العرض</string>
     <string name="cd_open_playlist">فتح قائمة التشغيل</string>
-    <string name="cd_ascending">تصاعدي</string>
-    <string name="cd_descending">تنازلي</string>
-    <string name="cd_artist_image">الفنان %1$s</string>
     <string name="cd_play_artist">تشغيل %1$s</string>
     <string name="cd_storage">تخزين</string>
     <string name="cd_pinned">مثبت</string>
@@ -1510,73 +1113,24 @@
     <string name="cd_export_playlists">تصدير قوائم التشغيل</string>
     <string name="cd_import_playlist">استيراد قائمة التشغيل</string>
     <string name="cd_create_playlist">إنشاء قائمة تشغيل</string>
-    <string name="cd_create_new_playlist">أنشئ قائمة تشغيل جديدة</string>
-    <string name="cd_home">الصفحة الرئيسية</string>
     <string name="cd_current_location">الموقع الحالي</string>
-    <string name="cd_item_icon">%1$s أيقونة</string>
-    <string name="cd_open_storage">تخزين مفتوح</string>
-    <string name="cd_minimize">تصغير</string>
     <string name="cd_song_info">معلومات الاغنية</string>
-    <string name="cd_album_artwork">العمل الفني للألبوم لـ %1$s</string>
     <string name="cd_no_song_playing">لا توجد أغنية قيد التشغيل</string>
-    <string name="cd_toggle_shuffle">تبديل عشوائي</string>
-    <string name="cd_toggle_lyrics">تبديل الكلمات</string>
-    <string name="cd_toggle_repeat_mode">تبديل وضع التكرار</string>
     <string name="cd_show_actions">إظهار الإجراءات</string>
-    <string name="cd_add_to_playlist_action">أضف إلى قائمة التشغيل</string>
     <string name="cd_toggle_favorite">تبديل المفضلة</string>
-    <string name="cd_playback_speed_action">سرعة التشغيل</string>
     <string name="cd_show_album">عرض الألبوم</string>
     <string name="cd_show_artist">عرض الفنان</string>
     <string name="cd_reorder_chips">إعادة ترتيب الرقائق</string>
     <string name="cd_search">يبحث</string>
     <string name="cd_view_all">عرض الكل</string>
-    <string name="cd_albums">الالبومات</string>
-    <string name="cd_artists">الفنانين</string>
-    <string name="cd_songs">أغاني</string>
     <string name="cd_rhythm_splash">Rhythm</string>
-    <string name="cd_search_in_playlist">البحث عن الأغاني في قائمة التشغيل</string>
-    <string name="cd_shuffle_play_action">تشغيل عشوائي</string>
-    <string name="cd_add_songs_to_playlist">إضافة الأغاني إلى قائمة التشغيل</string>
     <string name="cd_remove_from_playlist">إزالة من قائمة التشغيل</string>
     <string name="cd_change_language">تغيير اللغة</string>
-    <string name="cd_permissions">الأذونات</string>
-    <string name="cd_backup_restore">النسخ الاحتياطي والاستعادة</string>
-    <string name="cd_open_backup_restore">فتح النسخ الاحتياطي والاستعادة</string>
-    <string name="cd_audio_playback_settings">إعدادات الصوت والتشغيل</string>
-    <string name="cd_library_setup">إعداد المكتبة</string>
     <string name="cd_open_settings">فتح</string>
-    <string name="cd_theming">السمات</string>
-    <string name="cd_open_theme_customization">فتح تخصيص الموضوع</string>
     <string name="cd_show_options">عرض الخيارات</string>
     <string name="cd_app_updates">تحديثات التطبيق</string>
     <string name="cd_completed">اكتمل</string>
-    <string name="cd_media_scan_filtering">تصفية مسح الوسائط</string>
-    <string name="cd_open_media_scan_settings">افتح إعدادات فحص الوسائط</string>
-    <string name="cd_close">إغلاق</string>
-    <string name="cd_album_artwork_generic">العمل الفني للألبوم</string>
     <string name="cd_language">اللغة</string>
-    <string name="cd_view_license">عرض الترخيص</string>
-    <string name="cd_refresh_devices">تحديث الأجهزة</string>
-    <string name="cd_switch_device">تبديل الجهاز</string>
-    <string name="cd_volume">المجلد</string>
-    <string name="cd_decrease_volume">خفض مستوى الصوت</string>
-    <string name="cd_increase_volume">زيادة الحجم</string>
-    <string name="cd_playback_speed">سرعة التشغيل</string>
-    <string name="cd_playback_settings">إعدادات التشغيل</string>
-    <string name="cd_move_up">تحرك للأعلى</string>
-    <string name="cd_move_down">تحرك للأسفل</string>
-    <string name="cd_add_songs">اضافة اغاني</string>
-    <string name="cd_clear_queue">مسح قائمة الانتظار</string>
-    <string name="cd_now_playing">العب الآن</string>
-    <string name="cd_drag_to_reorder">اسحب لإعادة الترتيب</string>
-    <string name="cd_remove_from_queue">إزالة من قائمة الانتظار</string>
-    <string name="cd_edit_metadata">تحرير البيانات الوصفية</string>
-    <string name="cd_reset_to_original">إعادة التعيين إلى الأصل</string>
-    <string name="cd_remove_from_blacklist">إزالة من القائمة السوداء</string>
-    <string name="cd_remove_folder_from_blacklist">إزالة المجلد من القائمة السوداء</string>
-    <string name="cd_beta_program_warning">تحذير من برنامج بيتا</string>
-    <string name="cd_sort_songs">ترتيب الأغاني</string>
     <string name="cd_add_selected_songs">إضافة الأغاني المختارة</string>
     <string name="cd_toggle_multi_select">تبديل التحديد المتعدد</string>
     <string name="cd_add_song">أضف أغنية</string>
@@ -1584,8 +1138,6 @@
     <!-- Bottom Sheet Titles -->
     <string name="bottomsheet_add_to_playlist">أضف إلى قائمة التشغيل</string>
     <string name="bottomsheet_no_playlists">لا توجد قوائم تشغيل بعد</string>
-    <string name="bottomsheet_actions">الإجراءات</string>
-    <string name="bottomsheet_metadata">البيانات الوصفية</string>
     <string name="bottomsheet_queue">قائمة الانتظار</string>
     <string name="bottomsheet_up_next">التالي</string>
     <string name="bottomsheet_albums">الالبومات</string>
@@ -1595,12 +1147,6 @@
     <string name="bottomsheet_reset">إعادة تعيين</string>
     <string name="bottomsheet_save">حفظ</string>
     <string name="bottomsheet_cancel">إلغاء</string>
-    <string name="bottomsheet_close">إغلاق</string>
-    <string name="bottomsheet_delete">حذف</string>
-    <string name="bottomsheet_clear_all">مسح الكل</string>
-    <string name="bottomsheet_add">أضف</string>
-    <string name="bottomsheet_import">استيراد</string>
-    <string name="bottomsheet_export">تصدير</string>
     
     <!-- Bottom Sheet: Lyrics Editor -->
     <string name="bottomsheet_lyrics_earlier">سابق</string>
@@ -1638,110 +1184,36 @@
     <string name="bottomsheet_reorder_toggle_visibility">إعادة ترتيب وتبديل الرؤية</string>
     
     <!-- Bottom Sheet: Cast -->
-    <string name="bottomsheet_cast_stream">الإرسال والبث</string>
-    <string name="bottomsheet_playing_now">يلعب الآن</string>
-    <string name="bottomsheet_switch_output">تبديل جهاز الإخراج</string>
-    <string name="bottomsheet_connect_devices">قم بالاتصال بجهاز Bluetooth أو Cast أو أجهزة أخرى</string>
-    <string name="bottomsheet_open_switcher">فتح محول الإخراج</string>
-    <string name="bottomsheet_about_casting">حول الصب</string>
-    <string name="bottomsheet_casting_info">استخدم محول الإخراج لإرسال الموسيقى الخاصة بك إلى أجهزة Bluetooth أو Chromecast أو الأجهزة المتوافقة الأخرى. يتعامل توجيه الوسائط الأصلي لـ Android مع نقل التشغيل السلس.</string>
-    <string name="bottomsheet_cast_to_tv">إرسال إلى التلفزيون أو مكبر الصوت</string>
-    <string name="bottomsheet_cast_description">قم ببث الموسيقى إلى Chromecast أو أجهزة التلفزيون الذكية أو مكبرات الصوت</string>
-    <string name="bottomsheet_find_devices">ابحث عن أجهزة الإرسال</string>
-    <string name="bottomsheet_tap_disconnect">انقر لقطع الاتصال بهذا الجهاز</string>
-    <string name="bottomsheet_disconnect">قطع الاتصال</string>
-    <string name="bottomsheet_stream_to_devices">البث إلى أجهزتك</string>
-    <string name="bottomsheet_this_phone">هذا الهاتف</string>
-    <string name="bottomsheet_opening_switcher">فتح محول الإخراج…</string>
-    <string name="bottomsheet_disconnected_cast">تم قطع الاتصال بجهاز الإرسال</string>
-    <string name="bottomsheet_cast_unavailable">فريق التمثيل غير متاح: %1$s</string>
-    <string name="bottomsheet_connected_to_device">متصل بـ %1$s</string>
     <string name="bottomsheet_active_device">نشط</string>
-    <string name="device_type_television">تلفزيون</string>
-    <string name="device_type_smart_speaker">مكبر صوت ذكي</string>
-    <string name="device_type_soundbar">شريط الصوت</string>
-    <string name="device_type_phone">الهاتف</string>
-    <string name="device_type_cast_device">جهاز الصب</string>
     
     <!-- Bottom Sheet: Backup/Restore -->
-    <string name="bottomsheet_backup_success_title">تم إنشاء النسخة الاحتياطية بنجاح</string>
-    <string name="bottomsheet_backup_success_msg">تم إنشاء النسخة الاحتياطية الكاملة لـ Rhythm بما في ذلك:\n\n• جميع قوائم التشغيل وأغانيها\n• المفضلة وسجل التشغيل\n• إعدادات التطبيق وتفضيلاته\n• تكوينات المعادل\n• تخصيصات السمات</string>
-    <string name="bottomsheet_restore_success_title">تمت عملية الاستعادة بنجاح</string>
-    <string name="bottomsheet_restore_success_msg">تمت استعادة بيانات Rhythm بنجاح، بما في ذلك:\n\n• جميع قوائم التشغيل وأغانيها\n• المفضلة وسجل التشغيل\n• إعدادات التطبيق وتفضيلاته\n• تكوينات المعادل\n• تخصيصات السمات</string>
-    <string name="bottomsheet_restart_now">أعد التشغيل الآن</string>
-    <string name="bottomsheet_ok">موافق</string>
-    <string name="bottomsheet_error">خطأ</string>
     
     <!-- Bottom Sheet: Cache Management -->
-    <string name="bottomsheet_clearing_cache">مسح ذاكرة التخزين المؤقت…</string>
-    <string name="bottomsheet_cache_cleared">تم مسح ذاكرة التخزين المؤقت!</string>
-    <string name="bottomsheet_clear_all_cache">مسح كافة ذاكرة التخزين المؤقت</string>
     
     <!-- Bottom Sheet: Blacklist -->
-    <string name="bottomsheet_blacklist_close">إغلاق</string>
     
     <!-- Bottom Sheet: Library Tab Order -->
-    <string name="bottomsheet_library_tab_order">ترتيب علامة تبويب المكتبة</string>
     
     <!-- Bottom Sheet: Device Configuration / AutoEQ -->
-    <string name="bottomsheet_manage_autoeq">إدارة AutoEQ</string>
-    <string name="bottomsheet_autoeq_desc">قم بتكوين أجهزتك الصوتية باستخدام ملفات تعريف AutoEQ المحسنة للحصول على أفضل تجربة استماع.</string>
-    <string name="bottomsheet_no_devices">لم يتم تكوين أي أجهزة</string>
-    <string name="bottomsheet_add_device_hint">أضف سماعات الرأس أو مكبرات الصوت للحصول على إعدادات EQ مخصصة</string>
-    <string name="bottomsheet_import_eq">استيراد ملف تعريف EQ</string>
-    <string name="bottomsheet_paste_eq">الصق إعدادات EQ من autoeq.app أو مصادر أخرى.</string>
-    <string name="bottomsheet_supported_formats">التنسيقات المدعومة:\n• نص FixedBandEQ (AutoEQ)\n• تنسيق JSON\n• CSV (10 قيم نطاق)</string>
     <string name="bottomsheet_export_eq">شارك إعدادات EQ الخاصة بك مع الآخرين أو احفظها للنسخ الاحتياطي.</string>
-    <string name="bottomsheet_active_profile">ملف التعريف النشط: %1$s</string>
     <string name="bottomsheet_no_eq_export">لا توجد إعدادات EQ نشطة للتصدير. يرجى تمكين المعادل وتكوينه أولاً.</string>
     <string name="bottomsheet_device_type">نوع الجهاز</string>
-    <string name="bottomsheet_choose_profile">اختر ملف تعريف AutoEQ لـ %1$s</string>
-    <string name="bottomsheet_delete_device">حذف الجهاز</string>
-    <string name="bottomsheet_delete_device_confirm">هل أنت متأكد أنك تريد حذف \'%1$s\'؟ لا يمكن التراجع عن هذا الإجراء.</string>
     
     <!-- Bottom Sheet: Song Info / Metadata Editor -->
-    <string name="bottomsheet_change">التغيير</string>
-    <string name="bottomsheet_remove">إزالة</string>
     <string name="bottomsheet_title">العنوان</string>
-    <string name="bottomsheet_artist">فنان</string>
-    <string name="bottomsheet_album">الالبوم</string>
     <string name="bottomsheet_genre">النوع</string>
     <string name="bottomsheet_year">سنة</string>
     <string name="bottomsheet_track">المسار</string>
-    <string name="bottomsheet_saving">جار الحفظ…</string>
-    <string name="bottomsheet_save_changes">حفظ التغييرات</string>
     <string name="bottomsheet_irreversible">تغييرات لا رجعة فيها</string>
     <string name="bottomsheet_proceed">تابع</string>
     
     <!-- Bottom Sheet: Player Chip Order -->
-    <string name="bottomsheet_player_chip_order">ترتيب شرائح اللاعب</string>
     
     <!-- Audio Quality Labels -->
-    <string name="audio_quality_dolby_atmos">دولبي اتموس</string>
-    <string name="audio_quality_dolby_truehd">دولبي ترو اتش دي</string>
-    <string name="audio_quality_dolby_digital">دولبي ديجيتال</string>
-    <string name="audio_quality_apple_lossless">أبل ضياع</string>
-    <string name="audio_quality_flac_lossless">FLAC ضياع</string>
-    <string name="audio_quality_ogg_vorbis">أو جي جي فوربيس</string>
-    <string name="audio_quality_dts_audio">صوت دي تي اس</string>
-    <string name="audio_quality_hi_res_lossless">مرحبا الدقة ضياع</string>
-    <string name="audio_quality_cd_quality">جودة القرص المضغوط</string>
-    <string name="audio_quality_studio_master">ستوديو ماستر</string>
-    <string name="audio_quality_lossless_surround">محيط بلا فقدان</string>
-    <string name="audio_quality_lossy_surround">محيط ضائع</string>
-    <string name="audio_quality_dolby_surround">دولبي محيطي</string>
     
     <!-- Device Names -->
-    <string name="device_phone_speaker">مكبر صوت الهاتف</string>
-    <string name="device_wired_headphones">سماعات سلكية</string>
-    <string name="device_wired_headset">سماعة سلكية</string>
-    <string name="device_bluetooth_audio">صوت بلوتوث</string>
-    <string name="device_unknown">جهاز غير معروف</string>
     
     <!-- Fallback Metadata -->
-    <string name="fallback_unknown_artist">فنان غير معروف</string>
-    <string name="fallback_unknown_album">ألبوم غير معروف</string>
-    <string name="fallback_unknown_file">ملف غير معروف</string>
     
     <!-- Service Notifications -->
     <string name="service_app_updates">Rhythm المحدث</string>
@@ -1769,20 +1241,13 @@
     <string name="crash_restart_app">إعادة تشغيل التطبيق</string>
     
     <!-- Genre Detection -->
-    <string name="genre_hip_hop">الهيب هوب</string>
     
     <!-- Cache Details -->
-    <string name="cache_internal">ذاكرة التخزين المؤقت الداخلية</string>
-    <string name="cache_external">ذاكرة التخزين المؤقت الخارجية</string>
-    <string name="cache_canvas">Canvas ذاكرة التخزين المؤقت</string>
     
     <!-- Default Playlists -->
-    <string name="default_playlist_recently_added">أضيفت مؤخرا</string>
-    <string name="default_playlist_most_played">الأكثر لعباً</string>
     
     <!-- Misc UI -->
     <string name="ui_clear_all">مسح الكل</string>
-    <string name="ui_error_generic">خطأ</string>
     
     <!-- Settings Screen - Complete -->
     <string name="settings_home_customization">الصفحة الرئيسية</string>
@@ -1801,127 +1266,42 @@
     <string name="settings_lossless_artwork_desc">إظهار العمل الفني للأغنية المضمنة بدقة كاملة بدون ضغط</string>
     <string name="settings_song_artwork_restart_required">تم تغيير وضع العمل الفني. أعد تشغيل التطبيق لمسح ذاكرة التخزين المؤقت وإجراء إعادة فحص كاملة للوسائط باستخدام مصادر العمل الفني المحدثة.</string>
     <string name="settings_artwork_cache_size">حجم ذاكرة التخزين المؤقت للعمل الفني</string>
-    <string name="settings_artwork_cache_size_loading">يتم الآن حساب استخدام ذاكرة التخزين المؤقت للعمل الفني المضمن...</string>
-    <string name="settings_artwork_cache_size_desc">تستخدم ذاكرة التخزين المؤقت للعمل الفني المضمنة حاليًا %1$s عبر ملفات %2$d</string>
-    <string name="settings_artwork_cache_trim_now">تقليم ذاكرة التخزين المؤقت للعمل الفني الآن</string>
-    <string name="settings_artwork_cache_trim_now_desc">تقليم إدخالات العمل الفني القديم باستخدام حدود ذاكرة التخزين المؤقت</string>
-    <string name="settings_artwork_cache_trim_in_progress">اقتطاع ذاكرة التخزين المؤقت للعمل الفني...</string>
-    <string name="settings_artwork_cache_trim_success">تم قطع ذاكرة التخزين المؤقت للعمل الفني. الاستخدام الحالي: %1$s</string>
-    <string name="settings_artwork_cache_trim_failed">فشل في قطع ذاكرة التخزين المؤقت للعمل الفني</string>
     <string name="settings_artist_parsing">الفنانين</string>
     <string name="settings_artist_parsing_desc">فواصل عرض</string>
     <string name="settings_rhythm_stats">Rhythm إحصائيات</string>
     <string name="settings_rhythm_stats_desc">وقت الاستماع وأهم المقاطع الصوتية والاتجاهات</string>
-    <string name="settings_rhythm_aura">Rhythm حارس</string>
     <string name="settings_rhythm_guard">Rhythm حارس</string>
-    <string name="settings_rhythm_aura_list_desc">الاستماع إلى حواجز الحماية الصحية المدعومة بإحصائيات Rhythm</string>
     <string name="settings_rhythm_guard_list_desc">الاستماع إلى حواجز الحماية الصحية المدعومة بإحصائيات Rhythm</string>
-    <string name="settings_rhythm_aura_subtitle">مراقبة صحة الاستماع</string>
-    <string name="settings_rhythm_guard_subtitle">مراقبة صحة الاستماع</string>
-    <string name="settings_rhythm_aura_desc">استخدم نشاط الإحصائيات Rhythm الخاص بك للحفاظ على عادات الاستماع أكثر أمانًا من خلال التوصيات والتحذيرات اليدوية التي تراعي العمر.</string>
-    <string name="settings_rhythm_guard_desc">استخدم نشاط الإحصائيات Rhythm الخاص بك للحفاظ على عادات الاستماع أكثر أمانًا من خلال التوصيات والتحذيرات اليدوية التي تراعي العمر.</string>
-    <string name="settings_rhythm_aura_mode_title">وضع الحماية</string>
     <string name="settings_rhythm_guard_mode_title">وضع الحماية</string>
-    <string name="settings_rhythm_aura_mode_desc">اختر كيفية قيام Rhythm Guard بإدارة صحة الاستماع</string>
     <string name="settings_rhythm_guard_mode_desc">اختر كيفية قيام Rhythm Guard بإدارة صحة الاستماع</string>
-    <string name="settings_rhythm_aura_mode_auto">تلقائي</string>
     <string name="settings_rhythm_guard_mode_auto">تلقائي</string>
-    <string name="settings_rhythm_aura_mode_manual">دليل</string>
     <string name="settings_rhythm_guard_mode_manual">دليل</string>
-    <string name="settings_rhythm_aura_mode_off">معطلة</string>
-    <string name="settings_rhythm_guard_mode_off">معطلة</string>
-    <string name="settings_rhythm_aura_age_label">الملف التعريفي للعمر: %1$d</string>
     <string name="settings_rhythm_guard_age_label">الملف التعريفي للعمر: %1$d</string>
-    <string name="settings_rhythm_aura_age_desc">يوصى بحجم آمن يصل إلى %1$d%% وحوالي %2$d دقيقة يوميًا.</string>
     <string name="settings_rhythm_guard_age_desc">يوصى بحجم آمن يصل إلى %1$d%% وحوالي %2$d دقيقة يوميًا.</string>
-    <string name="settings_rhythm_aura_auto_policy_table_title">دليل الاستماع الآمن (العمر -&gt; الحجم / اليوم)</string>
     <string name="settings_rhythm_guard_auto_policy_table_title">دليل الاستماع الآمن (العمر -&gt; الحجم / اليوم)</string>
-    <string name="settings_rhythm_aura_auto_policy_band">العمر %1$d-%2$d</string>
     <string name="settings_rhythm_guard_auto_policy_band">العمر %1$d-%2$d</string>
-    <string name="settings_rhythm_aura_auto_policy_value">%1$d%% / %2$d دقيقة</string>
     <string name="settings_rhythm_guard_auto_policy_value">%1$d%% / %2$d دقيقة</string>
-    <string name="settings_rhythm_aura_health_overview_title">نظرة عامة على الصحة</string>
-    <string name="settings_rhythm_guard_health_overview_title">نظرة عامة على الصحة</string>
-    <string name="settings_rhythm_aura_health_overview_subtitle">لقطة حية لسلامة السمع بناءً على مستوى صوت النظام في الوقت الفعلي وحمل الاستماع اليوم.</string>
-    <string name="settings_rhythm_guard_health_overview_subtitle">لقطة حية لسلامة السمع بناءً على مستوى صوت النظام في الوقت الفعلي وحمل الاستماع اليوم.</string>
-    <string name="settings_rhythm_aura_health_snapshot">لقطة صحية</string>
-    <string name="settings_rhythm_guard_health_snapshot">لقطة صحية</string>
-    <string name="settings_rhythm_aura_snapshot_volume_title">ضغط الحجم</string>
     <string name="settings_rhythm_guard_snapshot_volume_title">ضغط الحجم</string>
-    <string name="settings_rhythm_aura_snapshot_volume_value">%1$d%% الآن (الهدف %2$d%%)</string>
-    <string name="settings_rhythm_guard_snapshot_volume_value">%1$d%% الآن (الهدف %2$d%%)</string>
-    <string name="settings_rhythm_aura_snapshot_exposure_title">إجمالي التعرض</string>
     <string name="settings_rhythm_guard_snapshot_exposure_title">إجمالي التعرض</string>
-    <string name="settings_rhythm_aura_snapshot_exposure_value">%1$s الهدف المقدر / %2$s</string>
-    <string name="settings_rhythm_guard_snapshot_exposure_value">%1$s اليوم / %2$s حد</string>
-    <string name="settings_rhythm_aura_snapshot_lifetime_title">تحميل مدى الحياة</string>
-    <string name="settings_rhythm_guard_snapshot_lifetime_title">تحميل مدى الحياة</string>
-    <string name="settings_rhythm_aura_snapshot_lifetime_value">%1$s إجمالي الاستماع</string>
-    <string name="settings_rhythm_guard_snapshot_lifetime_value">%1$s إجمالي الاستماع</string>
-    <string name="settings_rhythm_aura_snapshot_sessions_title">Rhythm الكثافة</string>
-    <string name="settings_rhythm_guard_snapshot_sessions_title">Rhythm الكثافة</string>
-    <string name="settings_rhythm_aura_snapshot_sessions_value">%1$s جلسات/يوم (متوسط ​​7 أيام)</string>
-    <string name="settings_rhythm_guard_snapshot_sessions_value">%1$s جلسات/يوم (متوسط ​​7 أيام)</string>
-    <string name="settings_rhythm_aura_lifetime_hours">الاستماع مدى الحياة: %1$s ساعة</string>
-    <string name="settings_rhythm_guard_lifetime_hours">الاستماع مدى الحياة: %1$s ساعة</string>
-    <string name="settings_rhythm_aura_songs_played">الأغاني التي تم تشغيلها: %1$d</string>
-    <string name="settings_rhythm_guard_songs_played">الأغاني التي تم تشغيلها: %1$d</string>
-    <string name="settings_rhythm_aura_weekly_sessions">متوسط ​​الجلسات/اليوم 7 أيام: %1$s</string>
-    <string name="settings_rhythm_guard_weekly_sessions">متوسط ​​الجلسات/اليوم 7 أيام: %1$s</string>
-    <string name="settings_rhythm_aura_live_volume">الحجم المباشر: %1$d%% (تحذير أعلى من %2$d%%)</string>
-    <string name="settings_rhythm_guard_live_volume">الحجم المباشر: %1$d%% (تحذير أعلى من %2$d%%)</string>
-    <string name="settings_rhythm_aura_auto_applied_title">Rhythm ملف تعريف الحماية التلقائي نشط</string>
-    <string name="settings_rhythm_guard_auto_applied_title">Rhythm ملف تعريف الحماية التلقائي نشط</string>
-    <string name="settings_rhythm_aura_auto_applied_desc">Rhythm يحافظ Guard تلقائيًا على إعدادات التشغيل الافتراضية الأكثر أمانًا بناءً على ملف تعريف العمر الخاص بك.</string>
-    <string name="settings_rhythm_guard_auto_applied_desc">Rhythm يحافظ Guard تلقائيًا على إعدادات التشغيل الافتراضية الأكثر أمانًا بناءً على ملف تعريف العمر الخاص بك.</string>
-    <string name="settings_rhythm_aura_auto_state">حجم النظام: %1$s، الإيقاف المؤقت عند الصفر: %2$s، التطبيع: %3$s، ReplayGain: %4$s</string>
-    <string name="settings_rhythm_guard_auto_state">حجم النظام: %1$s، الإيقاف المؤقت عند الصفر: %2$s، التطبيع: %3$s، ReplayGain: %4$s</string>
-    <string name="settings_rhythm_aura_last_auto_applied">آخر تعديل تلقائي: %1$s</string>
-    <string name="settings_rhythm_guard_last_auto_applied">آخر تعديل تلقائي: %1$s</string>
-    <string name="settings_rhythm_aura_never">أبدا</string>
-    <string name="settings_rhythm_guard_never">أبدا</string>
-    <string name="settings_rhythm_aura_manual_controls_title">الدرابزين اليدوي</string>
     <string name="settings_rhythm_guard_manual_controls_title">الدرابزين اليدوي</string>
-    <string name="settings_rhythm_aura_manual_warning_toggle">عرض تحذيرات السلامة</string>
     <string name="settings_rhythm_guard_manual_warning_toggle">عرض تحذيرات السلامة</string>
-    <string name="settings_rhythm_aura_manual_warning_toggle_desc">تحذير عندما يكون الحجم المباشر أو التبديل اليدوي محفوفًا بالمخاطر</string>
     <string name="settings_rhythm_guard_manual_warning_toggle_desc">تحذير عندما يكون الحجم المباشر أو التبديل اليدوي محفوفًا بالمخاطر</string>
-    <string name="settings_rhythm_aura_manual_threshold_title">عتبة التحذير ذات الحجم الكبير: %1$d%%</string>
     <string name="settings_rhythm_guard_manual_threshold_title">عتبة التحذير ذات الحجم الكبير: %1$d%%</string>
-    <string name="settings_rhythm_aura_manual_threshold_desc">اضبط الوقت الذي يجب أن يحذر فيه Rhythm Guard من الحجم الضار المحتمل.</string>
     <string name="settings_rhythm_guard_manual_threshold_desc">اضبط الوقت الذي يجب أن يحذر فيه Rhythm Guard من الحجم الضار المحتمل.</string>
-    <string name="settings_rhythm_aura_device_controls_title">ضوابط الإخراج</string>
     <string name="settings_rhythm_guard_device_controls_title">ضوابط الإخراج</string>
-    <string name="settings_rhythm_aura_device_controls_speaker_limit_title">تطبيق حدود مستوى الصوت على مكبر صوت الهاتف</string>
     <string name="settings_rhythm_guard_device_controls_speaker_limit_title">تطبيق حدود مستوى الصوت على مكبر صوت الهاتف</string>
-    <string name="settings_rhythm_aura_device_controls_speaker_limit_desc">عند إيقاف التشغيل، يتخطى Rhythm Guard تثبيت مستوى الصوت وتحذيرات مستوى الصوت على مخرج مكبر الصوت المدمج.</string>
     <string name="settings_rhythm_guard_device_controls_speaker_limit_desc">عند إيقاف التشغيل، يتخطى Rhythm Guard تثبيت مستوى الصوت وتحذيرات مستوى الصوت على مخرج مكبر الصوت المدمج.</string>
     <string name="settings_rhythm_guard_alert_controls_title">ضوابط تنبيه الاستماع</string>
-    <string name="settings_rhythm_guard_alert_controls_desc">ضبط تنبيهات التعرض، ومهلة التذكير، والفاصل الزمني لاستئناف الاستراحة الافتراضية.</string>
     <string name="settings_rhythm_guard_alert_threshold_title">عتبة تنبيه التعرض: %1$s</string>
     <string name="settings_rhythm_guard_alert_threshold_policy_default">السياسة الافتراضية</string>
     <string name="settings_rhythm_guard_alert_timeout_title">مهلة التنبيه: %1$s</string>
     <string name="settings_rhythm_guard_post_timeout_cooldown_title">فترة التهدئة بعد انتهاء المهلة: %1$s</string>
     <string name="settings_rhythm_guard_break_resume_default_title">استئناف الاستراحة الافتراضي: %1$s</string>
-    <string name="settings_rhythm_guard_auto_controls_hidden_desc">يقوم الوضع التلقائي بإدارة حدود الاستماع والفواصل الزمنية لك. السياسة الحالية: %1$s الهدف اليومي، %2$s فترة تباطؤ التحذير، %3$s المهلة الافتراضية.</string>
-    <string name="settings_rhythm_aura_warning_title">تحذير بشأن سلامة الاستماع</string>
     <string name="settings_rhythm_guard_warning_title">تحذير بشأن سلامة الاستماع</string>
-    <string name="settings_rhythm_aura_warning_high_volume">الحجم الحالي أعلى من حد التحذير الخاص بك (%1$d%%). فكر في تقليل الحجم.</string>
     <string name="settings_rhythm_guard_warning_high_volume">الحجم الحالي أعلى من حد التحذير الخاص بك (%1$d%%). فكر في تقليل الحجم.</string>
-    <string name="settings_rhythm_aura_warning_daily_exposure">لقد وصلت إلى %1$s اليوم، أعلى من %2$s المقترح. فكر في أخذ استراحة للاستماع.</string>
     <string name="settings_rhythm_guard_warning_daily_exposure">لقد وصلت إلى %1$s اليوم، أعلى من %2$s المقترح. فكر في أخذ استراحة للاستماع.</string>
-    <string name="settings_rhythm_aura_warning_disable_normalization">قد يؤدي إيقاف تشغيل تطبيع الصوت إلى زيادة تقلبات جهارة الصوت.</string>
-    <string name="settings_rhythm_guard_warning_disable_normalization">قد يؤدي إيقاف تشغيل تطبيع الصوت إلى زيادة تقلبات جهارة الصوت.</string>
-    <string name="settings_rhythm_aura_warning_disable_replay_gain">يمكن أن يؤدي إيقاف تشغيل ReplayGain إلى رفع حجم الذروة بشكل غير متوقع.</string>
-    <string name="settings_rhythm_guard_warning_disable_replay_gain">يمكن أن يؤدي إيقاف تشغيل ReplayGain إلى رفع حجم الذروة بشكل غير متوقع.</string>
-    <string name="settings_rhythm_aura_warning_disable_zero_volume">يؤدي تعطيل الإيقاف المؤقت عند الصفر إلى إزالة الحماية الوقائية.</string>
-    <string name="settings_rhythm_guard_warning_disable_zero_volume">يؤدي تعطيل الإيقاف المؤقت عند الصفر إلى إزالة الحماية الوقائية.</string>
-    <string name="settings_rhythm_aura_warning_dialog_title">Rhythm تنبيه حماية الحرس</string>
     <string name="settings_rhythm_guard_warning_dialog_title">Rhythm تنبيه حماية الحرس</string>
-    <string name="settings_rhythm_aura_warning_dialog_volume_message">يبلغ حجم وسائط النظام %1$d%% في الوقت الفعلي، وهو أعلى من حد الحماية الحالي الذي يبلغ %2$d%%. خفض مستوى الصوت للحد من مخاطر السمع.</string>
     <string name="settings_rhythm_guard_warning_dialog_volume_message">يبلغ حجم وسائط النظام %1$d%% في الوقت الفعلي، وهو أعلى من حد الحماية الحالي الذي يبلغ %2$d%%. خفض مستوى الصوت للحد من مخاطر السمع.</string>
-    <string name="settings_rhythm_aura_warning_dialog_exposure_message">تبلغ مدة الاستماع المقدرة اليوم %1$d دقيقة، وهو ما يزيد عن %2$d دقيقة الموصى بها. فكر في استراحة قصيرة وحجم أقل للجلسة التالية.</string>
-    <string name="settings_rhythm_guard_warning_dialog_exposure_message">تبلغ مدة الاستماع المقدرة اليوم %1$d دقيقة، وهو ما يزيد عن %2$d دقيقة الموصى بها. فكر في استراحة قصيرة وحجم أقل للجلسة التالية.</string>
     <string name="settings_rhythm_guard_risk_level_label">شدة المخاطر: %1$s</string>
     <string name="settings_rhythm_guard_risk_action_label">الإجراء الموصى به: %1$s</string>
     <string name="settings_rhythm_guard_risk_level_low">منخفض</string>
@@ -1932,49 +1312,25 @@
     <string name="settings_rhythm_guard_risk_action_moderate">قم بخفض مستوى الصوت قريبًا وتجنب الجلسات الطويلة.</string>
     <string name="settings_rhythm_guard_risk_action_high">قم بتقليل حجم الصوت الآن وخذ استراحة قصيرة.</string>
     <string name="settings_rhythm_guard_risk_action_severe">قم بإيقاف التشغيل مؤقتًا الآن واستأنفه بمستوى أكثر أمانًا.</string>
-    <string name="settings_rhythm_aura_warning_dialog_apply">خفض إلى المستوى الآمن</string>
     <string name="settings_rhythm_guard_warning_dialog_apply">خفض إلى المستوى الآمن</string>
-    <string name="settings_rhythm_aura_warning_dialog_dismiss">تجاهل الآن</string>
     <string name="settings_rhythm_guard_warning_dialog_dismiss">تجاهل الآن</string>
-    <string name="settings_rhythm_aura_break_dialog_title">حان وقت استراحة الاستماع</string>
     <string name="settings_rhythm_guard_break_dialog_title">حان وقت استراحة الاستماع</string>
-    <string name="settings_rhythm_aura_break_dialog_message">لقد استمعت إلى %1$s اليوم (موصى به %2$s). خذ استراحة قصيرة لحماية سمعك.</string>
     <string name="settings_rhythm_guard_break_dialog_message">لقد استمعت إلى %1$s اليوم (موصى به %2$s). خذ استراحة قصيرة لحماية سمعك.</string>
-    <string name="settings_rhythm_aura_break_dialog_pause_only">خذ استراحة</string>
     <string name="settings_rhythm_guard_break_dialog_pause_only">خذ استراحة</string>
-    <string name="settings_rhythm_aura_break_dialog_pause_close">فاصل تأخير</string>
     <string name="settings_rhythm_guard_break_dialog_pause_close">فاصل تأخير</string>
-    <string name="settings_rhythm_aura_break_dialog_schedule_title">طول الاستراحة</string>
     <string name="settings_rhythm_guard_break_dialog_schedule_title">طول الاستراحة</string>
-    <string name="settings_rhythm_aura_break_dialog_delay_title">طول التأخير</string>
-    <string name="settings_rhythm_guard_break_dialog_delay_title">طول التأخير</string>
-    <string name="settings_rhythm_aura_break_dialog_pick_time">اختر الوقت</string>
     <string name="settings_rhythm_guard_break_dialog_pick_time">اختر الوقت</string>
-    <string name="settings_rhythm_aura_break_dialog_picker_extend_title">اختر طول الفاصل</string>
     <string name="settings_rhythm_guard_break_dialog_picker_extend_title">اختر طول الفاصل</string>
-    <string name="settings_rhythm_aura_break_dialog_picker_delay_title">اختر طول التأخير</string>
     <string name="settings_rhythm_guard_break_dialog_picker_delay_title">اختر طول التأخير</string>
-    <string name="settings_rhythm_aura_break_dialog_delay_action">كسر التأخير بمقدار %1$s</string>
-    <string name="settings_rhythm_guard_break_dialog_delay_action">كسر التأخير بمقدار %1$s</string>
-    <string name="settings_rhythm_aura_break_dialog_schedule_action">توقف مؤقتًا واستأنف في %1$s</string>
-    <string name="settings_rhythm_guard_break_dialog_schedule_action">توقف مؤقتًا واستأنف في %1$s</string>
     <string name="settings_rhythm_guard_timeout_reason_auto">تم تشغيل فاصل الاستماع: اليوم %1$s يتجاوز الموصى به %2$s.</string>
     <string name="settings_rhythm_guard_timeout_reason_manual">بدأت استراحة الاستماع</string>
     <string name="settings_rhythm_guard_resume_countdown_label">مهلة الاستماع</string>
     <string name="settings_rhythm_guard_resume_countdown_value">استئناف في %1$s</string>
     <string name="settings_rhythm_guard_delay_break_countdown_label">ستبدأ الاستراحة قريبا</string>
     <string name="settings_rhythm_guard_start_countdown_value">يبدأ في %1$s</string>
-    <string name="settings_rhythm_guard_timeout_cooldown_label">فترة تباطؤ الاسترداد</string>
-    <string name="settings_rhythm_guard_timeout_cooldown_value">تحقق المهلة التالية %1$s</string>
     <string name="settings_rhythm_guard_snapshot_widget_above_limit">فوق الحد الموصى به</string>
     <string name="settings_rhythm_guard_snapshot_widget_within_limit">ضمن الحد الموصى به</string>
     <string name="settings_rhythm_guard_snapshot_widget_load_label">مؤشر الحمل الحالي</string>
-    <string name="settings_rhythm_guard_overall_health_title">مؤشر الصحة العامة</string>
-    <string name="settings_rhythm_guard_overall_health_summary">الحجم %1$d%%/%2$d%% • التعرض %3$s/%4$s • Rhythm %5$s جلسات/يوم</string>
-    <string name="settings_rhythm_guard_health_good">جيد</string>
-    <string name="settings_rhythm_guard_health_fair">يحتاج إلى اهتمام</string>
-    <string name="settings_rhythm_guard_health_risk">محفوفة بالمخاطر</string>
-    <string name="settings_rhythm_guard_health_off">احذر</string>
     <string name="settings_rhythm_guard_state_active">Rhythm الحارس نشط</string>
     <string name="settings_rhythm_guard_state_inactive">Rhythm الحارس غير نشط</string>
     <string name="settings_rhythm_guard_state_timeout_active">انتهت مهلة الاستماع</string>
@@ -1991,21 +1347,12 @@
     <string name="settings_rhythm_guard_timeout_activity_title">انتهاء مهلة الاستماع نشطة</string>
     <string name="settings_rhythm_guard_timeout_activity_default_reason">تطور الحبكة: بدأت أذنيك في الاتحاد ودعت إلى استراحة لتناول الوجبات الخفيفة. Rhythm قام الحرس بإيقاف التشغيل مؤقتًا حتى يتمكن الجميع من التهدئة.</string>
     <string name="settings_rhythm_guard_timeout_activity_comic_desc">تطور الحبكة: بدأت أذنيك في الاتحاد ودعت إلى استراحة لتناول الوجبات الخفيفة. Rhythm قام الحرس بإيقاف التشغيل مؤقتًا حتى يتمكن الجميع من التهدئة.</string>
-    <string name="settings_rhythm_guard_timeout_activity_countdown">استئناف في %1$s</string>
     <string name="settings_rhythm_guard_timeout_activity_extend">تمديد الاستراحة (+%1$d دقيقة)</string>
     <string name="settings_rhythm_guard_timeout_activity_exit">إغلاق شاشة المهلة</string>
     <string name="settings_rhythm_guard_timeout_activity_close_app">إغلاق التطبيق</string>
-    <string name="settings_rhythm_aura_off_title">Rhythm الحارس معطل</string>
-    <string name="settings_rhythm_guard_off_title">Rhythm الحارس معطل</string>
-    <string name="settings_rhythm_aura_off_desc">لا يتم تطبيق أي تعديلات أو تحذيرات تلقائية. يبقى سلوك التشغيل دون تغيير.</string>
-    <string name="settings_rhythm_guard_off_desc">لا يتم تطبيق أي تعديلات أو تحذيرات تلقائية. يبقى سلوك التشغيل دون تغيير.</string>
-    <string name="settings_rhythm_aura_age_search_title">ملف تعريف العمر</string>
     <string name="settings_rhythm_guard_age_search_title">ملف تعريف العمر</string>
-    <string name="settings_rhythm_aura_age_search_desc">قم بتعيين ملف تعريف سلامة السمع على أساس العمر</string>
     <string name="settings_rhythm_guard_age_search_desc">قم بتعيين ملف تعريف سلامة السمع على أساس العمر</string>
-    <string name="settings_rhythm_aura_manual_threshold_search_title">عتبة التحذير اليدوية</string>
     <string name="settings_rhythm_guard_manual_threshold_search_title">عتبة التحذير اليدوية</string>
-    <string name="settings_rhythm_aura_manual_threshold_search_desc">اختر حد تحذير الحجم الكبير</string>
     <string name="settings_rhythm_guard_manual_threshold_search_desc">اختر حد تحذير الحجم الكبير</string>
     <string name="settings_rhythm_guard_alert_threshold_search_title">عتبة تنبيه التعرض</string>
     <string name="settings_rhythm_guard_alert_threshold_search_desc">قم بتعيين مقدار الاستماع اليومي الذي يؤدي إلى تنبيه السلامة</string>
@@ -2025,8 +1372,6 @@
     <string name="settings_rhythm_guard_notification_timer_scheduled_title">Rhythm تمت جدولة استراحة الحراسة</string>
     <string name="settings_rhythm_guard_notification_timer_scheduled_text">تبدأ استراحة الاستماع في %1$s.</string>
     <string name="settings_rhythm_guard_notification_tap_open">انقر لعرض تفاصيل المهلة.</string>
-    <string name="label_enabled">ممكّن</string>
-    <string name="label_disabled">معطل</string>
     
     <!-- Rhythm Stats Screen -->
     <string name="stats_title">Rhythm إحصائيات</string>
@@ -2035,121 +1380,37 @@
     <string name="stats_this_month">هذا الشهر</string>
     <string name="stats_all_time">كل الأوقات</string>
     <string name="stats_total_listening_time">إجمالي وقت الاستماع</string>
-    <string name="stats_total_plays">إجمالي عدد مرات اللعب</string>
-    <string name="stats_unique_tracks">مسارات فريدة</string>
-    <string name="stats_top_vibes">أعلى المشاعر</string>
-    <string name="stats_star_artists">فنانين النجوم</string>
-    <string name="stats_genre_mix">النوع ميكس</string>
-    <string name="stats_beat_timeline">فاز الجدول الزمني</string>
-    <string name="stats_musical_journey">رحلتك الموسيقية</string>
-    <string name="stats_no_data">لا توجد بيانات استماع حتى الآن</string>
-    <string name="stats_start_listening">ابدأ تشغيل الموسيقى لترى إحصائياتك</string>
-    <string name="stats_rise_rhythm">صعود &amp; Rhythm</string>
-    <string name="stats_midday_beats">دقات منتصف النهار</string>
-    <string name="stats_evening_vibes">اجواء المساء</string>
-    <string name="stats_night_grooves">أخاديد الليل</string>
-    <string name="stats_just_started">مجرد البدء! 🎵</string>
-    <string name="stats_nice_rhythm">إيقاع جميل يحدث! 🎸</string>
-    <string name="stats_jamming">أنت التشويش! 🎧</string>
-    <string name="stats_enthusiast">عشاق الموسيقى! 🎹</string>
-    <string name="stats_legendary">المستمع الأسطوري! 🌟</string>
-    <string name="stats_maestro">مايسترو الموسيقى! 🎼</string>
-    <string name="stats_sage">حكيم الموسيقى في نهاية المطاف! 👑</string>
     
     <!-- Cache Management Complete -->
-    <string name="cache_artwork_images">صور العمل الفني</string>
-    <string name="cache_artwork_images_desc">أغلفة الألبومات وصور الفنانين والصور المصغرة</string>
-    <string name="cache_lyrics">كلمات مخبأ</string>
-    <string name="cache_lyrics_desc">بيانات الكلمات التي تم تنزيلها ومزامنتها</string>
-    <string name="cache_canvas_videos">Canvas فيديوهات</string>
-    <string name="cache_canvas_videos_desc">خلفيات موسيقية متحركة</string>
-    <string name="cache_misc_temp">متنوعات ودرجة الحرارة</string>
-    <string name="cache_misc_temp_desc">ملفات مؤقتة ومتنوعة</string>
-    <string name="cache_clear_artwork">مسح ذاكرة التخزين المؤقت للعمل الفني</string>
-    <string name="cache_clear_lyrics">مسح ذاكرة التخزين المؤقت كلمات الأغاني</string>
-    <string name="cache_clear_canvas">مسح Canvas ذاكرة التخزين المؤقت</string>
-    <string name="cache_remove_all_data">إزالة كافة البيانات المخزنة مؤقتاً</string>
-    <string name="cache_good_to_know">من الجيد أن نعرف</string>
-    <string name="cache_tip_auto">تساعد ذاكرة التخزين المؤقت في تحميل المحتوى بشكل أسرع وتقليل استخدام البيانات</string>
-    <string name="cache_tip_limit">قم بتعيين حد ذاكرة التخزين المؤقت لإدارة التخزين تلقائيًا</string>
-    <string name="cache_tip_clear">لن يؤدي مسح ذاكرة التخزين المؤقت إلى حذف الموسيقى أو قوائم التشغيل</string>
     
     <!-- Queue Playback Settings -->
-    <string name="queue_use_exoplayer_shuffle">استخدم ExoPlayer خلط ورق اللعب</string>
-    <string name="queue_use_exoplayer_shuffle_desc">دع مشغل الوسائط يتولى التبديل العشوائي</string>
     <string name="queue_auto_add">إضافة تلقائية إلى قائمة الانتظار</string>
-    <string name="queue_auto_add_desc">إضافة الأغاني ذات الصلة تلقائيًا عند تشغيل</string>
     <string name="queue_clear_on_new">استبدال قائمة الانتظار بأغنية جديدة</string>
-    <string name="queue_clear_on_new_desc">يؤدي تشغيل أغنية إلى مسح قائمة الانتظار الحالية مباشرةً.</string>
-    <string name="queue_remember_repeat">تذكر وضع التكرار</string>
-    <string name="queue_remember_repeat_desc">حفظ وضع التكرار بين عمليات إعادة تشغيل التطبيق</string>
-    <string name="queue_remember_shuffle">تذكر الوضع العشوائي</string>
-    <string name="queue_remember_shuffle_desc">حفظ حالة التبديل العشوائي بين عمليات إعادة تشغيل التطبيق</string>
-    <string name="queue_playback_speed">سرعة التشغيل</string>
     <string name="queue_playback_speed_desc">ضبط سرعة التشغيل</string>
 
     <!-- Gestures Settings -->
-    <string name="gestures_player_swipe_dismiss">اسحب لأسفل للتجاهل</string>
-    <string name="gestures_player_swipe_dismiss_desc">اسحب لأسفل على المشغل لإغلاقه</string>
-    <string name="gestures_player_swipe_tracks">اسحب لتغيير المسارات</string>
-    <string name="gestures_player_swipe_tracks_desc">اسحب لليسار/لليمين على العمل الفني لتخطي المسارات</string>
-    <string name="gestures_artwork_double_tap">عمل فني بنقرة مزدوجة</string>
-    <string name="gestures_artwork_double_tap_desc">انقر نقرًا مزدوجًا على العمل الفني لتشغيل/إيقاف مؤقت</string>
     
     <!-- Playlist Settings Toggle -->
     <string name="playlist_ask_each_time">اسأل في كل مرة</string>
     <string name="playlist_ask_each_time_desc">إظهار الحوار مع الخيارات</string>
-    <string name="playlist_load_entire">تحميل قائمة التشغيل بأكملها</string>
-    <string name="playlist_load_entire_desc">استبدال قائمة الانتظار والتشغيل من الأغنية المحددة</string>
-    <string name="playlist_play_single">تشغيل هذه الأغنية فقط</string>
-    <string name="playlist_play_single_desc">لا تغير قائمة الانتظار</string>
-    <string name="queue_always_add">أضف دائمًا إلى قائمة الانتظار</string>
-    <string name="queue_always_add_desc">إضافة الأغاني إلى قائمة الانتظار تلقائيًا دون طلب</string>
     
     <!-- About Multi-Artist Parsing -->
-    <string name="artist_parsing_about">حول التحليل متعدد الفنانين</string>
-    <string name="artist_parsing_tip_1">يتم تقسيم الأغاني التي تضم فنانين متعددين باستخدام الفواصل</string>
-    <string name="artist_parsing_tip_2">يظهر كل فنان بشكل منفصل في مكتبتك</string>
-    <string name="artist_parsing_tip_3">استخدم الفواصل المخصصة لتنظيم أفضل</string>
     
     <!-- Home Screen Greetings -->
-    <string name="home_greeting_night">طاب مساؤك</string>
-    <string name="home_greeting_morning">صباح الخير</string>
-    <string name="home_greeting_afternoon">مساء الخير</string>
-    <string name="home_greeting_evening">مساء الخير</string>
-    <string name="home_greeting_christmas">عيد ميلاد سعيد</string>
-    <string name="home_greeting_new_year">كل عام وأنتم بخير</string>
-    <string name="home_greeting_halloween">عيد الهالوين السعيد</string>
-    <string name="home_greeting_valentines">عيد حب سعيد</string>
     
     <!-- Home Screen Section Titles -->
     <string name="home_top_artists">الفنانين</string>
     <string name="home_top_artists_subtitle">الموسيقيين المفضلين لديك</string>
-    <string name="home_no_top_artists">لا يوجد فنانين بعد</string>
     
     <!-- Content Descriptions (additional) -->
     <string name="cd_reorder_home_sections">إعادة ترتيب أقسام المنزل</string>
-    <string name="cd_artist">الفنان %1$s</string>
-    <string name="cd_view_detailed_stats">عرض إحصائيات مفصلة</string>
-    <string name="cd_selected">تم التحديد</string>
     <string name="cd_remove">إزالة</string>
-    <string name="cd_delete_playlist">حذف قائمة التشغيل</string>
     <string name="cd_rhythm_logo">Rhythm الشعار</string>
-    <string name="cd_report_bug">الإبلاغ عن خطأ</string>
     <string name="cd_telegram_support">دعم برقية</string>
-    <string name="cd_view_github_profile">عرض الملف الشخصي على جيثب</string>
-    <string name="cd_error">خطأ</string>
-    <string name="cd_updates_disabled">التحديثات معطلة</string>
-    <string name="cd_update_available">التحديث متاح</string>
-    <string name="cd_manual_check_only">فحص يدوي فقط</string>
-    <string name="cd_up_to_date">محدث</string>
     
     <!-- Queue &amp; Playlist Dialogs -->
     <string name="queue_action_dialog">حوار إجراء قائمة الانتظار</string>
-    <string name="queue_ask_when_not_empty">اسأل ماذا تفعل عندما لا تكون قائمة الانتظار فارغة</string>
     <string name="playlist_action_dialog">مربع حوار إجراء قائمة التشغيل</string>
-    <string name="playlist_load_entire_queue">تحميل قائمة التشغيل بأكملها إلى قائمة الانتظار</string>
-    <string name="playlist_play_only_selected">تشغيل الأغنية المحددة فقط</string>
     
     <!-- Artist Settings -->
     <string name="artists_title">الفنانين</string>
@@ -2161,80 +1422,33 @@
     <string name="artist_library_organization">تنظيم المكتبة</string>
     <string name="artist_group_by_album_artist">المجموعة حسب فنان الألبوم</string>
     <string name="artist_group_by_album_artist_desc">إظهار ألبومات التعاون ضمن الفنان الرئيسي</string>
-    <string name="artist_about_multi_parsing">حول تحليل متعدد الفنانين</string>
-    <string name="artist_parsing_description">عند التمكين، سيقوم Rhythm تلقائيًا بتقسيم علامات الفنان التي تحتوي على فنانين متعددين. يعد هذا مفيدًا للأغاني التي تم تنزيلها باستخدام yt-dlp أو الأدوات الأخرى التي تستخدم المحددات مثل \'/\' للفصل بين الفنانين.\n\nيمكن استخدام الشرطة العكسية (\\\\) للهروب من المحددات.</string>
-    <string name="artist_examples">أمثلة</string>
-    <string name="artist_select_separators">حدد فواصل الفنان</string>
-    <string name="artist_delimiter_slash">شرطة مائلة</string>
-    <string name="artist_delimiter_semicolon">فاصلة منقوطة</string>
-    <string name="artist_delimiter_comma">فاصلة</string>
-    <string name="artist_delimiter_plus">زائد</string>
-    <string name="artist_delimiter_ampersand">علامة الضم</string>
-    <string name="save_changes">حفظ التغييرات</string>
     
     <!-- About Screen -->
-    <string name="about_title">حول</string>
-    <string name="about_version">النسخة</string>
-    <string name="about_build">بناء</string>
-    <string name="about_target_sdk">الهدف SDK</string>
-    <string name="about_architecture">الهندسة المعمارية</string>
-    <string name="about_arm_arch">ARM64 و ARM32</string>
-    <string name="about_lead_developer">المطور الرئيسي ومهندس المشروع</string>
-    <string name="about_manages_izzyondroid">يدير التحديثات على IzzyOnDroid</string>
-    <string name="about_collab_lead">فريق تطوير Collab &amp; Project Booming</string>
-    <string name="about_canvas_api">Spotify Canvas API التكامل</string>
     
     <!-- Equalizer -->
-    <string name="equalizer_title">المعادل</string>
-    <string name="equalizer_my_devices">أجهزتي</string>
     
     <!-- Common Actions & Dialogs -->
-    <string name="action_save_changes">حفظ التغييرات</string>
-    <string name="content_desc_selected">تم التحديد</string>
     <string name="content_desc_remove">إزالة</string>
-    <string name="content_desc_delete_playlist">حذف قائمة التشغيل</string>
     <string name="content_desc_refresh_devices">تحديث الأجهزة</string>
     <string name="content_desc_switch_device">تبديل الجهاز</string>
     <string name="content_desc_volume">المجلد</string>
     <string name="content_desc_decrease_volume">خفض مستوى الصوت</string>
     <string name="content_desc_increase_volume">زيادة الحجم</string>
-    <string name="content_desc_mute">كتم</string>
-    <string name="content_desc_unmute">إلغاء كتم الصوت</string>
-    <string name="content_desc_playback_speed">سرعة التشغيل</string>
-    <string name="content_desc_playback_settings">إعدادات التشغيل</string>
     <string name="content_desc_shuffle_play">تشغيل عشوائي</string>
     <string name="content_desc_sort_songs">ترتيب الأغاني</string>
-    <string name="content_desc_ascending">تصاعدي</string>
-    <string name="content_desc_descending">تنازلي</string>
     <string name="content_desc_more_options">المزيد من الخيارات</string>
     <string name="content_desc_add_to_playlist">أضف إلى قائمة التشغيل</string>
-    <string name="content_desc_favorite">المفضلة</string>
     <string name="content_desc_now_playing">العب الآن</string>
     <string name="content_desc_drag_reorder">اسحب لإعادة الترتيب</string>
     <string name="content_desc_remove_from_queue">إزالة من قائمة الانتظار</string>
     <string name="content_desc_add_songs">اضافة اغاني</string>
     <string name="content_desc_clear_queue">مسح قائمة الانتظار</string>
     <string name="content_desc_play_album">تشغيل الألبوم</string>
-    <string name="content_desc_move_up">تحرك للأعلى</string>
-    <string name="content_desc_move_down">تحرك للأسفل</string>
-    <string name="content_desc_show_hide">إظهار/إخفاء</string>
-    <string name="content_desc_hide_section">إخفاء القسم</string>
-    <string name="content_desc_show_section">عرض القسم</string>
-    <string name="content_desc_hide_tab">إخفاء علامة التبويب</string>
-    <string name="content_desc_show_tab">إظهار علامة التبويب</string>
-    <string name="content_desc_hide_chip">إخفاء الشريحة</string>
-    <string name="content_desc_show_chip">عرض الشريحة</string>
-    <string name="content_desc_edit_metadata">تحرير البيانات الوصفية</string>
     <string name="content_desc_album_artwork">العمل الفني للألبوم</string>
     
     <!-- Additional UI strings -->
-    <string name="playlist_play_one">تشغيل الأغنية المحددة فقط</string>
-    <string name="up_next_section">التالي</string>
     
     <!-- Sort Orders -->
-    <string name="sort_track_number">رقم المسار</string>
-    <string name="sort_title_asc">العنوان (من الألف إلى الياء)</string>
-    <string name="sort_title_desc">العنوان (ي - أ)</string>
     <string name="sort_duration_short_first">المدة (القصيرة الأولى)</string>
     <string name="sort_duration_long_first">المدة (الطويلة الأولى)</string>
     
@@ -2245,43 +1459,15 @@
     <string name="action_add_to_favorites">أضف إلى المفضلة</string>
     <string name="action_song_info">معلومات الاغنية</string>
     <string name="action_add_to_blacklist">أضف إلى القائمة السوداء</string>
-    <string name="action_hide_song">إخفاء الأغنية</string>
     <string name="action_play_all">تشغيل الكل</string>
     
     <!-- Blacklist/Whitelist -->
-    <string name="blacklist_track">مسار القائمة السوداء</string>
-    <string name="unblacklist_track">مسار إلغاء القائمة السوداء</string>
-    <string name="blacklist_folder">مجلد القائمة السوداء</string>
-    <string name="unblacklist_folder">إلغاء مجلد القائمة السوداء</string>
-    <string name="whitelist_track">مسار القائمة البيضاء</string>
-    <string name="unwhitelist_track">مسار إلغاء القائمة البيضاء</string>
-    <string name="whitelist_folder">مجلد القائمة البيضاء</string>
-    <string name="unwhitelist_folder">مجلد إلغاء القائمة البيضاء</string>
-    <string name="song_added_to_blacklist">تم إضافة الأغنية إلى القائمة السوداء</string>
-    <string name="song_removed_from_blacklist">تمت إزالة الأغنية من القائمة السوداء</string>
-    <string name="folder_added_to_blacklist">تمت إضافة المجلد إلى القائمة السوداء</string>
-    <string name="folder_removed_from_blacklist">تمت إزالة المجلد من القائمة السوداء</string>
     
     <!-- Device & Audio -->
-    <string name="device_bluetooth">جهاز بلوتوث</string>
-    <string name="device_wired_headphones_alt">سماعات سلكية</string>
-    <string name="device_speaker">مكبر صوت الهاتف</string>
-    <string name="device_audio_generic">جهاز صوتي</string>
-    <string name="volume_system">حجم النظام</string>
-    <string name="volume_app">حجم التطبيق</string>
-    <string name="volume_switch_hint">انقر للتبديل بين مستوى صوت التطبيق والنظام</string>
     <string name="playback_use_system_volume">استخدام حجم النظام</string>
     <string name="playback_use_system_volume_desc">التحكم في مستوى صوت النظام بدلاً من حجم التطبيق</string>
-    <string name="playback_gapless_title">تشغيل بدون فجوات</string>
-    <string name="eq_profile_applied">تطبيق %1$s الملف الشخصي</string>
     
     <!-- Multi-Artist Parsing -->
-    <string name="multi_artist_parsing_title">تحليل متعدد الفنانين</string>
-    <string name="multi_artist_parsing_about">حول التحليل متعدد الفنانين</string>
-    <string name="multi_artist_parsing_desc">عند التمكين، سيقوم Rhythm تلقائيًا بتقسيم علامات الفنان التي تحتوي على فنانين متعددين. يعد هذا مفيدًا للأغاني التي تم تنزيلها باستخدام yt-dlp أو الأدوات الأخرى التي تستخدم المحددات مثل \'/\' للفصل بين الفنانين.\\n\\nيمكن استخدام الشرطة العكسية (\\\\) للهروب من المحددات.</string>
-    <string name="multi_artist_parsing_examples">أمثلة</string>
-    <string name="multi_artist_parsing_configure">تكوين المحددات</string>
-    <string name="multi_artist_parsing_select_separators">حدد فواصل الفنان</string>
     <string name="delimiter_slash">شرطة مائلة</string>
     <string name="delimiter_semicolon">فاصلة منقوطة</string>
     <string name="delimiter_comma">فاصلة</string>
@@ -2289,29 +1475,14 @@
     <string name="delimiter_ampersand">علامة الضم</string>
     
     <!-- About Screen (additional strings) -->
-    <string name="about_app_description">مشغل موسيقى حديث وغني بالميزات لـ Android</string>
-    <string name="about_arch_value">ARM64 و ARM32</string>
-    <string name="about_lead_dev">المطور الرئيسي ومهندس المشروع</string>
-    <string name="about_izzy_role">يدير التحديثات على IzzyOnDroid</string>
     
     <!-- Sleep Timer -->
-    <string name="sleep_timer_active_status">نشط \u2022 %1$s المتبقي</string>
-    <string name="sleep_timer_no_music">لا يوجد تشغيل موسيقى</string>
     <string name="sleep_timer_set_control">ضبط التحكم في التشغيل التلقائي</string>
-    <string name="sleep_timer_fade_out">تتلاشى</string>
-    <string name="sleep_timer_pause">وقفة</string>
-    <string name="sleep_timer_stop">توقف</string>
     
     <!-- Home Sections -->
-    <string name="home_section_greeting">تحية</string>
     <string name="home_section_recently_played">تم تشغيلها مؤخرًا</string>
     <string name="home_section_discover">اكتشف كاروسيل</string>
-    <string name="home_section_top_artists">كبار الفنانين</string>
     <string name="home_section_new_releases">الإصدارات الجديدة</string>
-    <string name="home_section_recently_added">أضيفت مؤخرا</string>
-    <string name="home_section_recommended">موصى به</string>
-    <string name="home_section_listening_stats">إحصائيات الاستماع</string>
-    <string name="home_section_mood">أقسام المزاج</string>
     <string name="home_section_one_visible">يجب أن يكون قسم واحد على الأقل مرئيًا</string>
     
     <!-- Library Tabs -->
@@ -2319,7 +1490,6 @@
     <string name="library_tab_playlists">قوائم التشغيل</string>
     <string name="library_tab_albums">الالبومات</string>
     <string name="library_tab_artists">الفنانين</string>
-    <string name="library_tab_explorer">اكسبلورر</string>
     <string name="library_tab_one_visible">يجب أن تكون علامة تبويب واحدة على الأقل مرئية</string>
     <string name="library_tab_order_reset">تم إعادة تعيين ترتيب علامات التبويب والرؤية إلى الوضع الافتراضي</string>
     <string name="library_tab_order_saved">تم حفظ ترتيب علامات التبويب وإمكانية الرؤية</string>
@@ -2328,154 +1498,61 @@
     <string name="player_chip_favorite">المفضلة</string>
     <string name="player_chip_speed">سرعة التشغيل</string>
     <string name="player_chip_equalizer">المعادل</string>
-    <string name="player_chip_sleep_timer">مؤقت النوم</string>
     <string name="player_chip_lyrics">كلمات</string>
     <string name="player_chip_album">الالبوم</string>
     <string name="player_chip_artist">فنان</string>
-    <string name="player_chip_cast">طاقم</string>
     <string name="player_chip_one_visible">يجب أن تكون شريحة واحدة على الأقل مرئية</string>
     <string name="player_chip_order_reset">إعادة التعيين إلى الترتيب الافتراضي والرؤية</string>
     
     <!-- AutoEQ & Device Configuration -->
     <string name="autoeq_manage">إدارة AutoEQ</string>
     <string name="autoeq_configure_desc">قم بتكوين أجهزتك الصوتية باستخدام ملفات تعريف AutoEQ المحسنة للحصول على أفضل تجربة استماع.</string>
-    <string name="autoeq_device_recognized">تم التعرف على الجهاز</string>
-    <string name="autoeq_new_device">تم اكتشاف جهاز جديد</string>
     <string name="autoeq_no_devices">لم يتم تكوين أي أجهزة</string>
     <string name="autoeq_add_prompt">أضف سماعات الرأس أو مكبرات الصوت للحصول على إعدادات EQ مخصصة</string>
     <string name="autoeq_delete_device_title">حذف الجهاز</string>
-    <string name="autoeq_delete_device_msg">هل أنت متأكد أنك تريد حذف \'%1$s\'؟ لا يمكن التراجع عن هذا الإجراء.</string>
     <string name="autoeq_import_profile">استيراد ملف تعريف EQ</string>
     <string name="autoeq_import_paste_hint">الصق إعدادات EQ من autoeq.app أو مصادر أخرى.</string>
-    <string name="autoeq_supported_formats">التنسيقات المدعومة:\\n\u2022 نص FixedBandEQ (AutoEQ)\\n\u2022 تنسيق JSON\\n\u2022 CSV (قيم النطاق 10)</string>
     <string name="autoeq_eq_settings_label">إعدادات المعادل</string>
-    <string name="autoeq_paste_placeholder">الصق بيانات المعادل هنا\u2026</string>
-    <string name="autoeq_button_file">الملف</string>
-    <string name="autoeq_button_paste">لصق</string>
-    <string name="autoeq_button_add">أضف</string>
-    <string name="autoeq_button_import">استيراد</string>
-    <string name="autoeq_button_export">تصدير</string>
     <string name="autoeq_failed_read_file">فشل في قراءة الملف</string>
     
     <!-- Backup/Restore -->
     <string name="backup_invalid_format">تنسيق نسخة احتياطية غير صالح أو بيانات تالفة</string>
     <string name="backup_unable_to_read">غير قادر على قراءة ملف النسخ الاحتياطي</string>
-    <string name="backup_restore_failed">فشلت الاستعادة من الملف: %1$s</string>
-    <string name="backup_create_failed">فشل إنشاء نسخة احتياطية: %1$s</string>
-    <string name="backup_clipboard_label">Rhythm النسخ الاحتياطي</string>
-    <string name="backup_status_never">أبدا</string>
-    <string name="backup_status_enabled">ممكّن</string>
-    <string name="backup_status_manual">دليل</string>
-    <string name="backup_creating">جارٍ إنشاء نسخة احتياطية\u2026</string>
-    <string name="backup_create_button">إنشاء نسخة احتياطية</string>
-    <string name="backup_restoring">استعادة\u2026</string>
-    <string name="backup_from_clipboard">من الحافظة</string>
-    <string name="backup_from_file">من الملف</string>
-    <string name="backup_opening">الافتتاح\u2026</string>
-    <string name="backup_no_clipboard_data">لم يتم العثور على بيانات احتياطية في الحافظة. يرجى نسخ نسخة احتياطية أولا.</string>
-    <string name="backup_restore_clipboard_failed">فشلت استعادة النسخة الاحتياطية: %1$s</string>
     
     <!-- Licenses -->
     <string name="license_autoeq_name">معادل تلقائي</string>
-    <string name="license_autoeq_desc">معادلة سماعات الرأس التلقائية من استجابات التردد بواسطة Jaakko Pasanen</string>
-    <string name="license_mit">رخصة معهد ماساتشوستس للتكنولوجيا</string>
-    <string name="license_jetpack_name">Jetpack يؤلف</string>
-    <string name="license_jetpack_desc">مجموعة أدوات Android الحديثة لبناء واجهة المستخدم الأصلية</string>
-    <string name="license_apache">ترخيص أباتشي 2.0</string>
-    <string name="license_gpl3">رخصة جنو العامة v3.0</string>
-    <string name="license_material3_name">Material 3 مكونات</string>
-    <string name="license_material3_desc">Material تصميم 3 مكونات لـ Android</string>
-    <string name="license_media3_name">ميديا3 ExoPlayer</string>
-    <string name="license_media3_desc">مكتبة تشغيل الوسائط الحديثة لـ Android</string>
-    <string name="license_coroutines_name">كوتلين كوروتين</string>
-    <string name="license_coroutines_desc">إطار برمجة غير متزامن لـ Kotlin</string>
-    <string name="license_coil_name">لفائف</string>
-    <string name="license_coil_desc">مكتبة تحميل الصور لـ Android بدعم من Kotlin Coroutines</string>
-    <string name="license_retrofit_name">التحديثية</string>
-    <string name="license_retrofit_desc">عميل HTTP آمن النوع لـ Android وJava</string>
     
     <!-- Lyrics Editor -->
     <string name="lyrics_loaded_success">تم تحميل الكلمات بنجاح</string>
-    <string name="lyrics_load_error">حدث خطأ أثناء تحميل كلمات الأغاني: %1$s</string>
     <string name="lyrics_saved_success">تم حفظ الكلمات بنجاح</string>
-    <string name="lyrics_save_error">خطأ في حفظ كلمات الأغاني: %1$s</string>
     
     <!-- Media Scan -->
-    <string name="media_scan_error_parsing_folder">خطأ في تحليل مسار المجلد</string>
     
     <!-- Song Info -->
-    <string name="song_info_unknown">غير معروف</string>
-    <string name="song_info_quality_hires_lossless">مرحبا الدقة ضياع</string>
-    <string name="song_info_quality_cd">جودة القرص المضغوط</string>
-    <string name="song_info_quality_type">نوع الجودة</string>
-    <string name="song_info_quality_label">علامة الجودة</string>
-    <string name="song_info_quality_category">فئة الجودة</string>
-    <string name="song_info_category_lossless">ضياع</string>
-    <string name="song_info_category_lossy">خسارة</string>
-    <string name="song_info_category_surround">محيطي</string>
     
     <!-- Common UI Text -->
-    <string name="exoplayer_settings">ExoPlayer الإعدادات</string>
     <string name="button_add">أضف</string>
     <string name="button_delete">حذف</string>
     <string name="button_import">استيراد</string>
     <string name="button_export">تصدير</string>
     <string name="text_file">الملف</string>
     <string name="text_paste">لصق</string>
-    <string name="logo_content_desc">Rhythm الشعار</string>
     
     <!-- PlaceholderScreens - Settings Labels -->
-    <string name="settings_about_lyrics">حول مصادر كلمات الأغاني</string>
-    <string name="settings_adjust_decorations">ضبط كمية زينة الأعياد المعروضة</string>
-    <string name="settings_artwork_corner_radius">يضبط استدارة زوايا العمل الفني للألبوم</string>
-    <string name="settings_canvas_backgrounds_desc">صور متحركة</string>
-    <string name="settings_choose_header">اختر ما تريد إظهاره في الرأس</string>
-    <string name="settings_customize_compact_player">قم بتخصيص المشغل المضغوط الذي يظهر أسفل الشاشة.</string>
-    <string name="settings_enable_auto_scroll">تمكين التمرير التلقائي</string>
-    <string name="settings_enable_bass_boost">تمكين تعزيز الجهير</string>
-    <string name="settings_enable_canvas">تمكين Canvas</string>
-    <string name="settings_enable_disco_mode">تمكين وضع الديسكو</string>
-    <string name="settings_enable_festive_theme">تمكين موضوع الأعياد</string>
-    <string name="settings_enable_virtualizer">تمكين أداة المحاكاة الافتراضية</string>
-    <string name="settings_festive_theme">موضوع احتفالي</string>
-    <string name="settings_mini_player">مشغل صغير</string>
-    <string name="settings_toggle_decorations">تبديل عناصر الزخرفة الفردية حسب الموضع</string>
-    <string name="settings_virtualizer">أداة المحاكاة الافتراضية</string>
-    <string name="settings_custom_separators">فواصل مخصصة</string>
-    <string name="settings_enable_parsing">تمكين التحليل</string>
-    <string name="settings_show_examples">عرض الأمثلة</string>
-    <string name="settings_example_original">اصلي</string>
-    <string name="settings_example_result">نتيجة</string>
     
     <!-- Cache & Storage -->
-    <string name="cache_mb_format">%1$.1f ميجا بايت</string>
-    <string name="cache_size_64mb">64 ميجا بايت</string>
-    <string name="cache_size_2gb">2 جيجا</string>
-    <string name="cache_clear_all_desc">إزالة كافة البيانات المخزنة مؤقتاً</string>
     
     <!-- Version Info -->
-    <string name="version_format">الخامس %1$s</string>
-    <string name="version_with_code">v%1$s</string>
-    <string name="released_date">صدر: %1$s</string>
-    <string name="crashed_on_date">تعطلت على: %1$s</string>
-    <string name="file_size_format">(%1$s)</string>
     <string name="download_progress">%1$d%%</string>
     
     <!-- GitHub & Links -->
-    <string name="github_username_format">\@%1$s</string>
-    <string name="bullet_point">\u2022</string>
-    <string name="original_quoted">\"%1$s\"</string>
     
     <!-- Contributors -->
-    <string name="credits_material_design">جوجل Material فريق التصميم لمبادئ التصميم</string>
     
     <!-- Counts & Numbers -->
-    <string name="count_format">%1$d</string>
-    <string name="index_number">%1$d</string>
     
     <!-- More PlaceholderScreens Strings -->
     <string name="settings_double_tap_artwork_tip">انقر نقرًا مزدوجًا على العمل الفني للتشغيل/الإيقاف المؤقت السريع</string>
-    <string name="settings_enable_lyrics_hint">تمكين كلمات الأغاني من رؤية كلمات الأغاني المتزامنة أثناء تشغيل</string>
     <string name="settings_full_player">لاعب كامل</string>
     <string name="settings_header_customization">تخصيص الرأس</string>
     <string name="settings_header_display">عرض الرأس</string>
@@ -2484,46 +1561,31 @@
     <string name="settings_lightness">خفة</string>
     <string name="settings_miniplayer">مشغل صغير</string>
     <string name="settings_no_crash_logs">لم يتم العثور على سجلات الأعطال. أحسنت!</string>
-    <string name="settings_personalize_player">قم بتخصيص تجربة اللاعب الخاصة بك من خلال تخطيطات الشرائح المخصصة والمؤثرات المرئية وتفضيلات العرض.</string>
     <string name="settings_player_controls">عناصر تحكم اللاعب</string>
     <string name="settings_player_screen">شاشة المشغل</string>
-    <string name="settings_player_tips">نصائح اللاعب</string>
     <string name="settings_presets">الإعدادات المسبقة</string>
     <string name="settings_progress_display">عرض التقدم</string>
     <string name="settings_progress_hidden">التقدم مخفي</string>
-    <string name="settings_quick_actions">إجراءات سريعة</string>
     <string name="settings_reorder_toggle_sections">إعادة ترتيب وتبديل الأقسام</string>
     <string name="settings_saturation">التشبع</string>
     <string name="settings_section_order_visibility">ترتيب القسم وإمكانية رؤيته</string>
-    <string name="settings_sleep_timer_placeholder">سيتم تنفيذ عناصر التحكم في مؤقت النوم هنا</string>
     <string name="settings_start_collapsed">ابدأ تشغيل كافة الشاشات برأس مطوي</string>
     <string name="settings_statistics_update">تحديث الإحصائيات بناءً على عادات الاستماع</string>
     <string name="settings_swipe_down_dismiss_tip">اسحب لأسفل على المشغل المصغر أو المشغل الكامل للاستبعاد</string>
     <string name="settings_swipe_up_open">اسحب لأعلى على المشغل الصغير لفتح المشغل الكامل</string>
-    <string name="settings_tap_chip_order">اضغط على \"ترتيب الرقائق وإمكانية رؤيتها\" لتخصيص شرائح الإجراء</string>
     <string name="settings_text_alignment">محاذاة النص</string>
     <string name="settings_quick_brown_fox">الثعلب البني السريع يقفز فوق الكلب الكسول</string>
     <string name="settings_toggle_widgets">تبديل الأدوات لتخصيص شاشتك الرئيسية</string>
     <string name="settings_visibility">الرؤية</string>
-    <string name="settings_when_show_header">متى يتم إظهار %1$s في الرأس</string>
     <string name="settings_widget_item_counts">عدد عناصر القطعة</string>
     
     <!-- Playlist Management -->
-    <string name="playlist_user_count">%1$d</string>
-    <string name="playlist_default_count">%1$d</string>
-    <string name="playlist_total_count">%1$d</string>
     
     <!-- Media Scan -->
-    <string name="media_filtered_count">%1$d</string>
-    <string name="media_all_songs_count">%1$d</string>
-    <string name="media_folders_count">%1$d</string>
     
     <!-- Time Formats -->
-    <string name="time_half_second">0.5 ثانية</string>
-    <string name="time_twelve_seconds">12 ثانية</string>
     
     <!-- Additional PlaceholderScreens UI Strings -->
-    <string name="settings_modern_music_player">مشغل موسيقى حديث وغني بالميزات لـ Android</string>
     <string name="settings_about_lyrics_sources">حول مصادر كلمات الأغاني</string>
     <string name="settings_about_multi_artist">حول التحليل متعدد الفنانين</string>
     <string name="settings_adjust_snowflake_size">ضبط حجم ندفة الثلج (حجم أصغر = المزيد من رقاقات الثلج)</string>
@@ -2531,17 +1593,11 @@
     <string name="settings_adjust_artwork_corners">يضبط استدارة زوايا العمل الفني للألبوم</string>
     <string name="settings_always_start_collapsed">ابدأ دائمًا بالانهيار</string>
     <string name="settings_artwork">عمل فني</string>
-    <string name="settings_artwork_size">حجم العمل الفني</string>
     <string name="settings_bass_boost">تعزيز الجهير</string>
-    <string name="settings_canvas_backgrounds_info">تضيف خلفيات Canvas صورًا متحركة إلى الأغاني المدعومة</string>
     <string name="settings_carousel_style">نمط دائري</string>
     <string name="settings_choose_festive_theme">اختر موضوع الاحتفال</string>
-    <string name="settings_choose_album_display">اختر كيفية عرض الألبومات</string>
     <string name="settings_choose_header_content">اختر ما تريد إظهاره في الرأس</string>
-    <string name="settings_coming_soon">قريبا</string>
-    <string name="settings_coming_soon_lowercase">قريبا</string>
     <string name="settings_configure_delimiters">تكوين المحددات</string>
-    <string name="settings_corner_radius">نصف قطر الزاوية</string>
     <string name="settings_customize_home_layout">تخصيص تخطيط الشاشة الرئيسية</string>
     <string name="settings_customize_miniplayer">قم بتخصيص المشغل المضغوط الذي يظهر أسفل الشاشة.</string>
     <string name="settings_decoration_elements">عناصر الديكور</string>
@@ -2554,31 +1610,16 @@
     <string name="settings_examples">أمثلة</string>
     <string name="settings_intensity">شدة</string>
     <string name="settings_more_festivals">سيتم إضافة المزيد من المهرجانات في التحديثات المستقبلية</string>
-    <string name="settings_remove_all_cache">إزالة كافة البيانات المخزنة مؤقتاً</string>
-    <string name="settings_save_changes">حفظ التغييرات</string>
     <string name="settings_select_festival">اختر المهرجان</string>
     <string name="settings_select_artist_separators">حدد فواصل الفنان</string>
     <string name="settings_snowflake_display_area">منطقة عرض ندفة الثلج</string>
     <string name="settings_snowflake_size">حجم ندفة الثلج</string>
     <string name="settings_toggle_decoration_elements">تبديل عناصر الزخرفة الفردية حسب الموضع</string>
     <string name="settings_multi_artist_parsing_info">عند التمكين، سيقوم Rhythm تلقائيًا بتقسيم علامات الفنان التي تحتوي على فنانين متعددين. يعد هذا مفيدًا للأغاني التي تم تنزيلها باستخدام yt-dlp أو الأدوات الأخرى التي تستخدم المحددات مثل \'/\' للفصل بين الفنانين.\n\nيمكن استخدام الشرطة العكسية (\\) للهروب من المحددات.</string>
-    <string name="settings_embedded_lyrics_info">• يتم تخزين كلمات الأغاني المضمنة في ملفاتك الصوتية\n</string>
-    <string name="settings_material_design_credit">• فريق تصميم Google Material لمبادئ التصميم\n</string>
-    <string name="settings_bullet_point">•</string>
-    <string name="settings_backslash">\\</string>
-    <string name="settings_db_unit">ديسيبل</string>
     
     <!-- Format Strings with Placeholders -->
-    <string name="settings_crashed_on">تعطلت على: %1$s</string>
-    <string name="settings_released_format">صدر: %1$s</string>
-    <string name="settings_version_prefix">الخامس %1$s</string>
-    <string name="settings_version_format">الإصدار %1$s</string>
-    <string name="settings_app_version">v%1$s</string>
-    <string name="settings_github_username">\@%1$s</string>
-    <string name="settings_readable_size">%1$s</string>
     <string name="settings_cache_size_2gb">2 جيجا</string>
     <string name="settings_cache_size_64mb">64 ميجا بايت</string>
-    <string name="settings_list_item_prefix">• %1$s:</string>
     
     <!-- Common UI strings -->
     <string name="ui_close">إغلاق</string>
@@ -2643,25 +1684,11 @@
     <string name="settings_audio_routing_default_desc">Android يقرر كيفية توجيه الصوت. تعتمد إعادة التشكيل على إعدادات النظام.</string>
 
     <!-- Library Storage -->
-    <string name="settings_library_storage">تخزين المكتبة</string>
     <string name="settings_cache_backend">ذاكرة التخزين المؤقت الخلفية</string>
-    <string name="settings_cache_backend_desc">كيف يتم تخزين بيانات مكتبتك محليا</string>
-    <string name="settings_storage_json">JSON</string>
-    <string name="settings_storage_room">غرفة قاعدة البيانات</string>
-    <string name="settings_storage_room_desc">يستخدم قاعدة بيانات الغرفة للتخزين المنظم. أفضل للمكتبات الكبيرة. إعادة التشغيل مطلوبة.</string>
-    <string name="settings_storage_json_desc">يستخدم ملف JSON للتخزين البسيط والمحمول. الخيار الافتراضي.</string>
-    <string name="settings_storage_export_json">تصدير المكتبة كـ JSON</string>
-    <string name="settings_storage_export_json_desc">احفظ ذاكرة التخزين المؤقت للمكتبة الحالية في ملف JSON قابل للمشاركة</string>
-    <string name="settings_storage_import_json">استيراد المكتبة من JSON</string>
-    <string name="settings_storage_import_json_desc">قم بتحميل بيانات الأغنية من ملف النسخ الاحتياطي JSON</string>
     <string name="settings_storage_rebuild_room">إعادة بناء قاعدة بيانات الغرفة</string>
     <string name="settings_storage_rebuild_room_desc">إعادة مزامنة قاعدة بيانات الغرفة من بيانات المكتبة الحالية</string>
     <string name="settings_storage_room_stats">إحصائيات قاعدة بيانات الغرفة</string>
-    <string name="settings_storage_room_stats_desc">عرض عدد أغاني قاعدة بيانات الغرفة وحجمها</string>
-    <string name="settings_storage_json_stats">JSON إحصائيات ذاكرة التخزين المؤقت</string>
-    <string name="settings_storage_json_stats_desc">عرض حجم ملف ذاكرة التخزين المؤقت JSON وعدد الأغاني</string>
     <string name="settings_storage_song_count">%1$d الأغاني المخزنة</string>
-    <string name="settings_storage_file_size">حجم الملف: %1$s</string>
     <string name="settings_storage_not_available">غير متوفر في الوضع الحالي</string>
     <string name="settings_storage_rebuild_success">تمت إعادة بناء قاعدة بيانات الغرفة بنجاح</string>
     <string name="settings_storage_rebuild_failed">فشلت إعادة بناء قاعدة بيانات الغرفة</string>
@@ -2686,13 +1713,7 @@
     <string name="settings_cache_info_4">يساعد المسح التلقائي في الحفاظ على الأداء الأمثل</string>
 
     <!-- Updates Settings -->
-    <string name="settings_updates_screen_title">التحديثات</string>
     <string name="updates_status_error">خطأ</string>
-    <string name="updates_status_checking">جاري التحقق…</string>
-    <string name="updates_status_update_available">التحديث متاح</string>
-    <string name="updates_status_disabled">التحديثات معطلة</string>
-    <string name="updates_status_manual">فحص يدوي</string>
-    <string name="updates_status_up_to_date">محدث</string>
     <string name="updates_rhythm_logo_cd">Rhythm الشعار</string>
     <string name="updates_version_prefix">الخامس %1$s</string>
     <string name="updates_released_prefix">صدر: %1$s</string>
@@ -2700,22 +1721,8 @@
     <string name="updates_open_settings">افتح الإعدادات</string>
     <string name="updates_retry">أعد المحاولة</string>
     <string name="updates_enable_updates">تمكين التحديثات</string>
-    <string name="updates_version_label">الإصدار %1$s</string>
-    <string name="settings_enable_updates">تمكين التحديثات</string>
-    <string name="settings_enable_updates_desc">السماح للتطبيق بالبحث عن التحديثات وتنزيلها</string>
-    <string name="settings_periodic_check">الفحص الدوري</string>
-    <string name="settings_periodic_check_desc">التحقق تلقائيًا من وجود تحديثات من Rhythm\'s GitHub repo</string>
     <string name="settings_update_notifications">تحديث الإخطارات</string>
-    <string name="settings_update_notifications_desc">احصل على إشعار عند توفر إصدارات جديدة</string>
-    <string name="settings_smart_polling">الاقتراع الذكي</string>
-    <string name="settings_smart_polling_desc">استخدم عمليات التحقق الفعالة لحفظ مكالمات GitHub API</string>
-    <string name="settings_update_channel">تحديث القناة</string>
-    <string name="settings_update_channel_suffix">- اضغط للتغيير</string>
-    <string name="settings_check_interval">التحقق من الفاصل الزمني</string>
     <string name="settings_check_interval_value">كل %1$d ساعة</string>
-    <string name="settings_channel_stable_desc">مستقرة - إصدارات مجربة وموثوقة</string>
-    <string name="settings_channel_beta_desc">بيتا - الوصول المبكر إلى الميزات الجديدة</string>
-    <string name="settings_check_interval_dialog">تحديث الفاصل الزمني</string>
     <string name="settings_interval_every_hour">كل ساعة</string>
     <string name="settings_interval_every_6_hours">كل 6 ساعات</string>
     <string name="settings_interval_every_12_hours">كل 12 ساعة</string>
@@ -2723,20 +1730,11 @@
     <string name="settings_interval_once_a_week">مرة واحدة في الأسبوع</string>
 
     <!-- Experimental Features -->
-    <string name="settings_music_source">مصدر الموسيقى</string>
-    <string name="settings_music_mode">وضع الموسيقى</string>
-    <string name="settings_music_mode_local">الملفات المحلية من الجهاز</string>
-    <string name="settings_music_mode_streaming">خدمات البث</string>
-    <string name="settings_allow_cellular_streaming">السماح بالبث الخلوي</string>
-    <string name="settings_allow_cellular_streaming_desc">دفق الموسيقى عبر بيانات الهاتف المحمول</string>
-    <string name="settings_streaming_coming_soon">ميزات البث قريبا</string>
     <string name="streaming_integration_title">Rhythm انطلق</string>
     <string name="streaming_integration_services">خدمات التكامل</string>
     <string name="streaming_integration_services_empty">لا توجد خدمات متصلة بعد</string>
-    <string name="streaming_home_subtitle">قم بتوصيل خدمة واحدة على الأقل للدخول إلى Rhythm انتقل إلى التنقل عبر البث المباشر.</string>
     <string name="streaming_settings_title">الإعدادات</string>
     <string name="streaming_settings_group_services">الخدمات</string>
-    <string name="streaming_settings_group_network">الشبكة والتشغيل</string>
     <string name="streaming_settings_group_actions">الإجراءات</string>
     <string name="streaming_settings_preferred_service">الخدمة المفضلة</string>
     <string name="streaming_settings_quality">جودة البث</string>
@@ -2750,8 +1748,6 @@
     <string name="streaming_quality_normal_desc">الجودة المتوازنة واستخدام البيانات (~ 160 كيلوبت في الثانية).</string>
     <string name="streaming_quality_high_desc">صوت عالي الجودة (~320 كيلو بايت في الثانية).</string>
     <string name="streaming_quality_lossless_desc">أفضل جودة عندما تكون مدعومة (FLAC/ALAC).</string>
-    <string name="streaming_settings_offline_mode">وضع غير متصل بالشبكة</string>
-    <string name="streaming_settings_offline_mode_desc">تشغيل المسارات التي تم تنزيلها عند التمكين</string>
     <string name="streaming_settings_group_wellbeing">Rhythm رؤى</string>
     <string name="streaming_open_full_settings">فتح الإعدادات الكاملة</string>
     <string name="streaming_open_full_settings_desc">افتح الإعدادات على مستوى التطبيق والتي تمت مشاركتها عبر الأوضاع</string>
@@ -2762,18 +1758,14 @@
     <string name="streaming_status_connected">الحساب متصل</string>
     <string name="streaming_status_not_connected">المصادقة معلقة</string>
     <string name="streaming_status_loading">تحديث البث المباشر...</string>
-    <string name="streaming_status_ready">جاهز للتكوين والاتصال</string>
     <string name="streaming_status_badge_connected">متصل</string>
     <string name="streaming_status_badge_pending">في انتظار</string>
     <string name="streaming_status_badge_refreshing">منعش</string>
     <string name="streaming_status_connect_hint">قم بإدارة الخدمة المحددة أدناه لربط حسابك.</string>
-    <string name="streaming_service_setup_coming_soon">إعداد %1$s قيد التقدم الآن.</string>
     <string name="streaming_selected">تم التحديد</string>
     <string name="streaming_connect">تواصل</string>
     <string name="streaming_manage">إدارة</string>
     <string name="streaming_manage_service">إدارة الخدمة المحددة</string>
-    <string name="streaming_service_setup_title">%1$s الإعداد</string>
-    <string name="streaming_service_setup_subtitle">قم بتوصيل حسابك لبدء البث في Rhythm Go.</string>
     <string name="streaming_service_setup_server_url">عنوان URL للخادم</string>
     <string name="streaming_service_setup_server_url_hint">https://your-server.example.com</string>
     <string name="streaming_service_setup_server_url_supporting">مطلوب لمقدمي الخدمات الذين يحتاجون إلى عنوان الخادم.</string>
@@ -2789,86 +1781,34 @@
     <string name="streaming_service_setup_reconnect">إعادة الاتصال</string>
     <string name="streaming_service_setup_disconnect">قطع الاتصال</string>
     <string name="streaming_service_setup_connected_as">متصل كـ %1$s</string>
-    <string name="streaming_dashboard_subtitle">عرض محتوى البث لـ %1$s.</string>
     <string name="streaming_home_selected_service_unavailable">الخدمة المحددة غير متصلة</string>
     <string name="streaming_home_connect_selected_service">قم بتوصيل %1$s لتحميل الصفحة الرئيسية والبحث.</string>
-    <string name="streaming_home_open_settings">افتح إعدادات البث</string>
-    <string name="streaming_home_connected_service">الخدمة المتصلة: %1$s</string>
-    <string name="streaming_home_for_service">لـ %1$s</string>
-    <string name="streaming_home_section_fixed_hint">مثبت في الأعلى</string>
-    <string name="streaming_home_widget_greeting_subtitle">متصل بـ %1$s</string>
-    <string name="streaming_home_widget_recently_played_subtitle">متابعة من جلسات %1$s</string>
-    <string name="streaming_home_widget_recommended_title">اكتشف</string>
-    <string name="streaming_home_widget_recommended_subtitle">اكتشف اللقطات من %1$s</string>
     <string name="streaming_home_widget_recommended_empty">لا يوجد شيء لاكتشافه بعد</string>
     <string name="streaming_home_widget_new_releases_title">الإصدارات الجديدة</string>
     <string name="streaming_home_widget_new_releases_subtitle">الألبومات المضافة مؤخرًا من %1$s</string>
     <string name="streaming_home_widget_new_releases_empty">لا توجد إصدارات جديدة متاحة</string>
-    <string name="streaming_home_widget_playlists_title">قوائم التشغيل المميزة</string>
-    <string name="streaming_home_widget_playlists_subtitle">اختيارات قائمة التشغيل من %1$s</string>
-    <string name="streaming_home_widget_playlists_empty">لم يتم العثور على قوائم تشغيل مميزة</string>
     <string name="streaming_home_widget_empty_hint">قد يستغرق هذا بعض الوقت بعد الاتصال أو التحديث.</string>
     <string name="streaming_library_syncing">جارٍ تحميل موجز البث الخاص بك...</string>
     <string name="streaming_library_empty">لا يوجد محتوى مكتبة بعد</string>
     <string name="streaming_home_no_content_title">لا يوجد محتوى منزلي بعد</string>
     <string name="streaming_home_no_content_hint">حاول التحديث بعد انتهاء الخدمة من المزامنة.</string>
     <string name="streaming_home_widget_playlist_track_count">%1$d المسارات</string>
-    <string name="streaming_library_overview_title">%1$s مكتبة</string>
-    <string name="streaming_library_overview_stats">%1$d أغاني · %2$d ألبومات · %3$d فنانون · %4$d قوائم التشغيل</string>
-    <string name="streaming_library_play_all">تشغيل جميع الأغاني</string>
     <string name="streaming_home_guard_break_active">فاصل نشط: %1$s يسار</string>
     <string name="streaming_home_guard_exposure">اليوم: %1$d / %2$d دقيقة</string>
-    <string name="streaming_search_subtitle">تم تحديد نطاق البحث إلى %1$s.</string>
-    <string name="streaming_search_discovery_title">اكتشف من %1$s</string>
-    <string name="streaming_search_hint">ابحث عن أغنية أو فنان أو ألبوم</string>
-    <string name="streaming_search_unavailable_title">البحث غير متاح</string>
-    <string name="streaming_search_suggestions_title">اقتراحات الخدمة</string>
-    <string name="streaming_search_results_empty">لا توجد نتائج من %1$s حتى الآن. جارٍ تحميل التكامل.</string>
     <string name="streaming_not_selected">لم يتم التحديد</string>
     <string name="streaming_service_subsonic">دون سرعة الصوت</string>
     <string name="streaming_service_subsonic_desc">قم بتوصيل Navidrome وخوادم Subsonic المتوافقة</string>
     <string name="streaming_service_jellyfin">جليفين</string>
     <string name="streaming_service_jellyfin_desc">يمكنك البث من مكتبة Jellyfin الشخصية الخاصة بك</string>
-    <string name="streaming_service_netease_cloud_music">نيتياس كلاود ميوزيك</string>
-    <string name="streaming_service_netease_cloud_music_desc">قم بتسجيل الدخول وقم ببث مجموعة الموسيقى السحابية الخاصة بك</string>
-    <string name="streaming_service_qq_music">موسيقى كيو كيو</string>
-    <string name="streaming_service_qq_music_desc">قم بتسجيل الدخول وقم ببث محتوى موسيقى QQ الخاص بك</string>
-    <string name="settings_developer_debugging">المطور والتصحيح</string>
-    <string name="settings_codec_monitoring">مراقبة الترميز</string>
-    <string name="settings_codec_monitoring_desc">قم بتسجيل برنامج ترميز الصوت ومعلومات التنسيق لتصحيح الأخطاء. عرض في Logcat مع علامة \"CodecMonitor\"</string>
-    <string name="settings_audio_device_logging">تسجيل جهاز الصوت</string>
-    <string name="settings_audio_device_logging_desc">تسجيل تغييرات جهاز الصوت (البلوتوث، سماعات الرأس، إلخ)</string>
-    <string name="settings_launch_onboarding">إطلاق جولة Rhythm</string>
-    <string name="settings_launch_onboarding_desc">قم بإعادة ضبط وإعادة تشغيل تجربة جولة Rhythm</string>
-    <string name="settings_test_crash">اختبار التصادم</string>
-    <string name="settings_test_crash_desc">قم بتعطيل التطبيق بالقوة لاختبار معالجة الأعطال وإعداد التقارير</string>
-    <string name="settings_music_mode_dialog_desc">اختر مصدر الموسيقى الخاص بك</string>
-    <string name="settings_local_files">الملفات المحلية</string>
-    <string name="settings_local_files_desc">تشغيل الموسيقى من مساحة تخزين جهازك</string>
-    <string name="settings_streaming_services">خدمات البث</string>
-    <string name="settings_streaming_services_desc">البث من Spotify والمزيد (قريبًا)</string>
-    <string name="settings_note">ملاحظة</string>
 
     <!-- Backup &amp; Restore -->
     <string name="settings_backup_restore">النسخ الاحتياطي والاستعادة</string>
-    <string name="settings_backup_never">أبدا</string>
-    <string name="settings_backup_auto_enabled">ممكّن</string>
-    <string name="settings_backup_auto_manual">دليل</string>
-    <string name="settings_backup_group_settings">الإعدادات</string>
     <string name="settings_auto_backup">النسخ الاحتياطي التلقائي</string>
     <string name="settings_auto_backup_desc">النسخ الاحتياطي للإعدادات تلقائيًا أسبوعيًا</string>
-    <string name="settings_backup_actions">إجراءات النسخ الاحتياطي</string>
-    <string name="settings_create_backup_file">إنشاء نسخة احتياطية للملف</string>
-    <string name="settings_create_backup_file_desc">تصدير نسخة احتياطية كاملة إلى ملف JSON</string>
-    <string name="settings_restore_actions">إجراءات الاستعادة</string>
     <string name="settings_restore_clipboard">استعادة من الحافظة</string>
     <string name="settings_restore_clipboard_desc">استيراد بيانات النسخ الاحتياطي من الحافظة</string>
     <string name="settings_restore_file">استعادة من ملف</string>
     <string name="settings_restore_file_desc">استيراد نسخة احتياطية من ملف JSON</string>
-    <string name="settings_backup_success_title">تم إنشاء النسخة الاحتياطية بنجاح</string>
-    <string name="settings_backup_success_message">تم إنشاء النسخة الاحتياطية الكاملة لـ Rhythm بما في ذلك:\n\n• جميع إعدادات التطبيق وتفضيلاته\n• تكوين المكتبة\n• تخصيص المظهر\n\nتم حفظ النسخة الاحتياطية ونسخها أيضًا إلى الحافظة الخاصة بك لتسهيل المشاركة.</string>
-    <string name="settings_restore_success_title">تمت عملية الاستعادة بنجاح</string>
-    <string name="settings_restore_success_message">تمت استعادة بيانات Rhythm بنجاح، بما في ذلك:\n\n• جميع إعدادات التطبيق وتفضيلاته\n• تكوين المكتبة\n• تخصيص المظهر\n\nيُرجى إعادة تشغيل التطبيق حتى تدخل جميع التغييرات حيز التنفيذ بالكامل.</string>
     <string name="settings_restart_now">أعد التشغيل الآن</string>
 
     <!-- Library Tab Order -->
@@ -2883,41 +1823,28 @@
     <string name="settings_move_down">تحرك للأسفل</string>
 
     <!-- Gestures Settings -->
-    <string name="settings_gestures_header">لفتات</string>
-    <string name="settings_gestures_mini_player">مشغل صغير</string>
     <string name="settings_swipe_gestures">إيماءات التمرير</string>
     <string name="settings_swipe_gestures_desc">اسحب لأعلى/لأسفل لفتح/استبعاد، لليسار/لليمين لتخطي المسارات</string>
-    <string name="settings_gestures_full_player">لاعب كامل</string>
     <string name="settings_swipe_down_dismiss">اسحب لأسفل للتجاهل</string>
     <string name="settings_swipe_down_dismiss_desc">أغلق المشغل عن طريق التمرير لأسفل على الشاشة</string>
     <string name="settings_swipe_artwork_tracks">اسحب العمل الفني للمسارات</string>
     <string name="settings_swipe_artwork_tracks_desc">اسحب لليسار/لليمين على العمل الفني للألبوم لتخطي المسارات</string>
     <string name="settings_double_tap_artwork">عمل فني بنقرة مزدوجة</string>
     <string name="settings_double_tap_artwork_desc">انقر نقرًا مزدوجًا على صورة الألبوم للتشغيل/الإيقاف المؤقت</string>
-    <string name="settings_gesture_tip_swipe_up">اسحب لأعلى على المشغل الصغير لفتح المشغل الكامل</string>
-    <string name="settings_gesture_tip_swipe_down">اسحب لأسفل على المشغل المصغر أو المشغل الكامل للاستبعاد</string>
-    <string name="settings_gesture_tip_double_tap">انقر نقرًا مزدوجًا على العمل الفني للتشغيل/الإيقاف المؤقت السريع</string>
-    <string name="settings_gesture_tip_disable">تعطيل الإيماءات غير المستخدمة للاستجابة بشكل أسرع</string>
 
     <!-- MiniPlayer Customization -->
     <string name="settings_miniplayer_header">مشغل صغير</string>
     <string name="settings_show_progress">عرض التقدم</string>
     <string name="settings_show_progress_desc">عرض مؤشر التقدم</string>
     <string name="settings_progress_mode">وضع التقدم</string>
-    <string name="settings_progress_mode_desc">اختر نمط مؤشر التقدم</string>
-    <string name="settings_progress_linear">خطي</string>
-    <string name="settings_progress_circular">تعميم</string>
-    <string name="settings_progress_style">أسلوب التقدم</string>
     <string name="settings_show_artwork">عرض العمل الفني</string>
     <string name="settings_show_artwork_desc">عرض العمل الفني للألبوم</string>
     <string name="settings_show_time">وقت العرض</string>
     <string name="settings_show_time_desc">عرض وقت التشغيل</string>
     <string name="settings_tablet_layout">تخطيط الجهاز اللوحي على الهاتف</string>
     <string name="settings_tablet_layout_desc">استخدم مشغلًا صغيرًا على غرار الكمبيوتر اللوحي على الهواتف</string>
-    <string name="settings_miniplayer_info">قم بتخصيص المشغل المضغوط الذي يظهر أسفل الشاشة.</string>
 
     <!-- Player Customization -->
-    <string name="settings_player_header">اللاعب</string>
     <string name="settings_chip_order">ترتيب الرقائق ورؤيتها</string>
     <string name="settings_chip_order_desc">تخصيص وإعادة ترتيب شرائح عمل اللاعب</string>
     <string name="settings_artwork_overlay">تراكب العمل الفني</string>
@@ -2931,31 +1858,16 @@
     <string name="settings_show_lyrics_player_desc">عرض كلمات الأغاني المتزامنة في المشغل</string>
     <string name="settings_lyrics_transition">انتقال كلمات</string>
     <string name="settings_lyrics_transition_desc">فن ↔ كلمات تبديل الرسوم المتحركة</string>
-    <string name="settings_transition_slide">الشريحة</string>
-    <string name="settings_transition_fade">تتلاشى</string>
-    <string name="settings_transition_scale">حجم</string>
-    <string name="settings_transition_up">فوق</string>
     <string name="settings_lyrics_text_size">حجم نص الكلمات</string>
-    <string name="settings_lyrics_text_size_value">الحجم: %1$d%%</string>
-    <string name="settings_lyrics_size_min">50%%</string>
-    <string name="settings_lyrics_size_max">200%%</string>
     <string name="settings_lyrics_alignment">محاذاة الكلمات</string>
     <string name="settings_lyrics_alignment_desc">محاذاة النص أفقياً</string>
-    <string name="settings_align_left">اليسار</string>
-    <string name="settings_align_center">المركز</string>
-    <string name="settings_align_right">الحق</string>
     <string name="settings_show_art_below_lyrics">عرض الفن أدناه كلمات</string>
     <string name="settings_show_art_below_lyrics_desc">عرض الفن أسفل تراكب كلمات الأغاني</string>
     <string name="settings_seek_buttons">أزرار البحث</string>
     <string name="settings_seek_buttons_desc">إظهار أزرار التخطي للأمام/للخلف لمدة 10 ثوانٍ</string>
-    <string name="settings_text_align_left">بمحاذاة إلى اليمين</string>
-    <string name="settings_text_align_right">بمحاذاة إلى اليمين</string>
-    <string name="settings_text_align_center">بمحاذاة إلى الوسط</string>
     <string name="settings_thumb_style">نمط الإبهام</string>
-    <string name="settings_player_screen_desc">قم بتخصيص تجربة اللاعب الخاصة بك من خلال تخطيطات الشرائح المخصصة والمؤثرات المرئية وتفضيلات العرض.</string>
 
     <!-- Theme Customization -->
-    <string name="settings_theme_header">الموضوع</string>
     <string name="settings_display_mode">وضع العرض</string>
     <string name="settings_theme_mode">وضع الموضوع</string>
     <string name="settings_theme_mode_desc">اختر الموضوع المفضل لديك</string>
@@ -2975,16 +1887,12 @@
     <string name="settings_font_source">مصدر الخط</string>
     <string name="settings_font_source_system">خط النظام - %1$s</string>
     <string name="settings_font_source_custom">الخط المخصص - %1$s</string>
-    <string name="settings_font_not_imported">غير مستوردة</string>
     <string name="settings_font_selection">اختيار الخط</string>
     <string name="settings_font_selection_desc">اختر من خيارات الخطوط المضمنة</string>
     <string name="settings_system_font_only">متوفر فقط مع مصدر خط النظام</string>
     <string name="settings_import_custom_font">استيراد خط مخصص</string>
     <string name="settings_font_imported_name">مستورد: %1$s</string>
     <string name="settings_import_font_desc">استيراد ملف الخط الخاص بك (.ttf، .otf)</string>
-    <string name="settings_font_imported">تم استيراد الخط بنجاح</string>
-    <string name="settings_font_invalid">تنسيق ملف الخط غير صالح</string>
-    <string name="settings_font_import_failed">فشل استيراد ملف الخط</string>
     <string name="settings_festive_themes">مواضيع الأعياد</string>
     <string name="settings_enable_festive">تمكين موضوع الأعياد</string>
     <string name="settings_enable_festive_desc">إظهار زخارف الأعياد عبر التطبيق</string>
@@ -2993,13 +1901,8 @@
     <string name="settings_theme_system">النظام</string>
     <string name="settings_theme_light">نور</string>
     <string name="settings_theme_dark">الظلام</string>
-    <string name="settings_festive_settings">إعدادات موضوع الأعياد</string>
     <string name="settings_festival_christmas">عيد الميلاد</string>
     <string name="settings_festival_new_year">رأس السنة</string>
-    <string name="settings_festival_halloween">الهالوين</string>
-    <string name="settings_festival_valentines">عيد الحب</string>
-    <string name="settings_festival_diwali">ديوالي</string>
-    <string name="settings_snowflake_area">منطقة عرض ندفة الثلج</string>
     <string name="settings_area_full">كامل</string>
     <string name="settings_area_sides">الجوانب</string>
     <string name="settings_area_top_third">أعلى ⅓</string>
@@ -3014,63 +1917,29 @@
 
     <!-- Crash Log History -->
     <string name="settings_crash_log_details">تفاصيل سجل الأعطال</string>
-    <string name="settings_no_log_details">لا توجد تفاصيل السجل المتاحة.</string>
     <string name="settings_log_copied">تم نسخ السجل إلى الحافظة</string>
     <string name="settings_copy_log">نسخ السجل</string>
     <string name="settings_clear_all_logs">مسح كافة السجلات</string>
-    <string name="settings_no_details">لا توجد تفاصيل متاحة.</string>
 
     <!-- Home Screen Customization -->
-    <string name="settings_home_header">الصفحة الرئيسية</string>
-    <string name="settings_always_collapsed">ابدأ دائمًا بالانهيار</string>
-    <string name="settings_always_collapsed_desc">ابدأ تشغيل كافة الشاشات برأس مطوي</string>
-    <string name="settings_header_display_desc">اختر ما تريد إظهاره في الرأس</string>
-    <string name="settings_header_icon">أيقونة</string>
-    <string name="settings_header_name">الاسم</string>
-    <string name="settings_header_both">كلاهما</string>
     <string name="settings_visibility_desc">متى يتم إظهار %1$s في الرأس</string>
-    <string name="settings_visibility_always">دائما</string>
-    <string name="settings_visibility_expanded">موسع</string>
-    <string name="settings_visibility_collapsed">انهار</string>
-    <string name="settings_greeting">تحية</string>
-    <string name="settings_show_greeting">إظهار التحية</string>
-    <string name="settings_show_greeting_desc">إظهار رأس قسم الترحيب والاكتشاف</string>
-    <string name="settings_section_order">ترتيب القسم وإمكانية رؤيته</string>
-    <string name="settings_reorder_sections">إعادة ترتيب وتبديل الأقسام</string>
-    <string name="settings_reorder_sections_desc">تخصيص تخطيط الشاشة الرئيسية</string>
-    <string name="settings_recently_played">تم تشغيلها مؤخرًا</string>
     <string name="settings_top_artists">كبار الفنانين</string>
     <string name="settings_new_releases">الإصدارات الجديدة</string>
     <string name="settings_recently_added">أضيفت مؤخرا</string>
     <string name="settings_recommended">موصى به</string>
     <string name="settings_carousel_style_desc">اختر كيفية عرض الألبومات</string>
     <string name="settings_carousel_default">الافتراضي</string>
-    <string name="settings_carousel_hero">البطل</string>
-    <string name="settings_auto_scroll">التمرير التلقائي</string>
 
     <!-- Expressive Shapes -->
-    <string name="settings_shapes_header">الأشكال</string>
-    <string name="settings_shapes_enabled">الأشكال التعبيرية</string>
-    <string name="settings_shapes_enabled_desc">استخدم الأشكال العضوية الدائرية عبر التطبيق</string>
-    <string name="settings_shapes_preset">إعداد مسبق للشكل</string>
-    <string name="settings_shapes_preset_desc">اختر نمط شكل معد مسبقًا</string>
-    <string name="settings_shapes_individual">الأشكال الفردية</string>
     <string name="settings_shapes_album_art">صورة الألبوم</string>
-    <string name="settings_shapes_player_art">فن اللاعب</string>
-    <string name="settings_shapes_song_art">فن الاغنية</string>
-    <string name="settings_shapes_playlist_art">فن قائمة التشغيل</string>
-    <string name="settings_shapes_artist_art">فن الفنان</string>
     <string name="settings_shapes_player_controls">عناصر تحكم اللاعب</string>
     <string name="settings_shapes_mini_player">مشغل صغير</string>
 
     <!-- Lyrics Source -->
-    <string name="settings_lyrics_source_header">مصدر الكلمات</string>
 
     <!-- API Management / Integrations -->
-    <string name="settings_integrations_header">التكامل</string>
 
     <!-- Settings Screen -->
-    <string name="settings_header_title">الإعدادات</string>
     <string name="settings_shapes">الأشكال</string>
     <string name="settings_shapes_desc">الأشكال التعبيرية</string>
     <string name="settings_skip_silence">تخطي الصمت</string>
@@ -3113,8 +1982,6 @@
 
 
     <!-- Experimental Features Search Strings -->
-    <string name="settings_exp_music_mode">وضع الموسيقى</string>
-    <string name="settings_exp_music_mode_desc">الملفات المحلية أو التدفق</string>
     <string name="settings_exp_festive_theme">موضوع احتفالي</string>
     <string name="settings_exp_festive_theme_desc">زينة الأعياد</string>
     <string name="settings_exp_auto_detect_holidays">الكشف التلقائي عن الإجازات</string>
@@ -3129,16 +1996,10 @@
     <string name="settings_exp_launch_onboarding_desc">إعادة إطلاق جولة Rhythm</string>
     <string name="settings_exp_test_crash">اختبار التصادم</string>
     <string name="settings_exp_test_crash_desc">فرض تعطل التطبيق</string>
-    <string name="settings_scrobbling_enabled">تمكين التمرير</string>
-    <string name="settings_scrobbling_enabled_desc">التكامل Last.fm</string>
-    <string name="settings_discord_enabled_search">تمكين الحضور الغني للديسكورد</string>
-    <string name="settings_discord_enabled_search_desc">حالة نشاط الخلاف</string>
     <string name="settings_broadcast_status_enabled">تمكين بث الحالة</string>
     <string name="settings_broadcast_status_enabled_desc">حالة تشغيل البث</string>
     <string name="settings_bluetooth_lyrics_enabled">وضع كلمات البلوتوث</string>
     <string name="settings_bluetooth_lyrics_enabled_desc">بث الخط الغنائي الحالي عبر بيانات تعريف البلوتوث</string>
-    <string name="settings_exp_cellular_streaming">السماح بالبث الخلوي</string>
-    <string name="settings_exp_cellular_streaming_desc">تدفق بيانات الجوال</string>
     <string name="exp_go_mode">وضع الذهاب</string>
     <string name="exp_go_mode_desc">قم بالتبديل إلى Rhythm انتقل إلى وضع البث</string>
 
@@ -3155,12 +2016,6 @@
     <string name="settings_home_carousel_auto_scroll_desc">دائري التمرير التلقائي</string>
 
     <!-- Notifications Search Strings -->
-    <string name="settings_notifications_custom">الإخطارات المخصصة</string>
-    <string name="settings_notifications_custom_desc">نمط مخصص لعناصر التحكم</string>
-    <string name="settings_notifications_update_available">تحديث الإخطارات المتاحة</string>
-    <string name="settings_notifications_update_available_desc">تنبيهات عند توفر إصدار جديد للتطبيق</string>
-    <string name="settings_notifications_update_status">تحديث إشعارات الحالة</string>
-    <string name="settings_notifications_update_status_desc">تنبيهات نتيجة فحص الخلفية</string>
     <string name="settings_notifications_rhythm_guard_alerts">Rhythm تنبيهات سلامة الحرس</string>
     <string name="settings_notifications_rhythm_guard_alerts_desc">الإخطار عند تشغيل تحذيرات مخاطر الاستماع</string>
     <string name="settings_notifications_rhythm_guard_timers">Rhythm مؤقتات Guard Break</string>
@@ -3224,7 +2079,6 @@
     <string name="settings_embed_lyrics_in_file">تضمين كلمات الأغاني في الملف</string>
     <string name="settings_embed_lyrics_in_file_desc">اكتب كلمات الأغاني مباشرة في البيانات الوصفية للملفات الصوتية</string>
     <string name="settings_playback_pitch">درجة التشغيل</string>
-    <string name="settings_playback_pitch_desc">ضبط درجة الصوت بشكل مستقل عن السرعة</string>
 
     <string name="settings_player_gradient">تراكب متدرج</string>
     <string name="settings_player_gradient_desc">إظهار تراكب متدرج على العمل الفني للألبوم</string>
@@ -3260,12 +2114,6 @@
 
     <!-- Library Screen scanning overlay -->
     <string name="settings_scanning">المسح</string>
-    <string name="scan_songs">مسح الأغاني…</string>
-    <string name="scan_albums">معالجة الألبومات…</string>
-    <string name="scan_artists">تجهيز الفنانين…</string>
-    <string name="scan_genres">الكشف عن الأنواع…</string>
-    <string name="scan_media">مسح الوسائط…</string>
-    <string name="scan_progress">%1$d / %2$d</string>
 
     <!-- Settings Search -->
     <string name="search_settings_hint">بحث في إعدادات Rhythm…</string>
@@ -3278,30 +2126,17 @@
     <string name="exp_audio_device_logging">تسجيل جهاز الصوت</string>
     <string name="exp_audio_device_logging_desc">تسجيل تغييرات جهاز الصوت (البلوتوث، سماعات الرأس، إلخ)</string>
     <string name="exp_cellular_streaming">السماح بالبث الخلوي</string>
-    <string name="exp_cellular_streaming_desc">دفق الموسيقى عبر بيانات الهاتف المحمول</string>
-    <string name="exp_choose_music_source">اختر مصدر الموسيقى الخاص بك</string>
     <string name="exp_codec_monitoring">مراقبة الترميز</string>
     <string name="exp_codec_monitoring_desc">قم بتسجيل برنامج ترميز الصوت ومعلومات التنسيق لتصحيح الأخطاء</string>
     <string name="exp_developer_debugging">المطور والتصحيح</string>
     <string name="exp_launch_onboarding">إطلاق جولة Rhythm</string>
     <string name="exp_launch_onboarding_desc">قم بإعادة ضبط وإعادة تشغيل تجربة جولة Rhythm</string>
-    <string name="exp_local_files">الملفات المحلية</string>
-    <string name="exp_local_files_desc">الملفات المحلية من الجهاز</string>
-    <string name="exp_music_mode">وضع الموسيقى</string>
-    <string name="exp_music_source">مصدر الموسيقى</string>
-    <string name="exp_note">ملاحظة</string>
-    <string name="exp_streaming_coming_soon">ميزات البث قريبا</string>
-    <string name="exp_streaming_desc">خدمات البث (قريبا)</string>
-    <string name="exp_streaming_services">خدمات البث</string>
     <string name="exp_test_crash">اختبار التصادم</string>
     <string name="exp_test_crash_desc">قم بتعطيل التطبيق بالقوة لاختبار معالجة الأعطال وإعداد التقارير</string>
     <string name="exp_force_player_compact_mode">فرض الوضع المضغوط للمشغل</string>
     <string name="exp_force_player_compact_mode_desc">إجبار شاشة المشغل على استخدام الوضع المضغوط</string>
     <string name="exp_third_party_integrations">تكاملات الطرف الثالث</string>
     <string name="settings_backup_created">تم إنشاء النسخة الاحتياطية بنجاح</string>
-    <string name="settings_backup_created_body">تم إنشاء النسخة الاحتياطية الكاملة Rhythm الخاصة بك.</string>
-    <string name="settings_backup_enabled">ممكّن</string>
-    <string name="settings_backup_manual">دليل</string>
     <string name="settings_backup_settings">الإعدادات</string>
     <string name="settings_center_aligned">بمحاذاة إلى الوسط</string>
     <string name="settings_choose_progress_style">اختر نمط مؤشر التقدم</string>
@@ -3313,7 +2148,6 @@
     <string name="settings_left_aligned">بمحاذاة إلى اليمين</string>
     <string name="settings_player">اللاعب</string>
     <string name="settings_restore_completed">تمت عملية الاستعادة بنجاح</string>
-    <string name="settings_restore_completed_body">تمت استعادة بيانات Rhythm الخاصة بك بنجاح.</string>
     <string name="settings_right_aligned">بمحاذاة إلى اليمين</string>
     <string name="settings_tab_order">ترتيب علامة تبويب المكتبة</string>
 
@@ -3323,24 +2157,14 @@
     <string name="settings_home_screen">الصفحة الرئيسية</string>
     <string name="settings_lyrics_source">كلمات</string>
     <string name="settings_theme">الموضوع</string>
-    <string name="theme_amoled">موضوع OLED</string>
-    <string name="theme_amoled_desc">مظهر أسود خالص لشاشات OLED</string>
     <string name="theme_auto_detect">الكشف التلقائي عن الإجازات</string>
-    <string name="theme_auto_detect_desc">إظهار زينة الأعياد تلقائيا</string>
-    <string name="theme_color_customization">تخصيص الألوان</string>
     <string name="theme_colors_applied">تم تطبيق الألوان المخصصة!</string>
-    <string name="theme_display_mode">وضع العرض</string>
     <string name="theme_enable_festive">تمكين موضوع الأعياد</string>
-    <string name="theme_enable_festive_desc">إظهار زخارف الأعياد عبر التطبيق</string>
     <string name="theme_festive_settings">إعدادات موضوع الأعياد</string>
-    <string name="theme_festive_themes">مواضيع الأعياد</string>
-    <string name="theme_font_customization">تخصيص الخط</string>
     <string name="theme_font_import_failed">فشل استيراد ملف الخط</string>
     <string name="theme_font_imported">تم استيراد الخط بنجاح</string>
     <string name="theme_font_invalid">تنسيق ملف الخط غير صالح</string>
     <string name="theme_import_font">استيراد خط مخصص</string>
-    <string name="theme_mode">وضع الموضوع</string>
-    <string name="theme_mode_desc">اختر الموضوع المفضل لديك</string>
     <string name="ui_apply">قدم</string>
 
     <string name="crashactivity_uh_oh_looks_like">اه اه! يبدو أن Rhythm قد أصابه ملاحظة سيئة!</string>
@@ -3411,7 +2235,6 @@
     <string name="explorertabcontent_add_all_to_queue">إضافة الكل إلى قائمة الانتظار</string>
     <string name="homescreen_view_all_stats">عرض جميع الإحصائيات</string>
     <string name="homescreen_plays">مسرحيات</string>
-    <string name="libraryscreen_shuffle_selected">تم التحديد العشوائي</string>
     <string name="libraryscreen_more_actions">المزيد من الإجراءات</string>
     <string name="libraryscreen_shuffle_artists">خلط الفنانين</string>
     <string name="libraryscreen_clear_selection">مسح التحديد</string>
@@ -3420,7 +2243,6 @@
     <string name="onboardingscreen_enable_festive_decorations_and">تمكين زخارف الأعياد والمواضيع الموسمية</string>
     <string name="onboardingscreen_interaction">التفاعل</string>
     <string name="onboardingscreen_choose_your_playback_mode">اختر وضع التشغيل الخاص بك</string>
-    <string name="onboardingscreen_select_how_youd_like">حدد الطريقة التي تريد بها تجربة الموسيقى الخاصة بك. يمكنك تغيير هذا في أي وقت في الإعدادات.</string>
     <string name="onboardingscreen_local_offline_player">مشغل محلي غير متصل</string>
     <string name="onboardingscreen_play_audio_files_stored">تشغيل الملفات الصوتية المخزنة مباشرة على جهازك. يدعم المسح المتقدم للدليل المحلي والإحصائيات ومطابقة السمات.</string>
     <string name="onboardingscreen_rhythm_go_streaming">Rhythm انطلق! (البث)</string>
@@ -3462,19 +2284,8 @@
     <string name="streamingsettingsscreen_streaming_restricted">البث مقيد</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">فشل التشغيل التالي: غير قادر على حل URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">فشلت الإضافة إلى قائمة الانتظار: غير قادر على حل عنوان URL</string>
-    <string name="legacywidgetpreview_rhythm_legacy_widget_previews">Rhythm معاينات الأدوات القديمة</string>
-    <string name="legacywidgetpreview_remoteviewsbased_widgets_for_maximum">عناصر واجهة المستخدم المستندة إلى RemoteViews لتحقيق أقصى قدر من التوافق</string>
-    <string name="legacywidgetpreview_str_11_extra_small_widget">1 × 1 قطعة صغيرة إضافية</string>
-    <string name="legacywidgetpreview_str_21_small_horizontal_widget">2×1 القطعة الأفقية الصغيرة</string>
     <string name="legacywidgetpreview_str_12_vertical_widget">1 × 2 القطعة العمودية</string>
     <string name="legacywidgetpreview_str_32_medium_widget">القطعة المتوسطة 3×2</string>
-    <string name="legacywidgetpreview_str_41_wide_widget">4×1 القطعة واسعة</string>
-    <string name="legacywidgetpreview_str_33_large_widget">القطعة الكبيرة 3×3</string>
-    <string name="legacywidgetpreview_str_43_extra_large_widget">القطعة الكبيرة جدًا 4×3</string>
-    <string name="legacywidgetpreview_str_55_premium_widget">5×5 القطعة المميزة</string>
-    <string name="legacywidgetpreview_legacy_widget_features">ميزات القطعة القديمة</string>
-    <string name="legacywidgetpreview_migration_to_glance">الهجرة إلى Glance</string>
-    <string name="legacywidgetpreview_consider_using_glance_widgets">فكر في استخدام عناصر واجهة المستخدم Glance لتحسين سمات Material 3 والألوان الديناميكية والمزيد من خيارات التخصيص.</string>
     <string name="rhythmmusicwidget_album_art_placeholder">العنصر النائب لصورة الألبوم</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance معاينة القطعة</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 القطعة المدمجة</string>
@@ -3488,7 +2299,6 @@
     <string name="rhythmwidgetpreview_playing">اللعب</string>
     <string name="rhythmwidgetpreview_paused">متوقف مؤقتًا</string>
     <string name="rhythmwidgetpreview_design_features">مميزات التصميم</string>
-    <string name="audioqualitybadges_str_320k">320 ألف</string>
     <string name="licensesbottomsheet_license_notes">ملاحظات الترخيص</string>
     <string name="playbackbottomsheet_str_025x">0.25x</string>
     <string name="playbackbottomsheet_str_30x">3.0x</string>
@@ -3570,10 +2380,7 @@
     <string name="playerscreen_select_artist">حدد الفنان</string>
     <string name="playerscreen_open_artist">فتح الفنان</string>
     <string name="aboutscreen_support_development">دعم التطوير</string>
-    <string name="aboutscreen_sponsors">الرعاة</string>
-    <string name="aboutscreen_thanks_to_everyone_supporting">شكرًا لكل من يدعم تطوير Rhythm.</string>
     <string name="aboutscreen_discord_community">مجتمع الخلاف</string>
-    <string name="aboutscreen_support">الدعم</string>
     <string name="apimanagementsettingsscreen_apple_music">أبل ميوزيك</string>
     <string name="apimanagementsettingsscreen_github">جيثب</string>
     <string name="apimanagementsettingsscreen_app_updates_and_release">تحديثات التطبيق ومعلومات الإصدار</string>
@@ -3695,7 +2502,6 @@
     <string name="error_saving_lyrics">خطأ في حفظ كلمات الأغاني: %1$s</string>
     <string name="song_metadata_details">%1$s\nالفنان: %2$s\nالألبوم: %3$s
 الصورة الرمزية</string>
-    <string name="about_avatar_description">%1$s</string>
     <string name="crash_log_title">تعطلت في: %1$s</string>
     <string name="widget_settings_radius_desc">%1$ddp (Glance الأدوات فقط)</string>
     <string name="equalizer_open_error">لا يمكن فتح المعادل: %1$s</string>
@@ -3914,15 +2720,10 @@
 
     <!-- Common UI element strings -->
     <string name="common_none">لا شيء</string>
-    <string name="common_cancel">إلغاء</string>
     <string name="common_back">العودة</string>
-    <string name="common_remove">إزالة</string>
-    <string name="common_add">إضافة</string>
     <string name="common_active">نشط</string>
     <string name="common_disabled">معطل</string>
     <string name="common_unavailable">غير متوفر</string>
-    <string name="common_success">النجاح</string>
-    <string name="common_error">خطأ</string>
     <string name="common_unknown">غير معروف</string>
 
     <!-- Blacklist UI additions -->
@@ -3955,8 +2756,6 @@
     <string name="dialog_restart_warning_message">للتأكد من أن جميع قوائم التشغيل المستوردة تعمل بشكل صحيح، نوصي بإعادة تشغيل التطبيق. يمكنك الاستمرار في استخدام التطبيق بشكل طبيعي، ولكن قد لا تعمل بعض الميزات كما هو متوقع حتى يتم إعادة تشغيله.</string>
     <string name="dialog_export_playlist_to">تصدير \"%1$s\" إلى:</string>
     <string name="dialog_export_playlists_to">تصدير قوائم التشغيل %1$d إلى:</string>
-    <string name="dialog_operation_importing">الاستيراد</string>
-    <string name="dialog_operation_exporting">التصدير</string>
 
     <!-- Mode dialog strings -->
     <string name="dialog_switch_to_go">قم بالتبديل إلى Rhythm اذهب؟</string>
@@ -3965,22 +2764,10 @@
     <string name="dialog_switch_to_local_desc">ينتمي هذا العنصر إلى مكتبتك المحلية. هل تريد التبديل إلى الوضع المحلي الآن لتشغيل مقطوعاتك غير المتصلة بالإنترنت؟</string>
 
     <!-- Section order content descriptions -->
-    <string name="home_section_hide_carousel">إخفاء الرف الدائري</string>
-    <string name="home_section_show_carousel">عرض الرف الدائري</string>
-    <string name="home_section_hide_section">إخفاء القسم</string>
-    <string name="home_section_show_section">عرض القسم</string>
-    <string name="library_tab_show">إظهار علامة التبويب</string>
-    <string name="library_tab_hide">إخفاء علامة التبويب</string>
 
     <!-- Add To Playlist additions -->
-    <string name="add_to_playlist_selected_count">%1$d تم التحديد</string>
-    <string name="add_to_playlist_title">أضف إلى %1$s</string>
-    <string name="add_to_playlist_no_songs">لا توجد أغاني متاحة</string>
-    <string name="add_to_playlist_all_songs_present">جميع الأغاني موجودة بالفعل في قائمة التشغيل هذه</string>
 
     <!-- Artist details -->
-    <string name="artist_detail_albums_count">%1$d ألبومات</string>
-    <string name="artist_detail_songs_count">%1$d الأغاني</string>
 
     <!-- Equalizer presets & UI -->
     <string name="eq_preset_flat">شقة</string>
@@ -3996,7 +2783,6 @@
     <string name="eq_preset_v_shape">على شكل حرف V</string>
     <string name="eq_preset_harman">هارمان</string>
     <string name="eq_preset_custom">مخصص</string>
-    <string name="eq_autoeq_profiles">ملفات تعريف AutoEQ</string>
     <string name="eq_manage_device">إدارة الجهاز</string>
     <string name="eq_system_equalizer">نظام التعادل</string>
     <string name="eq_enhance_lows">تعزيز المستويات المنخفضة</string>
@@ -4004,27 +2790,18 @@
     <string name="eq_mono_only">أحادي فقط</string>
 
     <!-- Library updates, sorting & categories -->
-    <string name="library_updated_songs_success">تم تحديث أغاني %1$d</string>
-    <string name="library_updated_songs_failed">تم تحديث أغاني %1$d، فشل %2$d</string>
-    <string name="library_switch_to_grid">قم بالتبديل إلى عرض الشبكة</string>
-    <string name="library_switch_to_list">قم بالتبديل إلى عرض القائمة</string>
     <string name="library_sort_title">العنوان</string>
     <string name="library_sort_artist">الفنان</string>
+    <string name="library_sort_album">الألبوم</string>
     <string name="library_sort_date_added">تاريخ الإضافة</string>
     <string name="library_sort_date_modified">تاريخ التعديل</string>
     <string name="library_sort_ascending">تصاعدي</string>
     <string name="library_sort_descending">تنازلي</string>
-    <string name="library_sort_name_asc">الاسم (من الألف إلى الياء)</string>
-    <string name="library_sort_name_desc">الاسم (Z-A)</string>
-    <string name="library_sort_songs_desc">الأغاني (من الأعلى إلى الأدنى)</string>
-    <string name="library_sort_albums_desc">الألبومات (من الأعلى إلى الأدنى)</string>
     <string name="library_scan_songs">جارٍ مسح الأغاني...</string>
     <string name="library_scan_albums">جارٍ معالجة الألبومات...</string>
     <string name="library_scan_artists">معالجة الفنانين...</string>
     <string name="library_scan_genres">جارٍ اكتشاف الأنواع...</string>
     <string name="library_scan_media">جارٍ فحص الوسائط...</string>
-    <string name="library_export_failed">فشل التصدير</string>
-    <string name="library_import_failed">فشل الاستيراد</string>
     <string name="library_category_all">الكل</string>
     <string name="library_category_favorites">❤️ المفضلة</string>
     <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ المفضلة المطلقة</string>
@@ -4035,56 +2812,17 @@
     <string name="library_category_short">قصير (أقل من 3 دقائق)</string>
     <string name="library_category_medium">متوسط (3-5 دقائق)</string>
     <string name="library_category_long">طويل (&gt; 5 دقائق)</string>
-    <string name="library_category_hi_res_lossless">مرحبا الدقة ضياع</string>
-    <string name="library_category_lossless">بلا خسارة</string>
-    <string name="library_category_dolby">دولبي</string>
     <string name="library_category_mono">مونو</string>
     <string name="library_category_stereo">ستيريو</string>
-    <string name="library_category_high_quality">جودة عالية</string>
-    <string name="library_category_standard">قياسي</string>
-    <string name="library_removed_from_favorites">تمت إزالة %1$d من المفضلة</string>
-    <string name="library_added_to_favorites">تمت إضافة %1$d إلى المفضلة</string>
-    <string name="library_unlike_all">على عكس الجميع</string>
-    <string name="library_like_all">مثل الجميع</string>
-    <string name="library_tracks_count_format">%1$d من مسارات %2$d</string>
     <string name="library_no_playlists_yet">لا توجد قوائم تشغيل حتى الآن\nأنشئ قائمة التشغيل الأولى باستخدام الزر +</string>
     <string name="library_no_albums_yet">لا يوجد ألبومات بعد</string>
     <string name="library_no_artists_yet">لا يوجد فنانين بعد</string>
-    <string name="library_action_play_next">العب بعد ذلك</string>
-    <string name="library_action_add_to_queue">أضف إلى قائمة الانتظار</string>
-    <string name="library_action_add_to_blacklist">أضف إلى القائمة السوداء</string>
-    <string name="library_action_song_info">معلومات الأغنية</string>
     <string name="library_action_add_to_playlist">أضف إلى قائمة التشغيل</string>
     <string name="library_action_rate_song">قيم الأغنية</string>
-    <string name="library_menu_new_playlist">قائمة تشغيل جديدة</string>
-    <string name="library_menu_import_playlist">استيراد قائمة التشغيل</string>
-    <string name="library_menu_export_playlists">تصدير قوائم التشغيل</string>
-    <string name="library_menu_close_playlist">أغلق قائمة التشغيل</string>
-    <string name="library_menu_open_playlist">افتح قائمة التشغيل</string>
-    <string name="library_menu_close">إغلاق القائمة</string>
     <string name="library_selected_count_format">%1$d تم التحديد</string>
     <string name="library_from_tracks_format">من مسارات %1$d</string>
-    <string name="library_playlist_count_singular">%1$d قائمة التشغيل</string>
-    <string name="library_playlist_count_plural">%1$d قوائم التشغيل</string>
-    <string name="library_album_count_singular">%1$d الألبوم</string>
-    <string name="library_album_count_plural">%1$d ألبومات</string>
-    <string name="library_artist_count_singular">%1$d فنان</string>
-    <string name="library_artist_count_plural">%1$d الفنانين</string>
-    <string name="library_duration_hours_minutes">%1$dh %2$dm</string>
-    <string name="library_duration_minutes">%1$dm</string>
 
     <!-- Onboarding, Backup & Settings additions -->
-    <string name="onboarding_blacklist_label">القائمة السوداء</string>
-    <string name="onboarding_whitelist_label">القائمة البيضاء</string>
-    <string name="onboarding_full_player_label">لاعب كامل</string>
-    <string name="onboarding_mini_player_label">مشغل صغير</string>
-    <string name="onboarding_blocked_folders">%1$d المجلدات المحظورة</string>
-    <string name="onboarding_whitelisted_folders">%1$d المجلدات المدرجة في القائمة البيضاء</string>
-    <string name="onboarding_sample_button">زر العينة</string>
-    <string name="onboarding_primary_label">الابتدائية</string>
-    <string name="onboarding_secondary_label">ثانوي</string>
-    <string name="onboarding_tertiary_label">التعليم العالي</string>
-    <string name="onboarding_rhythm_material">Rhythm (Material)</string>
     
     <string name="backup_restored_success">تمت استعادة النسخة الاحتياطية بنجاح. أعد تشغيل التطبيق لتطبيق كافة التغييرات.</string>
     <string name="backup_copied_to_clipboard">تم إنشاء نسخة احتياطية ونسخها إلى الحافظة.</string>
@@ -4097,8 +2835,6 @@
     <string name="updater_download_progress">%1$d%% • %2$s / %3$s</string>
     <string name="updater_version_info">الإصدار %1$s • %2$s</string>
     <string name="updater_error_occurred">حدث خطأ</string>
-    <string name="updater_channel_stable">مستقر</string>
-    <string name="updater_channel_beta">بيتا</string>
 
     <!-- Expressive shape preset & group names -->
     <string name="shape_preset_default">الافتراضي</string>
@@ -4133,10 +2869,6 @@
     <string name="shape_option_pentagon_desc">مضلع ذو خمسة جوانب</string>
     <string name="shape_option_flower">زهرة</string>
     <string name="shape_option_flower_desc">زهرة ذات بتلات</string>
-    <string name="shape_option_clover4">4-ورق البرسيم</string>
-    <string name="shape_option_clover4_desc">البرسيم ذو أربع أوراق</string>
-    <string name="shape_option_clover8">8-ورق البرسيم</string>
-    <string name="shape_option_clover8_desc">البرسيم ذو ثماني أوراق</string>
     <string name="shape_option_heart">القلب</string>
     <string name="shape_option_heart_desc">شكل قلب</string>
     <string name="shape_option_bun">كعكة</string>
@@ -4207,8 +2939,6 @@
     <string name="option_collapsed">انهار</string>
     <string name="option_linear">خطي</string>
     <string name="option_circular">دائري</string>
-    <string name="option_auto">آلي</string>
-    <string name="option_manual">يدوي</string>
     <string name="option_both">كلاهما</string>
     <string name="option_icon">رمز</string>
     <string name="option_name">اسم</string>
@@ -4217,46 +2947,12 @@
     <string name="theme_color_red">أحمر</string>
     <string name="theme_color_green">أخضر</string>
     <string name="theme_color_blue">أزرق</string>
-    <string name="theme_font_restart_warning">تم تغيير الخط. أعد تشغيل التطبيق لتطبيق الخط الجديد.</string>
-    <string name="theme_source_album_art">فن الألبوم</string>
-    <string name="theme_source_album_art_desc">استخراج الألوان من العمل الفني للألبوم حاليًا</string>
-    <string name="theme_source_system_colors">ألوان النظام</string>
-    <string name="theme_source_system_colors_desc">استخدم Material الألوان من ورق الحائط الخاص بك</string>
-    <string name="theme_source_custom_scheme">مخطط مخصص</string>
-    <string name="theme_source_custom_scheme_desc">اختر من بين أنظمة الألوان المحددة مسبقًا</string>
-    <string name="theme_font_system">خط النظام</string>
-    <string name="theme_font_system_desc">استخدم الخط الافتراضي للجهاز</string>
-    <string name="theme_font_custom">الخط المخصص</string>
-    <string name="theme_font_custom_desc">استيراد واستخدام ملف خط مخصص</string>
 
     <!-- Color Scheme names -->
-    <string name="scheme_default">تقصير</string>
-    <string name="scheme_warm">دافيء</string>
-    <string name="scheme_cool">رائع</string>
-    <string name="scheme_forest">غابة</string>
-    <string name="scheme_rose">وَردَة</string>
-    <string name="scheme_monochrome">أحادية اللون</string>
-    <string name="scheme_lavender">لافندر</string>
-    <string name="scheme_ocean">محيط</string>
-    <string name="scheme_aurora">أورورا</string>
-    <string name="scheme_amber">العنبر</string>
-    <string name="scheme_crimson">قرمزي</string>
-    <string name="scheme_emerald">الزمرد</string>
-    <string name="scheme_mint">نعناع</string>
 
     <!-- Shape Utils category and descriptions -->
-    <string name="shape_utils_fab">زر العمل العائم</string>
-    <string name="shape_utils_fab_desc">شكل لأزرار FAB</string>
-    <string name="shape_utils_cards">بطاقات</string>
-    <string name="shape_utils_cards_desc">شكل للبطاقات والحاويات</string>
-    <string name="shape_utils_buttons">أزرار</string>
-    <string name="shape_utils_buttons_desc">شكل للأزرار</string>
-    <string name="shape_utils_chips">رقائق</string>
-    <string name="shape_utils_chips_desc">شكل للرقائق والعلامات</string>
     <string name="shape_utils_player_controls">ضوابط اللاعب</string>
-    <string name="shape_utils_player_controls_desc">شكل أزرار التحكم في المشغل</string>
     <string name="shape_utils_mini_player">مشغل صغير</string>
-    <string name="shape_utils_mini_player_desc">شكل للعمل الفني للاعب الصغير</string>
 
     <!-- Metadata properties and labels -->
     <string name="metadata_duration">مدة</string>
@@ -4279,10 +2975,6 @@
     <string name="metadata_date_added">تاريخ الإضافة</string>
     <string name="metadata_modified">معدل</string>
     <string name="metadata_lyrics_available">متاح</string>
-    <string name="metadata_dts">دتس</string>
-    <string name="metadata_hi_res">مرحبا الدقة</string>
-    <string name="metadata_dolby">دولبي</string>
-    <string name="metadata_lossless">ضياع</string>
 
     <!-- Discover settings specific -->
     <string name="settings_discover_album_name">اسم الألبوم</string>
@@ -4309,15 +3001,20 @@
 
     <!-- Shape targets -->
     <string name="shape_target_album_art">عمل فني للألبوم</string>
-    <string name="shape_target_album_art_desc">شكل العمل الفني للألبوم</string>
     <string name="shape_target_player_art">العمل الفني للاعب</string>
-    <string name="shape_target_player_art_desc">شكل العمل الفني لشاشة المشغل</string>
     <string name="shape_target_song_art">عمل فني للأغنية</string>
-    <string name="shape_target_song_art_desc">شكل العمل الفني للأغنية في القوائم</string>
     <string name="shape_target_playlist_art">العمل الفني لقائمة التشغيل</string>
-    <string name="shape_target_playlist_art_desc">شكل أغلفة قائمة التشغيل</string>
     <string name="shape_target_artist_art">عمل فني للفنان</string>
-    <string name="shape_target_artist_art_desc">شكل لصور الفنان</string>
     <string name="settings_shape_for">شكل %1$s</string>
+    <string name="lyric_widget_description">القطعة التي تعرض كلمات الوسائط التي يتم تشغيلها حاليًا</string>
+    <string name="edit_album_title">تحرير الألبوم</string>
+    <string name="edit_album_desc">تحرير العلامات والأعمال الفنية لجميع الأغاني في هذا الألبوم.</string>
+    <string name="edit_album_saving">جارٍ تحديث البيانات التعريفية للألبوم...</string>
+    <string name="streaming_service_setup_auto_detect">الكشف التلقائي</string>
+    <string name="nearby_server_discovery_title">الخوادم القريبة</string>
+    <string name="nearby_server_discovery_desc">حدد خادمًا تم اكتشافه على شبكتك المحلية</string>
+    <string name="nearby_server_discovery_scanning">جارٍ البحث عن الخوادم القريبة...</string>
+    <string name="nearby_server_discovery_empty">لم يتم العثور على خوادم قريبة. تأكد من أن الخادم الخاص بك يعمل ومتصل بنفس شبكة Wi-Fi.</string>
+    <string name="nearby_server_discovery_rescan">إعادة المسح</string>
 </resources>
 

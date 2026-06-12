@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -122,6 +123,10 @@ fun SingleCardExplorerContent(
     onShuffleQueue: (List<Song>) -> Unit,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
     appSettings: AppSettings,
+    currentPath: String?,
+    onPathChanged: (String?) -> Unit,
+    onFolderSongsChanged: (List<Song>) -> Unit,
+    bottomPadding: androidx.compose.ui.unit.Dp,
     reloadTrigger: Int = 0,
     onCreatePlaylist: (String) -> Unit = { _ -> },
     musicViewModel: MusicViewModel,
@@ -159,7 +164,6 @@ fun SingleCardExplorerContent(
     }
 
     var showPermissionDialog by remember { mutableStateOf(false) }
-    var currentPath by rememberSaveable { mutableStateOf<String?>(null) }
     var isLoadingDirectory by remember { mutableStateOf(false) }
     var isInitialLoading by remember { mutableStateOf(true) }
 
@@ -460,94 +464,28 @@ fun SingleCardExplorerContent(
             .mapNotNull { it.song }
     }
 
+    LaunchedEffect(currentFolderSongs) {
+        onFolderSongsChanged(currentFolderSongs)
+    }
+
     BackHandler(enabled = currentPath != null) {
         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-        currentPath = getParentPath(currentPath!!)
+        onPathChanged(getParentPath(currentPath!!))
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = 16.dp,
+                bottom = bottomPadding + 80.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            item {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    ExpressiveSectionHeader(
-                        title = context.getString(R.string.library_explore),
-                        countText = if (currentPath == null) "${currentItems.size} locations" else "${currentItems.size} items",
-                        icon = RhythmIcons.Folder,
-                        countIcon = RhythmIcons.MusicNote,
-                        actionContent = {
-                            if (currentPath != null) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    FilledTonalIconButton(
-                                        onClick = {
-                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                            currentPath = getParentPath(currentPath!!)
-                                        },
-                                        shape = ButtonGroupDefaults.connectedLeadingButtonShapes().shape,
-                                        colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                        ),
-                                        modifier = Modifier.size(44.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.Back,
-                                            contentDescription = stringResource(R.string.cd_navigate_back),
-                                            modifier = Modifier.size(22.dp)
-                                        )
-                                    }
 
-                                    if (currentFolderSongs.isNotEmpty()) {
-                                        FilledTonalIconButton(
-                                            onClick = {
-                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                                onShuffleQueue(currentFolderSongs)
-                                            },
-                                            shape = ButtonGroupDefaults.connectedTrailingButtonShapes().shape,
-                                            colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                            ),
-                                            modifier = Modifier.size(44.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = RhythmIcons.Shuffle,
-                                                contentDescription = context.getString(R.string.cd_shuffle),
-                                                modifier = Modifier.size(22.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    )
-
-                    if (currentPath != null) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ExplorerBreadcrumb(
-                            path = currentPath!!,
-                            onNavigateTo = { newPath ->
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                currentPath = newPath
-                            },
-                            onGoHome = {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                currentPath = null
-                            },
-                            scrollState = breadcrumbScrollState
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-            }
 
             if ((isLoadingDirectory || isInitialLoading || (isPathMapLoading && currentPath != null)) && currentItems.isEmpty()) {
                 item {
@@ -617,12 +555,13 @@ fun SingleCardExplorerContent(
                             item = item,
                             onItemClick = {
                                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                currentPath = item.path
+                                onPathChanged(item.path)
                             },
                             onSongClick = onSongClick,
                             onAddToPlaylist = onAddToPlaylist,
                             onAddToQueue = onAddToQueue,
                             onShowSongInfo = onShowSongInfo,
+                            onAddToBlacklist = { song -> appSettings.addToBlacklist(song.id) },
                             haptics = haptics,
                             isPinned = false,
                             onPinToggle = null,
@@ -694,12 +633,13 @@ fun SingleCardExplorerContent(
                                 item = item,
                                 onItemClick = {
                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    currentPath = item.path
+                                    onPathChanged(item.path)
                                 },
                                 onSongClick = onSongClick,
                                 onAddToPlaylist = onAddToPlaylist,
                                 onAddToQueue = onAddToQueue,
                                 onShowSongInfo = onShowSongInfo,
+                                onAddToBlacklist = { song -> appSettings.addToBlacklist(song.id) },
                                 haptics = haptics,
                                 isPinned = true,
                                 onPinToggle = {
@@ -766,7 +706,7 @@ fun SingleCardExplorerContent(
 
                                 when (item.type) {
                                     ExplorerItemType.STORAGE, ExplorerItemType.FOLDER -> {
-                                        currentPath = item.path
+                                        onPathChanged(item.path)
                                     }
                                     ExplorerItemType.FILE -> {
                                         item.song?.let { song ->
@@ -784,6 +724,7 @@ fun SingleCardExplorerContent(
                             onAddToPlaylist = onAddToPlaylist,
                             onAddToQueue = onAddToQueue,
                             onShowSongInfo = onShowSongInfo,
+                            onAddToBlacklist = { song -> appSettings.addToBlacklist(song.id) },
                             haptics = haptics,
                             isPinned = pinnedFolders.contains(item.path),
                             onPinToggle = if (item.type == ExplorerItemType.FOLDER) {
@@ -943,7 +884,7 @@ fun SingleCardExplorerContent(
                                 OutlinedButton(
                                     onClick = {
                                         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                        currentPath = getParentPath(currentPath!!)
+                                        onPathChanged(getParentPath(currentPath!!))
                                     },
                                     shape = RoundedCornerShape(12.dp),
                                     border = BorderStroke(
@@ -2129,6 +2070,7 @@ fun ExplorerItemCard(
     onAddToPlaylist: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
     onShowSongInfo: (Song) -> Unit,
+    onAddToBlacklist: (Song) -> Unit,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
     modifier: Modifier = Modifier,
     itemShape: RoundedCornerShape? = null,
@@ -2336,44 +2278,96 @@ fun ExplorerItemCard(
 
                                 DropdownMenu(
                                     expanded = showMenu,
-                                    onDismissRequest = { showMenu = false },
-                                    shape = RoundedCornerShape(16.dp),
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+                                    onDismissRequest = {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                        showMenu = false
+                                    },
+                                    modifier = Modifier
+                                        .widthIn(min = 220.dp)
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .padding(5.dp),
+                                    shape = RoundedCornerShape(18.dp)
                                 ) {
                                     if (onPlayFolder != null) {
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.explorertabcontent_play_folder_as_playlist)) },
-                                            onClick = {
-                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                                showMenu = false
-                                                onPlayFolder(item)
-                                            },
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = RhythmIcons.AddToPlaylist,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(20.dp)
-                                                )
-                                            }
-                                        )
+                                        Surface(
+                                            color = MaterialTheme.colorScheme.surfaceContainer,
+                                            shape = RoundedCornerShape(16.dp),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                                        ) {
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        text = stringResource(R.string.explorertabcontent_play_folder_as_playlist),
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        fontWeight = FontWeight.Medium,
+                                                        color = MaterialTheme.colorScheme.onSurface
+                                                    )
+                                                },
+                                                leadingIcon = {
+                                                    Surface(
+                                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                                                        shape = CircleShape,
+                                                        modifier = Modifier.size(32.dp)
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.AddToPlaylist,
+                                                            contentDescription = null,
+                                                            modifier = Modifier
+                                                                .fillMaxSize()
+                                                                .padding(6.dp)
+                                                        )
+                                                    }
+                                                },
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    showMenu = false
+                                                    onPlayFolder(item)
+                                                }
+                                            )
+                                        }
                                     }
 
                                     if (onAddFolderToQueue != null) {
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.explorertabcontent_add_all_to_queue)) },
-                                            onClick = {
-                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                                showMenu = false
-                                                onAddFolderToQueue(item)
-                                            },
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = RhythmIcons.Queue,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(20.dp)
-                                                )
-                                            }
-                                        )
+                                        Surface(
+                                            color = MaterialTheme.colorScheme.surfaceContainer,
+                                            shape = RoundedCornerShape(16.dp),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                                        ) {
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        text = stringResource(R.string.explorertabcontent_add_all_to_queue),
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        fontWeight = FontWeight.Medium,
+                                                        color = MaterialTheme.colorScheme.onSurface
+                                                    )
+                                                },
+                                                leadingIcon = {
+                                                    Surface(
+                                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                                                        shape = CircleShape,
+                                                        modifier = Modifier.size(32.dp)
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.Queue,
+                                                            contentDescription = null,
+                                                            modifier = Modifier
+                                                                .fillMaxSize()
+                                                                .padding(6.dp)
+                                                        )
+                                                    }
+                                                },
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    showMenu = false
+                                                    onAddFolderToQueue(item)
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -2392,7 +2386,7 @@ fun ExplorerItemCard(
                     onMoreClick = { onAddToPlaylist(song) },
                     onAddToQueue = { onAddToQueue(song) },
                     onShowSongInfo = { onShowSongInfo(song) },
-                    onAddToBlacklist = { },
+                    onAddToBlacklist = { onAddToBlacklist(song) },
                     currentSong = currentSong,
                     isPlaying = isPlaying,
                     haptics = haptics,

@@ -132,6 +132,8 @@ import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppVersion
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
+import chromahub.rhythm.app.features.streaming.presentation.components.bottomsheets.NearbyServerDiscoverySheet
+import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
 import chromahub.rhythm.app.shared.presentation.viewmodel.ThemeViewModel
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
@@ -10612,15 +10614,17 @@ fun EnhancedStreamingSetupContent(
     val sessions by streamingViewModel.serviceSessions.collectAsState()
     val isLoading by streamingViewModel.isLoading.collectAsState()
     val error by streamingViewModel.error.collectAsState()
+    val rememberStreamingPasswords by appSettings.rememberStreamingPasswords.collectAsState()
 
-    var selectedProvider by rememberSaveable { mutableStateOf("subsonic") } // Default to subsonic (Navidrome/Subsonic)
+    var selectedProvider by rememberSaveable { mutableStateOf("SUBSONIC") } // Default to subsonic (Navidrome/Subsonic)
     
     val currentSession = sessions[selectedProvider] ?: streamingViewModel.getServiceSession(selectedProvider)
-    val requiresServerUrl = remember(selectedProvider) { selectedProvider == "subsonic" || selectedProvider == "jellyfin" }
+    val requiresServerUrl = remember(selectedProvider) { selectedProvider == "SUBSONIC" || selectedProvider == "JELLYFIN" }
 
     var serverUrl by rememberSaveable(selectedProvider) { mutableStateOf(currentSession.serverUrl) }
     var username by rememberSaveable(selectedProvider) { mutableStateOf(currentSession.username) }
     var password by rememberSaveable(selectedProvider) { mutableStateOf("") }
+    var showDiscoverySheet by remember { mutableStateOf(false) }
 
     val isConnected = currentSession.isConnected
     val canSubmit = username.isNotBlank() && password.isNotBlank() && (!requiresServerUrl || serverUrl.isNotBlank())
@@ -10697,6 +10701,11 @@ fun EnhancedStreamingSetupContent(
                     error = error,
                     canSubmit = canSubmit,
                     selectedProviderName = selectedProvider,
+                    rememberStreamingPasswords = rememberStreamingPasswords,
+                    onRememberPasswordChange = { enabled ->
+                        scope.launch { appSettings.setRememberStreamingPasswords(enabled) }
+                    },
+                    onDiscoverClick = { showDiscoverySheet = true },
                     onConnect = {
                         appSettings.setStreamingService(selectedProvider)
                         streamingViewModel.connectService(
@@ -10760,6 +10769,11 @@ fun EnhancedStreamingSetupContent(
                 error = error,
                 canSubmit = canSubmit,
                 selectedProviderName = selectedProvider,
+                rememberStreamingPasswords = rememberStreamingPasswords,
+                onRememberPasswordChange = { enabled ->
+                    scope.launch { appSettings.setRememberStreamingPasswords(enabled) }
+                },
+                onDiscoverClick = { showDiscoverySheet = true },
                 onConnect = {
                     appSettings.setStreamingService(selectedProvider)
                     streamingViewModel.connectService(
@@ -10778,6 +10792,17 @@ fun EnhancedStreamingSetupContent(
 
             StreamingSetupTipsCard()
         }
+    }
+
+    if (showDiscoverySheet) {
+        NearbyServerDiscoverySheet(
+            serviceId = selectedProvider,
+            onDismiss = { showDiscoverySheet = false },
+            onServerSelected = { detectedUrl ->
+                serverUrl = detectedUrl
+                showDiscoverySheet = false
+            }
+        )
     }
 }
 
@@ -10840,6 +10865,9 @@ private fun StreamingSetupSelectionAndForm(
     error: String?,
     canSubmit: Boolean,
     selectedProviderName: String,
+    rememberStreamingPasswords: Boolean,
+    onRememberPasswordChange: (Boolean) -> Unit,
+    onDiscoverClick: () -> Unit,
     onConnect: () -> Unit,
     onDisconnect: () -> Unit
 ) {
@@ -10851,7 +10879,7 @@ private fun StreamingSetupSelectionAndForm(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         val subsonicCardScale = remember { Animatable(1f) }
-        val isSubsonic = selectedProvider == "subsonic"
+        val isSubsonic = selectedProvider == "SUBSONIC"
         Card(
             modifier = Modifier
                 .weight(1f)
@@ -10864,7 +10892,7 @@ private fun StreamingSetupSelectionAndForm(
                         subsonicCardScale.animateTo(0.95f, animationSpec = tween(80))
                         subsonicCardScale.animateTo(1f, animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy))
                     }
-                    onProviderSelected("subsonic")
+                    onProviderSelected("SUBSONIC")
                 },
             shape = RoundedCornerShape(16.dp),
             border = BorderStroke(
@@ -10880,9 +10908,8 @@ private fun StreamingSetupSelectionAndForm(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    imageVector = MaterialSymbolIcon("cloud_queue", filled = true),
-                    tint = if (isSubsonic) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                Image(
+                    painter = painterResource(id = R.drawable.ic_subsonic),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp)
                 )
@@ -10896,7 +10923,7 @@ private fun StreamingSetupSelectionAndForm(
         }
 
         val jellyfinCardScale = remember { Animatable(1f) }
-        val isJellyfin = selectedProvider == "jellyfin"
+        val isJellyfin = selectedProvider == "JELLYFIN"
         Card(
             modifier = Modifier
                 .weight(1f)
@@ -10909,7 +10936,7 @@ private fun StreamingSetupSelectionAndForm(
                         jellyfinCardScale.animateTo(0.95f, animationSpec = tween(80))
                         jellyfinCardScale.animateTo(1f, animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy))
                     }
-                    onProviderSelected("jellyfin")
+                    onProviderSelected("JELLYFIN")
                 },
             shape = RoundedCornerShape(16.dp),
             border = BorderStroke(
@@ -10925,9 +10952,8 @@ private fun StreamingSetupSelectionAndForm(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    imageVector = MaterialSymbolIcon("video_library", filled = true),
-                    tint = if (isJellyfin) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                Image(
+                    painter = painterResource(id = R.drawable.ic_jellyfin),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp)
                 )
@@ -10964,6 +10990,14 @@ private fun StreamingSetupSelectionAndForm(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(stringResource(R.string.streaming_service_setup_server_url)) },
                     placeholder = { Text(stringResource(R.string.onboardingscreen_httpsyourservercom)) },
+                    trailingIcon = {
+                        IconButton(onClick = onDiscoverClick, enabled = !isLoading && !isConnected) {
+                            Icon(
+                                imageVector = MaterialSymbolIcon("radar"),
+                                contentDescription = stringResource(R.string.streaming_service_setup_auto_detect)
+                            )
+                        }
+                    },
                     supportingText = { Text(stringResource(R.string.onboardingscreen_remember_to_include_http)) },
                     singleLine = true,
                     enabled = !isLoading && !isConnected
@@ -10990,6 +11024,32 @@ private fun StreamingSetupSelectionAndForm(
                 singleLine = true,
                 enabled = !isLoading && !isConnected
             )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(id = R.string.streaming_service_setup_remember_password),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(id = R.string.streaming_service_setup_remember_password_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                TunerAnimatedSwitch(
+                    checked = rememberStreamingPasswords,
+                    onCheckedChange = onRememberPasswordChange,
+                    enabled = !isLoading && !isConnected
+                )
+            }
 
             if (isConnected) {
                 Row(

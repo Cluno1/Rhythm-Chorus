@@ -119,6 +119,9 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmGuardCard
+import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository
+import chromahub.rhythm.app.shared.data.repository.StatsTimeRange
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import chromahub.rhythm.app.shared.presentation.components.common.CollapsibleHeaderScreen
@@ -237,6 +240,7 @@ fun HomeScreen(
     onNavigateToPlaylist: (String) -> Unit = {},
     onCreatePlaylist: (String) -> Unit = { _ -> },
     onNavigateToStats: () -> Unit = {},
+    onNavigateToRhythmGuard: () -> Unit = {},
     onNavigateToArtist: (Artist) -> Unit = {}
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -275,16 +279,31 @@ fun HomeScreen(
         contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
         if (result.resultCode == android.app.Activity.RESULT_OK) {
-            musicViewModel.completeMetadataWriteAfterPermission(
-                onSuccess = {
-                    Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
-                },
-                onError = { errorMessage ->
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                }
-            )
+            if (musicViewModel.pendingBatchWriteRequest.value != null) {
+                musicViewModel.completeBatchMetadataWriteAfterPermission(
+                    onSuccess = {
+                        Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                )
+            } else {
+                musicViewModel.completeMetadataWriteAfterPermission(
+                    onSuccess = {
+                        Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                )
+            }
         } else {
-            musicViewModel.cancelPendingMetadataWrite()
+            if (musicViewModel.pendingBatchWriteRequest.value != null) {
+                musicViewModel.cancelPendingBatchMetadataWrite()
+            } else {
+                musicViewModel.cancelPendingMetadataWrite()
+            }
             Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, Toast.LENGTH_LONG).show()
         }
     }
@@ -397,7 +416,37 @@ fun HomeScreen(
                 Toast.makeText(context, context.getString(R.string.song_added_to_blacklist_format, song.title), Toast.LENGTH_SHORT).show()
             },
             currentSong = currentSong,
-            isPlaying = isPlaying
+            isPlaying = isPlaying,
+            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
+                musicViewModel.batchEditMetadata(
+                    songs = selectedAlbum!!.songs,
+                    artist = artist,
+                    album = title,
+                    genre = null,
+                    year = null,
+                    artworkUri = artworkUri,
+                    removeArtwork = removeArtwork,
+                    onProgress = onProgress,
+                    onComplete = { successCount, failCount ->
+                        onComplete(successCount, failCount)
+                    },
+                    onPermissionRequired = { pendingRequest ->
+                        try {
+                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
+                                pendingRequest.intentSender
+                            ).build()
+                            writePermissionLauncher.launch(intentSenderRequest)
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                context,
+                                "Failed to request permission: ${e.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            musicViewModel.cancelPendingBatchMetadataWrite()
+                        }
+                    }
+                )
+            }
         )
     }
 
@@ -564,6 +613,7 @@ fun HomeScreen(
             onNavigateToLibrary = onNavigateToLibrary,
             onNavigateToPlaylist = onNavigateToPlaylist,
             onNavigateToStats = onNavigateToStats,
+            onNavigateToRhythmGuard = onNavigateToRhythmGuard,
             musicViewModel = musicViewModel,
             coroutineScope = coroutineScope
         )
@@ -593,6 +643,7 @@ private fun ModernScrollableContent(
     onNavigateToLibrary: () -> Unit = {},
     onNavigateToPlaylist: (String) -> Unit = {},
     onNavigateToStats: () -> Unit = {},
+    onNavigateToRhythmGuard: () -> Unit = {},
     musicViewModel: chromahub.rhythm.app.viewmodel.MusicViewModel,
     coroutineScope: CoroutineScope
 ) {
@@ -636,12 +687,25 @@ private fun ModernScrollableContent(
             ?: rhythmGuardPolicy.recommendedDailyMinutes
         else -> rhythmGuardPolicy.recommendedDailyMinutes
     }
-    val todayListeningMinutes = remember(dailyListeningStats, persistedSongsPlayed, listeningTimeMs) {
-        appSettings.estimateRhythmGuardTodayListeningMinutes(
-            dailyListeningStats = dailyListeningStats,
-            songsPlayed = persistedSongsPlayed,
-            listeningTimeMs = listeningTimeMs
-        )
+    val playbackStatsRepository = remember(context) { PlaybackStatsRepository.getInstance(context) }
+    var todayListeningMinutes by remember { mutableIntStateOf(0) }
+
+    val currentProgress by musicViewModel.progress.collectAsState()
+    val currentDurationMs by musicViewModel.duration.collectAsState()
+    val currentIsPlaying by musicViewModel.isPlaying.collectAsState()
+
+    LaunchedEffect(dailyListeningStats, persistedSongsPlayed, listeningTimeMs, currentProgress, currentDurationMs, currentIsPlaying) {
+        val todaySummary = runCatching {
+            playbackStatsRepository.loadSummary(StatsTimeRange.TODAY)
+        }.getOrNull()
+        val dbDurationMs = todaySummary?.totalDurationMs ?: 0L
+        val activeSessionDurationMs = if (currentIsPlaying && currentDurationMs > 0) {
+            (currentProgress * currentDurationMs).toLong()
+        } else {
+            0L
+        }
+        val totalMs = dbDurationMs + activeSessionDurationMs
+        todayListeningMinutes = (totalMs / 60000L).toInt().coerceAtLeast(0)
     }
 
     // Discover widget card content visibility settings
@@ -1065,7 +1129,7 @@ private fun ModernScrollableContent(
                                             todayListeningMinutes = todayListeningMinutes,
                                             isGuardTimeoutActive = isRhythmGuardTimeoutActive,
                                             guardTimeoutRemainingMs = rhythmGuardTimeoutRemainingMs,
-                                            onCardClick = onNavigateToStats
+                                            onCardClick = onNavigateToRhythmGuard
                                         )
                                     }
                                 }

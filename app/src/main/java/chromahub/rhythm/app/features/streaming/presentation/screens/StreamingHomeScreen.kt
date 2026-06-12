@@ -45,6 +45,9 @@ import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingM
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.presentation.components.common.CollapsibleHeaderScreen
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveFilledIconButton
+import chromahub.rhythm.app.features.streaming.domain.model.StreamingServiceId
+import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
+import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 
@@ -168,88 +171,97 @@ fun StreamingHomeScreen(
                 }
             }
 
-            items(StreamingServiceOptions.defaults, key = { it.id }) { service ->
-                StreamingServiceCard(
-                    option = service,
-                    isSelected = displaySelectedService == service.id,
-                    isConnected = serviceSessions[service.id]?.isConnected == true,
-                    onConfigure = {
-                        appSettings.setStreamingService(service.id)
-                        onConfigureService(service.id)
+            item {
+                val settingsItems = remember(displaySelectedService, serviceSessions) {
+                    StreamingServiceOptions.defaults.map { service ->
+                        val isSelected = displaySelectedService == service.id
+                        val isConnected = serviceSessions[service.id]?.isConnected == true
+                        
+                        Material3SettingsItem(
+                            leadingContent = {
+                                val providerIconRes = when (service.id) {
+                                    StreamingServiceId.SUBSONIC -> R.drawable.ic_subsonic
+                                    StreamingServiceId.JELLYFIN -> R.drawable.ic_jellyfin
+                                    else -> null
+                                }
+                                if (providerIconRes != null) {
+                                    Icon(
+                                        painter = painterResource(id = providerIconRes),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(32.dp),
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            },
+                            title = {
+                                Text(
+                                    text = stringResource(id = service.nameRes),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            },
+                            description = {
+                                Text(
+                                    text = stringResource(id = service.descriptionRes),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            trailingContent = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    if (isSelected) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Icon(
+                                                icon = RhythmIcons.CheckCircle,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Text(
+                                                text = stringResource(id = R.string.streaming_selected),
+                                                style = MaterialTheme.typography.labelMedium,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+
+                                    FilledTonalButton(
+                                        onClick = {
+                                            appSettings.setStreamingService(service.id)
+                                            onConfigureService(service.id)
+                                        }
+                                    ) {
+                                        Text(
+                                            text = if (isConnected) {
+                                                stringResource(id = R.string.streaming_manage)
+                                            } else {
+                                                stringResource(id = R.string.streaming_connect)
+                                            }
+                                        )
+                                    }
+                                }
+                            },
+                            onClick = {
+                                appSettings.setStreamingService(service.id)
+                                onConfigureService(service.id)
+                            }
+                        )
                     }
+                }
+
+                Material3SettingsGroup(
+                    items = settingsItems
                 )
             }
 
             item {
                 Spacer(modifier = Modifier.height(18.dp))
-            }
-        }
-    }
-}
-
-@Composable
-private fun StreamingServiceCard(
-    option: StreamingServiceOption,
-    isSelected: Boolean,
-    isConnected: Boolean,
-    onConfigure: () -> Unit
-) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceContainer
-            }
-        ),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(id = option.nameRes),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = stringResource(id = option.descriptionRes),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            if (isSelected) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.CheckCircle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = stringResource(id = R.string.streaming_selected),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            FilledTonalButton(onClick = onConfigure) {
-                Text(
-                    text = if (isConnected) {
-                        stringResource(id = R.string.streaming_manage)
-                    } else {
-                        stringResource(id = R.string.streaming_connect)
-                    }
-                )
             }
         }
     }

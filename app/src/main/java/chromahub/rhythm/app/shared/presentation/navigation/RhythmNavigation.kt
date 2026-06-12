@@ -1019,7 +1019,7 @@ private fun RhythmGuardWarningHost(
                         setSystemMusicVolumeFraction(context, volumeState.suggestedVolume)
                         musicViewModel.setVolume(volumeState.suggestedVolume)
                         appSettings.setAudioNormalization(true)
-                        appSettings.setReplayGain(true)
+                        appSettings.setReplayGain(false)
                         if (auraMode == AppSettings.RHYTHM_GUARD_MODE_AUTO) {
                             appSettings.applyRhythmGuardAutoProfileForAge(auraAge)
                         }

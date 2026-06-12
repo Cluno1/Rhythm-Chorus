@@ -116,8 +116,10 @@ class ReplayGainAudioProcessor : BaseAudioProcessor() {
             throw IllegalStateException("unsupported pcm encoding $encoding")
         }
         
-        // Remove Flags.TEST_RG_OFFLOAD check (always false in Rhythm)
-        if (computeGain()?.second != null) { // we need a compressor which outputs float32
+        val hasCompressor = synchronized(this) {
+            computeGain()?.second != null || (computeGain() == null && reduceGain && nonRgGain > 0)
+        }
+        if (hasCompressor) { // we need a compressor which outputs float32
             pendingOutputFloat = true
             toFloatPcmAudioProcessor.configure(inputAudioFormat)
             return AudioProcessor.AudioFormat(
@@ -230,15 +232,28 @@ class ReplayGainAudioProcessor : BaseAudioProcessor() {
 
     private fun applyGain(): Boolean {
         val nonRgGain: Int
+        val reduceGain: Boolean
         synchronized(this) {
             nonRgGain = this.nonRgGain
+            reduceGain = this.reduceGain
         }
-        val gain = computeGain()
-        if ((gain?.second != null) != outputFloat) {
+        val gainPair = computeGain()
+        val hasCompressor = gainPair?.second != null || (gainPair == null && reduceGain && nonRgGain > 0)
+        if (hasCompressor != outputFloat) {
             return false
         }
-        this.gain = gain?.first ?: ReplayGainUtil.dbToAmpl(nonRgGain.toFloat())
-        this.kneeThresholdDb = gain?.second
+        if (gainPair != null) {
+            this.gain = gainPair.first
+            this.kneeThresholdDb = gainPair.second
+        } else {
+            this.gain = ReplayGainUtil.dbToAmpl(nonRgGain.toFloat())
+            if (reduceGain && nonRgGain > 0) {
+                val postGainPeakDb = nonRgGain.toFloat()
+                this.kneeThresholdDb = postGainPeakDb - postGainPeakDb * ReplayGainUtil.RATIO / (ReplayGainUtil.RATIO - 1f)
+            } else {
+                this.kneeThresholdDb = null
+            }
+        }
         if (kneeThresholdDb != null) {
             if (compressor == null)
                 compressor = AdaptiveDynamicRangeCompression()

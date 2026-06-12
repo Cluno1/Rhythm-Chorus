@@ -12,7 +12,9 @@ import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.util.MediaUtils
 import chromahub.rhythm.app.util.PendingLyricsWriteRequest
 import chromahub.rhythm.app.util.PendingWriteRequest
+import chromahub.rhythm.app.util.PendingBatchWriteRequest
 import chromahub.rhythm.app.util.RecoverableSecurityExceptionWrapper
+import android.provider.MediaStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +39,9 @@ class LibraryMetadataManager(
 
     private val _pendingWriteRequest = MutableStateFlow<PendingWriteRequest?>(null)
     val pendingWriteRequest: StateFlow<PendingWriteRequest?> = _pendingWriteRequest.asStateFlow()
+
+    private val _pendingBatchWriteRequest = MutableStateFlow<PendingBatchWriteRequest?>(null)
+    val pendingBatchWriteRequest: StateFlow<PendingBatchWriteRequest?> = _pendingBatchWriteRequest.asStateFlow()
 
     private val _pendingLyricsWriteRequest = MutableStateFlow<PendingLyricsWriteRequest?>(null)
     val pendingLyricsWriteRequest: StateFlow<PendingLyricsWriteRequest?> = _pendingLyricsWriteRequest.asStateFlow()
@@ -81,6 +86,12 @@ class LibraryMetadataManager(
                     return@launch
                 }
 
+                val newAlbumArtist = if (song.albumArtist.isNullOrBlank() || song.albumArtist == song.artist) {
+                    artist
+                } else {
+                    song.albumArtist
+                }
+
                 val success = withContext(Dispatchers.IO) {
                     MediaUtils.updateSongMetadata(
                         context = appContext,
@@ -92,7 +103,8 @@ class LibraryMetadataManager(
                         newYear = year,
                         newTrackNumber = trackNumber,
                         artworkUri = artworkUri,
-                        removeArtwork = removeArtwork
+                        removeArtwork = removeArtwork,
+                        newAlbumArtist = newAlbumArtist
                     )
                 }
 
@@ -123,7 +135,8 @@ class LibraryMetadataManager(
                     genre = genre,
                     year = year,
                     trackNumber = trackNumber,
-                    artworkUri = updatedArtworkUri
+                    artworkUri = updatedArtworkUri,
+                    albumArtist = newAlbumArtist
                 )
                 
                 updateCurrentSongMetadata(updatedSong)
@@ -157,7 +170,8 @@ class LibraryMetadataManager(
                                     newYear = year,
                                     newTrackNumber = trackNumber,
                                     artworkUri = artworkUri,
-                                    removeArtwork = removeArtwork
+                                    removeArtwork = removeArtwork,
+                                    newAlbumArtist = newAlbumArtist
                                 )
                             }
                             
@@ -182,6 +196,11 @@ class LibraryMetadataManager(
                 Log.w(TAG, "RecoverableSecurityException - attempting createWriteRequest approach")
                 
                 val appContext = context.applicationContext
+                val newAlbumArtist = if (song.albumArtist.isNullOrBlank() || song.albumArtist == song.artist) {
+                    artist
+                } else {
+                    song.albumArtist
+                }
                 
                 // Update in-memory data first
                 val updatedSong = song.copy(
@@ -224,7 +243,8 @@ class LibraryMetadataManager(
                             newYear = year,
                             newTrackNumber = trackNumber,
                             artworkUri = artworkUri,
-                            removeArtwork = removeArtwork
+                            removeArtwork = removeArtwork,
+                            newAlbumArtist = newAlbumArtist
                         )
                     }
                     
@@ -312,7 +332,8 @@ class LibraryMetadataManager(
                         genre = pendingRequest.newGenre,
                         year = pendingRequest.newYear,
                         trackNumber = pendingRequest.newTrackNumber,
-                        artworkUri = updatedArtworkUri
+                        artworkUri = updatedArtworkUri,
+                        albumArtist = pendingRequest.newAlbumArtist
                     )
                     updateCurrentSongMetadata(updatedSong)
                     
@@ -363,7 +384,8 @@ class LibraryMetadataManager(
         artworkUri: Uri? = null,
         removeArtwork: Boolean = false,
         onProgress: (Int, Int) -> Unit,
-        onComplete: (successCount: Int, failCount: Int) -> Unit
+        onComplete: (successCount: Int, failCount: Int) -> Unit,
+        onPermissionRequired: ((PendingBatchWriteRequest) -> Unit)? = null
     ) {
         scope.launch {
             val appContext = context.applicationContext
@@ -371,6 +393,7 @@ class LibraryMetadataManager(
             var failCount = 0
             // Collect updated songs for bulk in-memory update at the end
             val updatedSongs = mutableMapOf<String, Song>()
+            val songsNeedingPermission = mutableListOf<Song>()
 
             songs.forEachIndexed { index, song ->
                 try {
@@ -378,6 +401,7 @@ class LibraryMetadataManager(
                     val newAlbum = album ?: song.album
                     val newGenre = genre ?: (song.genre ?: "")
                     val newYear = year ?: song.year
+                    val newAlbumArtist = artist ?: song.albumArtist
                     val hasArtworkEdit = artworkUri != null || removeArtwork
 
                     // Check if file format is supported before attempting write
@@ -406,27 +430,30 @@ class LibraryMetadataManager(
                                     newYear = newYear,
                                     newTrackNumber = song.trackNumber,
                                     artworkUri = artworkUri,
-                                    removeArtwork = removeArtwork
+                                    removeArtwork = removeArtwork,
+                                    newAlbumArtist = newAlbumArtist
                                 )
                             }
 
                             if (!fileWriteSuccess && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                // Batch flow cannot open per-item permission dialogs like single-edit.
-                                // Count this as partial success when MediaStore/app-level state is still updated.
-                                Log.w(
-                                    TAG,
-                                    "Batch edit: file tag write blocked by scoped storage for ${song.title}; counting as partial success"
-                                )
-                                true
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                    songsNeedingPermission.add(song)
+                                    false
+                                } else {
+                                    true
+                                }
                             } else {
                                 fileWriteSuccess
                             }
                         } catch (e: RecoverableSecurityExceptionWrapper) {
-                            // On Android 11+, file write requires per-file user permission (scoped storage).
-                            // MediaStore was already updated in updateSongMetadata before the exception.
-                            // Count as partial success — in-memory and MediaStore updated, file tags not.
-                            Log.w(TAG, "Batch edit: scoped storage restriction for ${song.title}, MediaStore updated only")
-                            true
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                Log.d(TAG, "Batch edit: song ${song.title} needs write permission")
+                                songsNeedingPermission.add(song)
+                                false
+                            } else {
+                                Log.w(TAG, "Batch edit: scoped storage restriction for ${song.title}, MediaStore updated only")
+                                true
+                            }
                         }
                     } else {
                         // Unsupported format — update MediaStore only via ContentValues
@@ -440,6 +467,9 @@ class LibraryMetadataManager(
                                     }
                                     if (newYear > 0) {
                                         put(android.provider.MediaStore.Audio.Media.YEAR, newYear)
+                                    }
+                                    if (newAlbumArtist != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                        put(android.provider.MediaStore.Audio.Media.ALBUM_ARTIST, newAlbumArtist)
                                     }
                                 }
                                 appContext.contentResolver.update(song.uri, values, null, null) > 0
@@ -460,46 +490,53 @@ class LibraryMetadataManager(
                         }
                     }
 
-                    val updatedArtworkUri = when {
-                        removeArtwork -> {
-                            clearCachedArtwork(appContext, song.id)
-                            persistArtworkOverrideRemoved(appContext, song.id)
-                            null
-                        }
-                        artworkUri != null -> {
-                            try {
-                                val cachedUri = saveArtworkToCache(appContext, song, artworkUri) ?: artworkUri
-                                persistArtworkOverrideUri(appContext, song.id, cachedUri)
-                                cachedUri
-                            } catch (_: Exception) {
-                                artworkUri
+                    if (success) {
+                        val updatedArtworkUri = when {
+                            removeArtwork -> {
+                                clearCachedArtwork(appContext, song.id)
+                                persistArtworkOverrideRemoved(appContext, song.id)
+                                null
                             }
+                            artworkUri != null -> {
+                                try {
+                                    val cachedUri = saveArtworkToCache(appContext, song, artworkUri) ?: artworkUri
+                                    persistArtworkOverrideUri(appContext, song.id, cachedUri)
+                                    cachedUri
+                                } catch (_: Exception) {
+                                    artworkUri
+                                }
+                            }
+                            else -> song.artworkUri
                         }
-                        else -> song.artworkUri
+
+                        val updatedSong = song.copy(
+                            artist = newArtist,
+                            album = newAlbum,
+                            genre = newGenre,
+                            year = newYear,
+                            artworkUri = updatedArtworkUri,
+                            albumArtist = newAlbumArtist
+                        )
+                        
+                        // Track for bulk update
+                        updatedSongs[song.id] = updatedSong
+                        
+                        // Also update currently playing song if it matches
+                        updateCurrentSongMetadata(updatedSong)
+
+                        if (newGenre.isNotBlank()) {
+                            try {
+                                val genrePrefs = appContext.getSharedPreferences("genre_cache", Context.MODE_PRIVATE)
+                                genrePrefs.edit().putString("genre_${song.id}", newGenre).apply()
+                            } catch (_: Exception) {}
+                        }
+
+                        successCount++
+                    } else {
+                        if (!songsNeedingPermission.contains(song)) {
+                            failCount++
+                        }
                     }
-
-                    val updatedSong = song.copy(
-                        artist = newArtist,
-                        album = newAlbum,
-                        genre = newGenre,
-                        year = newYear,
-                        artworkUri = updatedArtworkUri
-                    )
-                    
-                    // Track for bulk update
-                    updatedSongs[song.id] = updatedSong
-                    
-                    // Also update currently playing song if it matches
-                    updateCurrentSongMetadata(updatedSong)
-
-                    if (newGenre.isNotBlank()) {
-                        try {
-                            val genrePrefs = appContext.getSharedPreferences("genre_cache", Context.MODE_PRIVATE)
-                            genrePrefs.edit().putString("genre_${song.id}", newGenre).apply()
-                        } catch (_: Exception) {}
-                    }
-
-                    if (success) successCount++ else failCount++
                 } catch (e: Exception) {
                     Log.e(TAG, "Batch edit failed for ${song.title}", e)
                     failCount++
@@ -514,9 +551,162 @@ class LibraryMetadataManager(
                 bulkUpdateSongs(updatedSongs)
             }
 
-            withContext(Dispatchers.Main) {
-                onComplete(successCount, failCount)
+            if (songsNeedingPermission.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                try {
+                    val contentResolver = appContext.contentResolver
+                    val pendingIntent = MediaStore.createWriteRequest(contentResolver, songsNeedingPermission.map { it.uri })
+                    val pendingRequest = PendingBatchWriteRequest(
+                        intentSender = pendingIntent.intentSender,
+                        songs = songsNeedingPermission,
+                        artist = artist,
+                        album = album,
+                        genre = genre,
+                        year = year,
+                        artworkUriString = artworkUri?.toString(),
+                        removeArtwork = removeArtwork,
+                        onProgress = onProgress,
+                        onComplete = onComplete
+                    )
+                    _pendingBatchWriteRequest.value = pendingRequest
+                    withContext(Dispatchers.Main) {
+                        onPermissionRequired?.invoke(pendingRequest)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to create batch write request", e)
+                    withContext(Dispatchers.Main) {
+                        onComplete(successCount, failCount + songsNeedingPermission.size)
+                    }
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    onComplete(successCount, failCount)
+                }
             }
+        }
+    }
+
+    /**
+     * Completes pending batch metadata write after permission is granted.
+     */
+    fun completeBatchMetadataWriteAfterPermission(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val pendingRequest = _pendingBatchWriteRequest.value
+        if (pendingRequest == null) {
+            Log.w(TAG, "No pending batch write request to complete")
+            onError("No pending batch write request")
+            return
+        }
+
+        scope.launch {
+            val appContext = context.applicationContext
+            var successCount = 0
+            var failCount = 0
+            val updatedSongs = mutableMapOf<String, Song>()
+
+            pendingRequest.songs.forEachIndexed { index, song ->
+                try {
+                    val newArtist = pendingRequest.artist ?: song.artist
+                    val newAlbum = pendingRequest.album ?: song.album
+                    val newGenre = pendingRequest.genre ?: (song.genre ?: "")
+                    val newYear = pendingRequest.year ?: song.year
+                    val newAlbumArtist = pendingRequest.artist ?: song.albumArtist
+                    val artworkUri = pendingRequest.artworkUriString?.toUri()
+                    val removeArtwork = pendingRequest.removeArtwork
+
+                    val success = withContext(Dispatchers.IO) {
+                        MediaUtils.updateSongMetadata(
+                            context = appContext,
+                            song = song,
+                            newTitle = song.title,
+                            newArtist = newArtist,
+                            newAlbum = newAlbum,
+                            newGenre = newGenre,
+                            newYear = newYear,
+                            newTrackNumber = song.trackNumber,
+                            artworkUri = artworkUri,
+                            removeArtwork = removeArtwork,
+                            newAlbumArtist = newAlbumArtist
+                        )
+                    }
+
+                    if (success) {
+                        val updatedArtworkUri = when {
+                            removeArtwork -> {
+                                clearCachedArtwork(appContext, song.id)
+                                persistArtworkOverrideRemoved(appContext, song.id)
+                                null
+                            }
+                            artworkUri != null -> {
+                                try {
+                                    val cachedUri = saveArtworkToCache(appContext, song, artworkUri) ?: artworkUri
+                                    persistArtworkOverrideUri(appContext, song.id, cachedUri)
+                                    cachedUri
+                                } catch (_: Exception) {
+                                    artworkUri
+                                }
+                            }
+                            else -> song.artworkUri
+                        }
+
+                        val updatedSong = song.copy(
+                            artist = newArtist,
+                            album = newAlbum,
+                            genre = newGenre,
+                            year = newYear,
+                            artworkUri = updatedArtworkUri,
+                            albumArtist = newAlbumArtist
+                        )
+                        updatedSongs[song.id] = updatedSong
+                        updateCurrentSongMetadata(updatedSong)
+
+                        if (newGenre.isNotBlank()) {
+                            try {
+                                val genrePrefs = appContext.getSharedPreferences("genre_cache", Context.MODE_PRIVATE)
+                                genrePrefs.edit().putString("genre_${song.id}", newGenre).apply()
+                            } catch (_: Exception) {}
+                        }
+
+                        successCount++
+                    } else {
+                        failCount++
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Batch write completion failed for ${song.title}", e)
+                    failCount++
+                }
+                withContext(Dispatchers.Main) {
+                    pendingRequest.onProgress(index + 1, pendingRequest.songs.size)
+                }
+            }
+
+            if (updatedSongs.isNotEmpty()) {
+                bulkUpdateSongs(updatedSongs)
+            }
+
+            _pendingBatchWriteRequest.value = null
+
+            withContext(Dispatchers.Main) {
+                pendingRequest.onComplete(successCount, failCount)
+                if (failCount == 0) {
+                    onSuccess()
+                } else {
+                    onError("Updated $successCount songs, but $failCount failed")
+                }
+            }
+        }
+    }
+
+    /**
+     * Cancels pending batch metadata write request.
+     */
+    fun cancelPendingBatchMetadataWrite() {
+        val pendingRequest = _pendingBatchWriteRequest.value
+        _pendingBatchWriteRequest.value = null
+        if (pendingRequest != null) {
+            pendingRequest.onComplete(0, pendingRequest.songs.size)
+            Log.d(TAG, "Cancelled pending batch metadata write request and notified caller")
         }
     }
 

@@ -2883,7 +2883,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         val policy = getRhythmGuardPolicy(safeAge)
 
         setAudioNormalization(true)
-        setReplayGain(true)
+        setReplayGain(false)
         setUseSystemVolume(true)
         setStopPlaybackOnZeroVolume(policy.stopPlaybackOnZeroVolume)
 
@@ -3402,6 +3402,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     
     fun normalizeStoragePath(path: String): String {
         var normalized = path.trim().replace('\\', '/')
+        while (normalized.contains("//")) {
+            normalized = normalized.replace("//", "/")
+        }
         if (normalized.length > 1 && normalized.endsWith('/')) {
             normalized = normalized.substring(0, normalized.length - 1)
         }

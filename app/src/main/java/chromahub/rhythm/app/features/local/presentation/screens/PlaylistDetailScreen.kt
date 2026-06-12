@@ -45,6 +45,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortMenuContent
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortOption
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
@@ -142,6 +144,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.collectAsState
 import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.HorizontalDivider
 import androidx.room.util.copy
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.animation.slideInVertically
@@ -1142,105 +1145,88 @@ fun PlaylistDetailScreen(
                 DropdownMenu(
                     expanded = showSortMenu,
                     onDismissRequest = { showSortMenu = false },
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.padding(4.dp)
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .widthIn(min = 250.dp)
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .padding(8.dp)
                 ) {
-                    PlaylistSortOrder.values().forEach { sortOrder ->
-                        val isSelected = currentPlaylistSort == sortOrder
-                        Surface(
-                            color = if (isSelected) 
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-                            else 
-                                Color.Transparent,
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            DropdownMenuItem(
-                                text = { 
-                                    Text(
-                                        text = when (sortOrder) {
-                                            PlaylistSortOrder.TITLE_ASC, PlaylistSortOrder.TITLE_DESC -> "Title"
-                                            PlaylistSortOrder.ARTIST_ASC, PlaylistSortOrder.ARTIST_DESC -> "Artist"
-                                            PlaylistSortOrder.ALBUM_ASC, PlaylistSortOrder.ALBUM_DESC -> "Album"
-                                            PlaylistSortOrder.DURATION_ASC, PlaylistSortOrder.DURATION_DESC -> "Duration"
-                                            PlaylistSortOrder.DATE_ADDED_ASC, PlaylistSortOrder.DATE_ADDED_DESC -> "Date Added"
-                                        },
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer
-                                        else
-                                            MaterialTheme.colorScheme.onSurface
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = when (sortOrder) {
-                                            PlaylistSortOrder.TITLE_ASC, PlaylistSortOrder.TITLE_DESC -> RhythmIcons.SortByAlpha
-                                            PlaylistSortOrder.ARTIST_ASC, PlaylistSortOrder.ARTIST_DESC -> RhythmIcons.ArtistFilled
-                                            PlaylistSortOrder.ALBUM_ASC, PlaylistSortOrder.ALBUM_DESC -> RhythmIcons.Music.Album
-                                            PlaylistSortOrder.DURATION_ASC, PlaylistSortOrder.DURATION_DESC -> MaterialSymbolIcon("timer", filled = true)
-                                            PlaylistSortOrder.DATE_ADDED_ASC, PlaylistSortOrder.DATE_ADDED_DESC -> RhythmIcons.DateRange
-                                        },
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                        tint = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                },
-                                trailingIcon = {
-                                    when (sortOrder) {
-                                        PlaylistSortOrder.TITLE_ASC, PlaylistSortOrder.ARTIST_ASC, PlaylistSortOrder.ALBUM_ASC, 
-                                        PlaylistSortOrder.DURATION_ASC, PlaylistSortOrder.DATE_ADDED_ASC -> {
-                                            Icon(
-                                                imageVector = RhythmIcons.ArrowUpward,
-                                                contentDescription = stringResource(R.string.content_desc_ascending),
-                                                modifier = Modifier.size(18.dp),
-                                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                        else -> {
-                                            Icon(
-                                                imageVector = RhythmIcons.ArrowDownward,
-                                                contentDescription = stringResource(R.string.content_desc_descending),
-                                                modifier = Modifier.size(18.dp),
-                                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
-                                },
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                    currentPlaylistSort = sortOrder
-                                    appSettings.setPlaylistDetailSortOrder(sortOrder.name)
-                                    showSortMenu = false
-                                    val sortedSongs = when (sortOrder) {
-                                        PlaylistSortOrder.TITLE_ASC -> playlist.songs.sortedBy { it.title.lowercase() }
-                                        PlaylistSortOrder.TITLE_DESC -> playlist.songs.sortedByDescending { it.title.lowercase() }
-                                        PlaylistSortOrder.ARTIST_ASC -> playlist.songs.sortedBy { it.artist.lowercase() }
-                                        PlaylistSortOrder.ARTIST_DESC -> playlist.songs.sortedByDescending { it.artist.lowercase() }
-                                        PlaylistSortOrder.ALBUM_ASC -> playlist.songs.sortedBy { it.album.lowercase() }
-                                        PlaylistSortOrder.ALBUM_DESC -> playlist.songs.sortedByDescending { it.album.lowercase() }
-                                        PlaylistSortOrder.DURATION_ASC -> playlist.songs.sortedBy { it.duration }
-                                        PlaylistSortOrder.DURATION_DESC -> playlist.songs.sortedByDescending { it.duration }
-                                        PlaylistSortOrder.DATE_ADDED_ASC -> playlist.songs.sortedBy { it.dateAdded }
-                                        PlaylistSortOrder.DATE_ADDED_DESC -> playlist.songs.sortedByDescending { it.dateAdded }
-                                    }
-                                    onUpdatePlaylistSongs?.invoke(sortedSongs)
-                                },
-                                colors = androidx.compose.material3.MenuDefaults.itemColors(
-                                    textColor = if (isSelected) 
-                                        MaterialTheme.colorScheme.onPrimaryContainer
-                                    else 
-                                        MaterialTheme.colorScheme.onSurface
-                                )
-                            )
+                    val currentKey = when (currentPlaylistSort) {
+                        PlaylistSortOrder.TITLE_ASC, PlaylistSortOrder.TITLE_DESC -> "TITLE"
+                        PlaylistSortOrder.ARTIST_ASC, PlaylistSortOrder.ARTIST_DESC -> "ARTIST"
+                        PlaylistSortOrder.ALBUM_ASC, PlaylistSortOrder.ALBUM_DESC -> "ALBUM"
+                        PlaylistSortOrder.DURATION_ASC, PlaylistSortOrder.DURATION_DESC -> "DURATION"
+                        PlaylistSortOrder.DATE_ADDED_ASC, PlaylistSortOrder.DATE_ADDED_DESC -> "DATE_ADDED"
+                    }
+                    val isAscending = when (currentPlaylistSort) {
+                        PlaylistSortOrder.TITLE_ASC, PlaylistSortOrder.ARTIST_ASC, PlaylistSortOrder.ALBUM_ASC, PlaylistSortOrder.DURATION_ASC, PlaylistSortOrder.DATE_ADDED_ASC -> true
+                        else -> false
+                    }
+                    
+                    fun getPlaylistDetailSortOrder(key: String, asc: Boolean): PlaylistSortOrder {
+                        return when (key) {
+                            "TITLE" -> if (asc) PlaylistSortOrder.TITLE_ASC else PlaylistSortOrder.TITLE_DESC
+                            "ARTIST" -> if (asc) PlaylistSortOrder.ARTIST_ASC else PlaylistSortOrder.ARTIST_DESC
+                            "ALBUM" -> if (asc) PlaylistSortOrder.ALBUM_ASC else PlaylistSortOrder.ALBUM_DESC
+                            "DURATION" -> if (asc) PlaylistSortOrder.DURATION_ASC else PlaylistSortOrder.DURATION_DESC
+                            "DATE_ADDED" -> if (asc) PlaylistSortOrder.DATE_ADDED_ASC else PlaylistSortOrder.DATE_ADDED_DESC
+                            else -> PlaylistSortOrder.TITLE_ASC
                         }
                     }
+                    
+                    val sortOptions = listOf(
+                        RhythmSortOption("TITLE", "Title", RhythmIcons.SortByAlpha),
+                        RhythmSortOption("ARTIST", "Artist", RhythmIcons.ArtistFilled),
+                        RhythmSortOption("ALBUM", "Album", RhythmIcons.Music.Album),
+                        RhythmSortOption("DURATION", "Duration", MaterialSymbolIcon("timer", filled = true)),
+                        RhythmSortOption("DATE_ADDED", "Date Added", RhythmIcons.DateRange)
+                    )
+                    
+                    RhythmSortMenuContent(
+                        selectedKey = currentKey,
+                        isAscending = isAscending,
+                        options = sortOptions,
+                        onKeySelected = { key ->
+                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                            val newOrder = getPlaylistDetailSortOrder(key, isAscending)
+                            currentPlaylistSort = newOrder
+                            appSettings.setPlaylistDetailSortOrder(newOrder.name)
+                            showSortMenu = false
+                            val sortedSongs = when (newOrder) {
+                                PlaylistSortOrder.TITLE_ASC -> playlist.songs.sortedBy { it.title.lowercase() }
+                                PlaylistSortOrder.TITLE_DESC -> playlist.songs.sortedByDescending { it.title.lowercase() }
+                                PlaylistSortOrder.ARTIST_ASC -> playlist.songs.sortedBy { it.artist.lowercase() }
+                                PlaylistSortOrder.ARTIST_DESC -> playlist.songs.sortedByDescending { it.artist.lowercase() }
+                                PlaylistSortOrder.ALBUM_ASC -> playlist.songs.sortedBy { it.album.lowercase() }
+                                PlaylistSortOrder.ALBUM_DESC -> playlist.songs.sortedByDescending { it.album.lowercase() }
+                                PlaylistSortOrder.DURATION_ASC -> playlist.songs.sortedBy { it.duration }
+                                PlaylistSortOrder.DURATION_DESC -> playlist.songs.sortedByDescending { it.duration }
+                                PlaylistSortOrder.DATE_ADDED_ASC -> playlist.songs.sortedBy { it.dateAdded }
+                                PlaylistSortOrder.DATE_ADDED_DESC -> playlist.songs.sortedByDescending { it.dateAdded }
+                            }
+                            onUpdatePlaylistSongs?.invoke(sortedSongs)
+                        },
+                        onDirectionToggled = { asc ->
+                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                            val newOrder = getPlaylistDetailSortOrder(currentKey, asc)
+                            currentPlaylistSort = newOrder
+                            appSettings.setPlaylistDetailSortOrder(newOrder.name)
+                            showSortMenu = false
+                            val sortedSongs = when (newOrder) {
+                                PlaylistSortOrder.TITLE_ASC -> playlist.songs.sortedBy { it.title.lowercase() }
+                                PlaylistSortOrder.TITLE_DESC -> playlist.songs.sortedByDescending { it.title.lowercase() }
+                                PlaylistSortOrder.ARTIST_ASC -> playlist.songs.sortedBy { it.artist.lowercase() }
+                                PlaylistSortOrder.ARTIST_DESC -> playlist.songs.sortedByDescending { it.artist.lowercase() }
+                                PlaylistSortOrder.ALBUM_ASC -> playlist.songs.sortedBy { it.album.lowercase() }
+                                PlaylistSortOrder.ALBUM_DESC -> playlist.songs.sortedByDescending { it.album.lowercase() }
+                                PlaylistSortOrder.DURATION_ASC -> playlist.songs.sortedBy { it.duration }
+                                PlaylistSortOrder.DURATION_DESC -> playlist.songs.sortedByDescending { it.duration }
+                                PlaylistSortOrder.DATE_ADDED_ASC -> playlist.songs.sortedBy { it.dateAdded }
+                                PlaylistSortOrder.DATE_ADDED_DESC -> playlist.songs.sortedByDescending { it.dateAdded }
+                            }
+                            onUpdatePlaylistSongs?.invoke(sortedSongs)
+                        }
+                    )
                 }
             }
         },

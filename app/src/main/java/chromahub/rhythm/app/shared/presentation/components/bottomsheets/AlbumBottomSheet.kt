@@ -2,6 +2,7 @@ package chromahub.rhythm.app.shared.presentation.components.bottomsheets
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
+import android.net.Uri
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -51,6 +52,8 @@ import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortMenuContent
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortOption
 import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
@@ -177,8 +180,17 @@ fun AlbumBottomSheet(
     showAddToPlaylistAction: Boolean = true,
     showSongInfoAction: Boolean = true,
     showAddToBlacklistAction: Boolean = true,
-    onAddToQueueAll: ((List<Song>) -> Unit)? = null
+    onAddToQueueAll: ((List<Song>) -> Unit)? = null,
+    onEditAlbum: ((
+        title: String,
+        artist: String,
+        artworkUri: Uri?,
+        removeArtwork: Boolean,
+        onProgress: (Int, Int) -> Unit,
+        onComplete: (successCount: Int, failCount: Int) -> Unit
+    ) -> Unit)? = null
 ) {
+    var showEditAlbumSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val configuration = LocalConfiguration.current
@@ -479,7 +491,7 @@ fun AlbumBottomSheet(
                                     shadowElevation = 16.dp,
                                     tonalElevation = 8.dp
                                 ) {
-                                    Box {
+                                    Box(modifier = Modifier.fillMaxSize()) {
                                         if (album.artworkUri != null) {
                                             AsyncImage(
                                                 model = ImageRequest.Builder(context)
@@ -520,6 +532,29 @@ fun AlbumBottomSheet(
                                                 )
                                             }
                                         }
+
+                                        if (onEditAlbum != null) {
+                                            FilledIconButton(
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.MEDIUM)
+                                                    showEditAlbumSheet = true
+                                                },
+                                                modifier = Modifier
+                                                    .align(Alignment.BottomEnd)
+                                                    .padding(12.dp)
+                                                    .size(36.dp),
+                                                colors = IconButtonDefaults.filledIconButtonColors(
+                                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                                )
+                                            ) {
+                                                Icon(
+                                                    imageVector = RhythmIcons.Edit,
+                                                    contentDescription = "Edit Album",
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        }
                                     }
                                 }
 
@@ -530,14 +565,22 @@ fun AlbumBottomSheet(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    AutoScrollingTextOnDemand(
-                                        text = album.title,
-                                        style = tabletAlbumTitleStyle,
-                                        gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        enabled = true,
-                                        textAlign = TextAlign.Center
-                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Box(modifier = Modifier.weight(1f, fill = false)) {
+                                            AutoScrollingTextOnDemand(
+                                                text = album.title,
+                                                style = tabletAlbumTitleStyle,
+                                                gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer,
+                                                modifier = Modifier.fillMaxWidth(),
+                                                enabled = true,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
 
                                     Text(
                                         text = album.artist,
@@ -820,101 +863,61 @@ fun AlbumBottomSheet(
                                                 DropdownMenu(
                                                     expanded = showSortMenu,
                                                     onDismissRequest = { showSortMenu = false },
-                                                    shape = RoundedCornerShape(16.dp),
-                                                    modifier = Modifier.padding(4.dp)
+                                                    shape = RoundedCornerShape(20.dp),
+                                                    modifier = Modifier
+                                                        .widthIn(min = 250.dp)
+                                                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                                                        .padding(8.dp)
                                                 ) {
-                                                    AlbumSortOrder.entries.forEach { order ->
-                                                        val isSelected = sortOrder == order
-                                                        Surface(
-                                                            color = if (isSelected)
-                                                                MaterialTheme.colorScheme.primaryContainer.copy(
-                                                                    alpha = 0.8f
-                                                                )
-                                                            else
-                                                                Color.Transparent,
-                                                            shape = RoundedCornerShape(12.dp),
-                                                            modifier = Modifier
-                                                                .fillMaxWidth()
-                                                                .padding(
-                                                                    horizontal = 8.dp,
-                                                                    vertical = 2.dp
-                                                                )
-                                                        ) {
-                                                            DropdownMenuItem(
-                                                                text = {
-                                                                    Text(
-                                                                        text = when (order) {
-                                                                            AlbumSortOrder.TRACK_NUMBER -> "Track Number"
-                                                                            AlbumSortOrder.TITLE_ASC, AlbumSortOrder.TITLE_DESC -> "Title"
-                                                                            AlbumSortOrder.DURATION_ASC, AlbumSortOrder.DURATION_DESC -> "Duration"
-                                                                        },
-                                                                        style = MaterialTheme.typography.bodyMedium,
-                                                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                                        color = if (isSelected)
-                                                                            MaterialTheme.colorScheme.onPrimaryContainer
-                                                                        else
-                                                                            MaterialTheme.colorScheme.onSurface
-                                                                    )
-                                                                },
-                                                                leadingIcon = {
-                                                                    Icon(
-                                                                        imageVector = when (order) {
-                                                                            AlbumSortOrder.TRACK_NUMBER -> RhythmIcons.FormatListNumbered
-                                                                            AlbumSortOrder.TITLE_ASC, AlbumSortOrder.TITLE_DESC -> RhythmIcons.SortByAlpha
-                                                                            AlbumSortOrder.DURATION_ASC, AlbumSortOrder.DURATION_DESC -> RhythmIcons.AccessTime
-                                                                        },
-                                                                        contentDescription = null,
-                                                                        modifier = Modifier.size(18.dp),
-                                                                        tint = if (isSelected)
-                                                                            MaterialTheme.colorScheme.onPrimaryContainer
-                                                                        else
-                                                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                                                    )
-                                                                },
-                                                                trailingIcon = {
-                                                                    when (order) {
-                                                                        AlbumSortOrder.TITLE_ASC, AlbumSortOrder.DURATION_ASC -> {
-                                                                            Icon(
-                                                                                imageVector = RhythmIcons.ArrowUpward,
-                                                                                contentDescription = stringResource(R.string.content_desc_ascending),
-                                                                                modifier = Modifier.size(18.dp),
-                                                                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                                                                            )
-                                                                        }
-
-                                                                        AlbumSortOrder.TITLE_DESC, AlbumSortOrder.DURATION_DESC -> {
-                                                                            Icon(
-                                                                                imageVector = RhythmIcons.ArrowDownward,
-                                                                                contentDescription = stringResource(R.string.content_desc_descending),
-                                                                                modifier = Modifier.size(18.dp),
-                                                                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                                                                            )
-                                                                        }
-
-                                                                        else -> {}
-                                                                    }
-                                                                },
-                                                                onClick = {
-                                                                    HapticUtils.performHapticFeedback(
-                                                                        context,
-                                                                        haptics,
-                                                                        HapticType.HEAVY
-                                                                    )
-                                                                    sortOrder = order
-                                                                    showSortMenu = false
-                                                                    appSettings.setAlbumSortOrder(
-                                                                        order.name
-                                                                    )
-                                                                },
-                                                                colors = androidx.compose.material3.MenuDefaults.itemColors(
-                                                                    textColor = if (isSelected)
-                                                                        MaterialTheme.colorScheme.onPrimaryContainer
-                                                                    else
-                                                                        MaterialTheme.colorScheme.onSurface
-                                                                )
-                                                            )
-                                                        }
+                                                    val sortOptions = remember(context) {
+                                                        listOf(
+                                                            RhythmSortOption("TRACK_NUMBER", "Track Number", RhythmIcons.FormatListNumbered),
+                                                            RhythmSortOption("TITLE", "Title", RhythmIcons.SortByAlpha),
+                                                            RhythmSortOption("DURATION", "Duration", RhythmIcons.AccessTime)
+                                                        )
                                                     }
+                                                    val currentKey = when (sortOrder) {
+                                                        AlbumSortOrder.TRACK_NUMBER -> "TRACK_NUMBER"
+                                                        AlbumSortOrder.TITLE_ASC, AlbumSortOrder.TITLE_DESC -> "TITLE"
+                                                        AlbumSortOrder.DURATION_ASC, AlbumSortOrder.DURATION_DESC -> "DURATION"
+                                                    }
+                                                    val isAscending = when (sortOrder) {
+                                                        AlbumSortOrder.TITLE_DESC, AlbumSortOrder.DURATION_DESC -> false
+                                                        else -> true
+                                                    }
+                                                    RhythmSortMenuContent(
+                                                        selectedKey = currentKey,
+                                                        isAscending = isAscending,
+                                                        options = sortOptions,
+                                                        onKeySelected = { key ->
+                                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                            val newOrder = when (key) {
+                                                                "TRACK_NUMBER" -> AlbumSortOrder.TRACK_NUMBER
+                                                                "TITLE" -> if (isAscending) AlbumSortOrder.TITLE_ASC else AlbumSortOrder.TITLE_DESC
+                                                                "DURATION" -> if (isAscending) AlbumSortOrder.DURATION_ASC else AlbumSortOrder.DURATION_DESC
+                                                                else -> AlbumSortOrder.TRACK_NUMBER
+                                                            }
+                                                            if (sortOrder != newOrder) {
+                                                                sortOrder = newOrder
+                                                                appSettings.setAlbumSortOrder(newOrder.name)
+                                                            }
+                                                            showSortMenu = false
+                                                        },
+                                                        onDirectionToggled = { asc ->
+                                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                            val newOrder = when (currentKey) {
+                                                                "TRACK_NUMBER" -> AlbumSortOrder.TRACK_NUMBER
+                                                                "TITLE" -> if (asc) AlbumSortOrder.TITLE_ASC else AlbumSortOrder.TITLE_DESC
+                                                                "DURATION" -> if (asc) AlbumSortOrder.DURATION_ASC else AlbumSortOrder.DURATION_DESC
+                                                                else -> AlbumSortOrder.TRACK_NUMBER
+                                                            }
+                                                            if (sortOrder != newOrder) {
+                                                                sortOrder = newOrder
+                                                                appSettings.setAlbumSortOrder(newOrder.name)
+                                                            }
+                                                            showSortMenu = false
+                                                        }
+                                                    )
                                                 }
                                             }
 
@@ -1284,7 +1287,7 @@ fun AlbumBottomSheet(
                                     shadowElevation = 16.dp,
                                     tonalElevation = 8.dp
                                 ) {
-                                    Box {
+                                    Box(modifier = Modifier.fillMaxSize()) {
                                         if (album.artworkUri != null) {
                                             AsyncImage(
                                                 model = ImageRequest.Builder(context)
@@ -1343,6 +1346,29 @@ fun AlbumBottomSheet(
                                                     )
                                                 )
                                         )
+
+                                        if (onEditAlbum != null) {
+                                            FilledIconButton(
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.MEDIUM)
+                                                    showEditAlbumSheet = true
+                                                },
+                                                modifier = Modifier
+                                                    .align(Alignment.BottomEnd)
+                                                    .padding(8.dp)
+                                                    .size(32.dp),
+                                                colors = IconButtonDefaults.filledIconButtonColors(
+                                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                                )
+                                            ) {
+                                                Icon(
+                                                    imageVector = RhythmIcons.Edit,
+                                                    contentDescription = "Edit Album",
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        }
                                     }
                                 }
 
@@ -1363,13 +1389,21 @@ fun AlbumBottomSheet(
                                                     initialOffsetX = { 50 }
                                                 )
                                     ) {
-                                        Text(
-                                            text = album.title,
-                                            style = phoneAlbumTitleStyle,
-                                            maxLines = 2,
-                                            overflow = TextOverflow.Ellipsis,
-                                            textAlign = TextAlign.Start
-                                        )
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Start,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Box(modifier = Modifier.weight(1f, fill = false)) {
+                                                Text(
+                                                    text = album.title,
+                                                    style = phoneAlbumTitleStyle,
+                                                    maxLines = 2,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    textAlign = TextAlign.Start
+                                                )
+                                            }
+                                        }
                                     }
 
                                     // Artist name
@@ -1811,96 +1845,61 @@ fun AlbumBottomSheet(
                                         DropdownMenu(
                                             expanded = showSortMenu,
                                             onDismissRequest = { showSortMenu = false },
-                                            shape = RoundedCornerShape(16.dp),
-                                            modifier = Modifier.padding(4.dp)
+                                            shape = RoundedCornerShape(20.dp),
+                                            modifier = Modifier
+                                                .widthIn(min = 250.dp)
+                                                .background(MaterialTheme.colorScheme.surfaceContainer)
+                                                .padding(8.dp)
                                         ) {
-                                            AlbumSortOrder.entries.forEach { order ->
-                                                val isSelected = sortOrder == order
-                                                Surface(
-                                                    color = if (isSelected)
-                                                        MaterialTheme.colorScheme.primaryContainer.copy(
-                                                            alpha = 0.8f
-                                                        )
-                                                    else
-                                                        Color.Transparent,
-                                                    shape = RoundedCornerShape(12.dp),
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                                                ) {
-                                                    DropdownMenuItem(
-                                                        text = {
-                                                            Text(
-                                                                text = when (order) {
-                                                                    AlbumSortOrder.TRACK_NUMBER -> "Track Number"
-                                                                    AlbumSortOrder.TITLE_ASC, AlbumSortOrder.TITLE_DESC -> "Title"
-                                                                    AlbumSortOrder.DURATION_ASC, AlbumSortOrder.DURATION_DESC -> "Duration"
-                                                                },
-                                                                style = MaterialTheme.typography.bodyMedium,
-                                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                                color = if (isSelected)
-                                                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                                                else
-                                                                    MaterialTheme.colorScheme.onSurface
-                                                            )
-                                                        },
-                                                        leadingIcon = {
-                                                            Icon(
-                                                                imageVector = when (order) {
-                                                                    AlbumSortOrder.TRACK_NUMBER -> RhythmIcons.FormatListNumbered
-                                                                    AlbumSortOrder.TITLE_ASC, AlbumSortOrder.TITLE_DESC -> RhythmIcons.SortByAlpha
-                                                                    AlbumSortOrder.DURATION_ASC, AlbumSortOrder.DURATION_DESC -> RhythmIcons.AccessTime
-                                                                },
-                                                                contentDescription = null,
-                                                                modifier = Modifier.size(18.dp),
-                                                                tint = if (isSelected)
-                                                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                                                else
-                                                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                                            )
-                                                        },
-                                                        trailingIcon = {
-                                                            when (order) {
-                                                                AlbumSortOrder.TITLE_ASC, AlbumSortOrder.DURATION_ASC -> {
-                                                                    Icon(
-                                                                        imageVector = RhythmIcons.ArrowUpward,
-                                                                        contentDescription = stringResource(R.string.content_desc_ascending),
-                                                                        modifier = Modifier.size(18.dp),
-                                                                        tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                                                                    )
-                                                                }
-
-                                                                AlbumSortOrder.TITLE_DESC, AlbumSortOrder.DURATION_DESC -> {
-                                                                    Icon(
-                                                                        imageVector = RhythmIcons.ArrowDownward,
-                                                                        contentDescription = stringResource(R.string.content_desc_descending),
-                                                                        modifier = Modifier.size(18.dp),
-                                                                        tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                                                                    )
-                                                                }
-
-                                                                else -> {}
-                                                            }
-                                                        },
-                                                        onClick = {
-                                                            HapticUtils.performHapticFeedback(
-                                                                context,
-                                                                haptics,
-                                                                HapticType.HEAVY
-                                                            )
-                                                            sortOrder = order
-                                                            showSortMenu = false
-                                                            appSettings.setAlbumSortOrder(order.name)
-                                                        },
-                                                        colors = androidx.compose.material3.MenuDefaults.itemColors(
-                                                            textColor = if (isSelected)
-                                                                MaterialTheme.colorScheme.onPrimaryContainer
-                                                            else
-                                                                MaterialTheme.colorScheme.onSurface
-                                                        )
-                                                    )
-                                                }
+                                            val sortOptions = remember(context) {
+                                                listOf(
+                                                    RhythmSortOption("TRACK_NUMBER", "Track Number", RhythmIcons.FormatListNumbered),
+                                                    RhythmSortOption("TITLE", "Title", RhythmIcons.SortByAlpha),
+                                                    RhythmSortOption("DURATION", "Duration", RhythmIcons.AccessTime)
+                                                )
                                             }
+                                            val currentKey = when (sortOrder) {
+                                                AlbumSortOrder.TRACK_NUMBER -> "TRACK_NUMBER"
+                                                AlbumSortOrder.TITLE_ASC, AlbumSortOrder.TITLE_DESC -> "TITLE"
+                                                AlbumSortOrder.DURATION_ASC, AlbumSortOrder.DURATION_DESC -> "DURATION"
+                                            }
+                                            val isAscending = when (sortOrder) {
+                                                AlbumSortOrder.TITLE_DESC, AlbumSortOrder.DURATION_DESC -> false
+                                                else -> true
+                                            }
+                                            RhythmSortMenuContent(
+                                                selectedKey = currentKey,
+                                                isAscending = isAscending,
+                                                options = sortOptions,
+                                                onKeySelected = { key ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    val newOrder = when (key) {
+                                                        "TRACK_NUMBER" -> AlbumSortOrder.TRACK_NUMBER
+                                                        "TITLE" -> if (isAscending) AlbumSortOrder.TITLE_ASC else AlbumSortOrder.TITLE_DESC
+                                                        "DURATION" -> if (isAscending) AlbumSortOrder.DURATION_ASC else AlbumSortOrder.DURATION_DESC
+                                                        else -> AlbumSortOrder.TRACK_NUMBER
+                                                    }
+                                                    if (sortOrder != newOrder) {
+                                                        sortOrder = newOrder
+                                                        appSettings.setAlbumSortOrder(newOrder.name)
+                                                    }
+                                                    showSortMenu = false
+                                                },
+                                                onDirectionToggled = { asc ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    val newOrder = when (currentKey) {
+                                                        "TRACK_NUMBER" -> AlbumSortOrder.TRACK_NUMBER
+                                                        "TITLE" -> if (asc) AlbumSortOrder.TITLE_ASC else AlbumSortOrder.TITLE_DESC
+                                                        "DURATION" -> if (asc) AlbumSortOrder.DURATION_ASC else AlbumSortOrder.DURATION_DESC
+                                                        else -> AlbumSortOrder.TRACK_NUMBER
+                                                    }
+                                                    if (sortOrder != newOrder) {
+                                                        sortOrder = newOrder
+                                                        appSettings.setAlbumSortOrder(newOrder.name)
+                                                    }
+                                                    showSortMenu = false
+                                                }
+                                            )
                                         }
                                     }
                                 }
@@ -2057,6 +2056,16 @@ fun AlbumBottomSheet(
                 }
             }
         }
+    }
+
+    if (showEditAlbumSheet && onEditAlbum != null) {
+        EditAlbumSheet(
+            album = album,
+            onDismiss = { showEditAlbumSheet = false },
+            onSave = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
+                onEditAlbum(title, artist, artworkUri, removeArtwork, onProgress, onComplete)
+            }
+        )
     }
 }
 

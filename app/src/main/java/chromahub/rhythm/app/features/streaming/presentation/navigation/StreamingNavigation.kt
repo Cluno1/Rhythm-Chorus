@@ -674,6 +674,7 @@ fun StreamingNavigation(
             ) {
                 StreamingContentHomeScreen(
                     viewModel = streamingMusicViewModel,
+                    localMusicViewModel = localMusicViewModel,
                     recentlyPlayedSongs = recentlyPlayed,
                     playbackStatsSummary = playbackStatsSummary,
                     listeningTimeMs = listeningTime,
@@ -765,6 +766,7 @@ fun StreamingNavigation(
             ) {
                 StreamingLibraryScreen(
                     viewModel = streamingMusicViewModel,
+                    localMusicViewModel = localMusicViewModel,
                     onConfigureService = { serviceId ->
                         navController.navigate(StreamingScreen.ServiceSetup.createRoute(serviceId)) {
                             launchSingleTop = true

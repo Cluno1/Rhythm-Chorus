@@ -388,8 +388,15 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.primary
                 )
             },
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
+            StandardBottomSheetHeader(
+                title = context.getString(R.string.settings_configure_delimiters),
+                subtitle = context.getString(R.string.settings_select_artist_separators),
+                visible = showContent
+            )
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -399,40 +406,6 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                     .navigationBarsPadding()
                     .graphicsLayer(alpha = contentAlpha)
             ) {
-                // Header
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 0.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text(
-                            text = context.getString(R.string.settings_configure_delimiters),
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 6.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                                text = context.getString(R.string.settings_select_artist_separators),
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 1,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 

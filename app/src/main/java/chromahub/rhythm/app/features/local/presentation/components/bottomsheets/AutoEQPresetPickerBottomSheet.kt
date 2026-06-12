@@ -445,6 +445,11 @@ private fun FilterSection(
             items(items.size) { index ->
                 val item = items[index]
                 val isSelected = selectedItem == item
+                val cornerRadius by animateDpAsState(
+                    targetValue = if (isSelected) 24.dp else 12.dp,
+                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                    label = "chipCornerRadius"
+                )
 
                 FilterChip(
                     selected = isSelected,
@@ -468,10 +473,11 @@ private fun FilterSection(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                         selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                         selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        selectedLeadingIconColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        selectedLeadingIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        iconColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
-                    // Expressive pill shape
-                    shape = CircleShape,
+                    shape = RoundedCornerShape(cornerRadius),
                     border = null // Removes the default border for a cleaner, expressive filled look
                 )
             }

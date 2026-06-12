@@ -1338,6 +1338,9 @@ private fun LocalNavigationContent(
                         onNavigateToStats = {
                             navigateToTopLevel(Screen.RhythmStats.route)
                         },
+                        onNavigateToRhythmGuard = {
+                            navController.navigate(Screen.TunerRhythmGuard.route)
+                        },
                         onNavigateToArtist = { artist ->
                             navController.navigate(Screen.ArtistDetail.createRoute(artist.name))
                         }
@@ -1381,16 +1384,31 @@ private fun LocalNavigationContent(
                         contract = androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult()
                     ) { result: ActivityResult ->
                         if (result.resultCode == android.app.Activity.RESULT_OK) {
-                            viewModel.completeMetadataWriteAfterPermission(
-                                onSuccess = {
-                                    android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
-                                },
-                                onError = { errorMessage ->
-                                    android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
-                                }
-                            )
+                            if (viewModel.pendingBatchWriteRequest.value != null) {
+                                viewModel.completeBatchMetadataWriteAfterPermission(
+                                    onSuccess = {
+                                        android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { errorMessage ->
+                                        android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                            } else {
+                                viewModel.completeMetadataWriteAfterPermission(
+                                    onSuccess = {
+                                        android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { errorMessage ->
+                                        android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                            }
                         } else {
-                            viewModel.cancelPendingMetadataWrite()
+                            if (viewModel.pendingBatchWriteRequest.value != null) {
+                                viewModel.cancelPendingBatchMetadataWrite()
+                            } else {
+                                viewModel.cancelPendingMetadataWrite()
+                            }
                             android.widget.Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, android.widget.Toast.LENGTH_LONG).show()
                         }
                     }
@@ -1425,9 +1443,13 @@ private fun LocalNavigationContent(
                     )
 
                     // local album sheet
-                    if (showAlbumBottomSheet && selectedAlbumForSheet != null) {
+                    val activeAlbum = remember(albums, selectedAlbumForSheet) {
+                        selectedAlbumForSheet?.let { sel -> albums.find { it.id == sel.id } } ?: selectedAlbumForSheet
+                    }
+
+                    if (showAlbumBottomSheet && activeAlbum != null) {
                         AlbumBottomSheet(
-                            album = selectedAlbumForSheet!!,
+                            album = activeAlbum,
                             onDismiss = {
                                 showAlbumBottomSheet = false
                                 selectedAlbumForSheet = null
@@ -1453,7 +1475,37 @@ private fun LocalNavigationContent(
                             },
                             onAddToBlacklist = { song -> appSettings.addToBlacklist(song.id) },
                             currentSong = currentSong,
-                            isPlaying = isPlaying
+                            isPlaying = isPlaying,
+                            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
+                                viewModel.batchEditMetadata(
+                                    songs = activeAlbum.songs,
+                                    artist = artist,
+                                    album = title,
+                                    genre = null,
+                                    year = null,
+                                    artworkUri = artworkUri,
+                                    removeArtwork = removeArtwork,
+                                    onProgress = onProgress,
+                                    onComplete = { successCount, failCount ->
+                                        onComplete(successCount, failCount)
+                                    },
+                                    onPermissionRequired = { pendingRequest ->
+                                        try {
+                                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
+                                                pendingRequest.intentSender
+                                            ).build()
+                                            writePermissionLauncher.launch(intentSenderRequest)
+                                        } catch (e: Exception) {
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Failed to request permission: ${e.message}",
+                                                android.widget.Toast.LENGTH_LONG
+                                            ).show()
+                                            viewModel.cancelPendingBatchMetadataWrite()
+                                        }
+                                    }
+                                )
+                            }
                         )
                     }
 
@@ -2287,6 +2339,40 @@ private fun LocalNavigationContent(
                     var showAlbumSheet by remember { mutableStateOf(false) }
                     val playlistHaptics = LocalHapticFeedback.current
 
+                    // Write permission launcher for Android 11+ metadata editing
+                    val writePermissionLauncher = rememberLauncherForActivityResult(
+                        contract = androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult()
+                    ) { result: androidx.activity.result.ActivityResult ->
+                        if (result.resultCode == android.app.Activity.RESULT_OK) {
+                            if (viewModel.pendingBatchWriteRequest.value != null) {
+                                viewModel.completeBatchMetadataWriteAfterPermission(
+                                    onSuccess = {
+                                        android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { errorMessage ->
+                                        android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                            } else {
+                                viewModel.completeMetadataWriteAfterPermission(
+                                    onSuccess = {
+                                        android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { errorMessage ->
+                                        android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                            }
+                        } else {
+                            if (viewModel.pendingBatchWriteRequest.value != null) {
+                                viewModel.cancelPendingBatchMetadataWrite()
+                            } else {
+                                viewModel.cancelPendingMetadataWrite()
+                            }
+                            android.widget.Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, android.widget.Toast.LENGTH_LONG).show()
+                        }
+                    }
+
                     if (playlist != null) {
                         PlaylistDetailScreen(
                             musicViewModel = viewModel,
@@ -2371,10 +2457,14 @@ private fun LocalNavigationContent(
                     }
 
                     // Album Bottom Sheet
-                    if (showAlbumSheet && selectedAlbumForSheet != null) {
+                    val activeAlbum = remember(allAlbums, selectedAlbumForSheet) {
+                        selectedAlbumForSheet?.let { sel -> allAlbums.find { it.id == sel.id } } ?: selectedAlbumForSheet
+                    }
+
+                    if (showAlbumSheet && activeAlbum != null) {
                         val albumSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                         AlbumBottomSheet(
-                            album = selectedAlbumForSheet!!,
+                            album = activeAlbum,
                             onDismiss = { showAlbumSheet = false; selectedAlbumForSheet = null },
                             onSongClick = onPlaySong,
                             onPlayAll = { songs -> viewModel.playSongs(songs) },
@@ -2389,7 +2479,37 @@ private fun LocalNavigationContent(
                             onToggleFavorite = { song -> viewModel.toggleFavorite(song) },
                             favoriteSongs = favoriteSongs,
                             currentSong = currentSong,
-                            isPlaying = isPlaying
+                            isPlaying = isPlaying,
+                            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
+                                viewModel.batchEditMetadata(
+                                    songs = activeAlbum.songs,
+                                    artist = artist,
+                                    album = title,
+                                    genre = null,
+                                    year = null,
+                                    artworkUri = artworkUri,
+                                    removeArtwork = removeArtwork,
+                                    onProgress = onProgress,
+                                    onComplete = { successCount, failCount ->
+                                        onComplete(successCount, failCount)
+                                    },
+                                    onPermissionRequired = { pendingRequest ->
+                                        try {
+                                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
+                                                pendingRequest.intentSender
+                                            ).build()
+                                            writePermissionLauncher.launch(intentSenderRequest)
+                                        } catch (e: Exception) {
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Failed to request permission: ${e.message}",
+                                                android.widget.Toast.LENGTH_LONG
+                                            ).show()
+                                            viewModel.cancelPendingBatchMetadataWrite()
+                                        }
+                                    }
+                                )
+                            }
                         )
                     }
                 }
@@ -2428,16 +2548,31 @@ private fun LocalNavigationContent(
                         contract = androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult()
                     ) { result: ActivityResult ->
                         if (result.resultCode == android.app.Activity.RESULT_OK) {
-                            viewModel.completeMetadataWriteAfterPermission(
-                                onSuccess = {
-                                    android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
-                                },
-                                onError = { errorMessage ->
-                                    android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
-                                }
-                            )
+                            if (viewModel.pendingBatchWriteRequest.value != null) {
+                                viewModel.completeBatchMetadataWriteAfterPermission(
+                                    onSuccess = {
+                                        android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { errorMessage ->
+                                        android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                            } else {
+                                viewModel.completeMetadataWriteAfterPermission(
+                                    onSuccess = {
+                                        android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { errorMessage ->
+                                        android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                            }
                         } else {
-                            viewModel.cancelPendingMetadataWrite()
+                            if (viewModel.pendingBatchWriteRequest.value != null) {
+                                viewModel.cancelPendingBatchMetadataWrite()
+                            } else {
+                                viewModel.cancelPendingMetadataWrite()
+                            }
                             android.widget.Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, android.widget.Toast.LENGTH_LONG).show()
                         }
                     }
@@ -2570,9 +2705,14 @@ private fun LocalNavigationContent(
                     }
                     
                     // Album bottom sheet
-                    if (showAlbumBottomSheet && selectedAlbum != null) {
+                    val allAlbums by viewModel.albums.collectAsState()
+                    val activeAlbum = remember(allAlbums, selectedAlbum) {
+                        selectedAlbum?.let { sel -> allAlbums.find { it.id == sel.id } } ?: selectedAlbum
+                    }
+
+                    if (showAlbumBottomSheet && activeAlbum != null) {
                         AlbumBottomSheet(
-                            album = selectedAlbum!!,
+                            album = activeAlbum,
                             onDismiss = { 
                                 showAlbumBottomSheet = false
                                 selectedAlbum = null
@@ -2598,7 +2738,37 @@ private fun LocalNavigationContent(
                             },
                             onAddToBlacklist = { song -> appSettings.addToBlacklist(song.id) },
                             currentSong = currentSong,
-                            isPlaying = isPlaying
+                            isPlaying = isPlaying,
+                            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
+                                viewModel.batchEditMetadata(
+                                    songs = activeAlbum.songs,
+                                    artist = artist,
+                                    album = title,
+                                    genre = null,
+                                    year = null,
+                                    artworkUri = artworkUri,
+                                    removeArtwork = removeArtwork,
+                                    onProgress = onProgress,
+                                    onComplete = { successCount, failCount ->
+                                        onComplete(successCount, failCount)
+                                    },
+                                    onPermissionRequired = { pendingRequest ->
+                                        try {
+                                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
+                                                pendingRequest.intentSender
+                                            ).build()
+                                            writePermissionLauncher.launch(intentSenderRequest)
+                                        } catch (e: Exception) {
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Failed to request permission: ${e.message}",
+                                                android.widget.Toast.LENGTH_LONG
+                                            ).show()
+                                            viewModel.cancelPendingBatchMetadataWrite()
+                                        }
+                                    }
+                                )
+                            }
                         )
                     }
                 }

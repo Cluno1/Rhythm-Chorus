@@ -1559,11 +1559,11 @@ class StreamingMusicRepositoryImpl(
     suspend fun enrichArtistsWithDeezerImages(artists: List<StreamingArtist>): List<StreamingArtist> {
         return withContext(Dispatchers.IO) {
             try {
-                // Check if Deezer API is available
+                // Check if Deezer API is available and enabled in settings
                 val deezerService = NetworkClient.deezerApiService
-                if (deezerService == null) {
-                    Log.d("StreamingMusicRepo", "Deezer API service not available, skipping enrichment")
-                    return@withContext artists // Return unchanged if API not available
+                if (deezerService == null || !NetworkClient.isDeezerApiEnabled()) {
+                    Log.d("StreamingMusicRepo", "Deezer API service not available or disabled in settings, skipping enrichment")
+                    return@withContext artists // Return unchanged if API not available/enabled
                 }
 
                 val enriched = mutableListOf<StreamingArtist>()

@@ -2,6 +2,17 @@
 
 package chromahub.rhythm.app.features.streaming.presentation.screens
 
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import chromahub.rhythm.app.features.local.presentation.screens.calculateSongCategories
+import chromahub.rhythm.app.features.local.presentation.screens.filterSongsByCategory
+import kotlin.math.abs
+
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -22,6 +33,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -38,8 +50,41 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortMenuContent
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortOption
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.derivedStateOf
+import chromahub.rhythm.app.shared.data.model.AlbumViewType
+import chromahub.rhythm.app.shared.data.model.ArtistViewType
+import chromahub.rhythm.app.shared.data.model.PlaylistViewType
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
@@ -82,6 +127,12 @@ import chromahub.rhythm.app.features.local.presentation.screens.SingleCardPlayli
 import chromahub.rhythm.app.features.local.presentation.screens.SingleCardSongsContent
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AlbumBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.activity.compose.BackHandler
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.MultiSelectionBottomSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
+import chromahub.rhythm.app.features.local.presentation.viewmodel.MultiSelectionStateHolder
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingArtist
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingPlaylist
@@ -100,6 +151,7 @@ import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.M3ImageUtils
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import androidx.compose.ui.platform.LocalConfiguration
 import chromahub.rhythm.app.ui.theme.MusicDimensions
@@ -171,6 +223,7 @@ private enum class StreamingPlaylistSortOrder(
 @Composable
 fun StreamingLibraryScreen(
     viewModel: StreamingMusicViewModel,
+    localMusicViewModel: chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel? = null,
     onConfigureService: (String) -> Unit,
     onNavigateToArtist: (StreamingArtist) -> Unit,
     onNavigateToPlaylist: (StreamingPlaylist) -> Unit,
@@ -264,7 +317,7 @@ fun StreamingLibraryScreen(
     val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val isTabletLayout = LocalConfiguration.current.screenWidthDp >= 600
     val baseLibraryBottomPadding = if (isTabletLayout) 16.dp else (MusicDimensions.bottomNavigationHeight + 16.dp)
-    val libraryBottomOverlayPadding = 26.dp
+    val libraryBottomOverlayPadding = baseLibraryBottomPadding
     val contentBottomPadding = 24.dp
 
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -291,6 +344,59 @@ fun StreamingLibraryScreen(
     var showSongInfoSheet by remember { mutableStateOf(false) }
     var selectedSongForInfo by remember { mutableStateOf<Song?>(null) }
     val albumSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+
+    val songsListState = rememberLazyListState()
+    val playlistsListState = rememberLazyListState()
+    val playlistsGridState = rememberLazyGridState()
+    val albumsListState = rememberLazyListState()
+    val albumsGridState = rememberLazyGridState()
+    val artistsListState = rememberLazyListState()
+    val artistsGridState = rememberLazyGridState()
+
+    val playlistViewType by appSettings.playlistViewType.collectAsState()
+    val albumViewType by appSettings.albumViewType.collectAsState()
+    val artistViewType by appSettings.artistViewType.collectAsState()
+
+    val isListAtTop by remember(
+        selectedTabIndex, playlistViewType, albumViewType, artistViewType
+    ) {
+        derivedStateOf {
+            when (tabs.getOrNull(selectedTabIndex)) {
+                StreamingLibraryTab.SONGS -> songsListState.firstVisibleItemIndex == 0 && songsListState.firstVisibleItemScrollOffset == 0
+                StreamingLibraryTab.PLAYLISTS -> {
+                    if (playlistViewType == PlaylistViewType.GRID) {
+                        playlistsGridState.firstVisibleItemIndex == 0 && playlistsGridState.firstVisibleItemScrollOffset == 0
+                    } else {
+                        playlistsListState.firstVisibleItemIndex == 0 && playlistsListState.firstVisibleItemScrollOffset == 0
+                    }
+                }
+                StreamingLibraryTab.ALBUMS -> {
+                    if (albumViewType == AlbumViewType.GRID) {
+                        albumsGridState.firstVisibleItemIndex == 0 && albumsGridState.firstVisibleItemScrollOffset == 0
+                    } else {
+                        albumsListState.firstVisibleItemIndex == 0 && albumsListState.firstVisibleItemScrollOffset == 0
+                    }
+                }
+                StreamingLibraryTab.ARTISTS -> {
+                    if (artistViewType == ArtistViewType.GRID) {
+                        artistsGridState.firstVisibleItemIndex == 0 && artistsGridState.firstVisibleItemScrollOffset == 0
+                    } else {
+                        artistsListState.firstVisibleItemIndex == 0 && artistsListState.firstVisibleItemScrollOffset == 0
+                    }
+                }
+                else -> true
+            }
+        }
+    }
+
+    val multiSelectionState = remember { chromahub.rhythm.app.features.local.presentation.viewmodel.MultiSelectionStateHolder() }
+    val selectedSongs by multiSelectionState.selectedSongs.collectAsState()
+    val isSelectionMode by multiSelectionState.isSelectionMode.collectAsState()
+    val selectedSongIds by multiSelectionState.selectedSongIds.collectAsState()
+    
+    var showMultiSelectionSheet by remember { mutableStateOf(false) }
+    var songsToAddToPlaylist by remember { mutableStateOf<List<Song>>(emptyList()) }
+    var showAddToPlaylistSheet by remember { mutableStateOf(false) }
 
     val sortedSongs = remember(librarySongs, songSortOrder) {
         when (songSortOrder) {
@@ -372,6 +478,26 @@ fun StreamingLibraryScreen(
     }
     val streamingFavoriteSongIds = remember(sortedSongs, likedSongs) {
         (sortedSongs.filter { it.isFavorite }.map { it.id } + likedSongs.map { it.id }).toSet()
+    }
+    val enableRatingSystem by appSettings.enableRatingSystem.collectAsState()
+    var selectedCategory by rememberSaveable { mutableStateOf("All") }
+    
+    val categories = remember(localSongs, streamingFavoriteSongIds, enableRatingSystem) {
+        calculateSongCategories(
+            preparedSongs = localSongs,
+            favoriteSongs = streamingFavoriteSongIds,
+            enableRatingSystem = enableRatingSystem,
+            ratingDistribution = emptyMap()
+        )
+    }
+
+    val filteredSongs = remember(localSongs, selectedCategory, streamingFavoriteSongIds) {
+        filterSongsByCategory(
+            preparedSongs = localSongs,
+            selectedCategory = selectedCategory,
+            favoriteSongs = streamingFavoriteSongIds,
+            ratedSongIdsProvider = { emptySet() }
+        )
     }
     val openAlbumBottomSheet: (StreamingAlbum) -> Unit = { album ->
         if (album.tracks.isEmpty()) {
@@ -472,6 +598,10 @@ fun StreamingLibraryScreen(
         StreamingLibraryTab.PLAYLISTS -> playlistSortOrder.icon
     }
     val random = remember { Random(System.currentTimeMillis()) }
+    
+    BackHandler(enabled = isSelectionMode) {
+        multiSelectionState.clearSelection()
+    }
     val libraryTitle = remember(selectedServiceName, isSelectedServiceConnected) {
         if (isSelectedServiceConnected && selectedServiceName.isNotBlank()) {
             "$selectedServiceName ${context.getString(R.string.library_title)}"
@@ -479,131 +609,279 @@ fun StreamingLibraryScreen(
             context.getString(R.string.library_title)
         }
     }
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    
+    val fabVisibility by remember {
+        derivedStateOf {
+            scrollBehavior.state.collapsedFraction < 0.5f
+        }
+    }
+
     val pullToRefreshState = rememberPullToRefreshState()
     val isRefreshing = isLoading
 
-    CollapsibleHeaderScreen(
-        title = libraryTitle,
-        headerDisplayMode = 1,
-        actions = {
-            if (isSelectedServiceConnected) {
-                Box {
-                    FilledTonalButton(
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showSortMenu = true
-                        },
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
-                    ) {
-                        Icon(
-                            imageVector = currentSortIcon,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+    Scaffold(
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            Column {
+                Spacer(modifier = Modifier.height(5.dp))
+                
+                LargeTopAppBar(
+                    navigationIcon = { },
+                    title = {
+                        val collapsedFraction = scrollBehavior.state.collapsedFraction
+                        val fontSize = (24 + (32 - 24) * (1 - collapsedFraction)).sp
+
                         Text(
-                            text = stringResource(id = currentSortLabelRes),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Medium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            text = libraryTitle,
+                            style = MaterialTheme.typography.headlineLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = fontSize
+                            ),
+                            modifier = Modifier.padding(start = 14.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            imageVector = if (isCurrentSortAscending) {
-                                RhythmIcons.ArrowUpward
-                            } else {
-                                RhythmIcons.ArrowDownward
-                            },
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+                    },
+                    actions = {
+                        if (isSelectedServiceConnected) {
+                            Box {
+                                val sortButtonScale by animateFloatAsState(
+                                    targetValue = if (showSortMenu) 0.95f else 1f,
+                                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                    label = "sortButtonScale"
+                                )
+                                
+                                FilledTonalButton(
+                                    onClick = {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                        showSortMenu = true
+                                    },
+                                    colors = ButtonDefaults.filledTonalButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                                    modifier = Modifier.graphicsLayer {
+                                        scaleX = sortButtonScale
+                                        scaleY = sortButtonScale
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = currentSortIcon,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
 
-                    DropdownMenu(
-                        expanded = showSortMenu,
-                        onDismissRequest = { showSortMenu = false },
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.padding(4.dp)
-                    ) {
-                        when (selectedTab) {
-                            StreamingLibraryTab.SONGS -> {
-                                StreamingSongSortOrder.entries.forEach { order ->
-                                    StreamingSortMenuItem(
-                                        label = stringResource(id = order.labelRes),
-                                        icon = order.icon,
-                                        ascending = order.ascending,
-                                        selected = songSortOrder == order,
-                                        onClick = {
-                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                            songSortOrder = order
-                                            showSortMenu = false
-                                        }
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Text(
+                                        text = stringResource(id = currentSortLabelRes),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    
+                                    Icon(
+                                        imageVector = if (isCurrentSortAscending) RhythmIcons.ArrowUpward else RhythmIcons.ArrowDownward,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
                                     )
                                 }
-                            }
-
-                            StreamingLibraryTab.ALBUMS -> {
-                                StreamingAlbumSortOrder.entries.forEach { order ->
-                                    StreamingSortMenuItem(
-                                        label = stringResource(id = order.labelRes),
-                                        icon = order.icon,
-                                        ascending = order.ascending,
-                                        selected = albumSortOrder == order,
-                                        onClick = {
-                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                            albumSortOrder = order
-                                            showSortMenu = false
+                                
+                                DropdownMenu(
+                                    expanded = showSortMenu,
+                                    onDismissRequest = { showSortMenu = false },
+                                    shape = RoundedCornerShape(20.dp),
+                                    modifier = Modifier
+                                        .widthIn(min = 250.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                                        .padding(8.dp)
+                                ) {
+                                    when (selectedTab) {
+                                        StreamingLibraryTab.SONGS -> {
+                                            val currentKey = when (songSortOrder) {
+                                                StreamingSongSortOrder.TITLE_ASC, StreamingSongSortOrder.TITLE_DESC -> "TITLE"
+                                                StreamingSongSortOrder.ARTIST_ASC, StreamingSongSortOrder.ARTIST_DESC -> "ARTIST"
+                                                StreamingSongSortOrder.ALBUM_ASC, StreamingSongSortOrder.ALBUM_DESC -> "ALBUM"
+                                                StreamingSongSortOrder.DURATION_ASC, StreamingSongSortOrder.DURATION_DESC -> "DURATION"
+                                            }
+                                            val isAscending = songSortOrder.ascending
+                                            val songOptions = listOf(
+                                                RhythmSortOption("TITLE", context.getString(R.string.sort_title), RhythmIcons.SortByAlpha),
+                                                RhythmSortOption("ARTIST", context.getString(R.string.sort_artist), RhythmIcons.ArtistFilled),
+                                                RhythmSortOption("ALBUM", context.getString(R.string.library_sort_album), RhythmIcons.AlbumFilled),
+                                                RhythmSortOption("DURATION", context.getString(R.string.sort_duration_short_first), MaterialSymbolIcon("timer", filled = true))
+                                            )
+                                            fun getOrder(key: String, asc: Boolean): StreamingSongSortOrder {
+                                                return when (key) {
+                                                    "TITLE" -> if (asc) StreamingSongSortOrder.TITLE_ASC else StreamingSongSortOrder.TITLE_DESC
+                                                    "ARTIST" -> if (asc) StreamingSongSortOrder.ARTIST_ASC else StreamingSongSortOrder.ARTIST_DESC
+                                                    "ALBUM" -> if (asc) StreamingSongSortOrder.ALBUM_ASC else StreamingSongSortOrder.ALBUM_DESC
+                                                    "DURATION" -> if (asc) StreamingSongSortOrder.DURATION_ASC else StreamingSongSortOrder.DURATION_DESC
+                                                    else -> StreamingSongSortOrder.TITLE_ASC
+                                                }
+                                            }
+                                            RhythmSortMenuContent(
+                                                selectedKey = currentKey,
+                                                isAscending = isAscending,
+                                                options = songOptions,
+                                                onKeySelected = { key ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    songSortOrder = getOrder(key, isAscending)
+                                                    showSortMenu = false
+                                                },
+                                                onDirectionToggled = { asc ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    songSortOrder = getOrder(currentKey, asc)
+                                                    showSortMenu = false
+                                                }
+                                            )
                                         }
-                                    )
-                                }
-                            }
-
-                            StreamingLibraryTab.ARTISTS -> {
-                                StreamingArtistSortOrder.entries.forEach { order ->
-                                    StreamingSortMenuItem(
-                                        label = stringResource(id = order.labelRes),
-                                        icon = order.icon,
-                                        ascending = order.ascending,
-                                        selected = artistSortOrder == order,
-                                        onClick = {
-                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                            artistSortOrder = order
-                                            showSortMenu = false
+                                        StreamingLibraryTab.ALBUMS -> {
+                                            val currentKey = when (albumSortOrder) {
+                                                StreamingAlbumSortOrder.TITLE_ASC, StreamingAlbumSortOrder.TITLE_DESC -> "TITLE"
+                                                StreamingAlbumSortOrder.ARTIST_ASC, StreamingAlbumSortOrder.ARTIST_DESC -> "ARTIST"
+                                                StreamingAlbumSortOrder.YEAR_ASC, StreamingAlbumSortOrder.YEAR_DESC -> "YEAR"
+                                                StreamingAlbumSortOrder.TRACK_COUNT_ASC, StreamingAlbumSortOrder.TRACK_COUNT_DESC -> "TRACK_COUNT"
+                                            }
+                                            val isAscending = albumSortOrder.ascending
+                                            val albumOptions = listOf(
+                                                RhythmSortOption("TITLE", context.getString(R.string.sort_title), RhythmIcons.SortByAlpha),
+                                                RhythmSortOption("ARTIST", context.getString(R.string.sort_artist), RhythmIcons.ArtistFilled),
+                                                RhythmSortOption("YEAR", context.getString(R.string.sort_date_created), RhythmIcons.DateRange),
+                                                RhythmSortOption("TRACK_COUNT", context.getString(R.string.sort_song_count), RhythmIcons.MusicNote)
+                                            )
+                                            fun getOrder(key: String, asc: Boolean): StreamingAlbumSortOrder {
+                                                return when (key) {
+                                                    "TITLE" -> if (asc) StreamingAlbumSortOrder.TITLE_ASC else StreamingAlbumSortOrder.TITLE_DESC
+                                                    "ARTIST" -> if (asc) StreamingAlbumSortOrder.ARTIST_ASC else StreamingAlbumSortOrder.ARTIST_DESC
+                                                    "YEAR" -> if (asc) StreamingAlbumSortOrder.YEAR_ASC else StreamingAlbumSortOrder.YEAR_DESC
+                                                    "TRACK_COUNT" -> if (asc) StreamingAlbumSortOrder.TRACK_COUNT_ASC else StreamingAlbumSortOrder.TRACK_COUNT_DESC
+                                                    else -> StreamingAlbumSortOrder.TITLE_ASC
+                                                }
+                                            }
+                                            RhythmSortMenuContent(
+                                                selectedKey = currentKey,
+                                                isAscending = isAscending,
+                                                options = albumOptions,
+                                                onKeySelected = { key ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    albumSortOrder = getOrder(key, isAscending)
+                                                    showSortMenu = false
+                                                },
+                                                onDirectionToggled = { asc ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    albumSortOrder = getOrder(currentKey, asc)
+                                                    showSortMenu = false
+                                                }
+                                            )
                                         }
-                                    )
-                                }
-                            }
-
-                            StreamingLibraryTab.PLAYLISTS -> {
-                                StreamingPlaylistSortOrder.entries.forEach { order ->
-                                    StreamingSortMenuItem(
-                                        label = stringResource(id = order.labelRes),
-                                        icon = order.icon,
-                                        ascending = order.ascending,
-                                        selected = playlistSortOrder == order,
-                                        onClick = {
-                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                            playlistSortOrder = order
-                                            showSortMenu = false
+                                        StreamingLibraryTab.ARTISTS -> {
+                                            val currentKey = when (artistSortOrder) {
+                                                StreamingArtistSortOrder.NAME_ASC, StreamingArtistSortOrder.NAME_DESC -> "NAME"
+                                                StreamingArtistSortOrder.SONG_COUNT_ASC, StreamingArtistSortOrder.SONG_COUNT_DESC -> "SONG_COUNT"
+                                                StreamingArtistSortOrder.ALBUM_COUNT_ASC, StreamingArtistSortOrder.ALBUM_COUNT_DESC -> "ALBUM_COUNT"
+                                                StreamingArtistSortOrder.POPULARITY_ASC, StreamingArtistSortOrder.POPULARITY_DESC -> "POPULARITY"
+                                            }
+                                            val isAscending = artistSortOrder.ascending
+                                            val artistOptions = listOf(
+                                                RhythmSortOption("NAME", context.getString(R.string.sort_name), RhythmIcons.SortByAlpha),
+                                                RhythmSortOption("SONG_COUNT", context.getString(R.string.sort_song_count), RhythmIcons.MusicNote),
+                                                RhythmSortOption("ALBUM_COUNT", context.getString(R.string.library_sort_album), RhythmIcons.AlbumFilled),
+                                                RhythmSortOption("POPULARITY", context.getString(R.string.bottomsheet_sort_by), RhythmIcons.TrendingUp)
+                                            )
+                                            fun getOrder(key: String, asc: Boolean): StreamingArtistSortOrder {
+                                                return when (key) {
+                                                    "NAME" -> if (asc) StreamingArtistSortOrder.NAME_ASC else StreamingArtistSortOrder.NAME_DESC
+                                                    "SONG_COUNT" -> if (asc) StreamingArtistSortOrder.SONG_COUNT_ASC else StreamingArtistSortOrder.SONG_COUNT_DESC
+                                                    "ALBUM_COUNT" -> if (asc) StreamingArtistSortOrder.ALBUM_COUNT_ASC else StreamingArtistSortOrder.ALBUM_COUNT_DESC
+                                                    "POPULARITY" -> if (asc) StreamingArtistSortOrder.POPULARITY_ASC else StreamingArtistSortOrder.POPULARITY_DESC
+                                                    else -> StreamingArtistSortOrder.NAME_ASC
+                                                }
+                                            }
+                                            RhythmSortMenuContent(
+                                                selectedKey = currentKey,
+                                                isAscending = isAscending,
+                                                options = artistOptions,
+                                                onKeySelected = { key ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    artistSortOrder = getOrder(key, isAscending)
+                                                    showSortMenu = false
+                                                },
+                                                onDirectionToggled = { asc ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    artistSortOrder = getOrder(currentKey, asc)
+                                                    showSortMenu = false
+                                                }
+                                            )
                                         }
-                                    )
+                                        StreamingLibraryTab.PLAYLISTS -> {
+                                            val currentKey = when (playlistSortOrder) {
+                                                StreamingPlaylistSortOrder.NAME_ASC, StreamingPlaylistSortOrder.NAME_DESC -> "NAME"
+                                                StreamingPlaylistSortOrder.TRACK_COUNT_ASC, StreamingPlaylistSortOrder.TRACK_COUNT_DESC -> "TRACK_COUNT"
+                                            }
+                                            val isAscending = playlistSortOrder.ascending
+                                            val playlistOptions = listOf(
+                                                RhythmSortOption("NAME", context.getString(R.string.sort_name), RhythmIcons.SortByAlpha),
+                                                RhythmSortOption("TRACK_COUNT", context.getString(R.string.sort_song_count), RhythmIcons.MusicNote)
+                                            )
+                                            fun getOrder(key: String, asc: Boolean): StreamingPlaylistSortOrder {
+                                                return when (key) {
+                                                    "NAME" -> if (asc) StreamingPlaylistSortOrder.NAME_ASC else StreamingPlaylistSortOrder.NAME_DESC
+                                                    "TRACK_COUNT" -> if (asc) StreamingPlaylistSortOrder.TRACK_COUNT_ASC else StreamingPlaylistSortOrder.TRACK_COUNT_DESC
+                                                    else -> StreamingPlaylistSortOrder.NAME_ASC
+                                                }
+                                            }
+                                            RhythmSortMenuContent(
+                                                selectedKey = currentKey,
+                                                isAscending = isAscending,
+                                                options = playlistOptions,
+                                                onKeySelected = { key ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    playlistSortOrder = getOrder(key, isAscending)
+                                                    showSortMenu = false
+                                                },
+                                                onDirectionToggled = { asc ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    playlistSortOrder = getOrder(currentKey, asc)
+                                                    showSortMenu = false
+                                                }
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent
+                    ),
+                    scrollBehavior = scrollBehavior,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
+        },
+        bottomBar = {},
+        floatingActionButton = {
+            if (tabs.getOrNull(selectedTabIndex) == StreamingLibraryTab.PLAYLISTS) {
+                PlaylistFabMenu(
+                    visible = fabVisibility,
+                    expanded = showPlaylistFabMenu,
+                    onExpandedChange = { showPlaylistFabMenu = it },
+                    onCreatePlaylist = { showCreatePlaylistDialog = true },
+                    onImportPlaylist = null,
+                    onExportPlaylists = null,
+                    bottomPadding = baseLibraryBottomPadding,
+                    haptics = haptics
+                )
             }
         }
-    ) { contentModifier ->
+    ) { paddingValues ->
         Column(
-            modifier = modifier
-                .then(contentModifier)
+            modifier = Modifier
                 .fillMaxSize()
+                .padding(paddingValues)
         ) {
             Surface(
                 modifier = Modifier
@@ -675,6 +953,7 @@ fun StreamingLibraryScreen(
                     isRefreshing = isRefreshing,
                     onRefresh = { viewModel.loadLibrary() },
                     state = pullToRefreshState,
+                    enabled = !isSelectionMode && isListAtTop && scrollBehavior.state.collapsedFraction == 0f,
                     modifier = Modifier.fillMaxSize(),
                     indicator = {
                         PullToRefreshDefaults.LoadingIndicator(
@@ -753,11 +1032,166 @@ fun StreamingLibraryScreen(
                     }
 
                     else -> {
-                        HorizontalPager(
-                            state = pagerState,
-                            modifier = Modifier
-                                .fillMaxSize()
-                        ) { page ->
+                        val activeTab = tabs.getOrNull(pagerState.currentPage)
+                        val isBottomBarVisible = when (activeTab) {
+                            StreamingLibraryTab.SONGS -> localSongs.isNotEmpty()
+                            StreamingLibraryTab.ALBUMS -> localAlbums.isNotEmpty()
+                            StreamingLibraryTab.ARTISTS -> localArtists.isNotEmpty()
+                            else -> false
+                        }
+
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            AnimatedVisibility(
+                                visible = selectedTab == StreamingLibraryTab.SONGS,
+                                enter = expandVertically() + fadeIn(),
+                                exit = shrinkVertically() + fadeOut()
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                ) {
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        items(
+                                            items = categories,
+                                            key = { it }
+                                        ) { category ->
+                                            val isSelected = selectedCategory == category
+                                            val scaleAnimatable = remember { Animatable(1f) }
+                                            val offsetAnimatable = remember { Animatable(0f) }
+                                            
+                                            LaunchedEffect(isSelected) {
+                                                if (isSelected) {
+                                                    launch {
+                                                        scaleAnimatable.animateTo(1.05f, animationSpec = tween<Float>(durationMillis = 250, easing = FastOutSlowInEasing))
+                                                        scaleAnimatable.animateTo(1f, animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing))
+                                                    }
+                                                } else {
+                                                    scaleAnimatable.snapTo(1f)
+                                                }
+                                            }
+                                            
+                                            LaunchedEffect(selectedCategory) {
+                                                if (!isSelected && selectedCategory != null) {
+                                                    val currentIndex = categories.indexOf(category)
+                                                    val selectedIndex = categories.indexOf(selectedCategory)
+                                                    if (currentIndex >= 0 && selectedIndex >= 0) {
+                                                        val distance = currentIndex - selectedIndex
+                                                        if (abs(distance) == 1) {
+                                                            val direction = if (distance > 0) 1 else -1
+                                                            val offsetValue = 8f * direction
+                                                            launch {
+                                                                offsetAnimatable.animateTo(offsetValue, animationSpec = tween<Float>(durationMillis = 250, easing = FastOutSlowInEasing))
+                                                                offsetAnimatable.animateTo(0f, animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing))
+                                                            }
+                                                        } else {
+                                                            offsetAnimatable.snapTo(0f)
+                                                        }
+                                                    }
+                                                } else {
+                                                    offsetAnimatable.snapTo(0f)
+                                                }
+                                            }
+
+                                            val containerColor by animateColorAsState(
+                                                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerLow,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                                                label = "chipContainerColor"
+                                            )
+                                            val labelColor by animateColorAsState(
+                                                targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                                                label = "chipLabelColor"
+                                            )
+                                            val borderColor by animateColorAsState(
+                                                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                                                label = "chipBorderColor"
+                                            )
+                                            val borderWidth by animateDpAsState(
+                                                targetValue = if (isSelected) 2.dp else 1.dp,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                                                label = "chipBorderWidth"
+                                            )
+                                            val cornerRadius by animateDpAsState(
+                                                targetValue = if (isSelected) 24.dp else 12.dp,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                                                label = "chipCornerRadius"
+                                            )
+
+                                            FilterChip(
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    selectedCategory = category
+                                                },
+                                                label = {
+                                                    Text(
+                                                        text = when (category) {
+                                                            "All" -> context.getString(R.string.library_category_all)
+                                                            "❤️ Favorites" -> context.getString(R.string.library_category_favorites)
+                                                            "Short (< 3 min)" -> context.getString(R.string.library_category_short)
+                                                            "Medium (3-5 min)" -> context.getString(R.string.library_category_medium)
+                                                            "Long (> 5 min)" -> context.getString(R.string.library_category_long)
+                                                            "Hi-Res Lossless" -> "Hi-Res Lossless"
+                                                            "Lossless" -> "Lossless"
+                                                            "Dolby" -> "Dolby"
+                                                            "Mono" -> context.getString(R.string.library_category_mono)
+                                                            "Stereo" -> context.getString(R.string.library_category_stereo)
+                                                            "High Quality" -> "High Quality"
+                                                            "Standard" -> "Standard"
+                                                            else -> category
+                                                        },
+                                                        style = MaterialTheme.typography.labelMedium,
+                                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                                    )
+                                                },
+                                                selected = isSelected,
+                                                leadingIcon = if (isSelected) {
+                                                    {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.Check,
+                                                            contentDescription = null,
+                                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                                        )
+                                                    }
+                                                } else null,
+                                                colors = FilterChipDefaults.filterChipColors(
+                                                    selectedContainerColor = containerColor,
+                                                    selectedLabelColor = labelColor,
+                                                    selectedLeadingIconColor = labelColor,
+                                                    containerColor = containerColor,
+                                                    labelColor = labelColor,
+                                                    iconColor = labelColor
+                                                ),
+                                                border = FilterChipDefaults.filterChipBorder(
+                                                    enabled = true,
+                                                    selected = isSelected,
+                                                    borderColor = borderColor,
+                                                    selectedBorderColor = borderColor,
+                                                    borderWidth = borderWidth
+                                                ),
+                                                shape = RoundedCornerShape(cornerRadius),
+                                                modifier = Modifier.graphicsLayer {
+                                                    scaleX = scaleAnimatable.value
+                                                    scaleY = scaleAnimatable.value
+                                                    translationX = offsetAnimatable.value
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            Box(modifier = Modifier.weight(1f)) {
+                                HorizontalPager(
+                                    state = pagerState,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                ) { page ->
                         when (tabs[page]) {
                             StreamingLibraryTab.ALBUMS -> {
                                 if (localAlbums.isEmpty()) {
@@ -776,6 +1210,8 @@ fun StreamingLibraryScreen(
                                 } else {
                                     SingleCardAlbumsContent(
                                         albums = localAlbums,
+                                        listState = albumsListState,
+                                        gridState = albumsGridState,
                                         onAlbumClick = { album ->
                                             val streamingAlbum = sortedAlbums.firstOrNull { it.id == album.id }
                                             streamingAlbum?.let {
@@ -843,7 +1279,8 @@ fun StreamingLibraryScreen(
 
                             StreamingLibraryTab.SONGS -> {
                                 SingleCardSongsContent(
-                                    songs = localSongs,
+                                    songs = filteredSongs,
+                                    listState = songsListState,
                                     albums = localAlbums,
                                     artists = localArtists,
                                     onSongClick = { localSong ->
@@ -856,9 +1293,24 @@ fun StreamingLibraryScreen(
                                             )
                                         }
                                     },
-                                    onAddToPlaylist = {},
-                                    onAddToQueue = {},
-                                    onPlayNext = {},
+                                    onAddToPlaylist = { song ->
+                                        songsToAddToPlaylist = listOf(song)
+                                        showAddToPlaylistSheet = true
+                                    },
+                                    onAddToQueue = { song ->
+                                        sortedSongsById[song.id]?.let { ss ->
+                                            if (localMusicViewModel != null) {
+                                                viewModel.addSongToQueue(ss, localMusicViewModel)
+                                            }
+                                        }
+                                    },
+                                    onPlayNext = { song ->
+                                        sortedSongsById[song.id]?.let { ss ->
+                                            if (localMusicViewModel != null) {
+                                                viewModel.playNext(ss, localMusicViewModel)
+                                            }
+                                        }
+                                    },
                                     onShowSongInfo = { song ->
                                         selectedSongForInfo = song
                                         showSongInfoSheet = true
@@ -910,7 +1362,13 @@ fun StreamingLibraryScreen(
                                     isPlaying = isPlayerPlaying,
                                     haptics = haptics,
                                     enableRatingSystem = false,
-                                    songMenuContent = { localSong, dismissMenu ->
+                                    isSelectionMode = isSelectionMode,
+                                    selectedSongIds = selectedSongIds,
+                                    multiSelectionState = multiSelectionState,
+                                    onSongLongPress = { song -> multiSelectionState.toggleSelection(song) },
+                                    onSongSelectionToggle = { song -> multiSelectionState.toggleSelection(song) },
+                                    onShowMultiSelectionSheet = { showMultiSelectionSheet = true },
+                                    songMenuContent = @Composable { localSong, dismissMenu ->
                                         val songIndex = sortedSongs.indexOfFirst { it.id == localSong.id }
                                         val resolvedArtist = sortedArtists.firstOrNull {
                                             it.name.equals(localSong.artist, ignoreCase = true)
@@ -1213,6 +1671,8 @@ fun StreamingLibraryScreen(
                             StreamingLibraryTab.ARTISTS -> {
                                 SingleCardArtistsContent(
                                     artists = localArtists,
+                                    listState = artistsListState,
+                                    gridState = artistsGridState,
                                     onArtistClick = { localArtist ->
                                         val resolvedArtist = sortedArtists.firstOrNull { it.id == localArtist.id }
                                             ?: sortedArtists.firstOrNull {
@@ -1242,55 +1702,105 @@ fun StreamingLibraryScreen(
                             }
 
                             StreamingLibraryTab.PLAYLISTS -> {
-                                Box(modifier = Modifier.fillMaxSize()) {
-                                    SingleCardPlaylistsContent(
-                                        playlists = localPlaylists,
-                                        onPlaylistClick = { localPlaylist ->
-                                            localPlaylistsById[localPlaylist.id]?.let(onNavigateToPlaylist)
-                                        },
-                                        haptics = haptics,
-                                        onCreatePlaylist = {
-                                            showCreatePlaylistDialog = true
-                                        },
-                                        appSettings = appSettings,
-                                        onRefreshClick = { viewModel.loadLibrary() }
-                                    )
-
-                                    PlaylistFabMenu(
-                                        visible = true,
-                                        expanded = showPlaylistFabMenu,
-                                        onExpandedChange = { showPlaylistFabMenu = it },
-                                        onCreatePlaylist = {
-                                            showCreatePlaylistDialog = true
-                                        },
-                                        onImportPlaylist = null,
-                                        onExportPlaylists = null,
-                                        modifier = Modifier.align(Alignment.BottomEnd),
-                                        bottomPadding = 0.dp,
-                                        haptics = haptics
-                                    )
-                                }
+                                SingleCardPlaylistsContent(
+                                    playlists = localPlaylists,
+                                    listState = playlistsListState,
+                                    gridState = playlistsGridState,
+                                    onPlaylistClick = { localPlaylist ->
+                                        localPlaylistsById[localPlaylist.id]?.let(onNavigateToPlaylist)
+                                    },
+                                    haptics = haptics,
+                                    onCreatePlaylist = {
+                                        showCreatePlaylistDialog = true
+                                    },
+                                    appSettings = appSettings,
+                                    onRefreshClick = { viewModel.loadLibrary() }
+                                )
                             }
                         }
                         }
-                    }
-                    }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(24.dp)
-                            .align(Alignment.TopCenter)
-                            .background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.background,
-                                        MaterialTheme.colorScheme.background.copy(alpha = 0.72f),
-                                        MaterialTheme.colorScheme.background.copy(alpha = 0.32f),
-                                        Color.Transparent
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(24.dp)
+                                .align(Alignment.TopCenter)
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.background,
+                                            MaterialTheme.colorScheme.background.copy(alpha = 0.72f),
+                                            MaterialTheme.colorScheme.background.copy(alpha = 0.32f),
+                                            Color.Transparent
+                                        )
                                     )
                                 )
+                                .zIndex(5f)
+                        )
+
+                            val bottomBarSongs = remember(activeTab, filteredSongs, localAlbums, localArtists) {
+                                when (activeTab) {
+                                    StreamingLibraryTab.SONGS -> filteredSongs
+                                    StreamingLibraryTab.ALBUMS -> localAlbums.flatMap { it.songs }
+                                    StreamingLibraryTab.ARTISTS -> localArtists.flatMap { it.songs }
+                                    else -> emptyList()
+                                }
+                            }
+
+                            LibraryBottomBar(
+                                isVisible = isBottomBarVisible,
+                                activeTab = activeTab?.name ?: "",
+                                songs = bottomBarSongs,
+                                isSelectionMode = isSelectionMode,
+                                selectedSongsCount = selectedSongs.size,
+                                explorerPath = null,
+                                onSelectToggle = {
+                                    if (bottomBarSongs.isNotEmpty()) {
+                                        multiSelectionState.toggleSelection(bottomBarSongs.first())
+                                    }
+                                },
+                                onCancelSelection = {
+                                    multiSelectionState.clearSelection()
+                                },
+                                onPlayAll = {
+                                    val queue = mapLocalSongsToStreaming(bottomBarSongs)
+                                    if (queue.isNotEmpty()) {
+                                        viewModel.playQueue(queue = queue, startIndex = 0, shuffle = false)
+                                    }
+                                },
+                                onShuffle = {
+                                    val queue = mapLocalSongsToStreaming(bottomBarSongs)
+                                    if (queue.isNotEmpty()) {
+                                        viewModel.playQueue(
+                                            queue = queue,
+                                            startIndex = if (queue.size > 1) random.nextInt(queue.size) else 0,
+                                            shuffle = true
+                                        )
+                                    }
+                                },
+                                onPlaySelected = {
+                                    if (selectedSongs.isNotEmpty()) {
+                                        val queue = mapLocalSongsToStreaming(selectedSongs)
+                                        if (queue.isNotEmpty()) {
+                                            viewModel.playQueue(queue = queue, startIndex = 0, shuffle = false)
+                                        }
+                                        multiSelectionState.clearSelection()
+                                    }
+                                },
+                                onMoreActions = {
+                                    showMultiSelectionSheet = true
+                                },
+                                onBack = {},
+                                modifier = with(this@Box) {
+                                    Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .zIndex(10f)
+                                }
                             )
-                    )
+                        }
+                    }
+                }
+                    }
                 }
             }
             }
@@ -1364,14 +1874,147 @@ fun StreamingLibraryScreen(
                 isStreamingMode = true
             )
         }
+
+        if (showMultiSelectionSheet && selectedSongs.isNotEmpty()) {
+            MultiSelectionBottomSheet(
+                selectedSongs = selectedSongs,
+                favoriteSongIds = streamingFavoriteSongIds,
+                onDismiss = {
+                    showMultiSelectionSheet = false
+                    multiSelectionState.clearSelection()
+                },
+                onPlayAll = {
+                    val queue = mapLocalSongsToStreaming(selectedSongs)
+                    if (queue.isNotEmpty()) {
+                        viewModel.playQueue(queue = queue, startIndex = 0, shuffle = false)
+                    }
+                    multiSelectionState.clearSelection()
+                },
+                onAddToQueue = {
+                    if (localMusicViewModel != null) {
+                        val queue = mapLocalSongsToStreaming(selectedSongs)
+                        queue.forEach { song -> viewModel.addSongToQueue(song, localMusicViewModel) }
+                    }
+                    multiSelectionState.clearSelection()
+                },
+                onPlayNext = {
+                    if (localMusicViewModel != null) {
+                        val queue = mapLocalSongsToStreaming(selectedSongs)
+                        queue.reversed().forEach { song -> viewModel.playNext(song, localMusicViewModel) }
+                    }
+                    multiSelectionState.clearSelection()
+                },
+                onAddToPlaylist = {
+                    songsToAddToPlaylist = selectedSongs
+                    showMultiSelectionSheet = false
+                    showAddToPlaylistSheet = true
+                },
+                onToggleLikeAll = { shouldLike ->
+                    val queue = mapLocalSongsToStreaming(selectedSongs)
+                    queue.forEach { song ->
+                        val isFavorited = streamingFavoriteSongIds.contains(song.id)
+                        if (shouldLike != isFavorited) {
+                            if (shouldLike) {
+                                viewModel.likeSong(song)
+                            } else {
+                                viewModel.unlikeSong(song)
+                            }
+                        }
+                    }
+                    multiSelectionState.clearSelection()
+                },
+                onGoToAlbum = {
+                    selectedSongs.firstOrNull()?.let { song ->
+                        openAlbumForSong(song)
+                    }
+                    multiSelectionState.clearSelection()
+                },
+                onGoToArtist = {
+                    selectedSongs.firstOrNull()?.let { localSong ->
+                        val resolvedArtist = sortedArtists.firstOrNull {
+                            it.name.equals(localSong.artist, ignoreCase = true)
+                        }
+                        resolvedArtist?.let(onNavigateToArtist)
+                    }
+                    multiSelectionState.clearSelection()
+                },
+                onAddToBlacklist = null,
+                onBatchEditTags = null
+            )
+        }
+
+        if (showAddToPlaylistSheet && songsToAddToPlaylist.isNotEmpty()) {
+            AddToPlaylistBottomSheet(
+                song = songsToAddToPlaylist.first(),
+                playlists = localPlaylists,
+                onDismissRequest = {
+                    showAddToPlaylistSheet = false
+                    songsToAddToPlaylist = emptyList()
+                    multiSelectionState.clearSelection()
+                },
+                onAddToPlaylist = { localPlaylist ->
+                    val streamingSongs = mapLocalSongsToStreaming(songsToAddToPlaylist)
+                    val resolvedPlaylist = savedPlaylists.firstOrNull { it.id == localPlaylist.id }
+                    if (resolvedPlaylist != null && streamingSongs.isNotEmpty()) {
+                        if (streamingSongs.size == 1) {
+                            viewModel.addSongToPlaylist(resolvedPlaylist.id, streamingSongs.first())
+                        } else {
+                            viewModel.addSongsToPlaylist(resolvedPlaylist.id, streamingSongs)
+                        }
+                        android.widget.Toast.makeText(
+                            context,
+                            "Added ${streamingSongs.size} songs to ${resolvedPlaylist.name}",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    showAddToPlaylistSheet = false
+                    songsToAddToPlaylist = emptyList()
+                    multiSelectionState.clearSelection()
+                },
+                onCreateNewPlaylist = {
+                    showCreatePlaylistDialog = true
+                }
+            )
+        }
     }
 
     // Create Playlist Dialog for streaming
     if (showCreatePlaylistDialog) {
         chromahub.rhythm.app.shared.presentation.components.dialogs.CreatePlaylistDialog(
-            onDismiss = { showCreatePlaylistDialog = false },
+            onDismiss = {
+                showCreatePlaylistDialog = false
+                songsToAddToPlaylist = emptyList()
+                multiSelectionState.clearSelection()
+            },
             onConfirm = { name ->
-                viewModel.createPlaylist(name)
+                if (songsToAddToPlaylist.isEmpty()) {
+                    viewModel.createPlaylist(name)
+                } else {
+                    scope.launch {
+                        val currentPlaylists = savedPlaylists.map { it.id }.toSet()
+                        viewModel.createPlaylist(name)
+                        // Wait for the new playlist to appear in savedPlaylists
+                        var newPlaylist: StreamingPlaylist? = null
+                        for (i in 0..20) {
+                            kotlinx.coroutines.delay(200)
+                            newPlaylist = savedPlaylists.firstOrNull { it.id !in currentPlaylists }
+                            if (newPlaylist != null) break
+                        }
+                        newPlaylist?.let { playlist ->
+                            val streamingSongs = mapLocalSongsToStreaming(songsToAddToPlaylist)
+                            if (streamingSongs.isNotEmpty()) {
+                                viewModel.addSongsToPlaylist(playlist.id, streamingSongs)
+                                android.widget.Toast.makeText(
+                                    context,
+                                    "Added ${streamingSongs.size} songs to ${playlist.name}",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                        songsToAddToPlaylist = emptyList()
+                        multiSelectionState.clearSelection()
+                    }
+                }
                 showCreatePlaylistDialog = false
             }
         )
@@ -1649,83 +2292,6 @@ private fun StreamingLibrarySectionHeader(
     }
 }
 
-@Composable
-private fun StreamingSortMenuItem(
-    label: String,
-    icon: MaterialSymbolIcon,
-    ascending: Boolean,
-    selected: Boolean,
-    onClick: () -> Unit,
-    showSortDirection: Boolean = true
-) {
-    Surface(
-        color = if (selected) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.82f)
-        } else {
-            Color.Transparent
-        },
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 2.dp)
-    ) {
-        DropdownMenuItem(
-            text = {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                    color = if (selected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    }
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = if (selected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-                )
-            },
-            trailingIcon = {
-                when {
-                    selected -> Icon(
-                        imageVector = RhythmIcons.Check,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-
-                    showSortDirection -> Icon(
-                        imageVector = if (ascending) {
-                            RhythmIcons.ArrowUpward
-                        } else {
-                            RhythmIcons.ArrowDownward
-                        },
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            },
-            onClick = onClick,
-            colors = MenuDefaults.itemColors(
-                textColor = if (selected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                }
-            )
-        )
-    }
-}
 
 @Composable
 private fun StreamingLibraryDisconnectedCard(
@@ -2308,5 +2874,343 @@ private fun formatCompactDuration(durationMs: Long): String {
     val minutes = totalSeconds / 60L
     val seconds = totalSeconds % 60L
     return if (minutes > 0L) "${minutes}m ${seconds}s" else "${seconds}s"
+}
+
+private enum class BottomBarButtonType { NONE, LEFT, CENTER, RIGHT }
+
+@Composable
+private fun LibraryBottomBar(
+    isVisible: Boolean,
+    activeTab: String,
+    songs: List<Song>,
+    isSelectionMode: Boolean,
+    selectedSongsCount: Int,
+    explorerPath: String?,
+    onSelectToggle: () -> Unit,
+    onCancelSelection: () -> Unit,
+    onPlayAll: () -> Unit,
+    onShuffle: () -> Unit,
+    onPlaySelected: () -> Unit,
+    onMoreActions: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    bottomPadding: androidx.compose.ui.unit.Dp = 12.dp
+) {
+    val context = LocalContext.current
+    val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
+
+    var lastClickedButton by remember { mutableStateOf<BottomBarButtonType?>(null) }
+    LaunchedEffect(lastClickedButton) {
+        if (lastClickedButton != null && lastClickedButton != BottomBarButtonType.NONE) {
+            delay(220L)
+            lastClickedButton = BottomBarButtonType.NONE
+        }
+    }
+
+    val leftScale by animateFloatAsState(
+        targetValue = if (lastClickedButton == BottomBarButtonType.LEFT) 0.92f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "leftScale"
+    )
+    val centerScale by animateFloatAsState(
+        targetValue = if (lastClickedButton == BottomBarButtonType.CENTER) 0.94f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "centerScale"
+    )
+    val rightScale by animateFloatAsState(
+        targetValue = if (lastClickedButton == BottomBarButtonType.RIGHT) 0.92f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "rightScale"
+    )
+
+    val centerWeightTarget = when (lastClickedButton) {
+        BottomBarButtonType.CENTER -> 1.25f
+        BottomBarButtonType.RIGHT -> 0.75f
+        else -> 1f
+    }
+    val rightWeightTarget = when (lastClickedButton) {
+        BottomBarButtonType.RIGHT -> 1.25f
+        BottomBarButtonType.CENTER -> 0.75f
+        else -> 1f
+    }
+
+    val centerWeight by animateFloatAsState(
+        targetValue = centerWeightTarget,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "centerWeight"
+    )
+    val rightWeight by animateFloatAsState(
+        targetValue = rightWeightTarget,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "rightWeight"
+    )
+
+    val centerCornerTarget = if (lastClickedButton == BottomBarButtonType.CENTER) 14.dp else 24.dp
+    val rightCornerTarget = if (lastClickedButton == BottomBarButtonType.RIGHT) 14.dp else 24.dp
+
+    val centerCorner by animateDpAsState(
+        targetValue = centerCornerTarget,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "centerCorner"
+    )
+    val rightCorner by animateDpAsState(
+        targetValue = rightCornerTarget,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "rightCorner"
+    )
+
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = slideInVertically(
+            initialOffsetY = { it * 2 },
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        ) + scaleIn(
+            initialScale = 0.8f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        ) + fadeIn(animationSpec = tween(300)),
+        exit = slideOutVertically(
+            targetOffsetY = { it * 2 },
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMedium
+            )
+        ) + scaleOut(
+            targetScale = 0.8f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMedium
+            )
+        ) + fadeOut(animationSpec = tween(200)),
+        modifier = modifier
+    ) {
+        Surface(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .padding(bottom = bottomPadding),
+            shape = RoundedCornerShape(32.dp),
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            tonalElevation = 6.dp,
+            shadowElevation = 4.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val showLeftButton = isSelectionMode || activeTab == "SONGS" || (activeTab == "EXPLORER" && explorerPath != null)
+                
+                AnimatedVisibility(
+                    visible = showLeftButton,
+                    enter = fadeIn() + expandHorizontally(),
+                    exit = fadeOut() + shrinkHorizontally()
+                ) {
+                    FilledTonalIconButton(
+                        onClick = {
+                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                            lastClickedButton = BottomBarButtonType.LEFT
+                            if (isSelectionMode) {
+                                onCancelSelection()
+                            } else if (activeTab == "EXPLORER") {
+                                onBack()
+                            } else {
+                                onSelectToggle()
+                            }
+                        },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .graphicsLayer {
+                                scaleX = leftScale
+                                scaleY = leftScale
+                            },
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    ) {
+                        AnimatedContent(
+                            targetState = isSelectionMode,
+                            transitionSpec = {
+                                fadeIn(animationSpec = tween(150)) togetherWith fadeOut(animationSpec = tween(150))
+                            },
+                            label = "leftButtonIcon"
+                        ) { selectionMode ->
+                            if (selectionMode) {
+                                Icon(
+                                    imageVector = RhythmIcons.Close,
+                                    contentDescription = "Cancel selection",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = if (activeTab == "EXPLORER") RhythmIcons.Back else MaterialSymbolIcon("check_box"),
+                                    contentDescription = if (activeTab == "EXPLORER") "Back" else "Select songs",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                val centerButtonWeightTarget = if (isSelectionMode) 1f else centerWeightTarget
+                val animatedCenterWeight by animateFloatAsState(
+                    targetValue = centerButtonWeightTarget,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    ),
+                    label = "animatedCenterWeight"
+                )
+
+                Button(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        lastClickedButton = BottomBarButtonType.CENTER
+                        if (isSelectionMode) {
+                            onPlaySelected()
+                        } else {
+                            onPlayAll()
+                        }
+                    },
+                    modifier = Modifier
+                        .height(48.dp)
+                        .weight(animatedCenterWeight)
+                        .graphicsLayer {
+                            scaleX = centerScale
+                            scaleY = centerScale
+                        },
+                    shape = RoundedCornerShape(centerCorner),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    AnimatedContent(
+                        targetState = isSelectionMode,
+                        transitionSpec = {
+                            (fadeIn(animationSpec = tween(150, delayMillis = 75)) +
+                                    scaleIn(initialScale = 0.8f, animationSpec = tween(150, delayMillis = 75)))
+                                .togetherWith(fadeOut(animationSpec = tween(75)))
+                        },
+                        label = "centerButtonContent"
+                    ) { selectionMode ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = RhythmIcons.Play,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = if (selectionMode) "Play ($selectedSongsCount)" else "Play All",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+
+                val rightButtonWeightTarget = if (isSelectionMode) 0.001f else rightWeightTarget
+                val animatedRightWeight by animateFloatAsState(
+                    targetValue = rightButtonWeightTarget,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    ),
+                    label = "animatedRightWeight"
+                )
+
+                Button(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                        lastClickedButton = BottomBarButtonType.RIGHT
+                        if (isSelectionMode) {
+                            onMoreActions()
+                        } else {
+                            onShuffle()
+                        }
+                    },
+                    modifier = Modifier
+                        .height(48.dp)
+                        .then(
+                            if (isSelectionMode) {
+                                Modifier.width(48.dp)
+                            } else {
+                                Modifier.weight(animatedRightWeight.coerceAtLeast(0.001f))
+                            }
+                        )
+                        .graphicsLayer {
+                            scaleX = rightScale
+                            scaleY = rightScale
+                        },
+                    shape = RoundedCornerShape(if (isSelectionMode) 24.dp else rightCorner),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    ),
+                    contentPadding = if (isSelectionMode) PaddingValues(0.dp) else PaddingValues(horizontal = 16.dp)
+                ) {
+                    AnimatedContent(
+                        targetState = isSelectionMode,
+                        transitionSpec = {
+                            (fadeIn(animationSpec = tween(150, delayMillis = 75)) +
+                                    scaleIn(initialScale = 0.8f, animationSpec = tween(150, delayMillis = 75)))
+                                .togetherWith(fadeOut(animationSpec = tween(75)))
+                        },
+                        label = "rightButtonContent"
+                    ) { selectionMode ->
+                        if (selectionMode) {
+                            Icon(
+                                imageVector = RhythmIcons.More,
+                                contentDescription = "More actions",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = RhythmIcons.Shuffle,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Shuffle",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 

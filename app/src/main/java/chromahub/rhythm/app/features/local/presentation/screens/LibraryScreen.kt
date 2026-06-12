@@ -67,6 +67,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -91,6 +92,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.Surface
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
@@ -98,6 +100,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortMenuContent
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortOption
 import android.net.Uri
 import android.util.Log
 import chromahub.rhythm.app.util.PlaylistImportExportUtils
@@ -212,6 +216,7 @@ import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
@@ -365,16 +370,31 @@ fun LibraryScreen(
         contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
         if (result.resultCode == android.app.Activity.RESULT_OK) {
-            musicViewModel.completeMetadataWriteAfterPermission(
-                onSuccess = {
-                    Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
-                },
-                onError = { errorMessage ->
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                }
-            )
+            if (musicViewModel.pendingBatchWriteRequest.value != null) {
+                musicViewModel.completeBatchMetadataWriteAfterPermission(
+                    onSuccess = {
+                        Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                )
+            } else {
+                musicViewModel.completeMetadataWriteAfterPermission(
+                    onSuccess = {
+                        Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                )
+            }
         } else {
-            musicViewModel.cancelPendingMetadataWrite()
+            if (musicViewModel.pendingBatchWriteRequest.value != null) {
+                musicViewModel.cancelPendingBatchMetadataWrite()
+            } else {
+                musicViewModel.cancelPendingMetadataWrite()
+            }
             Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, Toast.LENGTH_LONG).show()
         }
     }
@@ -389,7 +409,10 @@ fun LibraryScreen(
     var showRestartDialog by remember { mutableStateOf(false) }
     
     var explorerReloadTrigger by remember { mutableStateOf(0) }
+    var explorerPath by rememberSaveable { mutableStateOf<String?>(null) }
+    var explorerFolderSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
     var selectedSong by remember { mutableStateOf<Song?>(null) }
+    var songsToAddToPlaylist by remember { mutableStateOf<List<Song>>(emptyList()) }
     var selectedAlbum by remember { mutableStateOf<Album?>(null) }
     val addToPlaylistSheetState = rememberModalBottomSheetState()
     val albumBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
@@ -410,6 +433,72 @@ fun LibraryScreen(
     }
     
     val favoriteSongs by musicViewModel.favoriteSongs.collectAsState()
+    var selectedCategory by rememberSaveable { mutableStateOf("All") }
+    val breadcrumbScrollState = rememberLazyListState()
+
+    val ratingDistribution = remember(appSettings) { appSettings.getRatingDistribution() }
+    val sortedSongs = remember(songs, sortOrder) {
+        when (sortOrder) {
+            MusicViewModel.SortOrder.TITLE_ASC -> songs.sortedBy { it.title.lowercase() }
+            MusicViewModel.SortOrder.TITLE_DESC -> songs.sortedByDescending { it.title.lowercase() }
+            MusicViewModel.SortOrder.ARTIST_ASC -> songs.sortedBy { it.artist.lowercase() }
+            MusicViewModel.SortOrder.ARTIST_DESC -> songs.sortedByDescending { it.artist.lowercase() }
+            MusicViewModel.SortOrder.ALBUM_ASC -> songs.sortedBy { it.album.lowercase() }
+            MusicViewModel.SortOrder.ALBUM_DESC -> songs.sortedByDescending { it.album.lowercase() }
+            MusicViewModel.SortOrder.DATE_ADDED_ASC -> songs.sortedBy { it.dateAdded }
+            MusicViewModel.SortOrder.DATE_ADDED_DESC -> songs.sortedByDescending { it.dateAdded }
+            MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> songs.sortedBy { it.dateModified }
+            MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> songs.sortedByDescending { it.dateModified }
+        }
+    }
+    
+    val preparedSongs = remember(sortedSongs) {
+        sortedSongs.distinctBy { "${it.id}_${it.uri}" }
+    }
+
+    val categories = remember(preparedSongs, favoriteSongs, enableRatingSystem) {
+        calculateSongCategories(
+            preparedSongs = preparedSongs,
+            favoriteSongs = favoriteSongs.toSet(),
+            enableRatingSystem = enableRatingSystem,
+            ratingDistribution = ratingDistribution
+        )
+    }
+
+    val filteredSongs = remember(preparedSongs, selectedCategory, favoriteSongs) {
+        filterSongsByCategory(
+            preparedSongs = preparedSongs,
+            selectedCategory = selectedCategory,
+            favoriteSongs = favoriteSongs.toSet(),
+            ratedSongIdsProvider = { rating -> appSettings.getSongsByRating(rating).toSet() }
+        )
+    }
+
+    val sortedAlbums = remember(albums, sortOrder) {
+        when (sortOrder) {
+            MusicViewModel.SortOrder.TITLE_ASC -> albums.sortedBy { it.title.lowercase() }
+            MusicViewModel.SortOrder.TITLE_DESC -> albums.sortedByDescending { it.title.lowercase() }
+            MusicViewModel.SortOrder.ARTIST_ASC -> albums.sortedBy { it.artist.lowercase() }
+            MusicViewModel.SortOrder.ARTIST_DESC -> albums.sortedByDescending { it.artist.lowercase() }
+            MusicViewModel.SortOrder.ALBUM_ASC -> albums.sortedBy { it.title.lowercase() }
+            MusicViewModel.SortOrder.ALBUM_DESC -> albums.sortedByDescending { it.title.lowercase() }
+            MusicViewModel.SortOrder.DATE_ADDED_ASC -> albums.sortedBy { it.songs.minOfOrNull { s -> s.dateAdded } ?: 0L }
+            MusicViewModel.SortOrder.DATE_ADDED_DESC -> albums.sortedByDescending { it.songs.minOfOrNull { s -> s.dateAdded } ?: 0L }
+            MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> albums.sortedBy { it.dateModified }
+            MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> albums.sortedByDescending { it.dateModified }
+        }
+    }
+
+    var artistSortOption by rememberSaveable { mutableStateOf(ArtistSortOption.NAME_ASC) }
+    val sortedArtists = remember(artists, artistSortOption) {
+        val baseList = artists.distinctBy { it.id }
+        when (artistSortOption) {
+            ArtistSortOption.NAME_ASC -> baseList.sortedBy { it.name.lowercase() }
+            ArtistSortOption.NAME_DESC -> baseList.sortedByDescending { it.name.lowercase() }
+            ArtistSortOption.TRACK_COUNT_DESC -> baseList.sortedByDescending { it.numberOfTracks }
+            ArtistSortOption.ALBUM_COUNT_DESC -> baseList.sortedByDescending { it.numberOfAlbums }
+        }
+    }
     
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     
@@ -458,9 +547,30 @@ fun LibraryScreen(
 
     if (showCreatePlaylistDialog) {
         CreatePlaylistDialog(
-            onDismiss = { showCreatePlaylistDialog = false },
+            onDismiss = { 
+                showCreatePlaylistDialog = false
+                songsToAddToPlaylist = emptyList()
+            },
             onConfirm = { name ->
-                onCreatePlaylist(name)
+                if (songsToAddToPlaylist.isEmpty()) {
+                    onCreatePlaylist(name)
+                } else {
+                    scope.launch {
+                        val currentPlaylists = playlists.map { it.id }.toSet()
+                        onCreatePlaylist(name)
+                        // Wait for the new playlist to appear in the list
+                        var newPlaylist: Playlist? = null
+                        for (i in 0..15) {
+                            kotlinx.coroutines.delay(100)
+                            newPlaylist = playlists.firstOrNull { it.id !in currentPlaylists }
+                            if (newPlaylist != null) break
+                        }
+                        newPlaylist?.let { playlist ->
+                            musicViewModel.addSongsToPlaylist(songsToAddToPlaylist, playlist.id)
+                        }
+                        songsToAddToPlaylist = emptyList()
+                    }
+                }
                 showCreatePlaylistDialog = false
             }
         )
@@ -513,18 +623,31 @@ fun LibraryScreen(
         )
     }
     
-    if (showAddToPlaylistSheet && selectedSong != null) {
+    if (showAddToPlaylistSheet && songsToAddToPlaylist.isNotEmpty()) {
         AddToPlaylistBottomSheet(
-            song = selectedSong!!,
+            song = songsToAddToPlaylist.first(),
             playlists = playlists,
-            onDismissRequest = { showAddToPlaylistSheet = false },
+            onDismissRequest = { 
+                showAddToPlaylistSheet = false
+                songsToAddToPlaylist = emptyList()
+            },
             onAddToPlaylist = { playlist ->
-                onAddSongToPlaylist(selectedSong!!, playlist.id)
+                if (songsToAddToPlaylist.size == 1) {
+                    onAddSongToPlaylist(songsToAddToPlaylist.first(), playlist.id)
+                } else {
+                    val (successCount, playlistName) = musicViewModel.addSongsToPlaylist(songsToAddToPlaylist, playlist.id)
+                    Toast.makeText(
+                        context,
+                        "Added $successCount songs to $playlistName",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
                 scope.launch {
                     addToPlaylistSheetState.hide()
                 }.invokeOnCompletion {
                     if (!addToPlaylistSheetState.isVisible) {
                         showAddToPlaylistSheet = false
+                        songsToAddToPlaylist = emptyList()
                     }
                 }
             },
@@ -542,23 +665,27 @@ fun LibraryScreen(
         )
     }
     
-    if (showAlbumBottomSheet && selectedAlbum != null) {
+    val activeAlbum = remember(albums, selectedAlbum) {
+        selectedAlbum?.let { sel -> albums.find { it.id == sel.id } } ?: selectedAlbum
+    }
+
+    if (showAlbumBottomSheet && activeAlbum != null) {
         AlbumBottomSheet(
-            album = selectedAlbum!!,
+            album = activeAlbum,
             onDismiss = { showAlbumBottomSheet = false },
             onSongClick = onSongClick,
             onPlayAll = { songs ->
                 if (songs.isNotEmpty()) {
                     onPlayQueue(songs)
                 } else {
-                    selectedAlbum?.let { onAlbumClick(it) }
+                    activeAlbum.let { onAlbumClick(it) }
                 }
             },
             onShufflePlay = { songs ->
                 if (songs.isNotEmpty()) {
                     onShuffleQueue(songs)
                 } else {
-                    selectedAlbum?.let { onAlbumShufflePlay(it) }
+                    activeAlbum.let { onAlbumShufflePlay(it) }
                 }
             },
             onAddToQueue = onAddToQueue,
@@ -588,7 +715,37 @@ fun LibraryScreen(
                 appSettings.addToBlacklist(song.id)
             },
             currentSong = currentSong,
-            isPlaying = isPlaying
+            isPlaying = isPlaying,
+            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
+                musicViewModel.batchEditMetadata(
+                    songs = activeAlbum.songs,
+                    artist = artist,
+                    album = title,
+                    genre = null,
+                    year = null,
+                    artworkUri = artworkUri,
+                    removeArtwork = removeArtwork,
+                    onProgress = onProgress,
+                    onComplete = { successCount, failCount ->
+                        onComplete(successCount, failCount)
+                    },
+                    onPermissionRequired = { pendingRequest ->
+                        try {
+                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
+                                pendingRequest.intentSender
+                            ).build()
+                            writePermissionLauncher.launch(intentSenderRequest)
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                context,
+                                "Failed to request permission: ${e.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            musicViewModel.cancelPendingBatchMetadataWrite()
+                        }
+                    }
+                )
+            }
         )
     }
     
@@ -677,7 +834,7 @@ fun LibraryScreen(
                 multiSelectionState.clearSelection()
             },
             onAddToPlaylist = {
-                selectedSong = selectedSongs.firstOrNull()
+                songsToAddToPlaylist = selectedSongs
                 showMultiSelectionSheet = false
                 showAddToPlaylistSheet = true
             },
@@ -724,6 +881,21 @@ fun LibraryScreen(
                         val msg = if (failCount == 0) "Updated $successCount songs"
                                   else "Updated $successCount songs, $failCount failed"
                         android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                    onPermissionRequired = { pendingRequest ->
+                        try {
+                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
+                                pendingRequest.intentSender
+                            ).build()
+                            writePermissionLauncher.launch(intentSenderRequest)
+                        } catch (e: Exception) {
+                            android.widget.Toast.makeText(
+                                context,
+                                "Failed to request permission: ${e.message}",
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                            musicViewModel.cancelPendingBatchMetadataWrite()
+                        }
                     }
                 )
             }
@@ -900,6 +1072,7 @@ fun LibraryScreen(
                             val sortText = when (sortOrder) {
                                 MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.TITLE_DESC -> context.getString(R.string.library_sort_title)
                                 MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ARTIST_DESC -> context.getString(R.string.library_sort_artist)
+                                MusicViewModel.SortOrder.ALBUM_ASC, MusicViewModel.SortOrder.ALBUM_DESC -> context.getString(R.string.library_sort_album)
                                 MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_ADDED_DESC -> context.getString(R.string.library_sort_date_added)
                                 MusicViewModel.SortOrder.DATE_MODIFIED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> context.getString(R.string.library_sort_date_modified)
                             }
@@ -913,8 +1086,8 @@ fun LibraryScreen(
                             Spacer(modifier = Modifier.width(4.dp))
                             
                             val sortArrowIcon = when (sortOrder) {
-                                MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> RhythmIcons.ArrowUpward
-                                MusicViewModel.SortOrder.TITLE_DESC, MusicViewModel.SortOrder.ARTIST_DESC, MusicViewModel.SortOrder.DATE_ADDED_DESC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> RhythmIcons.ArrowDownward
+                                MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ALBUM_ASC, MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> RhythmIcons.ArrowUpward
+                                MusicViewModel.SortOrder.TITLE_DESC, MusicViewModel.SortOrder.ARTIST_DESC, MusicViewModel.SortOrder.ALBUM_DESC, MusicViewModel.SortOrder.DATE_ADDED_DESC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> RhythmIcons.ArrowDownward
                             }
                             
                             Icon(
@@ -927,92 +1100,69 @@ fun LibraryScreen(
                         DropdownMenu(
                             expanded = showSortMenu,
                             onDismissRequest = { showSortMenu = false },
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier.padding(4.dp)
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier
+                                .widthIn(min = 250.dp)
+                                .background(MaterialTheme.colorScheme.surfaceContainer)
+                                .padding(8.dp)
                         ) {
-                            MusicViewModel.SortOrder.values().forEach { order ->
-                                val isSelected = (pendingSortOrder ?: sortOrder) == order
-                                Surface(
-                                    color = if (isSelected) 
-                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-                                    else 
-                                        Color.Transparent,
-                                    shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { 
-                                            Text(
-                                                text = when (order) {
-                                                    MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.TITLE_DESC -> context.getString(R.string.library_sort_title)
-                                                    MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ARTIST_DESC -> context.getString(R.string.library_sort_artist)
-                                                    MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_ADDED_DESC -> context.getString(R.string.library_sort_date_added)
-                                                    MusicViewModel.SortOrder.DATE_MODIFIED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> context.getString(R.string.library_sort_date_modified)
-                                                },
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                color = if (isSelected)
-                                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                                else
-                                                    MaterialTheme.colorScheme.onSurface
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = when (order) {
-                                                    MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.TITLE_DESC -> RhythmIcons.SortByAlpha
-                                                    MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ARTIST_DESC -> RhythmIcons.ArtistFilled
-                                                    MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_ADDED_DESC -> RhythmIcons.DateRange
-                                                    MusicViewModel.SortOrder.DATE_MODIFIED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> MaterialSymbolIcon("edit_calendar", filled = true)
-                                                },
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp),
-                                                tint = if (isSelected)
-                                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                                else
-                                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        },
-                                        trailingIcon = {
-                                            when (order) {
-                                                MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> {
-                                                    Icon(
-                                                        imageVector = RhythmIcons.ArrowUpward,
-                                                        contentDescription = stringResource(R.string.content_desc_ascending),
-                                                        modifier = Modifier.size(18.dp),
-                                                        tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                                                    )
-                                                }
-                                                MusicViewModel.SortOrder.TITLE_DESC, MusicViewModel.SortOrder.ARTIST_DESC, MusicViewModel.SortOrder.DATE_ADDED_DESC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> {
-                                                    Icon(
-                                                        imageVector = RhythmIcons.ArrowDownward,
-                                                        contentDescription = stringResource(R.string.content_desc_descending),
-                                                        modifier = Modifier.size(18.dp),
-                                                        tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                                                    )
-                                                }
-                                                else -> {}
-                                            }
-                                        },
-                                        onClick = {
-                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                            pendingSortOrder = order
-                                            showSortMenu = false
-                                            if (sortOrder != order) {
-                                                musicViewModel.setSortOrder(order)
-                                            }
-                                        },
-                                        colors = androidx.compose.material3.MenuDefaults.itemColors(
-                                            textColor = if (isSelected) 
-                                                MaterialTheme.colorScheme.onPrimaryContainer 
-                                            else 
-                                                MaterialTheme.colorScheme.onSurface
-                                        )
-                                    )
+                            val activeSortOrder = pendingSortOrder ?: sortOrder
+                            val currentKey = when (activeSortOrder) {
+                                MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.TITLE_DESC -> "TITLE"
+                                MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ARTIST_DESC -> "ARTIST"
+                                MusicViewModel.SortOrder.ALBUM_ASC, MusicViewModel.SortOrder.ALBUM_DESC -> "ALBUM"
+                                MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_ADDED_DESC -> "DATE_ADDED"
+                                MusicViewModel.SortOrder.DATE_MODIFIED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> "DATE_MODIFIED"
+                            }
+                            val isAscending = when (activeSortOrder) {
+                                MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ALBUM_ASC, MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> true
+                                else -> false
+                            }
+                            
+                            fun getSortOrder(key: String, asc: Boolean): MusicViewModel.SortOrder {
+                                return when (key) {
+                                    "TITLE" -> if (asc) MusicViewModel.SortOrder.TITLE_ASC else MusicViewModel.SortOrder.TITLE_DESC
+                                    "ARTIST" -> if (asc) MusicViewModel.SortOrder.ARTIST_ASC else MusicViewModel.SortOrder.ARTIST_DESC
+                                    "ALBUM" -> if (asc) MusicViewModel.SortOrder.ALBUM_ASC else MusicViewModel.SortOrder.ALBUM_DESC
+                                    "DATE_ADDED" -> if (asc) MusicViewModel.SortOrder.DATE_ADDED_ASC else MusicViewModel.SortOrder.DATE_ADDED_DESC
+                                    "DATE_MODIFIED" -> if (asc) MusicViewModel.SortOrder.DATE_MODIFIED_ASC else MusicViewModel.SortOrder.DATE_MODIFIED_DESC
+                                    else -> MusicViewModel.SortOrder.TITLE_ASC
                                 }
                             }
+                            
+                            val sortOptions = listOf(
+                                RhythmSortOption("TITLE", context.getString(R.string.library_sort_title), RhythmIcons.SortByAlpha),
+                                RhythmSortOption("ARTIST", context.getString(R.string.library_sort_artist), RhythmIcons.ArtistFilled),
+                                RhythmSortOption("ALBUM", context.getString(R.string.library_sort_album), RhythmIcons.AlbumFilled),
+                                RhythmSortOption("DATE_ADDED", context.getString(R.string.library_sort_date_added), RhythmIcons.DateRange),
+                                RhythmSortOption("DATE_MODIFIED", context.getString(R.string.library_sort_date_modified), MaterialSymbolIcon("edit_calendar", filled = true))
+                            ).filter { option ->
+                                !(currentTabId == "ALBUMS" && option.key == "ALBUM")
+                            }
+                            
+                            RhythmSortMenuContent(
+                                selectedKey = currentKey,
+                                isAscending = isAscending,
+                                options = sortOptions,
+                                onKeySelected = { key ->
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    val newOrder = getSortOrder(key, isAscending)
+                                    pendingSortOrder = newOrder
+                                    showSortMenu = false
+                                    if (sortOrder != newOrder) {
+                                        musicViewModel.setSortOrder(newOrder)
+                                    }
+                                },
+                                onDirectionToggled = { asc ->
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    val newOrder = getSortOrder(currentKey, asc)
+                                    pendingSortOrder = newOrder
+                                    showSortMenu = false
+                                    if (sortOrder != newOrder) {
+                                        musicViewModel.setSortOrder(newOrder)
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -1079,80 +1229,62 @@ fun LibraryScreen(
                                 )
                             }
                             
-                            DropdownMenu(
-                                expanded = showPlaylistSortMenu,
-                                onDismissRequest = { showPlaylistSortMenu = false },
-                                shape = RoundedCornerShape(16.dp),
-                                modifier = Modifier.padding(4.dp)
-                            ) {
-                                LibraryPlaylistSortOrder.values().forEach { order ->
-                                    val isSelected = playlistSortOrder == order
-                                    Surface(
-                                        color = if (isSelected) 
-                                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-                                        else 
-                                            Color.Transparent,
-                                        shape = RoundedCornerShape(12.dp),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 8.dp, vertical = 2.dp)
-                                    ) {
-                                        DropdownMenuItem(
-                                            text = { 
-                                                Text(
-                                                    text = when (order) {
-                                                        LibraryPlaylistSortOrder.NAME_ASC, LibraryPlaylistSortOrder.NAME_DESC -> context.getString(R.string.sort_name)
-                                                        LibraryPlaylistSortOrder.DATE_CREATED_ASC, LibraryPlaylistSortOrder.DATE_CREATED_DESC -> context.getString(R.string.sort_date_created)
-                                                        LibraryPlaylistSortOrder.SONG_COUNT_ASC, LibraryPlaylistSortOrder.SONG_COUNT_DESC -> context.getString(R.string.sort_song_count)
-                                                    },
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                    color = if (isSelected)
-                                                        MaterialTheme.colorScheme.onPrimaryContainer
-                                                    else
-                                                        MaterialTheme.colorScheme.onSurface
-                                                )
-                                            },
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = when (order) {
-                                                        LibraryPlaylistSortOrder.NAME_ASC, LibraryPlaylistSortOrder.NAME_DESC -> RhythmIcons.SortByAlpha
-                                                        LibraryPlaylistSortOrder.DATE_CREATED_ASC, LibraryPlaylistSortOrder.DATE_CREATED_DESC -> RhythmIcons.DateRange
-                                                        LibraryPlaylistSortOrder.SONG_COUNT_ASC, LibraryPlaylistSortOrder.SONG_COUNT_DESC -> RhythmIcons.MusicNote
-                                                    },
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(18.dp),
-                                                    tint = if (isSelected)
-                                                        MaterialTheme.colorScheme.onPrimaryContainer
-                                                    else
-                                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            },
-                                            trailingIcon = {
-                                                Icon(
-                                                    imageVector = if (order.name.endsWith("_ASC")) RhythmIcons.ArrowUpward else RhythmIcons.ArrowDownward,
-                                                    contentDescription = if (order.name.endsWith("_ASC")) context.getString(R.string.library_sort_ascending) else context.getString(R.string.library_sort_descending),
-                                                    modifier = Modifier.size(18.dp),
-                                                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            },
-                                            onClick = {
-                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                                showPlaylistSortMenu = false
-                                                if (playlistSortOrder != order) {
-                                                    appSettings.setPlaylistSortOrder(order.name)
-                                                }
-                                            },
-                                            colors = androidx.compose.material3.MenuDefaults.itemColors(
-                                                textColor = if (isSelected) 
-                                                    MaterialTheme.colorScheme.onPrimaryContainer 
-                                                else 
-                                                    MaterialTheme.colorScheme.onSurface
-                                            )
-                                        )
-                                    }
-                                }
-                            }
+                             DropdownMenu(
+                                 expanded = showPlaylistSortMenu,
+                                 onDismissRequest = { showPlaylistSortMenu = false },
+                                 shape = RoundedCornerShape(20.dp),
+                                 modifier = Modifier
+                                     .widthIn(min = 250.dp)
+                                     .background(MaterialTheme.colorScheme.surfaceContainer)
+                                     .padding(8.dp)
+                             ) {
+                                 val currentKey = when (playlistSortOrder) {
+                                     LibraryPlaylistSortOrder.NAME_ASC, LibraryPlaylistSortOrder.NAME_DESC -> "NAME"
+                                     LibraryPlaylistSortOrder.DATE_CREATED_ASC, LibraryPlaylistSortOrder.DATE_CREATED_DESC -> "DATE_CREATED"
+                                     LibraryPlaylistSortOrder.SONG_COUNT_ASC, LibraryPlaylistSortOrder.SONG_COUNT_DESC -> "SONG_COUNT"
+                                 }
+                                 val isAscending = when (playlistSortOrder) {
+                                     LibraryPlaylistSortOrder.NAME_ASC, LibraryPlaylistSortOrder.DATE_CREATED_ASC, LibraryPlaylistSortOrder.SONG_COUNT_ASC -> true
+                                     else -> false
+                                 }
+                                 
+                                 fun getPlaylistSortOrder(key: String, asc: Boolean): LibraryPlaylistSortOrder {
+                                     return when (key) {
+                                         "NAME" -> if (asc) LibraryPlaylistSortOrder.NAME_ASC else LibraryPlaylistSortOrder.NAME_DESC
+                                         "DATE_CREATED" -> if (asc) LibraryPlaylistSortOrder.DATE_CREATED_ASC else LibraryPlaylistSortOrder.DATE_CREATED_DESC
+                                         "SONG_COUNT" -> if (asc) LibraryPlaylistSortOrder.SONG_COUNT_ASC else LibraryPlaylistSortOrder.SONG_COUNT_DESC
+                                         else -> LibraryPlaylistSortOrder.NAME_ASC
+                                     }
+                                 }
+                                 
+                                 val playlistSortOptions = listOf(
+                                     RhythmSortOption("NAME", context.getString(R.string.sort_name), RhythmIcons.SortByAlpha),
+                                     RhythmSortOption("DATE_CREATED", context.getString(R.string.sort_date_created), RhythmIcons.DateRange),
+                                     RhythmSortOption("SONG_COUNT", context.getString(R.string.sort_song_count), RhythmIcons.MusicNote)
+                                 )
+                                 
+                                 RhythmSortMenuContent(
+                                     selectedKey = currentKey,
+                                     isAscending = isAscending,
+                                     options = playlistSortOptions,
+                                     onKeySelected = { key ->
+                                         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                         val newOrder = getPlaylistSortOrder(key, isAscending)
+                                         showPlaylistSortMenu = false
+                                         if (playlistSortOrder != newOrder) {
+                                             appSettings.setPlaylistSortOrder(newOrder.name)
+                                         }
+                                     },
+                                     onDirectionToggled = { asc ->
+                                         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                         val newOrder = getPlaylistSortOrder(currentKey, asc)
+                                         showPlaylistSortMenu = false
+                                         if (playlistSortOrder != newOrder) {
+                                             appSettings.setPlaylistSortOrder(newOrder.name)
+                                         }
+                                     }
+                                 )
+                             }
                         }
                     }
                 },
@@ -1366,161 +1498,329 @@ fun LibraryScreen(
                         )
                     }
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        HorizontalPager(
-                    state = pagerState,
-                    contentPadding = PaddingValues(0.dp),
-                    pageSpacing = 0.dp,
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) { page ->
-                    when (visibleTabIds.getOrNull(page)) {
-                        "SONGS" -> {
-                            val sortedSongs = remember(songs, sortOrder) {
-                                when (sortOrder) {
-                                    MusicViewModel.SortOrder.TITLE_ASC -> songs.sortedBy { it.title.lowercase() }
-                                    MusicViewModel.SortOrder.TITLE_DESC -> songs.sortedByDescending { it.title.lowercase() }
-                                    MusicViewModel.SortOrder.ARTIST_ASC -> songs.sortedBy { it.artist.lowercase() }
-                                    MusicViewModel.SortOrder.ARTIST_DESC -> songs.sortedByDescending { it.artist.lowercase() }
-                                    MusicViewModel.SortOrder.DATE_ADDED_ASC -> songs.sortedBy { it.dateAdded }
-                                    MusicViewModel.SortOrder.DATE_ADDED_DESC -> songs.sortedByDescending { it.dateAdded }
-                                    MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> songs.sortedBy { it.dateModified }
-                                    MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> songs.sortedByDescending { it.dateModified }
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        val currentTabId = visibleTabIds.getOrNull(selectedTabIndex)
+                        
+                        AnimatedVisibility(
+                            visible = currentTabId == "SONGS" || (currentTabId == "EXPLORER" && explorerPath != null),
+                            enter = expandVertically() + fadeIn(),
+                            exit = shrinkVertically() + fadeOut()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                if (currentTabId == "SONGS") {
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        items(
+                                            items = categories,
+                                            key = { it }
+                                        ) { category ->
+                                            val isSelected = selectedCategory == category
+                                            val scaleAnimatable = remember { Animatable(1f) }
+                                            val offsetAnimatable = remember { Animatable(0f) }
+                                            
+                                            LaunchedEffect(isSelected) {
+                                                if (isSelected) {
+                                                    launch {
+                                                        scaleAnimatable.animateTo(1.05f, animationSpec = tween<Float>(durationMillis = 250, easing = FastOutSlowInEasing))
+                                                        scaleAnimatable.animateTo(1f, animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing))
+                                                    }
+                                                } else {
+                                                    scaleAnimatable.snapTo(1f)
+                                                }
+                                            }
+                                            
+                                            LaunchedEffect(selectedCategory) {
+                                                if (!isSelected && selectedCategory != null) {
+                                                    val currentIndex = categories.indexOf(category)
+                                                    val selectedIndex = categories.indexOf(selectedCategory)
+                                                    if (currentIndex >= 0 && selectedIndex >= 0) {
+                                                        val distance = currentIndex - selectedIndex
+                                                        if (abs(distance) == 1) {
+                                                            val direction = if (distance > 0) 1 else -1
+                                                            val offsetValue = 8f * direction
+                                                            launch {
+                                                                offsetAnimatable.animateTo(offsetValue, animationSpec = tween<Float>(durationMillis = 250, easing = FastOutSlowInEasing))
+                                                                offsetAnimatable.animateTo(0f, animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing))
+                                                            }
+                                                        } else {
+                                                            offsetAnimatable.snapTo(0f)
+                                                        }
+                                                    }
+                                                } else {
+                                                    offsetAnimatable.snapTo(0f)
+                                                }
+                                            }
+
+                                            val containerColor by animateColorAsState(
+                                                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerLow,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                                                label = "chipContainerColor"
+                                            )
+                                            val labelColor by animateColorAsState(
+                                                targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                                                label = "chipLabelColor"
+                                            )
+                                            val borderColor by animateColorAsState(
+                                                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                                                label = "chipBorderColor"
+                                            )
+                                            val borderWidth by animateDpAsState(
+                                                targetValue = if (isSelected) 2.dp else 1.dp,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                                                label = "chipBorderWidth"
+                                            )
+                                            val cornerRadius by animateDpAsState(
+                                                targetValue = if (isSelected) 24.dp else 12.dp,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                                                label = "chipCornerRadius"
+                                            )
+
+                                            FilterChip(
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    selectedCategory = category
+                                                },
+                                                label = {
+                                                    Text(
+                                                        text = when (category) {
+                                                            "All" -> context.getString(R.string.library_category_all)
+                                                            "❤️ Favorites" -> context.getString(R.string.library_category_favorites)
+                                                            "⭐⭐⭐⭐⭐ Absolute Favorites" -> context.getString(R.string.library_category_absolute_favorites)
+                                                            "⭐⭐⭐⭐ Loved" -> context.getString(R.string.library_category_loved)
+                                                            "⭐⭐⭐ Great" -> context.getString(R.string.library_category_great)
+                                                            "⭐⭐ Good" -> context.getString(R.string.library_category_good)
+                                                            "⭐ Liked" -> context.getString(R.string.library_category_liked)
+                                                            "Short (< 3 min)" -> context.getString(R.string.library_category_short)
+                                                            "Medium (3-5 min)" -> context.getString(R.string.library_category_medium)
+                                                            "Long (> 5 min)" -> context.getString(R.string.library_category_long)
+                                                            "Hi-Res Lossless" -> "Hi-Res Lossless"
+                                                            "Lossless" -> "Lossless"
+                                                            "Dolby" -> "Dolby"
+                                                            "Mono" -> context.getString(R.string.library_category_mono)
+                                                            "Stereo" -> context.getString(R.string.library_category_stereo)
+                                                            "High Quality" -> "High Quality"
+                                                            "Standard" -> "Standard"
+                                                            else -> category
+                                                        },
+                                                        style = MaterialTheme.typography.labelMedium,
+                                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                                    )
+                                                },
+                                                selected = isSelected,
+                                                leadingIcon = if (isSelected) {
+                                                    {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.Check,
+                                                            contentDescription = null,
+                                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                                        )
+                                                    }
+                                                } else null,
+                                                colors = FilterChipDefaults.filterChipColors(
+                                                    selectedContainerColor = containerColor,
+                                                    selectedLabelColor = labelColor,
+                                                    selectedLeadingIconColor = labelColor,
+                                                    containerColor = containerColor,
+                                                    labelColor = labelColor,
+                                                    iconColor = labelColor
+                                                ),
+                                                border = FilterChipDefaults.filterChipBorder(
+                                                    enabled = true,
+                                                    selected = isSelected,
+                                                    borderColor = borderColor,
+                                                    selectedBorderColor = borderColor,
+                                                    borderWidth = borderWidth
+                                                ),
+                                                shape = RoundedCornerShape(cornerRadius),
+                                                modifier = Modifier.graphicsLayer {
+                                                    scaleX = scaleAnimatable.value
+                                                    scaleY = scaleAnimatable.value
+                                                    translationX = offsetAnimatable.value
+                                                }
+                                            )
+                                        }
+                                    }
+                                } else if (currentTabId == "EXPLORER" && explorerPath != null) {
+                                    ExplorerBreadcrumb(
+                                        path = explorerPath!!,
+                                        onNavigateTo = { newPath ->
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                            explorerPath = newPath
+                                        },
+                                        onGoHome = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                            explorerPath = null
+                                        },
+                                        scrollState = breadcrumbScrollState
+                                    )
                                 }
                             }
-                            SingleCardSongsContent(
-                                songs = sortedSongs,
-                                listState = songsListState,
-                                albums = albums,
-                                artists = artists,
-                                onSongClick = onSongClick,
-                                onAddToPlaylist = { song ->
-                                    selectedSong = song
-                                    showAddToPlaylistSheet = true
-                                },
-                                onAddToQueue = onAddToQueue,
-                                onPlayNext = { song -> musicViewModel.playNext(song) },
-                                onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
-                                favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
-                                onGoToArtist = onArtistClick,
-                                onGoToAlbum = onAlbumClick,
-                                onShowSongInfo = { song ->
-                                    selectedSong = song
-                                    showSongInfoSheet = true
-                                },
-                                onAddToBlacklist = { song ->
-                                    appSettings.addToBlacklist(song.id)
-                                },
-                                onPlayQueue = onPlayQueue,
-                                onPlayQueueFromIndex = onPlayQueueFromIndex,
-                                onShuffleQueue = onShuffleQueue,
-                                currentSong = currentSong,
-                                isPlaying = isPlaying,
-                                haptics = haptics,
-                                enableRatingSystem = enableRatingSystem,
-                                isSelectionMode = isSelectionMode,
-                                selectedSongIds = selectedSongIds,
-                                multiSelectionState = multiSelectionState,
-                                onSongLongPress = onSongLongPress,
-                                onSongSelectionToggle = onSongSelectionToggle,
-                                onShowMultiSelectionSheet = { showMultiSelectionSheet = true },
-                                onRefreshClick = onRefreshClick
-                            )
                         }
-                        "PLAYLISTS" -> SingleCardPlaylistsContent(
-                            playlists = playlists,
-                            onPlaylistClick = onPlaylistClick,
-                            listState = playlistsListState,
-                            gridState = playlistsGridState,
-                            haptics = haptics,
-                            onCreatePlaylist = { showCreatePlaylistDialog = true },
-                            onImportPlaylist = { showImportDialog = true },
-                            onExportPlaylists = { showBulkExportDialog = true },
-                            appSettings = appSettings,
-                            onRefreshClick = onRefreshClick
-                        )
-                        "ALBUMS" -> SingleCardAlbumsContent(
-                            albums = albums,
-                            onAlbumClick = onAlbumClick,
-                            listState = albumsListState,
-                            gridState = albumsGridState,
-                            onSongClick = onSongClick,
-                            onAlbumBottomSheetClick = { album ->
-                                selectedAlbum = album
-                                showAlbumBottomSheet = true
-                            },
-                            haptics = haptics,
-                            appSettings = appSettings,
-                            onPlayQueue = onPlayQueue,
-                            onShuffleQueue = onShuffleQueue,
-                            onRefreshClick = onRefreshClick
-                        )
-                        "ARTISTS" -> SingleCardArtistsContent(
-                            artists = artists,
-                            onArtistClick = { artist ->
-                                onNavigateToArtist(artist)
-                            },
-                            listState = artistsListState,
-                            gridState = artistsGridState,
-                            haptics = haptics,
-                            onPlayQueue = onPlayQueue,
-                            onShuffleQueue = onShuffleQueue,
-                            onRefreshClick = onRefreshClick
-                        )
-                        "EXPLORER" -> SingleCardExplorerContent(
-                            songs = songs,
-                            onSongClick = onSongClick,
-                            listState = explorerListState,
-                            onAddToPlaylist = { song ->
-                                selectedSong = song
-                                showAddToPlaylistSheet = true
-                            },
-                            onAddToQueue = onAddToQueue,
-                            onShowSongInfo = { song ->
-                                selectedSong = song
-                                showSongInfoSheet = true
-                            },
-                            onPlayQueue = onPlayQueue,
-                            onPlayQueueFromIndex = onPlayQueueFromIndex,
-                            onShuffleQueue = onShuffleQueue,
-                            haptics = haptics,
-                            appSettings = appSettings,
-                            reloadTrigger = explorerReloadTrigger,
-                            onCreatePlaylist = onCreatePlaylist,
-                            musicViewModel = musicViewModel,
-                            currentSong = currentSong,
-                            isPlaying = isPlaying,
-                            enableRatingSystem = enableRatingSystem
-                        )
-                    }
-                }
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(24.dp)
-                                .align(Alignment.TopCenter)
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.background,
-                                            MaterialTheme.colorScheme.background.copy(alpha = 0.72f),
-                                            MaterialTheme.colorScheme.background.copy(alpha = 0.32f),
-                                            Color.Transparent
+                        Box(modifier = Modifier.weight(1f)) {
+                            HorizontalPager(
+                                state = pagerState,
+                                contentPadding = PaddingValues(0.dp),
+                                pageSpacing = 0.dp,
+                                modifier = Modifier.fillMaxSize()
+                            ) { page ->
+                                when (visibleTabIds.getOrNull(page)) {
+                                    "SONGS" -> {
+                                        SingleCardSongsContent(
+                                            songs = filteredSongs,
+                                            listState = songsListState,
+                                            albums = albums,
+                                            artists = artists,
+                                            onSongClick = onSongClick,
+                                            onAddToPlaylist = { song ->
+                                                songsToAddToPlaylist = listOf(song)
+                                                showAddToPlaylistSheet = true
+                                            },
+                                            onAddToQueue = onAddToQueue,
+                                            onPlayNext = { song -> musicViewModel.playNext(song) },
+                                            onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
+                                            favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
+                                            onGoToArtist = onArtistClick,
+                                            onGoToAlbum = onAlbumClick,
+                                            onShowSongInfo = { song ->
+                                                selectedSong = song
+                                                showSongInfoSheet = true
+                                            },
+                                            onAddToBlacklist = { song ->
+                                                appSettings.addToBlacklist(song.id)
+                                            },
+                                            onPlayQueue = onPlayQueue,
+                                            onPlayQueueFromIndex = onPlayQueueFromIndex,
+                                            onShuffleQueue = onShuffleQueue,
+                                            currentSong = currentSong,
+                                            isPlaying = isPlaying,
+                                            haptics = haptics,
+                                            enableRatingSystem = enableRatingSystem,
+                                            isSelectionMode = isSelectionMode,
+                                            selectedSongIds = selectedSongIds,
+                                            multiSelectionState = multiSelectionState,
+                                            onSongLongPress = onSongLongPress,
+                                            onSongSelectionToggle = onSongSelectionToggle,
+                                            onShowMultiSelectionSheet = { showMultiSelectionSheet = true },
+                                            onRefreshClick = onRefreshClick,
+                                            bottomPadding = 0.dp
+                                        )
+                                    }
+                                    "PLAYLISTS" -> SingleCardPlaylistsContent(
+                                        playlists = playlists,
+                                        onPlaylistClick = onPlaylistClick,
+                                        listState = playlistsListState,
+                                        gridState = playlistsGridState,
+                                        haptics = haptics,
+                                        onCreatePlaylist = { showCreatePlaylistDialog = true },
+                                        onImportPlaylist = { showImportDialog = true },
+                                        onExportPlaylists = { showBulkExportDialog = true },
+                                        appSettings = appSettings,
+                                        onRefreshClick = onRefreshClick,
+                                        bottomPadding = 0.dp
+                                    )
+                                    "ALBUMS" -> {
+                                        SingleCardAlbumsContent(
+                                            albums = sortedAlbums,
+                                            onAlbumClick = onAlbumClick,
+                                            listState = albumsListState,
+                                            gridState = albumsGridState,
+                                            onSongClick = onSongClick,
+                                            onAlbumBottomSheetClick = { album ->
+                                                selectedAlbum = album
+                                                showAlbumBottomSheet = true
+                                            },
+                                            haptics = haptics,
+                                            appSettings = appSettings,
+                                            onPlayQueue = onPlayQueue,
+                                            onShuffleQueue = onShuffleQueue,
+                                            onRefreshClick = onRefreshClick,
+                                            bottomPadding = 0.dp
+                                        )
+                                    }
+                                    "ARTISTS" -> SingleCardArtistsContent(
+                                        artists = artists,
+                                        onArtistClick = { artist ->
+                                            onNavigateToArtist(artist)
+                                        },
+                                        listState = artistsListState,
+                                        gridState = artistsGridState,
+                                        haptics = haptics,
+                                        onPlayQueue = onPlayQueue,
+                                        onShuffleQueue = onShuffleQueue,
+                                        onRefreshClick = onRefreshClick,
+                                        bottomPadding = 0.dp,
+                                        initialSortOption = artistSortOption,
+                                        onSortOptionChange = { artistSortOption = it }
+                                    )
+                                    "EXPLORER" -> SingleCardExplorerContent(
+                                        songs = songs,
+                                        onSongClick = onSongClick,
+                                        listState = explorerListState,
+                                        onAddToPlaylist = { song ->
+                                            selectedSong = song
+                                            showAddToPlaylistSheet = true
+                                        },
+                                        onAddToQueue = onAddToQueue,
+                                        onShowSongInfo = { song ->
+                                            selectedSong = song
+                                            showSongInfoSheet = true
+                                        },
+                                        onPlayQueue = onPlayQueue,
+                                        onPlayQueueFromIndex = onPlayQueueFromIndex,
+                                        onShuffleQueue = onShuffleQueue,
+                                        haptics = haptics,
+                                        appSettings = appSettings,
+                                        reloadTrigger = explorerReloadTrigger,
+                                        onCreatePlaylist = onCreatePlaylist,
+                                        musicViewModel = musicViewModel,
+                                        currentSong = currentSong,
+                                        isPlaying = isPlaying,
+                                        enableRatingSystem = enableRatingSystem,
+                                        currentPath = explorerPath,
+                                        onPathChanged = { explorerPath = it },
+                                        onFolderSongsChanged = { explorerFolderSongs = it },
+                                        bottomPadding = 0.dp
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(24.dp)
+                                    .align(Alignment.TopCenter)
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.background,
+                                                MaterialTheme.colorScheme.background.copy(alpha = 0.72f),
+                                                MaterialTheme.colorScheme.background.copy(alpha = 0.32f),
+                                                Color.Transparent
+                                            )
                                         )
                                     )
-                                )
-                                .zIndex(5f)
-                        )
-                        
+                                    .zIndex(5f)
+                            )
                         androidx.compose.animation.AnimatedVisibility(
                             visible = isMediaScanning,
                             enter = fadeIn() + expandVertically(),
                             exit = fadeOut() + shrinkVertically(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.TopCenter)
-                                .padding(top = 8.dp)
+                            modifier = with(this@Box) {
+                                Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.TopCenter)
+                                    .padding(top = 8.dp)
+                            }
                         ) {
                             Card(
                                 modifier = Modifier
@@ -1579,7 +1879,7 @@ fun LibraryScreen(
                                         }
                                     }
                                     
-                                    CircularProgressIndicator(
+                                                                    CircularProgressIndicator(
                                         modifier = Modifier.size(20.dp),
                                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                                         strokeWidth = 2.dp
@@ -1587,10 +1887,72 @@ fun LibraryScreen(
                                 }
                             }
                         }
+
+                        val activeTabId = visibleTabIds.getOrNull(pagerState.currentPage) ?: ""
+                        val isBottomBarVisible = when (activeTabId) {
+                            "SONGS" -> songs.isNotEmpty()
+                            "ALBUMS" -> albums.isNotEmpty()
+                            "ARTISTS" -> false
+                            "EXPLORER" -> explorerPath != null || explorerFolderSongs.isNotEmpty()
+                            else -> false
+                        }
+                        
+                        val bottomBarSongs = remember(activeTabId, filteredSongs, sortedAlbums, sortedArtists, explorerFolderSongs) {
+                            when (activeTabId) {
+                                "SONGS" -> filteredSongs
+                                "ALBUMS" -> sortedAlbums.flatMap { it.songs }
+                                "ARTISTS" -> sortedArtists.flatMap { it.songs }
+                                "EXPLORER" -> explorerFolderSongs
+                                else -> emptyList()
+                            }
+                        }
+                        
+                        LibraryBottomBar(
+                            isVisible = isBottomBarVisible,
+                            activeTab = activeTabId,
+                            songs = bottomBarSongs,
+                            isSelectionMode = isSelectionMode,
+                            selectedSongsCount = selectedSongs.size,
+                            explorerPath = explorerPath,
+                            onSelectToggle = {
+                                if (bottomBarSongs.isNotEmpty()) {
+                                    multiSelectionState.toggleSelection(bottomBarSongs.first())
+                                }
+                            },
+                            onCancelSelection = {
+                                multiSelectionState.clearSelection()
+                            },
+                            onPlayAll = {
+                                if (bottomBarSongs.isNotEmpty()) onPlayQueue(bottomBarSongs)
+                            },
+                            onShuffle = {
+                                if (bottomBarSongs.isNotEmpty()) onShuffleQueue(bottomBarSongs)
+                            },
+                            onPlaySelected = {
+                                if (selectedSongs.isNotEmpty()) {
+                                    onPlayQueueFromIndex(selectedSongs, 0)
+                                    multiSelectionState.clearSelection()
+                                }
+                            },
+                            onMoreActions = {
+                                showMultiSelectionSheet = true
+                            },
+                            onBack = {
+                                explorerPath?.let { path ->
+                                    explorerPath = getParentPath(path)
+                                }
+                            },
+                            modifier = with(this@Box) {
+                                Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .zIndex(10f)
+                            }
+                        )
                     }
                 }
             }
         }
+    }
     }
     
     if (showBulkExportDialog && onExportAllPlaylists != null) {
@@ -1795,18 +2157,19 @@ fun SingleCardSongsContent(
     onSongSelectionToggle: (Song) -> Unit = {},
     onShowMultiSelectionSheet: () -> Unit = {},
     onRefreshClick: (() -> Unit)? = null,
+    bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     songMenuContent: (@Composable (song: Song, dismissMenu: () -> Unit) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val appSettings = remember { AppSettings.getInstance(context) }
     val groupByAlbumArtist by appSettings.groupByAlbumArtist.collectAsState()
-    var selectedCategory by remember { mutableStateOf("All") }
     
     val selectedSongs = multiSelectionState?.selectedSongs?.collectAsState()?.value ?: emptyList()
     
-    var isLoading by remember { mutableStateOf(true) }
-    var preparedSongs by remember { mutableStateOf(songs) }
-    var categories by remember { mutableStateOf<List<String>>(listOf("All")) }
+    val isLoading = false
+    val preparedSongs = remember(songs) {
+        songs.distinctBy { "${it.id}_${it.uri}" }
+    }
     
     val splitArtistNames: (String) -> List<String> = remember {
         { artistName ->
@@ -1886,239 +2249,6 @@ fun SingleCardSongsContent(
         }
     }
     
-    fun isLosslessAudio(song: Song): Boolean {
-        val codec = song.codec?.uppercase() ?: ""
-
-        if (codec.isNotEmpty()) {
-            val isLossyCodec = codec.contains("MP3") || codec.contains("AAC") ||
-                              codec.contains("OGG") || codec.contains("OPUS") ||
-                              codec.contains("VORBIS") || (codec.contains("WMA") && !codec.contains("LOSSLESS"))
-
-            if (isLossyCodec) return false
-
-            val isLosslessCodec = codec in listOf("ALAC", "FLAC", "PCM", "WAV", "APE", "DSD", "TRUEHD", "DOLBY ATMOS", "DTS-HD MA", "AIFF", "WV", "TAK", "TTA") ||
-                                 codec.contains("LOSSLESS", ignoreCase = true) ||
-                                 codec.contains("APPLE LOSSLESS", ignoreCase = true)
-
-            if (isLosslessCodec) return true
-        }
-
-        val uri = song.uri.toString()
-        val isLosslessExtension = uri.endsWith(".flac", ignoreCase = true) ||
-                                  uri.endsWith(".wav", ignoreCase = true) ||
-                                  uri.endsWith(".alac", ignoreCase = true) ||
-                                  uri.endsWith(".ape", ignoreCase = true) ||
-                                  uri.endsWith(".aiff", ignoreCase = true) ||
-                                  uri.endsWith(".aif", ignoreCase = true) ||
-                                  uri.endsWith(".dsd", ignoreCase = true) ||
-                                  uri.endsWith(".wv", ignoreCase = true) ||
-                                  uri.endsWith(".tta", ignoreCase = true) ||
-                                  uri.endsWith(".tak", ignoreCase = true)
-
-        if (isLosslessExtension) return true
-
-        return false
-    }
-
-    fun isHiResLossless(song: Song): Boolean {
-        if (!isLosslessAudio(song)) {
-            return false
-        }
-
-        val sampleRate = song.sampleRate ?: 0
-        val bitrate = song.bitrate ?: 0
-        val channels = song.channels ?: 2
-
-        if (sampleRate < 48000) {
-            return false
-        }
-
-        if (sampleRate >= 88200) {
-            return true
-        }
-
-        if (bitrate > 0 && sampleRate > 0 && channels > 0) {
-            val bitrateKbps = bitrate / 1000
-            val calculatedBitDepth = (bitrateKbps * 1000) / (sampleRate * channels)
-            if (calculatedBitDepth >= 18) {
-                return true
-            }
-        }
-
-        if (bitrate >= 2000000 && sampleRate >= 48000) {
-            return true
-        }
-
-        return false
-    }
-    
-    fun isRegularLossless(song: Song): Boolean {
-        val lossless = isLosslessAudio(song)
-        if (!lossless) return false
-        
-        val hiRes = isHiResLossless(song)
-        if (hiRes) {
-            return false
-        }
-        
-        return true
-    }
-
-    fun isDolbyOrSurround(song: Song): Boolean {
-        val codec = song.codec?.uppercase() ?: ""
-        return (song.channels ?: 2) > 2 ||
-               codec.contains("AC-3") ||
-               codec.contains("E-AC-3") ||
-               codec.contains("DOLBY") ||
-               codec.contains("TRUEHD") ||
-               codec.contains("ATMOS") ||
-               codec.contains("DTS")
-    }
-
-    LaunchedEffect(songs, favoriteSongs, enableRatingSystem) {
-        isLoading = true
-        val result = withContext(Dispatchers.Default) {
-            val allCategories = mutableListOf("All")
-
-            android.util.Log.d("SongsTab", "Recomputing categories for ${songs.size} songs")
-
-        val favoriteSongsList = songs.filter { it.id in favoriteSongs }
-        if (favoriteSongsList.isNotEmpty()) {
-            allCategories.add("❤️ Favorites")
-            }
-
-
-            val hiResLosslessSongs = songs.filter { isHiResLossless(it) && !isDolbyOrSurround(it) }
-            android.util.Log.d("SongsTab", "Found ${hiResLosslessSongs.size} Hi-Res Lossless songs")
-            if (hiResLosslessSongs.isNotEmpty()) allCategories.add("Hi-Res Lossless")
-
-            val regularLosslessSongs = songs.filter { isRegularLossless(it) && !isDolbyOrSurround(it) }
-            android.util.Log.d("SongsTab", "Found ${regularLosslessSongs.size} Lossless (CD Quality) songs")
-            if (regularLosslessSongs.isNotEmpty()) allCategories.add("Lossless")
-
-            val dolbySongs = songs.filter { isDolbyOrSurround(it) }
-            android.util.Log.d("SongsTab", "Found ${dolbySongs.size} Dolby/Surround songs")
-            if (dolbySongs.isNotEmpty()) allCategories.add("Dolby")
-            
-            val stereoSongs = songs.filter { song ->
-                (song.channels ?: 2) == 2 && !isDolbyOrSurround(song)
-            }
-            android.util.Log.d("SongsTab", "Found ${stereoSongs.size} Stereo songs")
-            
-            val monoSongs = songs.filter { song ->
-                (song.channels ?: 2) == 1
-            }
-            android.util.Log.d("SongsTab", "Found ${monoSongs.size} Mono songs")
-            if (monoSongs.isNotEmpty()) allCategories.add("Mono")
-            
-            if (songs.isNotEmpty()) {
-                val sampleSong = songs.first()
-                android.util.Log.d("SongsTab", "Sample song metadata: ${sampleSong.title} - bitrate=${sampleSong.bitrate}, sampleRate=${sampleSong.sampleRate}, channels=${sampleSong.channels}, codec=${sampleSong.codec}")
-            }
-
-            if (enableRatingSystem) {
-                val appSettings = chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context)
-                val ratingDistribution = appSettings.getRatingDistribution()
-                
-                if ((ratingDistribution[5] ?: 0) > 0) {
-                    allCategories.add("⭐⭐⭐⭐⭐ Absolute Favorites")
-                }
-                if ((ratingDistribution[4] ?: 0) > 0) {
-                    allCategories.add("⭐⭐⭐⭐ Loved")
-                }
-                if ((ratingDistribution[3] ?: 0) > 0) {
-                    allCategories.add("⭐⭐⭐ Great")
-                }
-                if ((ratingDistribution[2] ?: 0) > 0) {
-                    allCategories.add("⭐⭐ Good")
-                }
-                if ((ratingDistribution[1] ?: 0) > 0) {
-                    allCategories.add("⭐ Liked")
-                }
-            }
-
-            val highQualitySongs = songs.filter { song ->
-                val bitrate = song.bitrate ?: 0
-                bitrate >= 320000 && !isLosslessAudio(song) && !isDolbyOrSurround(song)
-            }
-            if (highQualitySongs.isNotEmpty()) allCategories.add("High Quality")
-
-            val standardSongs = songs.filter { song ->
-                val bitrate = song.bitrate ?: 0
-                bitrate in 128000..319999 && !isLosslessAudio(song) && !isDolbyOrSurround(song)
-            }
-            if (standardSongs.isNotEmpty()) allCategories.add("Standard")
-
-            val shortSongs = songs.filter { it.duration < 3 * 60 * 1000 }
-            if (shortSongs.isNotEmpty()) allCategories.add("Short (< 3 min)")
-
-            val mediumSongs = songs.filter { it.duration in (3 * 60 * 1000)..(5 * 60 * 1000) }
-            if (mediumSongs.isNotEmpty()) allCategories.add("Medium (3-5 min)")
-
-            val longSongs = songs.filter { it.duration > 5 * 60 * 1000 }
-            if (longSongs.isNotEmpty()) allCategories.add("Long (> 5 min)")
-
-            allCategories
-        }
-        categories = result
-        preparedSongs = songs.distinctBy { "${it.id}_${it.uri}" }
-        isLoading = false
-    }
-
-    var filteredSongs by remember { mutableStateOf<List<Song>>(songs) }
-    
-    LaunchedEffect(preparedSongs, selectedCategory, favoriteSongs) {
-        filteredSongs = withContext(Dispatchers.Default) {
-            when (selectedCategory) {
-                "All" -> preparedSongs
-                "❤️ Favorites" -> preparedSongs.filter { it.id in favoriteSongs }
-                
-                "⭐⭐⭐⭐⭐ Absolute Favorites" -> {
-                    val ratedSongIds = chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context).getSongsByRating(5)
-                    preparedSongs.filter { it.id in ratedSongIds }
-                }
-                "⭐⭐⭐⭐ Loved" -> {
-                    val ratedSongIds = chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context).getSongsByRating(4)
-                    preparedSongs.filter { it.id in ratedSongIds }
-                }
-                "⭐⭐⭐ Great" -> {
-                    val ratedSongIds = chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context).getSongsByRating(3)
-                    preparedSongs.filter { it.id in ratedSongIds }
-                }
-                "⭐⭐ Good" -> {
-                    val ratedSongIds = chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context).getSongsByRating(2)
-                    preparedSongs.filter { it.id in ratedSongIds }
-                }
-                "⭐ Liked" -> {
-                    val ratedSongIds = chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context).getSongsByRating(1)
-                    preparedSongs.filter { it.id in ratedSongIds }
-                }
-                
-                "Short (< 3 min)" -> preparedSongs.filter { it.duration < 3 * 60 * 1000 }
-                "Medium (3-5 min)" -> preparedSongs.filter { it.duration in (3 * 60 * 1000)..(5 * 60 * 1000) }
-                "Long (> 5 min)" -> preparedSongs.filter { it.duration > 5 * 60 * 1000 }
-
-                "Hi-Res Lossless" -> preparedSongs.filter { isHiResLossless(it) && !isDolbyOrSurround(it) }
-                "Lossless" -> preparedSongs.filter { isRegularLossless(it) && !isDolbyOrSurround(it) }
-                "Dolby" -> preparedSongs.filter { isDolbyOrSurround(it) }
-                "Stereo" -> preparedSongs.filter { (it.channels ?: 2) == 2 && !isDolbyOrSurround(it) }
-                "Mono" -> preparedSongs.filter { (it.channels ?: 2) == 1 }
-                
-                "High Quality" -> preparedSongs.filter { song ->
-                    val bitrate = song.bitrate ?: 0
-                    bitrate >= 320000 && !isLosslessAudio(song) && !isDolbyOrSurround(song)
-                }
-
-                "Standard" -> preparedSongs.filter { song ->
-                    val bitrate = song.bitrate ?: 0
-                    bitrate in 128000..319999 && !isLosslessAudio(song) && !isDolbyOrSurround(song)
-                }
-
-                else -> preparedSongs
-            }
-        }
-    }
-    
     if (isLoading && preparedSongs.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -2154,339 +2284,72 @@ fun SingleCardSongsContent(
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
-                bottom = 16.dp
+                top = 16.dp,
+                bottom = bottomPadding + 80.dp
             ),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            item {
-                AnimatedContent(
-                    targetState = isSelectionMode,
-                    transitionSpec = {
-                        (fadeIn() + slideInVertically { it / 2 }) togetherWith
-                                (fadeOut() + slideOutVertically { -it / 2 })
-                    },
-                    label = "SectionHeaderAnimation"
-                ) { isInSelectionMode ->
-                    if (isInSelectionMode) {
-                        ExpressiveSelectionHeader(
-                            selectedCount = selectedSongs.size,
-                            totalCount = filteredSongs.size,
-                            onClearSelection = {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                multiSelectionState?.clearSelection()
-                            }
-                        ) {
-                            ExpressiveButtonGroup(
-                                modifier = Modifier.weight(1f),
-                                style = ButtonGroupStyle.Filled
-                            ) {
-                                ExpressiveGroupButton(
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                        onPlayQueueFromIndex(selectedSongs, 0)
-                                        multiSelectionState?.clearSelection()
-                                    },
-                                    isStart = true,
-                                    isEnd = false,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Icon(imageVector = RhythmIcons.Play, contentDescription = null, modifier = Modifier.size(18.dp))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(stringResource(R.string.cd_play), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
-                                }
-
-                                ExpressiveGroupButton(
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                        onShuffleQueue(selectedSongs)
-                                        multiSelectionState?.clearSelection()
-                                    },
-                                    isStart = false,
-                                    isEnd = true
-                                ) {
-                                    Icon(imageVector = RhythmIcons.Shuffle, contentDescription = stringResource(R.string.libraryscreen_shuffle_selected), modifier = Modifier.size(20.dp))
-                                }
-                            }
-
-                            FilledTonalIconButton(
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                    val allAreLiked = selectedSongs.all { favoriteSongs.contains(it.id) }
-                                    selectedSongs.forEach { onToggleFavorite(it) }
-                                    val msg = if (allAreLiked) {
-                                        context.getString(R.string.library_removed_from_favorites, selectedSongs.size)
-                                    } else {
-                                        context.getString(R.string.library_added_to_favorites, selectedSongs.size)
-                                    }
-                                    android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
-                                },
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                val allAreLiked = selectedSongs.all { favoriteSongs.contains(it.id) }
-                                Icon(
-                                    imageVector = if (allAreLiked) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
-                                    contentDescription = if (allAreLiked) context.getString(R.string.library_unlike_all) else context.getString(R.string.library_like_all),
-                                    tint = if (allAreLiked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-
-                            FilledTonalIconButton(
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                    onShowMultiSelectionSheet()
-                                },
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Icon(imageVector = RhythmIcons.More, contentDescription = stringResource(R.string.libraryscreen_more_actions))
-                            }
-                        }
-                    } else {
-                        ExpressiveSectionHeader(
-                            title = context.getString(R.string.library_your_music),
-                            countText = context.getString(R.string.library_tracks_count_format, filteredSongs.size, preparedSongs.size),
-                            icon = RhythmIcons.Relax,
-                            countIcon = RhythmIcons.MusicNote
-                        ) {
-                            if (filteredSongs.isNotEmpty()) {
-                                ExpressiveFilledIconButton(
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                        onShuffleQueue(filteredSongs)
-                                    },
-                                    modifier = Modifier.size(56.dp),
-                                    shape = ExpressiveShapes.SquircleMedium,
-                                    colors = IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                    )
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Shuffle,
-                                        contentDescription = context.getString(R.string.cd_shuffle),
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            if (categories.size > 1) {
-                stickyHeader {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = Color.Transparent
-                        ) {
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                contentPadding = PaddingValues(horizontal = 5.dp, vertical = 4.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                items(
-                                    items = categories,
-                                    key = { it }
-                                ) { category ->
-                                    val isSelected = selectedCategory == category
-                                    
-                                    val scaleAnimatable = remember { Animatable(1f) }
-                                    val offsetAnimatable = remember { Animatable(0f) }
-                                    
-                                    LaunchedEffect(isSelected) {
-                                        if (isSelected) {
-                                            launch {
-                                                scaleAnimatable.animateTo(1.05f, animationSpec = tween<Float>(durationMillis = 250, easing = FastOutSlowInEasing))
-                                                scaleAnimatable.animateTo(1f, animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing))
-                                            }
-                                        } else {
-                                            scaleAnimatable.snapTo(1f)
-                                        }
-                                    }
-                                    
-                                    LaunchedEffect(selectedCategory) {
-                                        if (!isSelected && selectedCategory != null) {
-                                            val currentIndex = categories.indexOf(category)
-                                            val selectedIndex = categories.indexOf(selectedCategory)
-                                            if (currentIndex >= 0 && selectedIndex >= 0) {
-                                                val distance = currentIndex - selectedIndex
-                                                if (abs(distance) == 1) {
-                                                    val direction = if (distance > 0) 1 else -1
-                                                    val offsetValue = 8f * direction
-                                                    launch {
-                                                        offsetAnimatable.animateTo(offsetValue, animationSpec = tween<Float>(durationMillis = 250, easing = FastOutSlowInEasing))
-                                                        offsetAnimatable.animateTo(0f, animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing))
-                                                    }
-                                                } else {
-                                                    offsetAnimatable.snapTo(0f)
-                                                }
-                                            }
-                                        } else {
-                                            offsetAnimatable.snapTo(0f)
-                                        }
-                                    }
-
-                                    val containerColor by animateColorAsState(
-                                        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerLow,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessLow
-                                        ),
-                                        label = "chipContainerColor"
-                                    )
-                                    val labelColor by animateColorAsState(
-                                        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessLow
-                                        ),
-                                        label = "chipLabelColor"
-                                    )
-                                    val borderColor by animateColorAsState(
-                                        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
-                                            alpha = 0.6f
-                                        ),
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessLow
-                                        ),
-                                        label = "chipBorderColor"
-                                    )
-                                    val borderWidth by animateDpAsState(
-                                        targetValue = if (isSelected) 2.dp else 1.dp,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessLow
-                                        ),
-                                        label = "chipBorderWidth"
-                                    )
-
-                                    FilterChip(
-                                        onClick = {
-                                            HapticUtils.performHapticFeedback(
-                                                context,
-                                                haptics,
-                                                HapticType.HEAVY
-                                            )
-                                            selectedCategory = category
-                                        },
-                                        label = {
-                                            Text(
-                                                text = when (category) {
-                                                    "All" -> context.getString(R.string.library_category_all)
-                                                    "❤️ Favorites" -> context.getString(R.string.library_category_favorites)
-                                                    "⭐⭐⭐⭐⭐ Absolute Favorites" -> context.getString(R.string.library_category_absolute_favorites)
-                                                    "⭐⭐⭐⭐ Loved" -> context.getString(R.string.library_category_loved)
-                                                    "⭐⭐⭐ Great" -> context.getString(R.string.library_category_great)
-                                                    "⭐⭐ Good" -> context.getString(R.string.library_category_good)
-                                                    "⭐ Liked" -> context.getString(R.string.library_category_liked)
-                                                    "Short (< 3 min)" -> context.getString(R.string.library_category_short)
-                                                    "Medium (3-5 min)" -> context.getString(R.string.library_category_medium)
-                                                    "Long (> 5 min)" -> context.getString(R.string.library_category_long)
-                                                    "Hi-Res Lossless" -> "Hi-Res Lossless"
-                                                    "Lossless" -> "Lossless"
-                                                    "Dolby" -> "Dolby"
-                                                    "Mono" -> context.getString(R.string.library_category_mono)
-                                                    "Stereo" -> context.getString(R.string.library_category_stereo)
-                                                    "High Quality" -> "High Quality"
-                                                    "Standard" -> "Standard"
-                                                    else -> category
-                                                },
-                                                style = MaterialTheme.typography.labelMedium,
-                                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-                                            )
-                                        },
-                                        selected = isSelected,
-                                        colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = containerColor,
-                                            selectedLabelColor = labelColor,
-                                            containerColor = containerColor,
-                                            labelColor = labelColor
-                                        ),
-                                        border = FilterChipDefaults.filterChipBorder(
-                                            enabled = true,
-                                            selected = isSelected,
-                                            borderColor = borderColor,
-                                            selectedBorderColor = borderColor,
-                                            borderWidth = borderWidth
-                                        ),
-                                        shape = RoundedCornerShape(50.dp),
-                                        modifier = Modifier.graphicsLayer {
-                                            scaleX = scaleAnimatable.value
-                                            scaleY = scaleAnimatable.value
-                                            translationX = offsetAnimatable.value
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
             itemsIndexed(
-                items = filteredSongs,
+                items = preparedSongs,
                 key = { _, song -> "song_${song.id}_${song.uri}" },
                 contentType = { _, _ -> "song" }
             ) { index, song ->
-                    AnimateIn(modifier = Modifier.animateItem()) {
-                        val isSelected = selectedSongIds.contains(song.id)
-                        val selectionIndex = multiSelectionState?.getSelectionIndex(song.id)
-                        
-                        LibrarySongItemWrapper(
-                            song = song,
-                            onClick = {
-                                if (isSelectionMode) {
-                                    onSongSelectionToggle(song)
+                AnimateIn(modifier = Modifier.animateItem()) {
+                    val isSelected = selectedSongIds.contains(song.id)
+                    val selectionIndex = multiSelectionState?.getSelectionIndex(song.id)
+                    
+                    LibrarySongItemWrapper(
+                        song = song,
+                        onClick = {
+                            if (isSelectionMode) {
+                                onSongSelectionToggle(song)
+                            } else {
+                                val songIndex = preparedSongs.indexOf(song)
+                                if (songIndex >= 0) {
+                                    onPlayQueueFromIndex(preparedSongs, songIndex)
                                 } else {
-                                    val songIndex = filteredSongs.indexOf(song)
-                                    if (songIndex >= 0) {
-                                        onPlayQueueFromIndex(filteredSongs, songIndex)
-                                    } else {
-                                        onSongClick(song)
-                                    }
+                                    onSongClick(song)
                                 }
-                            },
-                            onMoreClick = { onAddToPlaylist(song) },
-                            onAddToQueue = { onAddToQueue(song) },
-                            onPlayNext = { onPlayNext(song) },
-                            onToggleFavorite = { onToggleFavorite(song) },
-                            isFavorite = favoriteSongs.contains(song.id),
-                            onGoToArtist = { 
-                                val artist = if (groupByAlbumArtist) {
-                                    val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
-                                    val songArtistNames = if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
-                                        splitArtistNames(explicitAlbumArtist)
-                                    } else {
-                                        splitArtistNames(song.artist)
-                                    }
-                                    songArtistNames.firstNotNullOfOrNull { name ->
-                                        artists.find { it.name.equals(name, ignoreCase = true) }
-                                    }
+                            }
+                        },
+                        onMoreClick = { onAddToPlaylist(song) },
+                        onAddToQueue = { onAddToQueue(song) },
+                        onPlayNext = { onPlayNext(song) },
+                        onToggleFavorite = { onToggleFavorite(song) },
+                        isFavorite = favoriteSongs.contains(song.id),
+                        onGoToArtist = { 
+                            val artist = if (groupByAlbumArtist) {
+                                val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
+                                val songArtistNames = if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
+                                    splitArtistNames(explicitAlbumArtist)
                                 } else {
-                                    val songArtistNames = splitArtistNames(song.artist)
-                                    songArtistNames.firstNotNullOfOrNull { name ->
-                                        artists.find { it.name.equals(name, ignoreCase = true) }
-                                    }
+                                    splitArtistNames(song.artist)
                                 }
-                                artist?.let { onGoToArtist(it) }
-                            },
-                            onGoToAlbum = { 
-                                val album = albums.find { 
-                                    it.title.equals(song.album, ignoreCase = true) && 
-                                    it.artist.equals(song.artist, ignoreCase = true)
+                                songArtistNames.firstNotNullOfOrNull { name ->
+                                    artists.find { it.name.equals(name, ignoreCase = true) }
                                 }
-                                album?.let { onGoToAlbum(it) }
-                            },
+                            } else {
+                                val songArtistNames = splitArtistNames(song.artist)
+                                songArtistNames.firstNotNullOfOrNull { name ->
+                                    artists.find { it.name.equals(name, ignoreCase = true) }
+                                }
+                            }
+                            artist?.let { onGoToArtist(it) }
+                        },
+                        onGoToAlbum = { 
+                            val album = albums.find { 
+                                it.title.equals(song.album, ignoreCase = true) && 
+                                it.artist.equals(song.artist, ignoreCase = true)
+                            }
+                            album?.let { onGoToAlbum(it) }
+                        },
                         onShowSongInfo = { onShowSongInfo(song) },
                         onAddToBlacklist = { onAddToBlacklist(song) },
                         currentSong = currentSong,
                         isPlaying = isPlaying,
                         haptics = haptics,
                         enableRatingSystem = enableRatingSystem,
-                        itemShape = groupedLibraryItemShape(index, filteredSongs.size),
+                        itemShape = groupedLibraryItemShape(index, preparedSongs.size),
                         isSelected = isSelected,
                         isSelectionMode = isSelectionMode,
                         selectionIndex = selectionIndex,
@@ -2512,7 +2375,8 @@ fun SingleCardPlaylistsContent(
     onImportPlaylist: (() -> Unit)? = null,
     onExportPlaylists: (() -> Unit)? = null,
     appSettings: AppSettings,
-    onRefreshClick: (() -> Unit)? = null
+    onRefreshClick: (() -> Unit)? = null,
+    bottomPadding: androidx.compose.ui.unit.Dp = 0.dp
 ) {
     val context = LocalContext.current
     val playlistViewType by appSettings.playlistViewType.collectAsState()
@@ -2579,23 +2443,12 @@ fun SingleCardPlaylistsContent(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    bottom = 16.dp
+                    top = 16.dp,
+                    bottom = bottomPadding + 80.dp
                 ),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Column {
-                        ExpressiveSectionHeader(
-                            title = context.getString(R.string.library_your_playlists),
-                            countText = "${preparedPlaylists.size} ${if (preparedPlaylists.size == 1) "playlist" else "playlists"}",
-                            icon = RhythmIcons.PlaylistFilled,
-                            countIcon = RhythmIcons.MusicNote
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                }
-                
                 items(
                     items = preparedPlaylists,
                     key = { it.id },
@@ -2617,21 +2470,11 @@ fun SingleCardPlaylistsContent(
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
-                bottom = 16.dp
+                top = 16.dp,
+                bottom = bottomPadding + 80.dp
             ),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            item {
-                Column {
-                    ExpressiveSectionHeader(
-                        title = context.getString(R.string.library_your_playlists),
-                        countText = "${preparedPlaylists.size} ${if (preparedPlaylists.size == 1) "playlist" else "playlists"}",
-                        icon = RhythmIcons.PlaylistFilled,
-                        countIcon = RhythmIcons.MusicNote
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-            }
 
             itemsIndexed(
                 items = preparedPlaylists,
@@ -2664,7 +2507,8 @@ fun SingleCardAlbumsContent(
     appSettings: AppSettings,
     onPlayQueue: (List<Song>) -> Unit = { _ -> },
     onShuffleQueue: (List<Song>) -> Unit = { _ -> },
-    onRefreshClick: (() -> Unit)? = null
+    onRefreshClick: (() -> Unit)? = null,
+    bottomPadding: androidx.compose.ui.unit.Dp = 0.dp
 ) {
     val context = LocalContext.current
     val albumViewType by appSettings.albumViewType.collectAsState()
@@ -2717,47 +2561,12 @@ fun SingleCardAlbumsContent(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    bottom = 16.dp
+                    top = 16.dp,
+                    bottom = bottomPadding + 80.dp
                 ),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Column {
-                        ExpressiveSectionHeader(
-                            title = context.getString(R.string.library_your_albums),
-                            countText = "${preparedAlbums.size} ${if (preparedAlbums.size == 1) "album" else "albums"}",
-                            icon = RhythmIcons.Music.Album,
-                            countIcon = RhythmIcons.Album
-                        ) {
-                            if (preparedAlbums.isNotEmpty()) {
-                                ExpressiveFilledIconButton(
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                        val shuffledAlbums = preparedAlbums.shuffled()
-                                        val allSongs = shuffledAlbums.flatMap { it.songs }
-                                        if (allSongs.isNotEmpty()) {
-                                            onPlayQueue(allSongs)
-                                        }
-                                    },
-                                    modifier = Modifier.size(56.dp),
-                                    shape = ExpressiveShapes.SquircleMedium,
-                                    colors = IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                    )
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Shuffle,
-                                        contentDescription = context.getString(R.string.cd_shuffle),
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                }
                 items(
                     items = preparedAlbums,
                     key = { it.id },
@@ -2780,46 +2589,11 @@ fun SingleCardAlbumsContent(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    bottom = 16.dp
+                    top = 16.dp,
+                    bottom = bottomPadding + 80.dp
                 ),
                 verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
-                item {
-                    Column {
-                        ExpressiveSectionHeader(
-                            title = context.getString(R.string.library_your_albums),
-                            countText = "${preparedAlbums.size} ${if (preparedAlbums.size == 1) "album" else "albums"}",
-                            icon = RhythmIcons.Music.Album,
-                            countIcon = RhythmIcons.Album
-                        ) {
-                            if (preparedAlbums.isNotEmpty()) {
-                                ExpressiveFilledIconButton(
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                        val shuffledAlbums = preparedAlbums.shuffled()
-                                        val allSongs = shuffledAlbums.flatMap { it.songs }
-                                        if (allSongs.isNotEmpty()) {
-                                            onPlayQueue(allSongs)
-                                        }
-                                    },
-                                    modifier = Modifier.size(56.dp),
-                                    shape = ExpressiveShapes.SquircleMedium,
-                                    colors = IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                    )
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Shuffle,
-                                        contentDescription = context.getString(R.string.cd_shuffle),
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                }
 
                 itemsIndexed(
                     items = preparedAlbums,
@@ -3300,306 +3074,293 @@ fun LibrarySongItem(
                         showDropdown = false
                     }
                 } else {
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = context.getString(R.string.action_play_next),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        },
-                        leadingIcon = {
-                            Surface(
-                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                                shape = CircleShape,
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.SkipNext,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(6.dp)
-                                )
-                            }
-                        },
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onPlayNext()
-                        }
-                    )
-                }
+                    val dividerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
 
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = context.getString(R.string.action_add_to_queue),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        },
-                        leadingIcon = {
-                            Surface(
-                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                                shape = CircleShape,
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Queue,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(6.dp)
-                                )
-                            }
-                        },
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onAddToQueue()
-                        }
-                    )
-                }
-
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = if (isFavorite) context.getString(R.string.action_remove_from_favorites) else context.getString(R.string.action_add_to_favorites),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        },
-                        leadingIcon = {
-                            Surface(
-                                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
-                                shape = CircleShape,
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
-                                    contentDescription = null,
-                                    
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(6.dp)
-                                )
-                            }
-                        },
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onToggleFavorite()
-                        }
-                    )
-                }
-
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = context.getString(R.string.library_action_add_to_playlist),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        },
-                        leadingIcon = {
-                            Surface(
-                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                                shape = CircleShape,
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.AddToPlaylist,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(6.dp)
-                                )
-                            }
-                        },
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onMoreClick()
-                        }
-                    )
-                }
-
-
-
-                if (enableRatingSystem) {
+                    // Group 1: Playback/Queue (Play Next, Add to Queue)
                     Surface(
                         color = MaterialTheme.colorScheme.surfaceContainer,
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
+                        Column {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = context.getString(R.string.action_play_next),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                },
+                                leadingIcon = {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                                        shape = CircleShape,
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.SkipNext,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(6.dp)
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    showDropdown = false
+                                    onPlayNext()
+                                }
+                            )
+
+                            Divider(color = dividerColor)
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = context.getString(R.string.action_add_to_queue),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                },
+                                leadingIcon = {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                                        shape = CircleShape,
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Queue,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(6.dp)
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    showDropdown = false
+                                    onAddToQueue()
+                                }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Group 2: Collection/Rating (Favorites, Add to Playlist, Rate Song)
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Column {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = if (isFavorite) context.getString(R.string.action_remove_from_favorites) else context.getString(R.string.action_add_to_favorites),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                },
+                                leadingIcon = {
                                     Surface(
                                         color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
                                         shape = CircleShape,
                                         modifier = Modifier.size(32.dp)
                                     ) {
                                         Icon(
-                                            imageVector = MaterialSymbolIcon("star", filled = true),
+                                            imageVector = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
                                             contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onTertiaryContainer,
                                             modifier = Modifier
                                                 .fillMaxSize()
                                                 .padding(6.dp)
                                         )
                                     }
+                                },
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    showDropdown = false
+                                    onToggleFavorite()
+                                }
+                            )
+
+                            Divider(color = dividerColor)
+
+                            DropdownMenuItem(
+                                text = {
                                     Text(
-                                        text = context.getString(R.string.library_action_rate_song),
+                                        text = context.getString(R.string.library_action_add_to_playlist),
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Medium,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            chromahub.rhythm.app.shared.presentation.components.RatingStars(
-                                rating = currentRating,
-                                onRatingChanged = { newRating ->
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    currentRating = newRating
-                                    appSettings.setSongRating(song.id, newRating)
-                                    if (newRating > 0 && !isFavorite) {
-                                        onToggleFavorite()
+                                },
+                                leadingIcon = {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                                        shape = CircleShape,
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.AddToPlaylist,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(6.dp)
+                                        )
                                     }
                                 },
-                                enabled = true,
-                                size = 24.dp
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    showDropdown = false
+                                    onMoreClick()
+                                }
+                            )
+
+                            if (enableRatingSystem) {
+                                Divider(color = dividerColor)
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Surface(
+                                                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+                                                shape = CircleShape,
+                                                modifier = Modifier.size(32.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = MaterialSymbolIcon("star", filled = true),
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .padding(6.dp)
+                                                )
+                                            }
+                                            Text(
+                                                text = context.getString(R.string.library_action_rate_song),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.Medium,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    chromahub.rhythm.app.shared.presentation.components.RatingStars(
+                                        rating = currentRating,
+                                        onRatingChanged = { newRating ->
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                            currentRating = newRating
+                                            appSettings.setSongRating(song.id, newRating)
+                                            if (newRating > 0 && !isFavorite) {
+                                                onToggleFavorite()
+                                            }
+                                        },
+                                        enabled = true,
+                                        size = 24.dp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Group 3: Details/Safety (Song Info, Add to Blacklist)
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Column {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = context.getString(R.string.action_song_info),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                },
+                                leadingIcon = {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                                        shape = CircleShape,
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Info,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(6.dp)
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    showDropdown = false
+                                    onShowSongInfo()
+                                }
+                            )
+
+                            Divider(color = dividerColor)
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = context.getString(R.string.action_add_to_blacklist),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                },
+                                leadingIcon = {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f),
+                                        shape = CircleShape,
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Block,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onErrorContainer,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(6.dp)
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    showDropdown = false
+                                    onAddToBlacklist()
+                                }
                             )
                         }
                     }
-                }
-
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = context.getString(R.string.action_song_info),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        },
-                        leadingIcon = {
-                            Surface(
-                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-                                shape = CircleShape,
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Info,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(6.dp)
-                                )
-                            }
-                        },
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onShowSongInfo()
-                        }
-                    )
-                }
-
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = context.getString(R.string.action_add_to_blacklist),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        leadingIcon = {
-                            Surface(
-                                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f),
-                                shape = CircleShape,
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Block,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onErrorContainer,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(6.dp)
-                                )
-                            }
-                        },
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onAddToBlacklist()
-                        }
-                    )
-                }
                 }
             }
         },
@@ -4713,7 +4474,10 @@ fun SingleCardArtistsContent(
     onShuffleQueue: (List<Song>) -> Unit = { _ -> },
     onRefreshClick: (() -> Unit)? = null,
     listState: LazyListState = rememberLazyListState(),
-    gridState: LazyGridState = rememberLazyGridState()
+    gridState: LazyGridState = rememberLazyGridState(),
+    bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
+    initialSortOption: ArtistSortOption = ArtistSortOption.NAME_ASC,
+    onSortOptionChange: (ArtistSortOption) -> Unit = {}
 ) {
     val context = LocalContext.current
     val viewModel = viewModel<chromahub.rhythm.app.viewmodel.MusicViewModel>()
@@ -4722,7 +4486,7 @@ fun SingleCardArtistsContent(
     val artistViewType by appSettings.artistViewType.collectAsState()
     
     var selectedCategory by remember { mutableStateOf("All") }
-    var currentSortOption by remember { mutableStateOf(ArtistSortOption.NAME_ASC) }
+    var currentSortOption by remember(initialSortOption) { mutableStateOf(initialSortOption) }
     var showSortOptions by remember { mutableStateOf(false) }
     
     var isLoading by remember { mutableStateOf(true) }
@@ -4730,6 +4494,10 @@ fun SingleCardArtistsContent(
     
     val categories = remember(artists) {
         listOf("All")
+    }
+    
+    LaunchedEffect(currentSortOption) {
+        onSortOptionChange(currentSortOption)
     }
     
     LaunchedEffect(artists, currentSortOption) {
@@ -4787,36 +4555,12 @@ fun SingleCardArtistsContent(
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
-                top = 0.dp,
-                bottom = 16.dp
+                top = 16.dp,
+                bottom = bottomPadding + 80.dp
             ),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Column {
-                    ArtistSectionHeader(
-                        artistCount = sortedArtists.size,
-                        artists = sortedArtists,
-                        applyOuterHorizontalPadding = false,
-                        onPlayAll = {
-                            val allSongs = sortedArtists.flatMap { it.songs }
-                            if (allSongs.isNotEmpty()) {
-                                onPlayQueue(allSongs)
-                            }
-                        },
-                        onShuffleAll = {
-                            val allSongs = sortedArtists.flatMap { it.songs }
-                            if (allSongs.isNotEmpty()) {
-                                onShuffleQueue(allSongs)
-                            }
-                        },
-                        haptics = haptics
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-            }
-            
             if (sortedArtists.isNotEmpty()) {
                 items(
                     items = sortedArtists,
@@ -4852,32 +4596,11 @@ fun SingleCardArtistsContent(
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
-                bottom = 16.dp
+                top = 16.dp,
+                bottom = bottomPadding + 80.dp
             ),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            item {
-                Column {
-                    ArtistSectionHeader(
-                        artistCount = sortedArtists.size,
-                        artists = sortedArtists,
-                        onPlayAll = {
-                            val allSongs = sortedArtists.flatMap { it.songs }
-                            if (allSongs.isNotEmpty()) {
-                                onPlayQueue(allSongs)
-                            }
-                        },
-                        onShuffleAll = {
-                            val allSongs = sortedArtists.flatMap { it.songs }
-                            if (allSongs.isNotEmpty()) {
-                                onShuffleQueue(allSongs)
-                            }
-                        },
-                        haptics = haptics
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-            }
             
             if (sortedArtists.isNotEmpty()) {
                 itemsIndexed(
@@ -5831,4 +5554,563 @@ fun ExpressiveSelectionHeader(
         }
     }
 }
+
+private enum class BottomBarButtonType { NONE, LEFT, CENTER, RIGHT }
+
+@Composable
+private fun LibraryBottomBar(
+    isVisible: Boolean,
+    activeTab: String,
+    songs: List<Song>,
+    isSelectionMode: Boolean,
+    selectedSongsCount: Int,
+    explorerPath: String?,
+    onSelectToggle: () -> Unit,
+    onCancelSelection: () -> Unit,
+    onPlayAll: () -> Unit,
+    onShuffle: () -> Unit,
+    onPlaySelected: () -> Unit,
+    onMoreActions: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
+
+    var lastClickedButton by remember { mutableStateOf<BottomBarButtonType?>(null) }
+    LaunchedEffect(lastClickedButton) {
+        if (lastClickedButton != null && lastClickedButton != BottomBarButtonType.NONE) {
+            delay(220L)
+            lastClickedButton = BottomBarButtonType.NONE
+        }
+    }
+
+    val leftScale by animateFloatAsState(
+        targetValue = if (lastClickedButton == BottomBarButtonType.LEFT) 0.92f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "leftScale"
+    )
+    val centerScale by animateFloatAsState(
+        targetValue = if (lastClickedButton == BottomBarButtonType.CENTER) 0.94f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "centerScale"
+    )
+    val rightScale by animateFloatAsState(
+        targetValue = if (lastClickedButton == BottomBarButtonType.RIGHT) 0.92f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "rightScale"
+    )
+
+    val centerWeightTarget = when (lastClickedButton) {
+        BottomBarButtonType.CENTER -> 1.25f
+        BottomBarButtonType.RIGHT -> 0.75f
+        else -> 1f
+    }
+    val rightWeightTarget = when (lastClickedButton) {
+        BottomBarButtonType.RIGHT -> 1.25f
+        BottomBarButtonType.CENTER -> 0.75f
+        else -> 1f
+    }
+
+    val centerWeight by animateFloatAsState(
+        targetValue = centerWeightTarget,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "centerWeight"
+    )
+    val rightWeight by animateFloatAsState(
+        targetValue = rightWeightTarget,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "rightWeight"
+    )
+
+    val centerCornerTarget = if (lastClickedButton == BottomBarButtonType.CENTER) 14.dp else 24.dp
+    val rightCornerTarget = if (lastClickedButton == BottomBarButtonType.RIGHT) 14.dp else 24.dp
+
+    val centerCorner by animateDpAsState(
+        targetValue = centerCornerTarget,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "centerCorner"
+    )
+    val rightCorner by animateDpAsState(
+        targetValue = rightCornerTarget,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "rightCorner"
+    )
+
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = slideInVertically(
+            initialOffsetY = { it * 2 },
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        ) + scaleIn(
+            initialScale = 0.8f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        ) + fadeIn(animationSpec = tween(300)),
+        exit = slideOutVertically(
+            targetOffsetY = { it * 2 },
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMedium
+            )
+        ) + scaleOut(
+            targetScale = 0.8f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMedium
+            )
+        ) + fadeOut(animationSpec = tween(200)),
+        modifier = modifier
+    ) {
+        Surface(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 12.dp),
+            shape = RoundedCornerShape(32.dp),
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            tonalElevation = 6.dp,
+            shadowElevation = 4.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val showLeftButton = isSelectionMode || activeTab == "SONGS" || (activeTab == "EXPLORER" && explorerPath != null)
+                
+                AnimatedVisibility(
+                    visible = showLeftButton,
+                    enter = fadeIn() + expandHorizontally(),
+                    exit = fadeOut() + shrinkHorizontally()
+                ) {
+                    FilledTonalIconButton(
+                        onClick = {
+                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                            lastClickedButton = BottomBarButtonType.LEFT
+                            if (isSelectionMode) {
+                                onCancelSelection()
+                            } else if (activeTab == "EXPLORER") {
+                                onBack()
+                            } else {
+                                onSelectToggle()
+                            }
+                        },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .graphicsLayer {
+                                scaleX = leftScale
+                                scaleY = leftScale
+                            },
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    ) {
+                        AnimatedContent(
+                            targetState = isSelectionMode,
+                            transitionSpec = {
+                                fadeIn(animationSpec = tween(150)) togetherWith fadeOut(animationSpec = tween(150))
+                            },
+                            label = "leftButtonIcon"
+                        ) { selectionMode ->
+                            if (selectionMode) {
+                                Icon(
+                                    imageVector = RhythmIcons.Close,
+                                    contentDescription = "Cancel selection",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = if (activeTab == "EXPLORER") RhythmIcons.Back else MaterialSymbolIcon("check_box"),
+                                    contentDescription = if (activeTab == "EXPLORER") "Back" else "Select songs",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                val centerButtonWeightTarget = if (isSelectionMode) 1f else centerWeightTarget
+                val animatedCenterWeight by animateFloatAsState(
+                    targetValue = centerButtonWeightTarget,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    ),
+                    label = "animatedCenterWeight"
+                )
+
+                Button(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        lastClickedButton = BottomBarButtonType.CENTER
+                        if (isSelectionMode) {
+                            onPlaySelected()
+                        } else {
+                            onPlayAll()
+                        }
+                    },
+                    modifier = Modifier
+                        .height(48.dp)
+                        .weight(animatedCenterWeight)
+                        .graphicsLayer {
+                            scaleX = centerScale
+                            scaleY = centerScale
+                        },
+                    shape = RoundedCornerShape(centerCorner),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    AnimatedContent(
+                        targetState = isSelectionMode,
+                        transitionSpec = {
+                            (fadeIn(animationSpec = tween(150, delayMillis = 75)) +
+                                    scaleIn(initialScale = 0.8f, animationSpec = tween(150, delayMillis = 75)))
+                                .togetherWith(fadeOut(animationSpec = tween(75)))
+                        },
+                        label = "centerButtonContent"
+                    ) { selectionMode ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = RhythmIcons.Play,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = if (selectionMode) "Play ($selectedSongsCount)" else "Play All",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+
+                val rightButtonWeightTarget = if (isSelectionMode) 0.001f else rightWeightTarget
+                val animatedRightWeight by animateFloatAsState(
+                    targetValue = rightButtonWeightTarget,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    ),
+                    label = "animatedRightWeight"
+                )
+
+                Button(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                        lastClickedButton = BottomBarButtonType.RIGHT
+                        if (isSelectionMode) {
+                            onMoreActions()
+                        } else {
+                            onShuffle()
+                        }
+                    },
+                    modifier = Modifier
+                        .height(48.dp)
+                        .then(
+                            if (isSelectionMode) {
+                                Modifier.width(48.dp)
+                            } else {
+                                Modifier.weight(animatedRightWeight.coerceAtLeast(0.001f))
+                            }
+                        )
+                        .graphicsLayer {
+                            scaleX = rightScale
+                            scaleY = rightScale
+                        },
+                    shape = RoundedCornerShape(if (isSelectionMode) 24.dp else rightCorner),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    ),
+                    contentPadding = if (isSelectionMode) PaddingValues(0.dp) else PaddingValues(horizontal = 16.dp)
+                ) {
+                    AnimatedContent(
+                        targetState = isSelectionMode,
+                        transitionSpec = {
+                            (fadeIn(animationSpec = tween(150, delayMillis = 75)) +
+                                    scaleIn(initialScale = 0.8f, animationSpec = tween(150, delayMillis = 75)))
+                                .togetherWith(fadeOut(animationSpec = tween(75)))
+                        },
+                        label = "rightButtonContent"
+                    ) { selectionMode ->
+                        if (selectionMode) {
+                            Icon(
+                                imageVector = RhythmIcons.More,
+                                contentDescription = "More actions",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = RhythmIcons.Shuffle,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Shuffle",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+fun isLosslessAudio(song: Song): Boolean {
+    val codec = song.codec?.uppercase() ?: ""
+
+    if (codec.isNotEmpty()) {
+        val isLossyCodec = codec.contains("MP3") || codec.contains("AAC") ||
+                          codec.contains("OGG") || codec.contains("OPUS") ||
+                          codec.contains("VORBIS") || (codec.contains("WMA") && !codec.contains("LOSSLESS"))
+
+        if (isLossyCodec) return false
+
+        val isLosslessCodec = codec in listOf("ALAC", "FLAC", "PCM", "WAV", "APE", "DSD", "TRUEHD", "DOLBY ATMOS", "DTS-HD MA", "AIFF", "WV", "TAK", "TTA") ||
+                             codec.contains("LOSSLESS", ignoreCase = true) ||
+                             codec.contains("APPLE LOSSLESS", ignoreCase = true)
+
+        if (isLosslessCodec) return true
+    }
+
+    val uri = song.uri.toString()
+    val isLosslessExtension = uri.endsWith(".flac", ignoreCase = true) ||
+                              uri.endsWith(".wav", ignoreCase = true) ||
+                              uri.endsWith(".alac", ignoreCase = true) ||
+                              uri.endsWith(".ape", ignoreCase = true) ||
+                              uri.endsWith(".aiff", ignoreCase = true) ||
+                              uri.endsWith(".aif", ignoreCase = true) ||
+                              uri.endsWith(".dsd", ignoreCase = true) ||
+                              uri.endsWith(".wv", ignoreCase = true) ||
+                              uri.endsWith(".tta", ignoreCase = true) ||
+                              uri.endsWith(".tak", ignoreCase = true)
+
+    if (isLosslessExtension) return true
+
+    return false
+}
+
+fun isHiResLossless(song: Song): Boolean {
+    if (!isLosslessAudio(song)) {
+        return false
+    }
+
+    val sampleRate = song.sampleRate ?: 0
+    val bitrate = song.bitrate ?: 0
+    val channels = song.channels ?: 2
+
+    if (sampleRate < 48000) {
+        return false
+    }
+
+    if (sampleRate >= 88200) {
+        return true
+    }
+
+    if (bitrate > 0 && sampleRate > 0 && channels > 0) {
+        val bitrateKbps = bitrate / 1000
+        val calculatedBitDepth = (bitrateKbps * 1000) / (sampleRate * channels)
+        if (calculatedBitDepth >= 18) {
+            return true
+        }
+    }
+
+    if (bitrate >= 2000000 && sampleRate >= 48000) {
+        return true
+    }
+
+    return false
+}
+
+fun isRegularLossless(song: Song): Boolean {
+    val lossless = isLosslessAudio(song)
+    if (!lossless) return false
+    
+    val hiRes = isHiResLossless(song)
+    if (hiRes) {
+        return false
+    }
+    
+    return true
+}
+
+fun isDolbyOrSurround(song: Song): Boolean {
+    val codec = song.codec?.uppercase() ?: ""
+    return (song.channels ?: 2) > 2 ||
+           codec.contains("AC-3") ||
+           codec.contains("E-AC-3") ||
+           codec.contains("DOLBY") ||
+           codec.contains("TRUEHD") ||
+           codec.contains("ATMOS") ||
+           codec.contains("DTS")
+}
+
+fun calculateSongCategories(
+    preparedSongs: List<Song>,
+    favoriteSongs: Set<String>,
+    enableRatingSystem: Boolean,
+    ratingDistribution: Map<Int, Int>
+): List<String> {
+    val allCategories = mutableListOf("All")
+
+    if (preparedSongs.any { it.id in favoriteSongs }) {
+        allCategories.add("❤️ Favorites")
+    }
+
+    if (preparedSongs.any { isHiResLossless(it) && !isDolbyOrSurround(it) }) {
+        allCategories.add("Hi-Res Lossless")
+    }
+
+    if (preparedSongs.any { isRegularLossless(it) && !isDolbyOrSurround(it) }) {
+        allCategories.add("Lossless")
+    }
+
+    if (preparedSongs.any { isDolbyOrSurround(it) }) {
+        allCategories.add("Dolby")
+    }
+
+    if (preparedSongs.any { (it.channels ?: 2) == 1 }) {
+        allCategories.add("Mono")
+    }
+
+    if (enableRatingSystem) {
+        if ((ratingDistribution[5] ?: 0) > 0) {
+            allCategories.add("⭐⭐⭐⭐⭐ Absolute Favorites")
+        }
+        if ((ratingDistribution[4] ?: 0) > 0) {
+            allCategories.add("⭐⭐⭐⭐ Loved")
+        }
+        if ((ratingDistribution[3] ?: 0) > 0) {
+            allCategories.add("⭐⭐⭐ Great")
+        }
+        if ((ratingDistribution[2] ?: 0) > 0) {
+            allCategories.add("⭐⭐ Good")
+        }
+        if ((ratingDistribution[1] ?: 0) > 0) {
+            allCategories.add("⭐ Liked")
+        }
+    }
+
+    if (preparedSongs.any { song ->
+        val bitrate = song.bitrate ?: 0
+        bitrate >= 320000 && !isLosslessAudio(song) && !isDolbyOrSurround(song)
+    }) {
+        allCategories.add("High Quality")
+    }
+
+    if (preparedSongs.any { song ->
+        val bitrate = song.bitrate ?: 0
+        bitrate in 128000..319999 && !isLosslessAudio(song) && !isDolbyOrSurround(song)
+    }) {
+        allCategories.add("Standard")
+    }
+
+    if (preparedSongs.any { it.duration < 3 * 60 * 1000 }) {
+        allCategories.add("Short (< 3 min)")
+    }
+
+    if (preparedSongs.any { it.duration in (3 * 60 * 1000)..(5 * 60 * 1000) }) {
+        allCategories.add("Medium (3-5 min)")
+    }
+
+    if (preparedSongs.any { it.duration > 5 * 60 * 1000 }) {
+        allCategories.add("Long (> 5 min)")
+    }
+
+    return allCategories
+}
+
+fun filterSongsByCategory(
+    preparedSongs: List<Song>,
+    selectedCategory: String,
+    favoriteSongs: Set<String>,
+    ratedSongIdsProvider: (Int) -> Set<String>
+): List<Song> {
+    return when (selectedCategory) {
+        "All" -> preparedSongs
+        "❤️ Favorites" -> preparedSongs.filter { it.id in favoriteSongs }
+
+        "⭐⭐⭐⭐⭐ Absolute Favorites" -> {
+            val ratedSongIds = ratedSongIdsProvider(5)
+            preparedSongs.filter { it.id in ratedSongIds }
+        }
+        "⭐⭐⭐⭐ Loved" -> {
+            val ratedSongIds = ratedSongIdsProvider(4)
+            preparedSongs.filter { it.id in ratedSongIds }
+        }
+        "⭐⭐⭐ Great" -> {
+            val ratedSongIds = ratedSongIdsProvider(3)
+            preparedSongs.filter { it.id in ratedSongIds }
+        }
+        "⭐⭐ Good" -> {
+            val ratedSongIds = ratedSongIdsProvider(2)
+            preparedSongs.filter { it.id in ratedSongIds }
+        }
+        "⭐ Liked" -> {
+            val ratedSongIds = ratedSongIdsProvider(1)
+            preparedSongs.filter { it.id in ratedSongIds }
+        }
+
+        "Short (< 3 min)" -> preparedSongs.filter { it.duration < 3 * 60 * 1000 }
+        "Medium (3-5 min)" -> preparedSongs.filter { it.duration in (3 * 60 * 1000)..(5 * 60 * 1000) }
+        "Long (> 5 min)" -> preparedSongs.filter { it.duration > 5 * 60 * 1000 }
+
+        "Hi-Res Lossless" -> preparedSongs.filter { isHiResLossless(it) && !isDolbyOrSurround(it) }
+        "Lossless" -> preparedSongs.filter { isRegularLossless(it) && !isDolbyOrSurround(it) }
+        "Dolby" -> preparedSongs.filter { isDolbyOrSurround(it) }
+        "Stereo" -> preparedSongs.filter { (it.channels ?: 2) == 2 && !isDolbyOrSurround(it) }
+        "Mono" -> preparedSongs.filter { (it.channels ?: 2) == 1 }
+
+        "High Quality" -> preparedSongs.filter { song ->
+            val bitrate = song.bitrate ?: 0
+            bitrate >= 320000 && !isLosslessAudio(song) && !isDolbyOrSurround(song)
+        }
+
+        "Standard" -> preparedSongs.filter { song ->
+            val bitrate = song.bitrate ?: 0
+            bitrate in 128000..319999 && !isLosslessAudio(song) && !isDolbyOrSurround(song)
+        }
+
+        else -> preparedSongs
+    }
+}
+
+
 

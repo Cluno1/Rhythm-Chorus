@@ -631,6 +631,9 @@ class MusicRepository(context: Context) {
 
     fun normalizeStoragePath(path: String): String {
         var normalized = path.trim().replace('\\', '/')
+        while (normalized.contains("//")) {
+            normalized = normalized.replace("//", "/")
+        }
         if (normalized.length > 1 && normalized.endsWith('/')) {
             normalized = normalized.substring(0, normalized.length - 1)
         }
@@ -1448,7 +1451,7 @@ class MusicRepository(context: Context) {
         }
 
         return runCatching {
-            val repaired = String(raw.toByteArray(Charsets.ISO_8859_1), Charsets.UTF_8)
+            val repaired = String(raw.toByteArray(java.nio.charset.Charset.forName("windows-1252")), Charsets.UTF_8)
             val repairedHasMoreReplacementChars =
                 repaired.count { it == '\uFFFD' } > raw.count { it == '\uFFFD' }
             if (repaired.isBlank() || repairedHasMoreReplacementChars) raw else repaired
@@ -4653,27 +4656,102 @@ class MusicRepository(context: Context) {
                         val songNameWithoutExt = songFile.nameWithoutExtension
                         
                         if (directory != null && directory.exists()) {
-                            // Look for .lrc file with same name as the song
-                            val lrcFile = File(directory, "$songNameWithoutExt.lrc")
-                            if (lrcFile.exists() && lrcFile.canRead()) {
-                                val lrcContent = lrcFile.readText()
-                                return parseLrcFile(lrcContent)
+                            val extensions = listOf("lrc", "elrc", "ttml", "srt")
+                            for (ext in extensions) {
+                                val lyricFile = File(directory, "$songNameWithoutExt.$ext")
+                                if (lyricFile.exists() && lyricFile.canRead()) {
+                                    val content = lyricFile.readText()
+                                    val parsed = parseLocalLyricsFile(content, ext)
+                                    if (parsed != null) return parsed
+                                }
                             }
                             
                             // Also try with artist - title pattern
                             val cleanArtist = artist.replace(Regex("[^a-zA-Z0-9]"), "_")
                             val cleanTitle = title.replace(Regex("[^a-zA-Z0-9]"), "_")
-                            val alternativeLrcFile = File(directory, "${cleanArtist}_${cleanTitle}.lrc")
-                            if (alternativeLrcFile.exists() && alternativeLrcFile.canRead()) {
-                                val lrcContent = alternativeLrcFile.readText()
-                                return parseLrcFile(lrcContent)
+                            for (ext in extensions) {
+                                val lyricFile = File(directory, "${cleanArtist}_${cleanTitle}.$ext")
+                                if (lyricFile.exists() && lyricFile.canRead()) {
+                                    val content = lyricFile.readText()
+                                    val parsed = parseLocalLyricsFile(content, ext)
+                                    if (parsed != null) return parsed
+                                }
                             }
                         }
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error searching for .lrc file", e)
+            Log.e(TAG, "Error searching for local lyric file", e)
+        }
+        return null
+    }
+
+    private fun parseLocalLyricsFile(content: String, ext: String): LyricsData? {
+        try {
+            if (content.isBlank()) return null
+            
+            if (ext.equals("lrc", ignoreCase = true) || ext.equals("elrc", ignoreCase = true)) {
+                return parseLrcFile(content)
+            }
+            
+            val semanticLyrics = when (ext.lowercase()) {
+                "ttml" -> chromahub.rhythm.app.util.parseTtml(null, content)
+                "srt" -> chromahub.rhythm.app.util.parseSrt(content, true)
+                else -> null
+            } ?: return null
+            
+            return when (semanticLyrics) {
+                is chromahub.rhythm.app.util.SemanticLyrics.UnsyncedLyrics -> {
+                    val plainLyrics = semanticLyrics.unsyncedText.joinToString("\n") { it.first }
+                    LyricsData(plainLyrics = plainLyrics, syncedLyrics = null, wordByWordLyrics = null, source = "Local File")
+                }
+                is chromahub.rhythm.app.util.SemanticLyrics.SyncedLyrics -> {
+                    val plainLyrics = semanticLyrics.text.joinToString("\n") { it.text }
+                    val syncedLyrics = semanticLyrics.text.joinToString("\n") { line ->
+                        val min = (line.start / 60000uL)
+                        val sec = (line.start % 60000uL) / 1000uL
+                        val ms = (line.start % 1000uL) / 10uL // 2 digits
+                        val timestamp = java.lang.String.format("%02d:%02d.%02d", min.toInt(), sec.toInt(), ms.toInt())
+                        "[$timestamp]${line.text}"
+                    }
+                    
+                    val rhythmWordLines = semanticLyrics.text.map { line ->
+                        val words = line.words?.map { word ->
+                            val wordText = try {
+                                line.text.substring(word.charRange.first, word.charRange.last + 1)
+                            } catch (e: Exception) {
+                                ""
+                            }
+                            mapOf(
+                                "text" to wordText,
+                                "part" to false,
+                                "timestamp" to word.begin.toLong(),
+                                "endtime" to (word.endInclusive?.toLong() ?: word.begin.toLong())
+                            )
+                        } ?: listOf(
+                            mapOf(
+                                "text" to line.text,
+                                "part" to false,
+                                "timestamp" to line.start.toLong(),
+                                "endtime" to line.end.toLong()
+                            )
+                        )
+                        
+                        mapOf(
+                            "text" to words,
+                            "background" to false,
+                            "timestamp" to line.start.toLong(),
+                            "endtime" to line.end.toLong()
+                        )
+                    }
+                    val wordByWordJson = com.google.gson.Gson().toJson(rhythmWordLines)
+                    
+                    LyricsData(plainLyrics, syncedLyrics, wordByWordJson, source = "Local File")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing local $ext lyrics file", e)
         }
         return null
     }

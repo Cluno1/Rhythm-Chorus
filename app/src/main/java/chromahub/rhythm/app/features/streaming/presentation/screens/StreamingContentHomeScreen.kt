@@ -105,6 +105,10 @@ import chromahub.rhythm.app.features.streaming.domain.model.StreamingServiceId
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingSong
 import chromahub.rhythm.app.features.streaming.presentation.model.StreamingServiceOptions
 import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
+import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel as LocalMusicViewModel
+import chromahub.rhythm.app.shared.data.repository.StatsTimeRange
+import androidx.compose.runtime.mutableIntStateOf
+import chromahub.rhythm.app.shared.presentation.components.AudioQualityIcon
 import chromahub.rhythm.app.features.streaming.presentation.components.settings.StreamingHomeSectionOrderBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AlbumBottomSheet
 import chromahub.rhythm.app.shared.data.model.Album
@@ -147,6 +151,7 @@ private val defaultStreamingHomeSections = listOf(
 @Composable
 fun StreamingContentHomeScreen(
     viewModel: StreamingMusicViewModel,
+    localMusicViewModel: LocalMusicViewModel,
     recentlyPlayedSongs: List<Song>,
     playbackStatsSummary: PlaybackStatsRepository.PlaybackStatsSummary?,
     listeningTimeMs: Long,
@@ -298,12 +303,25 @@ fun StreamingContentHomeScreen(
             ?: rhythmGuardPolicy.recommendedDailyMinutes
         else -> rhythmGuardPolicy.recommendedDailyMinutes
     }
-    val todayListeningMinutes = remember(dailyListeningStats, songsPlayedForStats, totalListeningDurationMs) {
-        appSettings.estimateRhythmGuardTodayListeningMinutes(
-            dailyListeningStats = dailyListeningStats,
-            songsPlayed = songsPlayedForStats,
-            listeningTimeMs = totalListeningDurationMs
-        )
+    val playbackStatsRepository = remember(context) { PlaybackStatsRepository.getInstance(context) }
+    var todayListeningMinutes by remember { mutableIntStateOf(0) }
+
+    val currentProgress by localMusicViewModel.progress.collectAsState()
+    val currentDurationMs by localMusicViewModel.duration.collectAsState()
+    val currentIsPlaying by localMusicViewModel.isPlaying.collectAsState()
+
+    LaunchedEffect(dailyListeningStats, songsPlayedForStats, totalListeningDurationMs, currentProgress, currentDurationMs, currentIsPlaying) {
+        val todaySummary = runCatching {
+            playbackStatsRepository.loadSummary(StatsTimeRange.TODAY)
+        }.getOrNull()
+        val dbDurationMs = todaySummary?.totalDurationMs ?: 0L
+        val activeSessionDurationMs = if (currentIsPlaying && currentDurationMs > 0) {
+            (currentProgress * currentDurationMs).toLong()
+        } else {
+            0L
+        }
+        val totalMs = dbDurationMs + activeSessionDurationMs
+        todayListeningMinutes = (totalMs / 60000L).toInt().coerceAtLeast(0)
     }
     val rhythmGuardTimeoutRemainingMs = (rhythmGuardTimeoutUntilMs - System.currentTimeMillis()).coerceAtLeast(0L)
     val isRhythmGuardTimeoutActive = rhythmGuardTimeoutRemainingMs > 0L
@@ -1420,6 +1438,8 @@ private fun StreamingRecommendationsCarousel(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    val releaseYear = song.releaseDate?.take(4)?.toIntOrNull() ?: 0
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -1443,6 +1463,22 @@ private fun StreamingRecommendationsCarousel(
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.ExtraBold
                             )
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            if (releaseYear > 0) {
+                                Text(
+                                    text = releaseYear.toString(),
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.35f),
+                                    modifier = Modifier.padding(end = 4.dp)
+                                )
+                            }
+                            AudioQualityIcon(song = song)
                         }
                     }
                 }

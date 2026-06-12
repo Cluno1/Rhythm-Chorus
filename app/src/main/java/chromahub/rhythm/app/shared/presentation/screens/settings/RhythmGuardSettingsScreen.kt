@@ -592,13 +592,29 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         listOf(-1, 60, 90, 120).forEach { option ->
+                                            val isSelected = alertThresholdMinutes == option
+                                            val cornerRadius by animateDpAsState(
+                                                targetValue = if (isSelected) 24.dp else 12.dp,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                                label = "alertThresholdCornerRadius"
+                                            )
                                             FilterChip(
-                                                selected = alertThresholdMinutes == option,
+                                                selected = isSelected,
                                                 onClick = {
                                                     appSettings.setRhythmGuardAlertThresholdMinutes(
                                                         option
                                                     )
                                                 },
+                                                leadingIcon = if (isSelected) {
+                                                    {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.Check,
+                                                            contentDescription = null,
+                                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                                        )
+                                                    }
+                                                } else null,
+                                                shape = RoundedCornerShape(cornerRadius),
                                                 label = {
                                                     Text(
                                                         if (option > 0) {
@@ -640,13 +656,29 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         listOf(2, 5, 10, 15).forEach { option ->
+                                            val isSelected = warningTimeoutMinutes == option
+                                            val cornerRadius by animateDpAsState(
+                                                targetValue = if (isSelected) 24.dp else 12.dp,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                                label = "warningTimeoutCornerRadius"
+                                            )
                                             FilterChip(
-                                                selected = warningTimeoutMinutes == option,
+                                                selected = isSelected,
                                                 onClick = {
                                                     appSettings.setRhythmGuardWarningTimeoutMinutes(
                                                         option
                                                     )
                                                 },
+                                                leadingIcon = if (isSelected) {
+                                                    {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.Check,
+                                                            contentDescription = null,
+                                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                                        )
+                                                    }
+                                                } else null,
+                                                shape = RoundedCornerShape(cornerRadius),
                                                 label = {
                                                     Text(
                                                         rhythmGuardFormatDurationFromMinutes(
@@ -684,13 +716,29 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         listOf(3, 5, 10, 15).forEach { option ->
+                                            val isSelected = postTimeoutCooldownMinutes == option
+                                            val cornerRadius by animateDpAsState(
+                                                targetValue = if (isSelected) 24.dp else 12.dp,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                                label = "postTimeoutCooldownCornerRadius"
+                                            )
                                             FilterChip(
-                                                selected = postTimeoutCooldownMinutes == option,
+                                                selected = isSelected,
                                                 onClick = {
                                                     appSettings.setRhythmGuardPostTimeoutCooldownMinutes(
                                                         option
                                                     )
                                                 },
+                                                leadingIcon = if (isSelected) {
+                                                    {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.Check,
+                                                            contentDescription = null,
+                                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                                        )
+                                                    }
+                                                } else null,
+                                                shape = RoundedCornerShape(cornerRadius),
                                                 label = {
                                                     Text(
                                                         rhythmGuardFormatDurationFromMinutes(
@@ -728,13 +776,29 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         listOf(10, 15, 30, 60).forEach { option ->
+                                            val isSelected = breakResumeMinutes == option
+                                            val cornerRadius by animateDpAsState(
+                                                targetValue = if (isSelected) 24.dp else 12.dp,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                                label = "breakResumeCornerRadius"
+                                            )
                                             FilterChip(
-                                                selected = breakResumeMinutes == option,
+                                                selected = isSelected,
                                                 onClick = {
                                                     appSettings.setRhythmGuardBreakResumeMinutes(
                                                         option
                                                     )
                                                 },
+                                                leadingIcon = if (isSelected) {
+                                                    {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.Check,
+                                                            contentDescription = null,
+                                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                                        )
+                                                    }
+                                                } else null,
+                                                shape = RoundedCornerShape(cornerRadius),
                                                 label = {
                                                     Text(
                                                         rhythmGuardFormatDurationFromMinutes(
@@ -778,8 +842,14 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                             RhythmGuardProtectionPreset.BALANCED,
                                             RhythmGuardProtectionPreset.STRICT
                                         ).forEach { preset ->
+                                            val isSelected = activeManualPreset == preset
+                                            val cornerRadius by animateDpAsState(
+                                                targetValue = if (isSelected) 24.dp else 12.dp,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                                label = "presetCornerRadius"
+                                            )
                                             FilterChip(
-                                                selected = activeManualPreset == preset,
+                                                selected = isSelected,
                                                 onClick = {
                                                     val values = rhythmGuardPresetValues(preset)
                                                     appSettings.setRhythmGuardManualWarningsEnabled(
@@ -801,21 +871,31 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                                         values.breakResumeMinutes
                                                     )
                                                 },
+                                                leadingIcon = if (isSelected) {
+                                                    {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.Check,
+                                                            contentDescription = null,
+                                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                                        )
+                                                    }
+                                                } else null,
+                                                shape = RoundedCornerShape(cornerRadius),
                                                 label = {
                                                     Text(
                                                         text = when (preset) {
                                                             RhythmGuardProtectionPreset.GENTLE -> context.getString(
                                                                 R.string.settings_rhythm_guard_protection_preset_gentle
                                                             )
-
+ 
                                                             RhythmGuardProtectionPreset.BALANCED -> context.getString(
                                                                 R.string.settings_rhythm_guard_protection_preset_balanced
                                                             )
-
+ 
                                                             RhythmGuardProtectionPreset.STRICT -> context.getString(
                                                                 R.string.settings_rhythm_guard_protection_preset_strict
                                                             )
-
+ 
                                                             RhythmGuardProtectionPreset.CUSTOM -> context.getString(
                                                                 R.string.settings_rhythm_guard_protection_preset_custom
                                                             )

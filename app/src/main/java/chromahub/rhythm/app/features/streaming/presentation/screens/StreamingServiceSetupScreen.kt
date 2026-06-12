@@ -3,6 +3,7 @@ package chromahub.rhythm.app.features.streaming.presentation.screens
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,12 +13,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -39,15 +43,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingServiceRules
+import chromahub.rhythm.app.features.streaming.domain.model.StreamingServiceId
 import chromahub.rhythm.app.features.streaming.presentation.model.StreamingServiceOptions
 import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
 import chromahub.rhythm.app.shared.presentation.components.common.CollapsibleHeaderScreen
+import chromahub.rhythm.app.features.streaming.presentation.components.bottomsheets.NearbyServerDiscoverySheet
+import chromahub.rhythm.app.shared.presentation.components.common.M3LinearLoader
+import chromahub.rhythm.app.shared.presentation.components.common.M3FourColorCircularLoader
 
 @Composable
 fun StreamingServiceSetupScreen(
@@ -75,6 +84,7 @@ fun StreamingServiceSetupScreen(
     var serverUrl by rememberSaveable(serviceId) { mutableStateOf(session.serverUrl) }
     var username by rememberSaveable(serviceId) { mutableStateOf(session.username) }
     var password by rememberSaveable(serviceId) { mutableStateOf("") }
+    var showDiscoverySheet by remember { mutableStateOf(false) }
 
     val canSubmit = username.isNotBlank() && password.isNotBlank() && (!requiresServerUrl || serverUrl.isNotBlank())
     val primaryActionText = when {
@@ -89,19 +99,14 @@ fun StreamingServiceSetupScreen(
         session.isConnected -> stringResource(id = R.string.streaming_status_connected)
         else -> stringResource(id = R.string.streaming_status_not_connected)
     }
-    val statusContainerColor = when {
-        isBusy -> MaterialTheme.colorScheme.primaryContainer
-        session.isConnected -> MaterialTheme.colorScheme.tertiaryContainer
-        else -> MaterialTheme.colorScheme.surfaceVariant
-    }
-    val statusContentColor = when {
-        isBusy -> MaterialTheme.colorScheme.onPrimaryContainer
-        session.isConnected -> MaterialTheme.colorScheme.onTertiaryContainer
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    val oneLinerStatus = if (session.isConnected && session.username.isNotBlank()) {
+        stringResource(id = R.string.streaming_service_setup_connected_as, session.username)
+    } else {
+        statusText
     }
 
     CollapsibleHeaderScreen(
-        title = stringResource(id = R.string.streaming_service_setup_title, optionName),
+        title = oneLinerStatus,
         showBackButton = true,
         onBackClick = onBackClick,
         headerDisplayMode = 1
@@ -113,220 +118,197 @@ fun StreamingServiceSetupScreen(
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+
+
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 24.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val providerIconRes = when (serviceId) {
+                        StreamingServiceId.SUBSONIC -> R.drawable.ic_subsonic
+                        StreamingServiceId.JELLYFIN -> R.drawable.ic_jellyfin
+                        else -> null
+                    }
+                    if (providerIconRes != null) {
+                        Image(
+                            painter = androidx.compose.ui.res.painterResource(id = providerIconRes),
+                            contentDescription = null,
+                            modifier = Modifier.size(56.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                    Text(
+                        text = optionName,
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
             if (isBusy) {
-                item {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                    ),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Surface(
-                                color = statusContainerColor,
-                                contentColor = statusContentColor,
-                                shape = RoundedCornerShape(18.dp),
-                                modifier = Modifier.size(48.dp)
-                            ) {
-                                Icon(
-                                    imageVector = MaterialSymbolIcon("cloud_queue", filled = true),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .padding(12.dp)
-                                        .size(24.dp)
-                                )
-                            }
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(id = R.string.streaming_status_title),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = statusText,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-                        }
-
-                        if (session.isConnected) {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                if (session.username.isNotBlank()) {
-                                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                        Text(
-                                            text = stringResource(id = R.string.streaming_service_setup_username),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Text(
-                                            text = session.username,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                }
-
-                                if (session.serverUrl.isNotBlank()) {
-                                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                        Text(
-                                            text = stringResource(id = R.string.streaming_service_setup_server_url),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Text(
-                                            text = session.serverUrl,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-                                }
-                            }
-                        } else {
-                            Text(
-                                text = stringResource(id = R.string.streaming_status_connect_hint),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
-                    ),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        if (requiresServerUrl) {
-                            OutlinedTextField(
-                                value = serverUrl,
-                                onValueChange = { serverUrl = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(text = stringResource(id = R.string.streaming_service_setup_server_url)) },
-                                placeholder = { Text(text = stringResource(id = R.string.streaming_service_setup_server_url_hint)) },
-                                supportingText = {
-                                    Text(text = stringResource(id = R.string.streaming_service_setup_server_url_supporting))
-                                },
-                                singleLine = true,
-                                enabled = !isBusy
-                            )
-                        }
-
-                        OutlinedTextField(
-                            value = username,
-                            onValueChange = { username = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            label = { Text(text = stringResource(id = R.string.streaming_service_setup_username)) },
-                            placeholder = { Text(text = stringResource(id = R.string.streaming_service_setup_username_hint)) },
-                            singleLine = true,
-                            enabled = !isBusy
-                        )
-
-                        OutlinedTextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            label = { Text(text = stringResource(id = R.string.streaming_service_setup_password)) },
-                            placeholder = { Text(text = stringResource(id = R.string.streaming_service_setup_password_hint)) },
-                            visualTransformation = PasswordVisualTransformation(),
-                            singleLine = true,
-                            enabled = !isBusy
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(id = R.string.streaming_service_setup_remember_password),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = stringResource(id = R.string.streaming_service_setup_remember_password_desc),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            TunerAnimatedSwitch(
-                                checked = rememberStreamingPasswords,
-                                onCheckedChange = { enabled -> appSettings.setRememberStreamingPasswords(enabled) },
-                                enabled = !isBusy
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (error != null) {
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
                         ),
-                        shape = RoundedCornerShape(18.dp)
+                        shape = RoundedCornerShape(24.dp)
                     ) {
-                        Text(
-                            text = error.orEmpty(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.padding(16.dp)
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(20.dp)
+                        ) {
+                            M3FourColorCircularLoader(
+                                modifier = Modifier.size(56.dp)
+                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                val loadingText = if (session.isConnected) {
+                                    stringResource(id = R.string.streaming_service_setup_disconnecting)
+                                } else {
+                                    stringResource(id = R.string.streaming_service_setup_connecting)
+                                }
+                                Text(
+                                    text = loadingText,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "Establishing connection with the provider...",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                 }
-            }
+            } else {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        ),
+                        shape = RoundedCornerShape(24.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            if (requiresServerUrl) {
+                                OutlinedTextField(
+                                    value = serverUrl,
+                                    onValueChange = { serverUrl = it },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    label = { Text(text = stringResource(id = R.string.streaming_service_setup_server_url)) },
+                                    placeholder = { Text(text = stringResource(id = R.string.streaming_service_setup_server_url_hint)) },
+                                    trailingIcon = {
+                                        IconButton(onClick = { showDiscoverySheet = true }) {
+                                            Icon(
+                                                imageVector = MaterialSymbolIcon("radar"),
+                                                contentDescription = stringResource(R.string.streaming_service_setup_auto_detect)
+                                            )
+                                        }
+                                    },
+                                    supportingText = {
+                                        Text(text = stringResource(id = R.string.streaming_service_setup_server_url_supporting))
+                                    },
+                                    singleLine = true,
+                                    enabled = !isBusy
+                                )
+                            }
 
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                    ),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
+                            OutlinedTextField(
+                                value = username,
+                                onValueChange = { username = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text(text = stringResource(id = R.string.streaming_service_setup_username)) },
+                                placeholder = { Text(text = stringResource(id = R.string.streaming_service_setup_username_hint)) },
+                                singleLine = true,
+                                enabled = !isBusy
+                            )
+
+                            OutlinedTextField(
+                                value = password,
+                                onValueChange = { password = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text(text = stringResource(id = R.string.streaming_service_setup_password)) },
+                                placeholder = { Text(text = stringResource(id = R.string.streaming_service_setup_password_hint)) },
+                                visualTransformation = PasswordVisualTransformation(),
+                                singleLine = true,
+                                enabled = !isBusy
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = stringResource(id = R.string.streaming_service_setup_remember_password),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = stringResource(id = R.string.streaming_service_setup_remember_password_desc),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                TunerAnimatedSwitch(
+                                    checked = rememberStreamingPasswords,
+                                    onCheckedChange = { enabled -> appSettings.setRememberStreamingPasswords(enabled) },
+                                    enabled = !isBusy
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (error != null) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            ),
+                            shape = RoundedCornerShape(18.dp)
+                        ) {
+                            Text(
+                                text = error.orEmpty(),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
+                }
+
+                item {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp),
+                            .padding(vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        FilledTonalButton(
+                        Button(
                             onClick = {
                                 viewModel.connectService(
                                     serviceId = serviceId,
@@ -338,15 +320,6 @@ fun StreamingServiceSetupScreen(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isBusy && canSubmit
                         ) {
-                            if (isBusy) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp),
-                                    strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                                Spacer(modifier = Modifier.size(12.dp))
-                            }
-
                             Text(text = stringResource(id = primaryActionText))
                         }
 
@@ -364,7 +337,8 @@ fun StreamingServiceSetupScreen(
                             Text(
                                 text = stringResource(id = R.string.streaming_service_setup_action_hint),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
                         }
                     }
@@ -375,5 +349,16 @@ fun StreamingServiceSetupScreen(
                 Spacer(modifier = Modifier.height(18.dp))
             }
         }
+    }
+
+    if (showDiscoverySheet) {
+        NearbyServerDiscoverySheet(
+            serviceId = serviceId,
+            onDismiss = { showDiscoverySheet = false },
+            onServerSelected = { detectedUrl ->
+                serverUrl = detectedUrl
+                showDiscoverySheet = false
+            }
+        )
     }
 }
