@@ -112,12 +112,14 @@ class LibraryMetadataManager(
                     removeArtwork -> {
                         clearCachedArtwork(appContext, song.id)
                         persistArtworkOverrideRemoved(appContext, song.id)
+                        MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, song.uri)
                         null
                     }
                     artworkUri != null -> {
                         try {
                             val cachedUri = saveArtworkToCache(appContext, song, artworkUri) ?: artworkUri
                             persistArtworkOverrideUri(appContext, song.id, cachedUri)
+                            MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, song.uri)
                             cachedUri
                         } catch (e: Exception) {
                             Log.w(TAG, "Failed to cache updated artwork for ${song.title}", e)
@@ -305,6 +307,7 @@ class LibraryMetadataManager(
                         pendingRequest.removeArtwork -> {
                             clearCachedArtwork(appContext, pendingRequest.song.id)
                             persistArtworkOverrideRemoved(appContext, pendingRequest.song.id)
+                            MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, pendingRequest.song.uri)
                             null
                         }
                         !pendingRequest.artworkUriString.isNullOrBlank() -> {
@@ -316,6 +319,7 @@ class LibraryMetadataManager(
                                     pendingArtworkUri
                                 ) ?: pendingArtworkUri
                                 persistArtworkOverrideUri(appContext, pendingRequest.song.id, cachedUri)
+                                MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, pendingRequest.song.uri)
                                 cachedUri
                             } catch (_: Exception) {
                                 pendingArtworkUri
@@ -495,12 +499,14 @@ class LibraryMetadataManager(
                             removeArtwork -> {
                                 clearCachedArtwork(appContext, song.id)
                                 persistArtworkOverrideRemoved(appContext, song.id)
+                                MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, song.uri)
                                 null
                             }
                             artworkUri != null -> {
                                 try {
                                     val cachedUri = saveArtworkToCache(appContext, song, artworkUri) ?: artworkUri
                                     persistArtworkOverrideUri(appContext, song.id, cachedUri)
+                                    MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, song.uri)
                                     cachedUri
                                 } catch (_: Exception) {
                                     artworkUri
@@ -636,12 +642,14 @@ class LibraryMetadataManager(
                             removeArtwork -> {
                                 clearCachedArtwork(appContext, song.id)
                                 persistArtworkOverrideRemoved(appContext, song.id)
+                                MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, song.uri)
                                 null
                             }
                             artworkUri != null -> {
                                 try {
                                     val cachedUri = saveArtworkToCache(appContext, song, artworkUri) ?: artworkUri
                                     persistArtworkOverrideUri(appContext, song.id, cachedUri)
+                                    MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, song.uri)
                                     cachedUri
                                 } catch (_: Exception) {
                                     artworkUri

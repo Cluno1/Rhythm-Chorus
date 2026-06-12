@@ -500,6 +500,7 @@
     <string name="updates_channel_desc">選擇要遵循的更新頻道：</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">歡迎</string>
     <string name="onboarding_welcome_to">歡迎來到</string>
     <string name="onboarding_welcome_subtitle">你的音樂，你的 Rhythm</string>
     <string name="onboarding_get_started">開始使用</string>
@@ -3026,5 +3027,8 @@
     <string name="nearby_server_discovery_scanning">正在掃描附近的伺服器...</string>
     <string name="nearby_server_discovery_empty">找不到附近的伺服器。確保您的伺服器正在運作並連接到相同 Wi-Fi 網路。</string>
     <string name="nearby_server_discovery_rescan">重新掃描</string>
+    <string name="settings_metadata_editing">元資料編輯</string>
+    <string name="settings_enable_album_editing">啟用相簿編輯</string>
+    <string name="settings_enable_album_editing_desc">允許大量編輯整張專輯的元資料和插圖。</string>
 </resources>
 

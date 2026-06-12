@@ -497,6 +497,7 @@
     <string name="updates_channel_desc">اختر قناة التحديث التي تريد متابعتها:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">مرحباً</string>
     <string name="onboarding_welcome_to">مرحبا بكم في</string>
     <string name="onboarding_welcome_subtitle">موسيقاك، Rhythm</string>
     <string name="onboarding_get_started">ابدأ</string>
@@ -3016,5 +3017,8 @@
     <string name="nearby_server_discovery_scanning">جارٍ البحث عن الخوادم القريبة...</string>
     <string name="nearby_server_discovery_empty">لم يتم العثور على خوادم قريبة. تأكد من أن الخادم الخاص بك يعمل ومتصل بنفس شبكة Wi-Fi.</string>
     <string name="nearby_server_discovery_rescan">إعادة المسح</string>
+    <string name="settings_metadata_editing">تحرير البيانات الوصفية</string>
+    <string name="settings_enable_album_editing">تمكين تحرير الألبوم</string>
+    <string name="settings_enable_album_editing_desc">السماح بتحرير دفعة واحدة من البيانات الوصفية والأعمال الفنية للألبومات بأكملها.</string>
 </resources>
 

@@ -52,6 +52,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
@@ -171,6 +172,7 @@ fun QueueBottomSheet(
     }
 
     ModalBottomSheet(
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = { 

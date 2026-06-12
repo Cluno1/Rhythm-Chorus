@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -264,11 +265,19 @@ fun StreamingNavigation(
             isLibraryRoute ||
             isSearchRoute
     
+    val systemNavBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     // Calculate miniplayer padding for bottom content alignment
     val miniPlayerBottomPadding by animateDpAsState(
-        targetValue = if (showMiniPlayer) {
-            val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 72.dp else 96.dp
-            miniPlayerHeight + 16.dp // Card height + spacing
+        targetValue = if (!isTablet) {
+            val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 84.dp else 96.dp
+            val bottomNavigationHeight = MusicDimensions.bottomNavigationHeight
+            val basePadding = when {
+                showBottomNav && showMiniPlayer -> bottomNavigationHeight + 16.dp + miniPlayerHeight + 16.dp
+                showBottomNav -> bottomNavigationHeight + 16.dp
+                showMiniPlayer -> miniPlayerHeight + 16.dp
+                else -> 0.dp
+            }
+            basePadding + systemNavBarPadding
         } else {
             0.dp
         },
@@ -449,6 +458,7 @@ fun StreamingNavigation(
         Scaffold(
             modifier = contentModifier,
         bottomBar = {
+            val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
             val bottomChromeVisible = showMiniPlayer || showBottomNavValue
             val bottomChromeAlpha by animateFloatAsState(
                 targetValue = if (bottomChromeVisible) 1f else 0f,
@@ -464,38 +474,52 @@ fun StreamingNavigation(
                 label = "streaming_miniplayer_bottom_offset"
             )
 
+            val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 84.dp else 96.dp
+            val gradientHeight by animateDpAsState(
+                targetValue = when {
+                    showBottomNavValue && showMiniPlayer -> MusicDimensions.bottomNavigationHeight + 16.dp + miniPlayerHeight + 32.dp
+                    showBottomNavValue -> MusicDimensions.bottomNavigationHeight + 32.dp
+                    showMiniPlayer -> miniPlayerHeight + 32.dp
+                    else -> 0.dp
+                },
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessLow
+                ),
+                label = "streaming_navigation_gradient_height"
+            )
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.navigationBars)
             ) {
+                if (gradientHeight > 0.dp && !isTablet) {
+                    val systemNavBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(gradientHeight + systemNavBarPadding)
+                            .align(Alignment.BottomCenter)
+                            .graphicsLayer { alpha = bottomChromeAlpha }
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colorStops = arrayOf(
+                                        0f to Color.Transparent,
+                                        0.25f to MaterialTheme.colorScheme.background.copy(alpha = 0.28f),
+                                        0.62f to MaterialTheme.colorScheme.background.copy(alpha = 0.76f),
+                                        1f to MaterialTheme.colorScheme.background.copy(alpha = 1f)
+                                    )
+                                )
+                            )
+                    )
+                }
+
                 Box(
                     modifier = Modifier
-                        .matchParentSize()
-                        .layout { measurable, constraints ->
-                            val heightOffset = 48.dp.roundToPx()
-                            val placeable = measurable.measure(
-                                constraints.copy(
-                                    maxHeight = constraints.maxHeight + heightOffset
-                                )
-                            )
-                            val layoutHeight = (placeable.height - heightOffset).coerceAtLeast(0)
-                            layout(placeable.width, layoutHeight) {
-                                placeable.placeRelative(0, -heightOffset)
-                            }
-                        }
-                        .graphicsLayer { alpha = bottomChromeAlpha }
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colorStops = arrayOf(
-                                    0f to Color.Transparent,
-                                    0.25f to MaterialTheme.colorScheme.surface.copy(alpha = 0.28f),
-                                    0.62f to MaterialTheme.colorScheme.surface.copy(alpha = 0.76f),
-                                    1f to MaterialTheme.colorScheme.surface.copy(alpha = 1f)
-                                )
-                            )
-                        )
-                )
+                        .fillMaxWidth()
+                        .windowInsetsPadding(WindowInsets.navigationBars)
+                        .align(Alignment.BottomCenter)
+                ) {
 
                 AnimatedVisibility(
                     visible = showMiniPlayer,
@@ -591,6 +615,7 @@ fun StreamingNavigation(
                         onSearchClick = { navigateToTopLevel(StreamingScreen.Search.route) }
                     )
                 }
+                }
             }
         }
     ) { _ ->
@@ -599,7 +624,6 @@ fun StreamingNavigation(
             startDestination = StreamingScreen.Integration.route,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(LocalMiniPlayerPadding.current)
         ) {
             composable(
                 route = StreamingScreen.Integration.route,

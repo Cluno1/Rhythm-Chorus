@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">কোন আপডেট চ্যানেল অনুসরণ করতে হবে তা বেছে নিন:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">স্বাগতম</string>
     <string name="onboarding_welcome_to">স্বাগতম</string>
     <string name="onboarding_welcome_subtitle">আপনার সঙ্গীত, আপনার Rhythm</string>
     <string name="onboarding_get_started">শুরু করুন</string>
@@ -3015,5 +3016,8 @@
     <string name="nearby_server_discovery_scanning">স্ক্যান করা হচ্ছে...</string>
     <string name="nearby_server_discovery_empty">কাছাকাছি কোনো সার্ভার পাওয়া যায়নি। নিশ্চিত করুন যে আপনার সার্ভার চলছে এবং একই Wi-Fi নেটওয়ার্কের সাথে সংযুক্ত আছে৷</string>
     <string name="nearby_server_discovery_rescan">রিস্ক্যান করুন</string>
+    <string name="settings_metadata_editing">মেটাডেটা সম্পাদনা</string>
+    <string name="settings_enable_album_editing">অ্যালবাম সম্পাদনা সক্ষম করুন</string>
+    <string name="settings_enable_album_editing_desc">সম্পূর্ণ অ্যালবামের জন্য মেটাডেটা এবং আর্টওয়ার্কের ব্যাচ সম্পাদনার অনুমতি দিন।</string>
 </resources>
 

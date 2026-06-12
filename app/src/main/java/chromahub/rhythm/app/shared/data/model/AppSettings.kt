@@ -158,6 +158,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_THEME_ID = "player_theme_id" // ID of the selected player theme (default, compact, large, minimal)
         private const val KEY_MINI_PLAYER_THEME_ID = "miniplayer_theme_id"
         private const val KEY_USE_EXPERIMENTAL_PLAYER_UI = "use_experimental_player_ui"
+        private const val KEY_ENABLE_ALBUM_EDITING = "enable_album_editing"
         
         // Library Settings
         private const val KEY_ALBUM_VIEW_TYPE = "album_view_type"
@@ -1515,6 +1516,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
 
     private val _useExperimentalPlayerUi = MutableStateFlow(prefs.getBoolean(KEY_USE_EXPERIMENTAL_PLAYER_UI, false))
     val useExperimentalPlayerUi: StateFlow<Boolean> = _useExperimentalPlayerUi.asStateFlow()
+
+    private val _enableAlbumEditing = MutableStateFlow(prefs.getBoolean(KEY_ENABLE_ALBUM_EDITING, false))
+    val enableAlbumEditing: StateFlow<Boolean> = _enableAlbumEditing.asStateFlow()
     
     // Festive Theme Settings
     private val _festiveThemeEnabled = MutableStateFlow(prefs.getBoolean(KEY_FESTIVE_THEME_ENABLED, true))
@@ -3255,6 +3259,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         prefs.edit().putBoolean(KEY_USE_EXPERIMENTAL_PLAYER_UI, enabled).apply()
         _useExperimentalPlayerUi.value = enabled
     }
+
+    fun setEnableAlbumEditing(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_ENABLE_ALBUM_EDITING, enabled).apply()
+        _enableAlbumEditing.value = enabled
+    }
     
     // Codec Monitoring & Enhanced Seeking Methods
     fun setCodecMonitoringEnabled(enabled: Boolean) {
@@ -4668,6 +4677,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _rhythmPulseNotificationIntervalHours.value = prefs.getInt(KEY_RHYTHM_PULSE_NOTIFICATION_INTERVAL_HOURS, 24).coerceIn(6, 72)
         _forcePlayerCompactMode.value = prefs.getBoolean(KEY_FORCE_PLAYER_COMPACT_MODE, false)
         _useExperimentalPlayerUi.value = prefs.getBoolean(KEY_USE_EXPERIMENTAL_PLAYER_UI, false)
+        _enableAlbumEditing.value = prefs.getBoolean(KEY_ENABLE_ALBUM_EDITING, false)
         _onboardingCompleted.value = prefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
         _initialMediaScanCompleted.value = prefs.getBoolean(KEY_INITIAL_MEDIA_SCAN_COMPLETED, false)
         _genreDetectionCompleted.value = prefs.getBoolean(KEY_GENRE_DETECTION_COMPLETED, false)

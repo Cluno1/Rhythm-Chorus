@@ -316,7 +316,7 @@ fun StreamingLibraryScreen(
     // Get miniplayer padding for bottom content alignment
     val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val isTabletLayout = LocalConfiguration.current.screenWidthDp >= 600
-    val baseLibraryBottomPadding = if (isTabletLayout) 16.dp else (MusicDimensions.bottomNavigationHeight + 16.dp)
+    val baseLibraryBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val libraryBottomOverlayPadding = baseLibraryBottomPadding
     val contentBottomPadding = 24.dp
 
@@ -872,7 +872,7 @@ fun StreamingLibraryScreen(
                     onCreatePlaylist = { showCreatePlaylistDialog = true },
                     onImportPlaylist = null,
                     onExportPlaylists = null,
-                    bottomPadding = baseLibraryBottomPadding,
+                    bottomPadding = (baseLibraryBottomPadding - 12.dp).coerceAtLeast(0.dp),
                     haptics = haptics
                 )
             }
@@ -944,7 +944,7 @@ fun StreamingLibraryScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(start = 10.dp, top = 0.dp, end = 10.dp, bottom = libraryBottomOverlayPadding),
+                    .padding(start = 10.dp, top = 0.dp, end = 10.dp),
                 shape = RoundedCornerShape(20.dp),
                 color = Color.Transparent,
                 shadowElevation = 0.dp
@@ -1272,7 +1272,8 @@ fun StreamingLibraryScreen(
                                                 )
                                             }
                                         },
-                                        onRefreshClick = { viewModel.loadLibrary() }
+                                        onRefreshClick = { viewModel.loadLibrary() },
+                                        bottomPadding = baseLibraryBottomPadding
                                     )
                                 }
                             }
@@ -1664,7 +1665,8 @@ fun StreamingLibraryScreen(
                                         }
 
                                     },
-                                    onRefreshClick = { viewModel.loadLibrary() }
+                                    onRefreshClick = { viewModel.loadLibrary() },
+                                    bottomPadding = baseLibraryBottomPadding
                                 )
                             }
 
@@ -1697,7 +1699,8 @@ fun StreamingLibraryScreen(
                                             )
                                         }
                                     },
-                                    onRefreshClick = { viewModel.loadLibrary() }
+                                    onRefreshClick = { viewModel.loadLibrary() },
+                                    bottomPadding = baseLibraryBottomPadding
                                 )
                             }
 
@@ -1714,7 +1717,8 @@ fun StreamingLibraryScreen(
                                         showCreatePlaylistDialog = true
                                     },
                                     appSettings = appSettings,
-                                    onRefreshClick = { viewModel.loadLibrary() }
+                                    onRefreshClick = { viewModel.loadLibrary() },
+                                    bottomPadding = baseLibraryBottomPadding
                                 )
                             }
                         }
@@ -3001,10 +3005,20 @@ private fun LibraryBottomBar(
         ) + fadeOut(animationSpec = tween(200)),
         modifier = modifier
     ) {
+        val isTablet = LocalConfiguration.current.screenWidthDp >= 600
+        val baseBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
+        val bottomPaddingVal = if (isTablet) 12.dp else (baseBottomPadding - 4.dp).coerceAtLeast(0.dp)
         Surface(
-            modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .padding(bottom = bottomPadding),
+            modifier = if (isTablet) {
+                Modifier
+                    .width(440.dp)
+                    .padding(bottom = bottomPaddingVal)
+            } else {
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = bottomPaddingVal)
+            },
             shape = RoundedCornerShape(32.dp),
             color = MaterialTheme.colorScheme.surfaceContainer,
             tonalElevation = 6.dp,

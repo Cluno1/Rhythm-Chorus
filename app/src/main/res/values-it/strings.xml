@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">Scegli quale canale di aggiornamento seguire:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Benvenuto</string>
     <string name="onboarding_welcome_to">Benvenuti a</string>
     <string name="onboarding_welcome_subtitle">La tua musica, il tuo Rhythm</string>
     <string name="onboarding_get_started">Inizia</string>
@@ -3017,5 +3018,8 @@ Grafica del giocatore</string>
     <string name="nearby_server_discovery_scanning">Ricerca di server nelle vicinanze in corso...</string>
     <string name="nearby_server_discovery_empty">Nessun server nelle vicinanze trovato. Assicurati che il tuo server sia in esecuzione e connesso alla stessa rete Wi-Fi.</string>
     <string name="nearby_server_discovery_rescan">Nuova scansione</string>
+    <string name="settings_metadata_editing">Modifica dei metadati</string>
+    <string name="settings_enable_album_editing">Abilita la modifica dell\'album</string>
+    <string name="settings_enable_album_editing_desc">Consenti la modifica in batch di metadati e grafica per interi album.</string>
 </resources>
 

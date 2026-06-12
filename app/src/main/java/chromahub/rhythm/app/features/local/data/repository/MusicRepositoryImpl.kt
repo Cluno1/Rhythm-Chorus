@@ -389,6 +389,11 @@ class MusicRepository(context: Context) {
             val songs = entities.mapNotNull { entity ->
                 try {
                     val songUri = Uri.parse(entity.uri)
+                    
+                    val artworkRemovedOverride = artworkPrefs.getBoolean("removed_${entity.id}", false)
+                    val artworkUriOverride = artworkPrefs.getString("uri_${entity.id}", null)
+                        ?.let { runCatching { Uri.parse(it) }.getOrNull() }
+
                     val savedArtworkUri = entity.artworkUri?.let { Uri.parse(it) }
                     val savedArtworkUsable = when (savedArtworkUri?.scheme) {
                         "file", null -> savedArtworkUri?.path?.let { File(it).exists() } == true
@@ -418,11 +423,28 @@ class MusicRepository(context: Context) {
                         )
                     }
 
-                    val resolvedArtworkUri = when {
+                    val effectiveArtUri = when {
                         embeddedCachedArtwork != null -> embeddedCachedArtwork
                         shouldUseSavedArtwork -> savedArtworkUri
                         fallbackAlbumArt != null -> fallbackAlbumArt
                         else -> null
+                    }
+
+                    val resolvedArtworkUri = when {
+                        artworkRemovedOverride -> null
+                        artworkUriOverride != null -> {
+                            val isUsable = when (artworkUriOverride.scheme) {
+                                "file", null -> artworkUriOverride.path?.let { File(it).exists() } == true
+                                else -> true
+                            }
+                            if (isUsable) {
+                                artworkUriOverride
+                            } else {
+                                artworkPrefs.edit().remove("uri_${entity.id}").apply()
+                                effectiveArtUri
+                            }
+                        }
+                        else -> effectiveArtUri
                     }
 
                     Song(

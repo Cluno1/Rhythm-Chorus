@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">เลือกช่องทางการอัปเดตที่จะติดตาม:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">ยินดีต้อนรับ</string>
     <string name="onboarding_welcome_to">ยินดีต้อนรับสู่</string>
     <string name="onboarding_welcome_subtitle">เพลงของคุณ Rhythm</string>
     <string name="onboarding_get_started">เริ่มต้น</string>
@@ -3008,5 +3009,8 @@
     <string name="nearby_server_discovery_scanning">กำลังสแกนหาเซิร์ฟเวอร์ใกล้เคียง...</string>
     <string name="nearby_server_discovery_empty">ไม่พบเซิร์ฟเวอร์ใกล้เคียง ตรวจสอบให้แน่ใจว่าเซิร์ฟเวอร์ของคุณทำงานและเชื่อมต่อกับเครือข่าย Wi-Fi เดียวกัน</string>
     <string name="nearby_server_discovery_rescan">สแกนใหม่</string>
+    <string name="settings_metadata_editing">การแก้ไขข้อมูลเมตา</string>
+    <string name="settings_enable_album_editing">เปิดใช้งานการแก้ไขอัลบั้ม</string>
+    <string name="settings_enable_album_editing_desc">อนุญาตให้แก้ไขข้อมูลเมตาและอาร์ตเวิร์คเป็นชุดสำหรับทั้งอัลบั้ม</string>
 </resources>
 

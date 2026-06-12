@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">Choose which update channel to follow:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Welcome</string>
     <string name="onboarding_welcome_to">Welcome to</string>
     <string name="onboarding_welcome_subtitle">Your Music, Your Rhythm</string>
     <string name="onboarding_get_started">Get Started</string>
@@ -3008,5 +3009,8 @@
     <string name="nearby_server_discovery_scanning">Scanning for nearby servers…</string>
     <string name="nearby_server_discovery_empty">No nearby servers found. Make sure your server is running and connected to the same Wi-Fi network.</string>
     <string name="nearby_server_discovery_rescan">Rescan</string>
+    <string name="settings_metadata_editing">Metadata Editing</string>
+    <string name="settings_enable_album_editing">Enable Album Editing</string>
+    <string name="settings_enable_album_editing_desc">Allow batch editing of metadata and artwork for entire albums.</string>
 </resources>
 

@@ -165,9 +165,7 @@ fun ExperimentalFeaturesScreen(
     val appSettings = AppSettings.getInstance(context)
     val appMode by appSettings.appMode.collectAsState()
     val hapticFeedbackEnabled by appSettings.hapticFeedbackEnabled.collectAsState()
-    val showLyrics by appSettings.showLyrics.collectAsState()
-    val showLyricsTranslation by appSettings.showLyricsTranslation.collectAsState()
-    val showLyricsRomanization by appSettings.showLyricsRomanization.collectAsState()
+    val enableAlbumEditing by appSettings.enableAlbumEditing.collectAsState()
     val skipSilenceEnabled by appSettings.skipSilenceEnabled.collectAsState()
     val replayGain by appSettings.replayGain.collectAsState()
     val audioRoutingMode by appSettings.audioRoutingMode.collectAsState()
@@ -218,33 +216,16 @@ fun ExperimentalFeaturesScreen(
 
             add(
                 SettingGroup(
-                    title = context.getString(R.string.settings_lyrics_customization),
-                    items = if (showLyrics) {
-                        listOf(
-                            SettingItem(
-                                MaterialSymbolIcon("translate", filled = true),
-                                context.getString(R.string.settings_lyrics_show_translation),
-                                context.getString(R.string.settings_lyrics_show_translation_desc),
-                                toggleState = showLyricsTranslation,
-                                onToggleChange = { appSettings.setShowLyricsTranslation(it) }
-                            ),
-                            SettingItem(
-                                RhythmIcons.Language,
-                                context.getString(R.string.settings_lyrics_show_romanization),
-                                context.getString(R.string.settings_lyrics_show_romanization_desc),
-                                toggleState = showLyricsRomanization,
-                                onToggleChange = { appSettings.setShowLyricsRomanization(it) }
-                            )
+                    title = context.getString(R.string.settings_metadata_editing),
+                    items = listOf(
+                        SettingItem(
+                            MaterialSymbolIcon("edit"),
+                            context.getString(R.string.settings_enable_album_editing),
+                            context.getString(R.string.settings_enable_album_editing_desc),
+                            toggleState = enableAlbumEditing,
+                            onToggleChange = { appSettings.setEnableAlbumEditing(it) }
                         )
-                    } else {
-                        listOf(
-                            SettingItem(
-                                RhythmIcons.Info,
-                                context.getString(R.string.settings_show_lyrics_player),
-                                context.getString(R.string.settings_show_lyrics_player_desc)
-                            )
-                        )
-                    }
+                    )
                 )
             )
             

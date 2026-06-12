@@ -9,6 +9,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -206,6 +207,7 @@ fun AlbumBottomSheet(
     val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
     val albumBottomSheetGradientBlur by appSettings.albumBottomSheetGradientBlur.collectAsState()
     val libraryCombineDiscs by appSettings.libraryCombineDiscs.collectAsState()
+    val enableAlbumEditing by appSettings.enableAlbumEditing.collectAsState()
     val albumArtworkShape = rememberExpressiveShapeFor(
         target = ExpressiveShapeTarget.ALBUM_ART,
         fallbackShape = RoundedCornerShape(24.dp)
@@ -533,7 +535,7 @@ fun AlbumBottomSheet(
                                             }
                                         }
 
-                                        if (onEditAlbum != null) {
+                                        if (onEditAlbum != null && enableAlbumEditing) {
                                             FilledIconButton(
                                                 onClick = {
                                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.MEDIUM)
@@ -1096,7 +1098,7 @@ fun AlbumBottomSheet(
             dragHandle = null,
             containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-            modifier = Modifier
+            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
                 .fillMaxHeight()
                 .imePadding()
         ) {
@@ -1347,7 +1349,7 @@ fun AlbumBottomSheet(
                                                 )
                                         )
 
-                                        if (onEditAlbum != null) {
+                                        if (onEditAlbum != null && enableAlbumEditing) {
                                             FilledIconButton(
                                                 onClick = {
                                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.MEDIUM)
@@ -2058,7 +2060,7 @@ fun AlbumBottomSheet(
         }
     }
 
-    if (showEditAlbumSheet && onEditAlbum != null) {
+    if (showEditAlbumSheet && onEditAlbum != null && enableAlbumEditing) {
         EditAlbumSheet(
             album = album,
             onDismiss = { showEditAlbumSheet = false },

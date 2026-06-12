@@ -16,6 +16,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -156,6 +157,8 @@ fun UniversalSearchScreen(
     var isSongInfoStreaming by remember { mutableStateOf(false) }
     var showCreatePlaylistDialog by remember { mutableStateOf(false) }
 
+    var pendingMetadataEditCompleteCallback by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
+
     val writePermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
@@ -163,13 +166,19 @@ fun UniversalSearchScreen(
             localViewModel.completeMetadataWriteAfterPermission(
                 onSuccess = {
                     Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                    pendingMetadataEditCompleteCallback?.invoke(true)
+                    pendingMetadataEditCompleteCallback = null
                 },
                 onError = { errorMessage ->
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    pendingMetadataEditCompleteCallback?.invoke(false)
+                    pendingMetadataEditCompleteCallback = null
                 }
             )
         } else {
             localViewModel.cancelPendingMetadataWrite()
+            pendingMetadataEditCompleteCallback?.invoke(false)
+            pendingMetadataEditCompleteCallback = null
             Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, Toast.LENGTH_LONG).show()
         }
     }
@@ -1117,7 +1126,8 @@ fun UniversalSearchScreen(
                 onDismiss = { showSongInfoSheet = false },
                 appSettings = appSettings,
                 isStreamingMode = isSongInfoStreaming,
-                onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork ->
+                onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+                    pendingMetadataEditCompleteCallback = onComplete
                     try {
                         localViewModel.saveMetadataChanges(
                             song = selectedSongForInfo!!,
@@ -1133,9 +1143,13 @@ fun UniversalSearchScreen(
                                 if (fileWriteSucceeded) {
                                     Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, Toast.LENGTH_SHORT).show()
                                 }
+                                pendingMetadataEditCompleteCallback?.invoke(true)
+                                pendingMetadataEditCompleteCallback = null
                             },
                             onError = { errorMessage ->
                                 Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                                pendingMetadataEditCompleteCallback?.invoke(false)
+                                pendingMetadataEditCompleteCallback = null
                             },
                             onPermissionRequired = { pendingRequest ->
                                 try {
@@ -1146,12 +1160,16 @@ fun UniversalSearchScreen(
                                 } catch (e: Exception) {
                                     Toast.makeText(context, context.getString(R.string.failed_to_request_permission, e.message ?: ""), Toast.LENGTH_LONG).show()
                                     localViewModel.cancelPendingMetadataWrite()
+                                    pendingMetadataEditCompleteCallback?.invoke(false)
+                                    pendingMetadataEditCompleteCallback = null
                                 }
                             }
                         )
                     } catch (e: Exception) {
                         Toast.makeText(context, context.getString(R.string.unexpected_error, e.message ?: ""), Toast.LENGTH_LONG).show()
                         android.util.Log.w("UniversalSearchScreen", "Metadata update failed for song: ${selectedSongForInfo!!.title}", e)
+                        pendingMetadataEditCompleteCallback?.invoke(false)
+                        pendingMetadataEditCompleteCallback = null
                     }
                 },
                 onShowLyricsEditor = { }
@@ -1622,6 +1640,7 @@ fun UniversalSongOptionsBottomSheet(
     }
 
     ModalBottomSheet(
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         dragHandle = {
             BottomSheetDefaults.DragHandle(

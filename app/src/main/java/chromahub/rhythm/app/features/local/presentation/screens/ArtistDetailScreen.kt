@@ -192,172 +192,440 @@ fun ArtistDetailScreen(
         showContent = true
     }
 
-    ArtistCollapsibleHeaderScreen(
-        title = artistName,
-        artist = artist,
-        artworkUri = artist?.artworkUri?.toString(),
-        artistName = artistName,
-        artistSongsCount = artistSongs.size.takeIf { it > 0 }
-            ?: artist?.numberOfTracks
-            ?: 0,
-        artistAlbumsCount = artistAlbums.size.takeIf { it > 0 }
-            ?: artist?.numberOfAlbums
-            ?: 0,
-        showBackButton = true,
-        onBackClick = {
-            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-            onBack()
-        }
-    ) { modifier ->
-        LazyColumn(
-            modifier = modifier,
-            contentPadding = PaddingValues(bottom = 100.dp)
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+
+    if (isTablet) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
         ) {
-            // Action Buttons Section
-            item {
-                Spacer(modifier = Modifier.height(38.dp))
-                if (isArtistContentLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 24.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                } else {
-                    ArtistActionButtons(
-                        artistSongs = artistSongs,
-                        onPlayAll = {
-                            if (artistSongs.isNotEmpty()) {
-                                onPlayAll(artistSongs)
-                                onPlayerClick()
-                            }
-                        },
-                        onShufflePlay = {
-                            if (artistSongs.isNotEmpty()) {
-                                onShufflePlay(artistSongs)
-                                onPlayerClick()
-                            }
-                        },
-                        onAddToQueueAll = {
-                            if (artistSongs.isNotEmpty()) {
-                                onAddToQueueAll(artistSongs)
-                            }
-                        },
-                        haptics = haptics
-                    )
-                }
-            }
-            
-            // Albums Section
-            if (!isArtistContentLoading && artistAlbums.isNotEmpty()) {
-                item {
-                    Spacer(modifier = Modifier.height(24.dp))
-                    ArtistAlbumsSection(
-                        artistAlbums = artistAlbums,
-                        viewModel = viewModel,
-                        onAlbumClick = onAlbumClick,
-                        haptics = haptics
-                    )
-                }
-            }
-            
-            // Songs Section
-            if (!isArtistContentLoading && artistSongs.isNotEmpty()) {
-                item {
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth()
+            Row(modifier = Modifier.fillMaxSize()) {
+                // Left Panel: Info and Artwork (40%)
+                Surface(
+                    modifier = Modifier
+                        .weight(0.4f)
+                        .fillMaxHeight(),
+                    color = MaterialTheme.colorScheme.surfaceContainerLow
+                ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        // Back Button
+                        IconButton(
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                onBack()
+                            },
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(16.dp)
                         ) {
-                            // Songs Section Header
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp, vertical = 16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                            Icon(
+                                imageVector = RhythmIcons.Navigation.Back,
+                                contentDescription = "Back"
+                            )
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Card(
+                                modifier = Modifier.size(260.dp),
+                                shape = RoundedCornerShape(32.dp),
+                                elevation = CardDefaults.cardElevation(8.dp)
                             ) {
-                                Text(
-                                    text = context.getString(R.string.bottomsheet_songs),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .apply(
+                                            ImageUtils.buildImageRequest(
+                                                artist?.artworkUri,
+                                                artistName,
+                                                context.cacheDir,
+                                                M3PlaceholderType.ARTIST
+                                            )
+                                        )
+                                        .build(),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
                                 )
-                                
+                            }
+
+                            Spacer(modifier = Modifier.height(28.dp))
+
+                            Text(
+                                text = artistName,
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                val songsCount = artistSongs.size.takeIf { it > 0 }
+                                    ?: artist?.numberOfTracks
+                                    ?: 0
+                                val albumsCount = artistAlbums.size.takeIf { it > 0 }
+                                    ?: artist?.numberOfAlbums
+                                    ?: 0
+
+                                Surface(
+                                    shape = RoundedCornerShape(16.dp),
+                                    color = MaterialTheme.colorScheme.primaryContainer
+                                ) {
+                                    Text(
+                                        text = "$songsCount songs",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                    )
+                                }
                                 Surface(
                                     shape = RoundedCornerShape(16.dp),
                                     color = MaterialTheme.colorScheme.secondaryContainer
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                    Text(
+                                        text = "$albumsCount albums",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Right Panel: Scrollable actions and content (60%)
+                Surface(
+                    modifier = Modifier
+                        .weight(0.6f)
+                        .fillMaxHeight(),
+                    color = Color.Transparent
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(top = 24.dp, bottom = 100.dp, start = 16.dp, end = 24.dp)
+                    ) {
+                        item {
+                            if (isArtistContentLoading) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 24.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            } else {
+                                ArtistActionButtons(
+                                    artistSongs = artistSongs,
+                                    onPlayAll = {
+                                        if (artistSongs.isNotEmpty()) {
+                                            onPlayAll(artistSongs)
+                                            onPlayerClick()
+                                        }
+                                    },
+                                    onShufflePlay = {
+                                        if (artistSongs.isNotEmpty()) {
+                                            onShufflePlay(artistSongs)
+                                            onPlayerClick()
+                                        }
+                                    },
+                                    onAddToQueueAll = {
+                                        if (artistSongs.isNotEmpty()) {
+                                            onAddToQueueAll(artistSongs)
+                                        }
+                                    },
+                                    haptics = haptics
+                                )
+                            }
+                        }
+
+                        if (!isArtistContentLoading && artistAlbums.isNotEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(24.dp))
+                                ArtistAlbumsSection(
+                                    artistAlbums = artistAlbums,
+                                    viewModel = viewModel,
+                                    onAlbumClick = onAlbumClick,
+                                    haptics = haptics
+                                )
+                            }
+                        }
+
+                        if (!isArtistContentLoading && artistSongs.isNotEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(24.dp))
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp),
+                                    shape = RoundedCornerShape(24.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                                    ),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.Music.Song,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                        )
-                                        Text(
-                                            text = "${artistSongs.size}",
-                                            style = MaterialTheme.typography.labelLarge,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                                        )
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 20.dp, vertical = 16.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = context.getString(R.string.bottomsheet_songs),
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold
+                                            )
+
+                                            Surface(
+                                                shape = RoundedCornerShape(16.dp),
+                                                color = MaterialTheme.colorScheme.secondaryContainer
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Icon(
+                                                        imageVector = RhythmIcons.Music.Song,
+                                                        contentDescription = null,
+                                                        modifier = Modifier.size(16.dp),
+                                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    )
+                                                    Text(
+                                                        text = "${artistSongs.size}",
+                                                        style = MaterialTheme.typography.labelLarge,
+                                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        artistSongs.forEach { song ->
+                                            ArtistSongItem(
+                                                song = song,
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                                    onSongClick(song)
+                                                    onPlayerClick()
+                                                },
+                                                onAddToQueue = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                                    onAddToQueue(song)
+                                                },
+                                                onAddToPlaylist = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                                    onAddSongToPlaylist(song)
+                                                },
+                                                onPlayNext = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                                    onPlayNext(song)
+                                                },
+                                                onToggleFavorite = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                                    onToggleFavorite(song)
+                                                },
+                                                isFavorite = favoriteSongs.contains(song.id),
+                                                onShowSongInfo = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                                    onShowSongInfo(song)
+                                                },
+                                                showPlayNextAction = showPlayNextAction,
+                                                showAddToQueueAction = showAddToQueueAction,
+                                                showToggleFavoriteAction = showToggleFavoriteAction,
+                                                showAddToPlaylistAction = showAddToPlaylistAction,
+                                                showSongInfoAction = showSongInfoAction,
+                                                currentSong = currentSong,
+                                                isPlaying = isPlaying,
+                                                useHoursFormat = useHoursFormat,
+                                                haptics = haptics
+                                            )
+                                        }
                                     }
                                 }
                             }
-                            
-                            // Songs List
-                            artistSongs.forEach { song ->
-                                ArtistSongItem(
-                                    song = song,
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                        onSongClick(song)
-                                        onPlayerClick()
-                                    },
-                                    onAddToQueue = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                        onAddToQueue(song)
-                                    },
-                                    onAddToPlaylist = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                        onAddSongToPlaylist(song)
-                                    },
-                                    onPlayNext = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                        onPlayNext(song)
-                                    },
-                                    onToggleFavorite = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                        onToggleFavorite(song)
-                                    },
-                                    isFavorite = favoriteSongs.contains(song.id),
-                                    onShowSongInfo = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                        onShowSongInfo(song)
-                                    },
-                                    showPlayNextAction = showPlayNextAction,
-                                    showAddToQueueAction = showAddToQueueAction,
-                                    showToggleFavoriteAction = showToggleFavoriteAction,
-                                    showAddToPlaylistAction = showAddToPlaylistAction,
-                                    showSongInfoAction = showSongInfoAction,
-                                    currentSong = currentSong,
-                                    isPlaying = isPlaying,
-                                    useHoursFormat = useHoursFormat,
-                                    haptics = haptics
-                                )
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        ArtistCollapsibleHeaderScreen(
+            title = artistName,
+            artist = artist,
+            artworkUri = artist?.artworkUri?.toString(),
+            artistName = artistName,
+            artistSongsCount = artistSongs.size.takeIf { it > 0 }
+                ?: artist?.numberOfTracks
+                ?: 0,
+            artistAlbumsCount = artistAlbums.size.takeIf { it > 0 }
+                ?: artist?.numberOfAlbums
+                ?: 0,
+            showBackButton = true,
+            onBackClick = {
+                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                onBack()
+            }
+        ) { modifier ->
+            LazyColumn(
+                modifier = modifier,
+                contentPadding = PaddingValues(bottom = 100.dp)
+            ) {
+                // Action Buttons Section
+                item {
+                    Spacer(modifier = Modifier.height(38.dp))
+                    if (isArtistContentLoading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        ArtistActionButtons(
+                            artistSongs = artistSongs,
+                            onPlayAll = {
+                                if (artistSongs.isNotEmpty()) {
+                                    onPlayAll(artistSongs)
+                                    onPlayerClick()
+                                }
+                            },
+                            onShufflePlay = {
+                                if (artistSongs.isNotEmpty()) {
+                                    onShufflePlay(artistSongs)
+                                    onPlayerClick()
+                                }
+                            },
+                            onAddToQueueAll = {
+                                if (artistSongs.isNotEmpty()) {
+                                    onAddToQueueAll(artistSongs)
+                                }
+                            },
+                            haptics = haptics
+                        )
+                    }
+                }
+
+                // Albums Section
+                if (!isArtistContentLoading && artistAlbums.isNotEmpty()) {
+                    item {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        ArtistAlbumsSection(
+                            artistAlbums = artistAlbums,
+                            viewModel = viewModel,
+                            onAlbumClick = onAlbumClick,
+                            haptics = haptics
+                        )
+                    }
+                }
+
+                // Songs Section
+                if (!isArtistContentLoading && artistSongs.isNotEmpty()) {
+                    item {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                // Songs Section Header
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = context.getString(R.string.bottomsheet_songs),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                    Surface(
+                                        shape = RoundedCornerShape(16.dp),
+                                        color = MaterialTheme.colorScheme.secondaryContainer
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = RhythmIcons.Music.Song,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(16.dp),
+                                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+                                            Text(
+                                                text = "${artistSongs.size}",
+                                                style = MaterialTheme.typography.labelLarge,
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+                                        }
+                                    }
+                                }
+
+                                // Songs List
+                                artistSongs.forEach { song ->
+                                    ArtistSongItem(
+                                        song = song,
+                                        onClick = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            onSongClick(song)
+                                            onPlayerClick()
+                                        },
+                                        onAddToQueue = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            onAddToQueue(song)
+                                        },
+                                        onAddToPlaylist = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            onAddSongToPlaylist(song)
+                                        },
+                                        onPlayNext = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            onPlayNext(song)
+                                        },
+                                        onToggleFavorite = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            onToggleFavorite(song)
+                                        },
+                                        isFavorite = favoriteSongs.contains(song.id),
+                                        onShowSongInfo = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            onShowSongInfo(song)
+                                        },
+                                        showPlayNextAction = showPlayNextAction,
+                                        showAddToQueueAction = showAddToQueueAction,
+                                        showToggleFavoriteAction = showToggleFavoriteAction,
+                                        showAddToPlaylistAction = showAddToPlaylistAction,
+                                        showSongInfoAction = showSongInfoAction,
+                                        currentSong = currentSong,
+                                        isPlaying = isPlaying,
+                                        useHoursFormat = useHoursFormat,
+                                        haptics = haptics
+                                    )
+                                }
                             }
                         }
                     }

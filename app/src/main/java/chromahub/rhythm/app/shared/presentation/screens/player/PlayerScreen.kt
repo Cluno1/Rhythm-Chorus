@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
@@ -206,6 +207,7 @@ fun PlayerScreen(
         var showLyricsView by remember { mutableStateOf(false) }
         var showArtistChooserSheet by remember { mutableStateOf(false) }
         var candidateArtists by remember { mutableStateOf<List<Artist>>(emptyList()) }
+        var pendingMetadataEditCompleteCallback by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
 
         val playbackSpeed by musicViewModel.playbackSpeed.collectAsState()
         val playbackPitch by musicViewModel.playbackPitch.collectAsState()
@@ -272,9 +274,13 @@ fun PlayerScreen(
                     musicViewModel.completeMetadataWriteAfterPermission(
                         onSuccess = {
                             Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                            pendingMetadataEditCompleteCallback?.invoke(true)
+                            pendingMetadataEditCompleteCallback = null
                         },
                         onError = { errorMessage ->
                             Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                            pendingMetadataEditCompleteCallback?.invoke(false)
+                            pendingMetadataEditCompleteCallback = null
                         }
                     )
                 }
@@ -283,6 +289,8 @@ fun PlayerScreen(
                     musicViewModel.cancelPendingBatchMetadataWrite()
                 } else {
                     musicViewModel.cancelPendingMetadataWrite()
+                    pendingMetadataEditCompleteCallback?.invoke(false)
+                    pendingMetadataEditCompleteCallback = null
                 }
                 Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, Toast.LENGTH_LONG).show()
             }
@@ -455,7 +463,8 @@ fun PlayerScreen(
                 onDismiss = { showSongInfoSheet = false },
                 appSettings = appSettings,
                 isStreamingMode = isStreamingMode,
-                onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork ->
+                onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+                    pendingMetadataEditCompleteCallback = onComplete
                     try {
                         musicViewModel.saveMetadataChanges(
                             song = song,
@@ -471,9 +480,13 @@ fun PlayerScreen(
                                 if (fileWriteSucceeded) {
                                     Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, Toast.LENGTH_SHORT).show()
                                 }
+                                pendingMetadataEditCompleteCallback?.invoke(true)
+                                pendingMetadataEditCompleteCallback = null
                             },
                             onError = { errorMessage ->
                                 Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                                pendingMetadataEditCompleteCallback?.invoke(false)
+                                pendingMetadataEditCompleteCallback = null
                             },
                             onPermissionRequired = { pendingRequest ->
                                 try {
@@ -484,11 +497,15 @@ fun PlayerScreen(
                                 } catch (e: Exception) {
                                     Toast.makeText(context, context.getString(R.string.failed_to_request_permission, e.message ?: ""), Toast.LENGTH_LONG).show()
                                     musicViewModel.cancelPendingMetadataWrite()
+                                    pendingMetadataEditCompleteCallback?.invoke(false)
+                                    pendingMetadataEditCompleteCallback = null
                                 }
                             }
                         )
                     } catch (e: Exception) {
                         Toast.makeText(context, context.getString(R.string.unexpected_error, e.message ?: ""), Toast.LENGTH_LONG).show()
+                        pendingMetadataEditCompleteCallback?.invoke(false)
+                        pendingMetadataEditCompleteCallback = null
                         android.util.Log.w("PlayerScreen", "Metadata update failed for song: ${song.title}", e)
                     }
                 },
@@ -695,6 +712,7 @@ fun PlayerScreen(
         if (showArtistChooserSheet) {
             val chooserSheetState = rememberModalBottomSheetState()
             ModalBottomSheet(
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
                 onDismissRequest = { showArtistChooserSheet = false },
                 sheetState = chooserSheetState,
                 dragHandle = {

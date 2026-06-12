@@ -32,6 +32,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -60,13 +61,23 @@ import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderT
 import chromahub.rhythm.app.shared.presentation.components.common.ButtonGroupStyle
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveButtonGroup
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveGroupButton
+import chromahub.rhythm.app.shared.presentation.components.common.ActionProgressLoader
+import chromahub.rhythm.app.network.NetworkClient
+import chromahub.rhythm.app.network.YTMusicSearchRequest
+import chromahub.rhythm.app.network.YTMusicContext
+import chromahub.rhythm.app.network.YTMusicClient
+import chromahub.rhythm.app.network.extractAlbumImageUrl
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.Button
 import chromahub.rhythm.app.util.ImageUtils
 import chromahub.rhythm.app.util.MediaUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import java.io.File
 import chromahub.rhythm.app.R
 import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
 
 private fun resolveBatchEditArtworkUri(context: android.content.Context, song: Song): Uri? {
     val currentArtworkUri = song.artworkUri
@@ -131,7 +142,16 @@ private fun isUsableArtworkUriForBatch(uri: Uri): Boolean {
 fun BatchEditTagsSheet(
     selectedSongs: List<Song>,
     onDismiss: () -> Unit,
-    onSave: (artist: String?, album: String?, genre: String?, year: Int?, artworkUri: Uri?, removeArtwork: Boolean) -> Unit
+    onSave: (
+        artist: String?,
+        album: String?,
+        genre: String?,
+        year: Int?,
+        artworkUri: Uri?,
+        removeArtwork: Boolean,
+        onProgress: (Int, Int) -> Unit,
+        onComplete: (successCount: Int, failCount: Int) -> Unit
+    ) -> Unit
 ) {
     val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -151,6 +171,8 @@ fun BatchEditTagsSheet(
 
     var isSaving by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
+    var isFetchingOnlineArt by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -213,11 +235,22 @@ fun BatchEditTagsSheet(
             if (editGenre) genre.trim().takeIf { it.isNotBlank() } else null,
             if (editYear) year.toIntOrNull() else null,
             if (editArtwork) selectedImageUri else null,
-            if (editArtwork) removeArtwork else false
+            if (editArtwork) removeArtwork else false,
+            { current, total ->
+                progress = if (total > 0) current.toFloat() / total else 0f
+            },
+            { successCount, failCount ->
+                isSaving = false
+                onDismiss()
+                val msg = if (failCount == 0) "Updated $successCount songs successfully"
+                          else "Updated $successCount songs, $failCount failed"
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            }
         )
     }
 
     ModalBottomSheet(
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = { if (!isSaving) onDismiss() },
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary) },
@@ -457,6 +490,107 @@ fun BatchEditTagsSheet(
                                             Text(stringResource(R.string.content_desc_remove))
                                         }
                                     }
+
+                                    if (NetworkClient.isYTMusicApiEnabled()) {
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Button(
+                                            onClick = {
+                                                isFetchingOnlineArt = true
+                                                coroutineScope.launch(Dispatchers.IO) {
+                                                    try {
+                                                        val apiService = NetworkClient.ytmusicApiService
+                                                        if (apiService != null) {
+                                                            val searchQueryArtist = if (editArtist && artist.isNotBlank()) artist else (previewSong?.artist ?: "")
+                                                            val searchQueryAlbum = if (editAlbum && album.isNotBlank()) album else (previewSong?.album ?: "")
+                                                            val searchQuery = "${searchQueryAlbum.trim()} ${searchQueryArtist.trim()}"
+                                                            val searchRequest = YTMusicSearchRequest(
+                                                                context = YTMusicContext(YTMusicClient()),
+                                                                query = searchQuery,
+                                                                params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D"
+                                                            )
+                                                            val response = apiService.search(request = searchRequest)
+                                                            if (response.isSuccessful) {
+                                                                val imageUrl = response.body()?.extractAlbumImageUrl()
+                                                                if (!imageUrl.isNullOrEmpty()) {
+                                                                    val okRequest = okhttp3.Request.Builder().url(imageUrl).build()
+                                                                    val okResponse = NetworkClient.genericHttpClient.newCall(okRequest).execute()
+                                                                    if (okResponse.isSuccessful) {
+                                                                        val bytes = okResponse.body?.bytes()
+                                                                        if (bytes != null) {
+                                                                            val tempFile = File(context.cacheDir, "temp_artwork_fetched_batch_${previewSong?.id ?: "temp"}.jpg")
+                                                                            tempFile.writeBytes(bytes)
+                                                                            withContext(Dispatchers.Main) {
+                                                                                selectedImageUri = Uri.fromFile(tempFile)
+                                                                                removeArtwork = false
+                                                                                Toast.makeText(context, R.string.songinfobottomsheet_artwork_fetched_successfully_click, Toast.LENGTH_SHORT).show()
+                                                                            }
+                                                                        } else {
+                                                                            withContext(Dispatchers.Main) {
+                                                                                Toast.makeText(context, R.string.songinfobottomsheet_failed_to_download_artwork, Toast.LENGTH_SHORT).show()
+                                                                            }
+                                                                        }
+                                                                    } else {
+                                                                        withContext(Dispatchers.Main) {
+                                                                            Toast.makeText(context, R.string.songinfobottomsheet_failed_to_download_artwork_1, Toast.LENGTH_SHORT).show()
+                                                                        }
+                                                                    }
+                                                                } else {
+                                                                    withContext(Dispatchers.Main) {
+                                                                        Toast.makeText(context, R.string.songinfobottomsheet_no_artwork_found_for, Toast.LENGTH_SHORT).show()
+                                                                    }
+                                                                }
+                                                            } else {
+                                                                withContext(Dispatchers.Main) {
+                                                                    Toast.makeText(context, R.string.songinfobottomsheet_online_search_failed, Toast.LENGTH_SHORT).show()
+                                                                }
+                                                            }
+                                                        } else {
+                                                            withContext(Dispatchers.Main) {
+                                                                Toast.makeText(context, R.string.songinfobottomsheet_online_api_service_unavailable, Toast.LENGTH_SHORT).show()
+                                                            }
+                                                        }
+                                                    } catch (e: Exception) {
+                                                        withContext(Dispatchers.Main) {
+                                                            Toast.makeText(context, context.getString(R.string.error_fetching_artwork, e.message ?: ""), Toast.LENGTH_LONG).show()
+                                                        }
+                                                    } finally {
+                                                        withContext(Dispatchers.Main) {
+                                                            isFetchingOnlineArt = false
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            enabled = !isFetchingOnlineArt && !isSaving && (
+                                                (editArtist && artist.isNotBlank()) ||
+                                                (editAlbum && album.isNotBlank()) ||
+                                                (!previewSong?.artist.isNullOrBlank()) ||
+                                                (!previewSong?.album.isNullOrBlank())
+                                            ),
+                                            shape = RoundedCornerShape(14.dp),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                            ),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            if (isFetchingOnlineArt) {
+                                                ActionProgressLoader(
+                                                    size = 18.dp,
+                                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(stringResource(R.string.songinfobottomsheet_fetching))
+                                            } else {
+                                                Icon(
+                                                    imageVector = MaterialSymbolIcon("cloud_download", filled = true),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(stringResource(R.string.songinfobottomsheet_fetch_online_art))
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -495,7 +629,7 @@ fun BatchEditTagsSheet(
             ) {
                 ExpressiveGroupButton(
                     onClick = onDismiss,
-                    enabled = !isSaving,
+                    enabled = !isSaving && !isFetchingOnlineArt,
                     modifier = Modifier.weight(1f),
                     isStart = true
                 ) {
@@ -510,7 +644,7 @@ fun BatchEditTagsSheet(
 
                 ExpressiveGroupButton(
                     onClick = { submitBatchChanges() },
-                    enabled = !isSaving,
+                    enabled = !isSaving && !isFetchingOnlineArt,
                     modifier = Modifier.weight(1f),
                     isEnd = true
                 ) {

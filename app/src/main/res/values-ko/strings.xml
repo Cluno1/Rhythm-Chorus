@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">따를 업데이트 채널을 선택하세요.</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">환영합니다</string>
     <string name="onboarding_welcome_to">에 오신 것을 환영합니다</string>
     <string name="onboarding_welcome_subtitle">당신의 음악, 당신의 Rhythm</string>
     <string name="onboarding_get_started">시작하기</string>
@@ -3008,5 +3009,8 @@
     <string name="nearby_server_discovery_scanning">근처 서버를 검색하는 중…</string>
     <string name="nearby_server_discovery_empty">근처에 서버가 없습니다. 서버가 실행 중이고 동일한 Wi-Fi 네트워크에 연결되어 있는지 확인하세요.</string>
     <string name="nearby_server_discovery_rescan">재검색</string>
+    <string name="settings_metadata_editing">메타데이터 편집</string>
+    <string name="settings_enable_album_editing">앨범 편집 활성화</string>
+    <string name="settings_enable_album_editing_desc">전체 앨범에 대한 메타데이터 및 아트워크의 일괄 편집을 허용합니다.</string>
 </resources>
 

@@ -246,6 +246,7 @@ fun PlaylistDetailScreen(
     val haptics = LocalHapticFeedback.current
     val context = LocalContext.current
     val appSettings = remember { chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context) }
+    var pendingMetadataEditCompleteCallback by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
     val writePermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
@@ -253,13 +254,19 @@ fun PlaylistDetailScreen(
             musicViewModel.completeMetadataWriteAfterPermission(
                 onSuccess = {
                     Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                    pendingMetadataEditCompleteCallback?.invoke(true)
+                    pendingMetadataEditCompleteCallback = null
                 },
                 onError = { errorMessage ->
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    pendingMetadataEditCompleteCallback?.invoke(false)
+                    pendingMetadataEditCompleteCallback = null
                 }
             )
         } else {
             musicViewModel.cancelPendingMetadataWrite()
+            pendingMetadataEditCompleteCallback?.invoke(false)
+            pendingMetadataEditCompleteCallback = null
             Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, Toast.LENGTH_LONG).show()
         }
     }
@@ -730,7 +737,8 @@ fun PlaylistDetailScreen(
             },
             appSettings = appSettings,
             isStreamingMode = isStreamingPlaylist,
-            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork ->
+            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+                pendingMetadataEditCompleteCallback = onComplete
                 try {
                     musicViewModel.saveMetadataChanges(
                         song = selectedSongForInfo!!,
@@ -746,9 +754,13 @@ fun PlaylistDetailScreen(
                             if (fileWriteSucceeded) {
                                 Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, Toast.LENGTH_SHORT).show()
                             }
+                            pendingMetadataEditCompleteCallback?.invoke(true)
+                            pendingMetadataEditCompleteCallback = null
                         },
                         onError = { errorMessage ->
                             Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                            pendingMetadataEditCompleteCallback?.invoke(false)
+                            pendingMetadataEditCompleteCallback = null
                         },
                         onPermissionRequired = { pendingRequest ->
                             try {
@@ -759,12 +771,16 @@ fun PlaylistDetailScreen(
                             } catch (e: Exception) {
                                 Toast.makeText(context, context.getString(R.string.failed_to_request_permission, e.message ?: ""), Toast.LENGTH_LONG).show()
                                 musicViewModel.cancelPendingMetadataWrite()
+                                pendingMetadataEditCompleteCallback?.invoke(false)
+                                pendingMetadataEditCompleteCallback = null
                             }
                         }
                     )
                 } catch (e: Exception) {
                     Toast.makeText(context, context.getString(R.string.unexpected_error, e.message ?: ""), Toast.LENGTH_LONG).show()
                     android.util.Log.w("PlaylistDetailScreen", "Metadata update failed for song: ${selectedSongForInfo!!.title}", e)
+                    pendingMetadataEditCompleteCallback?.invoke(false)
+                    pendingMetadataEditCompleteCallback = null
                 }
             },
             onShowLyricsEditor = { }

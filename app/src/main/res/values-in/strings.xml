@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">Pilih saluran pembaruan mana yang akan diikuti:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Selamat datang</string>
     <string name="onboarding_welcome_to">Selamat datang di</string>
     <string name="onboarding_welcome_subtitle">Musik Anda, Rhythm Anda</string>
     <string name="onboarding_get_started">Memulai</string>
@@ -3013,5 +3014,8 @@ Peringkat</string>
     <string name="nearby_server_discovery_scanning">Memindai server terdekat…</string>
     <string name="nearby_server_discovery_empty">Tidak ditemukan server terdekat. Pastikan server Anda berjalan dan terhubung ke jaringan Wi-Fi yang sama.</string>
     <string name="nearby_server_discovery_rescan">Pindai ulang</string>
+    <string name="settings_metadata_editing">Pengeditan Metadata</string>
+    <string name="settings_enable_album_editing">Aktifkan Pengeditan Album</string>
+    <string name="settings_enable_album_editing_desc">Izinkan pengeditan batch metadata dan karya seni untuk seluruh album.</string>
 </resources>
 

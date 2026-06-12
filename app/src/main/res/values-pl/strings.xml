@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">Wybierz kanał aktualizacji, który chcesz śledzić:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Witamy</string>
     <string name="onboarding_welcome_to">Witamy w</string>
     <string name="onboarding_welcome_subtitle">Twoja muzyka, Twoje Rhythm</string>
     <string name="onboarding_get_started">Rozpocznij</string>
@@ -3014,5 +3015,8 @@ Format</string>
     <string name="nearby_server_discovery_scanning">Skanowanie w poszukiwaniu pobliskich serwerów…</string>
     <string name="nearby_server_discovery_empty">Nie znaleziono pobliskich serwerów. Upewnij się, że serwer działa i jest podłączony do tej samej sieci Wi-Fi.</string>
     <string name="nearby_server_discovery_rescan">Skanuj ponownie</string>
+    <string name="settings_metadata_editing">Edycja metadanych</string>
+    <string name="settings_enable_album_editing">Włącz edycję albumu</string>
+    <string name="settings_enable_album_editing_desc">Zezwalaj na zbiorczą edycję metadanych i grafik całych albumów.</string>
 </resources>
 

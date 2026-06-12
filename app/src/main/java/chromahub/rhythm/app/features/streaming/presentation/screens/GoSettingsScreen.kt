@@ -34,6 +34,7 @@ import android.content.Context
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Column
@@ -461,7 +462,7 @@ private fun ServiceSelectionBottomSheet(
         dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary) },
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
     ) {
         StandardBottomSheetHeader(
             title = stringResource(id = chromahub.rhythm.app.R.string.streaming_settings_preferred_service),
@@ -572,7 +573,7 @@ private fun QualitySelectionBottomSheet(
         dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary) },
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
     ) {
         StandardBottomSheetHeader(
             title = stringResource(id = chromahub.rhythm.app.R.string.streaming_settings_quality),

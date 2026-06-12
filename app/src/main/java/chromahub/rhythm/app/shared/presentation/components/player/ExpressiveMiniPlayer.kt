@@ -1,5 +1,11 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+
 package chromahub.rhythm.app.shared.presentation.components.player
 
+import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -70,6 +76,17 @@ fun ExpressiveMiniPlayer(
 
     val miniPlayerSwipeGestures by appSettings.miniPlayerSwipeGestures.collectAsState()
     val miniPlayerCornerRadius by appSettings.miniPlayerCornerRadius.collectAsState()
+
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+    val isCompactHeight = configuration.screenHeightDp < 500
+    val isLargeHeight = configuration.screenHeightDp >= 700
+    val alwaysShowTabletLayout by appSettings.miniPlayerAlwaysShowTablet.collectAsState()
+    val useTabletLayout = isTablet || (alwaysShowTabletLayout && !isTablet)
+
+    val miniPlayerShowProgress by appSettings.miniPlayerShowProgress.collectAsState()
+    val miniPlayerShowArtwork by appSettings.miniPlayerShowArtwork.collectAsState()
+    val miniPlayerUseCircularProgress by appSettings.miniPlayerUseCircularProgress.collectAsState()
 
     
     val animatedProgress by animateFloatAsState(
@@ -176,164 +193,214 @@ fun ExpressiveMiniPlayer(
         }
     }
 
-    Box(modifier = modifier.fillMaxWidth()) {
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = if (useTabletLayout) Alignment.BottomEnd else Alignment.BottomCenter
+    ) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(84.dp)
-                .padding(horizontal = 14.dp, vertical = 6.dp)
-                .scale(scale * songBounceScale * initialAppearanceBounceScale * dragScale)
-                .graphicsLayer {
-                    translationY = translationOffsetY
-                    translationX = translationOffsetX
-                    alpha = alphaValue
-                }
-                .pointerInput(miniPlayerSwipeGestures) {
-                    if (miniPlayerSwipeGestures) {
-                        detectDragGestures(
-                            onDragStart = {
-                                lastHapticOffset = 0f
-                                lastHapticOffsetX = 0f
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            },
-                            onDragEnd = {
-                                val absX = abs(offsetX)
-                                val absY = abs(offsetY)
-
-                                if (absX > absY) {
-                                    if (offsetX < -swipeHorizontalThreshold) {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                        onSkipNext()
-                                    } else if (offsetX > swipeHorizontalThreshold) {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                        onSkipPrevious()
-                                    } else {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    }
-                                } else {
-                                    if (offsetY < -swipeUpThreshold) {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                        onPlayerClick()
-                                    } else if (offsetY > swipeDownThreshold) {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                        isDismissingPlayer = true
-                                    } else {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    }
-                                }
-
-                                if (!isDismissingPlayer) {
-                                    offsetY = 0f
-                                    offsetX = 0f
-                                }
-                            },
-                            onDragCancel = {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                if (!isDismissingPlayer) {
-                                    offsetY = 0f
-                                    offsetX = 0f
-                                }
-                            },
-                            onDrag = { change, dragAmount ->
-                                change.consume()
-                                offsetX += dragAmount.x
-                                offsetY += dragAmount.y
-
-                                if (abs(offsetY) > abs(offsetX)) {
-                                    if (offsetY < 0 && abs(offsetY) - abs(lastHapticOffset) > swipeUpThreshold / 3) {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                        lastHapticOffset = offsetY
-                                    } else if (offsetY > 0 && abs(offsetY) - abs(lastHapticOffset) > swipeDownThreshold / 3) {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                        lastHapticOffset = offsetY
-                                    }
-                                } else {
-                                    if (abs(offsetX) - abs(lastHapticOffsetX) > swipeHorizontalThreshold / 3) {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                        lastHapticOffsetX = offsetX
-                                    }
-                                }
-                            }
-                        )
+            modifier = if (useTabletLayout) {
+                Modifier
+                    .width(380.dp)
+                    .height(92.dp)
+                    .padding(end = 24.dp, bottom = 16.dp)
+                    .scale(scale * songBounceScale * initialAppearanceBounceScale)
+                    .graphicsLayer {
+                        translationY = translationOffsetY
+                        translationX = translationOffsetX
+                        alpha = alphaValue
                     }
-                }
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = {
-                        if (!isDismissingPlayer) {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                            onPlayerClick()
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = {
+                            if (!isDismissingPlayer) {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                onPlayerClick()
+                            }
+                        }
+                    )
+            } else {
+                Modifier
+                    .fillMaxWidth()
+                    .height(84.dp)
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+                    .scale(scale * songBounceScale * initialAppearanceBounceScale * dragScale)
+                    .graphicsLayer {
+                        translationY = translationOffsetY
+                        translationX = translationOffsetX
+                        alpha = alphaValue
+                    }
+                    .pointerInput(miniPlayerSwipeGestures) {
+                        if (miniPlayerSwipeGestures) {
+                            detectDragGestures(
+                                onDragStart = {
+                                    lastHapticOffset = 0f
+                                    lastHapticOffsetX = 0f
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                },
+                                onDragEnd = {
+                                    val absX = abs(offsetX)
+                                    val absY = abs(offsetY)
+
+                                    if (absX > absY) {
+                                        if (offsetX < -swipeHorizontalThreshold) {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                            onSkipNext()
+                                        } else if (offsetX > swipeHorizontalThreshold) {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                            onSkipPrevious()
+                                        } else {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                        }
+                                    } else {
+                                        if (offsetY < -swipeUpThreshold) {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                            onPlayerClick()
+                                        } else if (offsetY > swipeDownThreshold) {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                            isDismissingPlayer = true
+                                        } else {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                        }
+                                    }
+
+                                    if (!isDismissingPlayer) {
+                                        offsetY = 0f
+                                        offsetX = 0f
+                                    }
+                                },
+                                onDragCancel = {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    if (!isDismissingPlayer) {
+                                        offsetY = 0f
+                                        offsetX = 0f
+                                    }
+                                },
+                                onDrag = { change, dragAmount ->
+                                    change.consume()
+                                    offsetX += dragAmount.x
+                                    offsetY += dragAmount.y
+
+                                    if (abs(offsetY) > abs(offsetX)) {
+                                        if (offsetY < 0 && abs(offsetY) - abs(lastHapticOffset) > swipeUpThreshold / 3) {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                            lastHapticOffset = offsetY
+                                        } else if (offsetY > 0 && abs(offsetY) - abs(lastHapticOffset) > swipeDownThreshold / 3) {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                            lastHapticOffset = offsetY
+                                        }
+                                    } else {
+                                        if (abs(offsetX) - abs(lastHapticOffsetX) > swipeHorizontalThreshold / 3) {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                            lastHapticOffsetX = offsetX
+                                        }
+                                    }
+                                }
+                            )
                         }
                     }
-                ),
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = {
+                            if (!isDismissingPlayer) {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                onPlayerClick()
+                            }
+                        }
+                    )
+            },
             shape = CircleShape,
             color = MaterialTheme.colorScheme.surfaceContainer // Unplayed background base
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-
-                
-                if (animatedProgress > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(fraction = animatedProgress.coerceIn(0.001f, 1f))
-                            .clip(CircleShape) // Ensures the leading edge tracks the pill curve perfectly
-                            .background(MaterialTheme.colorScheme.primaryContainer) // Played fill color
-                    )
-                }
-                
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(end = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(1f)
-                            .padding(6.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val miniPlayerArtShape = rememberExpressiveShapeFor(
-                            ExpressiveShapeTarget.MINI_PLAYER,
-                            fallbackShape = RoundedCornerShape(miniPlayerCornerRadius.dp)
+            if (useTabletLayout) {
+                // Tablet layout
+                val miniPlayerArtShape = rememberExpressiveShapeFor(
+                    ExpressiveShapeTarget.MINI_PLAYER,
+                    fallbackShape = RoundedCornerShape(miniPlayerCornerRadius.dp)
+                )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    if (animatedProgress > 0f) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(fraction = animatedProgress.coerceIn(0.001f, 1f))
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f))
                         )
-
-                        Surface(
-                            modifier = Modifier.fillMaxSize(),
-                            shape = miniPlayerArtShape,
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        ) {
-                            if (song != null) {
-                                ShimmerBox(modifier = Modifier.fillMaxSize())
-                                M3ImageUtils.TrackImage(
-                                    imageUrl = song.artworkUri,
-                                    trackName = song.title,
-                                    modifier = Modifier.fillMaxSize(),
-                                    applyExpressiveShape = false
-                                )
-                            } else {
-                                Box(
-                                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondaryContainer),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Album,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
-                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = 12.dp, end = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Album art with optional circular wavy progress ring
+                        if (miniPlayerShowArtwork) {
+                            Box(
+                                modifier = Modifier.size(56.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (song != null && miniPlayerShowProgress && miniPlayerUseCircularProgress) {
+                                    CircularWavyProgressIndicator(
+                                        progress = { animatedProgress },
+                                        modifier = Modifier.size(56.dp),
+                                        trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                                     )
+                                    Surface(
+                                        modifier = Modifier.size(46.dp),
+                                        shape = miniPlayerArtShape,
+                                        color = MaterialTheme.colorScheme.surfaceVariant
+                                    ) {
+                                        Box(modifier = Modifier.fillMaxSize()) {
+                                            ShimmerBox(modifier = Modifier.fillMaxSize())
+                                            M3ImageUtils.TrackImage(
+                                                imageUrl = song.artworkUri,
+                                                trackName = song.title,
+                                                modifier = Modifier.fillMaxSize(),
+                                                applyExpressiveShape = false
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    Surface(
+                                        modifier = Modifier.size(46.dp),
+                                        shape = miniPlayerArtShape,
+                                        color = MaterialTheme.colorScheme.surfaceVariant
+                                    ) {
+                                        Box(modifier = Modifier.fillMaxSize()) {
+                                            if (song != null) {
+                                                ShimmerBox(modifier = Modifier.fillMaxSize())
+                                                M3ImageUtils.TrackImage(
+                                                    imageUrl = song.artworkUri,
+                                                    trackName = song.title,
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    applyExpressiveShape = false
+                                                )
+                                            } else {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(
+                                                        imageVector = RhythmIcons.Album,
+                                                        contentDescription = null,
+                                                        modifier = Modifier.size(24.dp),
+                                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
 
-                    
+                    // Metadata
                     Column(
                         modifier = Modifier.weight(1f),
                         horizontalAlignment = Alignment.Start,
@@ -344,7 +411,7 @@ fun ExpressiveMiniPlayer(
                                 text = song.title,
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp,
+                                    fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onSurface
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
@@ -353,10 +420,11 @@ fun ExpressiveMiniPlayer(
                                 textAlign = TextAlign.Start,
                                 respectGlobalSetting = true
                             )
+                            Spacer(modifier = Modifier.height(2.dp))
                             AutoScrollingTextOnDemand(
                                 text = song.artist,
                                 style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontSize = 13.sp,
+                                    fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
@@ -370,7 +438,7 @@ fun ExpressiveMiniPlayer(
                                 text = context.getString(R.string.miniplayer_no_song),
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
+                                    fontSize = 14.sp
                                 ),
                                 color = MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1,
@@ -379,50 +447,251 @@ fun ExpressiveMiniPlayer(
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
 
-                    
-                    val playInteractionSource = remember { MutableInteractionSource() }
-                    val isPlayPressed by playInteractionSource.collectIsPressedAsState()
-                    val playScale by animateFloatAsState(
-                        targetValue = if (isPlayPressed) 0.85f else 1f,
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessMedium
-                        ),
-                        label = "playScale"
-                    )
-
-                    Surface(
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                            onPlayPause()
-                        },
-                        modifier = Modifier
-                            .size(56.dp)
-                            .graphicsLayer {
-                                scaleX = playScale
-                                scaleY = playScale
-                            },
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary, // Make it pop against the container and fill
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        interactionSource = playInteractionSource
+                    // Controls Row
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            if (isMediaLoading) {
-                                M3CircularLoader(
-                                    modifier = Modifier.size(24.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.24f),
-                                    strokeWidth = 2.5f
+                        val playerControlsShape = rememberExpressiveShapeFor(
+                            ExpressiveShapeTarget.PLAYER_CONTROLS,
+                            fallbackShape = CircleShape
+                        )
+
+                        // Skip Previous
+                        IconButton(
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                onSkipPrevious()
+                            },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = RhythmIcons.SkipPrevious,
+                                contentDescription = "Previous",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        // Play/Pause
+                        val playInteractionSource = remember { MutableInteractionSource() }
+                        val isPlayPressed by playInteractionSource.collectIsPressedAsState()
+                        val playScale by animateFloatAsState(
+                            targetValue = if (isPlayPressed) 0.85f else 1f,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessMedium
+                            ),
+                            label = "playScale"
+                        )
+
+                        Surface(
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                onPlayPause()
+                            },
+                            modifier = Modifier
+                                .size(44.dp)
+                                .graphicsLayer {
+                                    scaleX = playScale
+                                    scaleY = playScale
+                                },
+                            shape = playerControlsShape,
+                            color = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            interactionSource = playInteractionSource
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                if (isMediaLoading) {
+                                    M3CircularLoader(
+                                        modifier = Modifier.size(18.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.24f),
+                                        strokeWidth = 2.0f
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = if (isPlaying) RhythmIcons.Pause else RhythmIcons.Play,
+                                        contentDescription = if (isPlaying) "Pause" else "Play",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Skip Next
+                        IconButton(
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                onSkipNext()
+                            },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = RhythmIcons.SkipNext,
+                                contentDescription = "Next",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+                // Phone layout (Original)
+                Box(modifier = Modifier.fillMaxSize()) {
+                    if (animatedProgress > 0f) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(fraction = animatedProgress.coerceIn(0.001f, 1f))
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(end = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .aspectRatio(1f)
+                                .padding(6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            val miniPlayerArtShape = rememberExpressiveShapeFor(
+                                ExpressiveShapeTarget.MINI_PLAYER,
+                                fallbackShape = RoundedCornerShape(miniPlayerCornerRadius.dp)
+                            )
+
+                            Surface(
+                                modifier = Modifier.fillMaxSize(),
+                                shape = miniPlayerArtShape,
+                                color = MaterialTheme.colorScheme.surfaceVariant
+                            ) {
+                                if (song != null) {
+                                    ShimmerBox(modifier = Modifier.fillMaxSize())
+                                    M3ImageUtils.TrackImage(
+                                        imageUrl = song.artworkUri,
+                                        trackName = song.title,
+                                        modifier = Modifier.fillMaxSize(),
+                                        applyExpressiveShape = false
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(MaterialTheme.colorScheme.secondaryContainer),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Album,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(24.dp),
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            if (song != null) {
+                                AutoScrollingTextOnDemand(
+                                    text = song.title,
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer,
+                                    enabled = true,
+                                    textAlign = TextAlign.Start,
+                                    respectGlobalSetting = true
+                                )
+                                AutoScrollingTextOnDemand(
+                                    text = song.artist,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontSize = 13.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer,
+                                    enabled = true,
+                                    textAlign = TextAlign.Start,
+                                    respectGlobalSetting = true
                                 )
                             } else {
-                                Icon(
-                                    imageVector = if (isPlaying) RhythmIcons.Pause else RhythmIcons.Play,
-                                    contentDescription = if (isPlaying) "Pause" else "Play",
-                                    modifier = Modifier.size(28.dp)
+                                Text(
+                                    text = context.getString(R.string.miniplayer_no_song),
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        val playInteractionSource = remember { MutableInteractionSource() }
+                        val isPlayPressed by playInteractionSource.collectIsPressedAsState()
+                        val playScale by animateFloatAsState(
+                            targetValue = if (isPlayPressed) 0.85f else 1f,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessMedium
+                            ),
+                            label = "playScale"
+                        )
+
+                        Surface(
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                onPlayPause()
+                            },
+                            modifier = Modifier
+                                .size(56.dp)
+                                .graphicsLayer {
+                                    scaleX = playScale
+                                    scaleY = playScale
+                                },
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            interactionSource = playInteractionSource
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                if (isMediaLoading) {
+                                    M3CircularLoader(
+                                        modifier = Modifier.size(24.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.24f),
+                                        strokeWidth = 2.5f
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = if (isPlaying) RhythmIcons.Pause else RhythmIcons.Play,
+                                        contentDescription = if (isPlaying) "Pause" else "Play",
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -430,94 +699,96 @@ fun ExpressiveMiniPlayer(
             }
         }
 
-        // Overlay: Swipe Guide Chips
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .padding(top = 8.dp),
-            contentAlignment = Alignment.TopCenter
-        ) {
-            // Swipe up hint
-            AnimatedVisibility(
-                visible = offsetY < -20f && abs(offsetY) > abs(offsetX),
-                enter = fadeIn() + slideInVertically(),
-                exit = fadeOut() + slideOutVertically()
+        // Overlay: Swipe Guide Chips (only on phone)
+        if (!useTabletLayout) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .padding(top = 8.dp),
+                contentAlignment = Alignment.TopCenter
             ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(
-                        alpha = (-offsetY / swipeUpThreshold).coerceIn(0f, 0.8f)
-                    )
+                // Swipe up hint
+                AnimatedVisibility(
+                    visible = offsetY < -20f && abs(offsetY) > abs(offsetX),
+                    enter = fadeIn() + slideInVertically(),
+                    exit = fadeOut() + slideOutVertically()
                 ) {
-                    Text(
-                        text = context.getString(R.string.miniplayer_swipe_up_hint),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(
+                            alpha = (-offsetY / swipeUpThreshold).coerceIn(0f, 0.8f)
+                        )
+                    ) {
+                        Text(
+                            text = context.getString(R.string.miniplayer_swipe_up_hint),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
                 }
-            }
 
-            // Swipe down hint
-            AnimatedVisibility(
-                visible = offsetY > 20f && abs(offsetY) > abs(offsetX),
-                enter = fadeIn() + slideInVertically(),
-                exit = fadeOut() + slideOutVertically()
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.errorContainer.copy(
-                        alpha = (offsetY / swipeDownThreshold).coerceIn(0f, 0.8f)
-                    )
+                // Swipe down hint
+                AnimatedVisibility(
+                    visible = offsetY > 20f && abs(offsetY) > abs(offsetX),
+                    enter = fadeIn() + slideInVertically(),
+                    exit = fadeOut() + slideOutVertically()
                 ) {
-                    Text(
-                        text = context.getString(R.string.miniplayer_swipe_down_hint),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.errorContainer.copy(
+                            alpha = (offsetY / swipeDownThreshold).coerceIn(0f, 0.8f)
+                        )
+                    ) {
+                        Text(
+                            text = context.getString(R.string.miniplayer_swipe_down_hint),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
                 }
-            }
 
-            // Swipe left (next)
-            AnimatedVisibility(
-                visible = offsetX < -20f && abs(offsetX) > abs(offsetY),
-                enter = fadeIn() + slideInVertically(),
-                exit = fadeOut() + slideOutVertically()
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.tertiaryContainer.copy(
-                        alpha = (-offsetX / swipeHorizontalThreshold).coerceIn(0f, 0.8f)
-                    )
+                // Swipe left (next)
+                AnimatedVisibility(
+                    visible = offsetX < -20f && abs(offsetX) > abs(offsetY),
+                    enter = fadeIn() + slideInVertically(),
+                    exit = fadeOut() + slideOutVertically()
                 ) {
-                    Text(
-                        text = context.getString(R.string.miniplayer_swipe_left_hint),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(
+                            alpha = (-offsetX / swipeHorizontalThreshold).coerceIn(0f, 0.8f)
+                        )
+                    ) {
+                        Text(
+                            text = context.getString(R.string.miniplayer_swipe_left_hint),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
                 }
-            }
 
-            // Swipe right (previous)
-            AnimatedVisibility(
-                visible = offsetX > 20f && abs(offsetX) > abs(offsetY),
-                enter = fadeIn() + slideInVertically(),
-                exit = fadeOut() + slideOutVertically()
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.tertiaryContainer.copy(
-                        alpha = (offsetX / swipeHorizontalThreshold).coerceIn(0f, 0.8f)
-                    )
+                // Swipe right (previous)
+                AnimatedVisibility(
+                    visible = offsetX > 20f && abs(offsetX) > abs(offsetY),
+                    enter = fadeIn() + slideInVertically(),
+                    exit = fadeOut() + slideOutVertically()
                 ) {
-                    Text(
-                        text = context.getString(R.string.miniplayer_swipe_right_hint),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(
+                            alpha = (offsetX / swipeHorizontalThreshold).coerceIn(0f, 0.8f)
+                        )
+                    ) {
+                        Text(
+                            text = context.getString(R.string.miniplayer_swipe_right_hint),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
                 }
             }
         }

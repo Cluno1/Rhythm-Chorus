@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">Hangi güncelleme kanalını takip edeceğinizi seçin:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Hoş Geldiniz</string>
     <string name="onboarding_welcome_to">Hoş geldiniz</string>
     <string name="onboarding_welcome_subtitle">Sizin Müziğiniz, Sizin Rhythm</string>
     <string name="onboarding_get_started">Başlarken</string>
@@ -3008,5 +3009,8 @@
     <string name="nearby_server_discovery_scanning">Yakındaki sunucular taranıyor…</string>
     <string name="nearby_server_discovery_empty">Yakınlarda sunucu bulunamadı. Sunucunuzun çalıştığından ve aynı Wi-Fi ağına bağlı olduğundan emin olun.</string>
     <string name="nearby_server_discovery_rescan">Yeniden Tara</string>
+    <string name="settings_metadata_editing">Meta Veri Düzenleme</string>
+    <string name="settings_enable_album_editing">Albüm Düzenlemeyi Etkinleştir</string>
+    <string name="settings_enable_album_editing_desc">Albümlerin tamamı için meta verilerin ve resimlerin toplu olarak düzenlenmesine izin verin.</string>
 </resources>
 

@@ -5,6 +5,7 @@ import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,6 +48,7 @@ fun UpdateBottomSheet(
     val error by updaterViewModel.error.collectAsState()
 
     ModalBottomSheet(
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = {

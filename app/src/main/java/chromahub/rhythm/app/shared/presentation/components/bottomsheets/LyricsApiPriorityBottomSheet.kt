@@ -3,6 +3,7 @@ package chromahub.rhythm.app.shared.presentation.components.bottomsheets
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -38,6 +39,7 @@ fun LyricsApiPriorityBottomSheet(
     val apiPriority by appSettings.lyricsApiPriority.collectAsState()
 
     ModalBottomSheet(
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = {

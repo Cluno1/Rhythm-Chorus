@@ -94,6 +94,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
@@ -533,6 +534,7 @@ fun MaterialPlayerScreen(
     
     // Pending write request for metadata editing (Android 11+)
     val pendingWriteRequest by musicViewModel.pendingWriteRequest.collectAsState()
+    var pendingMetadataEditCompleteCallback by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
     
     // Write permission launcher for Android 11+ metadata editing
     val writePermissionLauncher = rememberLauncherForActivityResult(
@@ -552,9 +554,13 @@ fun MaterialPlayerScreen(
                 musicViewModel.completeMetadataWriteAfterPermission(
                     onSuccess = {
                         Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                        pendingMetadataEditCompleteCallback?.invoke(true)
+                        pendingMetadataEditCompleteCallback = null
                     },
                     onError = { errorMessage ->
                         Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                        pendingMetadataEditCompleteCallback?.invoke(false)
+                        pendingMetadataEditCompleteCallback = null
                     }
                 )
             }
@@ -563,6 +569,8 @@ fun MaterialPlayerScreen(
                 musicViewModel.cancelPendingBatchMetadataWrite()
             } else {
                 musicViewModel.cancelPendingMetadataWrite()
+                pendingMetadataEditCompleteCallback?.invoke(false)
+                pendingMetadataEditCompleteCallback = null
             }
             Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, Toast.LENGTH_LONG).show()
         }
@@ -992,7 +1000,8 @@ fun MaterialPlayerScreen(
             onDismiss = { showSongInfoSheet = false },
             appSettings = appSettings,
             isStreamingMode = isStreamingMode,
-            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork ->
+            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+                pendingMetadataEditCompleteCallback = onComplete
                 try {
                     // Use the ViewModel's new metadata saving function
                     musicViewModel.saveMetadataChanges(
@@ -1011,6 +1020,8 @@ fun MaterialPlayerScreen(
                             } else {
                                 // Don't show error here - permission request will be triggered
                             }
+                            pendingMetadataEditCompleteCallback?.invoke(true)
+                            pendingMetadataEditCompleteCallback = null
                         },
                         onError = { errorMessage ->
                             // Show detailed error message
@@ -1019,6 +1030,8 @@ fun MaterialPlayerScreen(
                                 errorMessage, 
                                 Toast.LENGTH_LONG
                             ).show()
+                            pendingMetadataEditCompleteCallback?.invoke(false)
+                            pendingMetadataEditCompleteCallback = null
                         },
                         onPermissionRequired = { pendingRequest ->
                             // Launch the system permission dialog for Android 11+
@@ -1034,6 +1047,8 @@ fun MaterialPlayerScreen(
                                     Toast.LENGTH_LONG
                                 ).show()
                                 musicViewModel.cancelPendingMetadataWrite()
+                                pendingMetadataEditCompleteCallback?.invoke(false)
+                                pendingMetadataEditCompleteCallback = null
                             }
                         }
                     )
@@ -1044,6 +1059,8 @@ fun MaterialPlayerScreen(
                         "Unexpected error: ${e.message}", 
                         Toast.LENGTH_LONG
                     ).show()
+                    pendingMetadataEditCompleteCallback?.invoke(false)
+                    pendingMetadataEditCompleteCallback = null
                     
                     // Log additional debug info
                     android.util.Log.w("MaterialPlayerScreen", "Metadata update failed for song: ${song.title}", e)

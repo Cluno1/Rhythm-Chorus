@@ -497,6 +497,7 @@ Người bảo trì gói</string>
     <string name="updates_channel_desc">Chọn kênh cập nhật để theo dõi:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Chào mừng</string>
     <string name="onboarding_welcome_to">Chào mừng đến với</string>
     <string name="onboarding_welcome_subtitle">Âm nhạc của bạn, Rhythm của bạn</string>
     <string name="onboarding_get_started">Bắt đầu</string>
@@ -3013,5 +3014,8 @@ Album</string>
     <string name="nearby_server_discovery_empty">Không tìm thấy máy chủ lân cận. Đảm bảo máy chủ của bạn đang chạy và được kết nối với cùng một mạng Wi-Fi.
 Quét lại</string>
     <string name="nearby_server_discovery_rescan">Quét lại</string>
+    <string name="settings_metadata_editing">Chỉnh sửa siêu dữ liệu</string>
+    <string name="settings_enable_album_editing">Bật chỉnh sửa album</string>
+    <string name="settings_enable_album_editing_desc">Cho phép chỉnh sửa hàng loạt siêu dữ liệu và tác phẩm nghệ thuật cho toàn bộ album.</string>
 </resources>
 

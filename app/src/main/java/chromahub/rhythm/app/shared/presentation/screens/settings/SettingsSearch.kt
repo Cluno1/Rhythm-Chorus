@@ -1430,6 +1430,16 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             settingKey = "bluetoothLyricsEnabled"
         ))
         add(SearchableSettingItem(
+            id = "enable_album_editing",
+            title = context.getString(R.string.settings_enable_album_editing),
+            description = context.getString(R.string.settings_enable_album_editing_desc),
+            keywords = listOf("album editing", "batch edit", "album metadata", "edit album", "artwork", "batch"),
+            icon = MaterialSymbolIcon("edit"),
+            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
+            parentScreen = "Experimental",
+            settingKey = "enableAlbumEditing"
+        ))
+        add(SearchableSettingItem(
             id = "home_section_order",
             title = context.getString(R.string.settings_home_section_order),
             description = context.getString(R.string.settings_home_section_order_desc),

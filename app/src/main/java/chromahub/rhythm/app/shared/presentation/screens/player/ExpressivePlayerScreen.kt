@@ -461,35 +461,29 @@ fun ExpressivePlayerScreen(
                 if (isCompactHeight) 40.dp else 56.dp
             }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .navigationBarsPadding(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Bottom
-            ) {
-                var artworkOffsetX by remember { mutableStateOf(0f) }
-                val artworkSwipeThreshold = 140f
-                val artworkTranslationX by animateFloatAsState(
-                    targetValue = artworkOffsetX.coerceIn(-200f, 200f),
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    ),
-                    label = "artworkTranslationX"
-                )
+            val isTablet = configuration.screenWidthDp >= 600
+            val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
 
+            var artworkOffsetX by remember { mutableStateOf(0f) }
+            val artworkSwipeThreshold = 140f
+            val artworkTranslationX by animateFloatAsState(
+                targetValue = artworkOffsetX.coerceIn(-200f, 200f),
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                ),
+                label = "artworkTranslationX"
+            )
+
+            val artworkContent = @Composable { modifier: Modifier ->
                 AnimatedVisibility(
                     visible = showAlbumArt,
                     enter = fadeIn() + slideInVertically { it / 2 },
                     exit = fadeOut() + slideOutVertically { it / 2 },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(bottom = if (isCompactHeight) 12.dp else 24.dp)
+                    modifier = modifier
                 ) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
                         AnimatedContent(
@@ -611,7 +605,9 @@ fun ExpressivePlayerScreen(
                         }
                     }
                 }
+            }
 
+            val controlsContent = @Composable {
                 AnimatedVisibility(
                     visible = showPlayerControls,
                     enter = fadeIn() + slideInVertically { it / 2 },
@@ -627,283 +623,285 @@ fun ExpressivePlayerScreen(
                             ),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = if (isCompactHeight) 8.dp else 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.Center
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = if (isCompactHeight) 8.dp else 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            AutoScrollingTextOnDemand(
-                                text = songTitle,
-                                style = titleTextStyle.copy(color = MaterialTheme.colorScheme.onSurface),
-                                gradientEdgeColor = MaterialTheme.colorScheme.surface,
-                                modifier = Modifier.fillMaxWidth(),
-                                respectGlobalSetting = true
-                            )
-                            AutoScrollingTextOnDemand(
-                                text = songArtist,
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                gradientEdgeColor = MaterialTheme.colorScheme.surface,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onShowArtistBottomSheet() },
-                                respectGlobalSetting = true
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        val lyricsContainerColor by animateColorAsState(
-                            targetValue = if (showLyricsView) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
-                            label = "LyricsContainerColor"
-                        )
-                        val lyricsContentColor by animateColorAsState(
-                            targetValue = if (showLyricsView) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                            label = "LyricsContentColor"
-                        )
-                        val favContainerColor by animateColorAsState(
-                            targetValue = if (isFavorite) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
-                            label = "FavContainerColor"
-                        )
-                        val favContentColor by animateColorAsState(
-                            targetValue = if (isFavorite) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                            label = "FavContentColor"
-                        )
-
-                        ExpressiveButtonGroup() {
-                            ExpressiveGroupButton(
-                                onClick = onToggleLyrics,
-                                isStart = true,
-                                isEnd = false,
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = lyricsContainerColor,
-                                    contentColor = lyricsContentColor
-                                ),
-                                contentPadding = PaddingValues(horizontal = 2.dp, vertical = 16.dp)
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.Center
                             ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Player.Lyrics,
-                                    contentDescription = stringResource(R.string.player_chip_lyrics),
-                                    modifier = Modifier.size(25.dp)
+                                AutoScrollingTextOnDemand(
+                                    text = songTitle,
+                                    style = titleTextStyle.copy(color = MaterialTheme.colorScheme.onSurface),
+                                    gradientEdgeColor = MaterialTheme.colorScheme.surface,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    respectGlobalSetting = true
                                 )
-                            }
-                            ExpressiveGroupButton(
-                                onClick = onToggleFavorite,
-                                isStart = false,
-                                isEnd = true,
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = favContainerColor,
-                                    contentColor = favContentColor
-                                ),
-                                contentPadding = PaddingValues(horizontal = 2.dp, vertical = 16.dp)
-                            ) {
-                                Icon(
-                                    imageVector = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
-                                    contentDescription = stringResource(R.string.cd_toggle_favorite),
-                                    modifier = Modifier.size(26.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(32.dp),
-                        color = controlsContainerColor,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(if (isCompactWidth) 12.dp else 20.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Surface(
-                                    onClick = onPlayPause,
-                                    shape = CircleShape,
-                                    color = primaryPillColor,
+                                AutoScrollingTextOnDemand(
+                                    text = songArtist,
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    gradientEdgeColor = MaterialTheme.colorScheme.surface,
                                     modifier = Modifier
-                                        .weight(1f)
-                                        .height(controlButtonSize)
+                                        .fillMaxWidth()
+                                        .clickable { onShowArtistBottomSheet() },
+                                    respectGlobalSetting = true
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            val lyricsContainerColor by animateColorAsState(
+                                targetValue = if (showLyricsView) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                label = "LyricsContainerColor"
+                            )
+                            val lyricsContentColor by animateColorAsState(
+                                targetValue = if (showLyricsView) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                label = "LyricsContentColor"
+                            )
+                            val favContainerColor by animateColorAsState(
+                                targetValue = if (isFavorite) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                label = "FavContainerColor"
+                            )
+                            val favContentColor by animateColorAsState(
+                                targetValue = if (isFavorite) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                label = "FavContentColor"
+                            )
+
+                            ExpressiveButtonGroup() {
+                                ExpressiveGroupButton(
+                                    onClick = onToggleLyrics,
+                                    isStart = true,
+                                    isEnd = false,
+                                    colors = ButtonDefaults.filledTonalButtonColors(
+                                        containerColor = lyricsContainerColor,
+                                        contentColor = lyricsContentColor
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 2.dp, vertical = 16.dp)
                                 ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        if (showBuffering) {
-                                            PlaybackBufferingLoader(
-                                                modifier = Modifier.size(40.dp),
-                                                color = primaryPillOnColor
-                                            )
-                                        } else {
-                                            Text(
-                                                text = if (isPlaying) "Pause" else "Play",
-                                                style = MaterialTheme.typography.headlineMedium.copy(
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = if (isCompactWidth) 20.sp else MaterialTheme.typography.headlineMedium.fontSize
-                                                ),
-                                                color = primaryPillOnColor
-                                            )
+                                    Icon(
+                                        imageVector = RhythmIcons.Player.Lyrics,
+                                        contentDescription = stringResource(R.string.player_chip_lyrics),
+                                        modifier = Modifier.size(25.dp)
+                                    )
+                                }
+                                ExpressiveGroupButton(
+                                    onClick = onToggleFavorite,
+                                    isStart = false,
+                                    isEnd = true,
+                                    colors = ButtonDefaults.filledTonalButtonColors(
+                                        containerColor = favContainerColor,
+                                        contentColor = favContentColor
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 2.dp, vertical = 16.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
+                                        contentDescription = stringResource(R.string.cd_toggle_favorite),
+                                        modifier = Modifier.size(26.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(32.dp),
+                            color = controlsContainerColor,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(if (isCompactWidth) 12.dp else 20.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Surface(
+                                        onClick = onPlayPause,
+                                        shape = CircleShape,
+                                        color = primaryPillColor,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(controlButtonSize)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            if (showBuffering) {
+                                                PlaybackBufferingLoader(
+                                                    modifier = Modifier.size(40.dp),
+                                                    color = primaryPillOnColor
+                                                )
+                                            } else {
+                                                Text(
+                                                    text = if (isPlaying) "Pause" else "Play",
+                                                    style = MaterialTheme.typography.headlineMedium.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = if (isCompactWidth) 20.sp else MaterialTheme.typography.headlineMedium.fontSize
+                                                    ),
+                                                    color = primaryPillOnColor
+                                                )
+                                            }
                                         }
+                                    }
+
+                                    Surface(
+                                        onClick = onSkipNext,
+                                        shape = playerControlShape,
+                                        color = secondaryButtonColor,
+                                        modifier = Modifier.size(controlButtonSize)
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Player.SkipNext,
+                                            contentDescription = stringResource(R.string.cd_next_track),
+                                            modifier = Modifier.padding(if (isCompactWidth) 16.dp else 24.dp),
+                                            tint = secondaryButtonOnColor
+                                        )
                                     }
                                 }
 
-                                Surface(
-                                    onClick = onSkipNext,
-                                    shape = playerControlShape,
-                                    color = secondaryButtonColor,
-                                    modifier = Modifier.size(controlButtonSize)
+                                Spacer(modifier = Modifier.height(if (isCompactHeight) 8.dp else 16.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Player.SkipNext,
-                                        contentDescription = stringResource(R.string.cd_next_track),
-                                        modifier = Modifier.padding(if (isCompactWidth) 16.dp else 24.dp),
-                                        tint = secondaryButtonOnColor
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(if (isCompactHeight) 8.dp else 16.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Surface(
-                                    onClick = onSkipPrevious,
-                                    shape = playerControlShape,
-                                    color = secondaryButtonColor,
-                                    modifier = Modifier.size(controlButtonSize)
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Player.SkipPrevious,
-                                        contentDescription = stringResource(R.string.cd_previous_track),
-                                        modifier = Modifier.padding(if (isCompactWidth) 16.dp else 24.dp),
-                                        tint = secondaryButtonOnColor
-                                    )
-                                }
-
-                                val canSeek = (song?.duration ?: 0L) > 0L
-
-                                Column(
-                                    modifier = Modifier.weight(1f),
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    if (showBuffering) {
-                                        M3LinearLoader(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(8.dp),
-                                            trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
+                                    Surface(
+                                        onClick = onSkipPrevious,
+                                        shape = playerControlShape,
+                                        color = secondaryButtonColor,
+                                        modifier = Modifier.size(controlButtonSize)
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Player.SkipPrevious,
+                                            contentDescription = stringResource(R.string.cd_previous_track),
+                                            modifier = Modifier.padding(if (isCompactWidth) 16.dp else 24.dp),
+                                            tint = secondaryButtonOnColor
                                         )
-                                    } else if (playerProgressStyle == "WAVY") {
-                                        WaveSlider(
-                                            value = if (isScrubbing && enhancedSeekingEnabled) scrubProgress else progressValue,
-                                            onValueChange = { newValue ->
-                                                if (canSeek && enhancedSeekingEnabled) {
-                                                    isScrubbing = true
-                                                    scrubProgress = newValue
-                                                } else if (canSeek) {
-                                                    onSeek(newValue)
-                                                }
-                                            },
-                                            onValueChangeFinished = {
-                                                if (canSeek && enhancedSeekingEnabled && isScrubbing) {
-                                                    onSeek(scrubProgress)
-                                                    isScrubbing = false
-                                                }
-                                            },
-                                            modifier = Modifier.fillMaxWidth(),
-                                            enabled = canSeek,
-                                            isPlaying = isPlaying,
-                                            activeTrackColor = primaryPillColor,
-                                            inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(
-                                                alpha = 0.2f
+                                    }
+
+                                    val canSeek = (song?.duration ?: 0L) > 0L
+
+                                    Column(
+                                        modifier = Modifier.weight(1f),
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        if (showBuffering) {
+                                            M3LinearLoader(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(8.dp),
+                                                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
                                             )
-                                        )
-                                    } else {
-                                        val progressStyle = try {
-                                            ProgressStyle.valueOf(playerProgressStyle)
-                                        } catch (e: IllegalArgumentException) {
-                                            ProgressStyle.NORMAL
-                                        }
-                                        val thumbStyle = try {
-                                            ThumbStyle.valueOf(playerProgressThumbStyle)
-                                        } catch (e: IllegalArgumentException) {
-                                            ThumbStyle.CIRCLE
-                                        }
-
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(32.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            StyledProgressBar(
-                                                progress = progressValue,
-                                                style = progressStyle,
-                                                modifier = Modifier.fillMaxWidth(),
-                                                progressColor = primaryPillColor,
-                                                trackColor = MaterialTheme.colorScheme.onSurface.copy(
-                                                    alpha = 0.2f
-                                                ),
-                                                height = when (progressStyle) {
-                                                    ProgressStyle.THIN -> 2.dp
-                                                    ProgressStyle.THICK -> 12.dp
-                                                    else -> 8.dp
+                                        } else if (playerProgressStyle == "WAVY") {
+                                            WaveSlider(
+                                                value = if (isScrubbing && enhancedSeekingEnabled) scrubProgress else progressValue,
+                                                onValueChange = { newValue ->
+                                                    if (canSeek && enhancedSeekingEnabled) {
+                                                        isScrubbing = true
+                                                        scrubProgress = newValue
+                                                    } else if (canSeek) {
+                                                        onSeek(newValue)
+                                                    }
                                                 },
-                                                isPlaying = isPlaying,
-                                                showThumb = thumbStyle != ThumbStyle.NONE,
-                                                thumbStyle = thumbStyle,
-                                                thumbSize = 14.dp,
-                                                waveAmplitudeWhenPlaying = 3.dp,
-                                                waveLength = 60.dp
-                                            )
-
-                                            Slider(
-                                                value = progressValue,
-                                                onValueChange = { onSeek(it) },
+                                                onValueChangeFinished = {
+                                                    if (canSeek && enhancedSeekingEnabled && isScrubbing) {
+                                                        onSeek(scrubProgress)
+                                                        isScrubbing = false
+                                                    }
+                                                },
                                                 modifier = Modifier.fillMaxWidth(),
                                                 enabled = canSeek,
-                                                colors = SliderDefaults.colors(
-                                                    thumbColor = Color.Transparent,
-                                                    activeTrackColor = Color.Transparent,
-                                                    inactiveTrackColor = Color.Transparent
+                                                isPlaying = isPlaying,
+                                                activeTrackColor = primaryPillColor,
+                                                inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(
+                                                    alpha = 0.2f
                                                 )
                                             )
-                                        }
-                                    }
+                                        } else {
+                                            val progressStyle = try {
+                                                ProgressStyle.valueOf(playerProgressStyle)
+                                            } catch (e: IllegalArgumentException) {
+                                                ProgressStyle.NORMAL
+                                            }
+                                            val thumbStyle = try {
+                                                ThumbStyle.valueOf(playerProgressThumbStyle)
+                                            } catch (e: IllegalArgumentException) {
+                                                ThumbStyle.CIRCLE
+                                            }
 
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 4.dp, start = 4.dp, end = 4.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            text = currentTimeStr,
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Text(
-                                            text = totalTimeStr,
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(32.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                StyledProgressBar(
+                                                    progress = progressValue,
+                                                    style = progressStyle,
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    progressColor = primaryPillColor,
+                                                    trackColor = MaterialTheme.colorScheme.onSurface.copy(
+                                                        alpha = 0.2f
+                                                    ),
+                                                    height = when (progressStyle) {
+                                                        ProgressStyle.THIN -> 2.dp
+                                                        ProgressStyle.THICK -> 12.dp
+                                                        else -> 8.dp
+                                                    },
+                                                    isPlaying = isPlaying,
+                                                    showThumb = thumbStyle != ThumbStyle.NONE,
+                                                    thumbStyle = thumbStyle,
+                                                    thumbSize = 14.dp,
+                                                    waveAmplitudeWhenPlaying = 3.dp,
+                                                    waveLength = 60.dp
+                                                )
+
+                                                Slider(
+                                                    value = progressValue,
+                                                    onValueChange = { onSeek(it) },
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    enabled = canSeek,
+                                                    colors = SliderDefaults.colors(
+                                                        thumbColor = Color.Transparent,
+                                                        activeTrackColor = Color.Transparent,
+                                                        inactiveTrackColor = Color.Transparent
+                                                    )
+                                                )
+                                            }
+                                        }
+
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(top = 4.dp, start = 4.dp, end = 4.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = currentTimeStr,
+                                                style = MaterialTheme.typography.labelMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                            Text(
+                                                text = totalTimeStr,
+                                                style = MaterialTheme.typography.labelMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-                }
+            }
 
+            val bottomButtonsContent = @Composable {
                 AnimatedVisibility(
                     visible = showBottomButtons,
                     enter = fadeIn() + slideInVertically { it / 2 },
@@ -951,7 +949,7 @@ fun ExpressivePlayerScreen(
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                     AutoScrollingTextOnDemand(
+                                    AutoScrollingTextOnDemand(
                                         text = location?.name ?: "Output",
                                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                                         gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -978,7 +976,7 @@ fun ExpressivePlayerScreen(
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                     AutoScrollingTextOnDemand(
+                                    AutoScrollingTextOnDemand(
                                         text = queueLabel,
                                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                                         gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -989,6 +987,56 @@ fun ExpressivePlayerScreen(
                             }
                         }
                     }
+                }
+            }
+
+            if (isLandscapeTablet) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .navigationBarsPadding(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Left Side: Artwork/Lyrics
+                    Column(
+                        modifier = Modifier
+                            .weight(1.1f)
+                            .fillMaxHeight()
+                            .padding(horizontal = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        artworkContent(Modifier.fillMaxSize())
+                    }
+
+                    // Right Side: Info, Controls, Buttons
+                    Column(
+                        modifier = Modifier
+                            .weight(0.9f)
+                            .fillMaxHeight()
+                            .padding(horizontal = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        controlsContent()
+                        bottomButtonsContent()
+                    }
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .navigationBarsPadding(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Bottom
+                ) {
+                    artworkContent(
+                        Modifier
+                            .weight(1f)
+                            .padding(bottom = if (isCompactHeight) 12.dp else 24.dp)
+                    )
+                    controlsContent()
+                    bottomButtonsContent()
                 }
             }
         }

@@ -10,6 +10,7 @@ package chromahub.rhythm.app.features.local.presentation.screens
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -109,6 +110,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -274,6 +276,8 @@ fun HomeScreen(
     // Pending write request for metadata editing (Android 11+)
     val pendingWriteRequest by musicViewModel.pendingWriteRequest.collectAsState()
 
+    var pendingMetadataEditCompleteCallback by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
+
     // Write permission launcher for Android 11+ metadata editing
     val writePermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
@@ -292,9 +296,13 @@ fun HomeScreen(
                 musicViewModel.completeMetadataWriteAfterPermission(
                     onSuccess = {
                         Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                        pendingMetadataEditCompleteCallback?.invoke(true)
+                        pendingMetadataEditCompleteCallback = null
                     },
                     onError = { errorMessage ->
                         Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                        pendingMetadataEditCompleteCallback?.invoke(false)
+                        pendingMetadataEditCompleteCallback = null
                     }
                 )
             }
@@ -303,6 +311,8 @@ fun HomeScreen(
                 musicViewModel.cancelPendingBatchMetadataWrite()
             } else {
                 musicViewModel.cancelPendingMetadataWrite()
+                pendingMetadataEditCompleteCallback?.invoke(false)
+                pendingMetadataEditCompleteCallback = null
             }
             Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, Toast.LENGTH_LONG).show()
         }
@@ -456,7 +466,8 @@ fun HomeScreen(
             song = selectedSongForPlaylist,
             onDismiss = { showSongInfoSheet = false },
             appSettings = AppSettings.getInstance(context),
-            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork ->
+            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+                pendingMetadataEditCompleteCallback = onComplete
                 musicViewModel.saveMetadataChanges(
                     song = selectedSongForPlaylist!!,
                     title = title,
@@ -471,9 +482,13 @@ fun HomeScreen(
                         if (fileWriteSucceeded) {
                             Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, Toast.LENGTH_SHORT).show()
                         }
+                        pendingMetadataEditCompleteCallback?.invoke(true)
+                        pendingMetadataEditCompleteCallback = null
                     },
                     onError = { errorMessage ->
                         Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                        pendingMetadataEditCompleteCallback?.invoke(false)
+                        pendingMetadataEditCompleteCallback = null
                     },
                     onPermissionRequired = { pendingRequest ->
                         try {
@@ -488,6 +503,8 @@ fun HomeScreen(
                                 Toast.LENGTH_LONG
                             ).show()
                             musicViewModel.cancelPendingMetadataWrite()
+                            pendingMetadataEditCompleteCallback?.invoke(false)
+                            pendingMetadataEditCompleteCallback = null
                         }
                     }
                 )
@@ -782,7 +799,7 @@ private fun ModernScrollableContent(
                 }
                 else -> 40.dp
             }),
-            contentPadding = PaddingValues(bottom = 24.dp)
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding())
         ) {
             sectionOrder.forEach { sectionId ->
                 when (sectionId) {

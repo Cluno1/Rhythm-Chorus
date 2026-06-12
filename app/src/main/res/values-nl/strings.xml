@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">Kies welk updatekanaal je wilt volgen:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Welkom</string>
     <string name="onboarding_welcome_to">Welkom bij</string>
     <string name="onboarding_welcome_subtitle">Jouw muziek, jouw Rhythm</string>
     <string name="onboarding_get_started">Aan de slag</string>
@@ -3008,5 +3009,8 @@
     <string name="nearby_server_discovery_scanning">Scannen naar servers in de buurt…</string>
     <string name="nearby_server_discovery_empty">Geen servers in de buurt gevonden. Zorg ervoor dat uw server actief is en verbonden is met hetzelfde Wi-Fi-netwerk.</string>
     <string name="nearby_server_discovery_rescan">Opnieuw scannen</string>
+    <string name="settings_metadata_editing">Metagegevens bewerken</string>
+    <string name="settings_enable_album_editing">Albumbewerking inschakelen</string>
+    <string name="settings_enable_album_editing_desc">Sta batchbewerking van metagegevens en illustraties voor hele albums toe.</string>
 </resources>
 

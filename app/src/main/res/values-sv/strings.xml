@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">Välj vilken uppdateringskanal du vill följa:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Välkommen</string>
     <string name="onboarding_welcome_to">Välkommen till</string>
     <string name="onboarding_welcome_subtitle">Din musik, din Rhythm</string>
     <string name="onboarding_get_started">Kom igång</string>
@@ -691,7 +692,7 @@
     <string name="onboarding_gesture_tip_2">Snabba svep svarar snabbare än långsamma</string>
     
     <!-- Onboarding: Widgets Step -->
-    <string name="onboarding_widgets_title">Launcher Widgets</string>
+    <string name="onboarding_widgets_title">Launcher-widgets</string>
     <string name="onboarding_widgets_desc">Lägg till Rhythm widgets till startprogrammet för snabb musikkontroll. Anpassa vilken information som visas och hur widgeten ser ut.</string>
     <string name="onboarding_widget_album_art">Visa albumomslag</string>
     <string name="onboarding_widget_album_art_desc">Visa albumomslag i widgeten</string>
@@ -3008,5 +3009,8 @@
     <string name="nearby_server_discovery_scanning">Söker efter närliggande servrar...</string>
     <string name="nearby_server_discovery_empty">Inga närliggande servrar hittades. Se till att din server är igång och ansluten till samma Wi-Fi-nätverk.</string>
     <string name="nearby_server_discovery_rescan">Skanna om</string>
+    <string name="settings_metadata_editing">Metadataredigering</string>
+    <string name="settings_enable_album_editing">Aktivera albumredigering</string>
+    <string name="settings_enable_album_editing_desc">Tillåt batchredigering av metadata och konstverk för hela album.</string>
 </resources>
 

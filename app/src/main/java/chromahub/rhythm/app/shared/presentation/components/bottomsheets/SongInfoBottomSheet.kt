@@ -13,6 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import android.widget.Toast
 import androidx.compose.foundation.shape.CircleShape
@@ -191,7 +192,7 @@ fun SongInfoBottomSheet(
     song: Song?,
     onDismiss: () -> Unit,
     appSettings: AppSettings,
-    onEditSong: ((title: String, artist: String, album: String, genre: String, year: Int, trackNumber: Int, artworkUri: Uri?, removeArtwork: Boolean) -> Unit)? = null,
+    onEditSong: ((title: String, artist: String, album: String, genre: String, year: Int, trackNumber: Int, artworkUri: Uri?, removeArtwork: Boolean, onComplete: (Boolean) -> Unit) -> Unit)? = null,
     onShowLyricsEditor: (() -> Unit)? = null,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     isStreamingMode: Boolean = false
@@ -739,7 +740,7 @@ fun SongInfoBottomSheet(
             EditSongSheet(
                 song = currentSong ?: song,
                 onDismiss = { showEditSheet = false },
-                onSave = { title: String, artist: String, album: String, genre: String, year: Int, trackNumber: Int, artworkUri: Uri?, removeArtwork: Boolean ->
+                onSave = { title: String, artist: String, album: String, genre: String, year: Int, trackNumber: Int, artworkUri: Uri?, removeArtwork: Boolean, onComplete ->
                     currentSong = currentSong?.copy(
                         title = title,
                         artist = artist,
@@ -762,8 +763,12 @@ fun SongInfoBottomSheet(
                         trackNumber,
                         artworkUri,
                         removeArtwork
-                    )
-                    showEditSheet = false
+                    ) { success ->
+                        onComplete(success)
+                        if (success) {
+                            showEditSheet = false
+                        }
+                    }
                 },
                 onShowLyricsEditor = onShowLyricsEditor,
                 songArtShape = songArtShape
@@ -772,6 +777,7 @@ fun SongInfoBottomSheet(
     } else {
         // Phone layout: Bottom sheet
         ModalBottomSheet(
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = { 
@@ -1141,7 +1147,7 @@ fun SongInfoBottomSheet(
             EditSongSheet(
                 song = currentSong ?: song,
                 onDismiss = { showEditSheet = false },
-                onSave = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork ->
+                onSave = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
                     currentSong = currentSong?.copy(
                         title = title,
                         artist = artist,
@@ -1164,8 +1170,12 @@ fun SongInfoBottomSheet(
                         trackNumber,
                         artworkUri,
                         removeArtwork
-                    )
-                    showEditSheet = false
+                    ) { success ->
+                        onComplete(success)
+                        if (success) {
+                            showEditSheet = false
+                        }
+                    }
                 },
                 onShowLyricsEditor = onShowLyricsEditor,
                 songArtShape = songArtShape
@@ -1786,7 +1796,17 @@ private fun FileInfoGridItem(
 private fun EditSongSheet(
     song: Song,
     onDismiss: () -> Unit,
-    onSave: (title: String, artist: String, album: String, genre: String, year: Int, trackNumber: Int, artworkUri: Uri?, removeArtwork: Boolean) -> Unit,
+    onSave: (
+        title: String,
+        artist: String,
+        album: String,
+        genre: String,
+        year: Int,
+        trackNumber: Int,
+        artworkUri: Uri?,
+        removeArtwork: Boolean,
+        onComplete: (success: Boolean) -> Unit
+    ) -> Unit,
     onShowLyricsEditor: (() -> Unit)? = null,
     songArtShape: androidx.compose.ui.graphics.Shape
 ) {
@@ -1853,6 +1873,7 @@ private fun EditSongSheet(
         val yearInt = year.toIntOrNull() ?: 0
         val trackInt = trackNumber.toIntOrNull() ?: 0
         
+        isSaving = true
         // Pass metadata with artwork intent to the save callback
         onSave(
             title.trim(),
@@ -1863,10 +1884,12 @@ private fun EditSongSheet(
             trackInt,
             selectedImageUri,
             removeArtwork
-        )
-        
-        // Reset saving state after initiating save
-        isSaving = false
+        ) { success ->
+            isSaving = false
+            if (success) {
+                onDismiss()
+            }
+        }
     }
 
     // Permission launchers for different scenarios
@@ -2512,6 +2535,7 @@ private fun EditSongSheet(
     } else {
         // Phone layout: Bottom sheet
         ModalBottomSheet(
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = {

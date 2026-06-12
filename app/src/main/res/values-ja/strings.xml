@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">フォローする更新チャネルを選択してください:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">ようこそ</string>
     <string name="onboarding_welcome_to">へようこそ</string>
     <string name="onboarding_welcome_subtitle">あなたの音楽、あなたの Rhythm</string>
     <string name="onboarding_get_started">始めましょう</string>
@@ -3013,5 +3014,8 @@
     <string name="nearby_server_discovery_scanning">近くのサーバーをスキャンしています…</string>
     <string name="nearby_server_discovery_empty">近くにサーバーが見つかりません。サーバーが実行中であり、同じ Wi-Fi ネットワークに接続されていることを確認してください。</string>
     <string name="nearby_server_discovery_rescan">再スキャン</string>
+    <string name="settings_metadata_editing">メタデータの編集</string>
+    <string name="settings_enable_album_editing">アルバム編集を有効にする</string>
+    <string name="settings_enable_album_editing_desc">アルバム全体のメタデータとアートワークのバッチ編集を許可します。</string>
 </resources>
 

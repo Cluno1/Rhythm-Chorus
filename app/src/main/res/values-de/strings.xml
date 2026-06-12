@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">Wählen Sie den Update-Kanal aus, dem Sie folgen möchten:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Willkommen</string>
     <string name="onboarding_welcome_to">Willkommen bei</string>
     <string name="onboarding_welcome_subtitle">Deine Musik, Dein Rhythm</string>
     <string name="onboarding_get_started">Erste Schritte</string>
@@ -3009,5 +3010,8 @@ Als nächstes wird</string>
     <string name="nearby_server_discovery_scanning">Suche nach Servern in der Nähe…</string>
     <string name="nearby_server_discovery_empty">Keine Server in der Nähe gefunden. Stellen Sie sicher, dass Ihr Server läuft und mit demselben Wi-Fi-Netzwerk verbunden ist.</string>
     <string name="nearby_server_discovery_rescan">Erneut scannen</string>
+    <string name="settings_metadata_editing">Metadatenbearbeitung</string>
+    <string name="settings_enable_album_editing">Albumbearbeitung aktivieren</string>
+    <string name="settings_enable_album_editing_desc">Ermöglichen Sie die Stapelbearbeitung von Metadaten und Grafiken für ganze Alben.</string>
 </resources>
 

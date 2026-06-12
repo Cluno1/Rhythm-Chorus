@@ -497,6 +497,7 @@ Error</string>
     <string name="updates_channel_desc">Elija qué canal de actualización seguir:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Bienvenido</string>
     <string name="onboarding_welcome_to">Bienvenido a</string>
     <string name="onboarding_welcome_subtitle">Tu música, tu Rhythm</string>
     <string name="onboarding_get_started">Empezar</string>
@@ -3027,5 +3028,8 @@ Canales</string>
     <string name="nearby_server_discovery_scanning">Buscando servidores cercanos...</string>
     <string name="nearby_server_discovery_empty">No se encontraron servidores cercanos. Asegúrese de que su servidor esté funcionando y conectado a la misma red Wi-Fi.</string>
     <string name="nearby_server_discovery_rescan">Volver a escanear</string>
+    <string name="settings_metadata_editing">Edición de metadatos</string>
+    <string name="settings_enable_album_editing">Habilitar edición de álbum</string>
+    <string name="settings_enable_album_editing_desc">Permitir la edición por lotes de metadatos e ilustraciones de álbumes completos.</string>
 </resources>
 

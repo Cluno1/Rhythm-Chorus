@@ -366,6 +366,8 @@ fun LibraryScreen(
     
     val pendingWriteRequest by musicViewModel.pendingWriteRequest.collectAsState()
     
+    var pendingMetadataEditCompleteCallback by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
+
     val writePermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
@@ -383,9 +385,13 @@ fun LibraryScreen(
                 musicViewModel.completeMetadataWriteAfterPermission(
                     onSuccess = {
                         Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                        pendingMetadataEditCompleteCallback?.invoke(true)
+                        pendingMetadataEditCompleteCallback = null
                     },
                     onError = { errorMessage ->
                         Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                        pendingMetadataEditCompleteCallback?.invoke(false)
+                        pendingMetadataEditCompleteCallback = null
                     }
                 )
             }
@@ -394,6 +400,8 @@ fun LibraryScreen(
                 musicViewModel.cancelPendingBatchMetadataWrite()
             } else {
                 musicViewModel.cancelPendingMetadataWrite()
+                pendingMetadataEditCompleteCallback?.invoke(false)
+                pendingMetadataEditCompleteCallback = null
             }
             Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, Toast.LENGTH_LONG).show()
         }
@@ -583,7 +591,8 @@ fun LibraryScreen(
             song = displaySong!!,
             onDismiss = { showSongInfoSheet = false },
             appSettings = appSettings,
-            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork ->
+            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+                pendingMetadataEditCompleteCallback = onComplete
                 musicViewModel.saveMetadataChanges(
                     song = displaySong!!,
                     title = title,
@@ -597,11 +606,14 @@ fun LibraryScreen(
                     onSuccess = { fileWriteSucceeded ->
                         if (fileWriteSucceeded) {
                             Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, Toast.LENGTH_SHORT).show()
-                        } else {
                         }
+                        pendingMetadataEditCompleteCallback?.invoke(true)
+                        pendingMetadataEditCompleteCallback = null
                     },
                     onError = { errorMessage ->
                         Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                        pendingMetadataEditCompleteCallback?.invoke(false)
+                        pendingMetadataEditCompleteCallback = null
                     },
                     onPermissionRequired = { pendingRequest ->
                         try {
@@ -616,6 +628,8 @@ fun LibraryScreen(
                                 Toast.LENGTH_LONG
                             ).show()
                             musicViewModel.cancelPendingMetadataWrite()
+                            pendingMetadataEditCompleteCallback?.invoke(false)
+                            pendingMetadataEditCompleteCallback = null
                         }
                     }
                 )
@@ -801,8 +815,7 @@ fun LibraryScreen(
         }
     }
     val isTabletLayout = LocalConfiguration.current.screenWidthDp >= 600
-    val baseLibraryBottomPadding =
-        if (isTabletLayout) 16.dp else (MusicDimensions.bottomNavigationHeight + 16.dp)
+    val baseLibraryBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val libraryBottomOverlayPadding = baseLibraryBottomPadding
     
     LaunchedEffect(isLibraryRefreshing) {
@@ -865,7 +878,7 @@ fun LibraryScreen(
                 showBatchEditSheet = false
                 multiSelectionState.clearSelection()
             },
-            onSave = { artist, album, genre, year, artworkUri, removeArtwork ->
+            onSave = { artist, album, genre, year, artworkUri, removeArtwork, onProgress, onComplete ->
                 musicViewModel.batchEditMetadata(
                     songs = selectedSongs,
                     artist = artist,
@@ -874,14 +887,8 @@ fun LibraryScreen(
                     year = year,
                     artworkUri = artworkUri,
                     removeArtwork = removeArtwork,
-                    onProgress = { _, _ -> },
-                    onComplete = { successCount, failCount ->
-                        showBatchEditSheet = false
-                        multiSelectionState.clearSelection()
-                        val msg = if (failCount == 0) "Updated $successCount songs"
-                                  else "Updated $successCount songs, $failCount failed"
-                        android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
-                    },
+                    onProgress = onProgress,
+                    onComplete = onComplete,
                     onPermissionRequired = { pendingRequest ->
                         try {
                             val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
@@ -889,12 +896,7 @@ fun LibraryScreen(
                             ).build()
                             writePermissionLauncher.launch(intentSenderRequest)
                         } catch (e: Exception) {
-                            android.widget.Toast.makeText(
-                                context,
-                                "Failed to request permission: ${e.message}",
-                                android.widget.Toast.LENGTH_LONG
-                            ).show()
-                            musicViewModel.cancelPendingBatchMetadataWrite()
+                            Log.e("LibraryScreen", "Failed to launch batch write request permission", e)
                         }
                     }
                 )
@@ -1307,7 +1309,7 @@ fun LibraryScreen(
                     onCreatePlaylist = onCreatePlaylistFromFab,
                     onImportPlaylist = onImportPlaylistFromFab,
                     onExportPlaylists = onExportPlaylistsFromFab,
-                    bottomPadding = baseLibraryBottomPadding,
+                    bottomPadding = (baseLibraryBottomPadding - 12.dp).coerceAtLeast(0.dp),
                     haptics = haptics
                 )
             }
@@ -1472,7 +1474,7 @@ fun LibraryScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(start = 10.dp, top = 0.dp, end = 10.dp, bottom = libraryBottomOverlayPadding),
+                    .padding(start = 10.dp, top = 0.dp, end = 10.dp),
                 shape = RoundedCornerShape(20.dp),
                 color = Color.Transparent,
                 shadowElevation = 0.dp
@@ -1712,7 +1714,7 @@ fun LibraryScreen(
                                             onSongSelectionToggle = onSongSelectionToggle,
                                             onShowMultiSelectionSheet = { showMultiSelectionSheet = true },
                                             onRefreshClick = onRefreshClick,
-                                            bottomPadding = 0.dp
+                                            bottomPadding = baseLibraryBottomPadding
                                         )
                                     }
                                     "PLAYLISTS" -> SingleCardPlaylistsContent(
@@ -1726,7 +1728,7 @@ fun LibraryScreen(
                                         onExportPlaylists = { showBulkExportDialog = true },
                                         appSettings = appSettings,
                                         onRefreshClick = onRefreshClick,
-                                        bottomPadding = 0.dp
+                                        bottomPadding = baseLibraryBottomPadding
                                     )
                                     "ALBUMS" -> {
                                         SingleCardAlbumsContent(
@@ -1744,7 +1746,7 @@ fun LibraryScreen(
                                             onPlayQueue = onPlayQueue,
                                             onShuffleQueue = onShuffleQueue,
                                             onRefreshClick = onRefreshClick,
-                                            bottomPadding = 0.dp
+                                            bottomPadding = baseLibraryBottomPadding
                                         )
                                     }
                                     "ARTISTS" -> SingleCardArtistsContent(
@@ -1758,7 +1760,7 @@ fun LibraryScreen(
                                         onPlayQueue = onPlayQueue,
                                         onShuffleQueue = onShuffleQueue,
                                         onRefreshClick = onRefreshClick,
-                                        bottomPadding = 0.dp,
+                                        bottomPadding = baseLibraryBottomPadding,
                                         initialSortOption = artistSortOption,
                                         onSortOptionChange = { artistSortOption = it }
                                     )
@@ -1789,7 +1791,7 @@ fun LibraryScreen(
                                         currentPath = explorerPath,
                                         onPathChanged = { explorerPath = it },
                                         onFolderSongsChanged = { explorerFolderSongs = it },
-                                        bottomPadding = 0.dp
+                                        bottomPadding = baseLibraryBottomPadding
                                     )
                                 }
                             }
@@ -4629,6 +4631,7 @@ fun SingleCardArtistsContent(
 
     if (showSortOptions) {
         ModalBottomSheet(
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
             onDismissRequest = { showSortOptions = false },
             sheetState = rememberModalBottomSheetState(),
             dragHandle = { 
@@ -5679,10 +5682,20 @@ private fun LibraryBottomBar(
         ) + fadeOut(animationSpec = tween(200)),
         modifier = modifier
     ) {
+        val isTablet = LocalConfiguration.current.screenWidthDp >= 600
+        val baseBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
+        val bottomPadding = if (isTablet) 12.dp else (baseBottomPadding - 4.dp).coerceAtLeast(0.dp)
         Surface(
-            modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 12.dp),
+            modifier = if (isTablet) {
+                Modifier
+                    .width(440.dp)
+                    .padding(bottom = bottomPadding)
+            } else {
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = bottomPadding)
+            },
             shape = RoundedCornerShape(32.dp),
             color = MaterialTheme.colorScheme.surfaceContainer,
             tonalElevation = 6.dp,

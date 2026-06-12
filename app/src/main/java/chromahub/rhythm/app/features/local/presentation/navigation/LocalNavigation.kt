@@ -459,12 +459,20 @@ fun LocalNavigation(
         currentRoute == Screen.Home.route || isLibraryRoute
     }
     
+    val systemNavBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     // Calculate content bottom padding based on visible UI elements
     // System insets are handled separately via windowInsetsPadding on the bottomBar
     val miniPlayerBottomPadding by animateDpAsState(
-        targetValue = if (showMiniPlayer && !isTablet) {
-            val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 72.dp else 96.dp
-            miniPlayerHeight + 16.dp // Card height + spacing
+        targetValue = if (!isTablet) {
+            val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 84.dp else 96.dp
+            val bottomNavigationHeight = MusicDimensions.bottomNavigationHeight
+            val basePadding = when {
+                showBottomNav && showMiniPlayer -> bottomNavigationHeight + 16.dp + miniPlayerHeight + 16.dp
+                showBottomNav -> bottomNavigationHeight + 16.dp
+                showMiniPlayer -> miniPlayerHeight + 16.dp
+                else -> 0.dp
+            }
+            basePadding + systemNavBarPadding
         } else {
             0.dp
         },
@@ -768,6 +776,8 @@ private fun LocalNavigationContent(
         navigateBackOrToLanding()
     }
 
+    val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
+
     Scaffold(
         modifier = modifier,
         snackbarHost = {
@@ -833,38 +843,52 @@ private fun LocalNavigationContent(
                 label = "local_miniplayer_bottom_offset"
             )
 
+            val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 84.dp else 96.dp
+            val gradientHeight by animateDpAsState(
+                targetValue = when {
+                    showBottomNav && showMiniPlayer -> MusicDimensions.bottomNavigationHeight + 16.dp + miniPlayerHeight + 32.dp
+                    showBottomNav -> MusicDimensions.bottomNavigationHeight + 32.dp
+                    showMiniPlayer -> miniPlayerHeight + 32.dp
+                    else -> 0.dp
+                },
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessLow
+                ),
+                label = "local_navigation_gradient_height"
+            )
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.navigationBars)
             ) {
+                if (gradientHeight > 0.dp && !isTablet) {
+                    val systemNavBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(gradientHeight + systemNavBarPadding)
+                            .align(Alignment.BottomCenter)
+                            .graphicsLayer { alpha = bottomChromeAlpha }
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colorStops = arrayOf(
+                                        0f to Color.Transparent,
+                                        0.25f to MaterialTheme.colorScheme.background.copy(alpha = 0.28f),
+                                        0.62f to MaterialTheme.colorScheme.background.copy(alpha = 0.76f),
+                                        1f to MaterialTheme.colorScheme.background.copy(alpha = 1f)
+                                    )
+                                )
+                            )
+                    )
+                }
+
                 Box(
                     modifier = Modifier
-                        .matchParentSize()
-                        .layout { measurable, constraints ->
-                            val heightOffset = 48.dp.roundToPx()
-                            val placeable = measurable.measure(
-                                constraints.copy(
-                                    maxHeight = constraints.maxHeight + heightOffset
-                                )
-                            )
-                            val layoutHeight = (placeable.height - heightOffset).coerceAtLeast(0)
-                            layout(placeable.width, layoutHeight) {
-                                placeable.placeRelative(0, -heightOffset)
-                            }
-                        }
-                        .graphicsLayer { alpha = bottomChromeAlpha }
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colorStops = arrayOf(
-                                    0f to Color.Transparent,
-                                    0.25f to MaterialTheme.colorScheme.surface.copy(alpha = 0.28f),
-                                    0.62f to MaterialTheme.colorScheme.surface.copy(alpha = 0.76f),
-                                    1f to MaterialTheme.colorScheme.surface.copy(alpha = 1f)
-                                )
-                            )
-                        )
-                )
+                        .fillMaxWidth()
+                        .windowInsetsPadding(WindowInsets.navigationBars)
+                        .align(Alignment.BottomCenter)
+                ) {
 
                 // Global MiniPlayer (hidden on full player screen) with bounce entrance animation
                 // Show at bottom on phones, or on right side if tablet miniplayer is enabled
@@ -1188,6 +1212,7 @@ private fun LocalNavigationContent(
                         }
                     }
                 }
+                }
             }
         }
     ) { paddingValues ->
@@ -1198,7 +1223,6 @@ private fun LocalNavigationContent(
                 startDestination = startDestination,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(LocalMiniPlayerPadding.current)
             ) {
                 composable(
                     route = Screen.Home.route,
@@ -1379,6 +1403,7 @@ private fun LocalNavigationContent(
                     var selectedSongForPlaylist by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
                     var showSongInfoSheet by remember { mutableStateOf(false) }
                     var selectedSongForInfo by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
+                    var pendingMetadataEditCompleteCallback by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
 
                     val writePermissionLauncher = rememberLauncherForActivityResult(
                         contract = androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult()
@@ -1397,9 +1422,13 @@ private fun LocalNavigationContent(
                                 viewModel.completeMetadataWriteAfterPermission(
                                     onSuccess = {
                                         android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
+                                        pendingMetadataEditCompleteCallback?.invoke(true)
+                                        pendingMetadataEditCompleteCallback = null
                                     },
                                     onError = { errorMessage ->
                                         android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                        pendingMetadataEditCompleteCallback?.invoke(false)
+                                        pendingMetadataEditCompleteCallback = null
                                     }
                                 )
                             }
@@ -1408,6 +1437,8 @@ private fun LocalNavigationContent(
                                 viewModel.cancelPendingBatchMetadataWrite()
                             } else {
                                 viewModel.cancelPendingMetadataWrite()
+                                pendingMetadataEditCompleteCallback?.invoke(false)
+                                pendingMetadataEditCompleteCallback = null
                             }
                             android.widget.Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, android.widget.Toast.LENGTH_LONG).show()
                         }
@@ -1542,7 +1573,8 @@ private fun LocalNavigationContent(
                                 selectedSongForInfo = null
                             },
                             appSettings = appSettings,
-                            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork ->
+                            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+                                pendingMetadataEditCompleteCallback = onComplete
                                 viewModel.saveMetadataChanges(
                                     song = selectedSongForInfo!!,
                                     title = title,
@@ -1557,9 +1589,13 @@ private fun LocalNavigationContent(
                                         if (fileWriteSucceeded) {
                                             android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, android.widget.Toast.LENGTH_SHORT).show()
                                         }
+                                        pendingMetadataEditCompleteCallback?.invoke(true)
+                                        pendingMetadataEditCompleteCallback = null
                                     },
                                     onError = { errorMessage ->
                                         android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                        pendingMetadataEditCompleteCallback?.invoke(false)
+                                        pendingMetadataEditCompleteCallback = null
                                     },
                                     onPermissionRequired = { pendingRequest ->
                                         try {
@@ -1569,6 +1605,8 @@ private fun LocalNavigationContent(
                                             writePermissionLauncher.launch(intentSenderRequest)
                                         } catch (e: Exception) {
                                             android.widget.Toast.makeText(context, R.string.localnavigation_permission_required_to_modify, android.widget.Toast.LENGTH_SHORT).show()
+                                            pendingMetadataEditCompleteCallback?.invoke(false)
+                                            pendingMetadataEditCompleteCallback = null
                                         }
                                     }
                                 )
@@ -2542,6 +2580,7 @@ private fun LocalNavigationContent(
                 ) { backStackEntry ->
                     val artistName = backStackEntry.arguments?.getString("artistName")?.let { Uri.decode(it) } ?: ""
                     val favoriteSongs by viewModel.favoriteSongs.collectAsState()
+                    var pendingMetadataEditCompleteCallback by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
                     
                     // Write permission launcher for Android 11+ metadata editing
                     val writePermissionLauncher = rememberLauncherForActivityResult(
@@ -2561,9 +2600,13 @@ private fun LocalNavigationContent(
                                 viewModel.completeMetadataWriteAfterPermission(
                                     onSuccess = {
                                         android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
+                                        pendingMetadataEditCompleteCallback?.invoke(true)
+                                        pendingMetadataEditCompleteCallback = null
                                     },
                                     onError = { errorMessage ->
                                         android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                        pendingMetadataEditCompleteCallback?.invoke(false)
+                                        pendingMetadataEditCompleteCallback = null
                                     }
                                 )
                             }
@@ -2572,6 +2615,8 @@ private fun LocalNavigationContent(
                                 viewModel.cancelPendingBatchMetadataWrite()
                             } else {
                                 viewModel.cancelPendingMetadataWrite()
+                                pendingMetadataEditCompleteCallback?.invoke(false)
+                                pendingMetadataEditCompleteCallback = null
                             }
                             android.widget.Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, android.widget.Toast.LENGTH_LONG).show()
                         }
@@ -2670,7 +2715,8 @@ private fun LocalNavigationContent(
                                 selectedSongForInfo = null
                             },
                             appSettings = appSettings,
-                            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork ->
+                            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+                                pendingMetadataEditCompleteCallback = onComplete
                                 viewModel.saveMetadataChanges(
                                     song = selectedSongForInfo!!,
                                     title = title,
@@ -2685,9 +2731,13 @@ private fun LocalNavigationContent(
                                         if (fileWriteSucceeded) {
                                             android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, android.widget.Toast.LENGTH_SHORT).show()
                                         }
+                                        pendingMetadataEditCompleteCallback?.invoke(true)
+                                        pendingMetadataEditCompleteCallback = null
                                     },
                                     onError = { errorMessage ->
                                         android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                        pendingMetadataEditCompleteCallback?.invoke(false)
+                                        pendingMetadataEditCompleteCallback = null
                                     },
                                     onPermissionRequired = { pendingRequest ->
                                         try {
@@ -2697,6 +2747,8 @@ private fun LocalNavigationContent(
                                             writePermissionLauncher.launch(intentSenderRequest)
                                         } catch (e: Exception) {
                                             android.widget.Toast.makeText(context, R.string.localnavigation_permission_required_to_modify, android.widget.Toast.LENGTH_SHORT).show()
+                                            pendingMetadataEditCompleteCallback?.invoke(false)
+                                            pendingMetadataEditCompleteCallback = null
                                         }
                                     }
                                 )

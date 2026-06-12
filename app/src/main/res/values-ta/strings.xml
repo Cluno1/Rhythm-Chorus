@@ -502,6 +502,7 @@
     <string name="updates_channel_desc">எந்த புதுப்பிப்பு சேனலைப் பின்பற்ற வேண்டும் என்பதைத் தேர்வுசெய்யவும்:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">வரவேற்கிறோம்</string>
     <string name="onboarding_welcome_to">வரவேற்கிறோம்</string>
     <string name="onboarding_welcome_subtitle">உங்கள் இசை, உங்கள் Rhythm</string>
     <string name="onboarding_get_started">தொடங்கவும்</string>
@@ -3054,5 +3055,8 @@ Rhythm காவலரிடமிருந்து</string>
     <string name="nearby_server_discovery_scanning">அருகிலுள்ள சேவையகங்களை ஸ்கேன் செய்கிறது…</string>
     <string name="nearby_server_discovery_empty">அருகிலுள்ள சேவையகங்கள் எதுவும் இல்லை. உங்கள் சேவையகம் இயங்குவதையும், அதே Wi-Fi நெட்வொர்க்குடன் இணைக்கப்பட்டுள்ளதையும் உறுதிசெய்யவும்.</string>
     <string name="nearby_server_discovery_rescan">மீண்டும் ஸ்கேன் செய்யவும்</string>
+    <string name="settings_metadata_editing">மெட்டாடேட்டா எடிட்டிங்</string>
+    <string name="settings_enable_album_editing">ஆல்பம் திருத்தத்தை இயக்கு</string>
+    <string name="settings_enable_album_editing_desc">முழு ஆல்பங்களுக்கும் மெட்டாடேட்டா மற்றும் கலைப்படைப்புகளின் தொகுப்பைத் திருத்த அனுமதிக்கவும்.</string>
 </resources>
 

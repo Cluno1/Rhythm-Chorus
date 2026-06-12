@@ -2602,6 +2602,40 @@ object MediaUtils {
      *     You should have received a copy of the GNU General Public License
      *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
      */
+    fun deleteCachedEmbeddedArtwork(cacheDir: File, songUri: Uri) {
+        try {
+            val songKey = buildArtworkCacheKey(songUri)
+            val legacyHash = songUri.hashCode()
+            val primaryPrefix = "embedded_art_lossless_$songKey"
+            val secondaryPrefix = "embedded_art_$songKey"
+            val legacyPrimaryPrefix = "embedded_art_lossless_$legacyHash"
+            val legacySecondaryPrefix = "embedded_art_$legacyHash"
+
+            val prefixes = listOf(primaryPrefix, secondaryPrefix, legacyPrimaryPrefix, legacySecondaryPrefix)
+            val artworkCacheDir = File(cacheDir, EMBEDDED_ARTWORK_CACHE_DIR)
+            
+            if (artworkCacheDir.exists() && artworkCacheDir.isDirectory) {
+                artworkCacheDir.listFiles()?.forEach { file ->
+                    if (prefixes.any { file.name.startsWith(it) }) {
+                        if (file.delete()) {
+                            Log.d(TAG, "Deleted cached embedded artwork: ${file.name}")
+                        }
+                    }
+                }
+            }
+
+            cacheDir.listFiles()?.forEach { file ->
+                if (prefixes.any { file.name.startsWith(it) }) {
+                    if (file.delete()) {
+                        Log.d(TAG, "Deleted legacy cached embedded artwork: ${file.name}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to delete cached embedded artwork for $songUri", e)
+        }
+    }
+
     fun findBestCover(songFolder: File): File? {
         val allowedExt = listOf("jpg", "png", "jpeg", "bmp", "tiff", "tif", "webp")
         var bestScore = 0

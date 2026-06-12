@@ -37,6 +37,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.pager.HorizontalPager
@@ -54,6 +55,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -70,12 +73,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
  
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -122,7 +123,6 @@ import chromahub.rhythm.app.shared.presentation.components.common.DataProcessing
 import chromahub.rhythm.app.shared.presentation.components.common.InitializationLoader
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveButtonGroup
 import chromahub.rhythm.app.shared.presentation.components.common.M3LinearLoader
-import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import chromahub.rhythm.app.features.local.presentation.components.settings.LanguageSwitcherDialog
 import chromahub.rhythm.app.features.local.presentation.components.settings.LibraryTabOrderBottomSheet
@@ -190,7 +190,7 @@ fun OnboardingScreen(
 
     // Responsive sizing
     val isTablet = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Medium || windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
-    val contentMaxWidth = if (isTablet) 600.dp else androidx.compose.ui.unit.Dp.Infinity
+    val contentMaxWidth = if (isTablet) 1080.dp else androidx.compose.ui.unit.Dp.Infinity
     val horizontalPadding = if (isTablet) 40.dp else 20.dp
     val cardPadding = if (isTablet) 32.dp else 20.dp
 
@@ -272,29 +272,54 @@ fun OnboardingScreen(
         }
     }
 
-    if (currentStep == OnboardingStep.WELCOME) {
-        EnhancedWelcomeContent(
-            onNextStep = onNextStep,
-            themeViewModel = themeViewModel,
-            isTablet = isTablet,
-            contentMaxWidth = contentMaxWidth
-        )
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .let { if (isTablet) it.width(contentMaxWidth) else it }
-        ) {
-            // Top app bar removed to provide a clean, full-screen onboarding experience.
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        RotatingBackgroundCookies(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f))
 
-            // Single onboarding card container for all pager content
-            OnboardingCard(
+        if (currentStep == OnboardingStep.WELCOME) {
+            EnhancedWelcomeContent(
+                onNextStep = onNextStep,
+                themeViewModel = themeViewModel,
                 isTablet = isTablet,
-                containerColor = if (currentStep == OnboardingStep.APP_MODE_CHOICE) androidx.compose.ui.graphics.Color.Transparent else MaterialTheme.colorScheme.surface,
-                modifier = Modifier.weight(1f)
+                contentMaxWidth = contentMaxWidth
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                // HorizontalPager for smooth sliding animations
+                Column(
+                    modifier = Modifier
+                        .let {
+                            if (isTablet) {
+                                it
+                                    .widthIn(max = contentMaxWidth)
+                                    .fillMaxWidth(0.9f)
+                                    .heightIn(max = 750.dp)
+                                    .fillMaxHeight(0.9f)
+                                    .clip(RoundedCornerShape(32.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceHigh)
+                                    .border(
+                                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                                        shape = RoundedCornerShape(32.dp)
+                                    )
+                            } else {
+                                it
+                                    .fillMaxSize()
+                                    .background(MaterialTheme.colorScheme.surfaceHigh)
+                            }
+                        }
+                ) {
+                    // Single onboarding card container for all pager content
+                    OnboardingCard(
+                        isTablet = isTablet,
+                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                        modifier = Modifier.weight(1f)
+                    ) {
                 HorizontalPager(
                     state = pagerState,
                     userScrollEnabled = when {
@@ -1646,7 +1671,7 @@ fun OnboardingScreen(
             exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
         ) {
             Surface(
-                color = MaterialTheme.colorScheme.surface,
+                color = MaterialTheme.colorScheme.surfaceHigh,
                 tonalElevation = 0.dp
             ) {
                 Row(
@@ -1869,6 +1894,8 @@ fun OnboardingScreen(
                 }
             }
         }
+        }
+    }
     }
     }
 
@@ -1913,7 +1940,7 @@ private fun OnboardingTopBackButton(onBackClick: () -> Unit) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(50))
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                .background(MaterialTheme.colorScheme.surfaceHigh),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -1936,7 +1963,7 @@ private fun OnboardingCard(
     containerColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.surface,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val contentMaxWidth = 600.dp
+    val contentMaxWidth = if (isTablet) 1000.dp else androidx.compose.ui.unit.Dp.Infinity
     val cardPadding = if (isTablet) 20.dp else 10.dp
 
     Surface(
@@ -2002,6 +2029,9 @@ fun EnhancedWelcomeContent(
             .background(MaterialTheme.colorScheme.primary),
         contentAlignment = Alignment.Center
     ) {
+        // Draw rotating background cookies
+        RotatingBackgroundCookies(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.08f))
+
         Box(
             modifier = Modifier
                 .fillMaxHeight()
@@ -2367,7 +2397,7 @@ fun EnhancedPermissionContent(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && permissionScreenState == PermissionScreenState.PermissionsRequired) {
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            containerColor = MaterialTheme.colorScheme.surface
                         ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -2464,7 +2494,7 @@ fun EnhancedPermissionContent(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && permissionScreenState == PermissionScreenState.PermissionsRequired) {
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        containerColor = MaterialTheme.colorScheme.surface
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -2554,7 +2584,7 @@ fun EnhancedPermissionCard(
         targetValue = if (isGranted)
             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
         else
-            MaterialTheme.colorScheme.surfaceContainer,
+            MaterialTheme.colorScheme.surface,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMedium
@@ -3011,7 +3041,7 @@ fun EnhancedBackupRestoreContent(
                             }
                         )
                     ),
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
 
                 OnboardingBackupActionCard(
@@ -3154,7 +3184,7 @@ fun EnhancedBackupRestoreContent(
                             }
                         )
                     ),
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
 
                 OnboardingBackupActionCard(
@@ -4166,7 +4196,7 @@ private fun LibrarySettingsCard(
                 }
             )
         ),
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
 
@@ -4280,7 +4310,7 @@ private fun FolderManagementCard(
 
     Material3SettingsGroup(
         items = folderItems,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
 
@@ -4393,7 +4423,7 @@ private fun AudioPlaybackSettingsCard(
                 }
             )
         ),
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
 
@@ -4507,7 +4537,7 @@ private fun ThemeSettingsCard(
 
     Material3SettingsGroup(
         items = themeItems,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
 
@@ -4527,7 +4557,7 @@ private fun LibraryFeatureCard(
             containerColor = when {
                 useTertiaryStyle -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
                 usePrimaryStyle -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                else -> MaterialTheme.colorScheme.surfaceContainerLow
+                else -> MaterialTheme.colorScheme.surface
             }
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
@@ -4722,7 +4752,7 @@ fun EnhancedThemingContent(
                 ) {
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            containerColor = MaterialTheme.colorScheme.surface
                         ),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(18.dp)
@@ -4979,7 +5009,7 @@ fun EnhancedThemingContent(
             /* // Live theme preview card
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp)
@@ -5284,9 +5314,9 @@ fun EnhancedThemeOption(
             },
         colors = CardDefaults.cardColors(
             containerColor = if (isEnabled)
-                MaterialTheme.colorScheme.surfaceContainerLow
+                MaterialTheme.colorScheme.surface
             else
-                MaterialTheme.colorScheme.surfaceContainer
+                MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
@@ -5360,7 +5390,7 @@ fun OnboardingDropdownOption(
                 showDropdown = true
             },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
@@ -5587,7 +5617,7 @@ fun EnhancedRhythmGuardContent(
                             ) {
                                 Surface(
                                     shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.surfaceContainerHighest
+                                    color = MaterialTheme.colorScheme.surfaceHighest
                                 ) {
                                     IconButton(onClick = { appSettings.setRhythmGuardAge((rhythmGuardAge - 1).coerceAtLeast(8)) }) {
                                         Icon(imageVector = RhythmIcons.Remove, contentDescription = null)
@@ -5601,7 +5631,7 @@ fun EnhancedRhythmGuardContent(
                                 )
                                 Surface(
                                     shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.surfaceContainerHighest
+                                    color = MaterialTheme.colorScheme.surfaceHighest
                                 ) {
                                     IconButton(onClick = { appSettings.setRhythmGuardAge((rhythmGuardAge + 1).coerceAtMost(80)) }) {
                                         Icon(imageVector = RhythmIcons.Add, contentDescription = null)
@@ -5621,7 +5651,7 @@ fun EnhancedRhythmGuardContent(
 
         Material3SettingsGroup(
             items = modeItems,
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 
@@ -5777,144 +5807,281 @@ fun EnhancedFullTourPromptContent(
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
 
-    Column(
-        horizontalAlignment = Alignment.Start,
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-    ) {
-        AnimatedVisibility(visible = true, enter = scaleIn() + fadeIn()) {
-            OnboardingStepHeaderIcon(
-                imageVector = RhythmIcons.AutoAwesome,
-                tint = MaterialTheme.colorScheme.secondary,
-                iconSize = if (isTablet) 72.dp else 56.dp
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = context.getString(R.string.onboarding_full_tour_prompt_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        Text(
-            text = context.getString(R.string.onboarding_full_tour_prompt_desc),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 20.dp)
-        )
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                OnboardingTipItem(
-                    icon = RhythmIcons.Tune,
-                    text = context.getString(R.string.onboarding_full_tour_prompt_tip_1)
-                )
-                OnboardingTipItem(
-                    icon = RhythmIcons.Library,
-                    text = context.getString(R.string.onboarding_full_tour_prompt_tip_2)
-                )
-                OnboardingTipItem(
-                    icon = RhythmIcons.Info,
-                    text = context.getString(R.string.onboarding_full_tour_prompt_tip_3)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(28.dp))
-
+    if (isTablet) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(32.dp),
+            verticalAlignment = Alignment.Top
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.rhythm_splash_logo),
-                contentDescription = context.getString(R.string.updates_rhythm_logo_cd),
-                modifier = Modifier.size(80.dp)
-            )
-            Spacer(modifier = Modifier.width(3.dp))
-            Text(
-                text = context.getString(R.string.common_rhythm),
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        if (isTablet) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+            // Left Column: Icon, Title, Description, logo info, and back button
+            Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                backButton?.invoke()
+                AnimatedVisibility(visible = true, enter = scaleIn() + fadeIn()) {
+                    OnboardingStepHeaderIcon(
+                        imageVector = RhythmIcons.AutoAwesome,
+                        tint = MaterialTheme.colorScheme.secondary,
+                        iconSize = 72.dp
+                    )
+                }
+
+                Text(
+                    text = context.getString(R.string.onboarding_full_tour_prompt_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Text(
+                    text = context.getString(R.string.onboarding_full_tour_prompt_desc),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
                 Spacer(modifier = Modifier.weight(1f))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.rhythm_splash_logo),
+                        contentDescription = context.getString(R.string.updates_rhythm_logo_cd),
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = context.getString(R.string.common_rhythm),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    backButton?.invoke()
+                    Spacer(modifier = Modifier.weight(1f))
+                }
             }
-            Spacer(modifier = Modifier.height(20.dp))
-        }
 
-        Button(
-            onClick = {
-                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                onContinueFullTour()
-            },
+            // Right Column: Tips card and primary buttons
+            Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        OnboardingTipItem(
+                            icon = RhythmIcons.Tune,
+                            text = context.getString(R.string.onboarding_full_tour_prompt_tip_1)
+                        )
+                        OnboardingTipItem(
+                            icon = RhythmIcons.Library,
+                            text = context.getString(R.string.onboarding_full_tour_prompt_tip_2)
+                        )
+                        OnboardingTipItem(
+                            icon = RhythmIcons.Info,
+                            text = context.getString(R.string.onboarding_full_tour_prompt_tip_3)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                        onContinueFullTour()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(32.dp)
+                ) {
+                    Text(
+                        text = context.getString(R.string.onboarding_continue_full_tour),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = RhythmIcons.Forward,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                OutlinedButton(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                        onSkipFullTour()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(32.dp)
+                ) {
+                    Text(
+                        text = context.getString(R.string.onboarding_finish_now),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = RhythmIcons.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+    } else {
+        Column(
+            horizontalAlignment = Alignment.Start,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(32.dp)
+                .verticalScroll(rememberScrollState())
         ) {
+            AnimatedVisibility(visible = true, enter = scaleIn() + fadeIn()) {
+                OnboardingStepHeaderIcon(
+                    imageVector = RhythmIcons.AutoAwesome,
+                    tint = MaterialTheme.colorScheme.secondary,
+                    iconSize = 56.dp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             Text(
-                text = context.getString(R.string.onboarding_continue_full_tour),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold
+                text = context.getString(R.string.onboarding_full_tour_prompt_title),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                imageVector = RhythmIcons.Forward,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-        }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedButton(
-            onClick = {
-                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                onSkipFullTour()
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(32.dp)
-        ) {
             Text(
-                text = context.getString(R.string.onboarding_finish_now),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold
+                text = context.getString(R.string.onboarding_full_tour_prompt_desc),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 20.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                imageVector = RhythmIcons.Check,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-        }
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    OnboardingTipItem(
+                        icon = RhythmIcons.Tune,
+                        text = context.getString(R.string.onboarding_full_tour_prompt_tip_1)
+                    )
+                    OnboardingTipItem(
+                        icon = RhythmIcons.Library,
+                        text = context.getString(R.string.onboarding_full_tour_prompt_tip_2)
+                    )
+                    OnboardingTipItem(
+                        icon = RhythmIcons.Info,
+                        text = context.getString(R.string.onboarding_full_tour_prompt_tip_3)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.rhythm_splash_logo),
+                    contentDescription = context.getString(R.string.updates_rhythm_logo_cd),
+                    modifier = Modifier.size(80.dp)
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                    text = context.getString(R.string.common_rhythm),
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                    onContinueFullTour()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(32.dp)
+            ) {
+                Text(
+                    text = context.getString(R.string.onboarding_continue_full_tour),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = RhythmIcons.Forward,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                    onSkipFullTour()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(32.dp)
+            ) {
+                Text(
+                    text = context.getString(R.string.onboarding_finish_now),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = RhythmIcons.Check,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+        }
     }
 }
 
@@ -6167,7 +6334,7 @@ fun EnhancedUpdaterContent(
                             }
                         )
                     ),
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
 
                 androidx.compose.animation.AnimatedVisibility(
@@ -6263,7 +6430,7 @@ fun EnhancedUpdaterContent(
                                     }
                                 )
                             ),
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            containerColor = MaterialTheme.colorScheme.surface
                         )
                     }
                 }
@@ -6423,7 +6590,7 @@ fun EnhancedUpdaterContent(
                             }
                         )
                     ),
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
 
                 androidx.compose.animation.AnimatedVisibility(
@@ -6519,7 +6686,7 @@ fun EnhancedUpdaterContent(
                                     }
                                 )
                             ),
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            containerColor = MaterialTheme.colorScheme.surface
                         )
                     }
                 }
@@ -6549,9 +6716,9 @@ fun EnhancedUpdateOption(
             },
         colors = CardDefaults.cardColors(
             containerColor = if (isEnabled)
-                MaterialTheme.colorScheme.surfaceContainerLow
+                MaterialTheme.colorScheme.surface
             else
-                MaterialTheme.colorScheme.surfaceContainer
+                MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
@@ -6674,7 +6841,7 @@ fun SettingsDropdownItem(
                 showDropdown = true
             },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
@@ -7281,7 +7448,7 @@ private fun MediaScanSettingsCard(
                 }
             )
         ),
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
 
@@ -7330,7 +7497,7 @@ fun MediaScanModeOption(
         targetValue = if (isSelected)
             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
         else
-            MaterialTheme.colorScheme.surfaceContainer,
+            MaterialTheme.colorScheme.surface,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMedium
@@ -7614,7 +7781,7 @@ fun EnhancedSetupFinishedContent(
                                 }
                             )
                         ),
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 }
 
@@ -7622,7 +7789,7 @@ fun EnhancedSetupFinishedContent(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 ) {
                     Text(
@@ -7721,7 +7888,7 @@ fun EnhancedSetupFinishedContent(
                             }
                         )
                     ),
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             }
 
@@ -8525,7 +8692,7 @@ private fun PlaybackThemePreview(
                                     modifier = Modifier
                                         .size(32.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                                        .background(MaterialTheme.colorScheme.surfaceHigh),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
@@ -8591,7 +8758,7 @@ private fun PlaybackThemePreview(
                                         modifier = Modifier
                                             .size(32.dp)
                                             .clip(RoundedCornerShape(8.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                                            .background(MaterialTheme.colorScheme.surfaceHigh),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
@@ -8605,7 +8772,7 @@ private fun PlaybackThemePreview(
                                         modifier = Modifier
                                             .size(32.dp)
                                             .clip(RoundedCornerShape(8.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                                            .background(MaterialTheme.colorScheme.surfaceHigh),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
@@ -8622,7 +8789,7 @@ private fun PlaybackThemePreview(
                             Card(
                                 shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                                    containerColor = MaterialTheme.colorScheme.surfaceHigh
                                 ),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
@@ -8813,7 +8980,7 @@ private fun PlaybackThemePreview(
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(20.dp),
-                                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                                color = MaterialTheme.colorScheme.surfaceHighest,
                                 tonalElevation = 2.dp
                             ) {
                                 Row(
@@ -8846,7 +9013,7 @@ private fun PlaybackThemePreview(
                                             .weight(1f)
                                             .height(32.dp)
                                             .clip(RoundedCornerShape(16.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                                            .background(MaterialTheme.colorScheme.surfaceHigh),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
@@ -8880,7 +9047,7 @@ private fun PlaybackThemePreview(
                                             .weight(1f)
                                             .height(32.dp)
                                             .clip(RoundedCornerShape(16.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                                            .background(MaterialTheme.colorScheme.surfaceHigh),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
@@ -8935,7 +9102,7 @@ private fun PlaybackThemePreview(
                                     .fillMaxWidth()
                                     .height(72.dp)
                                     .shadow(4.dp, CircleShape)
-                                    .background(MaterialTheme.colorScheme.surfaceContainer, shape = CircleShape)
+                                    .background(MaterialTheme.colorScheme.surface, shape = CircleShape)
                                     .clip(CircleShape)
                             ) {
                                 // Progress overlay acts as dynamic background
@@ -9013,7 +9180,7 @@ private fun PlaybackThemePreview(
                             Card(
                                 shape = RoundedCornerShape(16.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                                    containerColor = MaterialTheme.colorScheme.surface
                                 ),
                                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                 modifier = Modifier
@@ -9364,7 +9531,7 @@ private fun GestureSettingsCards(
                     onHapticFeedbackChange
                 )
             ),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surface
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -9387,7 +9554,7 @@ private fun GestureSettingsCards(
                     onMiniPlayerSwipeChange
                 )
             ),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surface
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -9424,7 +9591,7 @@ private fun GestureSettingsCards(
                     onDoubleTapChange
                 )
             ),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 }
@@ -9676,7 +9843,7 @@ private fun WidgetSettingsCard(
                 }
             )
         ),
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
 
@@ -10007,7 +10174,7 @@ private fun IntegrationsSettingsCards(
         if (apiItems.isNotEmpty()) {
             Material3SettingsGroup(
                 items = apiItems,
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                containerColor = MaterialTheme.colorScheme.surface
             )
         }
 
@@ -10015,7 +10182,7 @@ private fun IntegrationsSettingsCards(
 
         Material3SettingsGroup(
             items = socialItems,
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 }
@@ -10239,7 +10406,7 @@ private fun StatsSettingsCard(
                 }
             )
         ),
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
 
@@ -10380,157 +10547,324 @@ fun EnhancedAppModeChoiceContent(
 
     var selectedMode by remember { mutableStateOf(appMode) }
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+    if (isTablet) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(if (isTablet) Modifier.width(500.dp) else Modifier)
                 .verticalScroll(scrollState)
-                .padding(horizontal = 16.dp, vertical = 16.dp)
+                .padding(vertical = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(32.dp),
+            verticalAlignment = Alignment.Top
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                modifier = Modifier.padding(bottom = 12.dp)
+            // Left Column: Brand branding (logo + name), subtitle, description, and navigation buttons
+            Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Logo
-                Image(
-                    painter = painterResource(id = R.drawable.rhythm_splash_logo),
-                    contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
-                    modifier = Modifier.size(100.dp)
-                )
-
-                // App name
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = context.getString(R.string.common_rhythm),
-                        style = MaterialTheme.typography.displayMedium.copy(
-                            fontSize = 42.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onBackground,
-                        textAlign = TextAlign.Center
-                    )
-
-                    androidx.compose.animation.AnimatedVisibility(
-                        visible = selectedMode == "STREAMING",
-                        enter = scaleIn() + fadeIn(),
-                        exit = scaleOut() + fadeOut()
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = stringResource(R.string.splashscreen_go),
-                                style = MaterialTheme.typography.displayMedium.copy(
-                                    fontSize = 42.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = 1.sp
-                                ),
-                                color = MaterialTheme.colorScheme.primary,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
-            }
-
-            Text(
-                text = stringResource(R.string.onboardingscreen_choose_your_playback_mode),
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.Medium
-                ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
-
-            // Button group selection
-            AppModeChoiceSelection(
-                selectedMode = selectedMode,
-                onModeSelected = { mode ->
-                    selectedMode = mode
-                    scope.launch { appSettings.setAppMode(mode) }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // Dynamic proper description card
-            androidx.compose.animation.AnimatedContent(
-                targetState = selectedMode,
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(220)).togetherWith(fadeOut(animationSpec = tween(220)))
-                },
-                label = "mode_description"
-            ) { mode ->
-                val descriptionTitle = if (mode == "LOCAL") {
-                    stringResource(R.string.onboardingscreen_local_offline_player)
-                } else {
-                    stringResource(R.string.onboardingscreen_rhythm_go_streaming)
-                }
-
-                val descriptionText = if (mode == "LOCAL") {
-                    stringResource(R.string.onboardingscreen_play_audio_files_stored)
-                } else {
-                    stringResource(R.string.onboardingscreen_connect_to_jellyfin_subsonic)
-                }
-
-                val icon = if (mode == "LOCAL") {
-                    MaterialSymbolIcon("music_note", filled = true)
-                } else {
-                    MaterialSymbolIcon("cloud_queue", filled = true)
-                }
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
-                    )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    modifier = Modifier.padding(bottom = 12.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(20.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            modifier = Modifier.size(52.dp)
+                    Image(
+                        painter = painterResource(id = R.drawable.rhythm_splash_logo),
+                        contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
+                        modifier = Modifier.size(80.dp)
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = context.getString(R.string.common_rhythm),
+                            style = MaterialTheme.typography.displayMedium.copy(
+                                fontSize = 36.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = selectedMode == "STREAMING",
+                            enter = scaleIn() + fadeIn(),
+                            exit = scaleOut() + fadeOut()
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = icon,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(26.dp)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = stringResource(R.string.splashscreen_go),
+                                    style = MaterialTheme.typography.displayMedium.copy(
+                                        fontSize = 36.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 1.sp
+                                    ),
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = descriptionTitle,
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = descriptionText,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                    }
+                }
+
+                Text(
+                    text = stringResource(R.string.onboardingscreen_choose_your_playback_mode),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Text(
+                    text = "Configure Rhythm as a local offline music player for audio files stored on your device, or connect to your self-hosted streaming services.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    backButton?.invoke()
+                    nextButton()
+                }
+            }
+
+            // Right Column: Selection controls and description card
+            Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                AppModeChoiceSelection(
+                    selectedMode = selectedMode,
+                    onModeSelected = { mode ->
+                        selectedMode = mode
+                        scope.launch { appSettings.setAppMode(mode) }
+                    }
+                )
+
+                androidx.compose.animation.AnimatedContent(
+                    targetState = selectedMode,
+                    transitionSpec = {
+                        fadeIn(animationSpec = tween(220)).togetherWith(fadeOut(animationSpec = tween(220)))
+                    },
+                    label = "mode_description"
+                ) { mode ->
+                    val descriptionTitle = if (mode == "LOCAL") {
+                        stringResource(R.string.onboardingscreen_local_offline_player)
+                    } else {
+                        stringResource(R.string.onboardingscreen_rhythm_go_streaming)
+                    }
+
+                    val descriptionText = if (mode == "LOCAL") {
+                        stringResource(R.string.onboardingscreen_play_audio_files_stored)
+                    } else {
+                        stringResource(R.string.onboardingscreen_connect_to_jellyfin_subsonic)
+                    }
+
+                    val icon = if (mode == "LOCAL") {
+                        MaterialSymbolIcon("music_note", filled = true)
+                    } else {
+                        MaterialSymbolIcon("cloud_queue", filled = true)
+                    }
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(20.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                modifier = Modifier.size(52.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(26.dp)
+                                    )
+                                }
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = descriptionTitle,
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = descriptionText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
             }
+        }
+    } else {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(if (isTablet) Modifier.width(500.dp) else Modifier)
+                    .verticalScroll(scrollState)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    modifier = Modifier.padding(bottom = 12.dp)
+                ) {
+                    // Logo
+                    Image(
+                        painter = painterResource(id = R.drawable.rhythm_splash_logo),
+                        contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
+                        modifier = Modifier.size(100.dp)
+                    )
 
-            Spacer(modifier = Modifier.height(20.dp))
+                    // App name
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = context.getString(R.string.common_rhythm),
+                            style = MaterialTheme.typography.displayMedium.copy(
+                                fontSize = 42.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground,
+                            textAlign = TextAlign.Center
+                        )
+
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = selectedMode == "STREAMING",
+                            enter = scaleIn() + fadeIn(),
+                            exit = scaleOut() + fadeOut()
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = stringResource(R.string.splashscreen_go),
+                                    style = MaterialTheme.typography.displayMedium.copy(
+                                        fontSize = 42.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 1.sp
+                                    ),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Text(
+                    text = stringResource(R.string.onboardingscreen_choose_your_playback_mode),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+
+                // Button group selection
+                AppModeChoiceSelection(
+                    selectedMode = selectedMode,
+                    onModeSelected = { mode ->
+                        selectedMode = mode
+                        scope.launch { appSettings.setAppMode(mode) }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // Dynamic proper description card
+                androidx.compose.animation.AnimatedContent(
+                    targetState = selectedMode,
+                    transitionSpec = {
+                        fadeIn(animationSpec = tween(220)).togetherWith(fadeOut(animationSpec = tween(220)))
+                    },
+                    label = "mode_description"
+                ) { mode ->
+                    val descriptionTitle = if (mode == "LOCAL") {
+                        stringResource(R.string.onboardingscreen_local_offline_player)
+                    } else {
+                        stringResource(R.string.onboardingscreen_rhythm_go_streaming)
+                    }
+
+                    val descriptionText = if (mode == "LOCAL") {
+                        stringResource(R.string.onboardingscreen_play_audio_files_stored)
+                    } else {
+                        stringResource(R.string.onboardingscreen_connect_to_jellyfin_subsonic)
+                    }
+
+                    val icon = if (mode == "LOCAL") {
+                        MaterialSymbolIcon("music_note", filled = true)
+                    } else {
+                        MaterialSymbolIcon("cloud_queue", filled = true)
+                    }
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(20.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                modifier = Modifier.size(52.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(26.dp)
+                                    )
+                                }
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = descriptionTitle,
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = descriptionText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+            }
         }
     }
 }
@@ -10900,7 +11234,7 @@ private fun StreamingSetupSelectionAndForm(
                 color = if (isSubsonic) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
             ),
             colors = CardDefaults.cardColors(
-                containerColor = if (isSubsonic) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.surfaceContainerLow
+                containerColor = if (isSubsonic) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.surface
             )
         ) {
             Column(
@@ -10908,9 +11242,10 @@ private fun StreamingSetupSelectionAndForm(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Image(
+                Icon(
                     painter = painterResource(id = R.drawable.ic_subsonic),
                     contentDescription = null,
+                    tint = if (isSubsonic) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
@@ -10944,7 +11279,7 @@ private fun StreamingSetupSelectionAndForm(
                 color = if (isJellyfin) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
             ),
             colors = CardDefaults.cardColors(
-                containerColor = if (isJellyfin) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.surfaceContainerLow
+                containerColor = if (isJellyfin) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.surface
             )
         ) {
             Column(
@@ -10952,9 +11287,10 @@ private fun StreamingSetupSelectionAndForm(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Image(
+                Icon(
                     painter = painterResource(id = R.drawable.ic_jellyfin),
                     contentDescription = null,
+                    tint = if (isJellyfin) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
@@ -10973,7 +11309,7 @@ private fun StreamingSetupSelectionAndForm(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         shape = RoundedCornerShape(24.dp)
     ) {
@@ -11148,4 +11484,214 @@ private fun StreamingSetupSelectionAndForm(
             }
         }
     }
+}
+
+@Composable
+private fun Material3SettingsGroup(
+    title: String? = null,
+    items: List<chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem>,
+    containerColor: Color = MaterialTheme.colorScheme.surface
+) {
+    chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup(
+        title = title,
+        items = items,
+        containerColor = MaterialTheme.colorScheme.surface
+    )
+}
+
+@Composable
+private fun RotatingBackgroundCookies(color: Color) {
+    val lowerY = remember { Animatable(-600f) }
+    val upperY = remember { Animatable(-1000f) }
+
+    LaunchedEffect(Unit) {
+        // 1. Fall down
+        launch {
+            lowerY.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(durationMillis = 500, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+            )
+        }
+        
+        upperY.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(durationMillis = 600, easing = androidx.compose.animation.core.LinearEasing)
+        )
+        
+        // 2. Collision impact
+        launch {
+            lowerY.animateTo(
+                targetValue = 40f,
+                animationSpec = tween(durationMillis = 80, easing = androidx.compose.animation.core.FastOutLinearInEasing)
+            )
+            lowerY.animateTo(
+                targetValue = 0f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        }
+        
+        launch {
+            upperY.animateTo(
+                targetValue = -60f,
+                animationSpec = tween(durationMillis = 120, easing = androidx.compose.animation.core.LinearOutSlowInEasing)
+            )
+            upperY.animateTo(
+                targetValue = 0f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
+        }
+    }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "cookieRotation")
+    val rotationLower by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 50000, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "lowerRotation"
+    )
+    val rotationUpper by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = -360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 60000, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "upperRotation"
+    )
+
+    val cookie6Shape = rememberExpressiveShape("COOKIE_6")
+    val cookie12Shape = rememberExpressiveShape("COOKIE_12")
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Lower cookie (COOKIE_6) located at bottom-left
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .size(460.dp)
+                .graphicsLayer {
+                    translationX = -120.dp.toPx()
+                    translationY = (140.dp.toPx() + lowerY.value.dp.toPx())
+                    rotationZ = rotationLower + 15f
+                }
+                .clip(cookie6Shape)
+                .background(color)
+        )
+
+        // Upper cookie (COOKIE_12) located at top-right
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(340.dp)
+                .graphicsLayer {
+                    translationX = 80.dp.toPx()
+                    translationY = (-100.dp.toPx() + upperY.value.dp.toPx())
+                    rotationZ = rotationUpper - 20f
+                }
+                .clip(cookie12Shape)
+                .background(color)
+        )
+    }
+}
+
+private val androidx.compose.material3.ColorScheme.surfaceHigh: androidx.compose.ui.graphics.Color
+    get() = this.surfaceContainer
+
+private val androidx.compose.material3.ColorScheme.surfaceHighest: androidx.compose.ui.graphics.Color
+    get() = this.surfaceContainerHighest
+
+@Composable
+private fun OutlinedButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: androidx.compose.ui.graphics.Shape = androidx.compose.material3.ButtonDefaults.outlinedShape,
+    colors: androidx.compose.material3.ButtonColors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface
+    ),
+    elevation: androidx.compose.material3.ButtonElevation? = null,
+    border: BorderStroke? = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)),
+    contentPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.material3.ButtonDefaults.ContentPadding,
+    interactionSource: androidx.compose.foundation.interaction.MutableInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+    content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit
+) {
+    androidx.compose.material3.OutlinedButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        shape = shape,
+        colors = colors,
+        elevation = elevation,
+        border = border,
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
+        content = content
+    )
+}
+
+@Composable
+private fun OutlinedTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    readOnly: Boolean = false,
+    textStyle: androidx.compose.ui.text.TextStyle = androidx.compose.material3.LocalTextStyle.current,
+    label: @Composable (() -> Unit)? = null,
+    placeholder: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    prefix: @Composable (() -> Unit)? = null,
+    suffix: @Composable (() -> Unit)? = null,
+    supportingText: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,
+    visualTransformation: androidx.compose.ui.text.input.VisualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
+    keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default,
+    keyboardActions: androidx.compose.foundation.text.KeyboardActions = androidx.compose.foundation.text.KeyboardActions.Default,
+    singleLine: Boolean = false,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    minLines: Int = 1,
+    interactionSource: androidx.compose.foundation.interaction.MutableInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+    shape: androidx.compose.ui.graphics.Shape = androidx.compose.material3.OutlinedTextFieldDefaults.shape,
+    colors: androidx.compose.material3.TextFieldColors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+    )
+) {
+    androidx.compose.material3.OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        enabled = enabled,
+        readOnly = readOnly,
+        textStyle = textStyle,
+        label = label,
+        placeholder = placeholder,
+        leadingIcon = leadingIcon,
+        trailingIcon = trailingIcon,
+        prefix = prefix,
+        suffix = suffix,
+        supportingText = supportingText,
+        isError = isError,
+        visualTransformation = visualTransformation,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        singleLine = singleLine,
+        maxLines = maxLines,
+        minLines = minLines,
+        interactionSource = interactionSource,
+        shape = shape,
+        colors = colors
+    )
 }

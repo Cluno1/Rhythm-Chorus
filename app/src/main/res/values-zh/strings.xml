@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">选择要遵循的更新通道：</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">欢迎</string>
     <string name="onboarding_welcome_to">欢迎来到</string>
     <string name="onboarding_welcome_subtitle">你的音乐，你的 Rhythm</string>
     <string name="onboarding_get_started">开始</string>
@@ -3012,5 +3013,8 @@
     <string name="nearby_server_discovery_scanning">正在扫描附近的服务器...</string>
     <string name="nearby_server_discovery_empty">未找到附近的服务器。确保您的服务器正在运行并连接到同一 Wi-Fi 网络。</string>
     <string name="nearby_server_discovery_rescan">重新扫描</string>
+    <string name="settings_metadata_editing">元数据编辑</string>
+    <string name="settings_enable_album_editing">启用相册编辑</string>
+    <string name="settings_enable_album_editing_desc">允许批量编辑整个专辑的元数据和插图。</string>
 </resources>
 

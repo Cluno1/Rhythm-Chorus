@@ -497,6 +497,7 @@
     <string name="updates_channel_desc">Выберите, какой канал обновлений следует использовать:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Добро пожаловать</string>
     <string name="onboarding_welcome_to">Добро пожаловать в</string>
     <string name="onboarding_welcome_subtitle">Ваша музыка, ваш Rhythm</string>
     <string name="onboarding_get_started">Начать</string>
@@ -3013,5 +3014,8 @@
     <string name="nearby_server_discovery_scanning">Сканирование ближайших серверов…</string>
     <string name="nearby_server_discovery_empty">Ближайшие серверы не найдены. Убедитесь, что ваш сервер работает и подключен к той же сети Wi-Fi.</string>
     <string name="nearby_server_discovery_rescan">Повторное сканирование</string>
+    <string name="settings_metadata_editing">Редактирование метаданных</string>
+    <string name="settings_enable_album_editing">Включить редактирование альбома</string>
+    <string name="settings_enable_album_editing_desc">Разрешить пакетное редактирование метаданных и иллюстраций для целых альбомов.</string>
 </resources>
 

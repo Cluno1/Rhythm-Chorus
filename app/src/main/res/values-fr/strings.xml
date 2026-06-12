@@ -497,6 +497,7 @@ Widget</string>
     <string name="updates_channel_desc">Choisissez le canal de mise à jour à suivre :</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">Bienvenue</string>
     <string name="onboarding_welcome_to">Bienvenue sur</string>
     <string name="onboarding_welcome_subtitle">Votre musique, votre Rhythm</string>
     <string name="onboarding_get_started">Commencez</string>
@@ -3045,5 +3046,8 @@ Icône</string>
     <string name="nearby_server_discovery_scanning">Recherche de serveurs à proximité…</string>
     <string name="nearby_server_discovery_empty">Aucun serveur à proximité trouvé. Assurez-vous que votre serveur est en cours d\'exécution et connecté au même réseau Wi-Fi.</string>
     <string name="nearby_server_discovery_rescan">Nouvelle analyse</string>
+    <string name="settings_metadata_editing">Édition des métadonnées</string>
+    <string name="settings_enable_album_editing">Activer l\'édition d\'album</string>
+    <string name="settings_enable_album_editing_desc">Autoriser l\'édition par lots des métadonnées et des illustrations pour des albums entiers.</string>
 </resources>
 

@@ -496,6 +496,7 @@
     <string name="updates_channel_desc">चुनें कि किस अपडेट चैनल का अनुसरण करना है:</string>
     
     <!-- Onboarding -->
+    <string name="onboarding_welcome">स्वागत है</string>
     <string name="onboarding_welcome_to">आपका स्वागत है</string>
     <string name="onboarding_welcome_subtitle">आपका संगीत, आपका Rhythm</string>
     <string name="onboarding_get_started">शुरू हो जाओ</string>
@@ -3011,5 +3012,8 @@
     <string name="nearby_server_discovery_scanning">आस-पास के सर्वर को स्कैन किया जा रहा है...</string>
     <string name="nearby_server_discovery_empty">कोई नजदीकी सर्वर नहीं मिला. सुनिश्चित करें कि आपका सर्वर चल रहा है और उसी वाई-फाई नेटवर्क से जुड़ा है।</string>
     <string name="nearby_server_discovery_rescan">पुनः स्कैन करें</string>
+    <string name="settings_metadata_editing">मेटाडेटा संपादन</string>
+    <string name="settings_enable_album_editing">एल्बम संपादन सक्षम करें</string>
+    <string name="settings_enable_album_editing_desc">संपूर्ण एल्बम के लिए मेटाडेटा और कलाकृति के बैच संपादन की अनुमति दें।</string>
 </resources>
 
