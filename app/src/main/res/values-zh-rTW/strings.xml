@@ -3034,5 +3034,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">安全警告</string>
     <string name="fdroid_update_warning_message">在 F-Droid 版本上啟用應用程式內更新會繞過 F-Droid 的安全性檢查。更新將直接從發布者下載。您想繼續嗎？</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">活躍</string>
+    <string name="replay_gain_status_disabled">殘障人士</string>
+    <string name="replay_gain_mode_title">ReplayGain模式</string>
+    <string name="replay_gain_mode_desc">依據曲目元數據或專輯元數據調整音量等級。</string>
+    <string name="replay_gain_mode_track">軌道</string>
+    <string name="replay_gain_mode_album">專輯</string>
+    <string name="replay_gain_prevent_clipping">防止削波（DRC）</string>
+    <string name="replay_gain_prevent_clipping_desc">動態壓縮峰值電平以防止音訊失真。</string>
+    <string name="replay_gain_preamp_tagged">前置放大器（已標記）</string>
+    <string name="replay_gain_preamp_tagged_desc">帶有 ReplayGain 標籤的曲目的音量調整。</string>
+    <string name="replay_gain_preamp_untagged">前置放大器（未標記）</string>
+    <string name="replay_gain_preamp_untagged_desc">沒有 ReplayGain 標籤的曲目的音量調整。</string>
+    <string name="replay_gain_configuration">配置</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">硬體加速音訊解碼以節省設備電量</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">核心</string>
+    <string name="backup_restore_section_core_desc">主題、播放器、UI、API 和應用程式首選項。</string>
+    <string name="backup_restore_section_collection">收藏</string>
+    <string name="backup_restore_section_collection_desc">播放清單、收藏夾、黑名單/白名單、固定資料夾。</string>
+    <string name="backup_restore_section_insight">洞察力</string>
+    <string name="backup_restore_section_insight_desc">播放次數、每日統計資料、類型和 Rhythm Guard 配置。</string>
+    <string name="backup_restore_status_included">包括</string>
+    <string name="backup_restore_status_excluded">排除</string>
+    <string name="backup_restore_sections_enabled">已啟用 %1$d（共 %2$d）</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">活躍</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">訂單</string>
+    <string name="sort_order_ascending">升序</string>
+    <string name="sort_order_descending">降序</string>
+    <string name="sort_track_number">曲目編號</string>
+    <string name="sort_duration">持續時間</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">取消選擇</string>
+    <string name="library_bottom_bar_back">返回</string>
+    <string name="library_bottom_bar_select_songs">選擇歌曲</string>
+    <string name="library_bottom_bar_more_actions">更多行動</string>
+    <string name="library_play_selected">播放 (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">你的耳朵正在舉辦一場音量完美的派對。保持負責任的態度！ 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">那裡有點辣。也許在警衛介入之前把它調低一點？ 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">哇搖滾明星，你正處於耳膜危險區！在鎖觸發之前撥回！ 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">安全區啟動！ Rhythm 警衛下班喝咖啡休息，所以可以自由地堵塞，沒有超時！ 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">聲音逾時已啟動。為了保護您的聽力，正在進行強制耳部小睡！ 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm 警衛下班。在容量安全方面，您完全是單飛。天佑！ 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">未知曲目</string>
+    <string name="unknown_song">未知歌曲</string>
+    <string name="player_queue_format">佇列 %1$d/%2$d</string>
+    <string name="player_release_to_close">釋放關閉</string>
+    <string name="player_swipe_down_to_close">向下滑動關閉</string>
+    <string name="lyrics_source_attribution">歌詞：%1$s</string>
+    <string name="lyrics_currently_no_lyrics">目前這首歌還沒有歌詞。\n</string>
+    <string name="lyrics_no_lyrics">這首歌沒有可用的歌詞。</string>
+    <string name="artist_options">藝術家選項</string>
+    <string name="edit_album_title_label">專輯名稱</string>
+    <string name="edit_album_artist_label">專輯藝術家</string>
+    <string name="autoeq_profiles_available">%1$d 個設定檔可用</string>
+    <string name="autoeq_no_brand">無品牌</string>
+    <string name="autoeq_change_profile">更改個人資料</string>
+    <string name="autoeq_configure_device">配置設備</string>
+    <string name="playlist_count_format">%1$d 個播放列表</string>
+    <string name="ui_song_count">1首</string>
+    <string name="duration_minutes_format">%1$d米</string>
 </resources>
+
 

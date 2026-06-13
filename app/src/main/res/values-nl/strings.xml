@@ -3016,5 +3016,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">Beveiligingswaarschuwing</string>
     <string name="fdroid_update_warning_message">Door in-app-updates in te schakelen voor een F-Droid-build worden de veiligheidscontroles van F-Droid omzeild. Updates worden rechtstreeks van de uitgever gedownload. Wilt u doorgaan?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">Actief</string>
+    <string name="replay_gain_status_disabled">Uitgeschakeld</string>
+    <string name="replay_gain_mode_title">ReplayGain-modus</string>
+    <string name="replay_gain_mode_desc">Pas volumeniveaus aan op basis van trackmetadata of albummetadata.</string>
+    <string name="replay_gain_mode_track">Spoor</string>
+    <string name="replay_gain_mode_album">Album</string>
+    <string name="replay_gain_prevent_clipping">Clipping voorkomen (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">Comprimeer piekniveaus dynamisch om audiovervorming te voorkomen.</string>
+    <string name="replay_gain_preamp_tagged">Voorversterker (gelabeld)</string>
+    <string name="replay_gain_preamp_tagged_desc">Volumeaanpassing voor nummers met ReplayGain-tags.</string>
+    <string name="replay_gain_preamp_untagged">Voorversterker (niet gelabeld)</string>
+    <string name="replay_gain_preamp_untagged_desc">Volumeaanpassing voor nummers zonder ReplayGain-tags.</string>
+    <string name="replay_gain_configuration">Configuratie</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">Hardwareversnelde audiodecodering om apparaatstroom te besparen</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">Kern</string>
+    <string name="backup_restore_section_core_desc">Thema-, speler-, UI-, API- en app-voorkeuren.</string>
+    <string name="backup_restore_section_collection">Verzameling</string>
+    <string name="backup_restore_section_collection_desc">Afspeellijsten, favorieten, zwarte/witte lijst, vastgezette mappen.</string>
+    <string name="backup_restore_section_insight">Inzicht</string>
+    <string name="backup_restore_section_insight_desc">Speeltellingen, dagelijkse statistieken, genres en Rhythm Guard-configuratie.</string>
+    <string name="backup_restore_status_included">Inbegrepen</string>
+    <string name="backup_restore_status_excluded">Uitgesloten</string>
+    <string name="backup_restore_sections_enabled">%1$d van %2$d ingeschakeld</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">Actief</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">Bestelling</string>
+    <string name="sort_order_ascending">Oplopend</string>
+    <string name="sort_order_descending">Aflopend</string>
+    <string name="sort_track_number">Tracknummer</string>
+    <string name="sort_duration">Duur</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">Selectie annuleren</string>
+    <string name="library_bottom_bar_back">Terug</string>
+    <string name="library_bottom_bar_select_songs">Selecteer nummers</string>
+    <string name="library_bottom_bar_more_actions">Meer acties</string>
+    <string name="library_play_selected">Afspelen (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">Je oren geven een perfect volumefeest. Blijf verantwoord vibreren! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">Het wordt een beetje pittig daarbinnen. Misschien een tandje lager zetten voordat de bewaker ingrijpt? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">Whoa rockstar, je bevindt je in de gevarenzone van het trommelvlies! Bel het terug voordat de sloten worden geactiveerd! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">Veilige zone actief! Rhythm De bewaker heeft geen dienst tijdens de koffiepauze, dus jam vrijelijk zonder time-outs! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">Akoestische time-out actief. Er wordt een verplicht oordutje uitgevoerd om uw gehoor te beschermen! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm Bewaker heeft geen dienst. Je vliegt volledig solo op volumeveiligheid. Godspeed! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">Onbekend nummer</string>
+    <string name="unknown_song">Onbekend nummer</string>
+    <string name="player_queue_format">Wachtrij %1$d/%2$d</string>
+    <string name="player_release_to_close">Laat los om te sluiten</string>
+    <string name="player_swipe_down_to_close">Veeg omlaag om te sluiten</string>
+    <string name="lyrics_source_attribution">Tekst door %1$s</string>
+    <string name="lyrics_currently_no_lyrics">Momenteel zijn er geen songteksten beschikbaar voor dit nummer.\n</string>
+    <string name="lyrics_no_lyrics">Er zijn geen songteksten beschikbaar voor dit nummer.</string>
+    <string name="artist_options">Artiestopties</string>
+    <string name="edit_album_title_label">Albumtitel</string>
+    <string name="edit_album_artist_label">Albumartiest</string>
+    <string name="autoeq_profiles_available">%1$d profielen beschikbaar</string>
+    <string name="autoeq_no_brand">Geen merk</string>
+    <string name="autoeq_change_profile">Profiel wijzigen</string>
+    <string name="autoeq_configure_device">Apparaat configureren</string>
+    <string name="playlist_count_format">%1$d afspeellijsten</string>
+    <string name="ui_song_count">1 nummer</string>
+    <string name="duration_minutes_format">%1$dm</string>
 </resources>
+
 

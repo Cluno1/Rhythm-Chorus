@@ -3062,5 +3062,80 @@ Rhythm காவலரிடமிருந்து</string>
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">பாதுகாப்பு எச்சரிக்கை</string>
     <string name="fdroid_update_warning_message">F-Droid கட்டமைப்பில் உள்ள-ஆப் புதுப்பிப்புகளை இயக்குவது F-Droid இன் பாதுகாப்பு சோதனைகளைத் தவிர்க்கிறது. புதுப்பிப்புகள் வெளியீட்டாளரிடமிருந்து நேரடியாகப் பதிவிறக்கப்படும். தொடர வேண்டுமா?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">செயலில்</string>
+    <string name="replay_gain_status_disabled">ஊனமுற்றவர்</string>
+    <string name="replay_gain_mode_title">ReplayGain பயன்முறை</string>
+    <string name="replay_gain_mode_desc">டிராக் மெட்டாடேட்டா அல்லது ஆல்பம் மெட்டாடேட்டாவின் அடிப்படையில் வால்யூம் அளவைச் சரிசெய்யவும்.</string>
+    <string name="replay_gain_mode_track">தடம்</string>
+    <string name="replay_gain_mode_album">ஆல்பம்</string>
+    <string name="replay_gain_prevent_clipping">தடு கிளிப்பிங் (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">ஆடியோ சிதைவைத் தடுக்க உச்ச நிலைகளை மாறும் வகையில் சுருக்கவும்.</string>
+    <string name="replay_gain_preamp_tagged">முன்-பெருக்கி (குறியிடப்பட்டது)</string>
+    <string name="replay_gain_preamp_tagged_desc">ReplayGain குறிச்சொற்களைக் கொண்ட டிராக்குகளுக்கான தொகுதி சரிசெய்தல்.</string>
+    <string name="replay_gain_preamp_untagged">முன்-பெருக்கி (குறியிடப்படாதது)</string>
+    <string name="replay_gain_preamp_untagged_desc">ReplayGain குறிச்சொற்கள் இல்லாத டிராக்குகளுக்கான தொகுதி சரிசெய்தல்.</string>
+    <string name="replay_gain_configuration">கட்டமைப்பு</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">சாதன ஆற்றலைச் சேமிக்க வன்பொருள்-துரிதப்படுத்தப்பட்ட ஆடியோ டிகோடிங்</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">கோர்</string>
+    <string name="backup_restore_section_core_desc">தீம், பிளேயர், UI, API மற்றும் பயன்பாட்டு விருப்பத்தேர்வுகள்.</string>
+    <string name="backup_restore_section_collection">சேகரிப்பு</string>
+    <string name="backup_restore_section_collection_desc">பிளேலிஸ்ட்கள், பிடித்தவை, பிளாக்லிஸ்ட்/ஒயிட்லிஸ்ட், பின் செய்யப்பட்ட கோப்புறைகள்.</string>
+    <string name="backup_restore_section_insight">நுண்ணறிவு</string>
+    <string name="backup_restore_section_insight_desc">விளையாட்டு எண்ணிக்கை, தினசரி புள்ளிவிவரங்கள், வகைகள் மற்றும் Rhythm காவலர் உள்ளமைவு.</string>
+    <string name="backup_restore_status_included">சேர்க்கப்பட்டுள்ளது</string>
+    <string name="backup_restore_status_excluded">விலக்கப்பட்டது</string>
+    <string name="backup_restore_sections_enabled">%2$d இல் %1$d இயக்கப்பட்டது</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">செயலில்</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">ஆணை</string>
+    <string name="sort_order_ascending">ஏறுதல்</string>
+    <string name="sort_order_descending">இறங்குதல்</string>
+    <string name="sort_track_number">ட்ராக் எண்</string>
+    <string name="sort_duration">கால அளவு</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">தேர்வை ரத்து செய்</string>
+    <string name="library_bottom_bar_back">பின்</string>
+    <string name="library_bottom_bar_select_songs">பாடல்களைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="library_bottom_bar_more_actions">மேலும் செயல்கள்</string>
+    <string name="library_play_selected">விளையாடு (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">உங்கள் காதுகள் ஒரு கச்சிதமான விருந்தைக் கொடுக்கின்றன. பொறுப்புடன் தொடர்ந்து இருங்கள்! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">அங்கே கொஞ்சம் காரமாக இருக்கிறது. பாதுகாவலர் உள்ளே நுழைவதற்கு முன்பு அதை ஒரு உச்சநிலையை குறைக்கலாமா? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">ஓ ராக்ஸ்டார், நீங்கள் செவிப்பறை ஆபத்து மண்டலத்தில் இருக்கிறீர்கள்! பூட்டுகள் தூண்டப்படுவதற்கு முன் அதை மீண்டும் டயல் செய்யுங்கள்! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">பாதுகாப்பான மண்டலம் செயலில் உள்ளது! Rhythm காபி ப்ரேக் நேரத்தில் காவலர் கடமையில் இருப்பதில்லை, எனவே நேரம் முடிவில்லாமல் தாராளமாக நெரிசல்! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">ஒலியியலின் நேரம்-முடிவு செயலில் உள்ளது. உங்கள் செவித்திறனைப் பாதுகாக்க ஒரு கட்டாய காது தூக்கம் செயலில் உள்ளது! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm காவலர் பணியில் இல்லை. வால்யூம் பாதுகாப்பில் நீங்கள் முற்றிலும் தனியாக பறக்கிறீர்கள். இறைவேகம்! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">தெரியாத தடம்</string>
+    <string name="unknown_song">தெரியாத பாடல்</string>
+    <string name="player_queue_format">வரிசை %1$d/%2$d</string>
+    <string name="player_release_to_close">மூடுவதற்கு விடுவிக்கவும்</string>
+    <string name="player_swipe_down_to_close">மூடுவதற்கு கீழே ஸ்வைப் செய்யவும்</string>
+    <string name="lyrics_source_attribution">பாடல் வரிகள்: %1$s</string>
+    <string name="lyrics_currently_no_lyrics">தற்போது இந்தப் பாடலுக்கான வரிகள் எதுவும் கிடைக்கவில்லை.\n</string>
+    <string name="lyrics_no_lyrics">இந்தப் பாடலுக்கான வரிகள் எதுவும் கிடைக்கவில்லை.</string>
+    <string name="artist_options">கலைஞர் விருப்பங்கள்</string>
+    <string name="edit_album_title_label">ஆல்பத்தின் தலைப்பு</string>
+    <string name="edit_album_artist_label">ஆல்பம் கலைஞர்</string>
+    <string name="autoeq_profiles_available">%1$d சுயவிவரங்கள் உள்ளன</string>
+    <string name="autoeq_no_brand">பிராண்ட் இல்லை</string>
+    <string name="autoeq_change_profile">சுயவிவரத்தை மாற்றவும்</string>
+    <string name="autoeq_configure_device">சாதனத்தை உள்ளமைக்கவும்</string>
+    <string name="playlist_count_format">%1$d பிளேலிஸ்ட்கள்</string>
+    <string name="ui_song_count">1 பாடல்</string>
+    <string name="duration_minutes_format">%1$dமீ</string>
 </resources>
+
 

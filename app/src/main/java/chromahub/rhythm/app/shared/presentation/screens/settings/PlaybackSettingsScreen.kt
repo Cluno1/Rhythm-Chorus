@@ -161,7 +161,7 @@ fun PlaybackSettingsScreen(
                     SettingItem(
                         MaterialSymbolIcon("bolt"),
                         context.getString(R.string.settingsscreen_audio_offload),
-                        "Hardware-accelerated audio decoding to save device power",
+                        context.getString(R.string.settingsscreen_audio_offload_desc),
                         toggleState = audioOffloadEnabled,
                         onToggleChange = { appSettings.setAudioOffloadEnabled(it) }
                     )

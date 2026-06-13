@@ -267,7 +267,7 @@ fun MaterialPlayerScreen(
     onAddToPlaylistSheetDismiss: () -> Unit = {},
     onAddSongToPlaylist: (Song, String) -> Unit = { _, _ -> },
     onCreatePlaylist: (String) -> Unit = { _ -> },
-    onShowCreatePlaylistDialog: () -> Unit = {} ,
+    onShowCreatePlaylistDialog: (Song?) -> Unit = {} ,
     onClearQueue: () -> Unit = {},
     // New parameters for loader control and bottom sheets
     isMediaLoading: Boolean = false,
@@ -711,6 +711,8 @@ fun MaterialPlayerScreen(
     var selectedAlbum by remember { mutableStateOf<Album?>(null) }
     var selectedArtist by remember { mutableStateOf<Artist?>(null) }
     var showCompactChipsSheet by remember { mutableStateOf(false) }
+    var selectedSongForPlaylist by remember { mutableStateOf<Song?>(null) }
+    var showAddToPlaylistSheetInternal by remember { mutableStateOf(false) }
 
     // AutoEQ Suggestion Dialog state
     var showAutoEQSuggestion by remember { mutableStateOf(false) }
@@ -929,18 +931,36 @@ fun MaterialPlayerScreen(
         )
     }
 
-    if (showAddToPlaylistSheet && song != null) {
+    if ((showAddToPlaylistSheet || showAddToPlaylistSheetInternal) && (selectedSongForPlaylist ?: song) != null) {
         AddToPlaylistBottomSheet(
-            song = song,
+            song = selectedSongForPlaylist ?: song!!,
             playlists = playlists,
-            onDismissRequest = onAddToPlaylistSheetDismiss,
+            onDismissRequest = {
+                if (showAddToPlaylistSheetInternal) {
+                    showAddToPlaylistSheetInternal = false
+                    selectedSongForPlaylist = null
+                } else {
+                    onAddToPlaylistSheetDismiss()
+                }
+            },
             onAddToPlaylist = { playlist ->
-                onAddSongToPlaylist(song, playlist.id)
-                onAddToPlaylistSheetDismiss()
+                onAddSongToPlaylist(selectedSongForPlaylist ?: song!!, playlist.id)
+                if (showAddToPlaylistSheetInternal) {
+                    showAddToPlaylistSheetInternal = false
+                    selectedSongForPlaylist = null
+                } else {
+                    onAddToPlaylistSheetDismiss()
+                }
             },
             onCreateNewPlaylist = {
-                onAddToPlaylistSheetDismiss()
-                onShowCreatePlaylistDialog()
+                val songForDialog = selectedSongForPlaylist ?: song
+                if (showAddToPlaylistSheetInternal) {
+                    showAddToPlaylistSheetInternal = false
+                    selectedSongForPlaylist = null
+                } else {
+                    onAddToPlaylistSheetDismiss()
+                }
+                onShowCreatePlaylistDialog(songForDialog)
             },
             sheetState = addToPlaylistSheetState
         )
@@ -1161,7 +1181,10 @@ fun MaterialPlayerScreen(
             },
             onAddToQueue = { song -> musicViewModel.addSongToQueue(song) },
             onAddToQueueAll = { songs -> musicViewModel.addSongsToQueue(songs) },
-            onAddSongToPlaylist = { song -> onAddSongToPlaylist(song, "") },
+            onAddSongToPlaylist = { track -> 
+                selectedSongForPlaylist = track
+                showAddToPlaylistSheetInternal = true
+            },
             onPlayerClick = { /* Already in player screen */ },
             sheetState = artistBottomSheetState,
             haptics = haptic,
@@ -1436,7 +1459,7 @@ fun MaterialPlayerScreen(
                         tonalElevation = 2.dp
                     ) {
                         Text(
-                            text = if (isPastThreshold) "Release to close" else "Swipe down to close",
+                            text = stringResource(if (isPastThreshold) R.string.player_release_to_close else R.string.player_swipe_down_to_close),
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = if (isPastThreshold) FontWeight.Bold else FontWeight.Normal
                             ),
@@ -2082,10 +2105,7 @@ fun MaterialPlayerScreen(
                                                             )
                                                             Spacer(modifier = Modifier.height(16.dp))
                                                             Text(
-                                                                text = if (onlineOnlyLyrics)
-                                                                    "Currently no lyrics are available for this song.\n"
-                                                                else
-                                                                    "No lyrics available for this song.",
+                                                                text = stringResource(if (onlineOnlyLyrics) R.string.lyrics_currently_no_lyrics else R.string.lyrics_no_lyrics),
                                                                 style = MaterialTheme.typography.bodyLarge,
                                                                 color = MaterialTheme.colorScheme.onSurface.copy(
                                                                     alpha = 0.8f
@@ -3986,7 +4006,7 @@ fun MaterialPlayerScreen(
     if (showLyricsEditorDialog) {
         LyricsEditorBottomSheet(
             lyricsData = lyrics,
-            songTitle = song?.title ?: "Unknown",
+            songTitle = song?.title ?: stringResource(R.string.rating_unknown),
             initialTimeOffset = musicViewModel.lyricsTimeOffset.collectAsState().value,
             onDismiss = { showLyricsEditorDialog = false },
             onSave = { editedLyrics, timeOffset, format ->

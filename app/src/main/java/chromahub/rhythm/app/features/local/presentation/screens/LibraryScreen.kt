@@ -518,11 +518,7 @@ fun LibraryScreen(
     
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     
-    val fabVisibility by remember {
-        derivedStateOf {
-            scrollBehavior.state.collapsedFraction < 0.5f
-        }
-    }
+    val fabVisibility = true
 
     var showPlaylistFabMenu by remember { mutableStateOf(false) }
 
@@ -571,21 +567,8 @@ fun LibraryScreen(
                 if (songsToAddToPlaylist.isEmpty()) {
                     onCreatePlaylist(name)
                 } else {
-                    scope.launch {
-                        val currentPlaylists = playlists.map { it.id }.toSet()
-                        onCreatePlaylist(name)
-                        // Wait for the new playlist to appear in the list
-                        var newPlaylist: Playlist? = null
-                        for (i in 0..15) {
-                            kotlinx.coroutines.delay(100)
-                            newPlaylist = playlists.firstOrNull { it.id !in currentPlaylists }
-                            if (newPlaylist != null) break
-                        }
-                        newPlaylist?.let { playlist ->
-                            musicViewModel.addSongsToPlaylist(songsToAddToPlaylist, playlist.id)
-                        }
-                        songsToAddToPlaylist = emptyList()
-                    }
+                    musicViewModel.createPlaylist(name, songsToAddToPlaylist)
+                    songsToAddToPlaylist = emptyList()
                 }
                 showCreatePlaylistDialog = false
             }
@@ -5522,24 +5505,12 @@ private fun LibraryBottomBar(
         enter = slideInVertically(
             initialOffsetY = { it * 2 },
             animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            )
-        ) + scaleIn(
-            initialScale = 0.8f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMedium
             )
         ) + fadeIn(animationSpec = tween(300)),
         exit = slideOutVertically(
             targetOffsetY = { it * 2 },
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioNoBouncy,
-                stiffness = Spring.StiffnessMedium
-            )
-        ) + scaleOut(
-            targetScale = 0.8f,
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioNoBouncy,
                 stiffness = Spring.StiffnessMedium
@@ -5612,13 +5583,13 @@ private fun LibraryBottomBar(
                             if (selectionMode) {
                                 Icon(
                                     imageVector = RhythmIcons.Close,
-                                    contentDescription = "Cancel selection",
+                                    contentDescription = context.getString(R.string.library_bottom_bar_cancel_selection),
                                     modifier = Modifier.size(24.dp)
                                 )
                             } else {
                                 Icon(
                                     imageVector = if (activeTab == "EXPLORER") RhythmIcons.Back else MaterialSymbolIcon("check_box"),
-                                    contentDescription = if (activeTab == "EXPLORER") "Back" else "Select songs",
+                                    contentDescription = if (activeTab == "EXPLORER") context.getString(R.string.library_bottom_bar_back) else context.getString(R.string.library_bottom_bar_select_songs),
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -5680,7 +5651,7 @@ private fun LibraryBottomBar(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = if (selectionMode) "Play ($selectedSongsCount)" else "Play All",
+                                text = if (selectionMode) context.getString(R.string.library_play_selected, selectedSongsCount) else context.getString(R.string.library_play_all),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1
@@ -5741,7 +5712,7 @@ private fun LibraryBottomBar(
                         if (selectionMode) {
                             Icon(
                                 imageVector = RhythmIcons.More,
-                                contentDescription = "More actions",
+                                contentDescription = context.getString(R.string.library_bottom_bar_more_actions),
                                 modifier = Modifier.size(24.dp)
                             )
                         } else {
@@ -5756,7 +5727,7 @@ private fun LibraryBottomBar(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Shuffle",
+                                    text = stringResource(R.string.action_shuffle),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     maxLines = 1

@@ -1557,22 +1557,12 @@ fun UniversalSearchScreen(
                     showCreatePlaylistDialog = false
                 },
                 onConfirmWithSong = { name ->
-                    localViewModel.createPlaylist(name)
-                    if (selectedSongForPlaylist != null) {
-                        coroutineScope.launch {
-                            var found = false
-                            for (i in 1..20) {
-                                delay(50)
-                                val match = localPlaylists.find { it.name == name }
-                                if (match != null) {
-                                    localViewModel.addSongToPlaylist(selectedSongForPlaylist!!, match.id) { msg ->
-                                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                    }
-                                    found = true
-                                    break
-                                }
-                            }
+                    selectedSongForPlaylist?.let { song ->
+                        localViewModel.createPlaylist(name, listOf(song)) { msg ->
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                         }
+                    } ?: run {
+                        localViewModel.createPlaylist(name)
                     }
                     showCreatePlaylistDialog = false
                 }
@@ -2096,7 +2086,7 @@ fun UniversalSongOptionsBottomSheet(
                         Box(modifier = Modifier.weight(1f)) {
                             UniversalSongOptionGridItem(
                                 icon = if (isFavorite) RhythmIcons.Favorite else RhythmIcons.Favorite,
-                                text = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                                text = if (isFavorite) stringResource(R.string.action_remove_from_favorites) else stringResource(R.string.action_add_to_favorites),
                                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                                 iconColor = MaterialTheme.colorScheme.onTertiaryContainer,
                                 onClick = {

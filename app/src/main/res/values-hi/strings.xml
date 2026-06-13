@@ -3019,5 +3019,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">सुरक्षा चेतावनी</string>
     <string name="fdroid_update_warning_message">F-Droid बिल्ड पर इन-ऐप अपडेट सक्षम करने से F-Droid की सुरक्षा जांच बायपास हो जाती है। अपडेट सीधे प्रकाशक से डाउनलोड किए जाएंगे। क्या आपकी आगे बढ़ने की इच्छा है?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">सक्रिय</string>
+    <string name="replay_gain_status_disabled">विकलांग</string>
+    <string name="replay_gain_mode_title">ReplayGain मोड</string>
+    <string name="replay_gain_mode_desc">ट्रैक मेटाडेटा या एल्बम मेटाडेटा के आधार पर वॉल्यूम स्तर समायोजित करें।</string>
+    <string name="replay_gain_mode_track">ट्रैक</string>
+    <string name="replay_gain_mode_album">एल्बम</string>
+    <string name="replay_gain_prevent_clipping">क्लिपिंग रोकें (डीआरसी)</string>
+    <string name="replay_gain_prevent_clipping_desc">ऑडियो विरूपण को रोकने के लिए चरम स्तरों को गतिशील रूप से संपीड़ित करें।</string>
+    <string name="replay_gain_preamp_tagged">प्री-एम्प्लीफायर (टैग किया गया)</string>
+    <string name="replay_gain_preamp_tagged_desc">ReplayGain टैग वाले ट्रैक के लिए वॉल्यूम समायोजन।</string>
+    <string name="replay_gain_preamp_untagged">प्री-एम्प्लीफायर (अनटैग्ड)</string>
+    <string name="replay_gain_preamp_untagged_desc">बिना ReplayGain टैग वाले ट्रैक के लिए वॉल्यूम समायोजन।</string>
+    <string name="replay_gain_configuration">विन्यास</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">डिवाइस की शक्ति बचाने के लिए हार्डवेयर-त्वरित ऑडियो डिकोडिंग</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">कोर</string>
+    <string name="backup_restore_section_core_desc">थीम, प्लेयर, यूआई, API, और ऐप प्राथमिकताएं।</string>
+    <string name="backup_restore_section_collection">संग्रह</string>
+    <string name="backup_restore_section_collection_desc">प्लेलिस्ट, पसंदीदा, ब्लैकलिस्ट/व्हाइटलिस्ट, पिन किए गए फ़ोल्डर।</string>
+    <string name="backup_restore_section_insight">अंतर्दृष्टि</string>
+    <string name="backup_restore_section_insight_desc">खेल की संख्या, दैनिक आँकड़े, शैलियाँ और Rhythm गार्ड कॉन्फ़िगरेशन।</string>
+    <string name="backup_restore_status_included">शामिल है</string>
+    <string name="backup_restore_status_excluded">बहिष्कृत</string>
+    <string name="backup_restore_sections_enabled">%2$d में से %1$d सक्षम</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">सक्रिय</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">आदेश</string>
+    <string name="sort_order_ascending">आरोही</string>
+    <string name="sort_order_descending">अवरोही</string>
+    <string name="sort_track_number">ट्रैक नंबर</string>
+    <string name="sort_duration">अवधि</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">चयन रद्द करें</string>
+    <string name="library_bottom_bar_back">वापस</string>
+    <string name="library_bottom_bar_select_songs">गाने चुनें</string>
+    <string name="library_bottom_bar_more_actions">अधिक कार्रवाइयां</string>
+    <string name="library_play_selected">खेलें (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">आपके कान पूरी तरह से भारी पार्टी का आयोजन कर रहे हैं। ज़िम्मेदारी से काम करते रहो! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">वहां थोड़ा मसालेदार होना। शायद गार्ड के आने से पहले इसे एक पायदान नीचे कर दें? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">वाह रॉकस्टार, आप खतरे के क्षेत्र में हैं! ताले खुलने से पहले इसे वापस डायल करें! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">सुरक्षित क्षेत्र सक्रिय! Rhythm गार्ड कॉफी ब्रेक पर ऑफ-ड्यूटी है, इसलिए बिना टाइमआउट के स्वतंत्र रूप से जाम करें! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">ध्वनिक टाइम-आउट सक्रिय। आपकी सुनने की क्षमता को सुरक्षित रखने के लिए कान की झपकी अनिवार्य रूप से चालू है! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm गार्ड ड्यूटी से बाहर है। आप वॉल्यूम सुरक्षा के मामले में पूरी तरह से अकेले उड़ान भर रहे हैं। ईश्वर की कृपा! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">अज्ञात ट्रैक</string>
+    <string name="unknown_song">अज्ञात गीत</string>
+    <string name="player_queue_format">कतार %1$d/%2$d</string>
+    <string name="player_release_to_close">बंद करने के लिए रिलीज़ करें</string>
+    <string name="player_swipe_down_to_close">बंद करने के लिए नीचे की ओर स्वाइप करें</string>
+    <string name="lyrics_source_attribution">गीत %1$s द्वारा</string>
+    <string name="lyrics_currently_no_lyrics">फिलहाल इस गाने के लिए कोई गीत उपलब्ध नहीं है।\n</string>
+    <string name="lyrics_no_lyrics">इस गीत के लिए कोई गीत उपलब्ध नहीं है।</string>
+    <string name="artist_options">कलाकार विकल्प</string>
+    <string name="edit_album_title_label">एल्बम का शीर्षक</string>
+    <string name="edit_album_artist_label">एल्बम कलाकार</string>
+    <string name="autoeq_profiles_available">%1$d प्रोफ़ाइल उपलब्ध हैं</string>
+    <string name="autoeq_no_brand">कोई ब्रांड नहीं</string>
+    <string name="autoeq_change_profile">प्रोफ़ाइल बदलें</string>
+    <string name="autoeq_configure_device">डिवाइस कॉन्फ़िगर करें</string>
+    <string name="playlist_count_format">%1$d प्लेलिस्ट</string>
+    <string name="ui_song_count">1 गाना</string>
+    <string name="duration_minutes_format">%1$dमी</string>
 </resources>
+
 

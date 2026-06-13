@@ -3016,5 +3016,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">คำเตือนด้านความปลอดภัย</string>
     <string name="fdroid_update_warning_message">การเปิดใช้งานการอัปเดตในแอปบน F-Droid build จะข้ามการตรวจสอบความปลอดภัยของ F-Droid การอัปเดตจะถูกดาวน์โหลดโดยตรงจากผู้จัดพิมพ์ คุณต้องการดำเนินการต่อหรือไม่?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">ใช้งานอยู่</string>
+    <string name="replay_gain_status_disabled">ปิดการใช้งาน</string>
+    <string name="replay_gain_mode_title">ReplayGain โหมด</string>
+    <string name="replay_gain_mode_desc">ปรับระดับเสียงตามข้อมูลเมตาของแทร็กหรือข้อมูลเมตาของอัลบั้ม</string>
+    <string name="replay_gain_mode_track">ติดตาม</string>
+    <string name="replay_gain_mode_album">อัลบั้ม</string>
+    <string name="replay_gain_prevent_clipping">ป้องกันการคลิป (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">บีบอัดระดับสูงสุดแบบไดนามิกเพื่อป้องกันการบิดเบือนของเสียง</string>
+    <string name="replay_gain_preamp_tagged">พรีแอมป์ (ติดแท็ก)</string>
+    <string name="replay_gain_preamp_tagged_desc">การปรับระดับเสียงสำหรับแทร็กที่มีแท็ก ReplayGain</string>
+    <string name="replay_gain_preamp_untagged">พรีแอมป์ (ไม่ติดแท็ก)</string>
+    <string name="replay_gain_preamp_untagged_desc">การปรับระดับเสียงสำหรับแทร็กที่ไม่มีแท็ก ReplayGain</string>
+    <string name="replay_gain_configuration">การกำหนดค่า</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">การถอดรหัสเสียงที่เร่งด้วยฮาร์ดแวร์เพื่อประหยัดพลังงานของอุปกรณ์</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">แกนกลาง</string>
+    <string name="backup_restore_section_core_desc">ธีม โปรแกรมเล่น UI API และการตั้งค่าแอป</string>
+    <string name="backup_restore_section_collection">ของสะสม</string>
+    <string name="backup_restore_section_collection_desc">เพลย์ลิสต์ รายการโปรด บัญชีดำ/ไวท์ลิสต์ โฟลเดอร์ที่ปักหมุด</string>
+    <string name="backup_restore_section_insight">ข้อมูลเชิงลึก</string>
+    <string name="backup_restore_section_insight_desc">จำนวนการเล่น สถิติรายวัน ประเภท และการกำหนดค่าการป้องกัน Rhythm</string>
+    <string name="backup_restore_status_included">รวมอยู่ด้วย</string>
+    <string name="backup_restore_status_excluded">ไม่รวม</string>
+    <string name="backup_restore_sections_enabled">เปิดใช้งาน %1$d จาก %2$d แล้ว</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">คล่องแคล่ว</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">คำสั่ง</string>
+    <string name="sort_order_ascending">จากน้อยไปมาก</string>
+    <string name="sort_order_descending">จากมากไปน้อย</string>
+    <string name="sort_track_number">หมายเลขแทร็ก</string>
+    <string name="sort_duration">ระยะเวลา</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">ยกเลิกการเลือก</string>
+    <string name="library_bottom_bar_back">กลับ</string>
+    <string name="library_bottom_bar_select_songs">เลือกเพลง</string>
+    <string name="library_bottom_bar_more_actions">การดำเนินการเพิ่มเติม</string>
+    <string name="library_play_selected">เล่น (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">หูของคุณกำลังจัดงานปาร์ตี้ที่เต็มอิ่ม รักษาความรู้สึกอย่างรับผิดชอบ! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">เผ็ดนิดหน่อยนะนั่น อาจจะลดระดับลงก่อนที่ยามจะเข้ามา? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">โอ้โห ดาราดัง คุณอยู่ในเขตอันตรายแก้วหูแล้ว! หมุนกลับก่อนที่ล็อคจะเริ่มทำงาน! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">โซนปลอดภัยเปิดใช้งานแล้ว! Rhythm เจ้าหน้าที่ไม่ปฏิบัติหน้าที่ในช่วงพักดื่มกาแฟ ดังนั้นติดขัดได้อย่างอิสระโดยไม่ต้องหมดเวลา! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">หมดเวลาเสียงทำงานอยู่ การงีบหูแบบบังคับกำลังดำเนินการเพื่อปกป้องการได้ยินของคุณ! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm ยามไม่ปฏิบัติหน้าที่ คุณกำลังบินเดี่ยวโดยสมบูรณ์เพื่อความปลอดภัยของระดับเสียง เร็วเข้า! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">แทร็กที่ไม่รู้จัก</string>
+    <string name="unknown_song">เพลงที่ไม่รู้จัก</string>
+    <string name="player_queue_format">คิว %1$d/%2$d</string>
+    <string name="player_release_to_close">ปล่อยเพื่อปิด</string>
+    <string name="player_swipe_down_to_close">ปัดลงเพื่อปิด</string>
+    <string name="lyrics_source_attribution">เนื้อเพลงโดย %1$s</string>
+    <string name="lyrics_currently_no_lyrics">ขณะนี้ไม่มีเนื้อเพลงสำหรับเพลงนี้\n</string>
+    <string name="lyrics_no_lyrics">ไม่มีเนื้อเพลงสำหรับเพลงนี้</string>
+    <string name="artist_options">ตัวเลือกศิลปิน</string>
+    <string name="edit_album_title_label">ชื่ออัลบั้ม</string>
+    <string name="edit_album_artist_label">ศิลปินอัลบั้ม</string>
+    <string name="autoeq_profiles_available">มีโปรไฟล์ %1$d รายการ</string>
+    <string name="autoeq_no_brand">ไม่มีแบรนด์</string>
+    <string name="autoeq_change_profile">เปลี่ยนโปรไฟล์</string>
+    <string name="autoeq_configure_device">กำหนดค่าอุปกรณ์</string>
+    <string name="playlist_count_format">%1$d เพลย์ลิสต์</string>
+    <string name="ui_song_count">1 เพลง</string>
+    <string name="duration_minutes_format">%1$dม</string>
 </resources>
+
 

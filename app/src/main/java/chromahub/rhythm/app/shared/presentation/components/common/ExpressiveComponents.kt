@@ -1796,7 +1796,7 @@ fun ExpressiveToggleButtonGroup(
             isActive = shuffleEnabled,
             onClick = onToggleShuffle,
             icon = RhythmIcons.Shuffle,
-            label = "Shuffle",
+            label = stringResource(R.string.action_shuffle),
             isDarkTheme = isDarkTheme,
             isCompactHeight = isCompactHeight,
             isCompactWidth = isCompactWidth

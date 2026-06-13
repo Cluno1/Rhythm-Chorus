@@ -27,6 +27,7 @@ import androidx.compose.ui.layout.ContentScale
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -230,7 +231,7 @@ fun ArtistBottomSheet(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Artist Options",
+                                        text = stringResource(R.string.artist_options),
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -316,7 +317,7 @@ fun ArtistBottomSheet(
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                "Shuffle",
+                                                stringResource(R.string.action_shuffle),
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Medium
                                             )
@@ -725,7 +726,7 @@ fun ArtistBottomSheet(
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            "Shuffle",
+                                            stringResource(R.string.action_shuffle),
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.Medium
                                         )

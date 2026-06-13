@@ -14,6 +14,8 @@ import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShape
+import androidx.compose.ui.platform.LocalContext
+import chromahub.rhythm.app.R
 
 /**
  * Data class representing a sorting option in the custom sort menu.
@@ -33,6 +35,7 @@ fun RhythmSortMenuContent(
     onDirectionToggled: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val directionCardShape = RoundedCornerShape(
         topStart = 30.dp,
         topEnd = 30.dp,
@@ -78,12 +81,12 @@ fun RhythmSortMenuContent(
                 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Order",
+                        text = context.getString(R.string.sort_order_title),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
                     )
                     Text(
-                        text = if (isAscending) "Ascending" else "Descending",
+                        text = if (isAscending) context.getString(R.string.sort_order_ascending) else context.getString(R.string.sort_order_descending),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer

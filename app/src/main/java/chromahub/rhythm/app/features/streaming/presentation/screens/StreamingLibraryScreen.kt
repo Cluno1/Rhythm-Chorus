@@ -614,11 +614,7 @@ fun StreamingLibraryScreen(
     }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     
-    val fabVisibility by remember {
-        derivedStateOf {
-            scrollBehavior.state.collapsedFraction < 0.5f
-        }
-    }
+    val fabVisibility = true
 
     val pullToRefreshState = rememberPullToRefreshState()
     val isRefreshing = isLoading
@@ -1768,30 +1764,16 @@ fun StreamingLibraryScreen(
                 if (songsToAddToPlaylist.isEmpty()) {
                     viewModel.createPlaylist(name)
                 } else {
-                    scope.launch {
-                        val currentPlaylists = savedPlaylists.map { it.id }.toSet()
-                        viewModel.createPlaylist(name)
-                        // Wait for the new playlist to appear in savedPlaylists
-                        var newPlaylist: StreamingPlaylist? = null
-                        for (i in 0..20) {
-                            kotlinx.coroutines.delay(200)
-                            newPlaylist = savedPlaylists.firstOrNull { it.id !in currentPlaylists }
-                            if (newPlaylist != null) break
-                        }
-                        newPlaylist?.let { playlist ->
-                            val streamingSongs = mapLocalSongsToStreaming(songsToAddToPlaylist)
-                            if (streamingSongs.isNotEmpty()) {
-                                viewModel.addSongsToPlaylist(playlist.id, streamingSongs)
-                                android.widget.Toast.makeText(
-                                    context,
-                                    "Added ${streamingSongs.size} songs to ${playlist.name}",
-                                    android.widget.Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                        songsToAddToPlaylist = emptyList()
-                        multiSelectionState.clearSelection()
+                    val streamingSongs = mapLocalSongsToStreaming(songsToAddToPlaylist)
+                    viewModel.createPlaylist(name, streamingSongs) { playlist ->
+                        android.widget.Toast.makeText(
+                            context,
+                            "Added ${streamingSongs.size} songs to ${playlist.name}",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
                     }
+                    songsToAddToPlaylist = emptyList()
+                    multiSelectionState.clearSelection()
                 }
                 showCreatePlaylistDialog = false
             }
@@ -2754,24 +2736,12 @@ private fun LibraryBottomBar(
         enter = slideInVertically(
             initialOffsetY = { it * 2 },
             animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            )
-        ) + scaleIn(
-            initialScale = 0.8f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMedium
             )
         ) + fadeIn(animationSpec = tween(300)),
         exit = slideOutVertically(
             targetOffsetY = { it * 2 },
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioNoBouncy,
-                stiffness = Spring.StiffnessMedium
-            )
-        ) + scaleOut(
-            targetScale = 0.8f,
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioNoBouncy,
                 stiffness = Spring.StiffnessMedium
@@ -2988,7 +2958,7 @@ private fun LibraryBottomBar(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Shuffle",
+                                    text = stringResource(R.string.action_shuffle),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     maxLines = 1

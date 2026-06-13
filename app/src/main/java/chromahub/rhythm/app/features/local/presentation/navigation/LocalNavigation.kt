@@ -1401,6 +1401,8 @@ private fun LocalNavigationContent(
 
                     var showAddToPlaylistSheet by remember { mutableStateOf(false) }
                     var selectedSongForPlaylist by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
+                    var showCreatePlaylistDialog by remember { mutableStateOf(false) }
+                    var songForCreatePlaylistDialog by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
                     var showSongInfoSheet by remember { mutableStateOf(false) }
                     var selectedSongForInfo by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
                     var pendingMetadataEditCompleteCallback by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
@@ -1559,8 +1561,37 @@ private fun LocalNavigationContent(
                                 selectedSongForPlaylist = null
                             },
                             onCreateNewPlaylist = {
+                                songForCreatePlaylistDialog = selectedSongForPlaylist
+                                showCreatePlaylistDialog = true
                                 showAddToPlaylistSheet = false
-                                selectedSongForPlaylist = null
+                            }
+                        )
+                    }
+
+                    if (showCreatePlaylistDialog) {
+                        CreatePlaylistDialog(
+                            onDismiss = {
+                                showCreatePlaylistDialog = false
+                                songForCreatePlaylistDialog = null
+                            },
+                            onConfirm = { name ->
+                                viewModel.createPlaylist(name)
+                                showCreatePlaylistDialog = false
+                                songForCreatePlaylistDialog = null
+                            },
+                            song = songForCreatePlaylistDialog,
+                            onConfirmWithSong = { name ->
+                                if (songForCreatePlaylistDialog != null) {
+                                    viewModel.createPlaylist(name, listOf(songForCreatePlaylistDialog!!)) { message ->
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(message)
+                                        }
+                                    }
+                                } else {
+                                    viewModel.createPlaylist(name)
+                                }
+                                showCreatePlaylistDialog = false
+                                songForCreatePlaylistDialog = null
                             }
                         )
                     }
@@ -2135,6 +2166,7 @@ private fun LocalNavigationContent(
                 ) {
                     val showAddToPlaylistSheet = remember { mutableStateOf(false) }
                     val showCreatePlaylistDialog = remember { mutableStateOf(false) }
+                    val songForCreatePlaylistDialog = remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
 
                     // If we're returning from AddToPlaylist route with a song to add, show the bottom sheet
                     LaunchedEffect(viewModel.selectedSongForPlaylist.collectAsState().value) {
@@ -2145,34 +2177,32 @@ private fun LocalNavigationContent(
 
                     // Show create playlist dialog if needed
                     if (showCreatePlaylistDialog.value) {
-                        // Get the non-delegated value of currentSong
-                        val songForDialog = currentSong
-                        if (songForDialog != null) {
-                            CreatePlaylistDialog(
-                                onDismiss = {
-                                    showCreatePlaylistDialog.value = false
-                                },
-                                onConfirm = { name ->
-                                    viewModel.createPlaylist(name)
-                                    showCreatePlaylistDialog.value = false
-                                },
-                                song = songForDialog,
-                                onConfirmWithSong = { name ->
-                                    viewModel.createPlaylist(name)
-                                    // The new playlist will be at the end of the list
-                                    val newPlaylist = viewModel.playlists.value.last()
-                                    viewModel.addSongToPlaylist(
-                                        songForDialog,
-                                        newPlaylist.id
-                                    ) { message ->
+                        val songForDialog = songForCreatePlaylistDialog.value
+                        CreatePlaylistDialog(
+                            onDismiss = {
+                                showCreatePlaylistDialog.value = false
+                                songForCreatePlaylistDialog.value = null
+                            },
+                            onConfirm = { name ->
+                                viewModel.createPlaylist(name)
+                                showCreatePlaylistDialog.value = false
+                                songForCreatePlaylistDialog.value = null
+                            },
+                            song = songForDialog,
+                            onConfirmWithSong = { name ->
+                                if (songForDialog != null) {
+                                    viewModel.createPlaylist(name, listOf(songForDialog)) { message ->
                                         coroutineScope.launch {
                                             snackbarHostState.showSnackbar(message)
                                         }
                                     }
-                                    showCreatePlaylistDialog.value = false
+                                } else {
+                                    viewModel.createPlaylist(name)
                                 }
-                            )
-                        }
+                                showCreatePlaylistDialog.value = false
+                                songForCreatePlaylistDialog.value = null
+                            }
+                        )
                     }
 
                     PlayerScreen(
@@ -2298,7 +2328,8 @@ private fun LocalNavigationContent(
                         onCreatePlaylist = { name ->
                             viewModel.createPlaylist(name)
                         },
-                        onShowCreatePlaylistDialog = {
+                        onShowCreatePlaylistDialog = { song ->
+                            songForCreatePlaylistDialog.value = song
                             showCreatePlaylistDialog.value = true
                         },
                         onClearQueue = {
@@ -2625,6 +2656,8 @@ private fun LocalNavigationContent(
                     // State for bottom sheets
                     var showAddToPlaylistSheet by remember { mutableStateOf(false) }
                     var selectedSongForPlaylist by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
+                    var showCreatePlaylistDialog by remember { mutableStateOf(false) }
+                    var songForCreatePlaylistDialog by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
                     var showSongInfoSheet by remember { mutableStateOf(false) }
                     var selectedSongForInfo by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
                     var showAlbumBottomSheet by remember { mutableStateOf(false) }
@@ -2699,9 +2732,37 @@ private fun LocalNavigationContent(
                                 selectedSongForPlaylist = null
                             },
                             onCreateNewPlaylist = {
-                                // For now, just close the sheet. Could implement create playlist dialog here
+                                songForCreatePlaylistDialog = selectedSongForPlaylist
+                                showCreatePlaylistDialog = true
                                 showAddToPlaylistSheet = false
-                                selectedSongForPlaylist = null
+                            }
+                        )
+                    }
+
+                    if (showCreatePlaylistDialog) {
+                        CreatePlaylistDialog(
+                            onDismiss = {
+                                showCreatePlaylistDialog = false
+                                songForCreatePlaylistDialog = null
+                            },
+                            onConfirm = { name ->
+                                viewModel.createPlaylist(name)
+                                showCreatePlaylistDialog = false
+                                songForCreatePlaylistDialog = null
+                            },
+                            song = songForCreatePlaylistDialog,
+                            onConfirmWithSong = { name ->
+                                if (songForCreatePlaylistDialog != null) {
+                                    viewModel.createPlaylist(name, listOf(songForCreatePlaylistDialog!!)) { message ->
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(message)
+                                        }
+                                    }
+                                } else {
+                                    viewModel.createPlaylist(name)
+                                }
+                                showCreatePlaylistDialog = false
+                                songForCreatePlaylistDialog = null
                             }
                         )
                     }

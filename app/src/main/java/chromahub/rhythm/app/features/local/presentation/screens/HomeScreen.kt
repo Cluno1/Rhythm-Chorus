@@ -545,10 +545,26 @@ fun HomeScreen(
 
     if (showCreatePlaylistDialog) {
         CreatePlaylistDialog(
-            onDismiss = { showCreatePlaylistDialog = false },
+            onDismiss = { 
+                showCreatePlaylistDialog = false
+                selectedSongForPlaylist = null
+            },
             onConfirm = { name ->
                 musicViewModel.createPlaylist(name)
                 showCreatePlaylistDialog = false
+                selectedSongForPlaylist = null
+            },
+            song = selectedSongForPlaylist,
+            onConfirmWithSong = { name ->
+                selectedSongForPlaylist?.let { song ->
+                    musicViewModel.createPlaylist(name, listOf(song)) { message ->
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    }
+                } ?: run {
+                    musicViewModel.createPlaylist(name)
+                }
+                showCreatePlaylistDialog = false
+                selectedSongForPlaylist = null
             }
         )
     }

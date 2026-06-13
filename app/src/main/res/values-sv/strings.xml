@@ -3016,5 +3016,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">Säkerhetsvarning</string>
     <string name="fdroid_update_warning_message">Genom att aktivera uppdateringar i appen på en F-Droid-build går det förbi F-Droids säkerhetskontroller. Uppdateringar kommer att laddas ner direkt från utgivaren. Vill du fortsätta?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">Aktiv</string>
+    <string name="replay_gain_status_disabled">Inaktiverad</string>
+    <string name="replay_gain_mode_title">ReplayGain-läge</string>
+    <string name="replay_gain_mode_desc">Justera volymnivåer baserat på spårmetadata eller albummetadata.</string>
+    <string name="replay_gain_mode_track">Spår</string>
+    <string name="replay_gain_mode_album">Album</string>
+    <string name="replay_gain_prevent_clipping">Förhindra klippning (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">Komprimera toppnivåer dynamiskt för att förhindra ljudförvrängning.</string>
+    <string name="replay_gain_preamp_tagged">Förförstärkare (taggad)</string>
+    <string name="replay_gain_preamp_tagged_desc">Volymjustering för spår med ReplayGain-taggar.</string>
+    <string name="replay_gain_preamp_untagged">Förförstärkare (otaggat)</string>
+    <string name="replay_gain_preamp_untagged_desc">Volymjustering för spår utan ReplayGain-taggar.</string>
+    <string name="replay_gain_configuration">Konfiguration</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">Hårdvaruaccelererad ljudavkodning för att spara enhetens ström</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">Kärna</string>
+    <string name="backup_restore_section_core_desc">Tema, spelare, UI, API och appinställningar.</string>
+    <string name="backup_restore_section_collection">Samling</string>
+    <string name="backup_restore_section_collection_desc">Spellistor, favoriter, svartlista/vitlista, fästade mappar.</string>
+    <string name="backup_restore_section_insight">Insikt</string>
+    <string name="backup_restore_section_insight_desc">Antal spelningar, daglig statistik, genrer och Rhythm Guard-konfiguration.</string>
+    <string name="backup_restore_status_included">Ingår</string>
+    <string name="backup_restore_status_excluded">Utesluten</string>
+    <string name="backup_restore_sections_enabled">%1$d av %2$d aktiverat</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">Aktiv</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">Beställning</string>
+    <string name="sort_order_ascending">Stigande</string>
+    <string name="sort_order_descending">Fallande</string>
+    <string name="sort_track_number">Spårnummer</string>
+    <string name="sort_duration">Varaktighet</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">Avbryt val</string>
+    <string name="library_bottom_bar_back">Tillbaka</string>
+    <string name="library_bottom_bar_select_songs">Välj låtar</string>
+    <string name="library_bottom_bar_more_actions">Fler åtgärder</string>
+    <string name="library_play_selected">Spela (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">Dina öron bjuder på en perfekt volym fest. Fortsätt vibba ansvarsfullt! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">Blir lite kryddig där inne. Kanske skruva ner ett snäpp innan vakten kliver in? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">Whoa rockstar, du befinner dig i farozonen för trumhinnan! Slå tillbaka den innan låsen utlöses! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">Säker zon aktiv! Rhythm Guard är ledig på kafferasten, så jappa fritt utan timeouts! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">Akustisk timeout aktiv. En obligatorisk öronlur pågår för att skydda din hörsel! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm Vakten är ledig. Du flyger helt solo på volymsäkerhet. Herregud! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">Okänt spår</string>
+    <string name="unknown_song">Okänd låt</string>
+    <string name="player_queue_format">Kö %1$d/%2$d</string>
+    <string name="player_release_to_close">Släpp för att stänga</string>
+    <string name="player_swipe_down_to_close">Svep nedåt för att stänga</string>
+    <string name="lyrics_source_attribution">Text av %1$s</string>
+    <string name="lyrics_currently_no_lyrics">För närvarande finns ingen text tillgänglig för den här låten.\n</string>
+    <string name="lyrics_no_lyrics">Ingen text tillgänglig för den här låten.</string>
+    <string name="artist_options">Artistalternativ</string>
+    <string name="edit_album_title_label">Albumtitel</string>
+    <string name="edit_album_artist_label">Albumartist</string>
+    <string name="autoeq_profiles_available">%1$d profiler tillgängliga</string>
+    <string name="autoeq_no_brand">Inget märke</string>
+    <string name="autoeq_change_profile">Ändra profil</string>
+    <string name="autoeq_configure_device">Konfigurera enhet</string>
+    <string name="playlist_count_format">%1$d spellistor</string>
+    <string name="ui_song_count">1 låt</string>
+    <string name="duration_minutes_format">%1$dm</string>
 </resources>
+
 

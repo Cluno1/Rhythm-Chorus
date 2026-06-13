@@ -3016,5 +3016,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">Güvenlik Uyarısı</string>
     <string name="fdroid_update_warning_message">Bir F-Droid yapısında uygulama içi güncellemelerin etkinleştirilmesi, F-Droid\'in güvenlik kontrollerini atlar. Güncellemeler doğrudan yayıncıdan indirilecektir. Devam etmek istiyor musunuz?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">Aktif</string>
+    <string name="replay_gain_status_disabled">Devre Dışı</string>
+    <string name="replay_gain_mode_title">ReplayGain Modu</string>
+    <string name="replay_gain_mode_desc">Parça meta verilerine veya albüm meta verilerine göre ses düzeylerini ayarlayın.</string>
+    <string name="replay_gain_mode_track">Parça</string>
+    <string name="replay_gain_mode_album">Albüm</string>
+    <string name="replay_gain_prevent_clipping">Kırpılmayı Önle (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">Ses bozulmasını önlemek için tepe seviyelerini dinamik olarak sıkıştırın.</string>
+    <string name="replay_gain_preamp_tagged">Ön amplifikatör (Etiketli)</string>
+    <string name="replay_gain_preamp_tagged_desc">ReplayGain etiketli parçalar için ses ayarı.</string>
+    <string name="replay_gain_preamp_untagged">Ön amplifikatör (Etiketsiz)</string>
+    <string name="replay_gain_preamp_untagged_desc">ReplayGain etiketi olmayan parçalar için ses ayarı.</string>
+    <string name="replay_gain_configuration">Yapılandırma</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">Cihaz gücünden tasarruf etmek için donanım hızlandırmalı ses kod çözme</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">Çekirdek</string>
+    <string name="backup_restore_section_core_desc">Tema, oynatıcı, kullanıcı arayüzü, API ve uygulama tercihleri.</string>
+    <string name="backup_restore_section_collection">Koleksiyon</string>
+    <string name="backup_restore_section_collection_desc">Çalma listeleri, favoriler, kara liste/beyaz liste, sabitlenmiş klasörler.</string>
+    <string name="backup_restore_section_insight">İçgörü</string>
+    <string name="backup_restore_section_insight_desc">Oynatma sayıları, günlük istatistikler, türler ve Rhythm Koruma yapılandırması.</string>
+    <string name="backup_restore_status_included">Dahil</string>
+    <string name="backup_restore_status_excluded">Hariç tutuldu</string>
+    <string name="backup_restore_sections_enabled">%1$d / %2$d etkinleştirildi</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">Aktif</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">Sipariş</string>
+    <string name="sort_order_ascending">Artan</string>
+    <string name="sort_order_descending">Azalan</string>
+    <string name="sort_track_number">Parça Numarası</string>
+    <string name="sort_duration">Süre</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">Seçimi iptal et</string>
+    <string name="library_bottom_bar_back">Geri</string>
+    <string name="library_bottom_bar_select_songs">Şarkıları seçin</string>
+    <string name="library_bottom_bar_more_actions">Daha fazla eylem</string>
+    <string name="library_play_selected">Oynat (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">Kulaklarınız mükemmel ses seviyesinde bir parti veriyor. Sorumlu bir şekilde titreşmeye devam edin! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">İçerisi biraz baharatlı olmaya başladı. Belki güvenlik görevlisi devreye girmeden önce biraz kısabilirsiniz? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">Vay rock yıldızı, kulak zarı tehlike bölgesindesin! Kilitler tetiklenmeden önce onu geri çevirin! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">Güvenli bölge etkin! Rhythm Muhafız kahve molasında izinli olduğundan, mola vermeden özgürce müzik yapın! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">Akustik zaman aşımı etkin. İşitme duyunuzu korumak için zorunlu bir kulak kestirme işlemi yapılıyor! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm Koruma görevde değil. Hacim güvenliği açısından tamamen yalnız uçuyorsunuz. Tanrı aşkına! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">Bilinmeyen Parça</string>
+    <string name="unknown_song">Bilinmeyen Şarkı</string>
+    <string name="player_queue_format">Sıra %1$d/%2$d</string>
+    <string name="player_release_to_close">Kapatmak için bırakın</string>
+    <string name="player_swipe_down_to_close">Kapatmak için aşağı kaydırın</string>
+    <string name="lyrics_source_attribution">%1$s Şarkı Sözleri</string>
+    <string name="lyrics_currently_no_lyrics">Şu anda bu şarkının sözleri mevcut değil.\n</string>
+    <string name="lyrics_no_lyrics">Bu şarkının sözleri mevcut değil.</string>
+    <string name="artist_options">Sanatçı Seçenekleri</string>
+    <string name="edit_album_title_label">Albüm Başlığı</string>
+    <string name="edit_album_artist_label">Albüm Sanatçısı</string>
+    <string name="autoeq_profiles_available">%1$d profil mevcut</string>
+    <string name="autoeq_no_brand">Marka yok</string>
+    <string name="autoeq_change_profile">Profili Değiştir</string>
+    <string name="autoeq_configure_device">Cihazı Yapılandır</string>
+    <string name="playlist_count_format">%1$d oynatma listesi</string>
+    <string name="ui_song_count">1 şarkı</string>
+    <string name="duration_minutes_format">%1$dm</string>
 </resources>
+
 

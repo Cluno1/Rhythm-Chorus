@@ -251,7 +251,7 @@ private fun AddToPlaylistHeader(
             )
             if (totalPlaylists > 0) {
                 Text(
-                    text = "$totalPlaylists playlists",
+                    text = context.getString(R.string.playlist_count_format, totalPlaylists),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
@@ -510,7 +510,7 @@ private fun PlaylistCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (playlist.songs.size == 1) "1 song" else "${playlist.songs.size} songs",
+                        text = if (playlist.songs.size == 1) context.getString(R.string.ui_song_count) else context.getString(R.string.ui_songs_count, playlist.songs.size),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -527,7 +527,7 @@ private fun PlaylistCard(
                         val minutes = (totalDuration / 1000 / 60).toInt()
                         
                         Text(
-                            text = "${minutes}m",
+                            text = context.getString(R.string.duration_minutes_format, minutes),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

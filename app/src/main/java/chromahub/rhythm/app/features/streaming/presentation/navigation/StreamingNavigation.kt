@@ -1749,6 +1749,7 @@ fun StreamingNavigation(
                 
                 var showAddToPlaylistSheet by remember { mutableStateOf(false) }
                 var showCreatePlaylistDialog by remember { mutableStateOf(false) }
+                var songForCreatePlaylistDialog by remember { mutableStateOf<Song?>(null) }
                 val savedPlaylists by streamingMusicViewModel.savedPlaylists.collectAsState()
                 val mappedPlaylists = remember(savedPlaylists) {
                     savedPlaylists.map { it.toLibraryPlaylist() }
@@ -1819,7 +1820,8 @@ fun StreamingNavigation(
                         streamingMusicViewModel.createPlaylist(name)
                         showAddToPlaylistSheet = false
                     },
-                    onShowCreatePlaylistDialog = {
+                    onShowCreatePlaylistDialog = { song ->
+                        songForCreatePlaylistDialog = song
                         showCreatePlaylistDialog = true
                     },
                     queue = queueState.songs,
@@ -1848,10 +1850,25 @@ fun StreamingNavigation(
                 
                 if (showCreatePlaylistDialog) {
                     chromahub.rhythm.app.shared.presentation.components.dialogs.CreatePlaylistDialog(
-                        onDismiss = { showCreatePlaylistDialog = false },
+                        onDismiss = {
+                            showCreatePlaylistDialog = false
+                            songForCreatePlaylistDialog = null
+                        },
                         onConfirm = { name ->
                             streamingMusicViewModel.createPlaylist(name)
                             showCreatePlaylistDialog = false
+                            songForCreatePlaylistDialog = null
+                        },
+                        song = songForCreatePlaylistDialog,
+                        onConfirmWithSong = { name ->
+                            val streamingSong = streamingMusicViewModel.currentSong.value
+                            if (streamingSong != null && songForCreatePlaylistDialog != null && streamingSong.id == songForCreatePlaylistDialog!!.id) {
+                                streamingMusicViewModel.createPlaylist(name, listOf(streamingSong))
+                            } else {
+                                streamingMusicViewModel.createPlaylist(name)
+                            }
+                            showCreatePlaylistDialog = false
+                            songForCreatePlaylistDialog = null
                         }
                     )
                 }
@@ -1976,6 +1993,15 @@ fun StreamingNavigation(
                     onDismiss = { showCreatePlaylistDialog = false },
                     onConfirm = { name ->
                         streamingMusicViewModel.createPlaylist(name)
+                        showCreatePlaylistDialog = false
+                    },
+                    song = selectedStreamingSongForPlaylist?.toLocalSong(),
+                    onConfirmWithSong = { name ->
+                        selectedStreamingSongForPlaylist?.let { streamingSong ->
+                            streamingMusicViewModel.createPlaylist(name, listOf(streamingSong))
+                        } ?: run {
+                            streamingMusicViewModel.createPlaylist(name)
+                        }
                         showCreatePlaylistDialog = false
                     }
                 )

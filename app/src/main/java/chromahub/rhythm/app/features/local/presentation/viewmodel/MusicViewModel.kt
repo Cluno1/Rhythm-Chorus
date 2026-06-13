@@ -5547,12 +5547,37 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // New functions for playlist management
-    fun createPlaylist(name: String) {
+    fun createPlaylist(name: String, songs: List<Song> = emptyList(), showSnackbar: ((String) -> Unit)? = null) {
         viewModelScope.launch {
             val newPlaylist = repository.createPlaylist(name)
-            _playlists.value = _playlists.value + newPlaylist
+            var updatedPlaylist = newPlaylist
+            if (songs.isNotEmpty()) {
+                val filteredSongsSet = filteredSongs.value.map { it.id }.toSet()
+                val existingSongIds = newPlaylist.songs.map { it.id }.toSet()
+                val songsToAdd = songs.filter { song ->
+                    val isStreaming = song.uri.toString().startsWith("http://") || 
+                                      song.uri.toString().startsWith("https://") || 
+                                      song.uri.toString().startsWith("streaming://") ||
+                                      _songs.value.none { it.id == song.id }
+                    (isStreaming || filteredSongsSet.contains(song.id)) && !existingSongIds.contains(song.id)
+                }
+                if (songsToAdd.isNotEmpty()) {
+                    updatedPlaylist = newPlaylist.copy(
+                        songs = songsToAdd,
+                        dateModified = System.currentTimeMillis()
+                    )
+                }
+            }
+            _playlists.value = _playlists.value + updatedPlaylist
             savePlaylists()
-            Log.d(TAG, "Created new playlist: ${newPlaylist.name}")
+            Log.d(TAG, "Created new playlist: ${updatedPlaylist.name} with ${updatedPlaylist.songs.size} songs")
+            if (showSnackbar != null) {
+                if (songs.isNotEmpty()) {
+                    showSnackbar("Created playlist '${updatedPlaylist.name}' with ${updatedPlaylist.songs.size} songs")
+                } else {
+                    showSnackbar("Created playlist '${updatedPlaylist.name}'")
+                }
+            }
         }
     }
 

@@ -3021,5 +3021,80 @@ Peringkat</string>
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">Peringatan Keamanan</string>
     <string name="fdroid_update_warning_message">Mengaktifkan pembaruan dalam aplikasi pada build F-Droid akan melewati pemeriksaan keamanan F-Droid. Pembaruan akan diunduh langsung dari penerbit. Apakah Anda ingin melanjutkan?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">Aktif</string>
+    <string name="replay_gain_status_disabled">Dinonaktifkan</string>
+    <string name="replay_gain_mode_title">Modus ReplayGain</string>
+    <string name="replay_gain_mode_desc">Sesuaikan level volume berdasarkan metadata lagu atau metadata album.</string>
+    <string name="replay_gain_mode_track">Lacak</string>
+    <string name="replay_gain_mode_album">Albumnya</string>
+    <string name="replay_gain_prevent_clipping">Cegah Kliping (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">Kompres level puncak secara dinamis untuk mencegah distorsi audio.</string>
+    <string name="replay_gain_preamp_tagged">Pra-amplifier (Ditandai)</string>
+    <string name="replay_gain_preamp_tagged_desc">Penyesuaian volume untuk trek dengan tag ReplayGain.</string>
+    <string name="replay_gain_preamp_untagged">Pra-amplifier (Tanpa tanda)</string>
+    <string name="replay_gain_preamp_untagged_desc">Penyesuaian volume untuk trek tanpa tag ReplayGain.</string>
+    <string name="replay_gain_configuration">Konfigurasi</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">Dekode audio yang dipercepat perangkat keras untuk menghemat daya perangkat</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">Inti</string>
+    <string name="backup_restore_section_core_desc">Tema, pemutar, UI, API, dan preferensi aplikasi.</string>
+    <string name="backup_restore_section_collection">Koleksi</string>
+    <string name="backup_restore_section_collection_desc">Daftar putar, favorit, daftar hitam/daftar putih, folder yang disematkan.</string>
+    <string name="backup_restore_section_insight">Wawasan</string>
+    <string name="backup_restore_section_insight_desc">Jumlah pemutaran, statistik harian, genre, dan konfigurasi Penjaga Rhythm.</string>
+    <string name="backup_restore_status_included">Termasuk</string>
+    <string name="backup_restore_status_excluded">Dikecualikan</string>
+    <string name="backup_restore_sections_enabled">%1$d dari %2$d diaktifkan</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">Aktif</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">Pesan</string>
+    <string name="sort_order_ascending">Naik</string>
+    <string name="sort_order_descending">Menurun</string>
+    <string name="sort_track_number">Nomor Trek</string>
+    <string name="sort_duration">Durasi</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">Batalkan pilihan</string>
+    <string name="library_bottom_bar_back">Kembali</string>
+    <string name="library_bottom_bar_select_songs">Pilih lagu</string>
+    <string name="library_bottom_bar_more_actions">Lebih banyak tindakan</string>
+    <string name="library_play_selected">Mainkan (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">Telingamu mengadakan pesta dengan volume yang sempurna. Teruslah bertindak secara bertanggung jawab! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">Menjadi sedikit pedas di sana. Mungkin mengecilkannya sedikit sebelum penjaga masuk? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">Wah bintang rock, Anda berada di zona bahaya gendang telinga! Panggil kembali sebelum kunci terpicu! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">Zona aman aktif! Rhythm Penjaga tidak bertugas saat rehat kopi, jadi jam bebas tanpa batas waktu! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">Batas waktu akustik aktif. Tidur siang wajib sedang berlangsung untuk melindungi pendengaran Anda! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm Penjaga sedang tidak bertugas. Anda terbang sendirian dengan keamanan volume. Hasil positif! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">Jalur Tidak Dikenal</string>
+    <string name="unknown_song">Lagu Tidak Dikenal</string>
+    <string name="player_queue_format">Antrian %1$d/%2$d</string>
+    <string name="player_release_to_close">Lepaskan untuk menutup</string>
+    <string name="player_swipe_down_to_close">Geser ke bawah untuk menutup</string>
+    <string name="lyrics_source_attribution">Lirik oleh %1$s</string>
+    <string name="lyrics_currently_no_lyrics">Saat ini tidak ada lirik yang tersedia untuk lagu ini.\n</string>
+    <string name="lyrics_no_lyrics">Tidak ada lirik yang tersedia untuk lagu ini.</string>
+    <string name="artist_options">Pilihan Artis</string>
+    <string name="edit_album_title_label">Judul Album</string>
+    <string name="edit_album_artist_label">Artis Album</string>
+    <string name="autoeq_profiles_available">%1$d profil tersedia</string>
+    <string name="autoeq_no_brand">Tidak ada merek</string>
+    <string name="autoeq_change_profile">Ubah Profil</string>
+    <string name="autoeq_configure_device">Konfigurasikan Perangkat</string>
+    <string name="playlist_count_format">%1$d daftar putar</string>
+    <string name="ui_song_count">1 lagu</string>
+    <string name="duration_minutes_format">%1$dm</string>
 </resources>
+
 

@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -341,7 +342,7 @@ fun WordByWordLyricsView(
                 item {
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = "Lyrics by $lyricsSource",
+                        text = stringResource(R.string.lyrics_source_attribution, lyricsSource),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         textAlign = TextAlign.Center,

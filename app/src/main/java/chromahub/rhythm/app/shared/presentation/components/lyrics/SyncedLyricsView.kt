@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -253,7 +254,7 @@ fun SyncedLyricsView(
                 item {
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = "Lyrics by $lyricsSource",
+                        text = stringResource(R.string.lyrics_source_attribution, lyricsSource),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         textAlign = TextAlign.Center,

@@ -255,8 +255,8 @@ fun ExpressivePlayerScreen(
     val configuration = LocalConfiguration.current
     val isCompactWidth = configuration.screenWidthDp < 360
     val isCompactHeight = configuration.screenHeightDp < 640
-    val songTitle = song?.title ?: "Unknown Track"
-    val songArtist = song?.artist ?: "Unknown Artist"
+    val songTitle = song?.title ?: stringResource(R.string.unknown_track)
+    val songArtist = song?.artist ?: stringResource(R.string.unknown_artist)
     val titleLength = songTitle.length
     val titleLetterSpacing = when {
         isCompactWidth || titleLength > 32 -> (-0.6).sp
@@ -738,7 +738,7 @@ fun ExpressivePlayerScreen(
                                                 )
                                             } else {
                                                 Text(
-                                                    text = if (isPlaying) "Pause" else "Play",
+                                                    text = stringResource(if (isPlaying) R.string.pause else R.string.play),
                                                     style = MaterialTheme.typography.headlineMedium.copy(
                                                         fontWeight = FontWeight.Bold,
                                                         fontSize = if (isCompactWidth) 20.sp else MaterialTheme.typography.headlineMedium.fontSize
@@ -930,7 +930,7 @@ fun ExpressivePlayerScreen(
                                 else -> RhythmIcons.Location
                             }
                             val queueLabel =
-                                if (queueTotal > 0) "Queue $queuePosition/$queueTotal" else "Queue"
+                                if (queueTotal > 0) stringResource(R.string.player_queue_format, queuePosition, queueTotal) else stringResource(R.string.player_queue)
 
                             Surface(
                                 onClick = onDeviceClick,
@@ -1087,9 +1087,9 @@ private fun RhythmPlayerLyricsPanel(
 
             !hasLyrics -> {
                 val message = if (onlineOnlyLyrics) {
-                    "Currently no lyrics are available for this song.\n"
+                    stringResource(R.string.lyrics_currently_no_lyrics)
                 } else {
-                    "No lyrics available for this song."
+                    stringResource(R.string.lyrics_no_lyrics)
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
@@ -1283,7 +1283,7 @@ private fun RhythmPlayerLyricsPanel(
                             if (!lyrics?.source.isNullOrBlank()) {
                                 Spacer(modifier = Modifier.height(24.dp))
                                 Text(
-                                    text = "Lyrics by ${lyrics.source}",
+                                    text = stringResource(R.string.lyrics_source_attribution, lyrics.source),
                                     style = MaterialTheme.typography.labelMedium.copy(
                                         fontWeight = FontWeight.Normal,
                                         letterSpacing = 0.5.sp

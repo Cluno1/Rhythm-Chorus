@@ -208,7 +208,7 @@ fun AutoEQProfileSelector(
                         Text(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                             style = MaterialTheme.typography.labelLarge,
-                            text = "${filteredProfiles.size} Profile${if (filteredProfiles.size != 1) "s" else ""} Available",
+                            text = context.getString(R.string.autoeq_profiles_available, filteredProfiles.size),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }

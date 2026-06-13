@@ -3023,5 +3023,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">নিরাপত্তা সতর্কতা</string>
     <string name="fdroid_update_warning_message">একটি এফ-ড্রয়েড বিল্ডে ইন-অ্যাপ আপডেট সক্ষম করা F-ড্রয়েডের নিরাপত্তা পরীক্ষাকে বাইপাস করে। আপডেটগুলি সরাসরি প্রকাশকের কাছ থেকে ডাউনলোড করা হবে। আপনি কি এগিয়ে যেতে চান?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">সক্রিয়</string>
+    <string name="replay_gain_status_disabled">অক্ষম</string>
+    <string name="replay_gain_mode_title">ReplayGain মোড</string>
+    <string name="replay_gain_mode_desc">ট্র্যাক মেটাডেটা বা অ্যালবাম মেটাডেটার উপর ভিত্তি করে ভলিউম লেভেল সামঞ্জস্য করুন।</string>
+    <string name="replay_gain_mode_track">ট্র্যাক</string>
+    <string name="replay_gain_mode_album">অ্যালবাম</string>
+    <string name="replay_gain_prevent_clipping">প্রিভেন্ট ক্লিপিং (ডিআরসি)</string>
+    <string name="replay_gain_prevent_clipping_desc">অডিও বিকৃতি রোধ করতে গতিশীলভাবে শিখর স্তর সংকুচিত করুন।</string>
+    <string name="replay_gain_preamp_tagged">প্রি-এম্প্লিফায়ার (ট্যাগ করা)</string>
+    <string name="replay_gain_preamp_tagged_desc">ReplayGain ট্যাগ সহ ট্র্যাকগুলির জন্য ভলিউম সমন্বয়।</string>
+    <string name="replay_gain_preamp_untagged">প্রি-এম্প্লিফায়ার (অনট্যাগ করা)</string>
+    <string name="replay_gain_preamp_untagged_desc">ReplayGain ট্যাগ ছাড়াই ট্র্যাকের জন্য ভলিউম সমন্বয়।</string>
+    <string name="replay_gain_configuration">কনফিগারেশন</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">ডিভাইসের শক্তি বাঁচাতে হার্ডওয়্যার-অ্যাক্সিলারেটেড অডিও ডিকোডিং</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">কোর</string>
+    <string name="backup_restore_section_core_desc">থিম, প্লেয়ার, UI, API, এবং অ্যাপ পছন্দ।</string>
+    <string name="backup_restore_section_collection">সংগ্রহ</string>
+    <string name="backup_restore_section_collection_desc">প্লেলিস্ট, ফেভারিট, ব্ল্যাকলিস্ট/হোয়াইটলিস্ট, পিন করা ফোল্ডার।</string>
+    <string name="backup_restore_section_insight">অন্তর্দৃষ্টি</string>
+    <string name="backup_restore_section_insight_desc">খেলার সংখ্যা, দৈনিক পরিসংখ্যান, জেনার এবং Rhythm গার্ড কনফিগারেশন।</string>
+    <string name="backup_restore_status_included">অন্তর্ভুক্ত</string>
+    <string name="backup_restore_status_excluded">বাদ</string>
+    <string name="backup_restore_sections_enabled">%2$d-এর মধ্যে %1$d সক্রিয়৷</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">সক্রিয়</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">আদেশ</string>
+    <string name="sort_order_ascending">আরোহী</string>
+    <string name="sort_order_descending">অবরোহী</string>
+    <string name="sort_track_number">ট্র্যাক নম্বর</string>
+    <string name="sort_duration">সময়কাল</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">নির্বাচন বাতিল করুন</string>
+    <string name="library_bottom_bar_back">ফিরে</string>
+    <string name="library_bottom_bar_select_songs">গান নির্বাচন করুন</string>
+    <string name="library_bottom_bar_more_actions">আরো কর্ম</string>
+    <string name="library_play_selected">খেলুন (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">আপনার কান একটি নিখুঁত ভলিউম পার্টি নিক্ষেপ করা হয়. দায়িত্বের সাথে ভাইবিং রাখুন! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">সেখানে একটু মশলাদার হচ্ছে. গার্ডের প্রবেশের আগে সম্ভবত এটি একটি খাঁজ নামিয়ে দেবেন? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">ওহ রকস্টার, আপনি কানের পর্দা বিপদ এলাকায়! লক ট্রিগার হওয়ার আগে এটি আবার ডায়াল করুন! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">নিরাপদ অঞ্চল সক্রিয়! Rhythm কফি বিরতিতে গার্ড অফ-ডিউটি, তাই টাইমআউট ছাড়াই অবাধে জ্যাম! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">অ্যাকোস্টিক টাইম-আউট সক্রিয়। আপনার শ্রবণশক্তি রক্ষা করার জন্য একটি বাধ্যতামূলক কানের ঘুমের প্রক্রিয়া চলছে! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm গার্ড অফ ডিউটি. আপনি ভলিউম নিরাপত্তার উপর সম্পূর্ণ একা উড়ছেন. গডস্পীড! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">অজানা ট্র্যাক</string>
+    <string name="unknown_song">অজানা গান</string>
+    <string name="player_queue_format">সারি %1$d/%2$d</string>
+    <string name="player_release_to_close">বন্ধ মুক্তি</string>
+    <string name="player_swipe_down_to_close">বন্ধ করতে নিচের দিকে সোয়াইপ করুন</string>
+    <string name="lyrics_source_attribution">গানের কথা %1$s</string>
+    <string name="lyrics_currently_no_lyrics">বর্তমানে এই গানের কোনো লিরিক পাওয়া যায় না।\n</string>
+    <string name="lyrics_no_lyrics">এই গানের জন্য কোন লিরিক্স পাওয়া যায় না।</string>
+    <string name="artist_options">শিল্পী বিকল্প</string>
+    <string name="edit_album_title_label">অ্যালবামের শিরোনাম</string>
+    <string name="edit_album_artist_label">অ্যালবাম শিল্পী</string>
+    <string name="autoeq_profiles_available">%1$dটি প্রোফাইল উপলব্ধ৷</string>
+    <string name="autoeq_no_brand">কোন ব্র্যান্ড নেই</string>
+    <string name="autoeq_change_profile">প্রোফাইল পরিবর্তন করুন</string>
+    <string name="autoeq_configure_device">ডিভাইস কনফিগার করুন</string>
+    <string name="playlist_count_format">%1$d প্লেলিস্ট</string>
+    <string name="ui_song_count">১টি গান</string>
+    <string name="duration_minutes_format">%1$dমি</string>
 </resources>
+
 

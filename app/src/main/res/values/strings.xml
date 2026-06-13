@@ -3016,5 +3016,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">Security Warning</string>
     <string name="fdroid_update_warning_message">Enabling in-app updates on an F-Droid build bypasses F-Droid\'s security checks. Updates will be downloaded directly from the publisher. Do you want to proceed?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">Active</string>
+    <string name="replay_gain_status_disabled">Disabled</string>
+    <string name="replay_gain_mode_title">ReplayGain Mode</string>
+    <string name="replay_gain_mode_desc">Adjust volume levels based on track metadata or album metadata.</string>
+    <string name="replay_gain_mode_track">Track</string>
+    <string name="replay_gain_mode_album">Album</string>
+    <string name="replay_gain_prevent_clipping">Prevent Clipping (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">Dynamically compress peak levels to prevent audio distortion.</string>
+    <string name="replay_gain_preamp_tagged">Pre-amplifier (Tagged)</string>
+    <string name="replay_gain_preamp_tagged_desc">Volume adjustment for tracks with ReplayGain tags.</string>
+    <string name="replay_gain_preamp_untagged">Pre-amplifier (Untagged)</string>
+    <string name="replay_gain_preamp_untagged_desc">Volume adjustment for tracks without ReplayGain tags.</string>
+    <string name="replay_gain_configuration">Configuration</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">Hardware-accelerated audio decoding to save device power</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">Core</string>
+    <string name="backup_restore_section_core_desc">Theme, player, UI, API, and app preferences.</string>
+    <string name="backup_restore_section_collection">Collection</string>
+    <string name="backup_restore_section_collection_desc">Playlists, favorites, blacklist/whitelist, pinned folders.</string>
+    <string name="backup_restore_section_insight">Insight</string>
+    <string name="backup_restore_section_insight_desc">Play counts, daily stats, genres, and Rhythm Guard configuration.</string>
+    <string name="backup_restore_status_included">Included</string>
+    <string name="backup_restore_status_excluded">Excluded</string>
+    <string name="backup_restore_sections_enabled">%1$d of %2$d enabled</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">Active</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">Order</string>
+    <string name="sort_order_ascending">Ascending</string>
+    <string name="sort_order_descending">Descending</string>
+    <string name="sort_track_number">Track Number</string>
+    <string name="sort_duration">Duration</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">Cancel selection</string>
+    <string name="library_bottom_bar_back">Back</string>
+    <string name="library_bottom_bar_select_songs">Select songs</string>
+    <string name="library_bottom_bar_more_actions">More actions</string>
+    <string name="library_play_selected">Play (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">Your ears are throwing a perfectly-volumed party. Keep vibing responsibly! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">Getting a little spicy in there. Maybe turn it down a notch before the guard steps in? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">Whoa rockstar, you are in the eardrum danger zone! Dial it back before the locks trigger! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">Safe zone active! Rhythm Guard is off-duty on coffee break, so jam freely without timeouts! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">Acoustic time-out active. A mandatory ear nap is in progress to protect your hearing! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm Guard is off duty. You are flying completely solo on volume safety. Godspeed! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">Unknown Track</string>
+    <string name="unknown_song">Unknown Song</string>
+    <string name="player_queue_format">Queue %1$d/%2$d</string>
+    <string name="player_release_to_close">Release to close</string>
+    <string name="player_swipe_down_to_close">Swipe down to close</string>
+    <string name="lyrics_source_attribution">Lyrics by %1$s</string>
+    <string name="lyrics_currently_no_lyrics">Currently no lyrics are available for this song.\n</string>
+    <string name="lyrics_no_lyrics">No lyrics available for this song.</string>
+    <string name="artist_options">Artist Options</string>
+    <string name="edit_album_title_label">Album Title</string>
+    <string name="edit_album_artist_label">Album Artist</string>
+    <string name="autoeq_profiles_available">%1$d profiles available</string>
+    <string name="autoeq_no_brand">No brand</string>
+    <string name="autoeq_change_profile">Change Profile</string>
+    <string name="autoeq_configure_device">Configure Device</string>
+    <string name="playlist_count_format">%1$d playlists</string>
+    <string name="ui_song_count">1 song</string>
+    <string name="duration_minutes_format">%1$dm</string>
 </resources>
+
 

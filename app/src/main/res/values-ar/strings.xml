@@ -3024,5 +3024,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">تحذير أمني</string>
     <string name="fdroid_update_warning_message">يؤدي تمكين التحديثات داخل التطبيق على إصدار F-Droid إلى تجاوز عمليات التحقق من أمان F-Droid. سيتم تنزيل التحديثات مباشرة من الناشر. هل تريد المتابعة؟</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">نشط</string>
+    <string name="replay_gain_status_disabled">معطل</string>
+    <string name="replay_gain_mode_title">الوضع ReplayGain.</string>
+    <string name="replay_gain_mode_desc">اضبط مستويات الصوت بناءً على بيانات تعريف المسار أو بيانات تعريف الألبوم.</string>
+    <string name="replay_gain_mode_track">المسار</string>
+    <string name="replay_gain_mode_album">الألبوم</string>
+    <string name="replay_gain_prevent_clipping">منع القطع (جمهورية الكونغو الديمقراطية)</string>
+    <string name="replay_gain_prevent_clipping_desc">ضغط مستويات الذروة ديناميكيًا لمنع تشويه الصوت.</string>
+    <string name="replay_gain_preamp_tagged">مضخم الصوت المسبق (موسوم)</string>
+    <string name="replay_gain_preamp_tagged_desc">ضبط مستوى الصوت للمسارات ذات العلامات ReplayGain.</string>
+    <string name="replay_gain_preamp_untagged">مضخم الصوت المسبق (بدون علامة)</string>
+    <string name="replay_gain_preamp_untagged_desc">ضبط مستوى الصوت للمسارات التي لا تحتوي على علامات ReplayGain.</string>
+    <string name="replay_gain_configuration">التكوين</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">فك تشفير الصوت عن طريق الأجهزة لتوفير طاقة الجهاز</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">الأساسية</string>
+    <string name="backup_restore_section_core_desc">السمة والمشغل وواجهة المستخدم وAPI وتفضيلات التطبيق.</string>
+    <string name="backup_restore_section_collection">المجموعة</string>
+    <string name="backup_restore_section_collection_desc">قوائم التشغيل، المفضلة، القائمة السوداء/القائمة البيضاء، المجلدات المثبتة.</string>
+    <string name="backup_restore_section_insight">البصيرة</string>
+    <string name="backup_restore_section_insight_desc">عدد مرات اللعب والإحصائيات اليومية والأنواع وتكوين الحرس Rhythm.</string>
+    <string name="backup_restore_status_included">متضمن</string>
+    <string name="backup_restore_status_excluded">مستبعد</string>
+    <string name="backup_restore_sections_enabled">تم تمكين %1$d من %2$d.</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">نشط</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">النظام</string>
+    <string name="sort_order_ascending">صاعد</string>
+    <string name="sort_order_descending">النزول</string>
+    <string name="sort_track_number">رقم المسار</string>
+    <string name="sort_duration">المدة</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">إلغاء التحديد</string>
+    <string name="library_bottom_bar_back">العودة</string>
+    <string name="library_bottom_bar_select_songs">اختر الأغاني</string>
+    <string name="library_bottom_bar_more_actions">مزيد من الإجراءات</string>
+    <string name="library_play_selected">تشغيل (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">أذناك تقيمان حفلة رائعة الحجم. استمر في الاهتزاز بمسؤولية! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">الحصول على القليل من التوابل هناك. ربما قم بتخفيضه قليلاً قبل أن يتدخل الحارس؟ 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">يا نجم الروك، أنت في منطقة خطر طبلة الأذن! اطلبه مرة أخرى قبل تشغيل الأقفال! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">المنطقة الآمنة نشطة! Rhythm الحرس خارج الخدمة أثناء استراحة القهوة، لذا استمتع بالتواجد بحرية دون مهلة! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">المهلة الصوتية نشطة. جاري تنفيذ قيلولة أذن إلزامية لحماية سمعك! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm الحرس خارج الخدمة. أنت تطير بمفردك تمامًا مع سلامة الحجم. التوفيق! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">مسار غير معروف</string>
+    <string name="unknown_song">أغنية غير معروفة</string>
+    <string name="player_queue_format">قائمة الانتظار %1$d/%2$d</string>
+    <string name="player_release_to_close">إطلاق للإغلاق</string>
+    <string name="player_swipe_down_to_close">اسحب لأسفل للإغلاق</string>
+    <string name="lyrics_source_attribution">كلمات %1$s</string>
+    <string name="lyrics_currently_no_lyrics">حاليا لا توجد كلمات متاحة لهذه الأغنية.\n</string>
+    <string name="lyrics_no_lyrics">لا توجد كلمات متاحة لهذه الأغنية.</string>
+    <string name="artist_options">خيارات الفنان</string>
+    <string name="edit_album_title_label">عنوان الألبوم</string>
+    <string name="edit_album_artist_label">فنان الألبوم</string>
+    <string name="autoeq_profiles_available">تتوفر ملفات تعريف %1$d.</string>
+    <string name="autoeq_no_brand">لا يوجد علامة تجارية</string>
+    <string name="autoeq_change_profile">تغيير الملف الشخصي</string>
+    <string name="autoeq_configure_device">تكوين الجهاز</string>
+    <string name="playlist_count_format">قوائم التشغيل %1$d.</string>
+    <string name="ui_song_count">أغنية واحدة</string>
+    <string name="duration_minutes_format">%1$dم</string>
 </resources>
+
 

@@ -3021,5 +3021,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">セキュリティ警告</string>
     <string name="fdroid_update_warning_message">F-Droid ビルドでアプリ内アップデートを有効にすると、F-Droid のセキュリティ チェックがバイパスされます。アップデートは発行元から直接ダウンロードされます。続行しますか?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">アクティブ</string>
+    <string name="replay_gain_status_disabled">無効</string>
+    <string name="replay_gain_mode_title">ReplayGain モード</string>
+    <string name="replay_gain_mode_desc">トラックのメタデータまたはアルバムのメタデータに基づいて音量レベルを調整します。</string>
+    <string name="replay_gain_mode_track">トラック</string>
+    <string name="replay_gain_mode_album">アルバム</string>
+    <string name="replay_gain_prevent_clipping">クリッピング防止 (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">オーディオの歪みを防ぐためにピークレベルを動的に圧縮します。</string>
+    <string name="replay_gain_preamp_tagged">プリアンプ (タグ付き)</string>
+    <string name="replay_gain_preamp_tagged_desc">ReplayGain タグが付いたトラックの音量調整。</string>
+    <string name="replay_gain_preamp_untagged">プリアンプ (タグなし)</string>
+    <string name="replay_gain_preamp_untagged_desc">ReplayGain タグのないトラックの音量調整。</string>
+    <string name="replay_gain_configuration">構成</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">デバイスの電力を節約するためのハードウェア アクセラレーションによるオーディオ デコーディング</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">コア</string>
+    <string name="backup_restore_section_core_desc">テーマ、プレーヤー、UI、API、およびアプリの設定。</string>
+    <string name="backup_restore_section_collection">コレクション</string>
+    <string name="backup_restore_section_collection_desc">プレイリスト、お気に入り、ブラックリスト/ホワイトリスト、固定フォルダー。</string>
+    <string name="backup_restore_section_insight">洞察力</string>
+    <string name="backup_restore_section_insight_desc">再生数、毎日の統計、ジャンル、および Rhythm ガードの構成。</string>
+    <string name="backup_restore_status_included">付属</string>
+    <string name="backup_restore_status_excluded">対象外</string>
+    <string name="backup_restore_sections_enabled">%1$d/%2$d が有効になりました</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">アクティブ</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">注文</string>
+    <string name="sort_order_ascending">昇順</string>
+    <string name="sort_order_descending">降順</string>
+    <string name="sort_track_number">トラック番号</string>
+    <string name="sort_duration">持続時間</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">選択を解除</string>
+    <string name="library_bottom_bar_back">戻る</string>
+    <string name="library_bottom_bar_select_songs">曲を選択する</string>
+    <string name="library_bottom_bar_more_actions">その他のアクション</string>
+    <string name="library_play_selected">プレイ (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">あなたの耳は完璧なボリュームのパーティーを開催しています。責任を持ってバイブレーションを続けてください！ 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">ちょっとスパイシーになってきました。警備員が介入する前に、音を一段階下げてみてはいかがでしょうか？ 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">おお、ロックスター、あなたは鼓膜の危険地帯にいる!ロックがかかる前にダイヤルを戻してください。 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">安全地帯がアクティブです! Rhythm 警備員はコーヒーブレイクで非番なので、タイムアウトなしで自由にジャムしてください! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">音響タイムアウトがアクティブです。聴覚を保護するための耳昼寝の義務化が進行中です。 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm 警備員は非番です。あなたはボリュームセーフで完全に単独で飛行しています。神速！ 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">未知の軌跡</string>
+    <string name="unknown_song">未知の歌</string>
+    <string name="player_queue_format">キュー %1$d/%2$d</string>
+    <string name="player_release_to_close">放すと閉じます</string>
+    <string name="player_swipe_down_to_close">下にスワイプして閉じます</string>
+    <string name="lyrics_source_attribution">歌詞: %1$s</string>
+    <string name="lyrics_currently_no_lyrics">現在、この曲の歌詞はありません。\n</string>
+    <string name="lyrics_no_lyrics">この曲には歌詞がありません。</string>
+    <string name="artist_options">アーティストオプション</string>
+    <string name="edit_album_title_label">アルバムタイトル</string>
+    <string name="edit_album_artist_label">アルバムアーティスト</string>
+    <string name="autoeq_profiles_available">%1$d 個のプロファイルが利用可能</string>
+    <string name="autoeq_no_brand">ノーブランド</string>
+    <string name="autoeq_change_profile">プロフィールの変更</string>
+    <string name="autoeq_configure_device">デバイスの設定</string>
+    <string name="playlist_count_format">%1$d 個のプレイリスト</string>
+    <string name="ui_song_count">1曲</string>
+    <string name="duration_minutes_format">%1$dメートル</string>
 </resources>
+
 

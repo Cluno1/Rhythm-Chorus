@@ -206,7 +206,7 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = if (batterySaverEnabled) "Active" else "Disabled",
+                                text = stringResource(if (batterySaverEnabled) R.string.status_active else R.string.status_disabled),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = if (batterySaverEnabled) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface

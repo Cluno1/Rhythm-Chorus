@@ -3022,5 +3022,80 @@ Format</string>
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">Ostrzeżenie dotyczące bezpieczeństwa</string>
     <string name="fdroid_update_warning_message">Włączenie aktualizacji w aplikacji w wersji F-Droid omija kontrole bezpieczeństwa F-Droid. Aktualizacje będą pobierane bezpośrednio od wydawcy. Czy chcesz kontynuować?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">Aktywny</string>
+    <string name="replay_gain_status_disabled">Wyłączone</string>
+    <string name="replay_gain_mode_title">Tryb ReplayGain</string>
+    <string name="replay_gain_mode_desc">Dostosuj poziomy głośności na podstawie metadanych utworu lub metadanych albumu.</string>
+    <string name="replay_gain_mode_track">Tor</string>
+    <string name="replay_gain_mode_album">Albumu</string>
+    <string name="replay_gain_prevent_clipping">Zapobieganie przycinaniu (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">Dynamicznie kompresuj poziomy szczytowe, aby zapobiec zniekształceniom dźwięku.</string>
+    <string name="replay_gain_preamp_tagged">Przedwzmacniacz (oznaczone)</string>
+    <string name="replay_gain_preamp_tagged_desc">Regulacja głośności dla utworów z tagami ReplayGain.</string>
+    <string name="replay_gain_preamp_untagged">Przedwzmacniacz (bez oznaczenia)</string>
+    <string name="replay_gain_preamp_untagged_desc">Regulacja głośności dla utworów bez tagów ReplayGain.</string>
+    <string name="replay_gain_configuration">Konfiguracja</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">Przyspieszone sprzętowo dekodowanie dźwięku w celu oszczędzania energii urządzenia</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">Rdzeń</string>
+    <string name="backup_restore_section_core_desc">Preferencje motywu, odtwarzacza, interfejsu użytkownika, API i aplikacji.</string>
+    <string name="backup_restore_section_collection">Kolekcja</string>
+    <string name="backup_restore_section_collection_desc">Listy odtwarzania, ulubione, czarna/biała lista, przypięte foldery.</string>
+    <string name="backup_restore_section_insight">Wgląd</string>
+    <string name="backup_restore_section_insight_desc">Liczba odtworzeń, dzienne statystyki, gatunki i konfiguracja Rhythm Guard.</string>
+    <string name="backup_restore_status_included">Uwzględnione</string>
+    <string name="backup_restore_status_excluded">Wyłączone</string>
+    <string name="backup_restore_sections_enabled">Włączono %1$d z %2$d</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">Aktywny</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">Rozkaz</string>
+    <string name="sort_order_ascending">Rosnąco</string>
+    <string name="sort_order_descending">Malejąco</string>
+    <string name="sort_track_number">Numer utworu</string>
+    <string name="sort_duration">Czas trwania</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">Anuluj wybór</string>
+    <string name="library_bottom_bar_back">Powrót</string>
+    <string name="library_bottom_bar_select_songs">Wybierz utwory</string>
+    <string name="library_bottom_bar_more_actions">Więcej akcji</string>
+    <string name="library_play_selected">Odtwórz (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">Twoje uszy urządzają imprezę o doskonałej głośności. Wibruj odpowiedzialnie! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">Robi się tam trochę pikantnie. Może zmniejsz nieco głośność, zanim wkroczy strażnik? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">Och, gwiazdo rocka, jesteś w strefie zagrożenia błony bębenkowej! Wybierz go ponownie, zanim uruchomi się zamek! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">Bezpieczna strefa aktywna! Rhythm Strażnik jest po służbie podczas przerwy na kawę, więc graj swobodnie bez przekroczeń limitu czasu! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">Aktywny limit czasu akustycznego. Trwa obowiązkowa drzemka w celu ochrony Twojego słuchu! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm Strażnik jest po służbie. Lecisz całkowicie solo, korzystając z bezpieczeństwa głośności. Życzenia powodzenia! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">Nieznany utwór</string>
+    <string name="unknown_song">Nieznana piosenka</string>
+    <string name="player_queue_format">Kolejka %1$d/%2$d</string>
+    <string name="player_release_to_close">Zwolnij, aby zamknąć</string>
+    <string name="player_swipe_down_to_close">Przesuń w dół, aby zamknąć</string>
+    <string name="lyrics_source_attribution">Teksty autorstwa: %1$s</string>
+    <string name="lyrics_currently_no_lyrics">Obecnie nie jest dostępny żaden tekst tej piosenki.\n</string>
+    <string name="lyrics_no_lyrics">Brak tekstu dla tej piosenki.</string>
+    <string name="artist_options">Opcje artysty</string>
+    <string name="edit_album_title_label">Tytuł albumu</string>
+    <string name="edit_album_artist_label">Artysta albumu</string>
+    <string name="autoeq_profiles_available">Dostępne profile %1$d</string>
+    <string name="autoeq_no_brand">Brak marki</string>
+    <string name="autoeq_change_profile">Zmień profil</string>
+    <string name="autoeq_configure_device">Skonfiguruj urządzenie</string>
+    <string name="playlist_count_format">Playlisty %1$d</string>
+    <string name="ui_song_count">1 piosenka</string>
+    <string name="duration_minutes_format">%1$dm</string>
 </resources>
+
 

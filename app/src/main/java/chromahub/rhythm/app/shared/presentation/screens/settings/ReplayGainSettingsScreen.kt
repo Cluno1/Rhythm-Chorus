@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -86,7 +87,7 @@ fun ReplayGainSettingsScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = if (replayGain) "Active" else "Disabled",
+                            text = stringResource(if (replayGain) R.string.status_active else R.string.status_disabled),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -117,13 +118,16 @@ fun ReplayGainSettingsScreen(
                     val settingItems = listOf(
                         Material3SettingsItem(
                             icon = MaterialSymbolIcon("music_note"),
-                            title = { Text("ReplayGain Mode") },
+                            title = { Text(stringResource(R.string.replay_gain_mode_title)) },
                             description = {
                                 Column(modifier = Modifier.fillMaxWidth()) {
-                                    Text("Adjust volume levels based on track metadata or album metadata.")
+                                    Text(stringResource(R.string.replay_gain_mode_desc))
                                     Spacer(modifier = Modifier.height(10.dp))
                                     ExpressiveButtonGroup(
-                                        items = listOf("Track", "Album"),
+                                        items = listOf(
+                                            stringResource(R.string.replay_gain_mode_track),
+                                            stringResource(R.string.replay_gain_mode_album)
+                                        ),
                                         selectedIndex = if (replayGainMode == 2) 1 else 0,
                                         onItemClick = { index ->
                                             HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
@@ -136,9 +140,9 @@ fun ReplayGainSettingsScreen(
                         ),
                         Material3SettingsItem(
                             icon = MaterialSymbolIcon("graphic_eq"),
-                            title = { Text("Prevent Clipping (DRC)") },
+                            title = { Text(stringResource(R.string.replay_gain_prevent_clipping)) },
                             description = {
-                                Text("Dynamically compress peak levels to prevent audio distortion.")
+                                Text(stringResource(R.string.replay_gain_prevent_clipping_desc))
                             },
                             trailingContent = {
                                 TunerAnimatedSwitch(
@@ -161,7 +165,7 @@ fun ReplayGainSettingsScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("Pre-amplifier (Tagged)")
+                                    Text(stringResource(R.string.replay_gain_preamp_tagged))
                                     Text(
                                         text = "${replayGainPreamp.toInt()} dB",
                                         fontWeight = FontWeight.Bold,
@@ -171,7 +175,7 @@ fun ReplayGainSettingsScreen(
                             },
                             description = {
                                 Column(modifier = Modifier.fillMaxWidth()) {
-                                    Text("Volume adjustment for tracks with ReplayGain tags.")
+                                    Text(stringResource(R.string.replay_gain_preamp_tagged_desc))
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Slider(
                                         value = replayGainPreamp,
@@ -190,7 +194,7 @@ fun ReplayGainSettingsScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("Pre-amplifier (Untagged)")
+                                    Text(stringResource(R.string.replay_gain_preamp_untagged))
                                     Text(
                                         text = "${replayGainPreampUntagged.toInt()} dB",
                                         fontWeight = FontWeight.Bold,
@@ -200,7 +204,7 @@ fun ReplayGainSettingsScreen(
                             },
                             description = {
                                 Column(modifier = Modifier.fillMaxWidth()) {
-                                    Text("Volume adjustment for tracks without ReplayGain tags.")
+                                    Text(stringResource(R.string.replay_gain_preamp_untagged_desc))
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Slider(
                                         value = replayGainPreampUntagged,
@@ -219,7 +223,7 @@ fun ReplayGainSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Material3SettingsGroup(
-                            title = "Configuration",
+                            title = stringResource(R.string.replay_gain_configuration),
                             items = settingItems,
                             containerColor = MaterialTheme.colorScheme.surfaceContainer
                         )

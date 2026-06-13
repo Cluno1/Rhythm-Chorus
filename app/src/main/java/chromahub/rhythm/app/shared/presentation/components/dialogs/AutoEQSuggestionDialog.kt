@@ -148,9 +148,9 @@ fun AutoEQSuggestionDialog(
                                 
                                 modifier = Modifier.size(16.dp)
                             )
-                            Text(
-                                text = "${savedDevice.type.displayName} • ${if (savedDevice.brand.isNotEmpty()) savedDevice.brand else "No brand"}",
-                                style = MaterialTheme.typography.bodySmall,
+                             Text(
+                                 text = "${savedDevice.type.displayName} • ${if (savedDevice.brand.isNotEmpty()) savedDevice.brand else stringResource(R.string.autoeq_no_brand)}",
+                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -223,7 +223,7 @@ fun AutoEQSuggestionDialog(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (savedDevice.autoEQProfileName != null) "Change Profile" else "Configure Device")
+                     Text(if (savedDevice.autoEQProfileName != null) stringResource(R.string.autoeq_change_profile) else stringResource(R.string.autoeq_configure_device))
                 }
                 
                 Row(

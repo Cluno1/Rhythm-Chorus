@@ -3025,5 +3025,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">Попередження безпеки</string>
     <string name="fdroid_update_warning_message">Увімкнення оновлень у програмі на збірці F-Droid обходить перевірки безпеки F-Droid. Оновлення будуть завантажені безпосередньо від видавця. Ви бажаєте продовжити?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">Активний</string>
+    <string name="replay_gain_status_disabled">Вимкнено</string>
+    <string name="replay_gain_mode_title">Режим ReplayGain</string>
+    <string name="replay_gain_mode_desc">Регулювання рівнів гучності на основі метаданих композиції або метаданих альбому.</string>
+    <string name="replay_gain_mode_track">Трек</string>
+    <string name="replay_gain_mode_album">Альбом</string>
+    <string name="replay_gain_prevent_clipping">Запобігання обрізанню (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">Динамічно стискайте пікові рівні, щоб запобігти спотворенню звуку.</string>
+    <string name="replay_gain_preamp_tagged">Попередній підсилювач (з тегами)</string>
+    <string name="replay_gain_preamp_tagged_desc">Регулювання гучності для треків із тегами ReplayGain.</string>
+    <string name="replay_gain_preamp_untagged">Попередній підсилювач (без тегів)</string>
+    <string name="replay_gain_preamp_untagged_desc">Регулювання гучності для треків без тегів ReplayGain.</string>
+    <string name="replay_gain_configuration">Конфігурація</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">Декодування звуку з апаратним прискоренням для економії енергії пристрою</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">Ядро</string>
+    <string name="backup_restore_section_core_desc">Параметри теми, програвача, інтерфейсу користувача, API і програми.</string>
+    <string name="backup_restore_section_collection">Збірник</string>
+    <string name="backup_restore_section_collection_desc">Списки відтворення, вибране, чорний/білий список, закріплені папки.</string>
+    <string name="backup_restore_section_insight">Інсайт</string>
+    <string name="backup_restore_section_insight_desc">Кількість відтворень, щоденна статистика, жанри та конфігурація Rhythm Guard.</string>
+    <string name="backup_restore_status_included">Включено</string>
+    <string name="backup_restore_status_excluded">Виключено</string>
+    <string name="backup_restore_sections_enabled">%1$d з %2$d увімкнено</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">Активний</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">Порядок</string>
+    <string name="sort_order_ascending">За зростанням</string>
+    <string name="sort_order_descending">За спаданням</string>
+    <string name="sort_track_number">Номер треку</string>
+    <string name="sort_duration">Тривалість</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">Скасувати вибір</string>
+    <string name="library_bottom_bar_back">Назад</string>
+    <string name="library_bottom_bar_select_songs">Виберіть пісні</string>
+    <string name="library_bottom_bar_more_actions">Більше дій</string>
+    <string name="library_play_selected">Грати (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">Ваші вуха влаштовують вечірку ідеального об’єму. Продовжуйте вітатися відповідально! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">Тут стає трохи гостро. Може, трохи зменшити його, перш ніж охоронець ввійде? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">Ой, рок-зірко, ти в небезпечній зоні барабанної перетинки! Наберіть назад, перш ніж спрацюють блокування! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">Безпечна зона активна! Rhythm Охоронець вільний від служби під час перерви на каву, тому джемуйте вільно без тайм-аутів! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">Акустичний тайм-аут активний. Триває обов’язковий сон на вухах, щоб захистити ваш слух! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm Охоронець не працює. Ви літаєте абсолютно самостійно з безпечним об’ємом. Божої дари! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">Невідомий трек</string>
+    <string name="unknown_song">Невідома пісня</string>
+    <string name="player_queue_format">Черга %1$d/%2$d</string>
+    <string name="player_release_to_close">Відпустіть, щоб закрити</string>
+    <string name="player_swipe_down_to_close">Проведіть пальцем вниз, щоб закрити</string>
+    <string name="lyrics_source_attribution">Слова %1$s</string>
+    <string name="lyrics_currently_no_lyrics">Наразі для цієї пісні немає тексту.\n</string>
+    <string name="lyrics_no_lyrics">Для цієї пісні немає тексту.</string>
+    <string name="artist_options">Параметри виконавця</string>
+    <string name="edit_album_title_label">Назва альбому</string>
+    <string name="edit_album_artist_label">Виконавець альбому</string>
+    <string name="autoeq_profiles_available">%1$d доступних профілів</string>
+    <string name="autoeq_no_brand">Без марки</string>
+    <string name="autoeq_change_profile">Змінити профіль</string>
+    <string name="autoeq_configure_device">Налаштувати пристрій</string>
+    <string name="playlist_count_format">%1$d списків відтворення</string>
+    <string name="ui_song_count">1 пісня</string>
+    <string name="duration_minutes_format">%1$dм</string>
 </resources>
+
 

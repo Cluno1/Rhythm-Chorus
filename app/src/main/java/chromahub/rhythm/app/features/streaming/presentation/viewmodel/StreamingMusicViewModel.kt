@@ -896,12 +896,23 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
     /**
      * Create a new playlist.
      */
-    fun createPlaylist(name: String) {
+    fun createPlaylist(name: String, songsToAdd: List<StreamingSong> = emptyList(), onCreated: ((StreamingPlaylist) -> Unit)? = null) {
         viewModelScope.launch {
             try {
-                repository.createPlaylist(name)
-                _savedPlaylists.value = repository.getPlaylists().first().filterIsInstance<StreamingPlaylist>()
-                notificationManager.notifyPlaylistCreated(name, getSourceTypeName(_currentService.value))
+                val newPlaylist = repository.createPlaylist(name)
+                if (newPlaylist != null) {
+                    if (songsToAdd.isNotEmpty()) {
+                        repository.addSongsToPlaylist(newPlaylist.id, songsToAdd.map { it.id })
+                    }
+                    val playlistsList = repository.getPlaylists().first().filterIsInstance<StreamingPlaylist>()
+                    _savedPlaylists.value = playlistsList
+                    notificationManager.notifyPlaylistCreated(name, getSourceTypeName(_currentService.value))
+                    
+                    val updatedPlaylist = playlistsList.firstOrNull { it.id == newPlaylist.id } ?: newPlaylist
+                    onCreated?.invoke(updatedPlaylist)
+                } else {
+                    _error.value = "Failed to create playlist: received null playlist from repository"
+                }
             } catch (e: Exception) {
                 _error.value = "Failed to create playlist: ${e.message}"
             }

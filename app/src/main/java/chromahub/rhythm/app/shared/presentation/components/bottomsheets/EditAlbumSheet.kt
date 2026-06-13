@@ -245,7 +245,7 @@ fun EditAlbumSheet(
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = "Artwork",
+                                    text = stringResource(R.string.settings_artwork),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -314,7 +314,7 @@ fun EditAlbumSheet(
                                             modifier = Modifier.size(18.dp)
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Remove")
+                                        Text(stringResource(R.string.blacklist_button_remove))
                                     }
                                 }
 
@@ -489,7 +489,7 @@ fun EditAlbumSheet(
                                         OutlinedTextField(
                                             value = albumTitle,
                                             onValueChange = { albumTitle = it },
-                                            label = { Text("Album Title") },
+                                            label = { Text(stringResource(R.string.edit_album_title_label)) },
                                             leadingIcon = {
                                                 Icon(
                                                     imageVector = RhythmIcons.AlbumFilled,
@@ -506,7 +506,7 @@ fun EditAlbumSheet(
                                         OutlinedTextField(
                                             value = albumArtist,
                                             onValueChange = { albumArtist = it },
-                                            label = { Text("Album Artist") },
+                                            label = { Text(stringResource(R.string.edit_album_artist_label)) },
                                             leadingIcon = {
                                                 Icon(
                                                     imageVector = RhythmIcons.ArtistFilled,
@@ -641,7 +641,7 @@ fun EditAlbumSheet(
                                 OutlinedTextField(
                                     value = albumTitle,
                                     onValueChange = { albumTitle = it },
-                                    label = { Text("Album Title") },
+                                    label = { Text(stringResource(R.string.edit_album_title_label)) },
                                     leadingIcon = {
                                         Icon(
                                             imageVector = RhythmIcons.AlbumFilled,
@@ -658,7 +658,7 @@ fun EditAlbumSheet(
                                 OutlinedTextField(
                                     value = albumArtist,
                                     onValueChange = { albumArtist = it },
-                                    label = { Text("Album Artist") },
+                                    label = { Text(stringResource(R.string.edit_album_artist_label)) },
                                     leadingIcon = {
                                         Icon(
                                             imageVector = RhythmIcons.ArtistFilled,
@@ -689,7 +689,7 @@ fun EditAlbumSheet(
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 Text(
-                                    text = "Artwork",
+                                    text = stringResource(R.string.settings_artwork),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -755,7 +755,7 @@ fun EditAlbumSheet(
                                             modifier = Modifier.size(18.dp)
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Remove")
+                                        Text(stringResource(R.string.blacklist_button_remove))
                                     }
                                 }
 

@@ -3021,5 +3021,80 @@ Quét lại</string>
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">Cảnh báo bảo mật</string>
     <string name="fdroid_update_warning_message">Việc bật cập nhật trong ứng dụng trên bản dựng F-Droid sẽ bỏ qua các bước kiểm tra bảo mật của F-Droid. Các bản cập nhật sẽ được tải xuống trực tiếp từ nhà xuất bản. Bạn có muốn tiếp tục không?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">Đang hoạt động</string>
+    <string name="replay_gain_status_disabled">Bị vô hiệu hóa</string>
+    <string name="replay_gain_mode_title">Chế độ ReplayGain</string>
+    <string name="replay_gain_mode_desc">Điều chỉnh mức âm lượng dựa trên siêu dữ liệu bản nhạc hoặc siêu dữ liệu album.</string>
+    <string name="replay_gain_mode_track">Theo dõi</string>
+    <string name="replay_gain_mode_album">Album</string>
+    <string name="replay_gain_prevent_clipping">Ngăn chặn việc cắt (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">Tự động nén mức cao nhất để tránh hiện tượng méo âm thanh.</string>
+    <string name="replay_gain_preamp_tagged">Bộ tiền khuếch đại (Được gắn thẻ)</string>
+    <string name="replay_gain_preamp_tagged_desc">Điều chỉnh âm lượng cho bản nhạc có thẻ ReplayGain.</string>
+    <string name="replay_gain_preamp_untagged">Bộ tiền khuếch đại (Không được gắn thẻ)</string>
+    <string name="replay_gain_preamp_untagged_desc">Điều chỉnh âm lượng cho các bản nhạc không có thẻ ReplayGain.</string>
+    <string name="replay_gain_configuration">Cấu hình</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">Giải mã âm thanh được tăng tốc phần cứng để tiết kiệm năng lượng cho thiết bị</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">Cốt lõi</string>
+    <string name="backup_restore_section_core_desc">Tùy chọn chủ đề, trình phát, giao diện người dùng, API và ứng dụng.</string>
+    <string name="backup_restore_section_collection">Bộ sưu tập</string>
+    <string name="backup_restore_section_collection_desc">Danh sách phát, mục yêu thích, danh sách đen/danh sách trắng, thư mục được ghim.</string>
+    <string name="backup_restore_section_insight">Cái nhìn sâu sắc</string>
+    <string name="backup_restore_section_insight_desc">Số lần chơi, số liệu thống kê hàng ngày, thể loại và cấu hình Bảo vệ Rhythm.</string>
+    <string name="backup_restore_status_included">Bao gồm</string>
+    <string name="backup_restore_status_excluded">Bị loại trừ</string>
+    <string name="backup_restore_sections_enabled">Đã bật %1$d trong số %2$d</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">Đang hoạt động</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">Đặt hàng</string>
+    <string name="sort_order_ascending">Tăng dần</string>
+    <string name="sort_order_descending">Giảm dần</string>
+    <string name="sort_track_number">Số bản nhạc</string>
+    <string name="sort_duration">Thời lượng</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">Hủy lựa chọn</string>
+    <string name="library_bottom_bar_back">Trở lại</string>
+    <string name="library_bottom_bar_select_songs">Chọn bài hát</string>
+    <string name="library_bottom_bar_more_actions">Thêm hành động</string>
+    <string name="library_play_selected">Chơi (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">Đôi tai của bạn đang tổ chức một bữa tiệc hoành tráng. Hãy tiếp tục rung cảm có trách nhiệm! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">Có chút cay ở đó. Có thể giảm nó xuống một chút trước khi người bảo vệ bước vào? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">Ôi ngôi sao nhạc rock, bạn đang ở trong vùng nguy hiểm của màng nhĩ! Quay lại trước khi khóa kích hoạt! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">Vùng an toàn đang hoạt động! Rhythm Nhân viên bảo vệ đang nghỉ giải lao nên cứ thoải mái ùn tắc mà không cần quá giờ! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">Hết thời gian chờ âm thanh đang hoạt động. Một giấc ngủ ngắn bắt buộc đang được tiến hành để bảo vệ thính giác của bạn! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm Bảo vệ nghỉ làm. Bạn đang bay hoàn toàn một mình về an toàn âm lượng. Thần tốc! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">Bản nhạc không xác định</string>
+    <string name="unknown_song">Bài hát không rõ</string>
+    <string name="player_queue_format">Hàng đợi %1$d/%2$d</string>
+    <string name="player_release_to_close">Nhả để đóng</string>
+    <string name="player_swipe_down_to_close">Vuốt xuống để đóng</string>
+    <string name="lyrics_source_attribution">Lời bài hát của %1$s</string>
+    <string name="lyrics_currently_no_lyrics">Hiện tại không có lời bài hát nào cho bài hát này.\n</string>
+    <string name="lyrics_no_lyrics">Không có lời bài hát nào cho bài hát này.</string>
+    <string name="artist_options">Tùy chọn nghệ sĩ</string>
+    <string name="edit_album_title_label">Tiêu đề album</string>
+    <string name="edit_album_artist_label">Nghệ sĩ album</string>
+    <string name="autoeq_profiles_available">Có sẵn %1$d hồ sơ</string>
+    <string name="autoeq_no_brand">Không có thương hiệu</string>
+    <string name="autoeq_change_profile">Thay đổi hồ sơ</string>
+    <string name="autoeq_configure_device">Cấu hình thiết bị</string>
+    <string name="playlist_count_format">%1$d danh sách phát</string>
+    <string name="ui_song_count">1 bài hát</string>
+    <string name="duration_minutes_format">%1$d phút</string>
 </resources>
+
 

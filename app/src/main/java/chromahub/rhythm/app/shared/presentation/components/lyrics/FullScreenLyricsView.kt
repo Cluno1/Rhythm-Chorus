@@ -384,7 +384,7 @@ fun FullScreenLyricsView(
 
                         // Song Title & Artist
                         Text(
-                            text = song?.title ?: "Unknown Song",
+                            text = song?.title ?: stringResource(R.string.unknown_song),
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = textPrimaryColor
@@ -395,7 +395,7 @@ fun FullScreenLyricsView(
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = song?.artist ?: "Unknown Artist",
+                            text = song?.artist ?: stringResource(R.string.unknown_artist),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = textSecondaryColor
@@ -790,7 +790,7 @@ fun FullScreenLyricsView(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = song?.title ?: "Unknown Song",
+                            text = song?.title ?: stringResource(R.string.unknown_song),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = textPrimaryColor,
@@ -801,7 +801,7 @@ fun FullScreenLyricsView(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = song?.artist ?: "Unknown Artist",
+                            text = song?.artist ?: stringResource(R.string.unknown_artist),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = textSecondaryColor

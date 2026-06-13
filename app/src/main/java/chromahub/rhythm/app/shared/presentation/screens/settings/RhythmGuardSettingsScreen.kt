@@ -394,7 +394,7 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = if (isRhythmGuardEnabled) "Active" else "Disabled",
+                                text = stringResource(if (isRhythmGuardEnabled) R.string.status_active else R.string.status_disabled),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isRhythmGuardEnabled) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
@@ -1790,12 +1790,12 @@ fun RhythmGuardOverallHealthCard(
     }
 
     val comicSubtitle = when (level) {
-        RhythmGuardOverallHealthLevel.GOOD -> "Your ears are throwing a perfectly-volumed party. Keep vibing responsibly! 🎉"
-        RhythmGuardOverallHealthLevel.FAIR -> "Getting a little spicy in there. Maybe turn it down a notch before the guard steps in? 🌶️"
-        RhythmGuardOverallHealthLevel.RISK -> "Whoa rockstar, you are in the eardrum danger zone! Dial it back before the locks trigger! 🎸🔥"
-        RhythmGuardOverallHealthLevel.COOLDOWN -> "Safe zone active! Rhythm Guard is off-duty on coffee break, so jam freely without timeouts! 🎫☕"
-        RhythmGuardOverallHealthLevel.TIMEOUT -> "Acoustic time-out active. A mandatory ear nap is in progress to protect your hearing! 😴🛑"
-        RhythmGuardOverallHealthLevel.OFF -> "Rhythm Guard is off duty. You are flying completely solo on volume safety. Godspeed! 🏍️💨"
+        RhythmGuardOverallHealthLevel.GOOD -> stringResource(R.string.rhythm_guard_health_desc_good)
+        RhythmGuardOverallHealthLevel.FAIR -> stringResource(R.string.rhythm_guard_health_desc_fair)
+        RhythmGuardOverallHealthLevel.RISK -> stringResource(R.string.rhythm_guard_health_desc_risk)
+        RhythmGuardOverallHealthLevel.COOLDOWN -> stringResource(R.string.rhythm_guard_health_desc_cooldown)
+        RhythmGuardOverallHealthLevel.TIMEOUT -> stringResource(R.string.rhythm_guard_health_desc_timeout)
+        RhythmGuardOverallHealthLevel.OFF -> stringResource(R.string.rhythm_guard_health_desc_off)
     }
 
     Card(
@@ -1956,7 +1956,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "$selectedSectionCount of 3 enabled",
+                                text = stringResource(R.string.backup_restore_sections_enabled, selectedSectionCount, 3),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -2017,7 +2017,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                                 color = MaterialTheme.colorScheme.surfaceVariant
                             ) {
                                 Text(
-                                    text = "Core",
+                                    text = stringResource(R.string.backup_restore_section_core),
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2026,7 +2026,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                         }
                     },
                     description = {
-                        Text("Theme, player, UI, API, and app preferences.")
+                        Text(stringResource(R.string.backup_restore_section_core_desc))
                     },
                     trailingContent = {
                         Column(horizontalAlignment = Alignment.End) {
@@ -2036,7 +2036,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = if (sections.includeGeneralSettings) "Included" else "Excluded",
+                                text = if (sections.includeGeneralSettings) stringResource(R.string.backup_restore_status_included) else stringResource(R.string.backup_restore_status_excluded),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -2062,7 +2062,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                                 color = MaterialTheme.colorScheme.surfaceVariant
                             ) {
                                 Text(
-                                    text = "Collection",
+                                    text = stringResource(R.string.backup_restore_section_collection),
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2071,7 +2071,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                         }
                     },
                     description = {
-                        Text("Playlists, favorites, blacklist/whitelist, pinned folders.")
+                        Text(stringResource(R.string.backup_restore_section_collection_desc))
                     },
                     trailingContent = {
                         Column(horizontalAlignment = Alignment.End) {
@@ -2081,7 +2081,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = if (sections.includeLibraryData) "Included" else "Excluded",
+                                text = if (sections.includeLibraryData) stringResource(R.string.backup_restore_status_included) else stringResource(R.string.backup_restore_status_excluded),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -2107,7 +2107,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                                 color = MaterialTheme.colorScheme.surfaceVariant
                             ) {
                                 Text(
-                                    text = "Insight",
+                                    text = stringResource(R.string.backup_restore_section_insight),
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2116,7 +2116,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                         }
                     },
                     description = {
-                        Text("Play counts, daily stats, genres, and Rhythm Guard configuration.")
+                        Text(stringResource(R.string.backup_restore_section_insight_desc))
                     },
                     trailingContent = {
                         Column(horizontalAlignment = Alignment.End) {
@@ -2126,7 +2126,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = if (sections.includeStatsAndRhythmGuard) "Included" else "Excluded",
+                                text = if (sections.includeStatsAndRhythmGuard) stringResource(R.string.backup_restore_status_included) else stringResource(R.string.backup_restore_status_excluded),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -2237,12 +2237,12 @@ fun RhythmGuardExpressiveDashboard(
     }
 
     val comicSubtitle = when (level) {
-        RhythmGuardOverallHealthLevel.GOOD -> "Your ears are throwing a perfectly-volumed party. Keep vibing responsibly! 🎉"
-        RhythmGuardOverallHealthLevel.FAIR -> "Getting a little spicy in there. Maybe turn it down a notch before the guard steps in? 🌶️"
-        RhythmGuardOverallHealthLevel.RISK -> "Whoa rockstar, you're in the eardrum danger zone! Dial it back before the locks trigger! 🎸🔥"
-        RhythmGuardOverallHealthLevel.COOLDOWN -> "Safe zone active! Rhythm Guard is on coffee break, so jam freely without timeouts! 🎫☕"
-        RhythmGuardOverallHealthLevel.TIMEOUT -> "Acoustic time-out active. A mandatory ear nap is in progress to protect your hearing! 😴🛑"
-        RhythmGuardOverallHealthLevel.OFF -> "Rhythm Guard is off duty. You are flying completely solo on volume safety. Godspeed! 🏍️💨"
+        RhythmGuardOverallHealthLevel.GOOD -> stringResource(R.string.rhythm_guard_health_desc_good)
+        RhythmGuardOverallHealthLevel.FAIR -> stringResource(R.string.rhythm_guard_health_desc_fair)
+        RhythmGuardOverallHealthLevel.RISK -> stringResource(R.string.rhythm_guard_health_desc_risk)
+        RhythmGuardOverallHealthLevel.COOLDOWN -> stringResource(R.string.rhythm_guard_health_desc_cooldown)
+        RhythmGuardOverallHealthLevel.TIMEOUT -> stringResource(R.string.rhythm_guard_health_desc_timeout)
+        RhythmGuardOverallHealthLevel.OFF -> stringResource(R.string.rhythm_guard_health_desc_off)
     }
 
     Column(

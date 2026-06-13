@@ -137,7 +137,7 @@ fun PlayerScreen(
     onAddToPlaylistSheetDismiss: () -> Unit = {},
     onAddSongToPlaylist: (Song, String) -> Unit = { _, _ -> },
     onCreatePlaylist: (String) -> Unit = {},
-    onShowCreatePlaylistDialog: () -> Unit = {},
+    onShowCreatePlaylistDialog: (Song?) -> Unit = {},
     onClearQueue: () -> Unit = {},
     isMediaLoading: Boolean = false,
     isSeeking: Boolean = false,
@@ -579,7 +579,9 @@ fun PlayerScreen(
                     showAddToPlaylistSheetInternal = false
                     selectedSongForPlaylist = null
                 },
-                onCreateNewPlaylist = onShowCreatePlaylistDialog,
+                onCreateNewPlaylist = {
+                    onShowCreatePlaylistDialog(selectedSongForPlaylist ?: song)
+                },
                 sheetState = addToPlaylistSheetState
             )
         }
@@ -930,7 +932,7 @@ fun PlayerScreen(
     if (showLyricsEditorDialog) {
         LyricsEditorBottomSheet(
             lyricsData = lyrics,
-            songTitle = song?.title ?: "Unknown",
+            songTitle = song?.title ?: stringResource(R.string.rating_unknown),
             initialTimeOffset = lyricsTimeOffset,
             onDismiss = { showLyricsEditorDialog = false },
             onSave = { editedLyrics, timeOffset, format ->

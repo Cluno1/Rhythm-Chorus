@@ -3021,5 +3021,80 @@
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">Предупреждение безопасности</string>
     <string name="fdroid_update_warning_message">Включение обновлений внутри приложения в сборке F-Droid позволяет обойти проверки безопасности F-Droid. Обновления будут загружаться напрямую от издателя. Хотите продолжить?</string>
+
+    <!-- Replay Gain Settings Screen -->
+    <string name="replay_gain_status_active">Активно</string>
+    <string name="replay_gain_status_disabled">Отключено</string>
+    <string name="replay_gain_mode_title">Режим ReplayGain</string>
+    <string name="replay_gain_mode_desc">Отрегулируйте уровни громкости на основе метаданных трека или метаданных альбома.</string>
+    <string name="replay_gain_mode_track">Трек</string>
+    <string name="replay_gain_mode_album">Альбом</string>
+    <string name="replay_gain_prevent_clipping">Предотвращение обрезки (DRC)</string>
+    <string name="replay_gain_prevent_clipping_desc">Динамическое сжатие пиковых уровней для предотвращения искажений звука.</string>
+    <string name="replay_gain_preamp_tagged">Предварительный усилитель (с меткой)</string>
+    <string name="replay_gain_preamp_tagged_desc">Регулировка громкости для треков с тегами ReplayGain.</string>
+    <string name="replay_gain_preamp_untagged">Предварительный усилитель (без маркировки)</string>
+    <string name="replay_gain_preamp_untagged_desc">Регулировка громкости для треков без тегов ReplayGain.</string>
+    <string name="replay_gain_configuration">Конфигурация</string>
+
+    <!-- Playback Settings Screen Extra -->
+    <string name="settingsscreen_audio_offload_desc">Аппаратное ускорение декодирования звука для экономии энергии устройства.</string>
+
+    <!-- Backup & Restore Sections picker extra strings -->
+    <string name="backup_restore_section_core">Ядро</string>
+    <string name="backup_restore_section_core_desc">Настройки темы, проигрывателя, пользовательского интерфейса, API и приложения.</string>
+    <string name="backup_restore_section_collection">Коллекция</string>
+    <string name="backup_restore_section_collection_desc">Списки воспроизведения, избранное, черный/белый список, закрепленные папки.</string>
+    <string name="backup_restore_section_insight">Понимание</string>
+    <string name="backup_restore_section_insight_desc">Количество игр, ежедневная статистика, жанры и конфигурация Rhythm Guard.</string>
+    <string name="backup_restore_status_included">Включено</string>
+    <string name="backup_restore_status_excluded">Исключено</string>
+    <string name="backup_restore_sections_enabled">%1$d из %2$d включено</string>
+
+    <!-- Settings status cards -->
+    <string name="status_active">Активно</string>
+
+    <!-- Sort menu options -->
+    <string name="sort_order_title">Заказать</string>
+    <string name="sort_order_ascending">По возрастанию</string>
+    <string name="sort_order_descending">По убыванию</string>
+    <string name="sort_track_number">Номер трека</string>
+    <string name="sort_duration">Продолжительность</string>
+
+    <!-- Library Bottom Bar -->
+    <string name="library_bottom_bar_cancel_selection">Отменить выбор</string>
+    <string name="library_bottom_bar_back">Назад</string>
+    <string name="library_bottom_bar_select_songs">Выбор песен</string>
+    <string name="library_bottom_bar_more_actions">Дополнительные действия</string>
+    <string name="library_play_selected">Играть (%1$d)</string>
+
+    <!-- Rhythm Guard Comic Status Subtitles -->
+    <string name="rhythm_guard_health_desc_good">Ваши уши устраивают великолепную вечеринку. Продолжайте вибрировать ответственно! 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">Здесь становится немного остро. Может быть, сделать тише, прежде чем войдет охранник? 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">Ого, рок-звезда, ты в опасной зоне барабанной перепонки! Наберите номер обратно, прежде чем сработают замки! 🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">Безопасная зона активна! Rhythm Охранник не на дежурстве во время перерыва на кофе, так что джемуйте свободно, без тайм-аутов! 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">Активен акустический тайм-аут. Для защиты вашего слуха проводится обязательная дневная дремота! 😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm Охранник не на дежурстве. Вы летите в одиночку с соблюдением объемной безопасности. Боже мой! 🏍️💨</string>
+
+    <!-- Player, Bottomsheet, and Popup translations -->
+    <string name="unknown_track">Неизвестный трек</string>
+    <string name="unknown_song">Неизвестная песня</string>
+    <string name="player_queue_format">Очередь %1$d/%2$d</string>
+    <string name="player_release_to_close">Отпустите, чтобы закрыть</string>
+    <string name="player_swipe_down_to_close">Проведите пальцем вниз, чтобы закрыть.</string>
+    <string name="lyrics_source_attribution">Слова %1$s</string>
+    <string name="lyrics_currently_no_lyrics">На данный момент текст этой песни отсутствует.\n</string>
+    <string name="lyrics_no_lyrics">Текста этой песни нет.</string>
+    <string name="artist_options">Параметры исполнителя</string>
+    <string name="edit_album_title_label">Название альбома</string>
+    <string name="edit_album_artist_label">Исполнитель альбома</string>
+    <string name="autoeq_profiles_available">Доступно %1$d профилей</string>
+    <string name="autoeq_no_brand">Нет бренда</string>
+    <string name="autoeq_change_profile">Изменить профиль</string>
+    <string name="autoeq_configure_device">Настройка устройства</string>
+    <string name="playlist_count_format">%1$d плейлистов</string>
+    <string name="ui_song_count">1 песня</string>
+    <string name="duration_minutes_format">%1$d м</string>
 </resources>
+
 

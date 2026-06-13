@@ -757,7 +757,7 @@ fun AlbumBottomSheet(
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            "Shuffle",
+                                            stringResource(R.string.action_shuffle),
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.Medium
                                         )
@@ -876,9 +876,9 @@ fun AlbumBottomSheet(
                                                 ) {
                                                     val sortOptions = remember(context) {
                                                         listOf(
-                                                            RhythmSortOption("TRACK_NUMBER", "Track Number", RhythmIcons.FormatListNumbered),
-                                                            RhythmSortOption("TITLE", "Title", RhythmIcons.SortByAlpha),
-                                                            RhythmSortOption("DURATION", "Duration", RhythmIcons.AccessTime)
+                                                            RhythmSortOption("TRACK_NUMBER", context.getString(R.string.sort_track_number), RhythmIcons.FormatListNumbered),
+                                                            RhythmSortOption("TITLE", context.getString(R.string.library_sort_title), RhythmIcons.SortByAlpha),
+                                                            RhythmSortOption("DURATION", context.getString(R.string.sort_duration), RhythmIcons.AccessTime)
                                                         )
                                                     }
                                                     val currentKey = when (sortOrder) {
@@ -1629,7 +1629,7 @@ fun AlbumBottomSheet(
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                "Shuffle",
+                                                stringResource(R.string.action_shuffle),
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Medium
                                             )
@@ -1858,9 +1858,9 @@ fun AlbumBottomSheet(
                                         ) {
                                             val sortOptions = remember(context) {
                                                 listOf(
-                                                    RhythmSortOption("TRACK_NUMBER", "Track Number", RhythmIcons.FormatListNumbered),
-                                                    RhythmSortOption("TITLE", "Title", RhythmIcons.SortByAlpha),
-                                                    RhythmSortOption("DURATION", "Duration", RhythmIcons.AccessTime)
+                                                    RhythmSortOption("TRACK_NUMBER", context.getString(R.string.sort_track_number), RhythmIcons.FormatListNumbered),
+                                                    RhythmSortOption("TITLE", context.getString(R.string.library_sort_title), RhythmIcons.SortByAlpha),
+                                                    RhythmSortOption("DURATION", context.getString(R.string.sort_duration), RhythmIcons.AccessTime)
                                                 )
                                             }
                                             val currentKey = when (sortOrder) {

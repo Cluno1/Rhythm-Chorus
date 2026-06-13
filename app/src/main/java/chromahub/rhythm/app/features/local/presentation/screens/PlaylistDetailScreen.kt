@@ -1194,11 +1194,11 @@ fun PlaylistDetailScreen(
                     }
                     
                     val sortOptions = listOf(
-                        RhythmSortOption("TITLE", "Title", RhythmIcons.SortByAlpha),
-                        RhythmSortOption("ARTIST", "Artist", RhythmIcons.ArtistFilled),
-                        RhythmSortOption("ALBUM", "Album", RhythmIcons.Music.Album),
-                        RhythmSortOption("DURATION", "Duration", MaterialSymbolIcon("timer", filled = true)),
-                        RhythmSortOption("DATE_ADDED", "Date Added", RhythmIcons.DateRange)
+                        RhythmSortOption("TITLE", context.getString(R.string.library_sort_title), RhythmIcons.SortByAlpha),
+                        RhythmSortOption("ARTIST", context.getString(R.string.library_sort_artist), RhythmIcons.ArtistFilled),
+                        RhythmSortOption("ALBUM", context.getString(R.string.library_sort_album), RhythmIcons.Music.Album),
+                        RhythmSortOption("DURATION", context.getString(R.string.sort_duration), MaterialSymbolIcon("timer", filled = true)),
+                        RhythmSortOption("DATE_ADDED", context.getString(R.string.library_sort_date_added), RhythmIcons.DateRange)
                     )
                     
                     RhythmSortMenuContent(
@@ -1413,7 +1413,7 @@ fun PlaylistDetailScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Shuffle",
+                            stringResource(R.string.action_shuffle),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Medium
                         )
@@ -1535,7 +1535,7 @@ fun PlaylistDetailScreen(
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        "Shuffle",
+                                        stringResource(R.string.action_shuffle),
                                         style = MaterialTheme.typography.titleMedium
                                     )
                                 }
