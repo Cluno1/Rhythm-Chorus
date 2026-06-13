@@ -3015,5 +3015,9 @@
     <string name="settings_metadata_editing">मेटाडेटा संपादन</string>
     <string name="settings_enable_album_editing">एल्बम संपादन सक्षम करें</string>
     <string name="settings_enable_album_editing_desc">संपूर्ण एल्बम के लिए मेटाडेटा और कलाकृति के बैच संपादन की अनुमति दें।</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">सुरक्षा चेतावनी</string>
+    <string name="fdroid_update_warning_message">F-Droid बिल्ड पर इन-ऐप अपडेट सक्षम करने से F-Droid की सुरक्षा जांच बायपास हो जाती है। अपडेट सीधे प्रकाशक से डाउनलोड किए जाएंगे। क्या आपकी आगे बढ़ने की इच्छा है?</string>
 </resources>
 

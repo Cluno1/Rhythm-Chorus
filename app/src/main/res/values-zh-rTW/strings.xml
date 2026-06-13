@@ -3030,5 +3030,9 @@
     <string name="settings_metadata_editing">元資料編輯</string>
     <string name="settings_enable_album_editing">啟用相簿編輯</string>
     <string name="settings_enable_album_editing_desc">允許大量編輯整張專輯的元資料和插圖。</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">安全警告</string>
+    <string name="fdroid_update_warning_message">在 F-Droid 版本上啟用應用程式內更新會繞過 F-Droid 的安全性檢查。更新將直接從發布者下載。您想繼續嗎？</string>
 </resources>
 

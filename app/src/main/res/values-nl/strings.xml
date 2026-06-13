@@ -3012,5 +3012,9 @@
     <string name="settings_metadata_editing">Metagegevens bewerken</string>
     <string name="settings_enable_album_editing">Albumbewerking inschakelen</string>
     <string name="settings_enable_album_editing_desc">Sta batchbewerking van metagegevens en illustraties voor hele albums toe.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Beveiligingswaarschuwing</string>
+    <string name="fdroid_update_warning_message">Door in-app-updates in te schakelen voor een F-Droid-build worden de veiligheidscontroles van F-Droid omzeild. Updates worden rechtstreeks van de uitgever gedownload. Wilt u doorgaan?</string>
 </resources>
 

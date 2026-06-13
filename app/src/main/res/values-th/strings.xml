@@ -3012,5 +3012,9 @@
     <string name="settings_metadata_editing">การแก้ไขข้อมูลเมตา</string>
     <string name="settings_enable_album_editing">เปิดใช้งานการแก้ไขอัลบั้ม</string>
     <string name="settings_enable_album_editing_desc">อนุญาตให้แก้ไขข้อมูลเมตาและอาร์ตเวิร์คเป็นชุดสำหรับทั้งอัลบั้ม</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">คำเตือนด้านความปลอดภัย</string>
+    <string name="fdroid_update_warning_message">การเปิดใช้งานการอัปเดตในแอปบน F-Droid build จะข้ามการตรวจสอบความปลอดภัยของ F-Droid การอัปเดตจะถูกดาวน์โหลดโดยตรงจากผู้จัดพิมพ์ คุณต้องการดำเนินการต่อหรือไม่?</string>
 </resources>
 

@@ -2770,7 +2770,7 @@ Als nächstes wird</string>
     <string name="eq_preset_jazz">Jazz</string>
     <string name="eq_preset_classical">Klassik</string>
     <string name="eq_preset_electronic">Elektronisch</string>
-    <string name="eq_preset_hiphop">Hip Hop</string>
+    <string name="eq_preset_hiphop">Hip-Hop</string>
     <string name="eq_preset_vocal">Gesang</string>
     <string name="eq_preset_bass_boost">Bassverstärkung</string>
     <string name="eq_preset_treble_boost">Höhenverstärkung</string>
@@ -3013,5 +3013,9 @@ Als nächstes wird</string>
     <string name="settings_metadata_editing">Metadatenbearbeitung</string>
     <string name="settings_enable_album_editing">Albumbearbeitung aktivieren</string>
     <string name="settings_enable_album_editing_desc">Ermöglichen Sie die Stapelbearbeitung von Metadaten und Grafiken für ganze Alben.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Sicherheitswarnung</string>
+    <string name="fdroid_update_warning_message">Durch die Aktivierung von In-App-Updates auf einem F-Droid-Build werden die Sicherheitsprüfungen von F-Droid umgangen. Updates werden direkt vom Herausgeber heruntergeladen. Möchten Sie fortfahren?</string>
 </resources>
 

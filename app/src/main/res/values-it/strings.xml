@@ -3021,5 +3021,9 @@ Grafica del giocatore</string>
     <string name="settings_metadata_editing">Modifica dei metadati</string>
     <string name="settings_enable_album_editing">Abilita la modifica dell\'album</string>
     <string name="settings_enable_album_editing_desc">Consenti la modifica in batch di metadati e grafica per interi album.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Avviso di sicurezza</string>
+    <string name="fdroid_update_warning_message">L\'abilitazione degli aggiornamenti in-app su una build F-Droid ignora i controlli di sicurezza di F-Droid. Gli aggiornamenti verranno scaricati direttamente dall\'editore. Vuoi procedere?</string>
 </resources>
 

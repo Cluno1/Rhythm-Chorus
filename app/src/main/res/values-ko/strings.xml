@@ -3012,5 +3012,9 @@
     <string name="settings_metadata_editing">메타데이터 편집</string>
     <string name="settings_enable_album_editing">앨범 편집 활성화</string>
     <string name="settings_enable_album_editing_desc">전체 앨범에 대한 메타데이터 및 아트워크의 일괄 편집을 허용합니다.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">보안 경고</string>
+    <string name="fdroid_update_warning_message">F-Droid 빌드에서 인앱 업데이트를 활성화하면 F-Droid의 보안 검사를 우회합니다. 업데이트는 게시자로부터 직접 다운로드됩니다. 계속하시겠습니까?</string>
 </resources>
 

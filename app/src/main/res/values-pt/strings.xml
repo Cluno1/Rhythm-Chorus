@@ -3031,5 +3031,9 @@ Formato</string>
     <string name="settings_metadata_editing">Edição de metadados</string>
     <string name="settings_enable_album_editing">Habilitar edição de álbum</string>
     <string name="settings_enable_album_editing_desc">Permitir edição em lote de metadados e arte de álbuns inteiros.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Aviso de segurança</string>
+    <string name="fdroid_update_warning_message">Habilitar atualizações no aplicativo em uma versão do F-Droid ignora as verificações de segurança do F-Droid. As atualizações serão baixadas diretamente do editor. Você quer prosseguir?</string>
 </resources>
 

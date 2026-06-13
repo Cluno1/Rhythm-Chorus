@@ -3017,5 +3017,9 @@ Peringkat</string>
     <string name="settings_metadata_editing">Pengeditan Metadata</string>
     <string name="settings_enable_album_editing">Aktifkan Pengeditan Album</string>
     <string name="settings_enable_album_editing_desc">Izinkan pengeditan batch metadata dan karya seni untuk seluruh album.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Peringatan Keamanan</string>
+    <string name="fdroid_update_warning_message">Mengaktifkan pembaruan dalam aplikasi pada build F-Droid akan melewati pemeriksaan keamanan F-Droid. Pembaruan akan diunduh langsung dari penerbit. Apakah Anda ingin melanjutkan?</string>
 </resources>
 

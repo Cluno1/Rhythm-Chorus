@@ -3020,5 +3020,9 @@
     <string name="settings_metadata_editing">تحرير البيانات الوصفية</string>
     <string name="settings_enable_album_editing">تمكين تحرير الألبوم</string>
     <string name="settings_enable_album_editing_desc">السماح بتحرير دفعة واحدة من البيانات الوصفية والأعمال الفنية للألبومات بأكملها.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">تحذير أمني</string>
+    <string name="fdroid_update_warning_message">يؤدي تمكين التحديثات داخل التطبيق على إصدار F-Droid إلى تجاوز عمليات التحقق من أمان F-Droid. سيتم تنزيل التحديثات مباشرة من الناشر. هل تريد المتابعة؟</string>
 </resources>
 

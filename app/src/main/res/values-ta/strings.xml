@@ -3058,5 +3058,9 @@ Rhythm காவலரிடமிருந்து</string>
     <string name="settings_metadata_editing">மெட்டாடேட்டா எடிட்டிங்</string>
     <string name="settings_enable_album_editing">ஆல்பம் திருத்தத்தை இயக்கு</string>
     <string name="settings_enable_album_editing_desc">முழு ஆல்பங்களுக்கும் மெட்டாடேட்டா மற்றும் கலைப்படைப்புகளின் தொகுப்பைத் திருத்த அனுமதிக்கவும்.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">பாதுகாப்பு எச்சரிக்கை</string>
+    <string name="fdroid_update_warning_message">F-Droid கட்டமைப்பில் உள்ள-ஆப் புதுப்பிப்புகளை இயக்குவது F-Droid இன் பாதுகாப்பு சோதனைகளைத் தவிர்க்கிறது. புதுப்பிப்புகள் வெளியீட்டாளரிடமிருந்து நேரடியாகப் பதிவிறக்கப்படும். தொடர வேண்டுமா?</string>
 </resources>
 

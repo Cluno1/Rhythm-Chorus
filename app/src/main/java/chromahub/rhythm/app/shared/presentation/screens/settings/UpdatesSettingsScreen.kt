@@ -229,6 +229,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     var showChannelDialog by remember { mutableStateOf(false) }
     var showSourceDialog by remember { mutableStateOf(false) }
     var showIntervalDialog by remember { mutableStateOf(false) }
+    var showFdroidWarningDialog by remember { mutableStateOf(false) }
 
     val intervalOptions = listOf(
         1 to context.getString(R.string.settings_interval_every_hour),
@@ -605,7 +606,13 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
 
                             !updatesEnabled -> {
                                 Button(
-                                    onClick = { appSettings.setUpdatesEnabled(true) },
+                                    onClick = {
+                                        if (BuildConfig.FLAVOR == "fdroid") {
+                                            showFdroidWarningDialog = true
+                                        } else {
+                                            appSettings.setUpdatesEnabled(true)
+                                        }
+                                    },
                                     modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                                     shape = RoundedCornerShape(20.dp)
                                 ) {
@@ -1019,7 +1026,17 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                             context.getString(R.string.updates_enable),
                             context.getString(R.string.updates_enable_updates),
                             toggleState = updatesEnabled,
-                            onToggleChange = { appSettings.setUpdatesEnabled(it) }
+                            onToggleChange = { enabled ->
+                                if (enabled) {
+                                    if (BuildConfig.FLAVOR == "fdroid") {
+                                        showFdroidWarningDialog = true
+                                    } else {
+                                        appSettings.setUpdatesEnabled(true)
+                                    }
+                                } else {
+                                    appSettings.setUpdatesEnabled(false)
+                                }
+                            }
                         )
                     )
                     if (updatesEnabled) {
@@ -1717,6 +1734,46 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(context.getString(R.string.ui_close))
+                }
+            },
+            shape = RoundedCornerShape(24.dp)
+        )
+    }
+
+    if (showFdroidWarningDialog) {
+        AlertDialog(
+            onDismissRequest = { showFdroidWarningDialog = false },
+            icon = {
+                Icon(
+                    icon = RhythmIcons.Security,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    size = 24.dp
+                )
+            },
+            title = { Text(context.getString(R.string.fdroid_update_warning_title)) },
+            text = {
+                Text(
+                    text = context.getString(R.string.fdroid_update_warning_message),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        appSettings.setUpdatesEnabled(true)
+                        showFdroidWarningDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(context.getString(R.string.onboarding_continue))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showFdroidWarningDialog = false }) {
+                    Text(context.getString(R.string.ui_cancel))
                 }
             },
             shape = RoundedCornerShape(24.dp)

@@ -3012,5 +3012,9 @@
     <string name="settings_metadata_editing">Metadata Editing</string>
     <string name="settings_enable_album_editing">Enable Album Editing</string>
     <string name="settings_enable_album_editing_desc">Allow batch editing of metadata and artwork for entire albums.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Security Warning</string>
+    <string name="fdroid_update_warning_message">Enabling in-app updates on an F-Droid build bypasses F-Droid\'s security checks. Updates will be downloaded directly from the publisher. Do you want to proceed?</string>
 </resources>
 

@@ -71,6 +71,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedButton
  
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -6115,6 +6117,7 @@ fun EnhancedUpdaterContent(
 
     // Auto-check for updates once when this step is opened and updates are enabled
     var hasCheckedOnce by remember { mutableStateOf(false) }
+    var showFdroidWarningDialog by remember { mutableStateOf(false) }
     LaunchedEffect(updatesEnabled) {
         if (updatesEnabled && !hasCheckedOnce) {
             hasCheckedOnce = true
@@ -6321,7 +6324,15 @@ fun EnhancedUpdaterContent(
                                     onCheckedChange = { enabled ->
                                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                         scope.launch {
-                                            appSettings.setUpdatesEnabled(enabled)
+                                            if (enabled) {
+                                                if (chromahub.rhythm.app.BuildConfig.FLAVOR == "fdroid") {
+                                                    showFdroidWarningDialog = true
+                                                } else {
+                                                    appSettings.setUpdatesEnabled(true)
+                                                }
+                                            } else {
+                                                appSettings.setUpdatesEnabled(false)
+                                            }
                                         }
                                     }
                                 )
@@ -6329,7 +6340,16 @@ fun EnhancedUpdaterContent(
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                 scope.launch {
-                                    appSettings.setUpdatesEnabled(!updatesEnabled)
+                                    val target = !updatesEnabled
+                                    if (target) {
+                                        if (chromahub.rhythm.app.BuildConfig.FLAVOR == "fdroid") {
+                                            showFdroidWarningDialog = true
+                                        } else {
+                                            appSettings.setUpdatesEnabled(true)
+                                        }
+                                    } else {
+                                        appSettings.setUpdatesEnabled(false)
+                                    }
                                 }
                             }
                         )
@@ -6577,7 +6597,15 @@ fun EnhancedUpdaterContent(
                                     onCheckedChange = { enabled ->
                                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                         scope.launch {
-                                            appSettings.setUpdatesEnabled(enabled)
+                                            if (enabled) {
+                                                if (chromahub.rhythm.app.BuildConfig.FLAVOR == "fdroid") {
+                                                    showFdroidWarningDialog = true
+                                                } else {
+                                                    appSettings.setUpdatesEnabled(true)
+                                                }
+                                            } else {
+                                                appSettings.setUpdatesEnabled(false)
+                                            }
                                         }
                                     }
                                 )
@@ -6585,7 +6613,16 @@ fun EnhancedUpdaterContent(
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                 scope.launch {
-                                    appSettings.setUpdatesEnabled(!updatesEnabled)
+                                    val target = !updatesEnabled
+                                    if (target) {
+                                        if (chromahub.rhythm.app.BuildConfig.FLAVOR == "fdroid") {
+                                            showFdroidWarningDialog = true
+                                        } else {
+                                            appSettings.setUpdatesEnabled(true)
+                                        }
+                                    } else {
+                                        appSettings.setUpdatesEnabled(false)
+                                    }
                                 }
                             }
                         )
@@ -6692,6 +6729,48 @@ fun EnhancedUpdaterContent(
                 }
             }
         }
+    }
+
+    if (showFdroidWarningDialog) {
+        AlertDialog(
+            onDismissRequest = { showFdroidWarningDialog = false },
+            icon = {
+                Icon(
+                    icon = RhythmIcons.Security,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    size = 24.dp
+                )
+            },
+            title = { Text(context.getString(R.string.fdroid_update_warning_title)) },
+            text = {
+                Text(
+                    text = context.getString(R.string.fdroid_update_warning_message),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            appSettings.setUpdatesEnabled(true)
+                        }
+                        showFdroidWarningDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(context.getString(R.string.onboarding_continue))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showFdroidWarningDialog = false }) {
+                    Text(context.getString(R.string.ui_cancel))
+                }
+            },
+            shape = RoundedCornerShape(24.dp)
+        )
     }
 }
 

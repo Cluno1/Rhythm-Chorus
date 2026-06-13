@@ -3017,5 +3017,9 @@
     <string name="settings_metadata_editing">メタデータの編集</string>
     <string name="settings_enable_album_editing">アルバム編集を有効にする</string>
     <string name="settings_enable_album_editing_desc">アルバム全体のメタデータとアートワークのバッチ編集を許可します。</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">セキュリティ警告</string>
+    <string name="fdroid_update_warning_message">F-Droid ビルドでアプリ内アップデートを有効にすると、F-Droid のセキュリティ チェックがバイパスされます。アップデートは発行元から直接ダウンロードされます。続行しますか?</string>
 </resources>
 

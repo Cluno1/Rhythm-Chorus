@@ -3017,5 +3017,9 @@ Quét lại</string>
     <string name="settings_metadata_editing">Chỉnh sửa siêu dữ liệu</string>
     <string name="settings_enable_album_editing">Bật chỉnh sửa album</string>
     <string name="settings_enable_album_editing_desc">Cho phép chỉnh sửa hàng loạt siêu dữ liệu và tác phẩm nghệ thuật cho toàn bộ album.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Cảnh báo bảo mật</string>
+    <string name="fdroid_update_warning_message">Việc bật cập nhật trong ứng dụng trên bản dựng F-Droid sẽ bỏ qua các bước kiểm tra bảo mật của F-Droid. Các bản cập nhật sẽ được tải xuống trực tiếp từ nhà xuất bản. Bạn có muốn tiếp tục không?</string>
 </resources>
 

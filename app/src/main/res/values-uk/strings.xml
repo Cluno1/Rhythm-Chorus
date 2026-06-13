@@ -3021,5 +3021,9 @@
     <string name="settings_metadata_editing">Редагування метаданих</string>
     <string name="settings_enable_album_editing">Увімкнути редагування альбому</string>
     <string name="settings_enable_album_editing_desc">Дозволити пакетне редагування метаданих і обкладинок цілих альбомів.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Попередження безпеки</string>
+    <string name="fdroid_update_warning_message">Увімкнення оновлень у програмі на збірці F-Droid обходить перевірки безпеки F-Droid. Оновлення будуть завантажені безпосередньо від видавця. Ви бажаєте продовжити?</string>
 </resources>
 

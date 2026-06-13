@@ -3066,5 +3066,9 @@ Superposition de dégradé</string>
     <string name="settings_metadata_editing">Édition des métadonnées</string>
     <string name="settings_enable_album_editing">Activer l\'édition d\'album</string>
     <string name="settings_enable_album_editing_desc">Autoriser l\'édition par lots des métadonnées et des illustrations pour des albums entiers.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Avertissement de sécurité</string>
+    <string name="fdroid_update_warning_message">L\'activation des mises à jour dans l\'application sur une version F-Droid contourne les contrôles de sécurité de F-Droid. Les mises à jour seront téléchargées directement depuis l\'éditeur. Voulez-vous continuer ?</string>
 </resources>
 

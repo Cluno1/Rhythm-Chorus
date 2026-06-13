@@ -3018,5 +3018,9 @@ Format</string>
     <string name="settings_metadata_editing">Edycja metadanych</string>
     <string name="settings_enable_album_editing">Włącz edycję albumu</string>
     <string name="settings_enable_album_editing_desc">Zezwalaj na zbiorczą edycję metadanych i grafik całych albumów.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Ostrzeżenie dotyczące bezpieczeństwa</string>
+    <string name="fdroid_update_warning_message">Włączenie aktualizacji w aplikacji w wersji F-Droid omija kontrole bezpieczeństwa F-Droid. Aktualizacje będą pobierane bezpośrednio od wydawcy. Czy chcesz kontynuować?</string>
 </resources>
 

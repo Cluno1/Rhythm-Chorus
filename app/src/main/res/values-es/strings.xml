@@ -3031,5 +3031,9 @@ Canales</string>
     <string name="settings_metadata_editing">Edición de metadatos</string>
     <string name="settings_enable_album_editing">Habilitar edición de álbum</string>
     <string name="settings_enable_album_editing_desc">Permitir la edición por lotes de metadatos e ilustraciones de álbumes completos.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Advertencia de seguridad</string>
+    <string name="fdroid_update_warning_message">Habilitar actualizaciones dentro de la aplicación en una compilación de F-Droid omite los controles de seguridad de F-Droid. Las actualizaciones se descargarán directamente del editor. ¿Quieres continuar?</string>
 </resources>
 

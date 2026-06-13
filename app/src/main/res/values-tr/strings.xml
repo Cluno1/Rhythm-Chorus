@@ -3012,5 +3012,9 @@
     <string name="settings_metadata_editing">Meta Veri Düzenleme</string>
     <string name="settings_enable_album_editing">Albüm Düzenlemeyi Etkinleştir</string>
     <string name="settings_enable_album_editing_desc">Albümlerin tamamı için meta verilerin ve resimlerin toplu olarak düzenlenmesine izin verin.</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">Güvenlik Uyarısı</string>
+    <string name="fdroid_update_warning_message">Bir F-Droid yapısında uygulama içi güncellemelerin etkinleştirilmesi, F-Droid\'in güvenlik kontrollerini atlar. Güncellemeler doğrudan yayıncıdan indirilecektir. Devam etmek istiyor musunuz?</string>
 </resources>
 

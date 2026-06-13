@@ -3019,5 +3019,9 @@
     <string name="settings_metadata_editing">মেটাডেটা সম্পাদনা</string>
     <string name="settings_enable_album_editing">অ্যালবাম সম্পাদনা সক্ষম করুন</string>
     <string name="settings_enable_album_editing_desc">সম্পূর্ণ অ্যালবামের জন্য মেটাডেটা এবং আর্টওয়ার্কের ব্যাচ সম্পাদনার অনুমতি দিন।</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">নিরাপত্তা সতর্কতা</string>
+    <string name="fdroid_update_warning_message">একটি এফ-ড্রয়েড বিল্ডে ইন-অ্যাপ আপডেট সক্ষম করা F-ড্রয়েডের নিরাপত্তা পরীক্ষাকে বাইপাস করে। আপডেটগুলি সরাসরি প্রকাশকের কাছ থেকে ডাউনলোড করা হবে। আপনি কি এগিয়ে যেতে চান?</string>
 </resources>
 

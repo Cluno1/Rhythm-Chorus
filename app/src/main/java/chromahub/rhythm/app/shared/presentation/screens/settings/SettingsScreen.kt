@@ -60,6 +60,10 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -92,6 +96,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.BuildConfig
 import chromahub.rhythm.app.shared.presentation.components.common.CollapsibleHeaderScreen
 import chromahub.rhythm.app.ui.utils.LazyListStateSaver
 import chromahub.rhythm.app.shared.data.model.AppSettings
@@ -191,6 +196,7 @@ fun SettingsScreen(
     
     var showDefaultScreenDialog by remember { mutableStateOf(false) }
     var showLanguageSwitcher by remember { mutableStateOf(false) }
+    var showFdroidWarningDialog by remember { mutableStateOf(false) }
     
     // Search state
     var searchQuery by remember { mutableStateOf("") }
@@ -368,7 +374,17 @@ fun SettingsScreen(
                         context.getString(R.string.settings_updates_title),
                         context.getString(R.string.settings_updates_desc),
                         toggleState = updatesEnabled,
-                        onToggleChange = { appSettings.setUpdatesEnabled(it) },
+                        onToggleChange = { enabled ->
+                            if (enabled) {
+                                if (BuildConfig.FLAVOR == "fdroid") {
+                                    showFdroidWarningDialog = true
+                                } else {
+                                    appSettings.setUpdatesEnabled(true)
+                                }
+                            } else {
+                                appSettings.setUpdatesEnabled(false)
+                            }
+                        },
                         onClick = { onNavigateTo(SettingsRoutes.UPDATES) }
                     ),
                     SettingItem(RhythmIcons.Info, context.getString(R.string.settings_about_title), context.getString(R.string.settings_about_desc), onClick = { onNavigateTo(SettingsRoutes.ABOUT) })
@@ -738,6 +754,46 @@ fun SettingsScreen(
         if (showLanguageSwitcher) {
             LanguageSwitcherDialog(
                 onDismiss = { showLanguageSwitcher = false }
+            )
+        }
+        
+        if (showFdroidWarningDialog) {
+            AlertDialog(
+                onDismissRequest = { showFdroidWarningDialog = false },
+                icon = {
+                    Icon(
+                        icon = RhythmIcons.Security,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        size = 24.dp
+                    )
+                },
+                title = { Text(context.getString(R.string.fdroid_update_warning_title)) },
+                text = {
+                    Text(
+                        text = context.getString(R.string.fdroid_update_warning_message),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            appSettings.setUpdatesEnabled(true)
+                            showFdroidWarningDialog = false
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text(context.getString(R.string.onboarding_continue))
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = { showFdroidWarningDialog = false }) {
+                        Text(context.getString(R.string.ui_cancel))
+                    }
+                },
+                shape = RoundedCornerShape(24.dp)
             )
         }
         

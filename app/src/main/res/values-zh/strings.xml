@@ -3016,5 +3016,9 @@
     <string name="settings_metadata_editing">元数据编辑</string>
     <string name="settings_enable_album_editing">启用相册编辑</string>
     <string name="settings_enable_album_editing_desc">允许批量编辑整个专辑的元数据和插图。</string>
+
+    <!-- F-Droid Update Warning -->
+    <string name="fdroid_update_warning_title">安全警告</string>
+    <string name="fdroid_update_warning_message">在 F-Droid 版本上启用应用内更新会绕过 F-Droid 的安全检查。更新将直接从发布者处下载。您想继续吗？</string>
 </resources>
 
