@@ -47,6 +47,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortMenuContent
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortOption
+import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveScrollBar
+import chromahub.rhythm.app.shared.presentation.components.common.playlistDetailFastScrollLabel
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
@@ -81,6 +83,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.derivedStateOf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -1640,11 +1643,14 @@ fun PlaylistDetailScreen(
                         }
                     }
 
+                    val canScroll by remember(listState) { derivedStateOf { listState.canScrollForward || listState.canScrollBackward } }
                     LazyColumn(
                         state = listState,
                         modifier = Modifier
                             .fillMaxSize(),
                         contentPadding = PaddingValues(
+                            start = 0.dp,
+                            end = if (canScroll && !isReorderMode) 28.dp else 0.dp,
                             top = 16.dp,
                             bottom = 20.dp
                         )
@@ -1856,6 +1862,24 @@ fun PlaylistDetailScreen(
                                 }
                             }
                         }
+                    }
+                    
+                    if (!isReorderMode && filteredSongs.isNotEmpty()) {
+                        val playlistDetailFastScrollLabelProvider = remember(filteredSongs, currentPlaylistSort) {
+                            { index: Int ->
+                                playlistDetailFastScrollLabel(
+                                    song = filteredSongs.getOrNull(index),
+                                    sortOrder = currentPlaylistSort
+                                )
+                            }
+                        }
+                        ExpressiveScrollBar(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(end = 4.dp, top = 16.dp, bottom = 20.dp),
+                            listState = listState,
+                            dragLabelProvider = playlistDetailFastScrollLabelProvider
+                        )
                     }
                 }
             }
@@ -2113,12 +2137,17 @@ fun PlaylistDetailScreen(
                 }
             }
 
+            val canScroll by remember(listState) { derivedStateOf { listState.canScrollForward || listState.canScrollBackward } }
+
             // LazyColumn - placed first so sticky header appears on top
             LazyColumn(
                 state = listState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp),
+                    .padding(
+                        start = 16.dp,
+                        end = if (canScroll && !isReorderMode) 28.dp else 16.dp
+                    ),
                 contentPadding = PaddingValues(
 //                    top = if (playlist.songs.isNotEmpty()) 90.dp else 16.dp,
                     bottom = (LocalMiniPlayerPadding.current.calculateBottomPadding() + 20.dp).coerceAtLeast(120.dp)
@@ -2723,6 +2752,28 @@ fun PlaylistDetailScreen(
                         }
                     }
                 }
+            }
+            
+            if (!isReorderMode && filteredSongs.isNotEmpty()) {
+                val playlistDetailFastScrollLabelProvider = remember(filteredSongs, currentPlaylistSort) {
+                    { index: Int ->
+                        playlistDetailFastScrollLabel(
+                            song = filteredSongs.getOrNull(index),
+                            sortOrder = currentPlaylistSort
+                        )
+                    }
+                }
+                ExpressiveScrollBar(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(
+                            end = 4.dp,
+                            top = 16.dp,
+                            bottom = (LocalMiniPlayerPadding.current.calculateBottomPadding() + 20.dp).coerceAtLeast(120.dp)
+                        ),
+                    listState = listState,
+                    dragLabelProvider = playlistDetailFastScrollLabelProvider
+                )
             }
             }
         }

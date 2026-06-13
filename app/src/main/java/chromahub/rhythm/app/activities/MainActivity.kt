@@ -7,7 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.fragment.app.FragmentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -127,7 +127,7 @@ import chromahub.rhythm.app.features.local.presentation.screens.OnboardingScreen
 import chromahub.rhythm.app.features.local.presentation.screens.onboarding.OnboardingStep
 import chromahub.rhythm.app.features.local.presentation.screens.onboarding.PermissionScreenState
 
-class MainActivity : FragmentActivity() {
+class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
     private val musicViewModel: MusicViewModel by viewModels()
     private val themeViewModel: ThemeViewModel by viewModels()

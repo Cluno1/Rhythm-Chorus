@@ -48,10 +48,13 @@ import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.Artist
 import chromahub.rhythm.app.shared.data.model.Song
+import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
+import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import chromahub.rhythm.app.shared.presentation.components.common.ArtistCollapsibleHeaderScreen
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSongMenuContent
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.ImageUtils
@@ -1274,73 +1277,47 @@ private fun ArtistSongItem(
                     modifier = Modifier
                         .widthIn(min = 220.dp)
                         .background(MaterialTheme.colorScheme.surface)
-                        .padding(6.dp),
+                        .padding(4.dp),
                     shape = RoundedCornerShape(20.dp)
                 ) {
-                    if (showPlayNextAction) {
-                    SongItemDropdownMenuItem(
-                        text = stringResource(R.string.action_play_next),
-                        icon = RhythmIcons.SkipNext,
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onPlayNext()
-                        }
+                    RhythmSongMenuContent(
+                        onPlayNext = if (showPlayNextAction) {
+                            {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onPlayNext()
+                            }
+                        } else null,
+                        onAddToQueue = if (showAddToQueueAction) {
+                            {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onAddToQueue()
+                            }
+                        } else null,
+                        isFavorite = isFavorite,
+                        onToggleFavorite = if (showToggleFavoriteAction) {
+                            {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onToggleFavorite()
+                            }
+                        } else null,
+                        onAddToPlaylist = if (showAddToPlaylistAction) {
+                            {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onAddToPlaylist()
+                            }
+                        } else null,
+                        onShowSongInfo = if (showSongInfoAction) {
+                            {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onShowSongInfo()
+                            }
+                        } else null
                     )
-                    }
-                    
-                    if (showAddToQueueAction) {
-                    SongItemDropdownMenuItem(
-                        text = stringResource(R.string.action_add_to_queue),
-                        icon = RhythmIcons.Queue,
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onAddToQueue()
-                        }
-                    )
-                    }
-                    
-                    if (showToggleFavoriteAction) {
-                    SongItemDropdownMenuItem(
-                        text = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                        icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onToggleFavorite()
-                        }
-                    )
-                    }
-                    
-                    if (showAddToPlaylistAction) {
-                    SongItemDropdownMenuItem(
-                        text = stringResource(R.string.content_desc_add_to_playlist),
-                        icon = RhythmIcons.AddToPlaylist,
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onAddToPlaylist()
-                        }
-                    )
-                    }
-                    
-                    if (showSongInfoAction) {
-                    SongItemDropdownMenuItem(
-                        text = stringResource(R.string.action_song_info),
-                        icon = RhythmIcons.Info,
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onShowSongInfo()
-                        }
-                    )
-                    }
                 }
                 }
             },
@@ -1351,50 +1328,6 @@ private fun ArtistSongItem(
             colors = ListItemDefaults.colors(
                 containerColor = Color.Transparent
             )
-        )
-    }
-}
-
-@Composable
-private fun SongItemDropdownMenuItem(
-    text: String,
-    icon: MaterialSymbolIcon,
-    containerColor: Color,
-    onClick: () -> Unit
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 6.dp, vertical = 3.dp)
-    ) {
-        DropdownMenuItem(
-            text = {
-                Text(
-                    text,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            },
-            leadingIcon = {
-                Surface(
-                    color = containerColor.copy(alpha = 0.7f),
-                    shape = CircleShape,
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
-                    )
-                }
-            },
-            onClick = onClick
         )
     }
 }

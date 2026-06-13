@@ -1,0 +1,253 @@
+package chromahub.rhythm.app.shared.presentation.components.common
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
+import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
+import chromahub.rhythm.app.R
+
+private data class SongMenuItem(
+    val title: String,
+    val icon: Any,
+    val iconBgColor: Color,
+    val iconTint: Color,
+    val onClick: () -> Unit
+)
+
+@Composable
+fun RhythmSongMenuContent(
+    onPlay: (() -> Unit)? = null,
+    onPlayNext: (() -> Unit)? = null,
+    onAddToQueue: (() -> Unit)? = null,
+    isFavorite: Boolean? = null,
+    onToggleFavorite: (() -> Unit)? = null,
+    isLiked: Boolean? = null,
+    onToggleLike: (() -> Unit)? = null,
+    onAddToPlaylist: (() -> Unit)? = null,
+    onShowSongInfo: (() -> Unit)? = null,
+    onGoToAlbum: (() -> Unit)? = null,
+    onGoToArtist: (() -> Unit)? = null,
+    onAddToBlacklist: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val menuItems = buildList {
+        onPlay?.let { action ->
+            add(
+                SongMenuItem(
+                    title = context.getString(R.string.action_play),
+                    icon = RhythmIcons.Play,
+                    iconBgColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                    iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    onClick = action
+                )
+            )
+        }
+        onPlayNext?.let { action ->
+            add(
+                SongMenuItem(
+                    title = context.getString(R.string.action_play_next),
+                    icon = RhythmIcons.SkipNext,
+                    iconBgColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                    iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    onClick = action
+                )
+            )
+        }
+        onAddToQueue?.let { action ->
+            add(
+                SongMenuItem(
+                    title = context.getString(R.string.action_add_to_queue),
+                    icon = RhythmIcons.Queue,
+                    iconBgColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                    iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    onClick = action
+                )
+            )
+        }
+        onToggleFavorite?.let { action ->
+            val fav = isFavorite == true
+            add(
+                SongMenuItem(
+                    title = if (fav) context.getString(R.string.action_remove_from_favorites) else context.getString(R.string.action_add_to_favorites),
+                    icon = if (fav) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
+                    iconBgColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+                    iconTint = MaterialTheme.colorScheme.onTertiaryContainer,
+                    onClick = action
+                )
+            )
+        }
+        onToggleLike?.let { action ->
+            val liked = isLiked == true
+            add(
+                SongMenuItem(
+                    title = if (liked) "Unlike" else "Like",
+                    icon = if (liked) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
+                    iconBgColor = if (liked) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+                        else MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+                    iconTint = if (liked) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onTertiaryContainer,
+                    onClick = action
+                )
+            )
+        }
+        onAddToPlaylist?.let { action ->
+            add(
+                SongMenuItem(
+                    title = context.getString(R.string.library_action_add_to_playlist),
+                    icon = RhythmIcons.AddToPlaylist,
+                    iconBgColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                    iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    onClick = action
+                )
+            )
+        }
+        onShowSongInfo?.let { action ->
+            add(
+                SongMenuItem(
+                    title = context.getString(R.string.action_song_info),
+                    icon = RhythmIcons.Info,
+                    iconBgColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                    iconTint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    onClick = action
+                )
+            )
+        }
+        onGoToAlbum?.let { action ->
+            add(
+                SongMenuItem(
+                    title = "Go to album",
+                    icon = RhythmIcons.AlbumFilled,
+                    iconBgColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                    iconTint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    onClick = action
+                )
+            )
+        }
+        onGoToArtist?.let { action ->
+            add(
+                SongMenuItem(
+                    title = context.getString(R.string.multiselectionbottomsheet_go_to_artist),
+                    icon = RhythmIcons.ArtistFilled,
+                    iconBgColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                    iconTint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    onClick = action
+                )
+            )
+        }
+        onAddToBlacklist?.let { action ->
+            add(
+                SongMenuItem(
+                    title = context.getString(R.string.action_add_to_blacklist),
+                    icon = RhythmIcons.Block,
+                    iconBgColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f),
+                    iconTint = MaterialTheme.colorScheme.onErrorContainer,
+                    onClick = action
+                )
+            )
+        }
+    }
+
+    if (menuItems.isNotEmpty()) {
+        val outerRadius = 16.dp
+        val innerRadius = 4.dp
+        val itemSpacing = 3.dp
+
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(itemSpacing)
+        ) {
+            menuItems.forEachIndexed { index, item ->
+                val itemShape = when {
+                    menuItems.size == 1 -> RoundedCornerShape(outerRadius)
+                    index == 0 -> RoundedCornerShape(
+                        topStart = outerRadius, topEnd = outerRadius,
+                        bottomStart = innerRadius, bottomEnd = innerRadius
+                    )
+                    index == menuItems.size - 1 -> RoundedCornerShape(
+                        topStart = innerRadius, topEnd = innerRadius,
+                        bottomStart = outerRadius, bottomEnd = outerRadius
+                    )
+                    else -> RoundedCornerShape(innerRadius)
+                }
+
+                Surface(
+                    onClick = item.onClick,
+                    shape = itemShape,
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            modifier = Modifier.size(28.dp),
+                            shape = CircleShape,
+                            color = item.iconBgColor
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                val icon = item.icon
+                                val iconSize = 16.dp
+                                when (icon) {
+                                    is MaterialSymbolIcon -> {
+                                        chromahub.rhythm.app.shared.presentation.components.icons.Icon(
+                                            imageVector = icon,
+                                            contentDescription = null,
+                                            tint = item.iconTint,
+                                            modifier = Modifier.size(iconSize)
+                                        )
+                                    }
+                                    is ImageVector -> {
+                                        chromahub.rhythm.app.shared.presentation.components.icons.Icon(
+                                            imageVector = icon,
+                                            contentDescription = null,
+                                            tint = item.iconTint,
+                                            modifier = Modifier.size(iconSize)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        Text(
+                            text = item.title,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = if (item.icon == RhythmIcons.Block) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

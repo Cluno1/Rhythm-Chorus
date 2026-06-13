@@ -68,6 +68,25 @@ class LibraryMetadataManager(
             try {
                 val appContext = context.applicationContext
 
+                val tempArtworkUri = if (artworkUri != null && artworkUri.scheme == "content") {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            val tempFile = File(appContext.cacheDir, "temp_single_edit_art_${System.currentTimeMillis()}.jpg")
+                            appContext.contentResolver.openInputStream(artworkUri)?.use { input ->
+                                tempFile.outputStream().use { output ->
+                                    input.copyTo(output)
+                                }
+                            }
+                            Uri.fromFile(tempFile)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to pre-cache single edit artwork", e)
+                        artworkUri
+                    }
+                } else {
+                    artworkUri
+                }
+
                 // Early format check — unsupported formats cannot be tag-edited
                 val fileExtension = run {
                     val projection = arrayOf(android.provider.MediaStore.Audio.Media.DATA)
@@ -102,7 +121,7 @@ class LibraryMetadataManager(
                         newGenre = genre,
                         newYear = year,
                         newTrackNumber = trackNumber,
-                        artworkUri = artworkUri,
+                        artworkUri = tempArtworkUri,
                         removeArtwork = removeArtwork,
                         newAlbumArtist = newAlbumArtist
                     )
@@ -115,15 +134,15 @@ class LibraryMetadataManager(
                         MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, song.uri)
                         null
                     }
-                    artworkUri != null -> {
+                    tempArtworkUri != null -> {
                         try {
-                            val cachedUri = saveArtworkToCache(appContext, song, artworkUri) ?: artworkUri
+                            val cachedUri = saveArtworkToCache(appContext, song, tempArtworkUri) ?: tempArtworkUri
                             persistArtworkOverrideUri(appContext, song.id, cachedUri)
                             MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, song.uri)
                             cachedUri
                         } catch (e: Exception) {
                             Log.w(TAG, "Failed to cache updated artwork for ${song.title}", e)
-                            artworkUri
+                            tempArtworkUri
                         }
                     }
                     else -> song.artworkUri
@@ -171,7 +190,7 @@ class LibraryMetadataManager(
                                     newGenre = genre,
                                     newYear = year,
                                     newTrackNumber = trackNumber,
-                                    artworkUri = artworkUri,
+                                    artworkUri = tempArtworkUri,
                                     removeArtwork = removeArtwork,
                                     newAlbumArtist = newAlbumArtist
                                 )
@@ -393,6 +412,26 @@ class LibraryMetadataManager(
     ) {
         scope.launch {
             val appContext = context.applicationContext
+
+            val tempArtworkUri = if (artworkUri != null && artworkUri.scheme == "content") {
+                try {
+                    withContext(Dispatchers.IO) {
+                        val tempFile = File(appContext.cacheDir, "temp_batch_edit_art_${System.currentTimeMillis()}.jpg")
+                        appContext.contentResolver.openInputStream(artworkUri)?.use { input ->
+                            tempFile.outputStream().use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                        Uri.fromFile(tempFile)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to pre-cache batch edit artwork", e)
+                    artworkUri
+                }
+            } else {
+                artworkUri
+            }
+
             var successCount = 0
             var failCount = 0
             // Collect updated songs for bulk in-memory update at the end
@@ -406,7 +445,7 @@ class LibraryMetadataManager(
                     val newGenre = genre ?: (song.genre ?: "")
                     val newYear = year ?: song.year
                     val newAlbumArtist = artist ?: song.albumArtist
-                    val hasArtworkEdit = artworkUri != null || removeArtwork
+                    val hasArtworkEdit = tempArtworkUri != null || removeArtwork
 
                     // Check if file format is supported before attempting write
                     val fileExtension = try {
@@ -433,7 +472,7 @@ class LibraryMetadataManager(
                                     newGenre = newGenre,
                                     newYear = newYear,
                                     newTrackNumber = song.trackNumber,
-                                    artworkUri = artworkUri,
+                                    artworkUri = tempArtworkUri,
                                     removeArtwork = removeArtwork,
                                     newAlbumArtist = newAlbumArtist
                                 )
@@ -502,14 +541,14 @@ class LibraryMetadataManager(
                                 MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, song.uri)
                                 null
                             }
-                            artworkUri != null -> {
+                            tempArtworkUri != null -> {
                                 try {
-                                    val cachedUri = saveArtworkToCache(appContext, song, artworkUri) ?: artworkUri
+                                    val cachedUri = saveArtworkToCache(appContext, song, tempArtworkUri) ?: tempArtworkUri
                                     persistArtworkOverrideUri(appContext, song.id, cachedUri)
                                     MediaUtils.deleteCachedEmbeddedArtwork(appContext.cacheDir, song.uri)
                                     cachedUri
                                 } catch (_: Exception) {
-                                    artworkUri
+                                    tempArtworkUri
                                 }
                             }
                             else -> song.artworkUri
@@ -568,7 +607,7 @@ class LibraryMetadataManager(
                         album = album,
                         genre = genre,
                         year = year,
-                        artworkUriString = artworkUri?.toString(),
+                        artworkUriString = tempArtworkUri?.toString(),
                         removeArtwork = removeArtwork,
                         onProgress = onProgress,
                         onComplete = onComplete

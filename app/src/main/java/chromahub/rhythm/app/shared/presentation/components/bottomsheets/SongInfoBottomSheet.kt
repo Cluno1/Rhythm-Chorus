@@ -37,6 +37,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.*
+import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import androidx.compose.runtime.*
@@ -186,7 +188,7 @@ private fun isUsableArtworkUri(uri: Uri): Boolean {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SongInfoBottomSheet(
     song: Song?,
@@ -2295,6 +2297,31 @@ private fun EditSongSheet(
 
                                         Spacer(modifier = Modifier.height(8.dp))
 
+                                        // Progress
+                                        AnimatedVisibility(visible = isSaving) {
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 12.dp),
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                LinearWavyProgressIndicator(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                Text(
+                                                    text = stringResource(R.string.metadata_saving),
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    textAlign = TextAlign.Center
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
                                         // Action buttons
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
@@ -2340,22 +2367,13 @@ private fun EditSongSheet(
                                                 shape = RoundedCornerShape(16.dp),
                                                 enabled = title.isNotBlank() && artist.isNotBlank() && !isSaving
                                             ) {
-                                                if (isSaving) {
-                                                    ActionProgressLoader(
-                                                        size = 20.dp,
-                                                        color = MaterialTheme.colorScheme.onPrimary
-                                                    )
-                                                    Spacer(modifier = Modifier.width(8.dp))
-                                                    Text(stringResource(R.string.metadata_saving))
-                                                } else {
-                                                    Icon(
-                                                        imageVector = MaterialSymbolIcon("save", filled = true),
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(20.dp)
-                                                    )
-                                                    Spacer(modifier = Modifier.width(8.dp))
-                                                    Text(stringResource(R.string.ui_save))
-                                                }
+                                                Icon(
+                                                    imageVector = MaterialSymbolIcon("save", filled = true),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(stringResource(R.string.ui_save))
                                             }
                                         }
 
@@ -2909,6 +2927,29 @@ private fun EditSongSheet(
                 }
             }
 
+            // Progress
+            AnimatedVisibility(visible = isSaving) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    LinearWavyProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.metadata_saving),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             ExpressiveButtonGroup(
@@ -2945,22 +2986,13 @@ private fun EditSongSheet(
                     enabled = title.isNotBlank() && artist.isNotBlank() && !isSaving,
                     isEnd = true
                 ) {
-                    if (isSaving) {
-                        ActionProgressLoader(
-                            size = 18.dp,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.metadata_saving))
-                    } else {
-                        Icon(
-                            imageVector = MaterialSymbolIcon("save", filled = true),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.ui_save))
-                    }
+                    Icon(
+                        imageVector = MaterialSymbolIcon("save", filled = true),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.ui_save))
                 }
             }
 

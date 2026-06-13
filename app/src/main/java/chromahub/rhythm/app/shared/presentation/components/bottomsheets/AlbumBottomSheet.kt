@@ -52,8 +52,11 @@ import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.data.model.AppSettings
+import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
+import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortMenuContent
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSongMenuContent
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortOption
 import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
@@ -2350,256 +2353,54 @@ fun ExpressiveSongItem(
                     modifier = Modifier
                         .widthIn(min = 220.dp)
                         .background(MaterialTheme.colorScheme.surface)
-                        .padding(5.dp),
-                    shape = RoundedCornerShape(18.dp)
+                        .padding(4.dp),
+                    shape = RoundedCornerShape(20.dp)
                 ) {
-                    if (showPlayNextAction) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.surfaceContainer,
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        "Play next",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                },
-                                leadingIcon = {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                                        shape = CircleShape,
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.SkipNext,
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .padding(6.dp)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    showDropdown = false
-                                    onPlayNext()
-                                }
-                            )
-                        }
-                    }
-
-                    if (showAddToQueueAction) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.surfaceContainer,
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        "Add to queue",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                },
-                                leadingIcon = {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                                        shape = CircleShape,
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.Queue,
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .padding(6.dp)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    showDropdown = false
-                                    onAddToQueue()
-                                }
-                            )
-                        }
-                    }
-
-                    if (showToggleFavoriteAction) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.surfaceContainer,
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        if (isFavorite) "Remove from favorites" else "Add to favorites",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                },
-                                leadingIcon = {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
-                                        shape = CircleShape,
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .padding(6.dp)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    showDropdown = false
-                                    onToggleFavorite()
-                                }
-                            )
-                        }
-                    }
-
-                    if (showAddToPlaylistAction) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.surfaceContainer,
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        "Add to playlist",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                },
-                                leadingIcon = {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                                        shape = CircleShape,
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.AddToPlaylist,
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .padding(6.dp)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    showDropdown = false
-                                    onAddToPlaylist()
-                                }
-                            )
-                        }
-                    }
-
-                    if (showSongInfoAction) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.surfaceContainer,
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        "Song info",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                },
-                                leadingIcon = {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-                                        shape = CircleShape,
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.Info,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .padding(6.dp)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    showDropdown = false
-                                    onShowSongInfo()
-                                }
-                            )
-                        }
-                    }
-
-                    if (showAddToBlacklistAction) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.surfaceContainer,
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        "Add to blacklist",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                },
-                                leadingIcon = {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f),
-                                        shape = CircleShape,
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.Block,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onErrorContainer,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .padding(6.dp)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    showDropdown = false
-                                    onAddToBlacklist()
-                                }
-                            )
-                        }
-                    }
+                    RhythmSongMenuContent(
+                        onPlayNext = if (showPlayNextAction) {
+                            {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onPlayNext()
+                            }
+                        } else null,
+                        onAddToQueue = if (showAddToQueueAction) {
+                            {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onAddToQueue()
+                            }
+                        } else null,
+                        isFavorite = isFavorite,
+                        onToggleFavorite = if (showToggleFavoriteAction) {
+                            {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onToggleFavorite()
+                            }
+                        } else null,
+                        onAddToPlaylist = if (showAddToPlaylistAction) {
+                            {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onAddToPlaylist()
+                            }
+                        } else null,
+                        onShowSongInfo = if (showSongInfoAction) {
+                            {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onShowSongInfo()
+                            }
+                        } else null,
+                        onAddToBlacklist = if (showAddToBlacklistAction) {
+                            {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onAddToBlacklist()
+                            }
+                        } else null
+                    )
                 }
             }
             }

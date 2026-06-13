@@ -29,7 +29,9 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.foundation.layout.widthIn
@@ -78,6 +80,7 @@ import java.io.File
 import chromahub.rhythm.app.R
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
+import androidx.compose.ui.text.style.TextAlign
 
 private fun resolveBatchEditArtworkUri(context: android.content.Context, song: Song): Uri? {
     val currentArtworkUri = song.artworkUri
@@ -137,7 +140,7 @@ private fun isUsableArtworkUriForBatch(uri: Uri): Boolean {
  * Each field has a checkbox to enable/disable it. Only enabled fields are applied.
  * UI matches the SongInfoBottomSheet metadata editor style.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BatchEditTagsSheet(
     selectedSongs: List<Song>,
@@ -212,7 +215,9 @@ fun BatchEditTagsSheet(
         else -> resolvedArtworkPreviewUri
     }
 
-    fun submitBatchChanges() {
+    var showWarningDialog by remember { mutableStateOf(false) }
+
+    fun handleSave() {
         if (!editArtist && !editAlbum && !editGenre && !editYear && !editArtwork) {
             Toast.makeText(context, R.string.batchedittagssheet_enable_at_least_one, Toast.LENGTH_SHORT).show()
             return
@@ -227,7 +232,10 @@ fun BatchEditTagsSheet(
             Toast.makeText(context, R.string.batchedittagssheet_please_enter_a_value, Toast.LENGTH_SHORT).show()
             return
         }
+        showWarningDialog = true
+    }
 
+    fun proceedWithSave() {
         isSaving = true
         onSave(
             if (editArtist) artist.trim().takeIf { it.isNotBlank() } else null,
@@ -503,45 +511,58 @@ fun BatchEditTagsSheet(
                                                             val searchQueryArtist = if (editArtist && artist.isNotBlank()) artist else (previewSong?.artist ?: "")
                                                             val searchQueryAlbum = if (editAlbum && album.isNotBlank()) album else (previewSong?.album ?: "")
                                                             val searchQuery = "${searchQueryAlbum.trim()} ${searchQueryArtist.trim()}"
-                                                            val searchRequest = YTMusicSearchRequest(
+                                                            var imageUrl: String? = null
+                                                            
+                                                            // Try searching with Album filter first
+                                                            val albumSearchRequest = YTMusicSearchRequest(
                                                                 context = YTMusicContext(YTMusicClient()),
                                                                 query = searchQuery,
-                                                                params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D"
+                                                                params = "EgWKAQIYAWoKEAoQAxAEEAkQBQ%3D%3D"
                                                             )
-                                                            val response = apiService.search(request = searchRequest)
-                                                            if (response.isSuccessful) {
-                                                                val imageUrl = response.body()?.extractAlbumImageUrl()
-                                                                if (!imageUrl.isNullOrEmpty()) {
-                                                                    val okRequest = okhttp3.Request.Builder().url(imageUrl).build()
-                                                                    val okResponse = NetworkClient.genericHttpClient.newCall(okRequest).execute()
-                                                                    if (okResponse.isSuccessful) {
-                                                                        val bytes = okResponse.body?.bytes()
-                                                                        if (bytes != null) {
-                                                                            val tempFile = File(context.cacheDir, "temp_artwork_fetched_batch_${previewSong?.id ?: "temp"}.jpg")
-                                                                            tempFile.writeBytes(bytes)
-                                                                            withContext(Dispatchers.Main) {
-                                                                                selectedImageUri = Uri.fromFile(tempFile)
-                                                                                removeArtwork = false
-                                                                                Toast.makeText(context, R.string.songinfobottomsheet_artwork_fetched_successfully_click, Toast.LENGTH_SHORT).show()
-                                                                            }
-                                                                        } else {
-                                                                            withContext(Dispatchers.Main) {
-                                                                                Toast.makeText(context, R.string.songinfobottomsheet_failed_to_download_artwork, Toast.LENGTH_SHORT).show()
-                                                                            }
+                                                            val albumResponse = apiService.search(request = albumSearchRequest)
+                                                            if (albumResponse.isSuccessful) {
+                                                                imageUrl = albumResponse.body()?.extractAlbumImageUrl()
+                                                            }
+                                                            
+                                                            // Fallback to Song filter if album filter yielded nothing
+                                                            if (imageUrl.isNullOrEmpty()) {
+                                                                val songSearchRequest = YTMusicSearchRequest(
+                                                                    context = YTMusicContext(YTMusicClient()),
+                                                                    query = searchQuery,
+                                                                    params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D"
+                                                                )
+                                                                val songResponse = apiService.search(request = songSearchRequest)
+                                                                if (songResponse.isSuccessful) {
+                                                                    imageUrl = songResponse.body()?.extractAlbumImageUrl()
+                                                                }
+                                                            }
+
+                                                            if (!imageUrl.isNullOrEmpty()) {
+                                                                val okRequest = okhttp3.Request.Builder().url(imageUrl).build()
+                                                                val okResponse = NetworkClient.genericHttpClient.newCall(okRequest).execute()
+                                                                if (okResponse.isSuccessful) {
+                                                                    val bytes = okResponse.body?.bytes()
+                                                                    if (bytes != null) {
+                                                                        val tempFile = File(context.cacheDir, "temp_artwork_fetched_batch_${previewSong?.id ?: "temp"}.jpg")
+                                                                        tempFile.writeBytes(bytes)
+                                                                        withContext(Dispatchers.Main) {
+                                                                            selectedImageUri = Uri.fromFile(tempFile)
+                                                                            removeArtwork = false
+                                                                            Toast.makeText(context, R.string.songinfobottomsheet_artwork_fetched_successfully_click, Toast.LENGTH_SHORT).show()
                                                                         }
                                                                     } else {
                                                                         withContext(Dispatchers.Main) {
-                                                                            Toast.makeText(context, R.string.songinfobottomsheet_failed_to_download_artwork_1, Toast.LENGTH_SHORT).show()
+                                                                            Toast.makeText(context, R.string.songinfobottomsheet_failed_to_download_artwork, Toast.LENGTH_SHORT).show()
                                                                         }
                                                                     }
                                                                 } else {
                                                                     withContext(Dispatchers.Main) {
-                                                                        Toast.makeText(context, R.string.songinfobottomsheet_no_artwork_found_for, Toast.LENGTH_SHORT).show()
+                                                                        Toast.makeText(context, R.string.songinfobottomsheet_failed_to_download_artwork_1, Toast.LENGTH_SHORT).show()
                                                                     }
                                                                 }
                                                             } else {
                                                                 withContext(Dispatchers.Main) {
-                                                                    Toast.makeText(context, R.string.songinfobottomsheet_online_search_failed, Toast.LENGTH_SHORT).show()
+                                                                    Toast.makeText(context, R.string.songinfobottomsheet_no_artwork_found_for, Toast.LENGTH_SHORT).show()
                                                                 }
                                                             }
                                                         } else {
@@ -604,19 +625,26 @@ fun BatchEditTagsSheet(
 
             // Progress
             AnimatedVisibility(visible = isSaving) {
-                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                    LinearProgressIndicator(
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    LinearWavyProgressIndicator(
                         progress = { progress },
                         modifier = Modifier.fillMaxWidth(),
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Saving... ${(progress * 100).toInt()}%",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                     Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(R.string.metadata_saving) + " ${(progress * 100).toInt()}%",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
 
@@ -643,7 +671,7 @@ fun BatchEditTagsSheet(
                 }
 
                 ExpressiveGroupButton(
-                    onClick = { submitBatchChanges() },
+                    onClick = { handleSave() },
                     enabled = !isSaving && !isFetchingOnlineArt,
                     modifier = Modifier.weight(1f),
                     isEnd = true
@@ -660,6 +688,74 @@ fun BatchEditTagsSheet(
 
             Spacer(modifier = Modifier.height(12.dp))
         }
+    }
+
+    if (showWarningDialog) {
+        AlertDialog(
+            onDismissRequest = { showWarningDialog = false },
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.bottomsheet_irreversible))
+                }
+            },
+            text = {
+                Column {
+                    Text(
+                        "The changes you're about to make will permanently modify the audio files' metadata.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "This action cannot be undone. Make sure you have a backup if needed.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showWarningDialog = false
+                        proceedWithSave()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.Warning,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.bottomsheet_proceed))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { 
+                        showWarningDialog = false
+                    }
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.Close,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.ui_cancel))
+                }
+            }
+        )
     }
 }
 

@@ -48,9 +48,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
+import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortMenuContent
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSongMenuContent
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortOption
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -1374,211 +1377,6 @@ fun StreamingLibraryScreen(
                                         val resolvedArtist = sortedArtists.firstOrNull {
                                             it.name.equals(localSong.artist, ignoreCase = true)
                                         }
-
-                                        // Play
-                                        Surface(
-                                            color = MaterialTheme.colorScheme.surfaceContainer,
-                                            shape = RoundedCornerShape(16.dp),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                                        ) {
-                                            DropdownMenuItem(
-                                                text = {
-                                                    Text(
-                                                        stringResource(id = R.string.action_play),
-                                                        style = MaterialTheme.typography.bodyMedium,
-                                                        fontWeight = FontWeight.Medium,
-                                                        color = MaterialTheme.colorScheme.onSurface
-                                                    )
-                                                },
-                                                leadingIcon = {
-                                                    Surface(
-                                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                                                        shape = CircleShape,
-                                                        modifier = Modifier.size(32.dp)
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = RhythmIcons.Play,
-                                                            contentDescription = null,
-                                                            modifier = Modifier
-                                                                .fillMaxSize()
-                                                                .padding(6.dp)
-                                                        )
-                                                    }
-                                                },
-                                                onClick = {
-                                                    dismissMenu()
-                                                    if (songIndex >= 0) {
-                                                        viewModel.playQueue(
-                                                            queue = sortedSongs,
-                                                            startIndex = songIndex,
-                                                            shuffle = false
-                                                        )
-                                                    }
-                                                }
-                                            )
-                                        }
-
-                                        // Add to queue
-                                        Surface(
-                                            color = MaterialTheme.colorScheme.surfaceContainer,
-                                            shape = RoundedCornerShape(16.dp),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                                        ) {
-                                            DropdownMenuItem(
-                                                text = {
-                                                    Text(
-                                                        "Add to queue",
-                                                        style = MaterialTheme.typography.bodyMedium,
-                                                        fontWeight = FontWeight.Medium,
-                                                        color = MaterialTheme.colorScheme.onSurface
-                                                    )
-                                                },
-                                                leadingIcon = {
-                                                    Surface(
-                                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                                                        shape = CircleShape,
-                                                        modifier = Modifier.size(32.dp)
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = RhythmIcons.Queue,
-                                                            contentDescription = null,
-                                                            modifier = Modifier
-                                                                .fillMaxSize()
-                                                                .padding(6.dp)
-                                                        )
-                                                    }
-                                                },
-                                                onClick = {
-                                                    dismissMenu()
-                                                    sortedSongsById[localSong.id]?.let { streamingSong ->
-                                                        viewModel.playQueue(queue = listOf(streamingSong), startIndex = 0, shuffle = false)
-                                                    }
-                                                }
-                                            )
-                                        }
-
-                                        // Like / Unlike
-                                        Surface(
-                                            color = MaterialTheme.colorScheme.surfaceContainer,
-                                            shape = RoundedCornerShape(16.dp),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                                        ) {
-                                            val streamingSong = sortedSongsById[localSong.id]
-                                            val isLiked = streamingSong != null && likedSongs.any { it.id == streamingSong.id }
-                                            DropdownMenuItem(
-                                                text = {
-                                                    Text(
-                                                        if (isLiked) "Unlike" else "Like",
-                                                        style = MaterialTheme.typography.bodyMedium,
-                                                        fontWeight = FontWeight.Medium,
-                                                        color = MaterialTheme.colorScheme.onSurface
-                                                    )
-                                                },
-                                                leadingIcon = {
-                                                    Surface(
-                                                        color = if (isLiked) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
-                                                            else MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
-                                                        shape = CircleShape,
-                                                        modifier = Modifier.size(32.dp)
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = if (isLiked) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
-                                                            contentDescription = null,
-                                                            modifier = Modifier
-                                                                .fillMaxSize()
-                                                                .padding(6.dp)
-                                                        )
-                                                    }
-                                                },
-                                                onClick = {
-                                                    dismissMenu()
-                                                    streamingSong?.let { s ->
-                                                        if (isLiked) viewModel.unlikeSong(s) else viewModel.likeSong(s)
-                                                    }
-                                                }
-                                            )
-                                        }
-
-                                        // Add to Playlist
-                                        Surface(
-                                            color = MaterialTheme.colorScheme.surfaceContainer,
-                                            shape = RoundedCornerShape(16.dp),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                                        ) {
-                                            DropdownMenuItem(
-                                                text = { Text(stringResource(R.string.content_desc_add_to_playlist), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface) },
-                                                leadingIcon = {
-                                                    Surface(
-                                                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
-                                                        shape = CircleShape,
-                                                        modifier = Modifier.size(32.dp)
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons.AddToPlaylist,
-                                                            contentDescription = null,
-                                                            tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                                                            modifier = Modifier.fillMaxSize().padding(6.dp)
-                                                        )
-                                                    }
-                                                },
-                                                onClick = {
-                                                    dismissMenu()
-                                                    sortedSongsById[localSong.id]?.let { s ->
-                                                        onAddSongToPlaylist(s)
-                                                    }
-                                                }
-                                            )
-                                        }
-
-                                        // Song info
-                                        Surface(
-                                            color = MaterialTheme.colorScheme.surfaceContainer,
-                                            shape = RoundedCornerShape(16.dp),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                                        ) {
-                                            DropdownMenuItem(
-                                                text = {
-                                                    Text(
-                                                        "Song info",
-                                                        style = MaterialTheme.typography.bodyMedium,
-                                                        fontWeight = FontWeight.Medium,
-                                                        color = MaterialTheme.colorScheme.onSurface
-                                                    )
-                                                },
-                                                leadingIcon = {
-                                                    Surface(
-                                                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-                                                        shape = CircleShape,
-                                                        modifier = Modifier.size(32.dp)
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = RhythmIcons.Info,
-                                                            contentDescription = null,
-                                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                            modifier = Modifier
-                                                                .fillMaxSize()
-                                                                .padding(6.dp)
-                                                        )
-                                                    }
-                                                },
-                                                onClick = {
-                                                    dismissMenu()
-                                                    selectedSongForInfo = localSong
-                                                    showSongInfoSheet = true
-                                                }
-                                            )
-                                        }
-
                                         val resolvedAlbum = sortedSongsById[localSong.id]?.let { streamingSong ->
                                             val albumArtist = localSong.albumArtist?.takeIf { it.isNotBlank() } ?: localSong.artist
                                             sortedAlbums.firstOrNull { album ->
@@ -1589,81 +1387,57 @@ fun StreamingLibraryScreen(
                                             }
                                         }
 
-                                        resolvedAlbum?.let { album ->
-                                            // Go to album
-                                            Surface(
-                                                color = MaterialTheme.colorScheme.surfaceContainer,
-                                                shape = RoundedCornerShape(16.dp),
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 8.dp, vertical = 2.dp)
-                                            ) {
-                                                DropdownMenuItem(
-                                                    text = {
-                                                        Text(
-                                                            "Go to album",
-                                                            style = MaterialTheme.typography.bodyMedium,
-                                                            fontWeight = FontWeight.Medium,
-                                                            color = MaterialTheme.colorScheme.onSurface
-                                                        )
-                                                    },
-                                                    leadingIcon = {
-                                                        Surface(
-                                                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-                                                            shape = CircleShape,
-                                                            modifier = Modifier.size(32.dp)
-                                                        ) {
-                                                            Icon(
-                                                                imageVector = RhythmIcons.AlbumFilled,
-                                                                contentDescription = null,
-                                                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                                modifier = Modifier
-                                                                    .fillMaxSize()
-                                                                    .padding(6.dp)
-                                                            )
-                                                        }
-                                                    },
-                                                    onClick = {
-                                                        dismissMenu()
-                                                        openAlbumBottomSheet(album)
-                                                    }
-                                                )
-                                            }
-                                        }
+                                        val streamingSong = sortedSongsById[localSong.id]
+                                        val isLiked = streamingSong != null && likedSongs.any { it.id == streamingSong.id }
 
-                                        // Go to artist
-                                        resolvedArtist?.let { artist ->
-                                            Surface(
-                                                color = MaterialTheme.colorScheme.surfaceContainer,
-                                                shape = RoundedCornerShape(16.dp),
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 8.dp, vertical = 2.dp)
-                                            ) {
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(R.string.multiselectionbottomsheet_go_to_artist), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface) },
-                                                    leadingIcon = {
-                                                        Surface(
-                                                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-                                                            shape = CircleShape,
-                                                            modifier = Modifier.size(32.dp)
-                                                        ) {
-                                                            Icon(
-                                                                imageVector = RhythmIcons.ArtistFilled,
-                                                                contentDescription = null,
-                                                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                                modifier = Modifier.fillMaxSize().padding(6.dp)
-                                                            )
-                                                        }
-                                                    },
-                                                    onClick = {
-                                                        dismissMenu()
-                                                        onNavigateToArtist(artist)
-                                                    }
-                                                )
+                                        RhythmSongMenuContent(
+                                            onPlay = {
+                                                dismissMenu()
+                                                if (songIndex >= 0) {
+                                                    viewModel.playQueue(
+                                                        queue = sortedSongs,
+                                                        startIndex = songIndex,
+                                                        shuffle = false
+                                                    )
+                                                }
+                                            },
+                                            onAddToQueue = {
+                                                dismissMenu()
+                                                sortedSongsById[localSong.id]?.let { s ->
+                                                    viewModel.playQueue(queue = listOf(s), startIndex = 0, shuffle = false)
+                                                }
+                                            },
+                                            isLiked = isLiked,
+                                            onToggleLike = {
+                                                dismissMenu()
+                                                streamingSong?.let { s ->
+                                                    if (isLiked) viewModel.unlikeSong(s) else viewModel.likeSong(s)
+                                                }
+                                            },
+                                            onAddToPlaylist = {
+                                                dismissMenu()
+                                                sortedSongsById[localSong.id]?.let { s ->
+                                                    onAddSongToPlaylist(s)
+                                                }
+                                            },
+                                            onShowSongInfo = {
+                                                dismissMenu()
+                                                selectedSongForInfo = localSong
+                                                showSongInfoSheet = true
+                                            },
+                                            onGoToAlbum = resolvedAlbum?.let { album ->
+                                                {
+                                                    dismissMenu()
+                                                    openAlbumBottomSheet(album)
+                                                }
+                                            },
+                                            onGoToArtist = resolvedArtist?.let { artist ->
+                                                {
+                                                    dismissMenu()
+                                                    onNavigateToArtist(artist)
+                                                }
                                             }
-                                        }
-
+                                        )
                                     },
                                     onRefreshClick = { viewModel.loadLibrary() },
                                     bottomPadding = baseLibraryBottomPadding

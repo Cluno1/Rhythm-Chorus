@@ -49,6 +49,7 @@ import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmSongMenuContent
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -962,204 +963,37 @@ private fun SongTrailingMenu(
             modifier = Modifier
                 .widthIn(min = 220.dp)
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(5.dp),
-            shape = RoundedCornerShape(18.dp)
+                .padding(4.dp),
+            shape = RoundedCornerShape(20.dp)
         ) {
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 2.dp)
-            ) {
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            "Play next",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    },
-                    leadingIcon = {
-                        Surface(
-                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                            shape = CircleShape,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.SkipNext,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(6.dp)
-                            )
-                        }
-                    },
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        showDropdown = false
-                        onPlayNext()
-                    }
-                )
-            }
-
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 2.dp)
-            ) {
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            "Add to queue",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    },
-                    leadingIcon = {
-                        Surface(
-                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                            shape = CircleShape,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Queue,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(6.dp)
-                            )
-                        }
-                    },
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        showDropdown = false
-                        onAddToQueue()
-                    }
-                )
-            }
-
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 2.dp)
-            ) {
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            if (isFavorite) "Remove from favorites" else "Add to favorites",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    },
-                    leadingIcon = {
-                        Surface(
-                            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
-                            shape = CircleShape,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(6.dp)
-                            )
-                        }
-                    },
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        showDropdown = false
-                        onToggleFavorite()
-                    }
-                )
-            }
-
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 2.dp)
-            ) {
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            "Add to playlist",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    },
-                    leadingIcon = {
-                        Surface(
-                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                            shape = CircleShape,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.AddToPlaylist,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(6.dp)
-                            )
-                        }
-                    },
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        showDropdown = false
-                        onAddToPlaylist()
-                    }
-                )
-            }
-
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 2.dp)
-            ) {
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            "Song info",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    },
-                    leadingIcon = {
-                        Surface(
-                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-                            shape = CircleShape,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Info,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(6.dp)
-                            )
-                        }
-                    },
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        showDropdown = false
-                        onShowSongInfo()
-                    }
-                )
-            }
+            RhythmSongMenuContent(
+                onPlayNext = {
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    showDropdown = false
+                    onPlayNext()
+                },
+                onAddToQueue = {
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    showDropdown = false
+                    onAddToQueue()
+                },
+                isFavorite = isFavorite,
+                onToggleFavorite = {
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    showDropdown = false
+                    onToggleFavorite()
+                },
+                onAddToPlaylist = {
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    showDropdown = false
+                    onAddToPlaylist()
+                },
+                onShowSongInfo = {
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    showDropdown = false
+                    onShowSongInfo()
+                }
+            )
         }
     }
 }

@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
@@ -195,33 +196,74 @@ private fun StatsPageContent(
                 EmptyStatsView()
             } else {
                 val stats = statsSummary!!
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(pageScrollState)
-                        .padding(horizontal = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    ListeningOverviewCard(
-                        stats = stats, 
-                        previousStats = previousSummary,
-                        useHoursFormat = useHoursFormat
-                    )
+                val configuration = LocalConfiguration.current
+                val isTablet = configuration.screenWidthDp >= 600
+                if (isTablet) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(pageScrollState)
+                            .padding(horizontal = 24.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(28.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(24.dp)
+                        ) {
+                            ListeningOverviewCard(
+                                stats = stats, 
+                                previousStats = previousSummary,
+                                useHoursFormat = useHoursFormat
+                            )
 
-                    CategoryMetricsSection(
-                        stats = stats, 
-                        artists = artists,
-                        useHoursFormat = useHoursFormat
-                    )
+                            ListeningHabitsCard(
+                                stats = stats,
+                                useHoursFormat = useHoursFormat
+                            )
+                        }
 
-                    ListeningHabitsCard(
-                        stats = stats,
-                        useHoursFormat = useHoursFormat
-                    )
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(24.dp)
+                        ) {
+                            CategoryMetricsSection(
+                                stats = stats, 
+                                artists = artists,
+                                useHoursFormat = useHoursFormat
+                            )
 
-                    RatingStatsCard(viewModel = viewModel)
-                    
-                    Spacer(modifier = Modifier.height(32.dp))
+                            RatingStatsCard(viewModel = viewModel)
+                        }
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(pageScrollState)
+                            .padding(horizontal = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        ListeningOverviewCard(
+                            stats = stats, 
+                            previousStats = previousSummary,
+                            useHoursFormat = useHoursFormat
+                        )
+
+                        CategoryMetricsSection(
+                            stats = stats, 
+                            artists = artists,
+                            useHoursFormat = useHoursFormat
+                        )
+
+                        ListeningHabitsCard(
+                            stats = stats,
+                            useHoursFormat = useHoursFormat
+                        )
+
+                        RatingStatsCard(viewModel = viewModel)
+                        
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
                 }
             }
         }

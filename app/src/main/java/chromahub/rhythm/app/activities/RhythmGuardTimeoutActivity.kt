@@ -9,7 +9,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -76,7 +76,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 
-class RhythmGuardTimeoutActivity : ComponentActivity() {
+class RhythmGuardTimeoutActivity : AppCompatActivity() {
 
     private val appSettings by lazy { AppSettings.getInstance(applicationContext) }
 
@@ -520,7 +520,7 @@ private fun RhythmGuardTimeoutScreen(
                                         stiffness = Spring.StiffnessHigh
                                     ))
                                 }
-                                val activity = context as? ComponentActivity
+                                val activity = context as? AppCompatActivity
                                 activity?.finishAffinity()
                             },
                             modifier = Modifier

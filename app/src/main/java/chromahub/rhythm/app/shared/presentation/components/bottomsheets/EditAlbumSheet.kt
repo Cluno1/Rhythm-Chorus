@@ -132,6 +132,7 @@ fun EditAlbumSheet(
     var isSaving by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
     var isFetchingOnlineArt by remember { mutableStateOf(false) }
+    var showWarningDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -164,7 +165,7 @@ fun EditAlbumSheet(
         else -> resolvedArtworkPreviewUri
     }
 
-    fun submitAlbumChanges() {
+    fun handleSave() {
         if (albumTitle.trim().isBlank()) {
             Toast.makeText(context, "Album Title cannot be empty", Toast.LENGTH_SHORT).show()
             return
@@ -173,7 +174,10 @@ fun EditAlbumSheet(
             Toast.makeText(context, "Album Artist cannot be empty", Toast.LENGTH_SHORT).show()
             return
         }
+        showWarningDialog = true
+    }
 
+    fun proceedWithSave() {
         isSaving = true
         onSave(
             albumTitle.trim(),
@@ -324,16 +328,34 @@ fun EditAlbumSheet(
                                                     val apiService = NetworkClient.ytmusicApiService
                                                     if (apiService != null) {
                                                         val searchQuery = "${albumTitle.trim()} ${albumArtist.trim()}"
-                                                        val searchRequest = YTMusicSearchRequest(
+                                                        var imageUrl: String? = null
+                                                        
+                                                        // Try searching with Album filter first
+                                                        val albumSearchRequest = YTMusicSearchRequest(
                                                             context = YTMusicContext(YTMusicClient()),
                                                             query = searchQuery,
-                                                            params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D"
+                                                            params = "EgWKAQIYAWoKEAoQAxAEEAkQBQ%3D%3D"
                                                         )
-                                                        val response = apiService.search(request = searchRequest)
-                                                        if (response.isSuccessful) {
-                                                            val imageUrl = response.body()?.extractAlbumImageUrl()
-                                                            if (!imageUrl.isNullOrEmpty()) {
-                                                                val okRequest = okhttp3.Request.Builder().url(imageUrl).build()
+                                                        val albumResponse = apiService.search(request = albumSearchRequest)
+                                                        if (albumResponse.isSuccessful) {
+                                                            imageUrl = albumResponse.body()?.extractAlbumImageUrl()
+                                                        }
+                                                        
+                                                        // Fallback to Song filter if album filter yielded nothing
+                                                        if (imageUrl.isNullOrEmpty()) {
+                                                            val songSearchRequest = YTMusicSearchRequest(
+                                                                context = YTMusicContext(YTMusicClient()),
+                                                                query = searchQuery,
+                                                                params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D"
+                                                            )
+                                                            val songResponse = apiService.search(request = songSearchRequest)
+                                                            if (songResponse.isSuccessful) {
+                                                                imageUrl = songResponse.body()?.extractAlbumImageUrl()
+                                                            }
+                                                        }
+
+                                                        if (!imageUrl.isNullOrEmpty()) {
+                                                            val okRequest = okhttp3.Request.Builder().url(imageUrl).build()
                                                                 val okResponse = NetworkClient.genericHttpClient.newCall(okRequest).execute()
                                                                 if (okResponse.isSuccessful) {
                                                                     val bytes = okResponse.body?.bytes()
@@ -362,14 +384,9 @@ fun EditAlbumSheet(
                                                             }
                                                         } else {
                                                             withContext(Dispatchers.Main) {
-                                                                Toast.makeText(context, R.string.songinfobottomsheet_online_search_failed, Toast.LENGTH_SHORT).show()
+                                                                Toast.makeText(context, R.string.songinfobottomsheet_online_api_service_unavailable, Toast.LENGTH_SHORT).show()
                                                             }
                                                         }
-                                                    } else {
-                                                        withContext(Dispatchers.Main) {
-                                                            Toast.makeText(context, R.string.songinfobottomsheet_online_api_service_unavailable, Toast.LENGTH_SHORT).show()
-                                                        }
-                                                    }
                                                 } catch (e: Exception) {
                                                     withContext(Dispatchers.Main) {
                                                         Toast.makeText(context, context.getString(R.string.error_fetching_artwork, e.message ?: ""), Toast.LENGTH_LONG).show()
@@ -550,7 +567,7 @@ fun EditAlbumSheet(
                                             }
 
                                             ExpressiveGroupButton(
-                                                onClick = { submitAlbumChanges() },
+                                                onClick = { handleSave() },
                                                 enabled = !isSaving,
                                                 modifier = Modifier.weight(1f),
                                                 isEnd = true
@@ -751,16 +768,34 @@ fun EditAlbumSheet(
                                                     val apiService = NetworkClient.ytmusicApiService
                                                     if (apiService != null) {
                                                         val searchQuery = "${albumTitle.trim()} ${albumArtist.trim()}"
-                                                        val searchRequest = YTMusicSearchRequest(
+                                                        var imageUrl: String? = null
+                                                        
+                                                        // Try searching with Album filter first
+                                                        val albumSearchRequest = YTMusicSearchRequest(
                                                             context = YTMusicContext(YTMusicClient()),
                                                             query = searchQuery,
-                                                            params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D"
+                                                            params = "EgWKAQIYAWoKEAoQAxAEEAkQBQ%3D%3D"
                                                         )
-                                                        val response = apiService.search(request = searchRequest)
-                                                        if (response.isSuccessful) {
-                                                            val imageUrl = response.body()?.extractAlbumImageUrl()
-                                                            if (!imageUrl.isNullOrEmpty()) {
-                                                                val okRequest = okhttp3.Request.Builder().url(imageUrl).build()
+                                                        val albumResponse = apiService.search(request = albumSearchRequest)
+                                                        if (albumResponse.isSuccessful) {
+                                                            imageUrl = albumResponse.body()?.extractAlbumImageUrl()
+                                                        }
+                                                        
+                                                        // Fallback to Song filter if album filter yielded nothing
+                                                        if (imageUrl.isNullOrEmpty()) {
+                                                            val songSearchRequest = YTMusicSearchRequest(
+                                                                context = YTMusicContext(YTMusicClient()),
+                                                                query = searchQuery,
+                                                                params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D"
+                                                            )
+                                                            val songResponse = apiService.search(request = songSearchRequest)
+                                                            if (songResponse.isSuccessful) {
+                                                                imageUrl = songResponse.body()?.extractAlbumImageUrl()
+                                                            }
+                                                        }
+
+                                                        if (!imageUrl.isNullOrEmpty()) {
+                                                            val okRequest = okhttp3.Request.Builder().url(imageUrl).build()
                                                                 val okResponse = NetworkClient.genericHttpClient.newCall(okRequest).execute()
                                                                 if (okResponse.isSuccessful) {
                                                                     val bytes = okResponse.body?.bytes()
@@ -789,14 +824,9 @@ fun EditAlbumSheet(
                                                             }
                                                         } else {
                                                             withContext(Dispatchers.Main) {
-                                                                Toast.makeText(context, R.string.songinfobottomsheet_online_search_failed, Toast.LENGTH_SHORT).show()
+                                                                Toast.makeText(context, R.string.songinfobottomsheet_online_api_service_unavailable, Toast.LENGTH_SHORT).show()
                                                             }
                                                         }
-                                                    } else {
-                                                        withContext(Dispatchers.Main) {
-                                                            Toast.makeText(context, R.string.songinfobottomsheet_online_api_service_unavailable, Toast.LENGTH_SHORT).show()
-                                                        }
-                                                    }
                                                 } catch (e: Exception) {
                                                     withContext(Dispatchers.Main) {
                                                         Toast.makeText(context, context.getString(R.string.error_fetching_artwork, e.message ?: ""), Toast.LENGTH_LONG).show()
@@ -891,7 +921,7 @@ fun EditAlbumSheet(
                     }
 
                     ExpressiveGroupButton(
-                        onClick = { submitAlbumChanges() },
+                        onClick = { handleSave() },
                         enabled = !isSaving,
                         modifier = Modifier.weight(1f),
                         isEnd = true
@@ -909,5 +939,73 @@ fun EditAlbumSheet(
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
+    }
+
+    if (showWarningDialog) {
+        AlertDialog(
+            onDismissRequest = { showWarningDialog = false },
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.bottomsheet_irreversible))
+                }
+            },
+            text = {
+                Column {
+                    Text(
+                        "The changes you're about to make will permanently modify the audio files' metadata.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "This action cannot be undone. Make sure you have a backup if needed.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showWarningDialog = false
+                        proceedWithSave()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.Warning,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.bottomsheet_proceed))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { 
+                        showWarningDialog = false
+                    }
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.Close,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.ui_cancel))
+                }
+            }
+        )
     }
 }

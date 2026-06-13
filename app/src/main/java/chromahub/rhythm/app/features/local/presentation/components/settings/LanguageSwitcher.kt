@@ -61,17 +61,29 @@ object LanguageHelper {
     )
     
     fun getCurrentLanguage(context: Context): String {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val locale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val localeManager = context.getSystemService(Context.LOCALE_SERVICE) as? LocaleManager
-            localeManager?.applicationLocales?.get(0)?.language ?: Locale.getDefault().language
+            localeManager?.applicationLocales?.get(0) ?: Locale.getDefault()
         } else {
             val locales = AppCompatDelegate.getApplicationLocales()
             if (locales.isEmpty) {
-                Locale.getDefault().language
+                Locale.getDefault()
             } else {
-                locales.get(0)?.language ?: Locale.getDefault().language
+                locales.get(0) ?: Locale.getDefault()
             }
         }
+        
+        val languageTag = locale.toLanguageTag()
+        // Try to match the exact language tag (e.g. fr-CA, pt-BR, zh-TW)
+        val exactMatch = supportedLanguages.firstOrNull { it.code.equals(languageTag, ignoreCase = true) }
+        if (exactMatch != null) return exactMatch.code
+        
+        // Try to match by language code (e.g. fr, pt, zh)
+        val languageCode = locale.language
+        val codeMatch = supportedLanguages.firstOrNull { it.code.equals(languageCode, ignoreCase = true) }
+        if (codeMatch != null) return codeMatch.code
+        
+        return "en" // default fallback
     }
     
     fun setLanguage(context: Context, languageCode: String) {

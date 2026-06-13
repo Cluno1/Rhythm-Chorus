@@ -1239,10 +1239,12 @@ object MediaUtils {
 
                     // Get the file extension to preserve format
                     val fileName = song.title.replace("[^a-zA-Z0-9.-]".toRegex(), "_")
-                    val extension = filePath?.substringAfterLast('.', "mp3") ?: "mp3"
+                    val extension = filePath?.substringAfterLast('.', "")?.takeIf { it.isNotEmpty() }
+                        ?: song.uri.lastPathSegment?.substringAfterLast('.', "")?.takeIf { it.isNotEmpty() }
+                        ?: "mp3"
                     val tempFile = File(
                         context.cacheDir,
-                        "temp_audio_${System.currentTimeMillis()}.$extension"
+                        "temp_audio_${java.util.UUID.randomUUID()}.$extension"
                     )
 
                     try {
