@@ -35,7 +35,8 @@ Complete guide to all features and capabilities in Rhythm Music Player.
 ### Modern UI Components
 - Edge-to-edge design with gesture navigation
 - Smooth animations and transitions
-- Responsive layouts for phones, tablets, and foldables
+- **Responsive layouts for phones, tablets, and foldables** — tablet-optimized multi-pane layout
+- **Material Symbols**: Variable-weight icon font for crisp, scalable icons
 - Split-screen and multi-window support
 - Adaptive icons and dynamic shortcuts
 
@@ -44,6 +45,8 @@ Complete guide to all features and capabilities in Rhythm Music Player.
 
 ### LRCLib Integration
 - **Real-time Lyrics**: Word-by-word synchronized highlighting
+- **Full-Screen View**: Immersive lyrics experience — tap to expand
+- **Lyrics Widget**: Home screen widget showing current track lyrics
 - **Community Database**: Access to thousands of synced lyrics
 - **Karaoke Mode**: Follow along with precise timing
 - **Seek by Tapping**: Jump to specific lyrics timestamp
@@ -74,6 +77,16 @@ Complete guide to all features and capabilities in Rhythm Music Player.
 - **Profile Search**: Find presets by brand and model
 - **Device Management**: Save and organize your audio devices
 
+### Replay Gain
+- **Album Gain**: Maintains dynamic range within albums
+- **Track Gain**: Normalizes perceived loudness per song
+- **Configured in**: Settings → Audio → Replay Gain
+
+### Crossfade
+- **Smooth Transitions**: Blends the end of one track into the start of the next
+- **Adjustable Duration**: 1–12 seconds
+- **Configured in**: Settings → Audio → Crossfade
+
 ### Audio Effects
 - **Bass Boost**: Enhance low frequencies (0-1000)
 - **Virtualizer/Spatial Audio**: 3D sound effect
@@ -90,6 +103,11 @@ Complete guide to all features and capabilities in Rhythm Music Player.
 - **Playlists**: Custom and auto-generated playlists
 - **Genres**: Genre-based categorization
 - **Folders**: File system browser
+
+### A–Z Scroll Bar
+- **Alphabetical Navigation**: Drag along letter strip to jump to songs, albums, or artists
+- **Auto-appears**: When library exceeds threshold
+- **Configured in**: Settings → Library → Scroll Bar
 
 ### Search & Library Exploration
 - **Instant Search**: Real-time results across all categories
@@ -135,19 +153,24 @@ Rhythm includes a dedicated safety system to protect your hearing:
 
 Beyond local playback, Rhythm supports a complete streaming ecosystem:
 - **Dual-Mode Architecture**: Seamlessly switch between Local and Streaming modes.
-- **Server Integration**: Connect to external streaming servers for your music.
+- **Server Integration**: Connect to external streaming servers (Subsonic, Navidrome, Jellyfin).
 - **Dedicated UI**: Specialized streaming library and player views.
+- **Nearby Server Discovery**: Automatically discover Subsonic-compatible servers on your local network — no manual address entry needed.
+- **Rhythm Go**: Download tracks from your streaming server for offline playback. Perfect for commuting, flights, or areas with limited connectivity. Downloaded tracks appear in a dedicated "Downloaded" section. Configure in Settings → Streaming → Rhythm Go.
 ---
 ## 📊 Playback Statistics
 
 
-### Rhythm Stats
+### Rhythm Stats 2.0
+- **Overview**: Total play count, listening time, top genres
+- **Songs**: Most played tracks
+- **Albums**: Most played albums
+- **Artists**: Favorite artists ranking
+- **History**: Recent plays with timestamps
+- **Yearly Reset**: Stats reset at start of each year with summary notification
 - **Play Count**: Track listening frequency
 - **Total Playtime**: Accumulated listening hours
-- **Most Played**: Top songs, albums, artists
-- **Recently Played**: Listening history
 - **Skip Rate**: Track skip statistics
-- **Listening Trends**: Visualize habits over time
 
 ### Listening Insights
 - Daily, weekly, monthly breakdowns
@@ -167,6 +190,11 @@ Beyond local playback, Rhythm supports a complete streaming ecosystem:
 - **Playback Controls**: Play/pause, skip controls
 - **Album Art**: Dynamic artwork display
 - **Customizable**: Corner radius and transparency settings
+
+### Lyrics Widget
+- **Home Screen**: Display current track lyrics at a glance
+- **Real-time Updates**: Synced with playback position
+- **Compact Layout**: Minimal footprint while showing full text
 
 ### Legacy Widgets
 - **7 RemoteViews Layouts**: Including 5x5 size
@@ -307,6 +335,7 @@ Beyond local playback, Rhythm supports a complete streaming ecosystem:
 - Double-tap: Play/pause
 - Long-press: Context menu
 - Drag album art: Seek
+- Tap lyrics timestamp: Seek to that point in the song
 
 ### Library Gestures
 - Pull-to-refresh: Rescan library

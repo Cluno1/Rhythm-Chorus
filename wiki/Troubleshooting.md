@@ -40,7 +40,7 @@ Before diving into specific issues, try these general fixes:
 4. **Re-scan media:**
    - Rhythm → Settings → Library → Rescan Media
    - Wait for scan to complete
-   - **v4.2+:** Rhythm now performs a **full scan** (not incremental), so a rescan after moving/adding files should reliably pick up all songs
+   - Rhythm performs a **full scan** to reliably pick up all changes
 
 ### Notification Controls Not Working
 
@@ -482,6 +482,7 @@ Share logs in [GitHub Issues](https://github.com/cromaguy/Rhythm/issues) for deb
 
 ### Community Support
 - **[Telegram Group](https://t.me/RhythmSupport)**: Live community help
+- **[Discord Server](https://discord.gg/XjPyUYPQYc)**: Community chat
 - **[GitHub Discussions](https://github.com/cromaguy/Rhythm/discussions)**: Q&A forum
 
 ### Bug Reports

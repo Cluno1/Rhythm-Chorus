@@ -10,7 +10,7 @@ This document details the technical architecture and libraries used in Rhythm Mu
 |:---|:---|
 | **Jetpack Compose** | Modern declarative UI toolkit for Android |
 | **Material 3** | Material Design components and theming system |
-| **Material Icons Extended** | Comprehensive icon library |
+| **Material Symbols Variable Font** | Custom static font asset replacing deprecated material-icons-extended |
 | **AndroidX Palette** | Dynamic color extraction from images |
 
 ### Audio & Media
@@ -87,49 +87,35 @@ This document details the technical architecture and libraries used in Rhythm Mu
 ### Project Structure
 
 ```
-app/
-├── ui/                          # UI Layer
-│   ├── screens/                 # Screen Composables
-│   │   ├── home/               # Home screen
-│   │   ├── player/             # Player screen
-│   │   ├── library/            # Library screen
-│   │   ├── search/             # Search screen
-│   │   └── settings/           # Settings screen
-│   ├── components/             # Reusable UI components
-│   ├── navigation/             # Navigation graph
-│   ├── theme/                  # Material 3 theming
-│   └── viewmodels/             # ViewModels
-│
-├── domain/                      # Domain Layer
-│   ├── models/                 # Data models
-│   │   ├── Song.kt
-│   │   ├── Album.kt
-│   │   ├── Artist.kt
-│   │   └── Playlist.kt
-│   ├── repository/             # Repository interfaces
-│   └── usecases/               # Business logic use cases
-│
-├── data/                        # Data Layer
-│   ├── local/                  # Local data sources
-│   │   ├── mediastore/        # MediaStore integration
-│   │   └── preferences/       # SharedPreferences/DataStore
-│   ├── remote/                 # Remote data sources
-│   │   ├── lrclib/            # LRCLib API
-│   │   └── deezer/            # Deezer API
-│   └── repository/             # Repository implementations
-│
-├── services/                    # Background Services
-│   ├── MusicService.kt         # Playback service
-│   └── MediaNotification.kt    # Notification handler
-│
-├── widgets/                     # Home Screen Widgets
-│   ├── glance/                 # Modern Glance widgets
-│   └── legacy/                 # RemoteViews widgets
-│
-└── utils/                       # Utility classes
-    ├── Extensions.kt
-    ├── Constants.kt
-    └── Helpers.kt
+app/src/main/java/chromahub/rhythm/app/
+├── activities/                  # Main Android activities (e.g. MainActivity.kt)
+├── core/                        # Core Shared Business/Domain Logic
+│   └── domain/
+│       ├── model/               # Core domain entities (Song, Album, Artist, Playlist)
+│       ├── repository/          # Core repository interfaces
+│       └── usecase/             # Core business use cases
+├── features/                    # Feature Modules
+│   ├── local/                   # Local media playback feature (Clean Architecture)
+│   │   ├── data/                # Local repositories, room database, MediaStore integration
+│   │   ├── di/                  # Local dependency injection configs
+│   │   ├── domain/              # Local use cases and business logic
+│   │   └── presentation/        # Local screens, viewmodels, themes, and views
+│   └── streaming/               # Streaming server client feature (Clean Architecture)
+│       ├── data/                # Remote repositories and networking clients
+│       ├── di/                  # Streaming dependency injection configs
+│       ├── domain/              # Streaming use cases
+│       └── presentation/        # Streaming screens and viewmodels
+├── infrastructure/              # Base Infrastructure layer
+│   ├── audio/                   # ExoPlayer setup, controller, and FFmpeg configuration
+│   ├── network/                 # Retrofit, OkHttp, and REST API definitions
+│   ├── service/                 # MusicService.kt & background media session handlers
+│   ├── widget/                  # Glance app widget definitions
+│   └── worker/                  # WorkManager background sync/scan workers
+├── shared/                      # Shared Cross-Cutting Presentation/Domain/Data components
+│   ├── data/
+│   ├── domain/
+│   └── presentation/            # Shared UI elements, color themes, styling, and custom icons
+└── util/ & utils/               # General utility files and extension functions
 ```
 
 ## 📦 Libraries & Dependencies
@@ -139,13 +125,14 @@ app/
 ```kotlin
 // Core
 androidx.core:core-ktx
+androidx.core:core-splashscreen
 androidx.lifecycle:lifecycle-runtime-ktx
 androidx.lifecycle:lifecycle-viewmodel-compose
+androidx.fragment:fragment-ktx
 
 // Compose
 androidx.compose.ui:ui
 androidx.compose.material3:material3
-androidx.compose.material:material-icons-extended
 androidx.compose.ui:ui-tooling
 
 // Navigation
@@ -159,6 +146,10 @@ androidx.media3:media3-ui
 // Widgets
 androidx.glance:glance-appwidget
 androidx.work:work-runtime-ktx
+
+// Room Database
+androidx.room:room-runtime
+androidx.room:room-ktx
 
 // Other
 androidx.palette:palette-ktx
@@ -247,7 +238,7 @@ class MusicRepositoryImpl(
 │                                     │
 │  ┌──────────────────────────────┐  │
 │  │      ExoPlayer               │  │
-│  │  • Media3 ExoPlayer 1.9.2    │  │
+│  │  • Media3 ExoPlayer 1.10.1   │  │
 │  │  • FFmpeg decoder extension  │  │
 │  │  • Gapless playback          │  │
 │  │  • Audio focus handling      │  │
@@ -324,19 +315,21 @@ class WidgetUpdateWorker : CoroutineWorker() {
 // build.gradle.kts
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
     id("kotlin-parcelize")
 }
 
 android {
     namespace = "chromahub.rhythm.app"
-    compileSdk = <latest>
+    compileSdk = 37
     
     defaultConfig {
         applicationId = "chromahub.rhythm.app"
-        minSdk = <min_sdk>
-        targetSdk = <latest>
+        minSdk = 26
+        targetSdk = 37
+        versionCode = 514081066
+        versionName = "5.1.408.1066"
     }
     
     buildFeatures {
@@ -344,8 +337,14 @@ android {
         buildConfig = true
     }
     
-    composeOptions {
-        kotlinCompilerExtensionVersion = "<version>"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            freeCompilerArgs.addAll(
+                "-opt-in=androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
+                "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+            )
+        }
     }
 }
 ```
@@ -355,15 +354,17 @@ android {
 ```toml
 # gradle/libs.versions.toml
 [versions]
-kotlin = "<version>"
-compose = "<version>"
-material3 = "<version>"
-exoplayer = "<version>"
+agp = "9.2.1"
+kotlin = "2.3.21"
+ksp = "2.3.6"
+composeBom = "2026.05.01"
+material3 = "1.5.0-alpha20"
+media3 = "1.10.1"
 
 [libraries]
-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "exoplayer" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3" }
+androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
 ```
 
 ## 🧪 Testing (Planned)
@@ -415,4 +416,4 @@ class PlayerViewModelTest {
 
 ---
 
-**Want to contribute?** Check the [Contributing Guide](https://github.com/cromaguy/Rhythm/wiki/Contributing)!
+**Want to contribute?** Check the [Contributing Guide](https://github.com/cromaguy/Rhythm/wiki/Contributing)! Questions? Ask in [Telegram](https://t.me/RhythmSupport) or [Discord](https://discord.gg/XjPyUYPQYc).

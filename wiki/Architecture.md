@@ -202,15 +202,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 // build.gradle.kts
 android {
     namespace = "chromahub.rhythm.app"
-    compileSdk = <latest>
+    compileSdk = 37
     
     defaultConfig {
         applicationId = "chromahub.rhythm.app"
-        minSdk = <min_sdk>
-        targetSdk = <latest>
-        versionCode = <version_code>
-        versionName = "<version_name>"
-
+        minSdk = 26
+        targetSdk = 37
+        versionCode = 514081066
+        versionName = "5.1.408.1066"
     }
     
     buildFeatures {
@@ -224,13 +223,13 @@ android {
 
 ```toml
 [versions]
-kotlin = "<version>"
-compose = "<version>"
-exoplayer = "<version>"
+kotlin = "2.3.21"
+composeBom = "2026.05.01"
+media3 = "1.10.1"
 
 [libraries]
-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "exoplayer" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
 ```
 
 ---
@@ -267,4 +266,4 @@ media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = 
 
 ---
 
-**Questions?** Check [Contributing Guide](https://github.com/cromaguy/Rhythm/wiki/Contributing) or ask in [Telegram](https://t.me/RhythmSupport)!
+**Questions?** Check [Contributing Guide](https://github.com/cromaguy/Rhythm/wiki/Contributing) or ask in [Telegram](https://t.me/RhythmSupport) or [Discord](https://discord.gg/XjPyUYPQYc)!

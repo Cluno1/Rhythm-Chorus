@@ -60,6 +60,14 @@ Common reasons:
 
 Yes! Gapless playback works for FLAC, MP3, AAC, and Opus formats.
 
+### What is Replay Gain?
+
+Replay Gain normalizes the perceived loudness of your music. Choose **Album Gain** to maintain dynamic range within albums, or **Track Gain** for consistent loudness across all songs. Configure in Settings → Audio → Replay Gain.
+
+### Does Rhythm support crossfade?
+
+Yes! Crossfade smoothly blends the end of one track into the start of the next with an adjustable duration of 1–12 seconds. Configure in Settings → Audio → Crossfade.
+
 ### Can I use the equalizer?
 
 Yes! Rhythm includes:
@@ -143,11 +151,13 @@ Yes! Core functionality works without internet:
 - Playlists
 - Equalizer
 - Widgets
+- **Rhythm Go** downloaded streaming tracks
 
 Internet only needed for:
 - Online lyrics (LRCLib)
 - Album artwork fetch (Deezer)
 - App updates
+- Streaming Mode server connection
 
 ---
 
@@ -176,6 +186,7 @@ Yes! Android Auto is supported in Rhythm.
 Yes! Multiple widgets available:
 - **Glance widgets**: 6 responsive Material 3 layouts (2x1 to 4x4)
 - **Legacy widgets**: 7 RemoteViews layouts (2x1 to 5x5)
+- **Lyrics widget**: Display current song lyrics on home screen
 - **Real-time updates**
 - **Playback controls**
 - **Customizable appearance**
@@ -187,7 +198,16 @@ Yes! Comprehensive theming:
 - Material You dynamic colors (Android 12+)
 - Custom color schemes
 - Font selection
+- Material Symbols icons
 - Festive seasonal themes
+
+### Is there an A–Z scroll bar?
+
+Yes! When your library exceeds a threshold, an alphabetical scroll bar appears on the right side of Songs, Albums, and Artists tabs. Drag your finger along the letters to jump to items starting with that letter.
+
+### What is Rhythm Go?
+
+Rhythm Go lets you download tracks from your streaming server (Subsonic, Navidrome, Jellyfin) for offline playback. Downloaded tracks appear in a dedicated section and work without internet access. Configure in Settings → Streaming → Rhythm Go.
 
 ---
 
@@ -307,10 +327,11 @@ Yes, under GPL-3.0 terms:
 
 ### Does Rhythm work on tablets?
 
-Yes! Rhythm has responsive design for:
-- Phones
-- Tablets
-- Foldables
+Yes! Rhythm has optimized **multi-pane layouts** for tablets:
+- Library on the left, content on the right
+- Optimized player, settings, and library views
+- Portrait and landscape support
+- Also works on foldables
 
 ### Does it support split-screen?
 
@@ -323,6 +344,7 @@ Yes, Rhythm works in split-screen/multi-window mode.
 ### Where can I get support?
 
 - **[Telegram Community](https://t.me/RhythmSupport)** - Live help
+- **[Discord Server](https://discord.gg/XjPyUYPQYc)** - Community chat
 - **[GitHub Discussions](https://github.com/cromaguy/Rhythm/discussions)** - Q&A forum
 - **[GitHub Issues](https://github.com/cromaguy/Rhythm/issues)** - Bug reports
 - **[Wiki](https://github.com/cromaguy/Rhythm/wiki)** - Documentation

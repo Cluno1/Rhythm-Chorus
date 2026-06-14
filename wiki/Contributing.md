@@ -393,6 +393,7 @@ Before submitting PR, verify:
 
 **Get Help:**
 - [Telegram Community](https://t.me/RhythmSupport) - Live chat
+- [Discord Server](https://discord.gg/XjPyUYPQYc) - Community chat
 - [GitHub Discussions](https://github.com/cromaguy/Rhythm/discussions) - Q&A
 - [GitHub Issues](https://github.com/cromaguy/Rhythm/issues) - Specific issues
 

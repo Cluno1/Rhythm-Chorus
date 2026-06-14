@@ -111,8 +111,8 @@ After installation:
    - Optional: Bluetooth for wireless audio
 
 2. **Complete Onboarding**
-   - Follow the 14-step setup wizard
-   - Configure your preferences
+   - Follow the setup wizard
+   - Configure your preferences (mode, permissions, theme)
    - Allow initial media scan
 
 3. **Start Listening!**

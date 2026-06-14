@@ -64,6 +64,44 @@ const updateData = {
             <p><strong>Here's to many more years of beautiful music and innovation! 🎵✨</strong></p>
         `
     },
+    update51: {
+        image: "assets/Posts/Rhythm_5.1_Release.png",
+        headline: "Rhythm 5.1: The Refinement Update ✨",
+        date: "June 14, 2026",
+        writer: "Anjishnu Nandi",
+        details: `
+            <p>Rhythm 5.1 is here, bringing a massive wave of refinements, fixes, and new features based on your feedback. This release focuses on polishing the experience across all device form factors.</p>
+            
+            <h3>📱 Improved Tablet & Foldable Experience</h3>
+            <p>The entire UI has been reworked for larger screens. Bottom sheets, player screens, library layouts, and navigation all adapt beautifully to tablets and foldables.</p>
+            
+            <h3>🆕 What's New</h3>
+            <ul>
+                <li>📜 <strong>A-Z Scroll Bar</strong> - Jump to any letter instantly in your library with the new expressive scroll bar.</li>
+                <li>🎵 <strong>Rhythm Lyrics Widget</strong> - A brand-new Glance widget that displays synced lyrics right on your home screen.</li>
+                <li>🔍 <strong>Nearby Server Discovery</strong> - Automatically discover Rhythm Go servers on your network.</li>
+                <li>🎚️ <strong>Replay Gain</strong> - Experimental support for volume normalization across tracks.</li>
+                <li>🖼️ <strong>Local Artist Images</strong> - Assign and display artist images from your local storage.</li>
+            </ul>
+            
+            <h3>🐛 Bug Fixes</h3>
+            <ul>
+                <li>🔧 Equalizer unresponsiveness fixed (#411)</li>
+                <li>📋 Playlists no longer disappear after restart (#414)</li>
+                <li>🔀 Turning off shuffle no longer briefly stops playback (#287)</li>
+                <li>💾 Backup & Restore now properly restores play counts (#419)</li>
+                <li>🛡️ Whitelist scan mode now works reliably (#405)</li>
+                <li>🖼️ Embedded album art displays correctly for WAV with ID3 tags (#409, #407)</li>
+                <li>🔤 Song titles with apostrophes and periods render correctly (#401)</li>
+                <li>🔁 Restored missing translation strings across all 24 languages</li>
+            </ul>
+            
+            <h3>🌍 Translations</h3>
+            <p>All 24 languages have been updated with the latest strings. AI-generated translations have been refreshed. We're preparing to move to Weblate for community-driven translations — stay tuned!</p>
+            
+            <p><strong>Download Rhythm 5.1 now from GitHub or your preferred source!</strong></p>
+        `
+    },
     update15: {
         image: "assets/Posts/Rhythm_5_Release.png",
         headline: "Rhythm 5: The Streaming Revolution 🌐",
@@ -287,6 +325,65 @@ function setupNewsCarousel() {
     startNewsAutoScroll(); // Start auto-scrolling on load
 }
 
+// Screenshot data
+const phoneScreenshots = [
+    { file: 'Home.png', label: 'Smart Home' },
+    { file: 'Home2.png', label: 'Home Screen 2' },
+    { file: 'Home3.png', label: 'Home Screen 3' },
+    { file: 'Player.png', label: 'Now Playing' },
+    { file: 'Player_2.png', label: 'Player Controls' },
+    { file: 'Player_Lyrics_View.png', label: 'Synced Lyrics' },
+    { file: 'Queue.png', label: 'Smart Queue' },
+    { file: 'Search.png', label: 'Instant Search' },
+    { file: 'Playlist.png', label: 'Playlists' },
+    { file: 'Settings.png', label: 'Deep Settings' },
+    { file: 'Artist.png', label: 'Artist Pages' },
+    { file: 'Equalizer.png', label: '10-Band Equalizer' },
+    { file: 'AutoEQ.png', label: 'AutoEQ Presets' },
+    { file: 'Playback.png', label: 'Device Output' },
+    { file: 'Sleep_Timer.png', label: 'Sleep Timer' },
+    { file: 'Rhythm_Stats.png', label: 'Playback Stats' },
+    { file: 'Tour.png', label: 'App Tour' },
+    { file: 'Modes.png', label: 'App Modes' },
+    { file: 'Shapes.png', label: 'Adaptive Shapes' },
+    { file: 'Edit_Metadata.png', label: 'Metadata Editor' },
+    { file: 'Song_Info.png', label: 'Song Information' },
+    { file: 'Language_Switcher.png', label: 'Language Switcher' },
+    { file: 'Multi-Selection.png', label: 'Multi Selection' },
+    { file: 'Full_Screen_Lyrics_View.png', label: 'Full Screen Lyrics' },
+    { file: 'About.png', label: 'About Rhythm' },
+    { file: 'Updater.png', label: 'In-App Updater' },
+];
+
+const tabletScreenshots = [
+    { file: 'Player.png', label: 'Now Playing' },
+    { file: 'Player_Artist.png', label: 'Artist Now Playing' },
+    { file: 'Lyrics_View.png', label: 'Synced Lyrics' },
+    { file: 'Album.png', label: 'Album Detail' },
+    { file: 'Library.png', label: 'Rich Library' },
+    { file: 'Search.png', label: 'Instant Search' },
+    { file: 'Rhythm_Stats.png', label: 'Playback Stats' },
+    { file: 'Settings.png', label: 'Deep Settings' },
+    { file: 'About.png', label: 'About Rhythm' },
+    { file: 'Tour.png', label: 'App Tour' },
+    { file: 'Tour_Step.png', label: 'Tour Detail' },
+    { file: 'Updater.png', label: 'In-App Updater' },
+];
+
+let currentShowcaseView = 'phone';
+
+function populateShowcaseTrack(view) {
+    const track = document.getElementById('showcase-carousel-track');
+    if (!track) return;
+    currentShowcaseView = view;
+    const data = view === 'phone' ? phoneScreenshots : tabletScreenshots;
+    track.innerHTML = data.map(item =>
+        `<div class="showcase-carousel-item">
+            <img src="assets/ScreenShots/${view}/${item.file}" alt="${item.label}" loading="lazy">
+        </div>`
+    ).join('');
+}
+
 // Showcase Carousel Functionality (for index.html)
 function setupShowcaseCarousel() {
     const showcaseCarouselTrack = document.getElementById('showcase-carousel-track');
@@ -295,28 +392,24 @@ function setupShowcaseCarousel() {
     const showcaseNextBtn = document.querySelector('.showcase-next-btn');
 
     if (!showcaseCarouselTrack || !showcaseCarouselContainer || !showcasePrevBtn || !showcaseNextBtn) {
-        return; // Exit if showcase carousel elements are not found
+        return;
     }
 
-    const showcaseSlides = document.querySelectorAll('.showcase-carousel-item');
     let showcaseSlideIndex = 0;
 
     function getShowcaseSlidesPerView() {
-        if (window.innerWidth >= 992) {
-            return 3;
-        } else if (window.innerWidth >= 768) {
-            return 2;
-        } else {
-            return 1;
-        }
+        if (window.innerWidth >= 992) return 3;
+        if (window.innerWidth >= 768) return 2;
+        return 1;
     }
 
     function updateShowcaseCarousel() {
+        const slides = document.querySelectorAll('.showcase-carousel-item');
         const slidesPerView = getShowcaseSlidesPerView();
-        const totalSlides = showcaseSlides.length;
+        const totalSlides = slides.length;
         const slideWidth = showcaseCarouselContainer.offsetWidth / slidesPerView;
 
-        showcaseSlides.forEach(slide => {
+        slides.forEach(slide => {
             slide.style.flex = `0 0 ${100 / slidesPerView}%`;
         });
 
@@ -332,8 +425,9 @@ function setupShowcaseCarousel() {
     }
 
     function showShowcaseSlide(index) {
+        const slides = document.querySelectorAll('.showcase-carousel-item');
         const slidesPerView = getShowcaseSlidesPerView();
-        const totalSlides = showcaseSlides.length;
+        const totalSlides = slides.length;
 
         showcaseSlideIndex = index;
 
@@ -354,36 +448,66 @@ function setupShowcaseCarousel() {
     });
 
     window.addEventListener('resize', updateShowcaseCarousel);
-    updateShowcaseCarousel(); // Initial update
-    showShowcaseSlide(0); // Initialize to the first slide
+    updateShowcaseCarousel();
+    showShowcaseSlide(0);
 
-    // Auto-scroll functionality for showcase carousel
     let showcaseAutoScrollInterval;
     function startShowcaseAutoScroll() {
+        stopShowcaseAutoScroll();
         showcaseAutoScrollInterval = setInterval(() => {
             showShowcaseSlide(showcaseSlideIndex + 1);
-        }, 5000); // Change slide every 5 seconds
+        }, 5000);
     }
 
     function stopShowcaseAutoScroll() {
         clearInterval(showcaseAutoScrollInterval);
     }
 
-    // Pause auto-scroll on hover
     showcaseCarouselContainer.addEventListener('mouseenter', stopShowcaseAutoScroll);
     showcaseCarouselContainer.addEventListener('mouseleave', startShowcaseAutoScroll);
 
-    // Restart auto-scroll when manually navigating
-    showcasePrevBtn.addEventListener('click', () => {
-        stopShowcaseAutoScroll();
-        startShowcaseAutoScroll();
-    });
-    showcaseNextBtn.addEventListener('click', () => {
-        stopShowcaseAutoScroll();
-        startShowcaseAutoScroll();
-    });
+    showcasePrevBtn.addEventListener('click', () => { stopShowcaseAutoScroll(); startShowcaseAutoScroll(); });
+    showcaseNextBtn.addEventListener('click', () => { stopShowcaseAutoScroll(); startShowcaseAutoScroll(); });
 
-    startShowcaseAutoScroll(); // Start auto-scrolling on load
+    startShowcaseAutoScroll();
+}
+
+// View toggle
+function setupViewToggle() {
+    const toggleBtns = document.querySelectorAll('.view-toggle-btn');
+    if (!toggleBtns.length) return;
+
+    toggleBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            toggleBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const view = btn.dataset.view;
+            populateShowcaseTrack(view);
+            // Reset and refresh carousel
+            const showcaseCarouselTrack = document.getElementById('showcase-carousel-track');
+            if (showcaseCarouselTrack) {
+                showcaseCarouselTrack.style.transform = 'translateX(0)';
+            }
+            // Re-setup screenshot popup for new images
+            if (window.showcaseAutoScrollInterval) {
+                clearInterval(window.showcaseAutoScrollInterval);
+            }
+            // Re-bind popup click listeners
+            rebindScreenshotPopup();
+        });
+    });
+}
+
+function rebindScreenshotPopup() {
+    const slides = document.querySelectorAll('.showcase-carousel-item img');
+    slides.forEach((slide, index) => {
+        slide.addEventListener('click', () => {
+            if (window.showScreenshotPopup) {
+                window.showScreenshotPopup(index);
+            }
+        });
+        slide.style.cursor = 'pointer';
+    });
 }
 
 // Screenshot Popup Functionality (for index.html)
@@ -392,7 +516,7 @@ function setupScreenshotPopup() {
     const screenshotPopupImage = document.getElementById('screenshot-popup-image');
     const screenshotTitle = document.getElementById('screenshot-title');
     const screenshotCounter = document.getElementById('screenshot-counter');
-    const closeScreenshotPopupBtn = document.querySelector('.close-screenshot-popup-btn');
+    const closeScreenshotPopupBtn = document.getElementById('screenshot-close-btn');
     const zoomInBtn = document.getElementById('zoom-in-btn');
     const zoomOutBtn = document.getElementById('zoom-out-btn');
     const zoomResetBtn = document.getElementById('zoom-reset-btn');
@@ -405,7 +529,6 @@ function setupScreenshotPopup() {
     }
 
     // Get all showcase carousel items
-    const showcaseSlides = document.querySelectorAll('.showcase-carousel-item img');
     let currentScreenshotIndex = 0;
     let currentZoom = 1;
     const minZoom = 0.5;
@@ -414,18 +537,9 @@ function setupScreenshotPopup() {
     let isPanning = false;
     let startX, startY, initialX, initialY;
 
-    // Function to get screenshot title from alt text or filename
+    // Function to get screenshot title from alt text
     function getScreenshotTitle(imgElement) {
-        const altText = imgElement.alt;
-        const src = imgElement.src;
-        const filename = src.split('/').pop().replace('.png', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-        // Use alt text if it exists and is not generic, otherwise format filename
-        if (altText && altText !== 'Screenshot' && altText.includes('Screen')) {
-            return altText;
-        } else {
-            return filename;
-        }
+        return imgElement.alt || 'Screenshot';
     }
 
     // Function to update zoom level display
@@ -463,11 +577,17 @@ function setupScreenshotPopup() {
         updateZoomDisplay();
     }
 
+    // Function to get current slides
+    function getCurrentSlides() {
+        return document.querySelectorAll('.showcase-carousel-item img');
+    }
+
     // Function to show screenshot popup
     function showScreenshotPopup(index) {
-        if (index >= 0 && index < showcaseSlides.length) {
+        const slides = getCurrentSlides();
+        if (index >= 0 && index < slides.length) {
             currentScreenshotIndex = index;
-            const imgElement = showcaseSlides[index];
+            const imgElement = slides[index];
             const imgSrc = imgElement.src;
             const imgAlt = imgElement.alt;
             const title = getScreenshotTitle(imgElement);
@@ -476,12 +596,12 @@ function setupScreenshotPopup() {
             screenshotPopupImage.src = imgSrc;
             screenshotPopupImage.alt = imgAlt;
             screenshotTitle.textContent = title;
-            screenshotCounter.textContent = `${index + 1} of ${showcaseSlides.length}`;
+            screenshotCounter.textContent = `${index + 1} of ${slides.length}`;
 
             // Reset zoom and enable/disable navigation buttons
             resetZoom();
             screenshotPrevBtn.disabled = currentScreenshotIndex === 0;
-            screenshotNextBtn.disabled = currentScreenshotIndex === showcaseSlides.length - 1;
+            screenshotNextBtn.disabled = currentScreenshotIndex === slides.length - 1;
 
             // Show popup
             screenshotPopup.classList.add('active');
@@ -496,28 +616,11 @@ function setupScreenshotPopup() {
     // Function to hide screenshot popup
     function hideScreenshotPopup() {
         screenshotPopup.classList.remove('active');
-
-        // Resume showcase carousel auto-scroll
-        if (showcaseSlides.length > 0) {
-            const showcaseCarouselContainer = document.querySelector('.showcase-carousel');
-            const showcasePrevBtn = document.querySelector('.showcase-prev-btn');
-            const showcaseNextBtn = document.querySelector('.showcase-next-btn');
-
-            window.showcaseAutoScrollInterval = setInterval(() => {
-                showcaseNextBtn.click();
-            }, 5000); // Restart auto-scroll
-        }
+        resetZoom();
     }
 
     // Add click event listeners to showcase images
-    showcaseSlides.forEach((slide, index) => {
-        slide.addEventListener('click', () => {
-            showScreenshotPopup(index);
-        });
-
-        // Make cursor pointer to indicate clickable
-        slide.style.cursor = 'pointer';
-    });
+    rebindScreenshotPopup();
 
     // Close popup event listeners
     closeScreenshotPopupBtn.addEventListener('click', hideScreenshotPopup);
@@ -582,7 +685,8 @@ function setupScreenshotPopup() {
     });
 
     screenshotNextBtn.addEventListener('click', () => {
-        if (currentScreenshotIndex < showcaseSlides.length - 1) {
+        const slides = getCurrentSlides();
+        if (currentScreenshotIndex < slides.length - 1) {
             showScreenshotPopup(currentScreenshotIndex + 1);
         }
     });
@@ -908,9 +1012,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentPage = window.location.pathname.split('/').pop();
 
     if (currentPage === 'index.html' || currentPage === '') {
+        // Auto-detect view: tablet on desktop, phone on mobile
+        const initialView = window.innerWidth >= 992 ? 'tablet' : 'phone';
+        const activeBtn = document.querySelector(`.view-toggle-btn[data-view="${initialView}"]`);
+        if (activeBtn) {
+            document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+            activeBtn.classList.add('active');
+        }
+        populateShowcaseTrack(initialView);
         setupNewsCarousel(); // Initialize news carousel functionality for index.html
         setupShowcaseCarousel(); // Initialize showcase carousel functionality for index.html
         setupScreenshotPopup(); // Initialize screenshot popup functionality for index.html
+        setupViewToggle(); // Initialize view toggle
     } else if (currentPage === 'updates.html') {
         setupUpdatePopup(); // Initialize update popup functionality for updates.html
         setupUpdateViewToggle(); // Initialize update view toggle functionality for updates.html

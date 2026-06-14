@@ -323,4 +323,4 @@ To detect when you connect Bluetooth headphones/speakers and auto-resume playbac
 
 ---
 
-**Still have questions?** Ask in our [Telegram Community](https://t.me/RhythmSupport).
+**Still have questions?** Ask in our [Telegram Community](https://t.me/RhythmSupport) or [Discord Server](https://discord.gg/XjPyUYPQYc).

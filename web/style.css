@@ -1006,6 +1006,43 @@ nav ul li a:hover::after {
   }
 }
 
+/* View Toggle for Showcase */
+.view-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.view-toggle-btn:hover {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.view-toggle-btn.active {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.view-toggle-btn i {
+  font-size: 16px;
+}
+
 /* No Results Message */
 .no-results {
   text-align: center;
@@ -2017,6 +2054,32 @@ footer {
     opacity: 0.8;
 }
 
+.translation-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    max-width: 800px;
+    margin: 0 auto 40px;
+    padding: 16px 20px;
+    background: rgba(255, 190, 11, 0.12);
+    border: 1px solid rgba(255, 190, 11, 0.3);
+    border-radius: var(--radius-md);
+    color: var(--on-surface);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.translation-warning i {
+    font-size: 20px;
+    color: var(--warning);
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.translation-warning strong {
+    font-weight: 700;
+}
+
 .translation-buttons {
     display: flex;
     justify-content: center;
@@ -2925,316 +2988,277 @@ footer {
 }
 
 /* Screenshot Popup Styles */
-.screenshot-popup-content {
-    background-color: var(--surface);
-    padding: 20px;
-    padding-top: 0px;
-    border-radius: var(--radius-lg);
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
-    width: auto;
-    max-width: min(420px, 90vw); /* Phone screenshot width (typical mobile viewport) */
-    max-height: min(95vh, 1000px); /* Reasonable max height */
-    border: 1px solid var(--surface-variant);
-    position: relative;
-    transform: scale(0.8);
-    opacity: 0;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* Screenshot Viewer */
+.screenshot-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 3000;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+    user-select: none;
 }
 
-.update-popup-overlay.active .screenshot-popup-content {
-    transform: scale(1);
+.screenshot-overlay.active {
     opacity: 1;
+    visibility: visible;
 }
 
-.close-screenshot-popup-btn {
+.screenshot-close {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    background-color: var(--error);
-    color: var(--on-error);
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
     border: none;
-    padding: 8px 16px;
-    border-radius: var(--radius-md);
-    font-size: 14px;
-    font-weight: 600;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 20px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    z-index: 3010;
+    backdrop-filter: blur(8px);
+}
+
+.screenshot-close:hover {
+    background: rgba(255, 255, 255, 0.22);
+    transform: scale(1.1);
+}
+
+.screenshot-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    z-index: 3010;
+    backdrop-filter: blur(8px);
+}
+
+.screenshot-nav:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.screenshot-nav:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.screenshot-nav:disabled {
+    opacity: 0.25;
+    cursor: default;
+    transform: translateY(-50%) scale(1);
+}
+
+.screenshot-prev {
+    left: 24px;
+}
+
+.screenshot-next {
+    right: 24px;
+}
+
+.screenshot-image-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 80px 96px;
+    overflow: hidden;
+}
+
+.screenshot-image-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 12px;
+    transition: transform 0.25s ease;
+    cursor: grab;
+    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.4);
+}
+
+.screenshot-image-wrapper img:active {
+    cursor: grabbing;
+}
+
+/* Bottom bar */
+.screenshot-bar {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 10px 20px;
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 3010;
+}
+
+.screenshot-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.screenshot-title {
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.screenshot-counter {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 2px 10px;
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.screenshot-zoom {
     display: flex;
     align-items: center;
     gap: 6px;
-    z-index: 2010;
-    box-shadow: var(--shadow-sm);
+    padding-left: 20px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.close-screenshot-popup-btn:hover {
-    background-color: var(--error-container);
-    color: var(--on-error-container);
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: var(--shadow-md);
-}
-
-.close-screenshot-popup-btn i {
-    font-size: 16px;
-}
-
-.screenshot-popup-header {
-    position: relative;
-    flex: 1;
-    min-height: 400px; /* Reverted to more reasonable height */
-    max-height: 70vh; /* Allow reasonable flexible height */
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-}
-
-.screenshot-zoom-controls {
-    position: absolute;
-    top: 15px; /* Positioned lower than close button */
-    left: 85px; /* Leave space for close button on left */
-    right: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 10;
-    pointer-events: none;
-}
-
-.zoom-btn {
-    pointer-events: all;
-    background-color: var(--surface);
-    color: var(--on-surface);
-    border: 2px solid var(--outline);
-    padding: 8px 12px;
-    border-radius: var(--radius-lg);
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    box-shadow: var(--shadow-sm);
-}
-
-.zoom-btn:hover {
-    background-color: var(--primary-container);
-    border-color: var(--primary);
-    color: var(--on-primary-container);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.zoom-btn:active {
-    transform: translateY(-1px);
-}
-
-.zoom-level {
-    background-color: var(--surface);
-    color: var(--on-surface);
-    padding: 6px 12px;
-    border-radius: var(--radius-md);
-    font-size: 14px;
-    font-weight: 600;
-    border: 2px solid var(--outline);
-    box-shadow: var(--shadow-sm);
-    pointer-events: all;
-}
-
-.screenshot-image-container {
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: var(--surface-container-low);
-    border-radius: var(--radius-lg);
-    scrollbar-width: thin;
-    scrollbar-color: var(--outline) transparent;
-}
-
-.screenshot-image-container::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-.screenshot-image-container::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 4px;
-}
-
-.screenshot-image-container::-webkit-scrollbar-thumb {
-    background: var(--outline);
-    border-radius: 4px;
-}
-
-.screenshot-image-container::-webkit-scrollbar-thumb:hover {
-    background: var(--on-surface-variant);
-}
-
-.screenshot-popup-header img {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-    display: block;
-    transition: transform 0.3s ease;
-    cursor: grab;
-    cursor: -webkit-grab;
-}
-
-.screenshot-popup-header img:active {
-    cursor: grabbing;
-    cursor: -webkit-grabbing;
-}
-
-.screenshot-popup-body {
-    padding-top: 20px;
-    flex-shrink: 0;
-}
-
-.screenshot-popup-controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    padding: 0 20px;
-}
-
-.screenshot-popup-title {
-    flex: 1;
-    text-align: center;
-}
-
-.screenshot-popup-title h3 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--on-surface);
-    margin-bottom: 5px;
-    line-height: 1.2;
-}
-
-.screenshot-popup-title p {
-    font-size: 16px;
-    color: var(--outline);
-    font-weight: 500;
-}
-
-.screenshot-nav-btn {
-    background-color: var(--primary-container);
-    color: var(--on-primary-container);
+.screenshot-zoom-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     border: none;
-    padding: 12px 16px;
-    border-radius: var(--radius-lg);
-    font-size: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 13px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: var(--shadow-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 50px;
+    transition: all 0.2s ease;
 }
 
-.screenshot-nav-btn:hover {
-    background-color: var(--primary);
-    color: var(--on-primary);
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: var(--shadow-md);
+.screenshot-zoom-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
 }
 
-.screenshot-nav-btn:active {
-    transform: translateY(-1px) scale(1.02);
+.screenshot-zoom-level {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 40px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
 }
 
-/* Dark mode styles for screenshot popup */
-.dark-mode .screenshot-popup-content {
-    background-color: var(--surface-container-low);
-    border: 1px solid var(--surface-variant);
+.screenshot-zoom-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 4px;
 }
 
-.dark-mode .screenshot-popup-title h3 {
-    color: var(--on-surface);
-}
-
-.dark-mode .screenshot-popup-title p {
-    color: var(--outline);
-}
-
-/* Responsive adjustments for screenshot popup */
+/* Responsive */
 @media (max-width: 768px) {
-    .screenshot-popup-content {
-        padding: 15px; /* Adjusted padding for medium screens */
-        padding-top: 60px; /* Adjusted top padding for medium screens */
-        max-width: 95%;
-        max-height: 95vh;
+    .screenshot-image-wrapper {
+        padding: 60px 16px;
     }
 
-    .close-screenshot-popup-btn {
-        top: 15px;
-        right: 15px;
-        padding: 8px 15px;
-        font-size: 14px;
+    .screenshot-nav {
+        width: 40px;
+        height: 40px;
+        font-size: 17px;
     }
 
-    .close-screenshot-popup-btn i {
-        font-size: 16px;
+    .screenshot-prev { left: 12px; }
+    .screenshot-next { right: 12px; }
+
+    .screenshot-bar {
+        gap: 14px;
+        padding: 8px 14px;
+        bottom: 16px;
     }
 
-    .screenshot-popup-title h3 {
-        font-size: 20px; /* Adjusted font size */
-        padding-top: 5px;
+    .screenshot-title { font-size: 13px; }
+    .screenshot-counter { font-size: 11px; padding: 1px 8px; }
+
+    .screenshot-zoom {
+        padding-left: 12px;
+        gap: 4px;
     }
 
-    .screenshot-popup-title p {
-        font-size: 14px;
+    .screenshot-zoom-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
     }
 
-    .screenshot-popup-controls {
-        padding: 0 10px;
-    }
-
-    .screenshot-nav-btn {
-        width: 45px;
-        height: 45px;
-        padding: 10px 14px;
-        font-size: 18px;
-    }
+    .screenshot-zoom-level { font-size: 11px; min-width: 32px; }
 }
 
 @media (max-width: 480px) {
-    .screenshot-popup-content {
-        padding: 10px; /* Adjusted padding for small screens */
-        padding-top: 50px; /* Adjusted top padding for small screens */
-        max-width: 95%;
-        max-height: 95vh;
-    }
-
-    .close-screenshot-popup-btn {
-        top: 10px;
-        right: 10px;
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-
-    .close-screenshot-popup-btn i {
-        font-size: 14px;
-    }
-
-    .screenshot-popup-title h3 {
-        font-size: 16px; /* Adjusted font size */
-    }
-
-    .screenshot-popup-title p {
-        font-size: 12px;
-    }
-
-    .screenshot-nav-btn {
-        width: 40px;
-        height: 40px;
-        padding: 8px 12px;
+    .screenshot-close {
+        top: 12px;
+        right: 12px;
+        width: 36px;
+        height: 36px;
         font-size: 16px;
     }
+
+    .screenshot-image-wrapper {
+        padding: 52px 8px;
+    }
+
+    .screenshot-nav {
+        width: 36px;
+        height: 36px;
+        font-size: 15px;
+    }
+
+    .screenshot-prev { left: 8px; }
+    .screenshot-next { right: 8px; }
+
+    .screenshot-bar {
+        gap: 10px;
+        padding: 6px 12px;
+        bottom: 12px;
+        flex-wrap: wrap;
+        border-radius: 16px;
+        justify-content: center;
+    }
+
+    .screenshot-title { font-size: 12px; }
+    .screenshot-counter { font-size: 10px; }
 }
 
 .news-carousel-section {

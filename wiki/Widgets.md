@@ -6,7 +6,12 @@ Complete guide to setting up and customizing Rhythm's home screen widgets.
 
 ## 📱 Widget Types
 
-Rhythm offers two types of widgets to suit different Android versions and preferences:
+Rhythm offers three types of widgets to suit different needs:
+
+### Lyrics Widget
+- **Purpose**: Display current track lyrics on your home screen
+- **Real-time**: Synced with playback position
+- **Compact**: Minimal footprint with scrolling text
 
 ### Modern Glance Widgets
 - **Technology**: Built with Jetpack Glance framework
@@ -287,7 +292,6 @@ Widgets update instantly for:
 - Custom widget themes
 - Multiple widget instances with different settings
 - Lock screen widgets (Android 13+)
-- Interactive lyrics display
 - Queue preview
 - Playback progress bar
 
@@ -319,4 +323,4 @@ Widgets update instantly for:
 
 ---
 
-**Need help?** Join our [Telegram Community](https://t.me/RhythmSupport)!
+**Need help?** Join our [Telegram Community](https://t.me/RhythmSupport) or [Discord Server](https://discord.gg/XjPyUYPQYc)!

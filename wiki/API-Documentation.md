@@ -916,4 +916,4 @@ class FakeMusicRepository : MusicRepository {
 
 ---
 
-**Questions?** Check the [FAQ](https://github.com/cromaguy/Rhythm/wiki/FAQ) or ask in [Telegram](https://t.me/RhythmSupport)!
+**Questions?** Check the [FAQ](https://github.com/cromaguy/Rhythm/wiki/FAQ) or ask in [Telegram](https://t.me/RhythmSupport) or [Discord](https://discord.gg/XjPyUYPQYc)!

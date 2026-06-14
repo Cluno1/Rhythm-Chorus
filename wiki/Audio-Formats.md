@@ -1,6 +1,6 @@
 # Audio Format Support
 
-Rhythm uses **Media3 ExoPlayer 1.9.2 + FFmpeg Decoder** for professional-grade audio playback. This page details supported formats, technical limitations, and recommendations.
+Rhythm uses **Media3 ExoPlayer 1.10.1 + FFmpeg Decoder** for professional-grade audio playback. This page details supported formats, technical limitations, and recommendations.
 
 ---
 
@@ -67,6 +67,7 @@ These formats are **not supported** by Media3 ExoPlayer. You must convert them t
 | **AIFF** | Limited Android support | Convert to **WAV** |
 | **TAK** | Rare lossless format | Convert to **FLAC** |
 | **WavPack** | Limited mobile support | Convert to **FLAC** |
+| **MKA** (Matroska Audio) | Container not scanned/supported by the local media library | Extract audio stream (e.g. to **FLAC** or **M4A**) |
 
 ---
 
@@ -100,6 +101,9 @@ Some containers can hold multiple codecs:
 
 Rhythm identifies the **actual codec** inside, not just the container.
 
+### Matroska Audio (.mka)
+Rhythm does not support Matroska Audio (`.mka`) files. Although ExoPlayer can play audio streams from Matroska container (`.mkv`) files when parsed as video streams, the dedicated `.mka` audio-only container is not registered for local media scanning. To play these files, we recommend extracting the underlying audio streams into standard FLAC, M4A, or MP3 containers.
+
 ### Hardware Dependencies
 - **Dolby/DTS**: Requires device-specific hardware decoders
 - **Sample Rate**: Limited by Android AudioTrack (typically 192kHz max)
@@ -107,7 +111,7 @@ Rhythm identifies the **actual codec** inside, not just the container.
 - **Channel Configuration**: Stereo universally supported, multi-channel varies
 
 ### ExoPlayer Capabilities
-- **ExoPlayer 1.9.2 + FFmpeg**: Adds EAC3-JOC, AC-3, WMA decoding beyond ExoPlayer defaults
+- **ExoPlayer 1.10.1 + FFmpeg**: Adds EAC3-JOC, AC-3, WMA decoding beyond ExoPlayer defaults
 - **Gapless Playback**: Supported for MP3, AAC, FLAC, Opus
 - **Seeking**: Accurate for most formats, approximate for some streaming codecs
 - **Metadata**: Depends on container format (ID3 for MP3, Vorbis comments for FLAC)
@@ -246,4 +250,4 @@ done
 
 ---
 
-**Questions?** Ask in our [Telegram Community](https://t.me/RhythmSupport) or check the [FAQ](https://github.com/cromaguy/Rhythm/wiki/FAQ).
+**Questions?** Ask in our [Telegram Community](https://t.me/RhythmSupport), [Discord Server](https://discord.gg/XjPyUYPQYc), or check the [FAQ](https://github.com/cromaguy/Rhythm/wiki/FAQ).

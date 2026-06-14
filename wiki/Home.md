@@ -18,19 +18,20 @@ Welcome to the official Rhythm Music Player documentation!
 ## 🎵 About Rhythm
 
 Rhythm is a modern, open-source music player for Android with Material 3 design, featuring:
-- 🎨 Dynamic Material You theming
-- 🎵 Professional audio engine (Media3 ExoPlayer)
-- 🎤 Synchronized lyrics support
-- 📊 Comprehensive playback statistics
+- 🎨 Dynamic Material You theming with Material Symbols
+- 🎵 Professional audio engine (Media3 ExoPlayer) with Replay Gain & Crossfade
+- 🎤 Synchronized lyrics with full-screen view and home screen widget
+- 📊 Rhythm Stats 2.0 — comprehensive listening analytics
 - 🎛️ 10-band equalizer with AutoEQ
-- 📱 Modern home screen widgets
-- 🌐 LRCLib and online artwork integration
+- 🌐 Dual-mode architecture (Local + Streaming via Subsonic/Navidrome/Jellyfin)
+- 📱 Tablet-optimized UI and modern home screen widgets
 
 ## 🔗 External Resources
 
 - [GitHub Repository](https://github.com/cromaguy/Rhythm)
 - [Official Website](https://rhythmweb.vercel.app/)
 - [Telegram Community](https://t.me/RhythmSupport)
+- [Discord Server](https://discord.gg/XjPyUYPQYc)
 - [Latest Release](https://github.com/cromaguy/Rhythm/releases/latest)
 
 ## 📖 For Developers

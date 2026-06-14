@@ -14,8 +14,8 @@ Complete guide to building Rhythm from source code. Whether you're contributing,
 - **Components**: Android SDK, SDK Tools, Platform Tools
 
 #### 2. **Java Development Kit (JDK)**
-- **Version**: JDK 17 (required for Kotlin 1.9.22)
-- **Download**: [Oracle JDK 17](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) or [OpenJDK 17](https://adoptium.net/)
+- **Version**: JDK 21 (required for Gradle 9.2.1 and AGP 9.2.1)
+- **Download**: [Oracle JDK 21](https://www.oracle.com/java/technologies/downloads/#java21) or [OpenJDK 21](https://adoptium.net/temurin/releases/?version=21)
 
 #### 3. **Git**
 - **Version**: 2.30 or newer
@@ -84,7 +84,7 @@ Required SDK components:
 
 1. **Tools** → **SDK Manager**
 2. **SDK Platforms** tab:
-   - ✅ Android 14.0 (API 34) - Compile SDK
+   - ✅ Android API 37 - Compile SDK
    - ✅ Android 8.0 (API 26) - Minimum SDK
 3. **SDK Tools** tab:
    - ✅ Android SDK Build-Tools 35.0.0
@@ -113,23 +113,30 @@ Check `app/build.gradle.kts`:
 ```kotlin
 android {
     namespace = "chromahub.rhythm.app"
-    compileSdk = 36
+    compileSdk = 37
     
     defaultConfig {
         applicationId = "chromahub.rhythm.app"
         minSdk = 26          // Android 8.0
-        targetSdk = 36       // Android 16
-        versionCode = 40310853
-        versionName = "4.0.310.853"
+        targetSdk = 37       // Android 15
+        versionCode = 514081066
+        versionName = "5.1.408.1066"
     }
     
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
     
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            freeCompilerArgs.addAll(
+                "-opt-in=androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
+                "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+            )
+        }
     }
 }
 ```
@@ -467,10 +474,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'adopt'
       
       - name: Grant execute permission for gradlew
@@ -518,6 +525,7 @@ rm -rf app/build
 ## 💬 Need Help?
 
 - **Telegram**: [Rhythm Support](https://t.me/RhythmSupport)
+- **Discord**: [Rhythm Community](https://discord.gg/XjPyUYPQYc)
 - **GitHub Issues**: [Report Build Problems](https://github.com/cromaguy/Rhythm/issues)
 - **Contributing Guide**: [https://github.com/cromaguy/Rhythm/wiki/Contributing](https://github.com/cromaguy/Rhythm/wiki/Contributing)
 

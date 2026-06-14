@@ -50,15 +50,18 @@ Rhythm is a modern, open-source music player built with **Material 3 Expressive*
 | :--- | :--- |
 | **Material You:** Dynamic theming with wallpaper colors (Android 12+). | **Pro Audio:** Media3 ExoPlayer with gapless playback & High-Res mode. |
 | **Expressive UI:** Refined adaptive shapes and Material 3 design. | **10-Band EQ:** Professional equalizer with 6032+ AutoEQ device presets. |
-| **Modern Widgets:** Multiple responsive layouts for your home screen. | **Format Support:** FLAC, ALAC, MP3, AAC, EAC3-JOC, Opus, WAV, OGG. |
+| **Tablet UI:** Optimized multi-pane layout for tablets. | **Replay Gain:** Track/album loudness normalization. |
+| **Material Symbols:** Crisp, scalable variable-weight icons. | **Crossfade:** Smooth transitions with adjustable duration. |
 
 | 🎤 **Features & Tools** | 🔒 **Privacy & Data** |
 | :--- | :--- |
-| **Synced Lyrics:** LRCLib integration with word-by-word highlighting. | **100% FOSS:** Completely open-source with zero tracking. |
-| **Smart Library:** Multi-select batch operations for songs and albums. | **Offline Capable:** Designed to work flawlessly without the internet. |
-| **Playback Stats:** Comprehensive listening statistics and insights. | **Local First:** Your data and habits stay securely on your device. |
-| **Streaming Mode:** Dual-mode architecture for local and server playback. | |
+| **Synced Lyrics:** LRCLib integration with word-by-word highlighting + full-screen view. | **100% FOSS:** Completely open-source with zero tracking. |
+| **Smart Library:** A–Z scroll bar, multi-select batch operations. | **Offline Capable:** Designed to work flawlessly without the internet. |
+| **Rhythm Stats 2.0:** Comprehensive stats with Overview, Songs, Albums, Artists, History. | **Local First:** Your data and habits stay securely on your device. |
+| **Streaming Mode:** Dual-mode architecture for local and server playback (Subsonic, Navidrome, Jellyfin). | |
 | **Rhythm Guard:** Integrated hearing safety and volume protection. | |
+| **Rhythm Go:** Download streaming tracks for offline playback. | |
+| **Home Screen Widgets:** Multiple layouts including a dedicated Lyrics widget. | |
 
 > **System Requirements:** Android 8.0+ (API 26) • 2GB RAM • 50MB Storage
 
@@ -70,38 +73,81 @@ Rhythm is a modern, open-source music player built with **Material 3 Expressive*
 <table>
 <tr>
 <td align="center" width="25%">
-<img src="assets/ScreenShots/Home.png" alt="Home" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<img src="assets/ScreenShots/Phone/Home.png" alt="Home" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 <br/><b>🏠 Smart Home</b>
 </td>
 <td align="center" width="25%">
-<img src="assets/ScreenShots/Player_2.png" alt="Player" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<img src="assets/ScreenShots/Phone/Player_2.png" alt="Player" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 <br/><b>▶️ Beautiful Player</b>
 </td>
 <td align="center" width="25%">
-<img src="assets/ScreenShots/Player_Lyrics_View.png" alt="Lyrics" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<img src="assets/ScreenShots/Phone/Player_Lyrics_View.png" alt="Lyrics" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 <br/><b>🎤 Synced Lyrics</b>
 </td>
 <td align="center" width="25%">
-<img src="assets/ScreenShots/Library_Songs.png" alt="Library" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<img src="assets/ScreenShots/Phone/Playlist.png" alt="Library" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 <br/><b>📚 Rich Library</b>
 </td>
 </tr>
 <tr>
 <td align="center">
-<img src="assets/ScreenShots/Queue.png" alt="Queue" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<img src="assets/ScreenShots/Phone/Queue.png" alt="Queue" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 <br/><b>📋 Smart Queue</b>
 </td>
 <td align="center">
-<img src="assets/ScreenShots/Search.png" alt="Search" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<img src="assets/ScreenShots/Phone/Search.png" alt="Search" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 <br/><b>🔍 Instant Search</b>
 </td>
 <td align="center">
-<img src="assets/ScreenShots/Settings.png" alt="Settings" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<img src="assets/ScreenShots/Phone/Settings.png" alt="Settings" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 <br/><b>⚙️ Deep Settings</b>
 </td>
 <td align="center">
-<img src="assets/ScreenShots/Artist.png" alt="Artist" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<img src="assets/ScreenShots/Phone/Artist.png" alt="Artist" width="180" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 <br/><b>🎤 Artist Pages</b>
+</td>
+</tr>
+</table>
+</div>
+
+### Tablet
+
+<div align="center">
+<table>
+<tr>
+<td align="center" width="25%">
+<img src="assets/ScreenShots/Tablet/Player.png" alt="Player" width="240" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<br/><b>▶️ Now Playing</b>
+</td>
+<td align="center" width="25%">
+<img src="assets/ScreenShots/Tablet/Library.png" alt="Library" width="240" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<br/><b>📚 Library</b>
+</td>
+<td align="center" width="25%">
+<img src="assets/ScreenShots/Tablet/Lyrics_View.png" alt="Lyrics" width="240" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<br/><b>🎤 Synced Lyrics</b>
+</td>
+<td align="center" width="25%">
+<img src="assets/ScreenShots/Tablet/Album.png" alt="Album" width="240" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<br/><b>💿 Album Detail</b>
+</td>
+</tr>
+<tr>
+<td align="center">
+<img src="assets/ScreenShots/Tablet/Search.png" alt="Search" width="240" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<br/><b>🔍 Search</b>
+</td>
+<td align="center">
+<img src="assets/ScreenShots/Tablet/Rhythm_Stats.png" alt="Stats" width="240" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<br/><b>📊 Playback Stats</b>
+</td>
+<td align="center">
+<img src="assets/ScreenShots/Tablet/Settings.png" alt="Settings" width="240" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<br/><b>⚙️ Settings</b>
+</td>
+<td align="center">
+<img src="assets/ScreenShots/Tablet/About.png" alt="About" width="240" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+<br/><b>ℹ️ About</b>
 </td>
 </tr>
 </table>

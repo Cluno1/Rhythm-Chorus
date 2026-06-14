@@ -143,6 +143,7 @@ Browse by:
 - Real-time playback updates
 - Play/pause, skip controls
 - Current track, artist, album art
+- **Lyrics Widget**: Display current song lyrics on home screen
 - Background auto-updates via WorkManager
 
 ---
@@ -183,6 +184,8 @@ Access comprehensive statistics:
 
 ### Audio Settings
 - **Gapless Playback**: Seamless track transitions
+- **Replay Gain**: Normalize loudness (album gain or track gain)
+- **Crossfade**: Smooth transitions between tracks (1–12 seconds)
 - **Audio Focus**: Handle calls and notifications
 - **Resume on Bluetooth**: Auto-play on device connect
 - **Independent Volume**: App-specific volume control
@@ -190,6 +193,7 @@ Access comprehensive statistics:
 ### Library Settings
 - **Media Scan**: Rescan your library
 - **Blacklist/Whitelist**: Include/exclude folders
+- **A–Z Scroll Bar**: Enable/configure alphabetical fast-scrolling
 - **Cache Management**: Clear temporary files
 - **Metadata Editor**: Edit song information
 
@@ -209,6 +213,7 @@ Access comprehensive statistics:
 
 ### Community Support
 - [Telegram Community](https://t.me/RhythmSupport)
+- [Discord Server](https://discord.gg/XjPyUYPQYc)
 - [GitHub Discussions](https://github.com/cromaguy/Rhythm/discussions)
 - [Issue Tracker](https://github.com/cromaguy/Rhythm/issues)
 
