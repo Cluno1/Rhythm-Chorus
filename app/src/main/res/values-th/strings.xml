@@ -1,4 +1,4 @@
-<resources>
+﻿<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -168,7 +168,7 @@
     <string name="notification_sleep_timer_stop_in">⏹ กำลังหยุดใน %1$s</string>
     
     <!-- Streaming Notifications -->
-    <string name="notification_streaming_channel_name">Rhythm ไป</string>
+    <string name="notification_streaming_channel_name">Rhythm Go</string>
     <string name="notification_streaming_channel_desc">สถานะบริการสตรีมมิ่งและการอัปเดตการซิงค์</string>
     
     <!-- Streaming Authentication -->
@@ -713,7 +713,7 @@
     <string name="onboarding_integration_deezer_desc">รับอาร์ตเวิร์กอัลบั้มและข้อมูลเมตาคุณภาพสูง</string>
     <string name="onboarding_integration_lrclib">LrcLib</string>
     <string name="onboarding_integration_lrclib_desc">ดาวน์โหลดเนื้อเพลงที่ซิงโครไนซ์สำหรับเพลงของคุณ</string>
-    <string name="onboarding_integration_ytmusic">YouTube ดนตรี</string>
+    <string name="onboarding_integration_ytmusic">YouTube Music</string>
     <string name="onboarding_integration_ytmusic_desc">เข้าถึงข้อมูลเมตาและคำแนะนำจาก YouTube เพลง</string>
     <string name="onboarding_integration_broadcast">สถานะการออกอากาศ</string>
     <string name="onboarding_integration_broadcast_desc">แชร์สถานะการเล่นกับแอปอื่น</string>
@@ -1730,7 +1730,7 @@
     <string name="settings_interval_once_a_week">สัปดาห์ละครั้ง</string>
 
     <!-- Experimental Features -->
-    <string name="streaming_integration_title">Rhythm ไป</string>
+    <string name="streaming_integration_title">Rhythm Go</string>
     <string name="streaming_integration_services">บริการบูรณาการ</string>
     <string name="streaming_integration_services_empty">ยังไม่มีการเชื่อมต่อบริการ</string>
     <string name="streaming_settings_title">การตั้งค่า</string>
@@ -1738,7 +1738,7 @@
     <string name="streaming_settings_group_actions">การกระทำ</string>
     <string name="streaming_settings_preferred_service">บริการที่ต้องการ</string>
     <string name="streaming_settings_quality">คุณภาพการสตรีม</string>
-    <string name="streaming_settings_service_sheet_desc">เลือกบริการที่เชื่อมต่อ Rhythm Go ควรจัดลำดับความสำคัญตามค่าเริ่มต้น</string>
+    <string name="streaming_settings_service_sheet_desc">เลือกบริการที่เชื่อมต่อ Rhythm Go ที่ควรจัดลำดับความสำคัญตามค่าเริ่มต้น</string>
     <string name="streaming_settings_quality_sheet_desc">เลือกคุณภาพเสียงที่คุณต้องการสำหรับการเล่นแบบสตรีมมิ่ง</string>
     <string name="streaming_quality_low">ต่ำ</string>
     <string name="streaming_quality_normal">ปกติ</string>
@@ -1796,9 +1796,9 @@
     <string name="streaming_home_guard_break_active">หยุดทำงาน: %1$s เหลือ</string>
     <string name="streaming_home_guard_exposure">วันนี้: %1$d / %2$d นาที</string>
     <string name="streaming_not_selected">ไม่ได้เลือก</string>
-    <string name="streaming_service_subsonic">เปรี้ยงปร้าง</string>
+    <string name="streaming_service_subsonic">Subsonic</string>
     <string name="streaming_service_subsonic_desc">เชื่อมต่อ Navidrome และเซิร์ฟเวอร์ Subsonic ที่เข้ากันได้</string>
-    <string name="streaming_service_jellyfin">เจลลี่ฟิน</string>
+    <string name="streaming_service_jellyfin">Jellyfin</string>
     <string name="streaming_service_jellyfin_desc">สตรีมจากไลบรารี Jellyfin ส่วนตัวของคุณ</string>
 
     <!-- Backup &amp; Restore -->
@@ -2000,8 +2000,8 @@
     <string name="settings_broadcast_status_enabled_desc">สถานะการเล่นแบบออกอากาศ</string>
     <string name="settings_bluetooth_lyrics_enabled">โหมดเนื้อเพลงบลูทูธ</string>
     <string name="settings_bluetooth_lyrics_enabled_desc">ออกอากาศเนื้อเพลงปัจจุบันผ่านข้อมูลเมตาของ Bluetooth</string>
-    <string name="exp_go_mode">ไปโหมด</string>
-    <string name="exp_go_mode_desc">เปลี่ยนเป็น Rhythm ไปที่โหมดสตรีมมิ่ง</string>
+    <string name="exp_go_mode">Go Mode</string>
+    <string name="exp_go_mode_desc">สลับไปที่ Rhythm Go streaming mode</string>
 
     <!-- Home Screen Search Strings -->
     <string name="settings_home_section_order">ลำดับส่วน</string>
@@ -2245,7 +2245,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">เลือกโหมดการเล่นของคุณ</string>
     <string name="onboardingscreen_local_offline_player">ผู้เล่นออฟไลน์ในพื้นที่</string>
     <string name="onboardingscreen_play_audio_files_stored">เล่นไฟล์เสียงที่จัดเก็บไว้ในอุปกรณ์ของคุณโดยตรง รองรับการสแกนไดเร็กทอรีท้องถิ่นขั้นสูง สถิติ และการจับคู่ธีม</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm ไปกันเลย! (สตรีมมิ่ง)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">เชื่อมต่อกับเซิร์ฟเวอร์ Jellyfin, Subsonic หรือ Navidrome เพื่อสตรีมไลบรารีทั้งหมดของคุณได้ทุกที่ พร้อมรองรับแคชสำหรับการฟังแบบออฟไลน์</string>
     <string name="onboardingscreen_playback_mode_tips">เคล็ดลับโหมดการเล่น</string>
     <string name="onboardingscreen_switch_easily_anytime_in">สลับได้อย่างง่ายดายทุกเวลาในการตั้งค่า &gt; การรวมระบบ</string>
@@ -2257,8 +2257,8 @@
     <string name="onboardingscreen_supports_navidrome_gonic_and">รองรับ Navidrome, gonic และ API แบบซับโซนิคทั้งหมด</string>
     <string name="onboardingscreen_enable_caching_in_settings">เปิดใช้งานการแคชในการตั้งค่าสำหรับการเล่นแบบออฟไลน์ในภายหลัง</string>
     <string name="onboardingscreen_connection_test_ensures_server">การทดสอบการเชื่อมต่อทำให้มั่นใจว่าข้อมูลรับรองเซิร์ฟเวอร์ถูกต้อง</string>
-    <string name="onboardingscreen_subsonic_navidrome">เปรี้ยงปร้าง / Navidrome</string>
-    <string name="onboardingscreen_jellyfin_server">เซิร์ฟเวอร์ Jellyfin</string>
+    <string name="onboardingscreen_subsonic_navidrome">Subsonic / Navidrome</string>
+    <string name="onboardingscreen_jellyfin_server">Jellyfin เซิร์ฟเวอร์</string>
     <string name="onboardingscreen_httpsyourservercom">https://your-server.com</string>
     <string name="onboardingscreen_remember_to_include_http">อย่าลืมใส่ http:// หรือ https://</string>
     <string name="onboardingscreen_username">ชื่อผู้ใช้</string>
@@ -2267,7 +2267,7 @@
     <string name="onboardingscreen_successfully_connected">เชื่อมต่อเรียบร้อยแล้ว!</string>
     <string name="onboardingscreen_connecting">กำลังเชื่อมต่อ...</string>
     <string name="onboardingscreen_connect_verify">เชื่อมต่อและยืนยัน</string>
-    <string name="splashscreen_go">ไป</string>
+    <string name="splashscreen_go">Go</string>
     <string name="musicviewmodel_failed_to_add_to">ไม่สามารถเพิ่มลงในคิว: ผู้เล่นไม่ได้เตรียมใช้งาน</string>
     <string name="musicviewmodel_failed_to_play_next">ไม่สามารถเล่นถัดไป: ผู้เล่นไม่ได้เตรียมใช้งาน</string>
     <string name="streaminghomesectionorderbottomsheet_streaming_section_order_and">ลำดับส่วนการสตรีมและการมองเห็นรีเซ็ตเป็นค่าเริ่มต้น</string>
@@ -2279,7 +2279,7 @@
     <string name="streamingcontenthomescreen_your_connected_streaming_service">เพลย์ลิสต์บริการสตรีมมิ่งที่เชื่อมต่อของคุณ</string>
     <string name="streamingcontenthomescreen_no_playlists_found">ไม่พบเพลย์ลิสต์</string>
     <string name="streamingcontenthomescreen_create_playlists_on_your">สร้างเพลย์ลิสต์บนเซิร์ฟเวอร์ของคุณเพื่อดูที่นี่</string>
-    <string name="streaminghomescreen_leave_go_mode">ออกจากโหมดไป</string>
+    <string name="streaminghomescreen_leave_go_mode">Leave Go Mode</string>
     <string name="streaminglibraryscreen_no_albums">ไม่มีอัลบั้ม</string>
     <string name="streamingsettingsscreen_streaming_restricted">จำกัดการสตรีม</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">ไม่สามารถเล่นถัดไป: ไม่สามารถแก้ไข URL</string>
@@ -2381,7 +2381,7 @@
     <string name="playerscreen_open_artist">ศิลปินเปิด</string>
     <string name="aboutscreen_support_development">สนับสนุนการพัฒนา</string>
     <string name="aboutscreen_discord_community">ชุมชนที่ไม่ลงรอยกัน</string>
-    <string name="apimanagementsettingsscreen_apple_music">แอปเปิ้ลมิวสิค</string>
+    <string name="apimanagementsettingsscreen_lyrically">Lyrically</string>
     <string name="apimanagementsettingsscreen_github">GitHub</string>
     <string name="apimanagementsettingsscreen_app_updates_and_release">การอัปเดตแอปและข้อมูลการเผยแพร่</string>
     <string name="backuprestoresettingsscreen_choose_backup_sections">เลือกส่วนสำรอง</string>
@@ -2656,7 +2656,7 @@
     <string name="lyrics_settings_online_first_desc">ชอบ API แบบออนไลน์ (Rhythm แบบคำต่อคำ, LRCLib) เป็นทางเลือกแบบฝัง</string>
     <string name="lyrics_settings_local_first">ท้องถิ่นก่อน</string>
     <string name="lyrics_settings_local_first_desc">ชอบไฟล์ .lrc ในเครื่อง จากนั้นจึงฝังเนื้อเพลง ตามด้วย API ออนไลน์</string>
-    <string name="lyrics_settings_apple_music_first">Apple Music ก่อน</string>
+    <string name="lyrics_settings_lyrically_first">Lyrically First</string>
     <string name="lyrics_settings_lrclib_first">LRCLib ก่อน</string>
     <string name="lyrics_settings_fallback_apis_desc">ลองใช้ API ทางเลือกหาก API ที่ต้องการไม่สามารถส่งคืนเนื้อเพลงได้</string>
     <string name="lyrics_settings_display_styling">การแสดงผลและการจัดสไตล์</string>
@@ -2751,9 +2751,9 @@
     <string name="dialog_export_playlists_to">ส่งออกเพลย์ลิสต์ %1$d ไปที่:</string>
 
     <!-- Mode dialog strings -->
-    <string name="dialog_switch_to_go">เปลี่ยนเป็น Rhythm ไปไหม</string>
+    <string name="dialog_switch_to_go">Switch to Rhythm Go?</string>
     <string name="dialog_switch_to_local">เปลี่ยนเป็นท้องถิ่นใช่ไหม</string>
-    <string name="dialog_switch_to_go_desc">รายการนี้เป็นของ Rhythm ไป เปลี่ยนเป็นโหมดสตรีมมิ่งทันทีเพื่อสตรีมและเล่นหรือไม่</string>
+    <string name="dialog_switch_to_go_desc">This item belongs to Rhythm Go เปลี่ยนเป็นโหมดสตรีมมิ่งทันทีเพื่อสตรีมและเล่นหรือไม่</string>
     <string name="dialog_switch_to_local_desc">รายการนี้เป็นของห้องสมุดท้องถิ่นของคุณ เปลี่ยนเป็นโหมด Local ตอนนี้เพื่อเล่นแทร็กแบบออฟไลน์ของคุณไหม</string>
 
     <!-- Section order content descriptions -->

@@ -3,6 +3,9 @@
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
 
+
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -174,6 +177,7 @@ fun GesturesSettingsScreen(onBackClick: () -> Unit) {
         onBackClick = onBackClick
     ) { modifier ->
         LazyColumn(
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             modifier = modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp)

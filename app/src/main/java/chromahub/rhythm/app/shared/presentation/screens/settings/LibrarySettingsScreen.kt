@@ -3,6 +3,9 @@
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
 
+
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -166,7 +169,7 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
     val preferSongArtwork by appSettings.preferSongArtwork.collectAsState()
     val losslessArtwork by appSettings.losslessArtwork.collectAsState()
     val albumBottomSheetGradientBlur by appSettings.albumBottomSheetGradientBlur.collectAsState()
-    val appleMusicApiEnabled by appSettings.appleMusicApiEnabled.collectAsState()
+    val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
     val autoFetchArtwork by appSettings.autoFetchArtwork.collectAsState()
 
     var showLibraryTabOrderBottomSheet by remember { mutableStateOf(false) }
@@ -249,15 +252,16 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
                         icon = MaterialSymbolIcon("cloud_download"),
                         title = stringResource(R.string.librarysettingsscreen_autofetch_artwork),
                         description = "Automatically search online APIs for missing cover artwork on startup",
-                        toggleState = autoFetchArtwork && appleMusicApiEnabled,
+                        toggleState = autoFetchArtwork && lyricallyApiEnabled,
                         onToggleChange = { enabled -> appSettings.setAutoFetchArtwork(enabled) },
-                        enabled = appleMusicApiEnabled
+                        enabled = lyricallyApiEnabled
                     )
                 )
             )
         )
 
         LazyColumn(
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             modifier = modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)

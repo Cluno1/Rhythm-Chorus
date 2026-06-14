@@ -83,6 +83,17 @@ private sealed class SyntacticLrc {
         val timeWordMarksRegex = "<(\\d+)[.:](\\d+)([.:]\\d+)?>".toRegex()
         val metadataRegex = "\\[([a-zA-Z#]+):([^]]*)]".toRegex()
 
+        private fun normalizeDigits(input: String): String {
+            return input.map { ch ->
+                val digit = Character.digit(ch.toInt(), 10)
+                if (digit >= 0 && ch.isDigit() && ch !in '0'..'9') {
+                    '0' + digit
+                } else {
+                    ch
+                }
+            }.joinToString("")
+        }
+
         private fun parseTime(match: MatchResult, second: Boolean): ULong {
             val offset = if (second) 3 else 0
             val minute = match.groupValues[offset+1].toULong()
@@ -92,18 +103,19 @@ private sealed class SyntacticLrc {
         }
 
         fun parseLrc(text: String, multiLineEnabled: Boolean): List<SyntacticLrc>? {
-            if (text.isBlank()) return null
+            val normalizedText = normalizeDigits(text)
+            if (normalizedText.isBlank()) return null
             var pos = 0
             val out = mutableListOf<SyntacticLrc>()
             var isBgSpeaker = false
-            while (pos < text.length) {
+            while (pos < normalizedText.length) {
                 var pendingBgNewLine = false
-                if (isBgSpeaker && text[pos] == ']') {
+                if (isBgSpeaker && normalizedText[pos] == ']') {
                     pos++
                     isBgSpeaker = false
                     pendingBgNewLine = true
                 }
-                if (pos < text.length && pos + 1 < text.length && text.regionMatches(
+                if (pos < normalizedText.length && pos + 1 < normalizedText.length && normalizedText.regionMatches(
                         pos,
                         "\r\n",
                         0,
@@ -114,7 +126,7 @@ private sealed class SyntacticLrc {
                     pos += 2
                     continue
                 }
-                if (pos < text.length && (text[pos] == '\n' || text[pos] == '\r')) {
+                if (pos < normalizedText.length && (normalizedText[pos] == '\n' || normalizedText[pos] == '\r')) {
                     out.add(NewLine())
                     pos++
                     continue
@@ -123,7 +135,7 @@ private sealed class SyntacticLrc {
                     out.add(NewLine.SyntheticNewLine())
                     continue
                 }
-                val tmMatch = timeMarksRegex.matchAt(text, pos)
+                val tmMatch = timeMarksRegex.matchAt(normalizedText, pos)
                 if (tmMatch != null) {
                     val lastOrNull = out.lastOrNull()
                     if (!(lastOrNull is NewLine? || lastOrNull is SyncPoint
@@ -137,44 +149,44 @@ private sealed class SyntacticLrc {
                     pos += tmMatch.value.length
                     continue
                 }
-                val tmwMatch = timeMarksAfterWsRegex.matchAt(text, pos)
-                if (out.lastOrNull() is SyncPoint && pos + 7 < text.length && tmwMatch != null) {
+                val tmwMatch = timeMarksAfterWsRegex.matchAt(normalizedText, pos)
+                if (out.lastOrNull() is SyncPoint && pos + 7 < normalizedText.length && tmwMatch != null) {
                     pos += tmwMatch.groupValues[1].length
                     continue
                 }
                 if (out.lastOrNull() is SyncPoint || out.lastOrNull() is LineEndSyncPoint) {
-                    if (pos + 2 < text.length && text.regionMatches(pos, "v1:", 0, 3)) {
+                    if (pos + 2 < normalizedText.length && normalizedText.regionMatches(pos, "v1:", 0, 3)) {
                         out.add(SpeakerTag(SpeakerEntity.Voice1))
                         pos += 3
                         continue
                     }
-                    if (pos + 2 < text.length && text.regionMatches(pos, "v2:", 0, 3)) {
+                    if (pos + 2 < normalizedText.length && normalizedText.regionMatches(pos, "v2:", 0, 3)) {
                         out.add(SpeakerTag(SpeakerEntity.Voice2))
                         pos += 3
                         continue
                     }
-                    if (pos + 2 < text.length && text.regionMatches(pos, "v3:", 0, 3)) {
+                    if (pos + 2 < normalizedText.length && normalizedText.regionMatches(pos, "v3:", 0, 3)) {
                         out.add(SpeakerTag(SpeakerEntity.Group))
                         pos += 3
                         continue
                     }
-                    if (pos + 3 < text.length && text.regionMatches(pos, " v1:", 0, 4)) {
+                    if (pos + 3 < normalizedText.length && normalizedText.regionMatches(pos, " v1:", 0, 4)) {
                         out.add(SpeakerTag(SpeakerEntity.Voice1))
                         pos += 4
                         continue
                     }
-                    if (pos + 3 < text.length && text.regionMatches(pos, " v2:", 0, 4)) {
+                    if (pos + 3 < normalizedText.length && normalizedText.regionMatches(pos, " v2:", 0, 4)) {
                         out.add(SpeakerTag(SpeakerEntity.Voice2))
                         pos += 4
                         continue
                     }
-                    if (pos + 3 < text.length && text.regionMatches(pos, " v3:", 0, 4)) {
+                    if (pos + 3 < normalizedText.length && normalizedText.regionMatches(pos, " v3:", 0, 4)) {
                         out.add(SpeakerTag(SpeakerEntity.Group))
                         pos += 4
                         continue
                     }
                 }
-                if (pos + 3 < text.length && text.regionMatches(pos, "[bg:", 0, 4)) {
+                if (pos + 3 < normalizedText.length && normalizedText.regionMatches(pos, "[bg:", 0, 4)) {
                     if (out.isNotEmpty() && out.last() !is NewLine)
                         out.add(NewLine.SyntheticNewLine())
                     val lastSpeaker = if (out.isNotEmpty()) out.subList(0, out.size - 1)
@@ -196,26 +208,26 @@ private sealed class SyntacticLrc {
                     continue
                 }
                 if (out.isEmpty() || out.last() is NewLine) {
-                    val mmMatch = metadataRegex.matchAt(text, pos)
+                    val mmMatch = metadataRegex.matchAt(normalizedText, pos)
                     if (mmMatch != null) {
                         out.add(Metadata(mmMatch.groupValues[1], mmMatch.groupValues[2]))
                         pos += mmMatch.value.length
                         continue
                     }
                 }
-                val wmMatch = timeWordMarksRegex.matchAt(text, pos)
+                val wmMatch = timeWordMarksRegex.matchAt(normalizedText, pos)
                 if (wmMatch != null) {
                     out.add(WordSyncPoint(parseTime(wmMatch, false)))
                     pos += wmMatch.value.length
                     continue
                 }
-                val firstUnsafeCharPos = (text.substring(pos).indexOfFirst {
+                val firstUnsafeCharPos = (normalizedText.substring(pos).indexOfFirst {
                     it == '[' ||
                             it == '<' || it == '\r' || it == '\n' || (isBgSpeaker && it == ']')
                 } + pos)
-                    .let { if (it == pos - 1) text.length else it }
+                    .let { if (it == pos - 1) normalizedText.length else it }
                     .let { if (it == pos) it + 1 else it }
-                val subText = text.substring(pos, firstUnsafeCharPos)
+                val subText = normalizedText.substring(pos, firstUnsafeCharPos)
                 val last = out.lastOrNull()
                 if (out.indexOfLast { it is NewLine } <
                     out.indexOfLast { it is SyncPoint || it is WordSyncPoint }) {
@@ -305,27 +317,28 @@ private sealed class SyntacticLrc {
     }
 }
 
-private fun splitBidirectionalWords(syncedLyrics: SemanticLyrics.SyncedLyrics) {
+internal fun splitBidirectionalWords(syncedLyrics: SemanticLyrics.SyncedLyrics) {
     syncedLyrics.text.forEach { line ->
-        if (line.words.isNullOrEmpty()) return@forEach
+        val words = line.words
+        if (words.isNullOrEmpty()) return@forEach
         val bidirectionalBarriers = findBidirectionalBarriers(line.text)
         var lastWasRtl = false
         bidirectionalBarriers.forEach { barrier ->
             val evilWordIndex =
-                if (barrier.first == -1) -1 else line.words.indexOfFirst {
+                if (barrier.first == -1) -1 else words.indexOfFirst {
                     it.charRange.contains(barrier.first) && it.charRange.first != barrier.first
                 }
             if (evilWordIndex == -1) {
                 val wordIndex = if (barrier.first == -1) 0 else
-                    line.words.indexOfFirst { it.charRange.first == barrier.first }
-                line.words.forEachSupport(skipFirst = wordIndex) {
+                    words.indexOfFirst { it.charRange.first == barrier.first }
+                words.forEachSupport(skipFirst = wordIndex) {
                     it.isRtl = barrier.second
                 }
                 lastWasRtl = barrier.second
                 return@forEach
             }
-            val evilWord = line.words[evilWordIndex]
-            val barrierTime = min(evilWord.timeRange.first + ((line.words.map {
+            val evilWord = words[evilWordIndex]
+            val barrierTime = min(evilWord.timeRange.first + ((words.map {
                 it.timeRange.count() / it.charRange.count().toFloat()
             }.average().let { if (it.isNaN()) 100.0 else it } * (barrier.first -
                     evilWord.charRange.first))).toULong(), evilWord.timeRange.last - 1uL)
@@ -337,8 +350,8 @@ private fun splitBidirectionalWords(syncedLyrics: SemanticLyrics.SyncedLyrics) {
                 charRange = barrier.first..evilWord.charRange.last,
                 timeRange = barrierTime..evilWord.timeRange.last, isRtl = barrier.second
             )
-            line.words[evilWordIndex] = firstPart
-            line.words.add(evilWordIndex + 1, secondPart)
+            words[evilWordIndex] = firstPart
+            words.add(evilWordIndex + 1, secondPart)
             lastWasRtl = barrier.second
         }
     }
@@ -357,6 +370,34 @@ private val rtl =
         Character.DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING,
         Character.DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE
     )
+
+fun applyAutoWordSync(syncedLyrics: SemanticLyrics.SyncedLyrics) {
+    syncedLyrics.text.forEach { line ->
+        if (line.words != null) return@forEach
+        if (line.text.isBlank()) return@forEach
+        if (line.end <= line.start) return@forEach
+        val tokens = line.text.split(Regex("\\s+")).filter { it.isNotBlank() }
+        if (tokens.size < 2) return@forEach
+        val lineDuration = line.end - line.start
+        val totalChars = tokens.sumOf { it.length }
+        var charIdx = 0
+        val newWords = mutableListOf<SemanticLyrics.Word>()
+        var accumulatedTime = 0uL
+        for ((i, token) in tokens.withIndex()) {
+            val tokenStart = line.text.indexOf(token, charIdx)
+            val tokenEnd = tokenStart + token.length
+            charIdx = tokenEnd
+            val charRatio = token.length.toFloat() / totalChars
+            val wordDuration = (lineDuration.toFloat() * charRatio).toULong()
+            val wordStart = line.start + accumulatedTime
+            val wordEndInclusive = if (i == tokens.lastIndex) line.end - 1uL
+                else wordStart + wordDuration - 1uL
+            newWords.add(SemanticLyrics.Word(wordStart, wordEndInclusive, tokenStart..<tokenEnd, isRtl = false))
+            accumulatedTime += wordDuration
+        }
+        line.words = newWords
+    }
+}
 
 fun findBidirectionalBarriers(text: CharSequence): List<Pair<Int, Boolean>> {
     val barriers = mutableListOf<Pair<Int, Boolean>>()
@@ -397,7 +438,7 @@ sealed class SemanticLyrics : Parcelable {
         val start: ULong,
         var end: ULong,
         var endIsImplicit: Boolean,
-        val words: MutableList<Word>?,
+        var words: MutableList<Word>?,
         var speaker: SpeakerEntity?,
         var isTranslated: Boolean
     ) : Parcelable {
@@ -648,8 +689,9 @@ fun parseLrc(lyricText: String, trimEnabled: Boolean, multiLineEnabled: Boolean)
                     out.lastOrNull()?.let {
                         out[out.size - 1] = it.copy(end = lastWordSyncPoint ?: lastSyncPoint!!,
                             endIsImplicit = false)
-                        if (it.words?.lastOrNull()?.let { w -> w.endInclusive == null } == true) {
-                            it.words.last().endInclusive = lastWordSyncPoint ?: lastSyncPoint!!
+                        val lrcWords = it.words
+                        if (lrcWords?.lastOrNull()?.let { w -> w.endInclusive == null } == true) {
+                            lrcWords.last().endInclusive = lastWordSyncPoint ?: lastSyncPoint!!
                         }
                     }
                 }
@@ -678,13 +720,14 @@ fun parseLrc(lyricText: String, trimEnabled: Boolean, multiLineEnabled: Boolean)
         val mainEnd = if (lyric.start == previousLyric?.start) out.firstOrNull {
             it.start == lyric.start && !it.endIsImplicit
         }?.end else null
-        val wordWithoutEnd = lyric.words?.lastOrNull()
+        val words = lyric.words
+        val wordWithoutEnd = words?.lastOrNull()
         if (wordWithoutEnd != null && wordWithoutEnd.endInclusive == null) {
             wordWithoutEnd.endInclusive = mainEnd?.takeIf { it > wordWithoutEnd.begin }
                 ?: out.find { it.start > lyric.start }?.start?.minus(1uL)
                     ?.takeIf { it > wordWithoutEnd.begin }
                 ?: run {
-                    wordWithoutEnd.begin + (lyric.words.subList(0, lyric.words.size - 1)
+                    wordWithoutEnd.begin + (words.subList(0, words.size - 1)
                         .map { it.timeRange.count() / it.charRange.count().toFloat() }
                         .average().let { if (it.isNaN()) 100.0 else it } *
                             lyric.text.substring(wordWithoutEnd.charRange).length).toULong()
@@ -955,13 +998,14 @@ fun UsltFrameDecoder.Result.Sylt.toSyncedLyrics(trimEnabled: Boolean): SemanticL
         val mainEnd = if (lyric.start == previousTimestamp) out.firstOrNull {
             it.start == lyric.start && !it.endIsImplicit
         }?.end else null
-        val wordWithoutEnd = lyric.words?.lastOrNull()
+        val syltWords = lyric.words
+        val wordWithoutEnd = syltWords?.lastOrNull()
         if (wordWithoutEnd != null && wordWithoutEnd.endInclusive == null) {
             wordWithoutEnd.endInclusive = mainEnd?.takeIf { it > wordWithoutEnd.begin }
                 ?: out.find { it.start > lyric.start }?.start?.minus(1uL)
                     ?.takeIf { it > wordWithoutEnd.begin }
                 ?: run {
-                    wordWithoutEnd.begin + (lyric.words.subList(0, lyric.words.size - 1)
+                    wordWithoutEnd.begin + (syltWords.subList(0, syltWords.size - 1)
                         .map { it.timeRange.count() / it.charRange.count().toFloat() }
                         .average().let { if (it.isNaN()) 100.0 else it } *
                             lyric.text.substring(wordWithoutEnd.charRange).length).toULong()
@@ -1209,7 +1253,7 @@ private class TtmlParserState(
         }
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType == XmlPullParser.START_TAG) {
-                activePLevel = activeLevel + 1
+                activePLevel = activeLevel
             }
             parse(activeTime, activeLevel, activePLevel, activeAgent, activeSongPart, activeKey, activeRole)
         }

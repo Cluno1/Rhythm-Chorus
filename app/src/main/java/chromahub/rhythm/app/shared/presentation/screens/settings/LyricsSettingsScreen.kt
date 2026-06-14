@@ -4,6 +4,9 @@ package chromahub.rhythm.app.shared.presentation.screens.settings
 
 
 
+
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -195,6 +198,7 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
         }
     ) { modifier ->
         LazyColumn(
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             modifier = modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
@@ -395,7 +399,7 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
                             title = { Text(stringResource(R.string.lyricssourcesettingsscreen_lyrics_api_priority)) },
                             description = {
                                 Text(
-                                    text = if (apiPriority == chromahub.rhythm.app.shared.data.model.LyricsApiPriority.APPLE_MUSIC_FIRST) context.getString(R.string.lyrics_settings_apple_music_first) else context.getString(R.string.lyrics_settings_lrclib_first),
+                                    text = if (apiPriority == chromahub.rhythm.app.shared.data.model.LyricsApiPriority.LYRICALLY_FIRST) context.getString(R.string.lyrics_settings_lyrically_first) else context.getString(R.string.lyrics_settings_lrclib_first),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

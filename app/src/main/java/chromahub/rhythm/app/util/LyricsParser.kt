@@ -350,7 +350,8 @@ object LyricsParser {
     fun parseLyrics(lrcContent: String): List<LyricLine> {
         if (lrcContent.isBlank()) return emptyList()
         val trim = runCatching { AppSettings.getInstance(chromahub.rhythm.app.RhythmApplication.instance).trimLyrics.value }.getOrDefault(true)
-        val options = LrcUtils.LrcParserOptions(trim = trim, multiLine = true, errorText = null)
+        val autoWordSync = runCatching { AppSettings.getInstance(chromahub.rhythm.app.RhythmApplication.instance).translationAutoWord.value }.getOrDefault(false)
+        val options = LrcUtils.LrcParserOptions(trim = trim, multiLine = true, errorText = null, autoWordSync = autoWordSync)
         val parsed = LrcUtils.parseLyrics(lrcContent, audioMimeType = null, parserOptions = options, format = LrcUtils.LyricFormat.LRC)
         
         if (parsed is SemanticLyrics.SyncedLyrics) {
@@ -437,7 +438,8 @@ object LyricsParser {
     fun parseEnhancedLRC(lrcContent: String): List<EnhancedLyricLine> {
         if (lrcContent.isBlank()) return emptyList()
         val trim = runCatching { AppSettings.getInstance(chromahub.rhythm.app.RhythmApplication.instance).trimLyrics.value }.getOrDefault(true)
-        val options = LrcUtils.LrcParserOptions(trim = trim, multiLine = true, errorText = null)
+        val autoWordSync = runCatching { AppSettings.getInstance(chromahub.rhythm.app.RhythmApplication.instance).translationAutoWord.value }.getOrDefault(false)
+        val options = LrcUtils.LrcParserOptions(trim = trim, multiLine = true, errorText = null, autoWordSync = autoWordSync)
         val parsed = LrcUtils.parseLyrics(lrcContent, audioMimeType = null, parserOptions = options, format = LrcUtils.LyricFormat.LRC)
         
         if (parsed is SemanticLyrics.SyncedLyrics) {
@@ -482,7 +484,8 @@ object LyricsParser {
                     }
                 }
                 
-                val enhancedWords = mainLine.words?.mapIndexed { idx, word ->
+                val mlWords = mainLine.words
+                val enhancedWords = mlWords?.mapIndexed { idx, word ->
                     val rawText = mainLine.text.substring(word.charRange)
                     val trimmedText = rawText.trim()
                     
@@ -492,7 +495,7 @@ object LyricsParser {
                     val trimmedEnd = word.charRange.last - trailingSpaces
 
                     val isPart = if (idx > 0 && trimmedText.isNotEmpty()) {
-                        val prevWord = mainLine.words[idx - 1]
+                        val prevWord = mlWords[idx - 1]
                         val prevRawText = mainLine.text.substring(prevWord.charRange)
                         val prevTrimmedText = prevRawText.trim()
                         if (prevTrimmedText.isNotEmpty()) {

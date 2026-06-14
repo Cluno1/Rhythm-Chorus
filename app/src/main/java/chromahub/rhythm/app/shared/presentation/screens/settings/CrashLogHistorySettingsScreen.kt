@@ -4,6 +4,9 @@ package chromahub.rhythm.app.shared.presentation.screens.settings
 
 
 
+
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -180,8 +183,10 @@ fun CrashLogHistorySettingsScreen(onBackClick: () -> Unit, appSettings: AppSetti
         }
     ) { modifier ->
         LazyColumn(
-            modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(24.dp),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
+            contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 

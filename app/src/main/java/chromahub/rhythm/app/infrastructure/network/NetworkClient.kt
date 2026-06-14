@@ -26,7 +26,7 @@ object NetworkClient {
     private const val DEEZER_BASE_URL = "https://api.deezer.com/"
     private const val YTMUSIC_BASE_URL = "https://music.youtube.com/"
     private const val SPOTIFY_API_BASE_URL = "https://api.spotify.com/v1/"
-    private const val APPLEMUSIC_BASE_URL = "https://lyrics.paxsenix.org/"
+    private const val LYRICALLY_BASE_URL = "https://lyrics.paxsenix.org/"
     private const val ITUNES_BASE_URL = "https://itunes.apple.com/"
     
     // Connection timeouts
@@ -199,7 +199,7 @@ object NetworkClient {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         
-    private val appleMusicHttpClient = OkHttpClient.Builder()
+    private val lyricallyHttpClient = OkHttpClient.Builder()
         .addInterceptor(deezerHeadersInterceptor())
         .addInterceptor(loggingInterceptor)
         .addInterceptor(retryInterceptor)
@@ -209,9 +209,9 @@ object NetworkClient {
         .connectionPool(connectionPool)
         .build()
     
-    private val appleMusicRetrofit = Retrofit.Builder()
-        .baseUrl(APPLEMUSIC_BASE_URL)
-        .client(appleMusicHttpClient)
+    private val lyricallyRetrofit = Retrofit.Builder()
+        .baseUrl(LYRICALLY_BASE_URL)
+        .client(lyricallyHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -246,11 +246,11 @@ object NetworkClient {
         spotifyRetrofit.create(SpotifySearchApiService::class.java)
     } else null
 
-    val rhythmLyricsApiService: RhythmLyricsApiService? = if (BuildConfig.ENABLE_APPLE_MUSIC) {
-        appleMusicRetrofit.create(RhythmLyricsApiService::class.java)
+    val rhythmLyricsApiService: RhythmLyricsApiService? = if (BuildConfig.ENABLE_LYRICALLY_API) {
+        lyricallyRetrofit.create(RhythmLyricsApiService::class.java)
     } else null
 
-    val itunesSearchApiService: ITunesSearchApiService? = if (BuildConfig.ENABLE_APPLE_MUSIC) {
+    val itunesSearchApiService: ITunesSearchApiService? = if (BuildConfig.ENABLE_LYRICALLY_API) {
         itunesRetrofit.create(ITunesSearchApiService::class.java)
     } else null
     
@@ -265,7 +265,7 @@ object NetworkClient {
     fun isLrcLibApiEnabled(): Boolean = BuildConfig.ENABLE_LRCLIB && (appSettings?.lrclibApiEnabled?.value ?: false)
     fun isYTMusicApiEnabled(): Boolean = BuildConfig.ENABLE_YOUTUBE_MUSIC && (appSettings?.ytMusicApiEnabled?.value ?: false)
     fun isSpotifyApiEnabled(): Boolean = BuildConfig.ENABLE_SPOTIFY_SEARCH && (appSettings?.spotifyApiEnabled?.value ?: false)
-    fun isAppleMusicApiEnabled(): Boolean = BuildConfig.ENABLE_APPLE_MUSIC && (appSettings?.appleMusicApiEnabled?.value ?: false)
+    fun isLyricallyApiEnabled(): Boolean = BuildConfig.ENABLE_LYRICALLY_API && (appSettings?.lyricallyApiEnabled?.value ?: false)
     
     // Get Spotify API credentials
     fun getSpotifyClientId(): String = appSettings?.spotifyClientId?.value ?: ""

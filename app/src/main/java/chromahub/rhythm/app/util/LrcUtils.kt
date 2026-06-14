@@ -37,7 +37,12 @@ object LrcUtils {
         SRT
     }
 
-    data class LrcParserOptions(val trim: Boolean, val multiLine: Boolean, val errorText: String?)
+    data class LrcParserOptions(
+        val trim: Boolean,
+        val multiLine: Boolean,
+        val errorText: String?,
+        val autoWordSync: Boolean = false
+    )
 
     @VisibleForTesting
     fun parseLyrics(
@@ -60,14 +65,17 @@ object LrcUtils {
             else null
         })) {
             return try {
-                val ret = i() ?: continue
+                var ret = i() ?: continue
+                if (parserOptions.autoWordSync && ret is SyncedLyrics) {
+                    applyAutoWordSync(ret)
+                    splitBidirectionalWords(ret)
+                }
                 if (ret is SyncedLyrics && Flags.HIDE_SAME_TRANSLATIONS)
-                    ret.copy(text = ret.text.filterIndexed { i, it ->
+                    ret = ret.copy(text = ret.text.filterIndexed { i, it ->
                         !it.isTranslated || it.text != ret.text.subList(0, i)
                             .last { !it.isTranslated }.text
                     })
-                else
-                    ret
+                ret
             } catch (e: Exception) {
                 if (parserOptions.errorText == null)
                     throw e

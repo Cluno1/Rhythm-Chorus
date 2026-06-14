@@ -32,6 +32,6 @@ object StreamingMusicModule {
     
     // TODO: Add use cases and API clients when implementing streaming features
     // fun provideSpotifyApiClient(context: Context): SpotifyApiClient { ... }
-    // fun provideAppleMusicApiClient(context: Context): AppleMusicApiClient { ... }
+    // fun provideLyricallyApiClient(context: Context): LyricallyApiClient { ... }
     // fun provideYouTubeMusicApiClient(context: Context): YouTubeMusicApiClient { ... }
 }

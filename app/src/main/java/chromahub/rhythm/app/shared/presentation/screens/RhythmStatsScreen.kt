@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -262,7 +263,7 @@ private fun StatsPageContent(
 
                         RatingStatsCard(viewModel = viewModel)
                         
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(32.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()))
                     }
                 }
             }

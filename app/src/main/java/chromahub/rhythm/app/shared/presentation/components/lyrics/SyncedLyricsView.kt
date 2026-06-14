@@ -68,9 +68,12 @@ private suspend fun LazyListState.animateToSyncedItemWithCatchUp(
 }
 
 private fun buildSyncedLyricsItems(lines: List<LyricLine>): List<SyncedLyricsItem> {
-    if (lines.isEmpty()) return emptyList()
+    val filtered = lines.mapIndexedNotNull { i, line ->
+        if (line.text.isNotBlank()) i to line else null
+    }
+    if (filtered.isEmpty()) return emptyList()
 
-    val intervals = lines.zipWithNext { current, next -> (next.timestamp - current.timestamp).coerceAtLeast(0L) }
+    val intervals = filtered.zipWithNext { (_, a), (_, b) -> (b.timestamp - a.timestamp).coerceAtLeast(0L) }
         .filter { it > 0L }
 
     val medianInterval = if (intervals.isNotEmpty()) {
@@ -84,11 +87,11 @@ private fun buildSyncedLyricsItems(lines: List<LyricLine>): List<SyncedLyricsIte
     val longGapThreshold = maxOf(MIN_VOCAL_GAP_MS, (medianInterval * 2.4f).toLong())
 
     return buildList {
-        lines.forEachIndexed { index, line ->
-            add(SyncedLyricsItem.Line(line, index))
+        filtered.forEachIndexed { idx, (origIdx, line) ->
+            add(SyncedLyricsItem.Line(line, origIdx))
 
-            if (index < lines.lastIndex) {
-                val nextLine = lines[index + 1]
+            if (idx < filtered.lastIndex) {
+                val nextLine = filtered[idx + 1].second
                 val intervalToNext = nextLine.timestamp - line.timestamp
 
                 if (intervalToNext >= longGapThreshold) {
@@ -164,10 +167,21 @@ fun SyncedLyricsView(
         }
     }
     
+    // Detect if playback is currently in an instrumental gap
+    val isInGap by remember(adjustedPlaybackTime, lyricsItems) {
+        derivedStateOf {
+            lyricsItems.any { item ->
+                item is SyncedLyricsItem.Gap &&
+                    adjustedPlaybackTime >= item.startTime &&
+                    adjustedPlaybackTime < item.startTime + item.duration
+            }
+        }
+    }
+
     // Find current line index more efficiently (using adjustedPlaybackTime for sync offset)
     val currentLineIndex by remember(adjustedPlaybackTime, parsedLyrics) {
         derivedStateOf {
-            parsedLyrics.indexOfLast { it.timestamp <= adjustedPlaybackTime }
+            if (isInGap) -1 else parsedLyrics.indexOfLast { it.timestamp <= adjustedPlaybackTime }
         }
     }
 
@@ -302,11 +316,11 @@ private fun SyncedVocalGapItem(
             .padding(horizontal = 28.dp)
     )
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        contentAlignment = Alignment.Center
+            .padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "♪",
@@ -316,6 +330,13 @@ private fun SyncedVocalGapItem(
                 scaleX = iconScale
                 scaleY = iconScale
             }
+        )
+        Text(
+            text = "Instrumental",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface.copy(
+                alpha = if (isCurrentGap) 0.6f else 0.25f
+            )
         )
     }
 

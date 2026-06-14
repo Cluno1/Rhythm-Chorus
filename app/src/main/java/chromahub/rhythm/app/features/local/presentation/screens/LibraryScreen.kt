@@ -807,7 +807,22 @@ fun LibraryScreen(
     }
     val isTabletLayout = LocalConfiguration.current.screenWidthDp >= 600
     val baseLibraryBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
+    val fabBottomPadding = if (isTabletLayout) {
+        12.dp
+    } else {
+        (baseLibraryBottomPadding - 4.dp).coerceAtLeast(0.dp)
+    }
     val libraryBottomOverlayPadding = baseLibraryBottomPadding
+    val activeTabId = visibleTabIds.getOrNull(pagerState.currentPage) ?: ""
+    val isBottomBarVisible = when (activeTabId) {
+        "SONGS" -> songs.isNotEmpty()
+        "ALBUMS" -> albums.isNotEmpty()
+        "ARTISTS" -> false
+        "EXPLORER" -> explorerPath != null || explorerFolderSongs.isNotEmpty()
+        else -> false
+    }
+    val adjustedSongsBottomPadding = baseLibraryBottomPadding + (if (isBottomBarVisible) 80.dp else 0.dp)
+
     
     LaunchedEffect(isLibraryRefreshing) {
         isRefreshing = isLibraryRefreshing
@@ -897,6 +912,7 @@ fun LibraryScreen(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         topBar = {
             Column {
                 Spacer(modifier = Modifier.height(5.dp))
@@ -1300,7 +1316,7 @@ fun LibraryScreen(
                     onCreatePlaylist = onCreatePlaylistFromFab,
                     onImportPlaylist = onImportPlaylistFromFab,
                     onExportPlaylists = onExportPlaylistsFromFab,
-                    bottomPadding = (baseLibraryBottomPadding - 12.dp).coerceAtLeast(0.dp),
+                    bottomPadding = fabBottomPadding,
                     haptics = haptics
                 )
             }
@@ -1705,7 +1721,7 @@ fun LibraryScreen(
                                             onSongSelectionToggle = onSongSelectionToggle,
                                             onShowMultiSelectionSheet = { showMultiSelectionSheet = true },
                                             onRefreshClick = onRefreshClick,
-                                            bottomPadding = baseLibraryBottomPadding,
+                                            bottomPadding = adjustedSongsBottomPadding,
                                             sortOrder = sortOrder
                                         )
                                     }
@@ -1738,7 +1754,7 @@ fun LibraryScreen(
                                             onPlayQueue = onPlayQueue,
                                             onShuffleQueue = onShuffleQueue,
                                             onRefreshClick = onRefreshClick,
-                                            bottomPadding = baseLibraryBottomPadding,
+                                            bottomPadding = adjustedSongsBottomPadding,
                                             sortOrder = sortOrder
                                         )
                                     }
@@ -1784,7 +1800,7 @@ fun LibraryScreen(
                                         currentPath = explorerPath,
                                         onPathChanged = { explorerPath = it },
                                         onFolderSongsChanged = { explorerFolderSongs = it },
-                                        bottomPadding = baseLibraryBottomPadding
+                                        bottomPadding = adjustedSongsBottomPadding
                                     )
                                 }
                             }
@@ -5520,7 +5536,13 @@ private fun LibraryBottomBar(
     ) {
         val isTablet = LocalConfiguration.current.screenWidthDp >= 600
         val baseBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
-        val bottomPadding = if (isTablet) 12.dp else (baseBottomPadding - 4.dp).coerceAtLeast(0.dp)
+        val bottomBarContext = LocalContext.current
+        val localAppSettings = remember { AppSettings.getInstance(bottomBarContext) }
+        val bottomPadding = if (isTablet) {
+            12.dp
+        } else {
+            (baseBottomPadding - 4.dp).coerceAtLeast(0.dp)
+        }
         Surface(
             modifier = if (isTablet) {
                 Modifier

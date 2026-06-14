@@ -43,6 +43,7 @@ import coil.request.ImageRequest
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
 import chromahub.rhythm.app.shared.presentation.components.player.formatDuration
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.AppSettings
@@ -311,7 +312,7 @@ fun ArtistDetailScreen(
                 ) {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(top = 24.dp, bottom = 100.dp, start = 16.dp, end = 24.dp)
+                        contentPadding = PaddingValues(top = 24.dp, bottom = (LocalMiniPlayerPadding.current.calculateBottomPadding() + 24.dp).coerceAtLeast(100.dp), start = 16.dp, end = 24.dp)
                     ) {
                         item {
                             if (isArtistContentLoading) {
@@ -481,7 +482,7 @@ fun ArtistDetailScreen(
         ) { modifier ->
             LazyColumn(
                 modifier = modifier,
-                contentPadding = PaddingValues(bottom = 100.dp)
+                contentPadding = PaddingValues(bottom = (LocalMiniPlayerPadding.current.calculateBottomPadding() + 24.dp).coerceAtLeast(100.dp))
             ) {
                 // Action Buttons Section
                 item {

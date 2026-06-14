@@ -2,6 +2,9 @@
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
+
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -147,12 +150,7 @@ fun PlaybackSettingsScreen(
                         onToggleChange = { appSettings.setCrossfadeOnSkip(it) },
                         enabled = crossfadeEnabled
                     ),
-                    SettingItem(
-                        MaterialSymbolIcon("volume_up"),
-                        context.getString(R.string.replay_gain),
-                        context.getString(R.string.replay_gain_desc),
-                        onClick = { onNavigateTo(SettingsRoutes.REPLAY_GAIN) }
-                    )
+
                 )
             ),
             SettingGroup(
@@ -182,6 +180,7 @@ fun PlaybackSettingsScreen(
         )
 
         LazyColumn(
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             modifier = modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)

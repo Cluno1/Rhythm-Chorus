@@ -186,6 +186,7 @@ import chromahub.rhythm.app.shared.presentation.components.lyrics.SyncedLyricsVi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBarsPadding
 import chromahub.rhythm.app.shared.presentation.components.player.formatDuration
 import java.util.concurrent.TimeUnit // Import TimeUnit for duration formatting
 import chromahub.rhythm.app.shared.presentation.components.common.PlaybackBufferingLoader
@@ -3892,7 +3893,7 @@ fun MaterialPlayerScreen(
             // Adaptive Layout Logic
             if (isLandscapeTablet) {
                 Row(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().navigationBarsPadding(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Left Side - Reduced size on tablet
@@ -3921,7 +3922,7 @@ fun MaterialPlayerScreen(
                 }
             } else {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().navigationBarsPadding(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {

@@ -134,6 +134,7 @@ fun CollapsibleHeaderScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = containerColor,
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         topBar = {
             val collapsedFraction = scrollBehavior.state.collapsedFraction
             val fontSize = (24 + (32 - 24) * (1 - collapsedFraction)).sp // Interpolate between 24sp and 32sp
@@ -483,6 +484,7 @@ fun ArtistCollapsibleHeaderScreen(
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             containerColor = Color.Transparent,
+            contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
             topBar = {
                 val collapsedFraction = scrollBehavior.state.collapsedFraction
                 val fontSize = (24 + (32 - 24) * (1 - collapsedFraction)).sp
@@ -604,6 +606,7 @@ fun FixedHeaderScreen(
     Scaffold(
         modifier = screenModifier.fillMaxSize(),
         containerColor = containerColor,
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         topBar = {
             Column {
                 Spacer(modifier = Modifier.height(10.dp))

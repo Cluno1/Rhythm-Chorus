@@ -1,4 +1,7 @@
 package chromahub.rhythm.app.shared.presentation.screens.settings
+
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 
@@ -49,6 +52,7 @@ fun FestiveSettingsScreen(
         }
     ) { modifier ->
         LazyColumn(
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             modifier = modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)

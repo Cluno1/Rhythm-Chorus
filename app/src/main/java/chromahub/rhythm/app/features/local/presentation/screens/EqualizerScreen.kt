@@ -271,6 +271,7 @@ import chromahub.rhythm.app.features.local.presentation.screens.AddToPlaylistScr
 import chromahub.rhythm.app.shared.presentation.components.dialogs.CreatePlaylistDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.QueueActionDialog
 import chromahub.rhythm.app.shared.presentation.components.player.MiniPlayer
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons.Delete
 import chromahub.rhythm.app.features.local.presentation.screens.LibraryScreen
 import chromahub.rhythm.app.shared.presentation.components.common.SmallTabAnimation
@@ -696,7 +697,7 @@ fun EqualizerScreen(
                     alpha = contentAlpha
                     translationY = contentOffset
                 },
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 120.dp),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = (LocalMiniPlayerPadding.current.calculateBottomPadding() + 24.dp).coerceAtLeast(120.dp)),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
 

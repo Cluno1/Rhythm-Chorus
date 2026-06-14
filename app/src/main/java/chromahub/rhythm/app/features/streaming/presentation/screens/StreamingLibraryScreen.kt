@@ -70,6 +70,9 @@ import chromahub.rhythm.app.shared.data.model.AlbumViewType
 import chromahub.rhythm.app.shared.data.model.ArtistViewType
 import chromahub.rhythm.app.shared.data.model.PlaylistViewType
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.AnimatedContent
@@ -320,6 +323,11 @@ fun StreamingLibraryScreen(
     val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val isTabletLayout = LocalConfiguration.current.screenWidthDp >= 600
     val baseLibraryBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
+    val fabBottomPaddingVal = if (isTabletLayout) {
+        12.dp
+    } else {
+        (baseLibraryBottomPadding - 4.dp).coerceAtLeast(0.dp)
+    }
     val libraryBottomOverlayPadding = baseLibraryBottomPadding
     val contentBottomPadding = 24.dp
 
@@ -502,6 +510,15 @@ fun StreamingLibraryScreen(
             ratedSongIdsProvider = { emptySet() }
         )
     }
+    val activeTab = tabs.getOrNull(pagerState.currentPage)
+    val isBottomBarVisible = when (activeTab) {
+        StreamingLibraryTab.SONGS -> localSongs.isNotEmpty()
+        StreamingLibraryTab.ALBUMS -> localAlbums.isNotEmpty()
+        StreamingLibraryTab.ARTISTS -> localArtists.isNotEmpty()
+        else -> false
+    }
+    val adjustedSongsBottomPadding = baseLibraryBottomPadding + (if (isBottomBarVisible) 80.dp else 0.dp)
+
     val openAlbumBottomSheet: (StreamingAlbum) -> Unit = { album ->
         if (album.tracks.isEmpty()) {
             selectedAlbumForSheet = album
@@ -621,6 +638,7 @@ fun StreamingLibraryScreen(
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         topBar = {
             Column {
                 Spacer(modifier = Modifier.height(5.dp))
@@ -871,7 +889,7 @@ fun StreamingLibraryScreen(
                     onCreatePlaylist = { showCreatePlaylistDialog = true },
                     onImportPlaylist = null,
                     onExportPlaylists = null,
-                    bottomPadding = (baseLibraryBottomPadding - 12.dp).coerceAtLeast(0.dp),
+                    bottomPadding = fabBottomPaddingVal,
                     haptics = haptics
                 )
             }
@@ -1272,7 +1290,7 @@ fun StreamingLibraryScreen(
                                             }
                                         },
                                         onRefreshClick = { viewModel.loadLibrary() },
-                                        bottomPadding = baseLibraryBottomPadding
+                                        bottomPadding = adjustedSongsBottomPadding
                                     )
                                 }
                             }
@@ -1436,7 +1454,7 @@ fun StreamingLibraryScreen(
                                         )
                                     },
                                     onRefreshClick = { viewModel.loadLibrary() },
-                                    bottomPadding = baseLibraryBottomPadding
+                                    bottomPadding = adjustedSongsBottomPadding
                                 )
                             }
 
@@ -1470,7 +1488,7 @@ fun StreamingLibraryScreen(
                                         }
                                     },
                                     onRefreshClick = { viewModel.loadLibrary() },
-                                    bottomPadding = baseLibraryBottomPadding
+                                    bottomPadding = adjustedSongsBottomPadding
                                 )
                             }
 
@@ -1488,7 +1506,7 @@ fun StreamingLibraryScreen(
                                     },
                                     appSettings = appSettings,
                                     onRefreshClick = { viewModel.loadLibrary() },
-                                    bottomPadding = baseLibraryBottomPadding
+                                    bottomPadding = adjustedSongsBottomPadding
                                 )
                             }
                         }
@@ -2751,7 +2769,13 @@ private fun LibraryBottomBar(
     ) {
         val isTablet = LocalConfiguration.current.screenWidthDp >= 600
         val baseBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
-        val bottomPaddingVal = if (isTablet) 12.dp else (baseBottomPadding - 4.dp).coerceAtLeast(0.dp)
+        val bottomBarContext = LocalContext.current
+        val localAppSettings = remember { AppSettings.getInstance(bottomBarContext) }
+        val bottomPaddingVal = if (isTablet) {
+            12.dp
+        } else {
+            (baseBottomPadding - 4.dp).coerceAtLeast(0.dp)
+        }
         Surface(
             modifier = if (isTablet) {
                 Modifier

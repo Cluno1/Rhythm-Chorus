@@ -136,13 +136,16 @@ fun WordByWordLyricsView(
 
     // Create items list with gaps for instrumental sections
     val lyricsItems = remember(visibleLyricsLines) {
+        val vocalLines = visibleLyricsLines.mapIndexedNotNull { i, line ->
+            if (line.words.any { it.text.isNotBlank() }) i to line else null
+        }
         val items = mutableListOf<LyricsItem>()
-        visibleLyricsLines.forEachIndexed { index, line ->
-            items.add(LyricsItem.LyricLine(line, index))
+        vocalLines.forEachIndexed { idx, (origIdx, line) ->
+            items.add(LyricsItem.LyricLine(line, origIdx))
             
             // Check for gap to next line
-            if (index < visibleLyricsLines.size - 1) {
-                val nextLine = visibleLyricsLines[index + 1]
+            if (idx < vocalLines.size - 1) {
+                val nextLine = vocalLines[idx + 1].second
                 val gapDuration = nextLine.lineTimestamp - line.effectiveLineEndtime()
                 if (gapDuration > 3000) { // 3 seconds threshold
                     items.add(LyricsItem.Gap(gapDuration, line.effectiveLineEndtime()))
@@ -152,9 +155,22 @@ fun WordByWordLyricsView(
         items
     }
 
+    // Detect if playback is currently in an instrumental gap
+    val isInGap by remember(adjustedPlaybackTime, lyricsItems) {
+        derivedStateOf {
+            lyricsItems.any { item ->
+                item is LyricsItem.Gap &&
+                    adjustedPlaybackTime >= item.startTime &&
+                    adjustedPlaybackTime < item.startTime + item.duration
+            }
+        }
+    }
+
     // Find current line index (among lyric lines only) - using adjustedPlaybackTime for sync offset
     val currentLineIndex by remember(adjustedPlaybackTime, visibleLyricsLines) {
         derivedStateOf {
+            if (isInGap) return@derivedStateOf -1
+
             val lastIndexAtPlayback = visibleLyricsLines.indexOfLast { line ->
                 adjustedPlaybackTime >= line.lineTimestamp
             }
@@ -291,6 +307,22 @@ fun WordByWordLyricsView(
                             adjustedPlaybackTime < item.startTime + item.duration
                         
                         val gapHeight = (item.duration / 1000f).coerceIn(20f, 80f)
+                        val iconAlpha by animateFloatAsState(
+                            targetValue = if (isCurrentGap) 0.85f else 0.3f,
+                            animationSpec = if (lyricNoAnimationVal) snap() else spring(
+                                dampingRatio = Spring.DampingRatioNoBouncy,
+                                stiffness = Spring.StiffnessLow
+                            ),
+                            label = "gapAlpha"
+                        )
+                        val iconScale by animateFloatAsState(
+                            targetValue = if (isCurrentGap) 1.5f else 1f,
+                            animationSpec = if (lyricNoAnimationVal) snap() else spring<Float>(
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessVeryLow
+                            ),
+                            label = "iconScale"
+                        )
                         
                         Spacer(
                             modifier = Modifier
@@ -299,31 +331,27 @@ fun WordByWordLyricsView(
                                 .padding(horizontal = 32.dp)
                         )
                         
-                        Box(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            contentAlignment = Alignment.Center
+                                .padding(vertical = 4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            val iconScale by animateFloatAsState(
-                                targetValue = if (isCurrentGap) 1.5f else 1f,
-                                animationSpec = if (lyricNoAnimationVal) snap() else spring<Float>(
-                                    dampingRatio = Spring.DampingRatioLowBouncy,
-                                    stiffness = Spring.StiffnessVeryLow
-                                ),
-                                label = "iconScale"
-                            )
-                            
                             Text(
                                 text = "♪",
                                 style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onSurface.copy(
-                                    alpha = if (isCurrentGap) 0.8f else 0.3f
-                                ),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = iconAlpha),
                                 modifier = Modifier.graphicsLayer {
                                     scaleX = iconScale
                                     scaleY = iconScale
                                 }
+                            )
+                            Text(
+                                text = "Instrumental",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurface.copy(
+                                    alpha = if (isCurrentGap) 0.6f else 0.25f
+                                )
                             )
                         }
                         

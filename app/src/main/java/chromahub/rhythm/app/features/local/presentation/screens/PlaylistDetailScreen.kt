@@ -1894,7 +1894,7 @@ fun PlaylistDetailScreen(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(horizontal = 20.dp)
-                        .padding(bottom = 12.dp),
+                        .padding(bottom = LocalMiniPlayerPadding.current.calculateBottomPadding()),
                     shape = RoundedCornerShape(32.dp),
                     color = MaterialTheme.colorScheme.surfaceContainer,
                     tonalElevation = 6.dp,
@@ -2532,7 +2532,7 @@ fun PlaylistDetailScreen(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(horizontal = 16.dp)
-                        .padding(bottom = 12.dp),
+                        .padding(bottom = LocalMiniPlayerPadding.current.calculateBottomPadding()),
                     shape = RoundedCornerShape(32.dp),
                     color = MaterialTheme.colorScheme.surface,
                     tonalElevation = 0.dp,

@@ -9990,7 +9990,7 @@ fun EnhancedIntegrationsContent(
     // Integration settings
     val deezerApiEnabled by appSettings.deezerApiEnabled.collectAsState()
     val lrclibApiEnabled by appSettings.lrclibApiEnabled.collectAsState()
-    val appleMusicApiEnabled by appSettings.appleMusicApiEnabled.collectAsState()
+    val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
     val ytMusicApiEnabled by appSettings.ytMusicApiEnabled.collectAsState()
     val spotifyApiEnabled by appSettings.spotifyApiEnabled.collectAsState()
     val broadcastStatusEnabled by appSettings.broadcastStatusEnabled.collectAsState()
@@ -10053,14 +10053,14 @@ fun EnhancedIntegrationsContent(
                 IntegrationsSettingsCards(
                     deezerApiEnabled = deezerApiEnabled,
                     lrclibApiEnabled = lrclibApiEnabled,
-                    appleMusicApiEnabled = appleMusicApiEnabled,
+                    lyricallyApiEnabled = lyricallyApiEnabled,
                     ytMusicApiEnabled = ytMusicApiEnabled,
                     spotifyApiEnabled = spotifyApiEnabled,
                     broadcastStatusEnabled = broadcastStatusEnabled,
                     bluetoothLyricsEnabled = bluetoothLyricsEnabled,
                     onDeezerChange = { appSettings.setDeezerApiEnabled(it) },
                     onLrcLibChange = { appSettings.setLrcLibApiEnabled(it) },
-                    onAppleMusicChange = { appSettings.setAppleMusicApiEnabled(it) },
+                    onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
                     onYtMusicChange = { appSettings.setYTMusicApiEnabled(it) },
                     onSpotifyChange = { appSettings.setSpotifyApiEnabled(it) },
                     onBroadcastChange = { appSettings.setBroadcastStatusEnabled(it) },
@@ -10108,14 +10108,14 @@ fun EnhancedIntegrationsContent(
             IntegrationsSettingsCards(
                 deezerApiEnabled = deezerApiEnabled,
                 lrclibApiEnabled = lrclibApiEnabled,
-                appleMusicApiEnabled = appleMusicApiEnabled,
+                lyricallyApiEnabled = lyricallyApiEnabled,
                 ytMusicApiEnabled = ytMusicApiEnabled,
                 spotifyApiEnabled = spotifyApiEnabled,
                 broadcastStatusEnabled = broadcastStatusEnabled,
                 bluetoothLyricsEnabled = bluetoothLyricsEnabled,
                 onDeezerChange = { appSettings.setDeezerApiEnabled(it) },
                 onLrcLibChange = { appSettings.setLrcLibApiEnabled(it) },
-                onAppleMusicChange = { appSettings.setAppleMusicApiEnabled(it) },
+                onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
                 onYtMusicChange = { appSettings.setYTMusicApiEnabled(it) },
                 onSpotifyChange = { appSettings.setSpotifyApiEnabled(it) },
                 onBroadcastChange = { appSettings.setBroadcastStatusEnabled(it) },
@@ -10140,14 +10140,14 @@ fun EnhancedIntegrationsContent(
 private fun IntegrationsSettingsCards(
     deezerApiEnabled: Boolean,
     lrclibApiEnabled: Boolean,
-    appleMusicApiEnabled: Boolean,
+    lyricallyApiEnabled: Boolean,
     ytMusicApiEnabled: Boolean,
     spotifyApiEnabled: Boolean,
     broadcastStatusEnabled: Boolean,
     bluetoothLyricsEnabled: Boolean,
     onDeezerChange: (Boolean) -> Unit,
     onLrcLibChange: (Boolean) -> Unit,
-    onAppleMusicChange: (Boolean) -> Unit,
+    onLyricallyChange: (Boolean) -> Unit,
     onYtMusicChange: (Boolean) -> Unit,
     onSpotifyChange: (Boolean) -> Unit,
     onBroadcastChange: (Boolean) -> Unit,
@@ -10189,14 +10189,14 @@ private fun IntegrationsSettingsCards(
                 )
             )
         }
-        if (chromahub.rhythm.app.BuildConfig.ENABLE_APPLE_MUSIC) {
+        if (chromahub.rhythm.app.BuildConfig.ENABLE_LYRICALLY_API) {
             add(
                 onboardingToggleItem(
                     MaterialSymbolIcon("music_note"),
-                    "Apple Music",
+                    "Lyrically",
                     "Word-by-word synchronized lyrics (Highest Quality)",
-                    appleMusicApiEnabled,
-                    onAppleMusicChange
+                    lyricallyApiEnabled,
+                    onLyricallyChange
                 )
             )
         }

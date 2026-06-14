@@ -4,6 +4,9 @@ package chromahub.rhythm.app.shared.presentation.screens.settings
 
 
 
+
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -167,7 +170,7 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
     val deezerApiEnabled by appSettings.deezerApiEnabled.collectAsState()
     val lrclibApiEnabled by appSettings.lrclibApiEnabled.collectAsState()
     val ytMusicApiEnabled by appSettings.ytMusicApiEnabled.collectAsState()
-    val appleMusicApiEnabled by appSettings.appleMusicApiEnabled.collectAsState()
+    val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
 
     CollapsibleHeaderScreen(
         title = context.getString(R.string.settings_api_management),
@@ -178,6 +181,7 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
         }
     ) { modifier ->
         LazyColumn(
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             modifier = modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
@@ -230,17 +234,17 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                         )
                     }
 
-                    if (chromahub.rhythm.app.BuildConfig.ENABLE_APPLE_MUSIC) {
+                    if (chromahub.rhythm.app.BuildConfig.ENABLE_LYRICALLY_API) {
                         add(
                             toMaterial3SettingsItem(
                                 context = context,
                                 hapticFeedback = hapticFeedback,
                                 item = SettingItem(
                                     icon = MaterialSymbolIcon("music_note"),
-                                    title = stringResource(R.string.apimanagementsettingsscreen_apple_music),
+                                    title = stringResource(R.string.apimanagementsettingsscreen_lyrically),
                                     description = "Word-by-word synchronized lyrics (Highest Quality)",
-                                    toggleState = appleMusicApiEnabled,
-                                    onToggleChange = { enabled -> appSettings.setAppleMusicApiEnabled(enabled) }
+                                    toggleState = lyricallyApiEnabled,
+                                    onToggleChange = { enabled -> appSettings.setLyricallyApiEnabled(enabled) }
                                 )
                             )
                         )

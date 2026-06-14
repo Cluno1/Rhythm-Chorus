@@ -3,6 +3,9 @@
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
 
+
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -386,8 +389,9 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .offset(y = -headerBlendHeight),
-            contentPadding = PaddingValues(horizontal = 24.dp),
+                .offset(y = -headerBlendHeight)
+                .padding(horizontal = 24.dp),
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // 1. Live Update Status display (No card bg, onboarding-like placements and wavy loaders)

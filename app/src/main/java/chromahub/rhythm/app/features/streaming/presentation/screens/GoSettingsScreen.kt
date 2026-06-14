@@ -56,6 +56,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -169,6 +170,7 @@ fun GoSettingsScreen(
                     alpha = contentAlpha
                     translationY = contentOffset
                 },
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {

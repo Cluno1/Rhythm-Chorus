@@ -68,6 +68,8 @@ import chromahub.rhythm.app.util.LyricsParser
 import chromahub.rhythm.app.util.EnhancedLyricLine
 import chromahub.rhythm.app.util.EnhancedWord
 import chromahub.rhythm.app.util.RhythmLyricsParser
+import chromahub.rhythm.app.util.LrcUtils
+import chromahub.rhythm.app.util.SemanticLyrics
 import android.content.SharedPreferences
 import androidx.room.withTransaction
 import chromahub.rhythm.app.features.local.data.database.RhythmDatabase
@@ -3855,7 +3857,24 @@ class MusicRepository(context: Context) {
                 
                 // Standard LRC format (line-by-line only) - normalize fragmented words
                 val normalizedLyrics = normalizePlainLRC(cleanedLyrics)
-                LyricsData(null, normalizedLyrics, null)
+                val wordByWordJson = if (appSettings.translationAutoWord.value) {
+                    try {
+                        val options = LrcUtils.LrcParserOptions(
+                            trim = true, multiLine = true, errorText = null, autoWordSync = true
+                        )
+                        val parsed = LrcUtils.parseLyrics(
+                            normalizedLyrics, audioMimeType = null,
+                            parserOptions = options, format = LrcUtils.LyricFormat.LRC
+                        )
+                        if (parsed is SemanticLyrics.SyncedLyrics)
+                            convertSemanticLyricsToWordByWord(parsed)
+                        else null
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to auto-generate word sync", e)
+                        null
+                    }
+                } else null
+                LyricsData(null, normalizedLyrics, wordByWordJson)
             } else {
                 // Empty synced lyrics
                 null
@@ -3988,6 +4007,29 @@ class MusicRepository(context: Context) {
         }
         
         return com.google.gson.Gson().toJson(rhythmWordLines)
+    }
+    
+    private fun convertSemanticLyricsToWordByWord(syncedLyrics: SemanticLyrics.SyncedLyrics): String? {
+        val rhythmWordLines = syncedLyrics.text.mapNotNull { line ->
+            val words = line.words ?: return@mapNotNull null
+            val wordMaps = words.map { word ->
+                val text = line.text.substring(word.charRange)
+                mapOf(
+                    "text" to text,
+                    "part" to false,
+                    "timestamp" to word.begin.toLong(),
+                    "endtime" to (word.endInclusive ?: word.begin).toLong()
+                )
+            }
+            val lineMap = mutableMapOf<String, Any>(
+                "text" to wordMaps,
+                "background" to false,
+                "timestamp" to line.start.toLong(),
+                "endtime" to line.end.toLong()
+            )
+            lineMap
+        }
+        return if (rhythmWordLines.isNotEmpty()) Gson().toJson(rhythmWordLines) else null
     }
     
     /**
@@ -4314,17 +4356,19 @@ class MusicRepository(context: Context) {
         val cleanArtist = artist.trim().replace(Regex("\\(.*?\\)"), "").trim()
         val cleanTitle = title.trim().replace(Regex("\\(.*?\\)"), "").trim()
 
-        var appleMusicBackup: LyricsData? = null
+        var lyricallyBackup: LyricsData? = null
         var lrclibPlainBackup: LyricsData? = null
 
-        val fetchAppleMusic = suspend {
-            if (NetworkClient.isAppleMusicApiEnabled() && itunesSearchApiService != null && rhythmLyricsApiService != null) {
+        val appSettings = AppSettings.getInstance(context)
+
+        val fetchLyrically = suspend {
+            if (NetworkClient.isLyricallyApiEnabled() && itunesSearchApiService != null && rhythmLyricsApiService != null) {
                 try {
                     val term1 = "$cleanArtist $cleanTitle"
                         .replace(Regex("[/\\-;,.&]"), " ")
                         .replace(Regex("\\s+"), " ")
                         .trim()
-                    Log.d(TAG, "Apple Music API: Searching iTunes with primary term: $term1")
+                    Log.d(TAG, "Lyrically API: Searching iTunes with primary term: $term1")
                     var searchResponse = itunesSearchApiService.searchSongs(term = term1, limit = 30)
                     
                     if (searchResponse.results.isEmpty()) {
@@ -4333,7 +4377,7 @@ class MusicRepository(context: Context) {
                             .replace(Regex("[/\\-;,.&]"), " ")
                             .replace(Regex("\\s+"), " ")
                             .trim()
-                        Log.d(TAG, "Apple Music API: Searching iTunes with secondary term: $term2")
+                        Log.d(TAG, "Lyrically API: Searching iTunes with secondary term: $term2")
                         searchResponse = itunesSearchApiService.searchSongs(term = term2, limit = 30)
                     }
                     
@@ -4342,7 +4386,7 @@ class MusicRepository(context: Context) {
                             .replace(Regex("[/\\-;,.&]"), " ")
                             .replace(Regex("\\s+"), " ")
                             .trim()
-                        Log.d(TAG, "Apple Music API: Searching iTunes with tertiary title-only term: $term3")
+                        Log.d(TAG, "Lyrically API: Searching iTunes with tertiary title-only term: $term3")
                         searchResponse = itunesSearchApiService.searchSongs(term = term3, limit = 50)
                     }
 
@@ -4359,14 +4403,14 @@ class MusicRepository(context: Context) {
                     }
 
                     bestTrack?.let { track ->
-                        Log.d(TAG, "Apple Music API: Found matching iTunes track ID: ${track.trackId} (${track.trackName})")
+                        Log.d(TAG, "Lyrically API: Found matching iTunes track ID: ${track.trackId} (${track.trackName})")
                         val lyricsResponse = rhythmLyricsApiService.getLyrics(track.trackId.toString())
                         
                         var content: List<RhythmLyricsLine>? = null
                         var isSyllable = false
                         
                         if (!lyricsResponse.ttmlContent.isNullOrBlank()) {
-                            Log.d(TAG, "Apple Music API: TTML content is present. Parsing TTML on client...")
+                            Log.d(TAG, "Lyrically API: TTML content is present. Parsing TTML on client...")
                             val parsedTtml = RhythmLyricsParser.parseTtmlLyrics(lyricsResponse.ttmlContent)
                             if (parsedTtml.isNotEmpty()) {
                                 content = parsedTtml
@@ -4375,7 +4419,7 @@ class MusicRepository(context: Context) {
                         }
                         
                         if (content == null || content.isEmpty()) {
-                            Log.d(TAG, "Apple Music API: Using pre-parsed content from response...")
+                            Log.d(TAG, "Lyrically API: Using pre-parsed content from response...")
                             val rawContent = lyricsResponse.content
                             isSyllable = lyricsResponse.type == "Syllable"
                             if (isSyllable && rawContent != null) {
@@ -4408,28 +4452,28 @@ class MusicRepository(context: Context) {
                             val plain = RhythmLyricsParser.toPlainText(parsedLines)
 
                             if (isSyllable) {
-                                Log.d(TAG, "Apple Music API: Syllable (Word-by-word) lyrics found and parsed successfully")
+                                Log.d(TAG, "Lyrically API: Syllable (Word-by-word) lyrics found and parsed successfully")
                                 LyricsData(
                                     plainLyrics = plain,
                                     syncedLyrics = lrc,
                                     wordByWordLyrics = wordByWordJson,
-                                    source = "Apple Music",
+                                    source = "Lyrically",
                                     isCorrected = true
                                 )
                             } else {
-                                Log.d(TAG, "Apple Music API: Line-synced or plain lyrics found (non-Syllable), caching as backup")
-                                appleMusicBackup = LyricsData(
+                                Log.d(TAG, "Lyrically API: Line-synced or plain lyrics found (non-Syllable), caching as backup")
+                                lyricallyBackup = LyricsData(
                                     plainLyrics = plain,
                                     syncedLyrics = lrc,
                                     wordByWordLyrics = null,
-                                    source = "Apple Music"
+                                    source = "Lyrically"
                                 )
                                 null
                             }
                         } else null
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Apple Music API fetch failed: ${e.message}", e)
+                    Log.e(TAG, "Lyrically API fetch failed: ${e.message}", e)
                     null
                 }
             } else null
@@ -4475,7 +4519,24 @@ class MusicRepository(context: Context) {
 
                         if (syncedLyrics != null) {
                             Log.d(TAG, "LRCLib: Synced lyrics found, returning immediately")
-                            LyricsData(plainLyrics, syncedLyrics, null, "LRCLib")
+                            val wordByWordJson = if (appSettings.translationAutoWord.value) {
+                                try {
+                                    val options = LrcUtils.LrcParserOptions(
+                                        trim = true, multiLine = true, errorText = null, autoWordSync = true
+                                    )
+                                    val parsed = LrcUtils.parseLyrics(
+                                        syncedLyrics, audioMimeType = null,
+                                        parserOptions = options, format = LrcUtils.LyricFormat.LRC
+                                    )
+                                    if (parsed is SemanticLyrics.SyncedLyrics)
+                                        convertSemanticLyricsToWordByWord(parsed)
+                                    else null
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Failed to auto-generate word sync for LRCLib", e)
+                                    null
+                                }
+                            } else null
+                            LyricsData(plainLyrics, syncedLyrics, wordByWordJson, "LRCLib")
                         } else if (plainLyrics != null) {
                             Log.d(TAG, "LRCLib: Plain lyrics found, caching as fallback")
                             lrclibPlainBackup = LyricsData(plainLyrics, null, null, "LRCLib")
@@ -4489,15 +4550,14 @@ class MusicRepository(context: Context) {
             } else null
         }
 
-        val appSettings = AppSettings.getInstance(context)
         val apiPriority = appSettings.lyricsApiPriority.value
         val fallbackRetry = appSettings.lyricsApiFallbackRetry.value
 
         Log.d(TAG, "fetchLyricsFromAPIs: priority=$apiPriority, fallbackRetry=$fallbackRetry")
 
-        if (apiPriority == LyricsApiPriority.APPLE_MUSIC_FIRST) {
-            val amResult = fetchAppleMusic()
-            if (amResult != null) return amResult
+        if (apiPriority == LyricsApiPriority.LYRICALLY_FIRST) {
+            val lyricallyResult = fetchLyrically()
+            if (lyricallyResult != null) return lyricallyResult
 
             if (fallbackRetry) {
                 val lrcResult = fetchLrcLib()
@@ -4508,8 +4568,8 @@ class MusicRepository(context: Context) {
             if (lrcResult != null) return lrcResult
 
             if (fallbackRetry) {
-                val amResult = fetchAppleMusic()
-                if (amResult != null) return amResult
+                val lyricallyResult = fetchLyrically()
+                if (lyricallyResult != null) return lyricallyResult
             }
         }
 
@@ -4519,9 +4579,9 @@ class MusicRepository(context: Context) {
             return lrclibPlainBackup
         }
         
-        if (appleMusicBackup != null) {
-            Log.d(TAG, "Fallback Chain: Returning cached Apple Music line-synced or plain lyrics")
-            return appleMusicBackup
+        if (lyricallyBackup != null) {
+            Log.d(TAG, "Fallback Chain: Returning cached Lyrically line-synced or plain lyrics")
+            return lyricallyBackup
         }
 
         // No lyrics found from APIs
@@ -4595,8 +4655,8 @@ class MusicRepository(context: Context) {
                 var data = Gson().fromJson(json, LyricsData::class.java)
                 Log.d(TAG, "===== LOADED LYRICS FROM SAVED JSON FILE =====")
                 
-                // Self-healing migration for old cached Apple Music lyrics containing the shift bug
-                if (data.source == "Apple Music" && !data.wordByWordLyrics.isNullOrBlank() && data.isCorrected != true) {
+                // Self-healing migration for old cached Lyrically lyrics containing the shift bug
+                if (data.source == "Lyrically" && !data.wordByWordLyrics.isNullOrBlank() && data.isCorrected != true) {
                     Log.d(TAG, "===== OLD CACHED APPLE MUSIC LYRICS DETECTED, APPLYING CORRECTION PASS =====")
                     try {
                         val originalListType = object : com.google.gson.reflect.TypeToken<List<RhythmLyricsLine>>() {}.type
@@ -4636,7 +4696,7 @@ class MusicRepository(context: Context) {
                         saveLocalLyrics(artist, title, data)
                         Log.d(TAG, "===== SUCCESSFULLY CORRECTED AND RESAVED CACHED LYRICS =====")
                     } catch (e: Exception) {
-                        Log.e(TAG, "Failed to correct cached Apple Music lyrics", e)
+                        Log.e(TAG, "Failed to correct cached Lyrically lyrics", e)
                     }
                 }
                 data

@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -99,6 +100,7 @@ import chromahub.rhythm.app.R
 import chromahub.rhythm.app.BuildConfig
 import chromahub.rhythm.app.shared.presentation.components.common.CollapsibleHeaderScreen
 import chromahub.rhythm.app.ui.utils.LazyListStateSaver
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.features.local.presentation.components.settings.LanguageSwitcherDialog
 import android.content.Context
@@ -313,12 +315,6 @@ fun SettingsScreen(
                     // Equalizer is available in both LOCAL and STREAMING modes
                     add(SettingItem(RhythmIcons.Equalizer, context.getString(R.string.settings_equalizer_title), context.getString(R.string.settings_equalizer_desc), onClick = { onNavigateTo(SettingsRoutes.EQUALIZER) }))
                     add(SettingItem(
-                        icon = MaterialSymbolIcon("volume_up"),
-                        title = context.getString(R.string.replay_gain),
-                        description = context.getString(R.string.replay_gain_desc),
-                        onClick = { onNavigateTo(SettingsRoutes.REPLAY_GAIN) }
-                    ))
-                    add(SettingItem(
                         icon = MaterialSymbolIcon("lyrics"),
                         title = context.getString(R.string.settings_lyrics_source),
                         description = context.getString(R.string.playback_lyrics_priority_desc),
@@ -429,7 +425,8 @@ fun SettingsScreen(
                     state = lazyListState,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = if (isTablet) 32.dp else 24.dp)
+                        .padding(horizontal = if (isTablet) 32.dp else 24.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding())
                 ) {
                     item {
                         if (showSettingsSuggestions) {

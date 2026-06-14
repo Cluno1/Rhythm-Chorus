@@ -93,14 +93,14 @@ fun LyricsApiPriorityBottomSheet(
 
             // Options
             val priorityOptions = listOf(
-                LyricsApiPriority.APPLE_MUSIC_FIRST to Triple(
-                    "Apple Music First",
-                    "Search Apple Music API first, fallback to LRCLib",
+                LyricsApiPriority.LYRICALLY_FIRST to Triple(
+                    "Lyrically First",
+                    "Search Lyrically API first, fallback to LRCLib",
                     MaterialSymbolIcon("music_note")
                 ),
                 LyricsApiPriority.LRCLIB_FIRST to Triple(
                     "LRCLib First",
-                    "Search LRCLib API first, fallback to Apple Music",
+                    "Search LRCLib API first, fallback to Lyrically",
                     MaterialSymbolIcon("cloud_queue")
                 )
             )

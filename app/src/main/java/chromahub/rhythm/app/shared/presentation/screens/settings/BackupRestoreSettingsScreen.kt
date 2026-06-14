@@ -3,6 +3,9 @@
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
 
+
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -475,8 +478,9 @@ fun BackupRestoreSettingsScreen(onBackClick: () -> Unit) {
                 .fillMaxSize()
                 .padding(paddingValues)
                 .offset(y = -headerBlendHeight)
-                .background(MaterialTheme.colorScheme.background),
-            contentPadding = PaddingValues(horizontal = 24.dp),
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 24.dp),
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             
@@ -783,4 +787,4 @@ fun BackupRestoreSettingsScreen(onBackClick: () -> Unit) {
             }
         )
     }
-}
+}

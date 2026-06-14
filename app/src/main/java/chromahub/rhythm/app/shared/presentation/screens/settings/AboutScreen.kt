@@ -3,6 +3,9 @@
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
 
+
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -198,6 +201,7 @@ fun AboutScreen(
         }
 
         LazyColumn(
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             state = lazyListState,
             modifier = modifier
                 .fillMaxSize()
@@ -676,7 +680,8 @@ fun AboutScreen(
     }
 }
 
-@Composable
+
+@Composable
 fun DeveloperCard(
     name: String,
     role: String,

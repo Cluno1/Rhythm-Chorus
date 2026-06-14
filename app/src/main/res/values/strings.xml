@@ -2381,7 +2381,7 @@
     <string name="playerscreen_open_artist">Open Artist</string>
     <string name="aboutscreen_support_development">Support Development</string>
     <string name="aboutscreen_discord_community">Discord Community</string>
-    <string name="apimanagementsettingsscreen_apple_music">Apple Music</string>
+    <string name="apimanagementsettingsscreen_lyrically">Lyrically</string>
     <string name="apimanagementsettingsscreen_github">GitHub</string>
     <string name="apimanagementsettingsscreen_app_updates_and_release">App updates and release information</string>
     <string name="backuprestoresettingsscreen_choose_backup_sections">Choose Backup Sections</string>
@@ -2656,7 +2656,7 @@
     <string name="lyrics_settings_online_first_desc">Prefer online APIs (Rhythm word-by-word, LRCLib), fallback to embedded</string>
     <string name="lyrics_settings_local_first">Local First</string>
     <string name="lyrics_settings_local_first_desc">Prefer local .lrc files, then embedded lyrics, then online APIs</string>
-    <string name="lyrics_settings_apple_music_first">Apple Music First</string>
+    <string name="lyrics_settings_lyrically_first">Lyrically First</string>
     <string name="lyrics_settings_lrclib_first">LRCLib First</string>
     <string name="lyrics_settings_fallback_apis_desc">Attempt fallback APIs if the preferred API fails to return lyrics</string>
     <string name="lyrics_settings_display_styling">Display &amp; Styling</string>
@@ -2677,8 +2677,8 @@
     <string name="lyrics_settings_trim_lyrics_desc">Trim leading and trailing whitespace from lyric lines</string>
     <string name="lyrics_settings_disable_animations">Disable Animations</string>
     <string name="lyrics_settings_disable_animations_desc">Disable transitions and animations in the lyrics view</string>
-    <string name="lyrics_settings_word_by_word_translation">Word-by-word Translation</string>
-    <string name="lyrics_settings_word_by_word_translation_desc">Try to automatically sync syllable or word translations</string>
+    <string name="lyrics_settings_word_by_word_translation">Auto Word Sync</string>
+    <string name="lyrics_settings_word_by_word_translation_desc">Auto-generate word-level timing for line-synced lyrics by distributing duration proportionally</string>
     <string name="lyrics_settings_info_bullets">Additional Sync Details:\n• Online APIs provide high-quality synced lyrics\n• Rhythm offers word-by-word sync\n• LRCLib provides free line-by-line sync</string>
 
     <!-- AutoEQ Preset Picker additions -->

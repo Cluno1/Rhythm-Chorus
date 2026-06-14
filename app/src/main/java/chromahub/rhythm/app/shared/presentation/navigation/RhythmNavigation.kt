@@ -105,6 +105,15 @@ import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 import androidx.compose.ui.res.stringResource
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.WindowInsetsSides
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+
+
 
 /**
  * Main navigation composable that handles switching between Local and Streaming modes.
@@ -142,9 +151,14 @@ fun RhythmNavigation(
         }
     }
     
+    val defaultMiniPlayerPadding = WindowInsets.navigationBars
+        .only(WindowInsetsSides.Bottom)
+        .asPaddingValues()
+
     // Switch between Local and Streaming navigation based on app mode with animated transitions.
     // RhythmGuardWarningHost is mounted at root so warnings appear above all screens and bottom sheets.
-    Box(modifier = modifier.fillMaxSize()) {
+    CompositionLocalProvider(LocalMiniPlayerPadding provides defaultMiniPlayerPadding) {
+        Box(modifier = modifier.fillMaxSize()) {
         NavHost(
             navController = rootNavController,
             startDestination = "main",
@@ -236,6 +250,7 @@ fun RhythmNavigation(
             appSettings = appSettings,
             musicViewModel = musicViewModel
         )
+        }
     }
 }
 

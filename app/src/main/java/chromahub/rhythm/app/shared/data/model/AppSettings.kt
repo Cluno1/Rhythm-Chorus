@@ -78,12 +78,12 @@ private val RHYTHM_GUARD_POLICY_BANDS = RHYTHM_AURA_POLICY_BANDS
  * Priority order for lyrics APIs
  */
 enum class LyricsApiPriority(val displayName: String) {
-    APPLE_MUSIC_FIRST("Apple Music"),
+    LYRICALLY_FIRST("Lyrically"),
     LRCLIB_FIRST("LRCLib");
 
     companion object {
         fun fromOrdinal(ordinal: Int): LyricsApiPriority {
-            return values().getOrElse(ordinal) { APPLE_MUSIC_FIRST }
+            return values().getOrElse(ordinal) { LYRICALLY_FIRST }
         }
     }
 }
@@ -268,7 +268,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_SPOTIFY_API_ENABLED = "spotify_api_enabled"
         private const val KEY_SPOTIFY_CLIENT_ID = "spotify_client_id"
         private const val KEY_SPOTIFY_CLIENT_SECRET = "spotify_client_secret"
-        private const val KEY_APPLEMUSIC_API_ENABLED = "applemusic_api_enabled"
+        private const val KEY_LYRICALLY_API_ENABLED = "lyrically_api_enabled"
         private const val KEY_AUTO_FETCH_ARTWORK = "auto_fetch_artwork"
         
         // General Broadcast Status Settings (for Tasker, KWGT, etc.)
@@ -671,7 +671,7 @@ class AppSettings private constructor(context: Context) {
     val tapLyricsToFullScreen: StateFlow<Boolean> = _tapLyricsToFullScreen.asStateFlow()
 
     private val _lyricsApiPriority = MutableStateFlow(
-        LyricsApiPriority.fromOrdinal(prefs.getInt(KEY_LYRICS_API_PRIORITY, LyricsApiPriority.APPLE_MUSIC_FIRST.ordinal))
+        LyricsApiPriority.fromOrdinal(prefs.getInt(KEY_LYRICS_API_PRIORITY, LyricsApiPriority.LYRICALLY_FIRST.ordinal))
     )
     val lyricsApiPriority: StateFlow<LyricsApiPriority> = _lyricsApiPriority.asStateFlow()
 
@@ -741,7 +741,7 @@ class AppSettings private constructor(context: Context) {
     private val _playerThemeId = MutableStateFlow(prefs.getString(KEY_PLAYER_THEME_ID, "default") ?: "default")
     val playerThemeId: StateFlow<String> = _playerThemeId.asStateFlow()
     
-    private val _miniPlayerThemeId = MutableStateFlow(prefs.getString(KEY_MINI_PLAYER_THEME_ID, "default") ?: "default")
+    private val _miniPlayerThemeId = MutableStateFlow(prefs.getString(KEY_MINI_PLAYER_THEME_ID, "EXPRESSIVE") ?: "EXPRESSIVE")
     val miniPlayerThemeId: StateFlow<String> = _miniPlayerThemeId.asStateFlow()
     
     // Library Settings
@@ -1312,8 +1312,8 @@ class AppSettings private constructor(context: Context) {
     private val _spotifyApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_SPOTIFY_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val spotifyApiEnabled: StateFlow<Boolean> = _spotifyApiEnabled.asStateFlow()
     
-    private val _appleMusicApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_APPLEMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
-    val appleMusicApiEnabled: StateFlow<Boolean> = _appleMusicApiEnabled.asStateFlow()
+    private val _lyricallyApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_LYRICALLY_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    val lyricallyApiEnabled: StateFlow<Boolean> = _lyricallyApiEnabled.asStateFlow()
     
     private val _autoFetchArtwork = MutableStateFlow(prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, false))
     val autoFetchArtwork: StateFlow<Boolean> = _autoFetchArtwork.asStateFlow()
@@ -2978,9 +2978,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _spotifyApiEnabled.value = enabled
     }
     
-    fun setAppleMusicApiEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY_APPLEMUSIC_API_ENABLED, enabled).apply()
-        _appleMusicApiEnabled.value = enabled
+    fun setLyricallyApiEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_LYRICALLY_API_ENABLED, enabled).apply()
+        _lyricallyApiEnabled.value = enabled
     }
     
     fun setAutoFetchArtwork(enabled: Boolean) {
@@ -4542,7 +4542,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _showLyrics.value = prefs.getBoolean(KEY_SHOW_LYRICS, true)
         _tapLyricsToFullScreen.value = prefs.getBoolean(KEY_TAP_LYRICS_TO_FULL_SCREEN, true)
         _lyricsApiPriority.value = LyricsApiPriority.fromOrdinal(
-            prefs.getInt(KEY_LYRICS_API_PRIORITY, LyricsApiPriority.APPLE_MUSIC_FIRST.ordinal)
+            prefs.getInt(KEY_LYRICS_API_PRIORITY, LyricsApiPriority.LYRICALLY_FIRST.ordinal)
         )
         _lyricsApiFallbackRetry.value = prefs.getBoolean(KEY_LYRICS_API_FALLBACK_RETRY, true)
         _onlineOnlyLyrics.value = prefs.getBoolean(KEY_ONLINE_ONLY_LYRICS, true)
@@ -4630,7 +4630,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _lrclibApiEnabled.value = prefs.getBoolean(KEY_LRCLIB_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _ytMusicApiEnabled.value = prefs.getBoolean(KEY_YTMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _spotifyApiEnabled.value = prefs.getBoolean(KEY_SPOTIFY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
-        _appleMusicApiEnabled.value = prefs.getBoolean(KEY_APPLEMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _lyricallyApiEnabled.value = prefs.getBoolean(KEY_LYRICALLY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _autoFetchArtwork.value = prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, false)
         _spotifyClientId.value = prefs.getString(KEY_SPOTIFY_CLIENT_ID, "") ?: ""
         _spotifyClientSecret.value = prefs.getString(KEY_SPOTIFY_CLIENT_SECRET, "") ?: ""

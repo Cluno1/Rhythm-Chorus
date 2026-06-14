@@ -1,5 +1,8 @@
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
+
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -268,8 +271,8 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
         add(SearchableSettingItem(
             id = "lyrics_api_priority",
             title = context.getString(R.string.lyricssourcesettingsscreen_lyrics_api_priority),
-            description = "Prefer Apple Music or LRCLib for online lyrics fetching",
-            keywords = listOf("lyrics", "api", "priority", "apple music", "lrclib", "online"),
+            description = "Prefer Lyrically or LRCLib for online lyrics fetching",
+            keywords = listOf("lyrics", "api", "priority", "lyrically", "lrclib", "online"),
             icon = MaterialSymbolIcon("lyrics"),
             route = SettingsRoutes.LYRICS,
             parentScreen = context.getString(R.string.settings_lyrics_source),
@@ -1769,6 +1772,7 @@ fun SettingsSearchResults(
     val haptic = LocalHapticFeedback.current
     
     LazyColumn(
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
         modifier = modifier.fillMaxSize()
     ) {
         if (results.isEmpty()) {

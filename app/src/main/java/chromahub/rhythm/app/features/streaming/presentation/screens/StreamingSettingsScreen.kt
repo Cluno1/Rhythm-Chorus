@@ -55,6 +55,9 @@ import chromahub.rhythm.app.shared.presentation.components.common.CollapsibleHea
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import androidx.compose.foundation.layout.PaddingValues
+
 @Composable
 fun StreamingSettingsScreen(
     viewModel: StreamingMusicViewModel,
@@ -131,6 +134,7 @@ fun StreamingSettingsScreen(
                 .then(contentModifier)
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),
+            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
