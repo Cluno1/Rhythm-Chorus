@@ -32,7 +32,7 @@ All flavors belong to the `distribution` dimension, ensuring they're mutually ex
 ```kotlin
 ENABLE_YOUTUBE_MUSIC = true
 ENABLE_SPOTIFY_CANVAS = true
-ENABLE_APPLE_MUSIC = true
+ENABLE_LYRICALLY_API = true
 ENABLE_DEEZER = true
 ENABLE_LRCLIB = true
 ENABLE_SPOTIFY_SEARCH = true
@@ -53,7 +53,7 @@ ENABLE_SPOTIFY_SEARCH = true
 ```kotlin
 ENABLE_YOUTUBE_MUSIC = true
 ENABLE_SPOTIFY_CANVAS = true
-ENABLE_APPLE_MUSIC = true
+ENABLE_LYRICALLY_API = true
 ENABLE_DEEZER = true
 ENABLE_LRCLIB = true
 ENABLE_SPOTIFY_SEARCH = true
@@ -163,8 +163,8 @@ Rhythm-{versionName}-{suffix}-{flavor}-{buildType}.apk
 
 **Examples:**
 ```
-Rhythm-4.0.312.858-fdroid-fdroid-release.apk
-Rhythm-4.0.312.858-gh-github-release.apk
+Rhythm-5.0.403.1056-fdroid-fdroid-release.apk
+Rhythm-5.0.403.1056-gh-github-release.apk
 ```
 
 ### Output Locations
@@ -253,10 +253,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '21'
           
       - name: Build F-Droid variant
         run: ./gradlew assembleFdroidRelease
@@ -277,8 +277,8 @@ Add to `.fdroid.yml` or `metadata/*.yml`:
 
 ```yaml
 Builds:
-  - versionName: 4.0.312.858
-    versionCode: 40312858
+  - versionName: 5.0.403.1056
+    versionCode: 504031056
     gradle:
       - fdroid
     

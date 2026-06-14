@@ -1,0 +1,13 @@
+Rhythm v5.1 - Major Update
+
+• Improved Tablet & Foldable UI layouts.
+• New A-Z scroll bar with jump-to-letter in Library.
+• Rhythm Lyrics widget (Glance).
+• Nearby server discovery for Rhythm Go.
+• Replay Gain customization (Experimental).
+• Artist images from local storage.
+• Many bug fixes: Equalizer, Playlist deletions, Shuffle, Backup/Restore, Whitelist scanning, Embedded artwork.
+• Updated translations for all 24 languages.
+• In-app update warnings for F-Droid builds.
+
+Thanks for using Rhythm ;)

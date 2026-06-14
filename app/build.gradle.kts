@@ -17,8 +17,8 @@ android {
         applicationId = "chromahub.rhythm.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 504031054
-        versionName = "5.0.403.1054"
+        versionCode = 514081067
+        versionName = "5.1.408.1067"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -33,7 +33,7 @@ android {
             
             // F-Droid build: Enable all features (FOSS ethos)
             buildConfigField("boolean", "ENABLE_YOUTUBE_MUSIC", "true")
-            buildConfigField("boolean", "ENABLE_APPLE_MUSIC", "true")
+            buildConfigField("boolean", "ENABLE_LYRICALLY_API", "true")
             buildConfigField("boolean", "ENABLE_DEEZER", "true")
             buildConfigField("boolean", "ENABLE_LRCLIB", "true")
             buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "true")
@@ -48,7 +48,7 @@ android {
             
             // GitHub releases: Enable all features (same as F-Droid)
             buildConfigField("boolean", "ENABLE_YOUTUBE_MUSIC", "true")
-            buildConfigField("boolean", "ENABLE_APPLE_MUSIC", "true")
+            buildConfigField("boolean", "ENABLE_LYRICALLY_API", "true")
             buildConfigField("boolean", "ENABLE_DEEZER", "true")
             buildConfigField("boolean", "ENABLE_LRCLIB", "true")
             buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "true")
