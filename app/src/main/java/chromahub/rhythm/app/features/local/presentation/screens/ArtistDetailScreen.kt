@@ -162,8 +162,7 @@ fun ArtistDetailScreen(
             }
 
             val songs = allSongs.filter(::songMatchesArtist)
-            val albumKeys = songs.asSequence().map { it.albumId to it.album }.toSet()
-            val albums = allAlbums.filter { album -> albumKeys.contains(album.id to album.title) }
+            val albums = allAlbums.filter {album -> album.songs.any {song -> songMatchesArtist(song) } }
             ArtistDetailContent(songs = songs, albums = albums)
         }
     }
