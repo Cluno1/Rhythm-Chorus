@@ -1769,8 +1769,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     
     // Media Scan Filtering
     private val _allowedFormats = MutableStateFlow(
-        prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma"))
-            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma")
+        prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka"))
+            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka")
     )
     val allowedFormats: StateFlow<Set<String>> = _allowedFormats.asStateFlow()
     
@@ -4719,8 +4719,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _lastScanDuration.value = safeLong(KEY_LAST_SCAN_DURATION, 0L)
         
         // Media Scan Filtering
-        _allowedFormats.value = prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma"))
-            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma")
+        _allowedFormats.value = prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka"))
+            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka")
         _minimumBitrate.value = prefs.getInt(KEY_MINIMUM_BITRATE, 0)
         _minimumDuration.value = safeLong(KEY_MINIMUM_DURATION, 0L)
 

@@ -1187,7 +1187,7 @@ class MusicRepository(context: Context) {
         }
 
         return extension in setOf(
-            "mp3", "m4a", "flac", "ogg", "opus", "wav", "aac", "alac", "aiff", "aif", "wma"
+            "mp3", "m4a", "flac", "ogg", "opus", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka"
         )
     }
 
@@ -1236,79 +1236,58 @@ class MusicRepository(context: Context) {
 
     private fun createSongFromFile(file: File, appSettings: AppSettings): Song? {
         val retriever = android.media.MediaMetadataRetriever()
-        return try {
+        var title: String = file.nameWithoutExtension
+        var artist: String = "Unknown Artist"
+        var album: String = "Unknown Album"
+        var albumArtist: String? = null
+        var duration: Long = 0L
+        var year: Int = 0
+        var trackNumber = 0
+        var fallbackDiscNumber = 1
+
+        try {
             retriever.setDataSource(file.absolutePath)
 
             val extractedTitle = normalizeMetadataText(
                 retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_TITLE)
-            )
-                ?.trim()
-            val title = if (!extractedTitle.isNullOrBlank() && !isLikelyCorruptedMetadata(extractedTitle)) {
+            )?.trim()
+            title = if (!extractedTitle.isNullOrBlank() && !isLikelyCorruptedMetadata(extractedTitle)) {
                 extractedTitle
             } else {
                 selectBestMetadataText(extractedTitle, file.nameWithoutExtension)
             } ?: file.nameWithoutExtension
+
             val extractedArtist = normalizeMetadataText(
                 retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST)
-            )
-                ?.trim()
+            )?.trim()
             val artistFromVorbisComments = extractArtistFromVorbisCommentTags(file.absolutePath)
-            val artist = artistFromVorbisComments
+            artist = artistFromVorbisComments
                 ?: extractedArtist?.takeUnless { isUnknownArtistValue(it) }
                 ?: "Unknown Artist"
-            val album = normalizeMetadataText(
+
+            album = normalizeMetadataText(
                 retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM)
-            )
-                ?.trim()
-                ?.takeIf { it.isNotBlank() }
-                ?: "Unknown Album"
-            val albumArtist = normalizeMetadataText(
+            )?.trim()?.takeIf { it.isNotBlank() } ?: "Unknown Album"
+
+            albumArtist = normalizeMetadataText(
                 retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST)
-            )
-                ?.trim()
-                ?.takeIf { it.isNotBlank() }
-            val duration = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)
-                ?.toLongOrNull()
-                ?: 0L
-            val year = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_YEAR)
-                ?.toIntOrNull()
-                ?: 0
+            )?.trim()?.takeIf { it.isNotBlank() }
+
+            duration = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)
+                ?.toLongOrNull() ?: 0L
+
+            year = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_YEAR)
+                ?.toIntOrNull() ?: 0
 
             val trackRaw = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER)
                 ?.substringBefore("/")
-                ?.toIntOrNull()
-                ?: 0
-            val trackNumber = if (trackRaw >= 1000) trackRaw % 1000 else trackRaw
-            val fallbackDiscNumber = if (trackRaw >= 1000) trackRaw / 1000 else 1
-
-            if (title.isBlank() || title.equals("<unknown>", ignoreCase = true)) {
-                return null
-            }
-
-            Song(
-                id = "file_${file.absolutePath.hashCode()}_${file.length()}",
-                title = title,
-                artist = artist,
-                album = album,
-                albumId = "local_${album.lowercase().hashCode()}",
-                duration = duration,
-                uri = Uri.fromFile(file),
-                artworkUri = null,
-                trackNumber = trackNumber,
-                year = year,
-                genre = null,
-                dateAdded = resolveStableDateAdded(file.absolutePath, file.lastModified()),
-                dateModified = file.lastModified(),
-                albumArtist = albumArtist,
-                bitrate = null,
-                sampleRate = null,
-                channels = null,
-                codec = file.extension.uppercase().ifBlank { null },
-                discNumber = fallbackDiscNumber.coerceAtLeast(1),
-                path = file.absolutePath
-            )
+                ?.toIntOrNull() ?: 0
+            trackNumber = if (trackRaw >= 1000) trackRaw % 1000 else trackRaw
+            fallbackDiscNumber = if (trackRaw >= 1000) trackRaw / 1000 else 1
         } catch (e: Exception) {
-            null
+            Log.w(TAG, "MediaMetadataRetriever failed for ${file.absolutePath}, using fallback values", e)
+            val artistFromVorbisComments = extractArtistFromVorbisCommentTags(file.absolutePath)
+            artist = artistFromVorbisComments ?: "Unknown Artist"
         } finally {
             try {
                 retriever.release()
@@ -1316,6 +1295,36 @@ class MusicRepository(context: Context) {
                 // Ignore release exceptions.
             }
         }
+
+        if (title.isBlank() || title.equals("<unknown>", ignoreCase = true)) {
+            title = file.nameWithoutExtension
+        }
+        if (title.isBlank()) {
+            return null
+        }
+
+        return Song(
+            id = "file_${file.absolutePath.hashCode()}_${file.length()}",
+            title = title,
+            artist = artist,
+            album = album,
+            albumId = "local_${album.lowercase().hashCode()}",
+            duration = duration,
+            uri = Uri.fromFile(file),
+            artworkUri = null,
+            trackNumber = trackNumber,
+            year = year,
+            genre = null,
+            dateAdded = resolveStableDateAdded(file.absolutePath, file.lastModified()),
+            dateModified = file.lastModified(),
+            albumArtist = albumArtist,
+            bitrate = null,
+            sampleRate = null,
+            channels = null,
+            codec = file.extension.uppercase().ifBlank { null },
+            discNumber = fallbackDiscNumber.coerceAtLeast(1),
+            path = file.absolutePath
+        )
     }
 
     private fun isUnknownArtistValue(value: String?): Boolean {

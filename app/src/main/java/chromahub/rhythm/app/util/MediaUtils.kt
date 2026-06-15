@@ -419,6 +419,27 @@ object MediaUtils {
         }
     }
 
+    fun getMediaMimeType(context: Context, uri: Uri): String? {
+        val type = getMimeType(context, uri)
+        if (type != null && type != "application/octet-stream") {
+            return type
+        }
+        val path = uri.path ?: uri.toString()
+        val extension = path.substringAfterLast('.', "").lowercase()
+        return when (extension) {
+            "opus" -> "audio/ogg"
+            "ogg", "oga" -> "audio/ogg"
+            "mkv", "mka" -> "audio/x-matroska"
+            "mp3" -> "audio/mpeg"
+            "m4a" -> "audio/mp4"
+            "flac" -> "audio/flac"
+            "wav" -> "audio/wav"
+            "aac" -> "audio/aac"
+            else -> type
+        }
+    }
+
+
     /**
      * Gets extended information about a song including file size, bitrate, sample rate, etc.
      * @param context The application context

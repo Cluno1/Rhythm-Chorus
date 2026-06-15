@@ -152,6 +152,7 @@ class ExternalPlaybackActivity : ComponentActivity() {
         return try {
             val mimeType = MediaUtils.getMimeType(applicationContext, uri)
             mimeType?.startsWith("audio/") == true ||
+                mimeType?.contains("matroska", ignoreCase = true) == true ||
                 uri.toString().let { uriStr ->
                     uriStr.endsWith(".mp3", ignoreCase = true) ||
                         uriStr.endsWith(".m4a", ignoreCase = true) ||
@@ -161,7 +162,9 @@ class ExternalPlaybackActivity : ComponentActivity() {
                         uriStr.endsWith(".flac", ignoreCase = true) ||
                         uriStr.endsWith(".aac", ignoreCase = true) ||
                         uriStr.endsWith(".opus", ignoreCase = true) ||
-                        uriStr.endsWith(".wma", ignoreCase = true)
+                        uriStr.endsWith(".wma", ignoreCase = true) ||
+                        uriStr.endsWith(".mkv", ignoreCase = true) ||
+                        uriStr.endsWith(".mka", ignoreCase = true)
                 }
         } catch (e: Exception) {
             Log.e(TAG, "Error validating external URI: $uri", e)

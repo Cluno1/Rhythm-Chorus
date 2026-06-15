@@ -491,17 +491,20 @@ class MainActivity : AppCompatActivity() {
         return try {
             val mimeType = MediaUtils.getMimeType(applicationContext, uri)
             mimeType?.startsWith("audio/") == true || 
-            uri.toString().let { uriStr ->
-                uriStr.endsWith(".mp3", ignoreCase = true) ||
-                uriStr.endsWith(".m4a", ignoreCase = true) ||
-                uriStr.endsWith(".alac", ignoreCase = true) ||
-                uriStr.endsWith(".wav", ignoreCase = true) ||
-                uriStr.endsWith(".ogg", ignoreCase = true) ||
-                uriStr.endsWith(".flac", ignoreCase = true) ||
-                uriStr.endsWith(".aac", ignoreCase = true) ||
-                uriStr.endsWith(".opus", ignoreCase = true) ||
-                uriStr.endsWith(".wma", ignoreCase = true)
-            }
+                mimeType?.contains("matroska", ignoreCase = true) == true ||
+                uri.toString().let { uriStr ->
+                    uriStr.endsWith(".mp3", ignoreCase = true) ||
+                    uriStr.endsWith(".m4a", ignoreCase = true) ||
+                    uriStr.endsWith(".alac", ignoreCase = true) ||
+                    uriStr.endsWith(".wav", ignoreCase = true) ||
+                    uriStr.endsWith(".ogg", ignoreCase = true) ||
+                    uriStr.endsWith(".flac", ignoreCase = true) ||
+                    uriStr.endsWith(".aac", ignoreCase = true) ||
+                    uriStr.endsWith(".opus", ignoreCase = true) ||
+                    uriStr.endsWith(".wma", ignoreCase = true) ||
+                    uriStr.endsWith(".mkv", ignoreCase = true) ||
+                    uriStr.endsWith(".mka", ignoreCase = true)
+                }
         } catch (e: Exception) {
             Log.e(TAG, "Error validating URI: $uri", e)
             false

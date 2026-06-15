@@ -633,14 +633,29 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         _albums,
         filteredSongs
     ) { albums, filteredSongs ->
-        albums.filter { album ->
-            // Include album if it has at least one non-blacklisted song
-            filteredSongs.any { song ->
-                val albumTitleMatch = song.album.trim().equals(album.title.trim(), ignoreCase = true)
-                val songAlbumArtist = song.albumArtist?.trim()?.takeIf { it.isNotBlank() }
-                    ?: song.artist.trim()
-                val albumArtistMatch = songAlbumArtist.equals(album.artist.trim(), ignoreCase = true)
-                albumTitleMatch && albumArtistMatch
+        val filteredSongsGrouped = filteredSongs.groupBy { song ->
+            val albumName = song.album.trim().lowercase(java.util.Locale.ROOT)
+            val albumArtist = (song.albumArtist?.trim()?.takeIf { it.isNotBlank() }
+                ?: song.artist.trim().takeIf { it.isNotBlank() }
+                ?: "Unknown Artist").lowercase(java.util.Locale.ROOT)
+            albumName to albumArtist
+        }
+
+        albums.mapNotNull { album ->
+            val key = album.title.trim().lowercase(java.util.Locale.ROOT) to album.artist.trim().lowercase(java.util.Locale.ROOT)
+            val albumSongs = filteredSongsGrouped[key]
+            if (albumSongs != null && albumSongs.isNotEmpty()) {
+                val sortedSongs = albumSongs.sortedWith(
+                    compareBy<Song> { it.discNumber }
+                        .thenBy { it.trackNumber }
+                        .thenBy { it.title.lowercase(java.util.Locale.ROOT) }
+                )
+                album.copy(
+                    songs = sortedSongs,
+                    numberOfSongs = sortedSongs.size
+                )
+            } else {
+                null
             }
         }.distinctBy { it.id }
     }.flowOn(Dispatchers.Default).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
@@ -662,9 +677,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             emptyList()
         }
 
-        // Pre-compute the set of all unique, lowercase split artist names from filteredSongs
-        // to avoid O(N * M) complex string splitting and massive allocations in the filter loop.
-        val activeArtistNames = java.util.HashSet<String>(filteredSongs.size)
+        // Map artist name (lowercase) -> songs of that artist in the filtered set
+        val artistSongsMap = java.util.HashMap<String, MutableList<Song>>()
+        val artistAlbumsMap = java.util.HashMap<String, java.util.HashSet<String>>()
+
         for (song in filteredSongs) {
             val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
             val artistsList = if (groupByAlbumArtist) {
@@ -677,12 +693,27 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 repository.splitArtistNames(song.artist, charDelimiters)
             }
             for (artistName in artistsList) {
-                activeArtistNames.add(artistName.lowercase())
+                val key = artistName.lowercase()
+                artistSongsMap.getOrPut(key) { mutableListOf() }.add(song)
+                
+                val albumKey = song.album.trim().lowercase()
+                artistAlbumsMap.getOrPut(key) { java.util.HashSet() }.add(albumKey)
             }
         }
 
-        artists.filter { artist ->
-            activeArtistNames.contains(artist.name.lowercase())
+        artists.mapNotNull { artist ->
+            val key = artist.name.lowercase()
+            val songsOfArtist = artistSongsMap[key]
+            if (songsOfArtist != null) {
+                val albumsOfArtist = artistAlbumsMap[key]?.size ?: 0
+                artist.copy(
+                    songs = songsOfArtist,
+                    numberOfTracks = songsOfArtist.size,
+                    numberOfAlbums = albumsOfArtist
+                )
+            } else {
+                null
+            }
         }
     }.flowOn(Dispatchers.Default).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
 
@@ -3477,9 +3508,26 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun Song.toMediaItem(): MediaItem {
+        val extension = this.path?.substringAfterLast('.', "")?.lowercase() ?: ""
+        val mimeType = when (extension) {
+            "opus" -> "audio/ogg"
+            "ogg", "oga" -> "audio/ogg"
+            "mkv", "mka" -> "audio/x-matroska"
+            "mp3" -> "audio/mpeg"
+            "m4a" -> "audio/mp4"
+            "flac" -> "audio/flac"
+            "wav" -> "audio/wav"
+            "aac" -> "audio/aac"
+            else -> null
+        }
         return MediaItem.Builder()
             .setMediaId(this.id)
             .setUri(this.uri)
+            .apply {
+                if (mimeType != null) {
+                    setMimeType(mimeType)
+                }
+            }
             .setMediaMetadata(
                 MediaMetadata.Builder()
                     .setTitle(this.title)
@@ -4444,20 +4492,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.Default) {
             try {
                 // Create all media items on background thread
-                val mediaItems = songs.map { song ->
-                    MediaItem.Builder()
-                        .setMediaId(song.id)
-                        .setUri(song.uri)
-                        .setMediaMetadata(
-                            MediaMetadata.Builder()
-                                .setTitle(song.title)
-                                .setArtist(song.artist)
-                                .setAlbumTitle(song.album)
-                                .setArtworkUri(song.artworkUri)
-                                .build()
-                        )
-                        .build()
-                }
+                val mediaItems = songs.map { it.toMediaItem() }
                 
                 // Switch to main thread to interact with MediaController
                 withContext(Dispatchers.Main) {
@@ -5067,20 +5102,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             newQueue.indexOfFirst { it.id == currentSongId }.takeIf { it != -1 } ?: 0
         } else 0
 
-        val mediaItems = newQueue.map { song ->
-            androidx.media3.common.MediaItem.Builder()
-                .setMediaId(song.id)
-                .setUri(song.uri)
-                .setMediaMetadata(
-                    androidx.media3.common.MediaMetadata.Builder()
-                        .setTitle(song.title)
-                        .setArtist(song.artist)
-                        .setAlbumTitle(song.album)
-                        .setArtworkUri(song.artworkUri)
-                        .build()
-                )
-                .build()
-        }
+        val mediaItems = newQueue.map { it.toMediaItem() }
 
         player.setMediaItems(mediaItems, targetIndex, currentPosition)
         if (wasPlaying && !player.isPlaying) {
@@ -6752,18 +6774,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         
         mediaController?.let { controller ->
             try {
-                val mediaItem = MediaItem.Builder()
-                    .setMediaId(song.id)
-                    .setUri(song.uri)
-                    .setMediaMetadata(
-                        MediaMetadata.Builder()
-                            .setTitle(song.title)
-                            .setArtist(song.artist)
-                            .setAlbumTitle(song.album)
-                            .setArtworkUri(song.artworkUri)
-                            .build()
-                    )
-                    .build()
+                val mediaItem = song.toMediaItem()
                 
                 // Add to media controller queue
                 controller.addMediaItem(mediaItem)
@@ -6831,18 +6842,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         
         mediaController?.let { controller ->
             try {
-                val mediaItem = MediaItem.Builder()
-                    .setMediaId(song.id)
-                    .setUri(song.uri)
-                    .setMediaMetadata(
-                        MediaMetadata.Builder()
-                            .setTitle(song.title)
-                            .setArtist(song.artist)
-                            .setAlbumTitle(song.album)
-                            .setArtworkUri(song.artworkUri)
-                            .build()
-                    )
-                    .build()
+                val mediaItem = song.toMediaItem()
                 
                 // Calculate the position to insert (right after current song)
                 val currentIndex = controller.currentMediaItemIndex
@@ -7123,20 +7123,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 try {
                     // Build media items in background to avoid UI freeze
                     val mediaItems = withContext(Dispatchers.Default) {
-                        songs.map { song ->
-                            MediaItem.Builder()
-                                .setMediaId(song.id)
-                                .setUri(song.uri)
-                                .setMediaMetadata(
-                                    MediaMetadata.Builder()
-                                        .setTitle(song.title)
-                                        .setArtist(song.artist)
-                                        .setAlbumTitle(song.album)
-                                        .setArtworkUri(song.artworkUri)
-                                        .build()
-                                )
-                                .build()
-                        }
+                        songs.map { it.toMediaItem() }
                     }
                     
                     // Add items in batches to prevent ANR
@@ -7331,18 +7318,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         updateRecentlyPlayed(song)
         
         // Create a media item from the song
-        val mediaItem = MediaItem.Builder()
-            .setMediaId(song.id)
-            .setUri(song.uri)
-            .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(song.title)
-                    .setArtist(song.artist)
-                    .setAlbumTitle(song.album)
-                    .setArtworkUri(song.artworkUri)
-                    .build()
-            )
-            .build()
+        val mediaItem = song.toMediaItem()
         
         // First check if we have a valid controller
         if (mediaController == null) {

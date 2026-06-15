@@ -2035,6 +2035,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 
                 // Extract metadata from the audio file in a background thread
                 val mediaItem = withContext(Dispatchers.IO) {
+                    val resolvedMimeType = chromahub.rhythm.app.util.MediaUtils.getMediaMimeType(this@MediaPlaybackService, uri)
                     try {
                         val song = chromahub.rhythm.app.util.MediaUtils.extractMetadataFromUri(this@MediaPlaybackService, uri)
                         Log.d(TAG, "Extracted metadata for external file: ${song.title} by ${song.artist}")
@@ -2043,6 +2044,11 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         MediaItem.Builder()
                             .setUri(uri)
                             .setMediaId(uri.toString())
+                            .apply {
+                                if (resolvedMimeType != null) {
+                                    setMimeType(resolvedMimeType)
+                                }
+                            }
                             .setMediaMetadata(
                                 MediaMetadata.Builder()
                                     .setTitle(song.title)
@@ -2057,11 +2063,15 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         Log.e(TAG, "Error extracting metadata from external file", e)
                         
                         // Fall back to basic playback if metadata extraction fails
-                        val mimeType = contentResolver.getType(uri)
-                        Log.d(TAG, "Falling back to basic playback with mime type: $mimeType")
+                        Log.d(TAG, "Falling back to basic playback with mime type: $resolvedMimeType")
                         
                         MediaItem.Builder()
                             .setUri(uri)
+                            .apply {
+                                if (resolvedMimeType != null) {
+                                    setMimeType(resolvedMimeType)
+                                }
+                            }
                             .setMediaMetadata(
                                 MediaMetadata.Builder()
                                     .setTitle(uri.lastPathSegment ?: "Unknown")
