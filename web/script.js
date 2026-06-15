@@ -379,7 +379,7 @@ function populateShowcaseTrack(view) {
     const data = view === 'phone' ? phoneScreenshots : tabletScreenshots;
     track.innerHTML = data.map(item =>
         `<div class="showcase-carousel-item">
-            <img src="assets/ScreenShots/${view}/${item.file}" alt="${item.label}" loading="lazy">
+            <img src="assets/ScreenShots/${view.charAt(0).toUpperCase() + view.slice(1)}/${item.file}" alt="${item.label}" loading="lazy">
         </div>`
     ).join('');
 }
