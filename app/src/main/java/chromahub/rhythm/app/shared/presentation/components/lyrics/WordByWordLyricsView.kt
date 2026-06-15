@@ -461,9 +461,8 @@ private fun WordByWordLyricLineItem(
         activeWord?.let { (it.endtime - it.timestamp).toInt() } ?: 0
     }
     
-    val animatedProgress = remember { Animatable(0f) }
+    val animatedProgress = remember(activeWord) { Animatable(0f) }
     LaunchedEffect(activeWord) {
-        animatedProgress.snapTo(0f)
         if (duration > 0 && !noAnimation) {
             animatedProgress.animateTo(
                 targetValue = 1f,
@@ -511,7 +510,7 @@ private fun WordByWordLyricLineItem(
             val inactiveWordColor = when (line.voiceTag) {
                 "v2" -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
                 "v3" -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
-                else -> MaterialTheme.colorScheme.onSurface.copy(alpha = wordAlpha)
+                else -> if (isCurrentLine) baseColor.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface.copy(alpha = wordAlpha)
             }
 
             val isWordPassed = isCurrentLine && wordIndex < activeWordIndex
@@ -519,7 +518,8 @@ private fun WordByWordLyricLineItem(
             val style = if (isWordActive) {
                 val range = wordRanges.getOrNull(wordIndex)
                 val layout = textLayoutResult
-                if (range != null && layout != null && !noAnimation) {
+                val sweepProgress = animatedProgress.value
+                if (range != null && layout != null && !noAnimation && sweepProgress < 1f) {
                     val startChar = range.first
                     val endChar = (range.last).coerceAtMost(layout.layoutInput.text.length - 1)
                     val startRect = layout.getBoundingBox(startChar)
@@ -527,7 +527,6 @@ private fun WordByWordLyricLineItem(
                     
                     val left = startRect.left
                     val right = endRect.right
-                    val sweepProgress = animatedProgress.value
                     
                     val activeBrush = Brush.linearGradient(
                         colorStops = arrayOf(
@@ -541,9 +540,14 @@ private fun WordByWordLyricLineItem(
                         brush = activeBrush,
                         fontWeight = if (lyricBold) FontWeight.Black else FontWeight.Bold
                     )
-                } else {
+                } else if (sweepProgress >= 1f) {
                     SpanStyle(
                         color = baseColor,
+                        fontWeight = if (lyricBold) FontWeight.Black else FontWeight.Bold
+                    )
+                } else {
+                    SpanStyle(
+                        color = inactiveWordColor,
                         fontWeight = if (lyricBold) FontWeight.Black else FontWeight.Bold
                     )
                 }

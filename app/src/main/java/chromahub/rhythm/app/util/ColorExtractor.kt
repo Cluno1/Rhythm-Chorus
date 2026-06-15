@@ -74,10 +74,10 @@ data class ExtractedColors(
  * Color scoring configuration for album art extraction
  */
 data class ColorScoringConfig(
-    val targetChroma: Double = 48.0,
-    val weightProportion: Double = 0.7,
-    val weightChromaAbove: Double = 0.3,
-    val weightChromaBelow: Double = 0.1,
+    val targetChroma: Double = 40.0,
+    val weightProportion: Double = 0.5,
+    val weightChromaAbove: Double = 0.5,
+    val weightChromaBelow: Double = 0.15,
     val cutoffChroma: Double = 5.0,
     val cutoffExcitedProportion: Double = 0.01,
     val maxColorCount: Int = 4,
@@ -207,8 +207,8 @@ object ColorExtractor {
 
             // Choose scheme based on chroma (colorfulness) for more impactful colors
             val schemeType = when {
-                sourceHct.chroma > 60.0 -> "VIBRANT"      // High chroma = vibrant, impactful colors
-                sourceHct.chroma > 30.0 -> "EXPRESSIVE"   // Medium chroma = expressive, artistic
+                sourceHct.chroma > 45.0 -> "VIBRANT"      // High chroma = vibrant, impactful colors
+                sourceHct.chroma > 18.0 -> "EXPRESSIVE"   // Medium chroma = expressive, artistic
                 else -> "TONAL_SPOT"                      // Low chroma = balanced, subtle
             }
 

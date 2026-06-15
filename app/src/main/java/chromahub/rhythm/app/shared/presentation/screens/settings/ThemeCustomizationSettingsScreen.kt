@@ -176,7 +176,7 @@ data class FontOption(
 )
 
 enum class ColorSource(val displayName: String, val description: String, val icon: MaterialSymbolIcon) {
-    ALBUM_ART("Album Art", "Extract colors from currently playing album artwork", RhythmIcons.Image),
+    ALBUM_ART("Art Based", "Extract theme colors from the current album artwork", RhythmIcons.Image),
     MONET("System Colors", "Use Material You colors from your wallpaper", MaterialSymbolIcon("color_lens", filled = true)),
     CUSTOM("Custom Scheme", "Choose from predefined color schemes", RhythmIcons.Palette)
 }

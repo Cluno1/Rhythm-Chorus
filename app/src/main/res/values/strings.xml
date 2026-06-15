@@ -787,7 +787,7 @@
     
     <!-- Theme Customization -->
     <string name="theme_good_to_know">Good to Know</string>
-    <string name="theme_tip_album_art">Album Art colors adapt dynamically to your music</string>
+    <string name="theme_tip_album_art">Art-based colors adapt dynamically to your music</string>
     <string name="theme_tip_material_you">Material You uses system wallpaper colors (Android 12+)</string>
     <string name="theme_tip_custom_fonts">Import custom fonts to personalize typography</string>
     <string name="theme_color_source">Color Source</string>
@@ -2593,8 +2593,8 @@
 
     <!-- Font / Color Customization Dialogs -->
     <string name="theme_font_source_changed_restart">Font source changed. Restart the app to apply the new font.</string>
-    <string name="color_source_album_art">Album Art</string>
-    <string name="color_source_album_art_desc">Extract colors from currently playing album artwork</string>
+    <string name="color_source_album_art">Art Based</string>
+    <string name="color_source_album_art_desc">Extract theme colors from the current album artwork</string>
     <string name="color_source_system_colors">System Colors</string>
     <string name="color_source_system_colors_desc">Use Material You colors from your wallpaper</string>
     <string name="color_source_custom_scheme">Custom Scheme</string>
