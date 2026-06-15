@@ -38,6 +38,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -510,14 +511,7 @@ fun StreamingLibraryScreen(
             ratedSongIdsProvider = { emptySet() }
         )
     }
-    val activeTab = tabs.getOrNull(pagerState.currentPage)
-    val isBottomBarVisible = when (activeTab) {
-        StreamingLibraryTab.SONGS -> localSongs.isNotEmpty()
-        StreamingLibraryTab.ALBUMS -> localAlbums.isNotEmpty()
-        StreamingLibraryTab.ARTISTS -> localArtists.isNotEmpty()
-        else -> false
-    }
-    val adjustedSongsBottomPadding = baseLibraryBottomPadding + (if (isBottomBarVisible) 80.dp else 0.dp)
+    val adjustedSongsBottomPadding = baseLibraryBottomPadding
 
     val openAlbumBottomSheet: (StreamingAlbum) -> Unit = { album ->
         if (album.tracks.isEmpty()) {
@@ -631,8 +625,6 @@ fun StreamingLibraryScreen(
     }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     
-    val fabVisibility = true
-
     val pullToRefreshState = rememberPullToRefreshState()
     val isRefreshing = isLoading
 
@@ -677,7 +669,9 @@ fun StreamingLibraryScreen(
                                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                     ),
                                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
-                                    modifier = Modifier.graphicsLayer {
+                                    modifier = Modifier
+                                        .padding(end = 16.dp)
+                                        .graphicsLayer {
                                         scaleX = sortButtonScale
                                         scaleY = sortButtonScale
                                     }
@@ -882,8 +876,11 @@ fun StreamingLibraryScreen(
         bottomBar = {},
         floatingActionButton = {
             if (tabs.getOrNull(selectedTabIndex) == StreamingLibraryTab.PLAYLISTS) {
+                val playlistsScrollingUp = if (playlistViewType == PlaylistViewType.GRID) playlistsGridState.isScrollingUp() else playlistsListState.isScrollingUp()
+                val playlistsScrollInProgress = if (playlistViewType == PlaylistViewType.GRID) playlistsGridState.isScrollInProgress else playlistsListState.isScrollInProgress
+                val showPlaylistFab = !playlistsScrollInProgress || playlistsScrollingUp
                 PlaylistFabMenu(
-                    visible = fabVisibility,
+                    visible = showPlaylistFab,
                     expanded = showPlaylistFabMenu,
                     onExpandedChange = { showPlaylistFabMenu = it },
                     onCreatePlaylist = { showCreatePlaylistDialog = true },
@@ -1050,11 +1047,39 @@ fun StreamingLibraryScreen(
 
                     else -> {
                         val activeTab = tabs.getOrNull(pagerState.currentPage)
-                        val isBottomBarVisible = when (activeTab) {
+                        val hasContent = when (activeTab) {
                             StreamingLibraryTab.SONGS -> localSongs.isNotEmpty()
                             StreamingLibraryTab.ALBUMS -> localAlbums.isNotEmpty()
                             StreamingLibraryTab.ARTISTS -> localArtists.isNotEmpty()
                             else -> false
+                        }
+                        val songsScrollingUp = songsListState.isScrollingUp()
+                        val albumsListScrollingUp = albumsListState.isScrollingUp()
+                        val albumsGridScrollingUp = albumsGridState.isScrollingUp()
+                        val artistsListScrollingUp = artistsListState.isScrollingUp()
+                        val artistsGridScrollingUp = artistsGridState.isScrollingUp()
+                        val songsScrollInProgress = songsListState.isScrollInProgress
+                        val albumsListScrollInProgress = albumsListState.isScrollInProgress
+                        val albumsGridScrollInProgress = albumsGridState.isScrollInProgress
+                        val artistsListScrollInProgress = artistsListState.isScrollInProgress
+                        val artistsGridScrollInProgress = artistsGridState.isScrollInProgress
+                        val shouldShowBottomBar = if (isSelectionMode) {
+                            hasContent
+                        } else {
+                            hasContent && when (activeTab) {
+                                StreamingLibraryTab.SONGS -> !songsScrollInProgress || songsScrollingUp
+                                StreamingLibraryTab.ALBUMS -> {
+                                    val isScrollingUp = if (albumViewType == AlbumViewType.GRID) albumsGridScrollingUp else albumsListScrollingUp
+                                    val isScrolling = if (albumViewType == AlbumViewType.GRID) albumsGridScrollInProgress else albumsListScrollInProgress
+                                    !isScrolling || isScrollingUp
+                                }
+                                StreamingLibraryTab.ARTISTS -> {
+                                    val isScrollingUp = if (artistViewType == ArtistViewType.GRID) artistsGridScrollingUp else artistsListScrollingUp
+                                    val isScrolling = if (artistViewType == ArtistViewType.GRID) artistsGridScrollInProgress else artistsListScrollInProgress
+                                    !isScrolling || isScrollingUp
+                                }
+                                else -> true
+                            }
                         }
 
                         Column(modifier = Modifier.fillMaxSize()) {
@@ -1066,11 +1091,11 @@ fun StreamingLibraryScreen(
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                        .padding(horizontal = 16.dp, vertical = 2.dp)
                                 ) {
                                     LazyRow(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         items(
@@ -1539,8 +1564,63 @@ fun StreamingLibraryScreen(
                                 }
                             }
 
+                            val locateScope = rememberCoroutineScope()
+                            val showLocateButton = !shouldShowBottomBar && !isListAtTop
+
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = showLocateButton,
+                                enter = fadeIn() + scaleIn(),
+                                exit = fadeOut() + scaleOut(),
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .padding(start = 20.dp, bottom = fabBottomPaddingVal)
+                                    .zIndex(10f)
+                            ) {
+                                FloatingActionButton(
+                                    onClick = {
+                                        locateScope.launch {
+                                            when (activeTab) {
+                                                StreamingLibraryTab.SONGS -> {
+                                                    val idx = localSongs.indexOfFirst { it.id == currentLocalSong?.id }
+                                                    songsListState.animateScrollToItem(if (idx >= 0) idx else 0)
+                                                }
+                                                StreamingLibraryTab.PLAYLISTS -> {
+                                                    if (playlistViewType == PlaylistViewType.GRID) playlistsGridState.animateScrollToItem(0)
+                                                    else playlistsListState.animateScrollToItem(0)
+                                                }
+                                                StreamingLibraryTab.ALBUMS -> {
+                                                    if (albumViewType == AlbumViewType.GRID) albumsGridState.animateScrollToItem(0)
+                                                    else albumsListState.animateScrollToItem(0)
+                                                }
+                                                StreamingLibraryTab.ARTISTS -> {
+                                                    if (artistViewType == ArtistViewType.GRID) artistsGridState.animateScrollToItem(0)
+                                                    else artistsListState.animateScrollToItem(0)
+                                                }
+                                                else -> {}
+                                            }
+                                        }
+                                    },
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    shape = CircleShape,
+                                    modifier = Modifier.size(48.dp)
+                                ) {
+                                    val locateIcon = if (activeTab == StreamingLibraryTab.SONGS) {
+                                        MaterialSymbolIcon("my_location", filled = true)
+                                    } else {
+                                        RhythmIcons.ArrowUpward
+                                    }
+                                    val locateDesc = if (activeTab == StreamingLibraryTab.SONGS) "Locate current song" else "Scroll to top"
+                                    Icon(
+                                        imageVector = locateIcon,
+                                        contentDescription = locateDesc,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+
                             LibraryBottomBar(
-                                isVisible = isBottomBarVisible,
+                                isVisible = shouldShowBottomBar,
                                 activeTab = activeTab?.name ?: "",
                                 songs = bottomBarSongs,
                                 isSelectionMode = isSelectionMode,
@@ -2652,6 +2732,46 @@ private fun formatCompactDuration(durationMs: Long): String {
     val minutes = totalSeconds / 60L
     val seconds = totalSeconds % 60L
     return if (minutes > 0L) "${minutes}m ${seconds}s" else "${seconds}s"
+}
+
+private class ScrollDirectionTracker(var previousIndex: Int = 0, var previousOffset: Int = 0)
+
+@Composable
+private fun LazyListState.isScrollingUp(): Boolean {
+    val tracker = remember(this) { ScrollDirectionTracker(firstVisibleItemIndex, firstVisibleItemScrollOffset) }
+    return remember {
+        derivedStateOf {
+            val currentIndex = firstVisibleItemIndex
+            val currentOffset = firstVisibleItemScrollOffset
+            val result = if (currentIndex != tracker.previousIndex) {
+                currentIndex < tracker.previousIndex
+            } else {
+                currentOffset < tracker.previousOffset
+            }
+            tracker.previousIndex = currentIndex
+            tracker.previousOffset = currentOffset
+            result
+        }
+    }.value
+}
+
+@Composable
+private fun LazyGridState.isScrollingUp(): Boolean {
+    val tracker = remember(this) { ScrollDirectionTracker(firstVisibleItemIndex, firstVisibleItemScrollOffset) }
+    return remember {
+        derivedStateOf {
+            val currentIndex = firstVisibleItemIndex
+            val currentOffset = firstVisibleItemScrollOffset
+            val result = if (currentIndex != tracker.previousIndex) {
+                currentIndex < tracker.previousIndex
+            } else {
+                currentOffset < tracker.previousOffset
+            }
+            tracker.previousIndex = currentIndex
+            tracker.previousOffset = currentOffset
+            result
+        }
+    }.value
 }
 
 private enum class BottomBarButtonType { NONE, LEFT, CENTER, RIGHT }

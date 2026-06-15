@@ -518,8 +518,6 @@ fun LibraryScreen(
     
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     
-    val fabVisibility = true
-
     var showPlaylistFabMenu by remember { mutableStateOf(false) }
 
     BackHandler(showPlaylistFabMenu) {
@@ -813,15 +811,7 @@ fun LibraryScreen(
         (baseLibraryBottomPadding - 4.dp).coerceAtLeast(0.dp)
     }
     val libraryBottomOverlayPadding = baseLibraryBottomPadding
-    val activeTabId = visibleTabIds.getOrNull(pagerState.currentPage) ?: ""
-    val isBottomBarVisible = when (activeTabId) {
-        "SONGS" -> songs.isNotEmpty()
-        "ALBUMS" -> albums.isNotEmpty()
-        "ARTISTS" -> false
-        "EXPLORER" -> explorerPath != null || explorerFolderSongs.isNotEmpty()
-        else -> false
-    }
-    val adjustedSongsBottomPadding = baseLibraryBottomPadding + (if (isBottomBarVisible) 80.dp else 0.dp)
+    val adjustedSongsBottomPadding = baseLibraryBottomPadding
 
     
     LaunchedEffect(isLibraryRefreshing) {
@@ -952,6 +942,7 @@ fun LibraryScreen(
                                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer
                                 ),
                                 modifier = Modifier
+                                    .padding(end = 8.dp)
                                     .size(42.dp)
                                     .graphicsLayer {
                                         scaleX = buttonScale
@@ -986,6 +977,7 @@ fun LibraryScreen(
                                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer
                                 ),
                                 modifier = Modifier
+                                    .padding(end = 16.dp)
                                     .size(42.dp)
                                     .graphicsLayer {
                                         scaleX = buttonScale
@@ -1020,6 +1012,7 @@ fun LibraryScreen(
                                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer
                                 ),
                                 modifier = Modifier
+                                    .padding(end = 8.dp)
                                     .size(42.dp)
                                     .graphicsLayer {
                                         scaleX = buttonScale
@@ -1065,7 +1058,9 @@ fun LibraryScreen(
                                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                             ),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
-                            modifier = Modifier.graphicsLayer {
+                            modifier = Modifier
+                                .padding(end = 16.dp)
+                                .graphicsLayer {
                                 scaleX = sortButtonScale
                                 scaleY = sortButtonScale
                             }
@@ -1202,7 +1197,9 @@ fun LibraryScreen(
                                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                 ),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
-                                modifier = Modifier.graphicsLayer {
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .graphicsLayer {
                                     scaleX = sortButtonScale
                                     scaleY = sortButtonScale
                                 }
@@ -1309,8 +1306,11 @@ fun LibraryScreen(
         bottomBar = {},
         floatingActionButton = {
             if (visibleTabIds.getOrNull(selectedTabIndex) == "PLAYLISTS") {
+                val playlistsScrollingUp = if (playlistViewType == PlaylistViewType.GRID) playlistsGridState.isScrollingUp() else playlistsListState.isScrollingUp()
+                val playlistsScrollInProgress = if (playlistViewType == PlaylistViewType.GRID) playlistsGridState.isScrollInProgress else playlistsListState.isScrollInProgress
+                val showPlaylistFab = !playlistsScrollInProgress || playlistsScrollingUp
                 PlaylistFabMenu(
-                    visible = fabVisibility,
+                    visible = showPlaylistFab,
                     expanded = showPlaylistFabMenu,
                     onExpandedChange = { showPlaylistFabMenu = it },
                     onCreatePlaylist = onCreatePlaylistFromFab,
@@ -1518,12 +1518,12 @@ fun LibraryScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .padding(horizontal = 16.dp, vertical = 2.dp)
                             ) {
                                 if (currentTabId == "SONGS") {
                                     LazyRow(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         items(
@@ -1900,12 +1900,34 @@ fun LibraryScreen(
                         }
 
                         val activeTabId = visibleTabIds.getOrNull(pagerState.currentPage) ?: ""
-                        val isBottomBarVisible = when (activeTabId) {
+                        val hasContent = when (activeTabId) {
                             "SONGS" -> songs.isNotEmpty()
                             "ALBUMS" -> albums.isNotEmpty()
                             "ARTISTS" -> false
                             "EXPLORER" -> explorerPath != null || explorerFolderSongs.isNotEmpty()
                             else -> false
+                        }
+                        val songsScrollingUp = songsListState.isScrollingUp()
+                        val albumsListScrollingUp = albumsListState.isScrollingUp()
+                        val albumsGridScrollingUp = albumsGridState.isScrollingUp()
+                        val explorerScrollingUp = explorerListState.isScrollingUp()
+                        val songsScrollInProgress = songsListState.isScrollInProgress
+                        val albumsListScrollInProgress = albumsListState.isScrollInProgress
+                        val albumsGridScrollInProgress = albumsGridState.isScrollInProgress
+                        val explorerScrollInProgress = explorerListState.isScrollInProgress
+                        val shouldShowBottomBar = if (isSelectionMode) {
+                            hasContent
+                        } else {
+                            hasContent && when (activeTabId) {
+                                "SONGS" -> !songsScrollInProgress || songsScrollingUp
+                                "ALBUMS" -> {
+                                    val isScrollingUp = if (albumViewType == AlbumViewType.GRID) albumsGridScrollingUp else albumsListScrollingUp
+                                    val isScrolling = if (albumViewType == AlbumViewType.GRID) albumsGridScrollInProgress else albumsListScrollInProgress
+                                    !isScrolling || isScrollingUp
+                                }
+                                "EXPLORER" -> !explorerScrollInProgress || explorerScrollingUp
+                                else -> true
+                            }
                         }
                         
                         val bottomBarSongs = remember(activeTabId, filteredSongs, sortedAlbums, sortedArtists, explorerFolderSongs) {
@@ -1918,8 +1940,63 @@ fun LibraryScreen(
                             }
                         }
                         
-                        LibraryBottomBar(
-                            isVisible = isBottomBarVisible,
+                            val locateScope = rememberCoroutineScope()
+                            val showLocateButton = !shouldShowBottomBar && !isListAtTop
+
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = showLocateButton,
+                                enter = fadeIn() + scaleIn(),
+                                exit = fadeOut() + scaleOut(),
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .padding(start = 20.dp, bottom = fabBottomPadding)
+                                    .zIndex(10f)
+                            ) {
+                                FloatingActionButton(
+                                    onClick = {
+                                        locateScope.launch {
+                                            when (activeTabId) {
+                                                "SONGS" -> {
+                                                    val idx = filteredSongs.indexOfFirst { it.id == currentSong?.id }
+                                                    songsListState.animateScrollToItem(if (idx >= 0) idx else 0)
+                                                }
+                                                "PLAYLISTS" -> {
+                                                    if (playlistViewType == PlaylistViewType.GRID) playlistsGridState.animateScrollToItem(0)
+                                                    else playlistsListState.animateScrollToItem(0)
+                                                }
+                                                "ALBUMS" -> {
+                                                    if (albumViewType == AlbumViewType.GRID) albumsGridState.animateScrollToItem(0)
+                                                    else albumsListState.animateScrollToItem(0)
+                                                }
+                                                "ARTISTS" -> {
+                                                    if (artistViewType == ArtistViewType.GRID) artistsGridState.animateScrollToItem(0)
+                                                    else artistsListState.animateScrollToItem(0)
+                                                }
+                                                "EXPLORER" -> explorerListState.animateScrollToItem(0)
+                                            }
+                                        }
+                                    },
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    shape = CircleShape,
+                                    modifier = Modifier.size(48.dp)
+                                ) {
+                                    val locateIcon = if (activeTabId == "SONGS") {
+                                        MaterialSymbolIcon("my_location", filled = true)
+                                    } else {
+                                        RhythmIcons.ArrowUpward
+                                    }
+                                    val locateDesc = if (activeTabId == "SONGS") "Locate current song" else "Scroll to top"
+                                    Icon(
+                                        imageVector = locateIcon,
+                                        contentDescription = locateDesc,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+
+                            LibraryBottomBar(
+                                isVisible = shouldShowBottomBar,
                             activeTab = activeTabId,
                             songs = bottomBarSongs,
                             isSelectionMode = isSelectionMode,
@@ -5420,6 +5497,46 @@ fun ExpressiveSelectionHeader(
             }
         }
     }
+}
+
+private class ScrollDirectionTracker(var previousIndex: Int = 0, var previousOffset: Int = 0)
+
+@Composable
+private fun LazyListState.isScrollingUp(): Boolean {
+    val tracker = remember(this) { ScrollDirectionTracker(firstVisibleItemIndex, firstVisibleItemScrollOffset) }
+    return remember {
+        derivedStateOf {
+            val currentIndex = firstVisibleItemIndex
+            val currentOffset = firstVisibleItemScrollOffset
+            val result = if (currentIndex != tracker.previousIndex) {
+                currentIndex < tracker.previousIndex
+            } else {
+                currentOffset < tracker.previousOffset
+            }
+            tracker.previousIndex = currentIndex
+            tracker.previousOffset = currentOffset
+            result
+        }
+    }.value
+}
+
+@Composable
+private fun LazyGridState.isScrollingUp(): Boolean {
+    val tracker = remember(this) { ScrollDirectionTracker(firstVisibleItemIndex, firstVisibleItemScrollOffset) }
+    return remember {
+        derivedStateOf {
+            val currentIndex = firstVisibleItemIndex
+            val currentOffset = firstVisibleItemScrollOffset
+            val result = if (currentIndex != tracker.previousIndex) {
+                currentIndex < tracker.previousIndex
+            } else {
+                currentOffset < tracker.previousOffset
+            }
+            tracker.previousIndex = currentIndex
+            tracker.previousOffset = currentOffset
+            result
+        }
+    }.value
 }
 
 private enum class BottomBarButtonType { NONE, LEFT, CENTER, RIGHT }
