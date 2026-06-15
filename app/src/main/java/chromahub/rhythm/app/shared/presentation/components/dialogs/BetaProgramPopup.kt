@@ -1,321 +1,149 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package chromahub.rhythm.app.shared.presentation.components.dialogs
 
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 
-import androidx.compose.foundation.Image
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import chromahub.rhythm.app.R
 import androidx.compose.ui.res.stringResource
+import kotlinx.coroutines.delay
 
-data class BetaFeature(
+private data class BetaFeature(
     val icon: MaterialSymbolIcon,
     val title: String,
     val description: String
 )
 
 @Composable
-fun BetaProgramPopup(onDismiss: () -> Unit) {
-    val context = LocalContext.current
-    val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
+fun BetaProgramPopup(
+    showDialog: Boolean,
+    onDismiss: () -> Unit
+) {
+    if (showDialog) {
+        val haptic = LocalHapticFeedback.current
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    val betaFeatures = listOf(
-        BetaFeature(
-            icon = MaterialSymbolIcon("flight_takeoff", filled = true),
-            title = stringResource(R.string.betaprogrampopup_early_access),
-            description = "Try new features before official release"
-        ),
-        BetaFeature(
-            icon = MaterialSymbolIcon("edit_note", filled = true),
-            title = stringResource(R.string.betaprogrampopup_shape_the_future),
-            description = "Your feedback directly influences development"
-        ),
-        BetaFeature(
-            icon = MaterialSymbolIcon("message", filled = true),
-            title = stringResource(R.string.betaprogrampopup_direct_feedback),
-            description = "Communicate directly with the development team"
-        ),
-    )
+        var showContent by remember { mutableStateOf(false) }
 
-    if (isTablet) {
-        // Tablet layout: Spacious side-by-side design
-        Dialog(
+        val contentAlpha by animateFloatAsState(
+            targetValue = if (showContent) 1f else 0f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            ),
+            label = "contentAlpha"
+        )
+
+        LaunchedEffect(Unit) {
+            delay(100)
+            showContent = true
+        }
+
+        val betaFeatures = listOf(
+            BetaFeature(
+                icon = MaterialSymbolIcon("flight_takeoff", filled = true),
+                title = stringResource(R.string.betaprogrampopup_early_access),
+                description = "Try new features before official release"
+            ),
+            BetaFeature(
+                icon = MaterialSymbolIcon("edit_note", filled = true),
+                title = stringResource(R.string.betaprogrampopup_shape_the_future),
+                description = "Your feedback directly influences development"
+            ),
+            BetaFeature(
+                icon = MaterialSymbolIcon("message", filled = true),
+                title = stringResource(R.string.betaprogrampopup_direct_feedback),
+                description = "Communicate directly with the development team"
+            ),
+        )
+
+        ModalBottomSheet(
+            modifier = Modifier
+                .widthIn(max = 640.dp)
+                .fillMaxWidth(),
             onDismissRequest = onDismiss,
-            properties = DialogProperties(
-                dismissOnBackPress = true,
-                dismissOnClickOutside = false,
-                usePlatformDefaultWidth = false
-            )
+            sheetState = sheetState,
+            dragHandle = {
+                BottomSheetDefaults.DragHandle(
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            tonalElevation = 0.dp
         ) {
-            Surface(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(0.85f)
-                    .heightIn(max = 600.dp),
-                shape = RoundedCornerShape(32.dp),
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 8.dp
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp)
+                    .graphicsLayer(alpha = contentAlpha)
             ) {
-                Row(
+                StandardBottomSheetHeader(
+                    title = stringResource(R.string.beta_program),
+                    subtitle = stringResource(R.string.betaprogrampopup_youre_part_of_an),
+                    visible = showContent
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Beta features
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-//                    verticalAlignment = Alignment.Center
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Left side: Gradient background with icon
-                    Surface(
-                        modifier = Modifier
-                            .weight(0.35f)
-                            .fillMaxHeight(),
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(32.dp, 0.dp, 0.dp, 32.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(40.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.rhythm_splash_logo),
-                                    contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
-                                    modifier = Modifier.size(85.dp)
-                                )
-                                Text(
-                                    text = context.getString(R.string.common_rhythm),
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-
-                            Text(
-                                text = stringResource(R.string.beta_program),
-                                style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.primary,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Button(
-                                onClick = onDismiss,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(48.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                )
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Play,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = stringResource(R.string.onboarding_get_started),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-
-                    // Right side: Content
-                    Surface(
-                        modifier = Modifier
-                            .weight(0.65f)
-                            .fillMaxHeight(),
-                        color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(0.dp, 32.dp, 32.dp, 0.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(40.dp)
-                                .verticalScroll(rememberScrollState()),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.Start
-                        ) {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text(
-                                    text = stringResource(R.string.betaprogrampopup_welcome_to_the_beta),
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-
-                                Text(
-                                    text = stringResource(R.string.betaprogrampopup_youre_part_of_an),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                betaFeatures.forEach { feature ->
-                                    BetaFeatureCard(feature)
-                                }
-                            }
-                        }
+                    betaFeatures.forEach { feature ->
+                        BetaFeatureCard(feature = feature)
                     }
                 }
-            }
-        }
-    } else {
-        // Phone layout: Full-width card with scrollable content
-        Dialog(
-            onDismissRequest = onDismiss,
-            properties = DialogProperties(
-                dismissOnBackPress = true,
-                dismissOnClickOutside = false,
-                usePlatformDefaultWidth = false
-            )
-        ) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth(0.95f)
-                    .heightIn(max = 650.dp),
-                shape = RoundedCornerShape(32.dp),
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 8.dp
-            ) {
-                Column(
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // CTA Button
+                Button(
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onDismiss()
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
+                        .height(56.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 ) {
-                    // Header with gradient background
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(140.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(32.dp, 32.dp, 0.dp, 0.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(20.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.rhythm_splash_logo),
-                                    contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
-                                    modifier = Modifier.size(56.dp)
-                                )
-                                Text(
-                                    text = context.getString(R.string.common_rhythm),
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = stringResource(R.string.beta_program),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-
-                    // Content
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = stringResource(R.string.betaprogrampopup_welcome_to_the_beta),
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Text(
-                                text = stringResource(R.string.betaprogrampopup_youre_part_of_an),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-
-                        // Features list
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            betaFeatures.forEach { feature ->
-                                BetaFeatureCard(feature)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(2.dp))
-
-                        // CTA Button
-                        Button(
-                            onClick = onDismiss,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            )
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Play,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.betaprogrampopup_start_exploring),
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+                    Icon(
+                        imageVector = RhythmIcons.Play,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.betaprogrampopup_start_exploring),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -324,51 +152,47 @@ fun BetaProgramPopup(onDismiss: () -> Unit) {
 
 @Composable
 private fun BetaFeatureCard(feature: BetaFeature) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 60.dp),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        shape = RoundedCornerShape(20.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Surface(
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier.size(44.dp),
                 shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
             ) {
-                Icon(
-                    imageVector = feature.icon,
-                    contentDescription = feature.title,
-                    
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp)
-                )
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Icon(
+                        imageVector = feature.icon,
+                        contentDescription = feature.title,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
 
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = feature.title,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = feature.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

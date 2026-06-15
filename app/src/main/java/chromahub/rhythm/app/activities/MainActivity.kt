@@ -282,16 +282,13 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         // Beta Program Popup
-                        AnimatedVisibility(
-                            visible = showBetaPopup,
-                            enter = fadeIn() + scaleIn(initialScale = 0.8f),
-                            exit = fadeOut() + scaleOut(targetScale = 0.8f)
-                        ) {
-                            BetaProgramPopup(onDismiss = {
+                        BetaProgramPopup(
+                            showDialog = showBetaPopup,
+                            onDismiss = {
                                 showBetaPopup = false
                                 appSettings.setHasShownBetaPopup(true)
-                            })
-                        }
+                            }
+                        )
                     }
                     }
                 }
