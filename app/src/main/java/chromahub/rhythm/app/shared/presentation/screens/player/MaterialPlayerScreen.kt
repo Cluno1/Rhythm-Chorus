@@ -2742,6 +2742,7 @@ fun MaterialPlayerScreen(
                                 )
                                 onToggleRepeat()
                             },
+                            onLongClickLyrics = onOpenFullScreenLyrics,
                             showLyrics = showLyrics,
                             modifier = Modifier.padding(
                                 horizontal = when {

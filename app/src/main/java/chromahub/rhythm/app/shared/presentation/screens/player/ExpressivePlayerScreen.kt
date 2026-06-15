@@ -676,6 +676,7 @@ fun ExpressivePlayerScreen(
                             ExpressiveButtonGroup() {
                                 ExpressiveGroupButton(
                                     onClick = onToggleLyrics,
+                                    onLongClick = onOpenFullScreenLyrics,
                                     isStart = true,
                                     isEnd = false,
                                     colors = ButtonDefaults.filledTonalButtonColors(

@@ -41,6 +41,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.shape.CircleShape
@@ -1168,6 +1170,7 @@ fun ExpressiveGroupButton(
         contentColor = MaterialTheme.colorScheme.onPrimary
     ),
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+    onLongClick: (() -> Unit)? = null,
     content: @Composable RowScope.() -> Unit
 ) {
     val shape = when {
@@ -1177,15 +1180,60 @@ fun ExpressiveGroupButton(
         else -> RoundedCornerShape(8.dp) // Middle button
     }
     
-    ExpressiveFilledTonalButton(
-        onClick = onClick,
-        modifier = modifier,
-        enabled = enabled,
-        shape = shape,
-        colors = colors,
-        contentPadding = contentPadding,
-        content = content
-    )
+    if (onLongClick != null) {
+        var isPressed by remember { mutableStateOf(false) }
+        val scale by animateFloatAsState(
+            targetValue = if (isPressed) 0.96f else 1f,
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+            label = "button_scale"
+        )
+        Surface(
+            modifier = modifier
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .pointerInput(onClick, onLongClick, enabled) {
+                    detectTapGestures(
+                        onPress = {
+                            if (enabled) {
+                                isPressed = true
+                                tryAwaitRelease()
+                                isPressed = false
+                            }
+                        },
+                        onTap = { if (enabled) onClick() },
+                        onLongPress = { if (enabled) onLongClick() }
+                    )
+                },
+            shape = shape,
+            color = colors.containerColor,
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .defaultMinSize(
+                        minWidth = ButtonDefaults.MinWidth,
+                        minHeight = ButtonDefaults.MinHeight
+                    )
+                    .padding(contentPadding),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                content = content
+            )
+        }
+    } else {
+        ExpressiveFilledTonalButton(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            shape = shape,
+            colors = colors,
+            contentPadding = contentPadding,
+            content = content
+        )
+    }
 }
 
 // ============================================================================
@@ -1784,7 +1832,8 @@ fun ExpressiveToggleButtonGroup(
     modifier: Modifier = Modifier,
     isDarkTheme: Boolean = false,
     isCompactHeight: Boolean = false,
-    isCompactWidth: Boolean = false
+    isCompactWidth: Boolean = false,
+    onLongClickLyrics: (() -> Unit)? = null
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -1807,6 +1856,7 @@ fun ExpressiveToggleButtonGroup(
             ExpressiveMorphingToggleButton(
                 isActive = lyricsVisible,
                 onClick = onToggleLyrics,
+                onLongClick = onLongClickLyrics,
                 icon = RhythmIcons.Player.Lyrics,
                 label = "Lyrics",
                 isDarkTheme = isDarkTheme,
@@ -1844,10 +1894,13 @@ private fun ExpressiveMorphingToggleButton(
     isDarkTheme: Boolean,
     isCompactHeight: Boolean = false,
     isCompactWidth: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    var isPressedManual by remember { mutableStateOf(false) }
+    val effectivePressed = if (onLongClick != null) isPressedManual else isPressed
     
     val containerColor by animateColorAsState(
         targetValue = if (isActive) {
@@ -1891,7 +1944,7 @@ private fun ExpressiveMorphingToggleButton(
     val toggleHeight = if (isCompact) 40.dp else 48.dp
     
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1f,
+        targetValue = if (effectivePressed) 0.92f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMedium
@@ -1900,19 +1953,38 @@ private fun ExpressiveMorphingToggleButton(
     )
     
     Surface(
-        onClick = onClick,
         modifier = modifier
             .width(width)
             .height(toggleHeight)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-            },
+            }
+            .then(
+                if (onLongClick != null) {
+                    Modifier.pointerInput(onClick, onLongClick) {
+                        detectTapGestures(
+                            onPress = {
+                                isPressedManual = true
+                                tryAwaitRelease()
+                                isPressedManual = false
+                            },
+                            onTap = { onClick() },
+                            onLongPress = { onLongClick() }
+                        )
+                    }
+                } else {
+                    Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = onClick
+                    )
+                }
+            ),
         shape = RoundedCornerShape(24.dp),
         color = containerColor,
         tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
-        interactionSource = interactionSource
+        shadowElevation = 0.dp
     ) {
         Row(
             modifier = Modifier.fillMaxSize(),

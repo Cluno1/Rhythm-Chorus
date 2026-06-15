@@ -408,7 +408,7 @@ fun FullScreenLyricsView(
 
                     // Sync tuner dock (only visible if controls are visible)
                     AnimatedVisibility(
-                        visible = !autoHideLyricsControls || controlsVisible,
+                        visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
                         enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
                         exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -542,7 +542,7 @@ fun FullScreenLyricsView(
 
                     // Glassmorphic control dock
                     AnimatedVisibility(
-                        visible = !autoHideLyricsControls || controlsVisible,
+                        visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
                         enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
                         exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -654,7 +654,7 @@ fun FullScreenLyricsView(
 
                     // Floating Romanization and Translation Stack (on the right)
                     androidx.compose.animation.AnimatedVisibility(
-                        visible = !autoHideLyricsControls || controlsVisible,
+                        visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
                         enter = fadeIn() + scaleIn(),
                         exit = fadeOut() + scaleOut(),
                         modifier = Modifier
@@ -700,7 +700,7 @@ fun FullScreenLyricsView(
 
                     // Floating Lyrics Editor and Lyrics Settings Stack (on the left)
                     androidx.compose.animation.AnimatedVisibility(
-                        visible = !autoHideLyricsControls || controlsVisible,
+                        visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
                         enter = fadeIn() + scaleIn(),
                         exit = fadeOut() + scaleOut(),
                         modifier = Modifier
@@ -922,7 +922,7 @@ fun FullScreenLyricsView(
 
                     // Floating Romanization and Translation Stack (on the right)
                     androidx.compose.animation.AnimatedVisibility(
-                        visible = !autoHideLyricsControls || controlsVisible,
+                        visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
                         enter = fadeIn() + scaleIn(),
                         exit = fadeOut() + scaleOut(),
                         modifier = Modifier
@@ -968,7 +968,7 @@ fun FullScreenLyricsView(
 
                     // Floating Lyrics Editor and Lyrics Settings Stack (on the left)
                     androidx.compose.animation.AnimatedVisibility(
-                        visible = !autoHideLyricsControls || controlsVisible,
+                        visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
                         enter = fadeIn() + scaleIn(),
                         exit = fadeOut() + scaleOut(),
                         modifier = Modifier
@@ -1013,7 +1013,7 @@ fun FullScreenLyricsView(
 
                 // C. SYNC TUNER DOCK: Translucent slider or quick buttons to tweak sync offset in real time
                 AnimatedVisibility(
-                    visible = !autoHideLyricsControls || controlsVisible,
+                    visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
                     enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
                     exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
                 ) {
@@ -1152,7 +1152,7 @@ fun FullScreenLyricsView(
 
                 // D. GLASSMORPHIC CONTROL DOCK: Integrated with the official material ExpressivePlayerControlGroup
                 AnimatedVisibility(
-                    visible = !autoHideLyricsControls || controlsVisible,
+                    visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
                     enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
                     exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
                 ) {
