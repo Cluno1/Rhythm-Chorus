@@ -556,6 +556,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 } else if (whitelistedFolders.isNotEmpty()) {
                     // Check if song is in a whitelisted folder
                     val songPath = song.path ?: if (song.uri.scheme == "file") song.uri.path else getPathFromUriCached(song.uri)
+                    if (songPath == null) {
+                        Log.w(TAG, "Whitelist: could not resolve path for song '${song.title}' (${song.uri}), excluding it")
+                    }
                     shouldInclude = songPath != null && isPathWhitelisted(songPath, whitelistedFolders)
                 }
             }
@@ -7999,17 +8002,48 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         return try {
             when (uri.scheme) {
                 "content" -> {
-                    // For content URIs, query the MediaStore to get the file path
                     val projection = arrayOf(MediaStore.Audio.Media.DATA)
-                    getApplication<Application>().contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
-                        if (cursor.moveToFirst()) {
-                            val dataIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-                            cursor.getString(dataIndex)
-                        } else null
+                    var path: String? = null
+                    // Direct content URI query
+                    val cursor = getApplication<Application>().contentResolver.query(
+                        uri, projection, null, null, null
+                    )
+                    cursor?.use { c ->
+                        if (c.moveToFirst()) {
+                            val dataIndex = c.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+                            if (!c.isNull(dataIndex)) {
+                                path = c.getString(dataIndex)
+                            }
+                        }
                     }
+                    // Fallback: query EXTERNAL_CONTENT_URI by _ID when direct query returns null
+                    // This works around DATA column deprecation on API 30+
+                    if (path == null) {
+                        val id = uri.lastPathSegment
+                        if (id != null) {
+                            val fallbackCursor = getApplication<Application>().contentResolver.query(
+                                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                                projection,
+                                "${MediaStore.Audio.Media._ID} = ?",
+                                arrayOf(id),
+                                null
+                            )
+                            fallbackCursor?.use { c ->
+                                if (c.moveToFirst()) {
+                                    val dataIndex = c.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+                                    if (!c.isNull(dataIndex)) {
+                                        path = c.getString(dataIndex)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (path == null) {
+                        Log.w(TAG, "Could not resolve file path for content URI: $uri")
+                    }
+                    path
                 }
                 "file" -> {
-                    // For file URIs, get the path directly
                     uri.path
                 }
                 else -> null
