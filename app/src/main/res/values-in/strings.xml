@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Tetapkan ukuran maksimum untuk data cache</string>
     <string name="cache_about">Tentang Tembolok</string>
     <string name="cache_size_limit">Batas Ukuran Cache</string>
-    <string name="cache_clear_on_exit">Hapus Cache saat Keluar</string>
+    <string name="cache_auto_trim">Pangkas otomatis pada 90%</string>
+    <string name="cache_auto_trim_desc">Cache secara otomatis terpangkas ketika penggunaan mencapai 90% dari batas</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Prioritas Sumber Lirik</string>
@@ -2636,7 +2637,7 @@
     <string name="color_scheme_crimson_desc">Warna merah anggur dan merah tua yang berani untuk drama</string>
     <string name="color_scheme_emerald_title">Mimpi Zamrud</string>
     <string name="color_scheme_emerald_desc">Hijau zamrud segar dengan warna hutan alami</string>
-    <string name="color_scheme_mint_title">Mint</string>
+    <string name="color_scheme_mint_title">daun mint</string>
     <string name="color_scheme_mint_desc">Warna cyan dan hijau mint yang segar dan bersih</string>
 
     <!-- Color Preview Chips -->
@@ -2864,7 +2865,7 @@
     <string name="shape_option_flower_desc">Bunga dengan kelopak</string>
     <string name="shape_option_heart">Hati</string>
     <string name="shape_option_heart_desc">Bentuk hati</string>
-    <string name="shape_option_bun">Bun</string>
+    <string name="shape_option_bun">Roti</string>
     <string name="shape_option_bun_desc">Bentuk roti/roti</string>
     <string name="shape_option_boom">Ledakan</string>
     <string name="shape_option_boom_desc">Bentuk ledakan</string>

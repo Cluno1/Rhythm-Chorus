@@ -607,14 +607,13 @@ class MainActivity : AppCompatActivity() {
         }
         lifecycleScopeJobs.clear()
         
-        // Perform cache cleanup if enabled
+        // Auto-trim cache if usage exceeds 90% of max
         lifecycleScope.launch {
             try {
-                // Get MusicRepository instance from the ViewModel to clear in-memory caches
-                val musicRepository = musicViewModel.getMusicRepository()
-                appSettings.performCacheCleanupOnExit(applicationContext, musicRepository)
+                val maxSize = appSettings.maxCacheSize.value
+                chromahub.rhythm.app.util.CacheManager.autoTrimCache(applicationContext, maxSize)
             } catch (e: Exception) {
-                Log.e(TAG, "Error during cache cleanup on app destroy", e)
+                Log.e(TAG, "Error during cache auto-trim on app destroy", e)
             }
         }
         

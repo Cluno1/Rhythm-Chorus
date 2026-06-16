@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Set the maximum size for cached data</string>
     <string name="cache_about">About Cache</string>
     <string name="cache_size_limit">Cache Size Limit</string>
-    <string name="cache_clear_on_exit">Clear Cache on Exit</string>
+    <string name="cache_auto_trim">Auto-trim at 90%</string>
+    <string name="cache_auto_trim_desc">Cache is automatically trimmed when usage reaches 90% of limit</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Lyrics Source Priority</string>

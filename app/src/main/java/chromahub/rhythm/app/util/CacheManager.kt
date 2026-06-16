@@ -87,6 +87,30 @@ object CacheManager {
         
         return@withContext false
     }
+
+    /**
+     * Automatically trims cache when usage reaches 90% of the max size.
+     * Cleans to 80% of the limit when triggered, maintaining headroom.
+     */
+    suspend fun autoTrimCache(context: Context, maxSizeBytes: Long): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val currentSize = getCacheSize(context)
+            val threshold = (maxSizeBytes * 0.9).toLong()
+            Log.d(TAG, "Current cache size: ${currentSize / (1024 * 1024)}MB, 90% threshold: ${threshold / (1024 * 1024)}MB")
+            
+            if (currentSize > threshold) {
+                Log.d(TAG, "Cache size exceeds 90% threshold (${currentSize / (1024 * 1024)}MB / ${maxSizeBytes / (1024 * 1024)}MB), auto-trimming...")
+                val cleaned = cleanOldCacheFiles(context, (maxSizeBytes * 0.8).toLong())
+                if (!cleaned) {
+                    clearAllCache(context)
+                }
+                return@withContext true
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in auto cache trim", e)
+        }
+        return@withContext false
+    }
     
     /**
      * Cleans old cache files based on last modified time

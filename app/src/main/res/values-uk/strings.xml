@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Встановити максимальний розмір для кешованих даних</string>
     <string name="cache_about">Про кеш</string>
     <string name="cache_size_limit">Обмеження розміру кешу</string>
-    <string name="cache_clear_on_exit">Очистити кеш під час виходу</string>
+    <string name="cache_auto_trim">Автоматичне обрізання на 90%</string>
+    <string name="cache_auto_trim_desc">Кеш автоматично очищається, коли використання досягає 90% ліміту</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Пріоритет джерела тексту</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Виберіть режим відтворення</string>
     <string name="onboardingscreen_local_offline_player">Локальний автономний програвач</string>
     <string name="onboardingscreen_play_audio_files_stored">Відтворення аудіофайлів, збережених безпосередньо на вашому пристрої. Підтримує розширене сканування локального каталогу, статистику та підбір тем.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (потокове передавання)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Підключіться до серверів Jellyfin, Subsonic або Navidrome, щоб транслювати всю свою бібліотеку на ходу з підтримкою кешування для прослуховування в автономному режимі.</string>
     <string name="onboardingscreen_playback_mode_tips">Поради щодо режиму відтворення</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Легко перемикайтеся будь-коли в меню «Налаштування» &gt; «Інтеграція».</string>
@@ -2499,7 +2500,7 @@
     <string name="error_saving_lyrics">Помилка збереження тексту: %1$s</string>
     <string name="song_metadata_details">%1$s\nВиконавець: %2$s\nАльбом: %3$s</string>
     <string name="crash_log_title">Збій: %1$s</string>
-    <string name="widget_settings_radius_desc">%1$ddp (Glance widgets only)</string>
+    <string name="widget_settings_radius_desc">%1$ddp (лише віджети Glance)</string>
     <string name="equalizer_open_error">Не вдалося відкрити еквалайзер: %1$s</string>
     <string name="track_artwork_description">Зображення для доріжки %1$s</string>
     <string name="playlist_artwork_description">Зображення для списку відтворення %1$s</string>

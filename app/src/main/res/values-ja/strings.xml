@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">キャッシュデータの最大サイズを設定する</string>
     <string name="cache_about">キャッシュについて</string>
     <string name="cache_size_limit">キャッシュサイズ制限</string>
-    <string name="cache_clear_on_exit">終了時にキャッシュをクリア</string>
+    <string name="cache_auto_trim">90%で自動トリミング</string>
+    <string name="cache_auto_trim_desc">使用量が制限の 90% に達すると、キャッシュは自動的にトリミングされます</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">歌詞ソース優先</string>
@@ -1625,7 +1626,7 @@
     <string name="ui_close">閉じる</string>
     <string name="ui_save">保存</string>
     <string name="ui_cancel">キャンセル</string>
-    <string name="ui_ok">OK</string>
+    <string name="ui_ok">わかりました</string>
     <string name="ui_reset">リセット</string>
     <string name="ui_error">エラー</string>
     <string name="ui_clear">クリア</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">再生モードの選択</string>
     <string name="onboardingscreen_local_offline_player">ローカルオフラインプレーヤー</string>
     <string name="onboardingscreen_play_audio_files_stored">デバイスに直接保存されているオーディオ ファイルを再生します。高度なローカル ディレクトリ スキャン、統計、テーマ マッチングをサポートします。</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (ストリーミング)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Jellyfin、Subsonic、または Navidrome サーバーに接続して、オフライン リスニングのためのキャッシュ サポートを使用して、外出先でライブラリ全体をストリーミングします。</string>
     <string name="onboardingscreen_playback_mode_tips">再生モードのヒント</string>
     <string name="onboardingscreen_switch_easily_anytime_in">[設定] &gt; [統合]でいつでも簡単に切り替えます。</string>

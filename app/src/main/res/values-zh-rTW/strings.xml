@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">設定快取資料的最大大小</string>
     <string name="cache_about">關於緩存</string>
     <string name="cache_size_limit">快取大小限制</string>
-    <string name="cache_clear_on_exit">退出時清除快取</string>
+    <string name="cache_auto_trim">90% 自動修剪</string>
+    <string name="cache_auto_trim_desc">當使用量達到限制的90%時自動修剪緩存</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">歌詞來源優先</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">選擇您的播放模式</string>
     <string name="onboardingscreen_local_offline_player">本機離線播放器</string>
     <string name="onboardingscreen_play_audio_files_stored">播放直接儲存在裝置上的音訊檔案。支援進階本地目錄掃描、統計和主題匹配。</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO!（串流媒體）</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">連接到 Jellyfin、Subsonic 或 Navidrome 伺服器，隨時隨地串流整個程式庫，並提供離線收聽的快取支援。</string>
     <string name="onboardingscreen_playback_mode_tips">播放模式提示</string>
     <string name="onboardingscreen_switch_easily_anytime_in">在「設定」&gt;「整合」中隨時輕鬆切換。</string>
@@ -2751,7 +2752,7 @@
     <string name="dialog_export_playlists_to">將 %1$d 個播放清單匯出到：</string>
 
     <!-- Mode dialog strings -->
-    <string name="dialog_switch_to_go">Switch to Rhythm Go?</string>
+    <string name="dialog_switch_to_go">Switch to Rhythm Go？</string>
     <string name="dialog_switch_to_local">切換到本地？</string>
     <string name="dialog_switch_to_go_desc">This item belongs to Rhythm Go。現在切換到串流模式來進行串流媒體播放嗎？</string>
     <string name="dialog_switch_to_local_desc">資料屬於您的本地圖書館。立即切換到本機模式來播放離線曲目嗎？</string>

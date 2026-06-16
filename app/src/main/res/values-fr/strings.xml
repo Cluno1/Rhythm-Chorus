@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Définir la taille maximale des données mises en cache</string>
     <string name="cache_about">À propos du cache</string>
     <string name="cache_size_limit">Limite de taille du cache</string>
-    <string name="cache_clear_on_exit">Vider le cache à la sortie</string>
+    <string name="cache_auto_trim">Trim automatique à 90 %</string>
+    <string name="cache_auto_trim_desc">Le cache est automatiquement supprimé lorsque l\'utilisation atteint 90 % de la limite</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Priorité à la source des paroles</string>
@@ -1280,7 +1281,7 @@
     <string name="settings_rhythm_guard_age_desc">Volume de sécurité recommandé jusqu\'à %1$d%% et environ %2$d minutes par jour.</string>
     <string name="settings_rhythm_guard_auto_policy_table_title">Guide d\'écoute sécurisée (Âge -&gt; Volume / Jour)</string>
     <string name="settings_rhythm_guard_auto_policy_band">Âge %1$d-%2$d</string>
-    <string name="settings_rhythm_guard_auto_policy_value">%1$d%% / %2$d min</string>
+    <string name="settings_rhythm_guard_auto_policy_value">%1$d%% / %2$d min</string>
     <string name="settings_rhythm_guard_snapshot_volume_title">Pression volumique</string>
     <string name="settings_rhythm_guard_snapshot_exposure_title">Exposition totale</string>
     <string name="settings_rhythm_guard_manual_controls_title">Garde-corps manuels</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Choisissez votre mode de lecture</string>
     <string name="onboardingscreen_local_offline_player">Lecteur local hors ligne</string>
     <string name="onboardingscreen_play_audio_files_stored">Lisez des fichiers audio stockés directement sur votre appareil. Prend en charge l\'analyse avancée du répertoire local, les statistiques et la correspondance de thèmes.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (diffusion en continu)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Connectez-vous aux serveurs Jellyfin, Subsonic ou Navidrome pour diffuser l\'intégralité de votre bibliothèque en déplacement, avec prise en charge de la mise en cache pour une écoute hors ligne.</string>
     <string name="onboardingscreen_playback_mode_tips">Conseils sur le mode de lecture</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Basculez facilement à tout moment dans Paramètres &gt; Intégration.</string>
@@ -2751,7 +2752,7 @@
     <string name="dialog_export_playlists_to">Exportez %1$d listes de lecture vers :</string>
 
     <!-- Mode dialog strings -->
-    <string name="dialog_switch_to_go">Switch to Rhythm Go?</string>
+    <string name="dialog_switch_to_go">Switch to Rhythm Go ?</string>
     <string name="dialog_switch_to_local">Passer au local ?</string>
     <string name="dialog_switch_to_go_desc">This item belongs to Rhythm Go. Passer en mode streaming maintenant pour le diffuser et le lire ?</string>
     <string name="dialog_switch_to_local_desc">Cet élément appartient à votre bibliothèque locale. Passer en mode local maintenant pour lire vos morceaux hors ligne ?</string>

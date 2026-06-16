@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Установите максимальный размер кэшированных данных.</string>
     <string name="cache_about">О кэше</string>
     <string name="cache_size_limit">Ограничение размера кэша</string>
-    <string name="cache_clear_on_exit">Очистить кэш при выходе</string>
+    <string name="cache_auto_trim">Автоматическая обрезка на 90 %.</string>
+    <string name="cache_auto_trim_desc">Кэш автоматически обрезается, когда использование достигает 90 % от лимита.</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Приоритет источника текстов</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Выберите режим воспроизведения</string>
     <string name="onboardingscreen_local_offline_player">Локальный офлайн-плеер</string>
     <string name="onboardingscreen_play_audio_files_stored">Воспроизведение аудиофайлов, хранящихся непосредственно на вашем устройстве. Поддерживает расширенное сканирование локальных каталогов, статистику и сопоставление тем.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (потоковая передача)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Подключайтесь к серверам Jellyfin, Subsonic или Navidrome для потоковой передачи всей вашей библиотеки на ходу с поддержкой кэширования для прослушивания в автономном режиме.</string>
     <string name="onboardingscreen_playback_mode_tips">Советы по режиму воспроизведения</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Легко переключайтесь в любое время в «Настройки» &gt; «Интеграция».</string>

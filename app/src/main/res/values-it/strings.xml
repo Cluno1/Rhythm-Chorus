@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Imposta la dimensione massima per i dati memorizzati nella cache</string>
     <string name="cache_about">Informazioni sulla cache</string>
     <string name="cache_size_limit">Limite dimensione cache</string>
-    <string name="cache_clear_on_exit">Cancella cache all\'uscita</string>
+    <string name="cache_auto_trim">Trim automatico al 90%</string>
+    <string name="cache_auto_trim_desc">La cache viene ridotta automaticamente quando l\'utilizzo raggiunge il 90% del limite</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Priorità sorgente testi</string>
@@ -1348,7 +1349,7 @@
     <string name="settings_rhythm_guard_timeout_activity_default_reason">Colpo di scena: le vostre orecchie hanno iniziato un\'unione e hanno chiesto una pausa merenda. Rhythm La guardia ha messo in pausa la riproduzione in modo che tutti possano rinfrescarsi.</string>
     <string name="settings_rhythm_guard_timeout_activity_comic_desc">Colpo di scena: le vostre orecchie hanno iniziato un\'unione e hanno chiesto una pausa per uno spuntino. Rhythm La guardia ha messo in pausa la riproduzione in modo che tutti possano rinfrescarsi.</string>
     <string name="settings_rhythm_guard_timeout_activity_extend">Prolungare la pausa (+%1$d min)</string>
-    <string name="settings_rhythm_guard_timeout_activity_exit">Close Timeout Screen</string>
+    <string name="settings_rhythm_guard_timeout_activity_exit">Chiudi la schermata Timeout</string>
     <string name="settings_rhythm_guard_timeout_activity_close_app">Chiudi l\'app</string>
     <string name="settings_rhythm_guard_age_search_title">Profilo dell\'età</string>
     <string name="settings_rhythm_guard_age_search_desc">Imposta il profilo di sicurezza dell\'udito in base all\'età</string>

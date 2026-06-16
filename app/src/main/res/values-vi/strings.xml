@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Đặt kích thước tối đa cho dữ liệu được lưu trong bộ nhớ đệm</string>
     <string name="cache_about">Về bộ nhớ đệm</string>
     <string name="cache_size_limit">Giới hạn kích thước bộ đệm</string>
-    <string name="cache_clear_on_exit">Xóa bộ nhớ đệm khi thoát</string>
+    <string name="cache_auto_trim">Tự động cắt ở mức 90%</string>
+    <string name="cache_auto_trim_desc">Bộ nhớ đệm sẽ tự động được cắt bớt khi mức sử dụng đạt 90% giới hạn</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Ưu tiên nguồn lời bài hát</string>
@@ -1060,7 +1061,7 @@
     <!-- Search -->
     
     <!-- Song Metadata -->
-    <string name="metadata_album">Album</string>
+    <string name="metadata_album">Anbum</string>
     <string name="metadata_genre">Thể loại</string>
     <string name="metadata_year">Năm</string>
     <string name="metadata_track">Theo dõi</string>
@@ -1619,7 +1620,7 @@
     
     <!-- Format Strings with Placeholders -->
     <string name="settings_cache_size_2gb">2GB</string>
-    <string name="settings_cache_size_64mb">64 MB</string>
+    <string name="settings_cache_size_64mb">64MB</string>
     
     <!-- Common UI strings -->
     <string name="ui_close">Đóng</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Chọn Chế độ Phát lại của Bạn</string>
     <string name="onboardingscreen_local_offline_player">Trình phát ngoại tuyến cục bộ</string>
     <string name="onboardingscreen_play_audio_files_stored">Phát các tệp âm thanh được lưu trữ trực tiếp trên thiết bị của bạn. Hỗ trợ quét thư mục cục bộ nâng cao, thống kê và khớp chủ đề.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Truyền phát)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Kết nối với máy chủ Jellyfin, Subsonic hoặc Navidrome để truyền trực tuyến toàn bộ thư viện của bạn khi đang di chuyển, có hỗ trợ bộ nhớ đệm để nghe ngoại tuyến.</string>
     <string name="onboardingscreen_playback_mode_tips">Mẹo về chế độ phát lại</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Dễ dàng chuyển đổi bất kỳ lúc nào trong Cài đặt &gt; Tích hợp.</string>

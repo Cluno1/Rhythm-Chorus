@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -741,7 +741,7 @@
     <string name="miniplayer_swipe_left_hint">Weiter →</string>
     <string name="miniplayer_swipe_right_hint">← Zurück</string>
     <string name="miniplayer_no_song">Kein Lied läuft</string>
-    <string name="badge_live">LIVE</string>
+    <string name="badge_live">LEBEN</string>
     
     <!-- Festive Greetings -->
     <string name="festive_greeting_christmas">🎄 Frohe Weihnachten! 🎅</string>
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Legen Sie die maximale Größe für zwischengespeicherte Daten fest</string>
     <string name="cache_about">Über Cache</string>
     <string name="cache_size_limit">Cache-Größenbegrenzung</string>
-    <string name="cache_clear_on_exit">Cache beim Beenden leeren</string>
+    <string name="cache_auto_trim">Automatisches Trimmen bei 90 %</string>
+    <string name="cache_auto_trim_desc">Der Cache wird automatisch gekürzt, wenn die Nutzung 90 % des Limits erreicht</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Songtext-Quellenpriorität</string>
@@ -1816,7 +1817,7 @@
     <string name="settings_tab_playlists">Wiedergabelisten</string>
     <string name="settings_tab_albums">Alben</string>
     <string name="settings_tab_artists">Künstler</string>
-    <string name="settings_tab_explorer">Explorer</string>
+    <string name="settings_tab_explorer">Entdecker</string>
     <string name="settings_tab_order_reset">Tab-Reihenfolge auf Standard zurückgesetzt</string>
     <string name="settings_tab_order_saved">Tab-Reihenfolge gespeichert</string>
     <string name="settings_move_up">Nach oben bewegen</string>
@@ -2769,7 +2770,7 @@
     <string name="eq_preset_jazz">Jazz</string>
     <string name="eq_preset_classical">Klassik</string>
     <string name="eq_preset_electronic">Elektronisch</string>
-    <string name="eq_preset_hiphop">Hip Hop</string>
+    <string name="eq_preset_hiphop">Hip-Hop</string>
     <string name="eq_preset_vocal">Gesang</string>
     <string name="eq_preset_bass_boost">Bassverstärkung</string>
     <string name="eq_preset_treble_boost">Höhenverstärkung</string>
@@ -2961,7 +2962,7 @@
     <string name="metadata_bitrate">Bitrate</string>
     <string name="metadata_sample_rate">Abtastrate</string>
     <string name="metadata_channels">Kanäle</string>
-    <string name="metadata_format">Format</string>
+    <string name="metadata_format">Formatieren</string>
     <string name="metadata_location">Standort</string>
     <string name="metadata_lyrics">Liedtext</string>
     <string name="metadata_mime_type">MIME-Typ</string>

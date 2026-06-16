@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Önbelleğe alınan veriler için maksimum boyutu ayarlayın</string>
     <string name="cache_about">Önbellek Hakkında</string>
     <string name="cache_size_limit">Önbellek Boyutu Sınırı</string>
-    <string name="cache_clear_on_exit">Çıkışta Önbelleği Temizle</string>
+    <string name="cache_auto_trim">%90\'da otomatik düzeltme</string>
+    <string name="cache_auto_trim_desc">Kullanım sınırın %90\'ına ulaştığında önbellek otomatik olarak kesilir</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Şarkı Sözü Kaynak Önceliği</string>
@@ -1437,7 +1438,7 @@
     <string name="content_desc_shuffle_play">Karışık çalma</string>
     <string name="content_desc_sort_songs">Şarkıları sıralama</string>
     <string name="content_desc_more_options">Daha fazla seçenek</string>
-    <string name="content_desc_add_to_playlist">Add to playlist</string>
+    <string name="content_desc_add_to_playlist">Çalma listesine ekle</string>
     <string name="content_desc_now_playing">Şimdi oynatılıyor</string>
     <string name="content_desc_drag_reorder">Yeniden sıralamak için sürükleyin</string>
     <string name="content_desc_remove_from_queue">Sıradan kaldır</string>
@@ -1481,7 +1482,7 @@
     
     <!-- Home Sections -->
     <string name="home_section_recently_played">Son Oynananlar</string>
-    <string name="home_section_discover">Discover Carousel</string>
+    <string name="home_section_discover">Atlıkarıncayı Keşfet</string>
     <string name="home_section_new_releases">Yeni Çıkanlar</string>
     <string name="home_section_one_visible">En az bir bölüm görünür olmalıdır</string>
     
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Oynatma Modunuzu Seçin</string>
     <string name="onboardingscreen_local_offline_player">Yerel Çevrimdışı Oyuncu</string>
     <string name="onboardingscreen_play_audio_files_stored">Doğrudan cihazınızda saklanan ses dosyalarını oynatın. Gelişmiş yerel dizin taramayı, istatistikleri ve tema eşleştirmeyi destekler.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Akış)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Çevrimdışı dinleme için önbelleğe alma desteğiyle, kitaplığınızın tamamını hareket halindeyken yayınlamak için Jellyfin, Subsonic veya Navidrome sunucularına bağlanın.</string>
     <string name="onboardingscreen_playback_mode_tips">Oynatma Modu İpuçları</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Ayarlar &gt; Entegrasyon bölümünde istediğiniz zaman kolayca geçiş yapın.</string>

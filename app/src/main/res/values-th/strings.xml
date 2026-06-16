@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">กำหนดขนาดสูงสุดสำหรับข้อมูลที่แคชไว้</string>
     <string name="cache_about">เกี่ยวกับแคช</string>
     <string name="cache_size_limit">ขีดจำกัดขนาดแคช</string>
-    <string name="cache_clear_on_exit">ล้างแคชเมื่อออก</string>
+    <string name="cache_auto_trim">ตัดแต่งอัตโนมัติที่ 90%</string>
+    <string name="cache_auto_trim_desc">แคชจะถูกตัดโดยอัตโนมัติเมื่อการใช้งานถึง 90% ของขีดจำกัด</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">ลำดับความสำคัญของแหล่งที่มาของเนื้อเพลง</string>
@@ -2267,7 +2268,7 @@
     <string name="onboardingscreen_successfully_connected">เชื่อมต่อสำเร็จแล้ว!</string>
     <string name="onboardingscreen_connecting">กำลังเชื่อมต่อ...</string>
     <string name="onboardingscreen_connect_verify">เชื่อมต่อและตรวจสอบ</string>
-    <string name="splashscreen_go">ไป</string>
+    <string name="splashscreen_go">Go</string>
     <string name="musicviewmodel_failed_to_add_to">ไม่สามารถเพิ่มลงในคิว: ผู้เล่นไม่ได้เตรียมใช้งาน</string>
     <string name="musicviewmodel_failed_to_play_next">ไม่สามารถเล่นถัดไป: ผู้เล่นไม่ได้เตรียมใช้งาน</string>
     <string name="streaminghomesectionorderbottomsheet_streaming_section_order_and">ลำดับส่วนการสตรีมและการมองเห็นจะรีเซ็ตเป็นค่าเริ่มต้น</string>
@@ -2279,7 +2280,7 @@
     <string name="streamingcontenthomescreen_your_connected_streaming_service">เพลย์ลิสต์บริการสตรีมมิ่งที่เชื่อมต่อของคุณ</string>
     <string name="streamingcontenthomescreen_no_playlists_found">ไม่พบเพลย์ลิสต์</string>
     <string name="streamingcontenthomescreen_create_playlists_on_your">สร้างเพลย์ลิสต์บนเซิร์ฟเวอร์ของคุณเพื่อดูได้ที่นี่</string>
-    <string name="streaminghomescreen_leave_go_mode">ออกจากโหมด Go</string>
+    <string name="streaminghomescreen_leave_go_mode">Leave Go Mode</string>
     <string name="streaminglibraryscreen_no_albums">ไม่มีอัลบั้ม</string>
     <string name="streamingsettingsscreen_streaming_restricted">จำกัดการสตรีม</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">ไม่สามารถเล่นถัดไป: ไม่สามารถแก้ไข URL</string>
@@ -2909,12 +2910,12 @@
     <string name="shape_option_clam_shell">เปลือกหอย</string>
     <string name="shape_option_clam_shell_desc">รูปทรงเปลือกหอย</string>
     <string name="shape_option_gem">อัญมณี</string>
-    <string name="shape_option_gem_desc">Gemstone shape</string>
-    <string name="shape_option_semi_circle">Semi Circle</string>
-    <string name="shape_option_semi_circle_desc">Half circle</string>
-    <string name="shape_option_slanted">Slanted</string>
-    <string name="shape_option_slanted_desc">Slanted square</string>
-    <string name="shape_option_pixel_circle">Pixel Circle</string>
+    <string name="shape_option_gem_desc">รูปทรงอัญมณี</string>
+    <string name="shape_option_semi_circle">กึ่งวงกลม</string>
+    <string name="shape_option_semi_circle_desc">ครึ่งวงกลม</string>
+    <string name="shape_option_slanted">เอียง</string>
+    <string name="shape_option_slanted_desc">สี่เหลี่ยมจัตุรัสเอียง</string>
+    <string name="shape_option_pixel_circle">วงกลมพิกเซล</string>
     <string name="shape_option_pixel_circle_desc">วงกลมพิกเซล</string>
     <string name="shape_option_pixel_triangle">สามเหลี่ยมพิกเซล</string>
     <string name="shape_option_pixel_triangle_desc">สามเหลี่ยมพิกเซล</string>

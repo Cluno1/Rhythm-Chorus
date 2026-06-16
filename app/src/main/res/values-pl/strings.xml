@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Ustaw maksymalny rozmiar danych buforowanych</string>
     <string name="cache_about">O pamięci podręcznej</string>
     <string name="cache_size_limit">Limit rozmiaru pamięci podręcznej</string>
-    <string name="cache_clear_on_exit">Wyczyść pamięć podręczną przy wyjściu</string>
+    <string name="cache_auto_trim">Automatyczne przycinanie przy 90%</string>
+    <string name="cache_auto_trim_desc">Pamięć podręczna jest automatycznie przycinana, gdy wykorzystanie osiągnie 90% limitu</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Priorytet źródła tekstów</string>
@@ -1274,7 +1275,7 @@
     <string name="settings_rhythm_guard_list_desc">Poręcze zdrowia nasłuchu obsługiwane przez statystyki Rhythm</string>
     <string name="settings_rhythm_guard_mode_title">Tryb ochrony</string>
     <string name="settings_rhythm_guard_mode_desc">Wybierz sposób, w jaki Rhythm Guard zarządza stanem słuchania</string>
-    <string name="settings_rhythm_guard_mode_auto">Auto</string>
+    <string name="settings_rhythm_guard_mode_auto">Automat</string>
     <string name="settings_rhythm_guard_mode_manual">Instrukcja</string>
     <string name="settings_rhythm_guard_age_label">Profil wiekowy: %1$d</string>
     <string name="settings_rhythm_guard_age_desc">Zalecana bezpieczna głośność do %1$d%% i około %2$d minut dziennie.</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Wybierz tryb odtwarzania</string>
     <string name="onboardingscreen_local_offline_player">Lokalny odtwarzacz offline</string>
     <string name="onboardingscreen_play_audio_files_stored">Odtwarzaj pliki audio zapisane bezpośrednio na Twoim urządzeniu. Obsługuje zaawansowane skanowanie katalogów lokalnych, statystyki i dopasowywanie motywów.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Przesyłanie strumieniowe)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Połącz się z serwerami Jellyfin, Subsonic lub Navidrome, aby przesyłać strumieniowo całą bibliotekę w dowolnym miejscu, z obsługą buforowania do słuchania offline.</string>
     <string name="onboardingscreen_playback_mode_tips">Wskazówki dotyczące trybu odtwarzania</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Łatwe przełączanie w dowolnym momencie w Ustawieniach &gt; Integracja.</string>

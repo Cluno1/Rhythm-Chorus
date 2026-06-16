@@ -242,7 +242,7 @@ fun CacheManagementSettingsScreen(onBackClick: () -> Unit) {
 
     // Collect states
     val maxCacheSize by appSettings.maxCacheSize.collectAsState()
-    val clearCacheOnExit by appSettings.clearCacheOnExit.collectAsState()
+
 
     // Local states
     var currentCacheSize by remember { mutableStateOf(0L) }
@@ -519,13 +519,10 @@ fun CacheManagementSettingsScreen(onBackClick: () -> Unit) {
                         ),
                         toMaterial3SettingsItem(
                             context = context,
-                            hapticFeedback = haptics,
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("auto_delete", filled = true),
-                                title = context.getString(R.string.cache_clear_on_exit),
-                                description = context.getString(R.string.settings_cache_clear_on_exit_desc),
-                                toggleState = clearCacheOnExit,
-                                onToggleChange = { appSettings.setClearCacheOnExit(it) }
+                                title = context.getString(R.string.cache_auto_trim),
+                                description = context.getString(R.string.cache_auto_trim_desc)
                             )
                         )
                     ),

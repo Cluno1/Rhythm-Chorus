@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">قم بتعيين الحد الأقصى لحجم البيانات المخزنة مؤقتًا</string>
     <string name="cache_about">حول ذاكرة التخزين المؤقت</string>
     <string name="cache_size_limit">الحد الأقصى لحجم ذاكرة التخزين المؤقت</string>
-    <string name="cache_clear_on_exit">مسح ذاكرة التخزين المؤقت عند الخروج</string>
+    <string name="cache_auto_trim">التشذيب التلقائي بنسبة 90%</string>
+    <string name="cache_auto_trim_desc">يتم قطع ذاكرة التخزين المؤقت تلقائيًا عندما يصل الاستخدام إلى 90% من الحد الأقصى</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">أولوية مصدر الكلمات</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">اختر وضع التشغيل الخاص بك</string>
     <string name="onboardingscreen_local_offline_player">مشغل محلي غير متصل</string>
     <string name="onboardingscreen_play_audio_files_stored">تشغيل الملفات الصوتية المخزنة مباشرة على جهازك. يدعم المسح المتقدم للدليل المحلي والإحصائيات ومطابقة السمات.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (البث المباشر)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">اتصل بخوادم Jellyfin أو Subsonic أو Navidrome لبث مكتبتك بأكملها أثناء التنقل، مع دعم التخزين المؤقت للاستماع في وضع عدم الاتصال.</string>
     <string name="onboardingscreen_playback_mode_tips">نصائح حول وضع التشغيل</string>
     <string name="onboardingscreen_switch_easily_anytime_in">يمكنك التبديل بسهولة في أي وقت من خلال الإعدادات &gt; التكامل.</string>
@@ -2751,7 +2752,7 @@
     <string name="dialog_export_playlists_to">تصدير قوائم التشغيل %1$d إلى:</string>
 
     <!-- Mode dialog strings -->
-    <string name="dialog_switch_to_go">Switch to Rhythm Go?</string>
+    <string name="dialog_switch_to_go">Switch to Rhythm Go؟</string>
     <string name="dialog_switch_to_local">هل تريد التبديل إلى المستوى المحلي؟</string>
     <string name="dialog_switch_to_go_desc">This item belongs to Rhythm Go. هل تريد التبديل إلى وضع البث الآن لبثه وتشغيله؟</string>
     <string name="dialog_switch_to_local_desc">ينتمي هذا العنصر إلى مكتبتك المحلية. هل تريد التبديل إلى الوضع المحلي الآن لتشغيل مقطوعاتك غير المتصلة بالإنترنت؟</string>

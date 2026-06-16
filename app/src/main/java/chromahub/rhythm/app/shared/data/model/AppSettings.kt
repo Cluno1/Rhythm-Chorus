@@ -201,7 +201,7 @@ class AppSettings private constructor(context: Context) {
         
         // Cache Settings
         private const val KEY_MAX_CACHE_SIZE = "max_cache_size"
-        private const val KEY_CLEAR_CACHE_ON_EXIT = "clear_cache_on_exit"
+
         
         // Search History
         private const val KEY_SEARCH_HISTORY = "search_history"
@@ -1040,11 +1040,8 @@ class AppSettings private constructor(context: Context) {
     val savedPlaybackPosition: StateFlow<Long> = _savedPlaybackPosition.asStateFlow()
     
     // Cache Settings
-    private val _maxCacheSize = MutableStateFlow(safeLong(KEY_MAX_CACHE_SIZE, 1024L * 1024L * 512L)) // 512MB default
+    private val _maxCacheSize = MutableStateFlow(safeLong(KEY_MAX_CACHE_SIZE, 1024L * 1024L * 1024L)) // 1GB default
     val maxCacheSize: StateFlow<Long> = _maxCacheSize.asStateFlow()
-    
-    private val _clearCacheOnExit = MutableStateFlow(prefs.getBoolean(KEY_CLEAR_CACHE_ON_EXIT, false))
-    val clearCacheOnExit: StateFlow<Boolean> = _clearCacheOnExit.asStateFlow()
     
     // Search History
     private val _searchHistory = MutableStateFlow<String?>(prefs.getString(KEY_SEARCH_HISTORY, null))
@@ -2619,11 +2616,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         } else {
             Log.w("AppSettings", "Invalid cache size: $size, keeping current value")
         }
-    }
-    
-    fun setClearCacheOnExit(clear: Boolean) {
-        prefs.edit().putBoolean(KEY_CLEAR_CACHE_ON_EXIT, clear).apply()
-        _clearCacheOnExit.value = clear
     }
     
     // Search History Methods
@@ -4444,40 +4436,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
     
     /**
-     * Clears app cache if the clear cache on exit setting is enabled
-     * This should be called when the app is being destroyed
-     * 
-     * @param context Application context
-     * @param musicRepository Optional MusicRepository instance to clear in-memory caches
-     */
-    suspend fun performCacheCleanupOnExit(
-        context: Context, 
-        musicRepository: Any? = null
-    ) {
-        if (_clearCacheOnExit.value) {
-            try {
-                Log.d("AppSettings", "Performing cache cleanup on app exit...")
-                
-                // Clear file system caches
-                chromahub.rhythm.app.util.CacheManager.clearAllCache(context)
-                
-                // Clear in-memory caches from MusicRepository
-                if (musicRepository != null && musicRepository::class.simpleName == "MusicRepository") {
-                    try {
-                        musicRepository::class.java.getMethod("clearInMemoryCaches").invoke(musicRepository)
-                    } catch (e: Exception) {
-                        Log.w("AppSettings", "Could not call clearInMemoryCaches on repository", e)
-                    }
-                }
-                
-                Log.d("AppSettings", "Cache cleanup completed successfully")
-            } catch (e: Exception) {
-                Log.e("AppSettings", "Error during cache cleanup on exit", e)
-            }
-        }
-    }
-    
-    /**
      * Refreshes all StateFlows to reflect current SharedPreferences values
      */
     private fun refreshAllStateFlows() {
@@ -4535,8 +4493,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _stopPlaybackOnZeroVolume.value = prefs.getBoolean(KEY_STOP_PLAYBACK_ON_ZERO_VOLUME, false)
         
         // Cache Settings
-        _maxCacheSize.value = safeLong(KEY_MAX_CACHE_SIZE, 500L * 1024L * 1024L)
-        _clearCacheOnExit.value = prefs.getBoolean(KEY_CLEAR_CACHE_ON_EXIT, false)
+        _maxCacheSize.value = safeLong(KEY_MAX_CACHE_SIZE, 1024L * 1024L * 1024L)
         
         // Other settings
         _showLyrics.value = prefs.getBoolean(KEY_SHOW_LYRICS, true)

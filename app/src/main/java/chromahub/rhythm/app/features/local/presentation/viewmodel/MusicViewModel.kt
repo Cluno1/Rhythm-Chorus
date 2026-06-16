@@ -180,7 +180,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val darkMode = appSettings.darkMode
     val autoConnectDevice = appSettings.autoConnectDevice
     val maxCacheSize = appSettings.maxCacheSize
-    val clearCacheOnExit = appSettings.clearCacheOnExit
+
     
     // Playback settings
     val enableGaplessPlayback = appSettings.gaplessPlayback
@@ -6296,7 +6296,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 "DarkMode=${darkMode.value}, " +
                 "AutoConnectDevice=${autoConnectDevice.value}, " +
                 "MaxCacheSize=${maxCacheSize.value}, " +
-                "ClearCacheOnExit=${clearCacheOnExit.value}")
+                "AutoTrimCache=true")
 
         // Load song play counts
         _songPlayCounts.value = appSettings.songPlayCounts.value
@@ -7553,9 +7553,6 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         appSettings.setMaxCacheSize(size)
     }
     
-    fun setClearCacheOnExit(clear: Boolean) {
-        appSettings.setClearCacheOnExit(clear)
-    }
     
     // Audio Device Settings Methods
     fun setAutoConnectDevice(enable: Boolean) {

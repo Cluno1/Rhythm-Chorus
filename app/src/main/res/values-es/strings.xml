@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Establecer el tamaño máximo para los datos almacenados en caché</string>
     <string name="cache_about">Acerca de la caché</string>
     <string name="cache_size_limit">Límite de tamaño de caché</string>
-    <string name="cache_clear_on_exit">Borrar caché al salir</string>
+    <string name="cache_auto_trim">Recorte automático al 90%</string>
+    <string name="cache_auto_trim_desc">La caché se recorta automáticamente cuando el uso alcanza el 90 % del límite.</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Prioridad de fuente de letras</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Elija su modo de reproducción</string>
     <string name="onboardingscreen_local_offline_player">Reproductor local sin conexión</string>
     <string name="onboardingscreen_play_audio_files_stored">Reproduzca archivos de audio almacenados directamente en su dispositivo. Admite escaneo avanzado de directorios locales, estadísticas y coincidencia de temas.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Transmisión)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Conéctese a los servidores Jellyfin, Subsonic o Navidrome para transmitir toda su biblioteca mientras viaja, con soporte de almacenamiento en caché para escuchar sin conexión.</string>
     <string name="onboardingscreen_playback_mode_tips">Consejos para el modo de reproducción</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Cambie fácilmente en cualquier momento en Configuración &gt; Integración.</string>
@@ -2765,7 +2766,7 @@
     <!-- Equalizer presets & UI -->
     <string name="eq_preset_flat">Plano</string>
     <string name="eq_preset_rock">Roca</string>
-    <string name="eq_preset_pop">Pop</string>
+    <string name="eq_preset_pop">pop</string>
     <string name="eq_preset_jazz">jazz</string>
     <string name="eq_preset_classical">Clásico</string>
     <string name="eq_preset_electronic">Electrónica</string>

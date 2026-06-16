@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">设置缓存数据的最大大小</string>
     <string name="cache_about">关于缓存</string>
     <string name="cache_size_limit">缓存大小限制</string>
-    <string name="cache_clear_on_exit">退出时清除缓存</string>
+    <string name="cache_auto_trim">90% 自动修剪</string>
+    <string name="cache_auto_trim_desc">当使用量达到限制的90%时自动修剪缓存</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">歌词来源优先</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">选择您的播放模式</string>
     <string name="onboardingscreen_local_offline_player">本地离线播放器</string>
     <string name="onboardingscreen_play_audio_files_stored">播放直接存储在设备上的音频文件。支持高级本地目录扫描、统计和主题匹配。</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO!（流媒体）</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">连接到 Jellyfin、Subsonic 或 Navidrome 服务器，随时随地流式传输整个库，并提供离线收听的缓存支持。</string>
     <string name="onboardingscreen_playback_mode_tips">播放模式提示</string>
     <string name="onboardingscreen_switch_easily_anytime_in">在“设置”&gt;“集成”中随时轻松切换。</string>
@@ -2751,7 +2752,7 @@
     <string name="dialog_export_playlists_to">将 %1$d 个播放列表导出到：</string>
 
     <!-- Mode dialog strings -->
-    <string name="dialog_switch_to_go">Switch to Rhythm Go?</string>
+    <string name="dialog_switch_to_go">Switch to Rhythm Go？</string>
     <string name="dialog_switch_to_local">切换到本地？</string>
     <string name="dialog_switch_to_go_desc">This item belongs to Rhythm Go。现在切换到流媒体模式来进行流媒体播放吗？</string>
     <string name="dialog_switch_to_local_desc">该资料属于您的本地图书馆。立即切换到本地模式来播放离线曲目吗？</string>

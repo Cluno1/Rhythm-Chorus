@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -90,7 +90,7 @@
     <string name="settings_resume_on_device_reconnect_desc">Återuppta automatiskt när ljudenheter återansluts</string>
     <string name="settings_gapless_playback">Uppspelning utan luckor</string>
     <string name="settings_gapless_playback_desc">Byt spår utan tystnad.</string>
-    <string name="settings_crossfade">Track Crossfade</string>
+    <string name="settings_crossfade">Spår Crossfade</string>
     <string name="settings_crossfade_desc">Blanda utgående och inkommande spår.</string>
     <string name="settings_crossfade_duration">Tona varaktighet</string>
     <string name="settings_crossfade_duration_desc">%1$.1f sekunder</string>
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Ställ in maximal storlek för cachad data</string>
     <string name="cache_about">Om cache</string>
     <string name="cache_size_limit">Gräns för cachestorlek</string>
-    <string name="cache_clear_on_exit">Rensa cache vid utgång</string>
+    <string name="cache_auto_trim">Autotrim vid 90 %</string>
+    <string name="cache_auto_trim_desc">Cache trimmas automatiskt när användningen når 90 % av gränsen</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Lyrics Källprioritet</string>
@@ -832,7 +833,7 @@
     <string name="player_chip_order_saved">Spelarmarkernas ordning och synlighet sparad</string>
     
     <!-- Components: Library Tab Order -->
-    <string name="library_tab_order_title">Library Tab Order</string>
+    <string name="library_tab_order_title">Bibliotekets flikordning</string>
     <string name="library_tab_order_desc">Ändra ordning och växla synlighet</string>
     
     <!-- Components: Playback Bottom Sheet -->
@@ -927,7 +928,7 @@
     <!-- Broadcast Status (Tasker/KWGT) -->
     <string name="broadcast_status_enabled">Aktivera statussändning</string>
     <string name="broadcast_status_desc">Skicka uppspelningsinformation till Tasker-, KWGT- och automationsappar</string>
-    <string name="bluetooth_lyrics_enabled">Bluetooth Lyrics Mode</string>
+    <string name="bluetooth_lyrics_enabled">Läge för Bluetooth-texter</string>
     <string name="bluetooth_lyrics_desc">Skicka synkroniserad lyrisk rad som Bluetooth-spårtitel och flytta Song - Artist till artistmetadata</string>
     
     <!-- Equalizer -->
@@ -1317,7 +1318,7 @@
     <string name="settings_rhythm_guard_break_dialog_title">Dags för en lyssningspaus</string>
     <string name="settings_rhythm_guard_break_dialog_message">Du har lyssnat på %1$s idag (rekommenderas %2$s). Ta en kort paus för att skydda din hörsel.</string>
     <string name="settings_rhythm_guard_break_dialog_pause_only">Ta en paus</string>
-    <string name="settings_rhythm_guard_break_dialog_pause_close">Delay Break</string>
+    <string name="settings_rhythm_guard_break_dialog_pause_close">Fördröjningsavbrott</string>
     <string name="settings_rhythm_guard_break_dialog_schedule_title">Pauslängd</string>
     <string name="settings_rhythm_guard_break_dialog_pick_time">Välj tid</string>
     <string name="settings_rhythm_guard_break_dialog_picker_extend_title">Välj pauslängd</string>
@@ -1356,7 +1357,7 @@
     <string name="settings_rhythm_guard_manual_threshold_search_desc">Välj varningsgräns för hög volym</string>
     <string name="settings_rhythm_guard_alert_threshold_search_title">Tröskelvärde för exponeringsvarning</string>
     <string name="settings_rhythm_guard_alert_threshold_search_desc">Ställ in hur mycket daglig lyssning som utlöser en säkerhetsvarning</string>
-    <string name="settings_rhythm_guard_warning_timeout_search_title">Alert Cooldown</string>
+    <string name="settings_rhythm_guard_warning_timeout_search_title">Larmnedkylning</string>
     <string name="settings_rhythm_guard_warning_timeout_search_desc">Ställ in nedkylningen mellan upprepade Rhythm Guard-varningar</string>
     <string name="settings_rhythm_guard_post_timeout_cooldown_search_title">Nedkylning efter timeout</string>
     <string name="settings_rhythm_guard_post_timeout_cooldown_search_desc">Ställ in nedkylning efter att en timeout har slutat innan en annan exponeringstimeout kan utlösas</string>
@@ -1845,7 +1846,7 @@
     <string name="settings_tablet_layout_desc">Använd minispelare i tablettstil på telefoner</string>
 
     <!-- Player Customization -->
-    <string name="settings_chip_order">Chip Order &amp; Visibility</string>
+    <string name="settings_chip_order">Chipordning och synlighet</string>
     <string name="settings_chip_order_desc">Anpassa och ordna om spelarens actionmarker</string>
     <string name="settings_artwork_overlay">Konstverksöverlägg</string>
     <string name="settings_artwork_overlay_desc">Visa överlagring på albumomslag</string>
@@ -1998,7 +1999,7 @@
     <string name="settings_exp_test_crash_desc">Forcera appkrasch</string>
     <string name="settings_broadcast_status_enabled">Aktivera statussändning</string>
     <string name="settings_broadcast_status_enabled_desc">Uppspelningsstatus för sändning</string>
-    <string name="settings_bluetooth_lyrics_enabled">Bluetooth Lyrics Mode</string>
+    <string name="settings_bluetooth_lyrics_enabled">Bluetooth-textläge</string>
     <string name="settings_bluetooth_lyrics_enabled_desc">Sänd aktuell lyrisk linje via Bluetooth-metadata</string>
     <string name="exp_go_mode">Go Mode</string>
     <string name="exp_go_mode_desc">Byt till Rhythm Go streaming mode</string>
@@ -2350,7 +2351,7 @@
     <string name="fullscreenlyricsview_str_05s">-0,5s</string>
     <string name="fullscreenlyricsview_str_05s_1">+0,5s</string>
     <string name="fullscreenlyricsview_reset_offset">Återställ offset</string>
-    <string name="lyricseditorbottomsheet_str_500ms">500ms</string>
+    <string name="lyricseditorbottomsheet_str_500ms">500 ms</string>
     <string name="lyricseditorbottomsheet_str_100ms">100 ms</string>
     <string name="rhythmnavigation_choose_your_experience">Välj din upplevelse</string>
     <string name="rhythmnavigation_switch_between_local_music">Växla mellan lokal musik och streamingtjänster</string>
@@ -2393,7 +2394,7 @@
     <string name="customcolorsdialog_color_picker">Färgväljare</string>
     <string name="customcolorsdialog_color_inspirations">Färginspirationer</string>
     <string name="customcolorsdialog_warm_cozy">Varmt och mysigt</string>
-    <string name="customcolorsdialog_cool_fresh">Cool &amp; Fresh</string>
+    <string name="customcolorsdialog_cool_fresh">Cool &amp; Fräsch</string>
     <string name="customcolorsdialog_nature_earth">Natur &amp; Earth</string>
     <string name="expressiveshapessettingsscreen_randomize_shapes">Randomisera former</string>
     <string name="expressiveshapessettingsscreen_randomize_all_shapes">Randomisera alla former</string>
@@ -2464,7 +2465,7 @@
     <string name="festivethemeexamples_adjust_snowfall">Justera snöfall</string>
     <string name="festivethemeexamples_medium">Medium</string>
     <string name="festivethemeexamples_heavy">Tung</string>
-    <string name="festivethemeexamples_performance_mode">⚡ Performance Mode</string>
+    <string name="festivethemeexamples_performance_mode">⚡ Prestandaläge</string>
     <string name="festivethemeexamples_optimized_for_lowerend_devices">Optimerad för lägre enheter</string>
     <string name="festivethemeexamples_select_theme">Välj tema</string>
     <string name="festivethemeexamples_christmas">🎄 Jul</string>
@@ -2872,7 +2873,7 @@
     <string name="shape_option_soft_boom_desc">Mjukare explosion</string>
     <string name="shape_option_burst">Burst</string>
     <string name="shape_option_burst_desc">Starburst form</string>
-    <string name="shape_option_soft_burst">Soft Burst</string>
+    <string name="shape_option_soft_burst">Mjuk burst</string>
     <string name="shape_option_soft_burst_desc">Mjukare starburst</string>
     <string name="shape_option_sunny">Soligt</string>
     <string name="shape_option_sunny_desc">Sol med strålar</string>

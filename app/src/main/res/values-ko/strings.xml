@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">캐시된 데이터의 최대 크기 설정</string>
     <string name="cache_about">캐시에 대하여</string>
     <string name="cache_size_limit">캐시 크기 제한</string>
-    <string name="cache_clear_on_exit">종료 시 캐시 지우기</string>
+    <string name="cache_auto_trim">90%에서 자동 트림</string>
+    <string name="cache_auto_trim_desc">사용량이 한도의 90%에 도달하면 캐시가 자동으로 정리됩니다.</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">가사 소스 우선순위</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">재생 모드 선택</string>
     <string name="onboardingscreen_local_offline_player">로컬 오프라인 플레이어</string>
     <string name="onboardingscreen_play_audio_files_stored">장치에 직접 저장된 오디오 파일을 재생합니다. 고급 로컬 디렉터리 검색, 통계 및 테마 일치를 지원합니다.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO!(스트리밍)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Jellyfin, Subsonic 또는 Navidrome 서버에 연결하여 오프라인 청취를 위한 캐싱 지원을 통해 이동 중에도 전체 라이브러리를 스트리밍할 수 있습니다.</string>
     <string name="onboardingscreen_playback_mode_tips">재생 모드 팁</string>
     <string name="onboardingscreen_switch_easily_anytime_in">설정 &gt; 통합에서 언제든지 쉽게 전환하세요.</string>
@@ -2300,7 +2301,7 @@
     <string name="rhythmwidgetpreview_paused">일시중지됨</string>
     <string name="rhythmwidgetpreview_design_features">디자인 특징</string>
     <string name="licensesbottomsheet_license_notes">라이센스 참고 사항</string>
-    <string name="playbackbottomsheet_str_025x">0.25x</string>
+    <string name="playbackbottomsheet_str_025x">0.25배</string>
     <string name="playbackbottomsheet_str_30x">3.0배</string>
     <string name="queuebottomsheet_played_songs_are_hidden">재생한 곡이 대기열에서 숨겨집니다.</string>
     <string name="songinfobottomsheet_song_artwork">노래 작품</string>

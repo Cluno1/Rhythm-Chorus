@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Stel de maximale grootte in voor gegevens in de cache</string>
     <string name="cache_about">Over cache</string>
     <string name="cache_size_limit">Limiet cachegrootte</string>
-    <string name="cache_clear_on_exit">Cache wissen bij afsluiten</string>
+    <string name="cache_auto_trim">Automatisch trimmen op 90%</string>
+    <string name="cache_auto_trim_desc">De cache wordt automatisch bijgesneden wanneer het gebruik 90% van de limiet bereikt</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Prioriteit van de songtekstbron</string>
@@ -2174,7 +2175,7 @@
     <string name="externalplaybackactivity_unable_to_open_audio">Kan het audiobestand niet openen</string>
     <string name="externalplaybackactivity_unsupported_or_unreadable_audio">Niet-ondersteund of onleesbaar audiobestand</string>
     <string name="externalplaybackactivity_failed_to_play_audio">Kan audiobestand niet afspelen</string>
-    <string name="externalplaybackactivity_open_rhythm">Open Rhythm</string>
+    <string name="externalplaybackactivity_open_rhythm">OpenenRhythm</string>
     <string name="mainactivity_error_opening_file">Fout bij openen van bestand</string>
     <string name="mainactivity_unsupported_file_format">Niet-ondersteund bestandsformaat</string>
     <string name="mainactivity_failed_to_initialize_media">Kan de mediaspeler niet initialiseren</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Kies uw afspeelmodus</string>
     <string name="onboardingscreen_local_offline_player">Lokale offline speler</string>
     <string name="onboardingscreen_play_audio_files_stored">Speel audiobestanden af die rechtstreeks op uw apparaat zijn opgeslagen. Ondersteunt geavanceerd scannen van lokale mappen, statistieken en thema-matching.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streamen)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Maak verbinding met Jellyfin-, Subsonic- of Navidrome-servers om uw volledige bibliotheek onderweg te streamen, met caching-ondersteuning voor offline luisteren.</string>
     <string name="onboardingscreen_playback_mode_tips">Tips voor de afspeelmodus</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Schakel op elk gewenst moment eenvoudig over via Instellingen &gt; Integratie.</string>

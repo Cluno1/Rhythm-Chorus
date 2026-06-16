@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">தற்காலிக சேமிப்பு தரவுக்கான அதிகபட்ச அளவை அமைக்கவும்</string>
     <string name="cache_about">Cache பற்றி</string>
     <string name="cache_size_limit">தற்காலிக சேமிப்பு அளவு வரம்பு</string>
-    <string name="cache_clear_on_exit">வெளியேறும்போது தற்காலிக சேமிப்பை அழிக்கவும்</string>
+    <string name="cache_auto_trim">90% ஆட்டோ டிரிம்</string>
+    <string name="cache_auto_trim_desc">பயன்பாடு வரம்பின் 90% ஐ அடையும் போது தற்காலிக சேமிப்பு தானாகவே டிரிம் செய்யப்படுகிறது</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">பாடல் வரிகள் மூல முன்னுரிமை</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">உங்கள் பிளேபேக் பயன்முறையைத் தேர்ந்தெடுக்கவும்</string>
     <string name="onboardingscreen_local_offline_player">உள்ளூர் ஆஃப்லைன் பிளேயர்</string>
     <string name="onboardingscreen_play_audio_files_stored">உங்கள் சாதனத்தில் நேரடியாகச் சேமிக்கப்பட்ட ஆடியோ கோப்புகளை இயக்கவும். மேம்பட்ட உள்ளூர் அடைவு ஸ்கேனிங், புள்ளிவிவரங்கள் மற்றும் தீம் பொருத்தத்தை ஆதரிக்கிறது.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (ஸ்ட்ரீமிங்)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">பயணத்தின்போது உங்கள் முழு நூலகத்தையும் ஸ்ட்ரீம் செய்ய Jellyfin, Subsonic, அல்லது Navidrome சேவையகங்களுடன் இணைக்கவும், ஆஃப்லைனில் கேட்பதற்கான கேச்சிங் ஆதரவுடன்.</string>
     <string name="onboardingscreen_playback_mode_tips">பிளேபேக் பயன்முறை குறிப்புகள்</string>
     <string name="onboardingscreen_switch_easily_anytime_in">அமைப்புகள் &gt; ஒருங்கிணைப்பு என்பதில் எந்த நேரத்திலும் எளிதாக மாறவும்.</string>

@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">कैश्ड डेटा के लिए अधिकतम आकार सेट करें</string>
     <string name="cache_about">कैश के बारे में</string>
     <string name="cache_size_limit">कैश आकार सीमा</string>
-    <string name="cache_clear_on_exit">बाहर निकलने पर कैश साफ़ करें</string>
+    <string name="cache_auto_trim">90% पर ऑटो-ट्रिम</string>
+    <string name="cache_auto_trim_desc">जब उपयोग 90% सीमा तक पहुंच जाता है तो कैश स्वचालित रूप से ट्रिम हो जाता है</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">गीत स्रोत प्राथमिकता</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">अपना प्लेबैक मोड चुनें</string>
     <string name="onboardingscreen_local_offline_player">स्थानीय ऑफ़लाइन प्लेयर</string>
     <string name="onboardingscreen_play_audio_files_stored">सीधे अपने डिवाइस पर संग्रहीत ऑडियो फ़ाइलें चलाएं। उन्नत स्थानीय निर्देशिका स्कैनिंग, सांख्यिकी और थीम मिलान का समर्थन करता है।</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (स्ट्रीमिंग)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">ऑफ़लाइन सुनने के लिए कैशिंग समर्थन के साथ, अपनी संपूर्ण लाइब्रेरी को चलते-फिरते स्ट्रीम करने के लिए Jellyfin, Subsonic, या Navidrome सर्वर से कनेक्ट करें।</string>
     <string name="onboardingscreen_playback_mode_tips">प्लेबैक मोड युक्तियाँ</string>
     <string name="onboardingscreen_switch_easily_anytime_in">सेटिंग्स &gt; इंटीग्रेशन में किसी भी समय आसानी से स्विच करें।</string>

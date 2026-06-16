@@ -5646,12 +5646,12 @@ class MusicRepository(context: Context) {
                 settings.maxCacheSize.value
             } catch (e: Exception) {
                 Log.w(TAG, "Error getting cache size setting, using default", e)
-                512L * 1024L * 1024L // Default 512MB
+                1024L * 1024L * 1024L // Default 1GB
             }
             
-            // Clean up file system cache if needed
+            // Auto-trim file system cache if usage exceeds 90% of max
             val cacheManager = chromahub.rhythm.app.util.CacheManager
-            val cacheCleanedUp = cacheManager.cleanCacheIfNeeded(context, maxCacheSize)
+            val cacheCleanedUp = cacheManager.autoTrimCache(context, maxCacheSize)
             
             if (cacheCleanedUp) {
                 Log.d(TAG, "File system cache was cleaned up")

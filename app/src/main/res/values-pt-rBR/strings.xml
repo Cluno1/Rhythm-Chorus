@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Rhythm</string>
     
     <!-- Common Labels -->
@@ -770,7 +770,8 @@
     <string name="cache_max_size_desc">Defina o tamanho máximo para dados em cache</string>
     <string name="cache_about">Sobre Cache</string>
     <string name="cache_size_limit">Limite de tamanho do cache</string>
-    <string name="cache_clear_on_exit">Limpar cache ao sair</string>
+    <string name="cache_auto_trim">Corte automático em 90%</string>
+    <string name="cache_auto_trim_desc">O cache é cortado automaticamente quando o uso atinge 90% do limite</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Prioridade da fonte das letras</string>
@@ -1694,7 +1695,7 @@
     <string name="settings_storage_rebuild_failed">Falha ao reconstruir o banco de dados do Room</string>
 
     <!-- Cache Management -->
-    <string name="settings_cache">Cache</string>
+    <string name="settings_cache">Esconderijo</string>
     <string name="settings_cache_settings">Configurações de cache</string>
     <string name="settings_cache_clear_on_exit_desc">Limpar cache automaticamente ao sair do aplicativo</string>
     <string name="settings_cache_actions">Ações de cache</string>
@@ -2245,7 +2246,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Escolha o seu modo de reprodução</string>
     <string name="onboardingscreen_local_offline_player">Player offline local</string>
     <string name="onboardingscreen_play_audio_files_stored">Reproduza arquivos de áudio armazenados diretamente no seu dispositivo. Suporta verificação avançada de diretório local, estatísticas e correspondência de temas.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (transmissão)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Conecte-se aos servidores Jellyfin, Subsonic ou Navidrome para transmitir toda a sua biblioteca em qualquer lugar, com suporte de cache para audição offline.</string>
     <string name="onboardingscreen_playback_mode_tips">Dicas do modo de reprodução</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Alterne facilmente a qualquer momento em Configurações &gt; Integração.</string>
@@ -2257,7 +2258,7 @@
     <string name="onboardingscreen_supports_navidrome_gonic_and">Suporta Navidrome, gonic e todas as APIs subsônicas.</string>
     <string name="onboardingscreen_enable_caching_in_settings">Ative o cache em Configurações para reprodução off-line posteriormente.</string>
     <string name="onboardingscreen_connection_test_ensures_server">O teste de conexão garante que as credenciais do servidor estejam corretas.</string>
-    <string name="onboardingscreen_subsonic_navidrome">Subsonic / Navidrome</string>
+    <string name="onboardingscreen_subsonic_navidrome">Subsonic/Navidrome</string>
     <string name="onboardingscreen_jellyfin_server">Servidor Jellyfin</string>
     <string name="onboardingscreen_httpsyourservercom">https://seu-servidor.com</string>
     <string name="onboardingscreen_remember_to_include_http">Lembre-se de incluir http:// ou https://</string>
