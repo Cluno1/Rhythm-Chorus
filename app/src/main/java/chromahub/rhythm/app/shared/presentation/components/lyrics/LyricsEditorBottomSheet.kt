@@ -102,7 +102,13 @@ fun LyricsEditorBottomSheet(
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     
-    var selectedFormat by remember { mutableStateOf(LyricFormat.SOURCE) }
+    var selectedFormat by remember(lyricsData) {
+        mutableStateOf(
+            if (lyricsData?.wordByWordLyrics?.isNotBlank() == true) LyricFormat.WORD_BY_WORD
+            else if (lyricsData?.syncedLyrics?.isNotBlank() == true) LyricFormat.LINE_BY_LINE
+            else LyricFormat.SOURCE
+        )
+    }
     
     val sourceForm = remember(lyricsData) {
         lyricsData?.wordByWordLyrics?.takeIf { it.isNotBlank() }
@@ -210,8 +216,9 @@ fun LyricsEditorBottomSheet(
         }
     }
     
-    // Check if lyrics are synced (contain LRC timestamps)
-    val hasSyncedLyrics = remember(editedLyrics) {
+    // Check if lyrics are synced (contain LRC timestamps or word-by-word JSON)
+    val hasSyncedLyrics = remember(editedLyrics, selectedFormat) {
+        selectedFormat == LyricFormat.WORD_BY_WORD ||
         editedLyrics.contains(Regex("""\[\d{2}:\d{2}\.\d{2,3}\]"""))
     }
     
@@ -253,9 +260,31 @@ fun LyricsEditorBottomSheet(
         showContent = true
     }
 
-    // Function to adjust LRC timestamps
+    // Function to adjust LRC timestamps or word-by-word JSON timestamps
     fun adjustLyricsTimestamps(lyrics: String, offsetMs: Int): String {
         if (offsetMs == 0) return lyrics
+        
+        if (selectedFormat == LyricFormat.WORD_BY_WORD) {
+            return try {
+                val parsed = RhythmLyricsParser.parseWordByWordLyrics(lyrics)
+                if (parsed.isEmpty()) return lyrics
+                val adjusted = parsed.map { line ->
+                    line.copy(
+                        lineTimestamp = (line.lineTimestamp + offsetMs).coerceAtLeast(0L),
+                        lineEndtime = (line.lineEndtime + offsetMs).coerceAtLeast(0L),
+                        words = line.words.map { word ->
+                            word.copy(
+                                timestamp = (word.timestamp + offsetMs).coerceAtLeast(0L),
+                                endtime = (word.endtime + offsetMs).coerceAtLeast(0L)
+                            )
+                        }
+                    )
+                }
+                RhythmLyricsParser.toWordByWordJson(adjusted)
+            } catch (e: Exception) {
+                lyrics
+            }
+        }
         
         val lrcRegex = Regex("""^\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)$""", RegexOption.MULTILINE)
         return lyrics.lines().joinToString("\n") { line ->
@@ -807,8 +836,12 @@ fun LyricsEditorBottomSheet(
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(context.getString(R.string.bottomsheet_lyrics_load))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        context.getString(R.string.bottomsheet_lyrics_load),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
 
                 // Save File Button
@@ -828,8 +861,12 @@ fun LyricsEditorBottomSheet(
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(context.getString(R.string.bottomsheet_lyrics_save))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        context.getString(R.string.bottomsheet_lyrics_save),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
 

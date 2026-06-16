@@ -127,6 +127,11 @@ fun FullScreenLyricsView(
     val showTranslation by appSettings.showLyricsTranslation.collectAsState()
     val showRomanization by appSettings.showLyricsRomanization.collectAsState()
     
+    // Determine if lyrics have timestamps (synced LRC or word-by-word JSON)
+    val hasSyncedLyrics = remember(lyrics) {
+        lyrics?.syncedLyrics?.isNotBlank() == true || lyrics?.getWordByWordLyricsOrNull() != null
+    }
+
     // Local manual sync offset in milliseconds (real-time offset tuning!)
     var manualSyncOffsetMs by remember { mutableLongStateOf(0L) }
 
@@ -406,9 +411,9 @@ fun FullScreenLyricsView(
                         )
                     }
 
-                    // Sync tuner dock (only visible if controls are visible)
+                    // Sync tuner dock (only visible for synced lyrics and when controls are visible)
                     AnimatedVisibility(
-                        visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
+                        visible = (isLoadingLyrics || hasSyncedLyrics) && (!autoHideLyricsControls || controlsVisible),
                         enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
                         exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -1013,7 +1018,7 @@ fun FullScreenLyricsView(
 
                 // C. SYNC TUNER DOCK: Translucent slider or quick buttons to tweak sync offset in real time
                 AnimatedVisibility(
-                    visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
+                    visible = (isLoadingLyrics || hasSyncedLyrics) && (!autoHideLyricsControls || controlsVisible),
                     enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
                     exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
                 ) {

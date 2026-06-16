@@ -460,6 +460,43 @@ object RhythmLyricsParser {
     }
 
     /**
+     * Convert word-by-word lyrics back to JSON format (inverse of parseWordByWordLyrics).
+     * Handles voice tags, translations, and romanization.
+     */
+    fun toWordByWordJson(lines: List<WordByWordLyricLine>): String {
+        val gson = Gson()
+        val rhythmLines = lines.map { line ->
+            val words = line.words.map { word ->
+                RhythmLyricsWord(
+                    text = word.text,
+                    part = word.isPart,
+                    timestamp = word.timestamp,
+                    endtime = word.endtime
+                )
+            }
+            val wordsWithVoice = if (line.voiceTag != null && words.isNotEmpty()) {
+                listOf(words.first().copy(text = "${line.voiceTag}: ${words.first().text}")) + words.drop(1)
+            } else {
+                words
+            }
+            val backgroundText = buildList {
+                line.translation?.let { add("($it)") }
+                line.romanization?.let { add("[$it]") }
+            }.ifEmpty { null }
+
+            RhythmLyricsLine(
+                text = wordsWithVoice,
+                background = if (line.background) true else null,
+                backgroundText = backgroundText,
+                oppositeTurn = null,
+                timestamp = line.lineTimestamp,
+                endtime = line.lineEndtime
+            )
+        }
+        return gson.toJson(rhythmLines)
+    }
+
+    /**
      * Parse TTML (Timed Text Markup Language) formatted synchronized lyrics.
      * Extracts lines (<p>) and word-by-word timestamps (<span>).
      */
