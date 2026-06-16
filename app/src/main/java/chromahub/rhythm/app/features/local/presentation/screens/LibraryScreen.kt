@@ -2562,6 +2562,15 @@ fun SingleCardPlaylistsContent(
                     }
                 }
             }
+            val playlistFastScrollLabelProvider = remember(preparedPlaylists, playlistSortOrder) {
+                { index: Int ->
+                    playlistFastScrollLabel(
+                        playlist = preparedPlaylists.getOrNull(index),
+                        sortOrder = playlistSortOrder
+                    )
+                }
+            }
+
             if (playlistViewType == PlaylistViewType.GRID) {
                 LazyVerticalGrid(
                     state = gridState,
@@ -2590,6 +2599,14 @@ fun SingleCardPlaylistsContent(
                         }
                     }
                 }
+
+                ExpressiveScrollBar(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                    gridState = gridState,
+                    dragLabelProvider = playlistFastScrollLabelProvider
+                )
             } else {
                 LazyColumn(
                     state = listState,
@@ -2618,25 +2635,15 @@ fun SingleCardPlaylistsContent(
                         }
                     }
                 }
-            }
 
-            val playlistFastScrollLabelProvider = remember(preparedPlaylists, playlistSortOrder) {
-                { index: Int ->
-                    playlistFastScrollLabel(
-                        playlist = preparedPlaylists.getOrNull(index),
-                        sortOrder = playlistSortOrder
-                    )
-                }
+                ExpressiveScrollBar(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                    listState = listState,
+                    dragLabelProvider = playlistFastScrollLabelProvider
+                )
             }
-
-            ExpressiveScrollBar(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
-                listState = if (playlistViewType == PlaylistViewType.GRID) null else listState,
-                gridState = if (playlistViewType == PlaylistViewType.GRID) gridState else null,
-                dragLabelProvider = playlistFastScrollLabelProvider
-            )
         }
     }
 }
@@ -2710,6 +2717,15 @@ fun SingleCardAlbumsContent(
                     }
                 }
             }
+            val albumFastScrollLabelProvider = remember(preparedAlbums, sortOrder) {
+                { index: Int ->
+                    albumFastScrollLabel(
+                        album = preparedAlbums.getOrNull(index),
+                        sortOrder = sortOrder
+                    )
+                }
+            }
+
             if (albumViewType == AlbumViewType.GRID) {
                 LazyVerticalGrid(
                     state = gridState,
@@ -2739,6 +2755,14 @@ fun SingleCardAlbumsContent(
                         }
                     }
                 }
+
+                ExpressiveScrollBar(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                    gridState = gridState,
+                    dragLabelProvider = albumFastScrollLabelProvider
+                )
             } else {
                 LazyColumn(
                     state = listState,
@@ -2768,25 +2792,15 @@ fun SingleCardAlbumsContent(
                         }
                     }
                 }
-            }
 
-            val albumFastScrollLabelProvider = remember(preparedAlbums, sortOrder) {
-                { index: Int ->
-                    albumFastScrollLabel(
-                        album = preparedAlbums.getOrNull(index),
-                        sortOrder = sortOrder
-                    )
-                }
+                ExpressiveScrollBar(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                    listState = listState,
+                    dragLabelProvider = albumFastScrollLabelProvider
+                )
             }
-
-            ExpressiveScrollBar(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
-                listState = if (albumViewType == AlbumViewType.GRID) null else listState,
-                gridState = if (albumViewType == AlbumViewType.GRID) gridState else null,
-                dragLabelProvider = albumFastScrollLabelProvider
-            )
         }
     }
 }
@@ -4479,6 +4493,15 @@ fun SingleCardArtistsContent(
                 }
             }
         }
+        val artistFastScrollLabelProvider = remember(sortedArtists, currentSortOption) {
+            { index: Int ->
+                artistFastScrollLabel(
+                    artist = sortedArtists.getOrNull(index),
+                    sortOrder = currentSortOption
+                )
+            }
+        }
+
         if (isGridView) {
             LazyVerticalGrid(
                 state = gridState,
@@ -4521,6 +4544,14 @@ fun SingleCardArtistsContent(
                     }
                 }
             }
+
+            ExpressiveScrollBar(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                gridState = gridState,
+                dragLabelProvider = artistFastScrollLabelProvider
+            )
         } else {
             LazyColumn(
                 state = listState,
@@ -4557,25 +4588,15 @@ fun SingleCardArtistsContent(
                     }
                 }
             }
-        }
 
-        val artistFastScrollLabelProvider = remember(sortedArtists, currentSortOption) {
-            { index: Int ->
-                artistFastScrollLabel(
-                    artist = sortedArtists.getOrNull(index),
-                    sortOrder = currentSortOption
-                )
-            }
+            ExpressiveScrollBar(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                listState = listState,
+                dragLabelProvider = artistFastScrollLabelProvider
+            )
         }
-
-        ExpressiveScrollBar(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
-            listState = if (isGridView) null else listState,
-            gridState = if (isGridView) gridState else null,
-            dragLabelProvider = artistFastScrollLabelProvider
-        )
     }
 
     if (showSortOptions) {
