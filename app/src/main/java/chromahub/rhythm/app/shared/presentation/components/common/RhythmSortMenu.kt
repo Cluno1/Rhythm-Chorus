@@ -64,7 +64,7 @@ fun RhythmSortMenuContent(
             ) {
                 Surface(
                     shape = arrowContainerShape,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(40.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
@@ -72,7 +72,7 @@ fun RhythmSortMenuContent(
                             imageVector = if (isAscending) RhythmIcons.ArrowUpward else RhythmIcons.ArrowDownward,
                             contentDescription = null,
                             modifier = Modifier.size(22.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            tint = MaterialTheme.colorScheme.primaryContainer
                         )
                     }
                 }

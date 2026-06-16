@@ -70,6 +70,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.draw.shadow
+import androidx.compose.material3.carousel.CarouselDefaults
 import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.ui.graphics.RectangleShape
@@ -1707,6 +1708,7 @@ private fun ModernFeaturedSection(
             itemWidth = screenWidth,
             itemSpacing = 0.dp,
             contentPadding = PaddingValues(0.dp),
+            flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(state = carouselState),
             modifier = Modifier.fillMaxSize()
         ) { page ->
             val album = albums[page]

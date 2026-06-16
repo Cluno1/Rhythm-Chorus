@@ -1371,6 +1371,7 @@ private fun StreamingRecommendationsCarousel(
             itemWidth = screenWidth,
             itemSpacing = 0.dp,
             contentPadding = PaddingValues(0.dp),
+            flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(state = carouselState),
             modifier = Modifier.fillMaxSize()
         ) { page ->
             val song = songs[page]
