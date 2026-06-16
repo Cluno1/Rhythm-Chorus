@@ -461,6 +461,8 @@ fun LibraryScreen(
             MusicViewModel.SortOrder.ARTIST_DESC -> songs.sortedByDescending { it.artist.lowercase() }
             MusicViewModel.SortOrder.ALBUM_ASC -> songs.sortedBy { it.album.lowercase() }
             MusicViewModel.SortOrder.ALBUM_DESC -> songs.sortedByDescending { it.album.lowercase() }
+            MusicViewModel.SortOrder.YEAR_ASC -> songs.sortedBy { it.year }
+            MusicViewModel.SortOrder.YEAR_DESC -> songs.sortedByDescending { it.year }
             MusicViewModel.SortOrder.DATE_ADDED_ASC -> songs.sortedBy { it.dateAdded }
             MusicViewModel.SortOrder.DATE_ADDED_DESC -> songs.sortedByDescending { it.dateAdded }
             MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> songs.sortedBy { it.dateModified }
@@ -498,6 +500,8 @@ fun LibraryScreen(
             MusicViewModel.SortOrder.ARTIST_DESC -> albums.sortedByDescending { it.artist.lowercase() }
             MusicViewModel.SortOrder.ALBUM_ASC -> albums.sortedBy { it.title.lowercase() }
             MusicViewModel.SortOrder.ALBUM_DESC -> albums.sortedByDescending { it.title.lowercase() }
+            MusicViewModel.SortOrder.YEAR_ASC -> albums.sortedBy { it.year }
+            MusicViewModel.SortOrder.YEAR_DESC -> albums.sortedByDescending { it.year }
             MusicViewModel.SortOrder.DATE_ADDED_ASC -> albums.sortedBy { it.songs.minOfOrNull { s -> s.dateAdded } ?: 0L }
             MusicViewModel.SortOrder.DATE_ADDED_DESC -> albums.sortedByDescending { it.songs.minOfOrNull { s -> s.dateAdded } ?: 0L }
             MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> albums.sortedBy { it.dateModified }
@@ -1077,6 +1081,7 @@ fun LibraryScreen(
                                 MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.TITLE_DESC -> context.getString(R.string.library_sort_title)
                                 MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ARTIST_DESC -> context.getString(R.string.library_sort_artist)
                                 MusicViewModel.SortOrder.ALBUM_ASC, MusicViewModel.SortOrder.ALBUM_DESC -> context.getString(R.string.library_sort_album)
+                                MusicViewModel.SortOrder.YEAR_ASC, MusicViewModel.SortOrder.YEAR_DESC -> context.getString(R.string.metadata_year)
                                 MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_ADDED_DESC -> context.getString(R.string.library_sort_date_added)
                                 MusicViewModel.SortOrder.DATE_MODIFIED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> context.getString(R.string.library_sort_date_modified)
                             }
@@ -1090,8 +1095,8 @@ fun LibraryScreen(
                             Spacer(modifier = Modifier.width(4.dp))
                             
                             val sortArrowIcon = when (sortOrder) {
-                                MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ALBUM_ASC, MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> RhythmIcons.ArrowUpward
-                                MusicViewModel.SortOrder.TITLE_DESC, MusicViewModel.SortOrder.ARTIST_DESC, MusicViewModel.SortOrder.ALBUM_DESC, MusicViewModel.SortOrder.DATE_ADDED_DESC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> RhythmIcons.ArrowDownward
+                                MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ALBUM_ASC, MusicViewModel.SortOrder.YEAR_ASC, MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> RhythmIcons.ArrowUpward
+                                MusicViewModel.SortOrder.TITLE_DESC, MusicViewModel.SortOrder.ARTIST_DESC, MusicViewModel.SortOrder.ALBUM_DESC, MusicViewModel.SortOrder.YEAR_DESC, MusicViewModel.SortOrder.DATE_ADDED_DESC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> RhythmIcons.ArrowDownward
                             }
                             
                             Icon(
@@ -1115,11 +1120,12 @@ fun LibraryScreen(
                                 MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.TITLE_DESC -> "TITLE"
                                 MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ARTIST_DESC -> "ARTIST"
                                 MusicViewModel.SortOrder.ALBUM_ASC, MusicViewModel.SortOrder.ALBUM_DESC -> "ALBUM"
+                                MusicViewModel.SortOrder.YEAR_ASC, MusicViewModel.SortOrder.YEAR_DESC -> "YEAR"
                                 MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_ADDED_DESC -> "DATE_ADDED"
                                 MusicViewModel.SortOrder.DATE_MODIFIED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> "DATE_MODIFIED"
                             }
                             val isAscending = when (activeSortOrder) {
-                                MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ALBUM_ASC, MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> true
+                                MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ALBUM_ASC, MusicViewModel.SortOrder.YEAR_ASC, MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> true
                                 else -> false
                             }
                             
@@ -1128,6 +1134,7 @@ fun LibraryScreen(
                                     "TITLE" -> if (asc) MusicViewModel.SortOrder.TITLE_ASC else MusicViewModel.SortOrder.TITLE_DESC
                                     "ARTIST" -> if (asc) MusicViewModel.SortOrder.ARTIST_ASC else MusicViewModel.SortOrder.ARTIST_DESC
                                     "ALBUM" -> if (asc) MusicViewModel.SortOrder.ALBUM_ASC else MusicViewModel.SortOrder.ALBUM_DESC
+                                    "YEAR" -> if (asc) MusicViewModel.SortOrder.YEAR_ASC else MusicViewModel.SortOrder.YEAR_DESC
                                     "DATE_ADDED" -> if (asc) MusicViewModel.SortOrder.DATE_ADDED_ASC else MusicViewModel.SortOrder.DATE_ADDED_DESC
                                     "DATE_MODIFIED" -> if (asc) MusicViewModel.SortOrder.DATE_MODIFIED_ASC else MusicViewModel.SortOrder.DATE_MODIFIED_DESC
                                     else -> MusicViewModel.SortOrder.TITLE_ASC
@@ -1138,6 +1145,7 @@ fun LibraryScreen(
                                 RhythmSortOption("TITLE", context.getString(R.string.library_sort_title), RhythmIcons.SortByAlpha),
                                 RhythmSortOption("ARTIST", context.getString(R.string.library_sort_artist), RhythmIcons.ArtistFilled),
                                 RhythmSortOption("ALBUM", context.getString(R.string.library_sort_album), RhythmIcons.AlbumFilled),
+                                RhythmSortOption("YEAR", context.getString(R.string.metadata_year), RhythmIcons.CalendarMonth),
                                 RhythmSortOption("DATE_ADDED", context.getString(R.string.library_sort_date_added), RhythmIcons.DateRange),
                                 RhythmSortOption("DATE_MODIFIED", context.getString(R.string.library_sort_date_modified), MaterialSymbolIcon("edit_calendar", filled = true))
                             ).filter { option ->

@@ -23,12 +23,12 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,6 +47,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -538,16 +539,6 @@ fun LyricsEditorBottomSheet(
                         }
                     }
                     
-                    // Show info message if lyrics are not synced
-                    if (!hasSyncedLyrics) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = context.getString(R.string.lyrics_sync_note),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-                    }
                     
                     Spacer(modifier = Modifier.height(12.dp))
                     
@@ -764,144 +755,150 @@ fun LyricsEditorBottomSheet(
             AnimatedVisibility(
                 visible = showContent,
                 enter = fadeIn() + slideInVertically { it },
-                exit = fadeOut() + slideOutVertically { it }
+                exit = fadeOut() + slideOutVertically { it },
+                modifier = Modifier.weight(1f)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .fillMaxHeight()
                         .padding(horizontal = 24.dp)
                 ) {
-                    BoxWithConstraints {
-                        val maxHeight = maxOf(minOf(maxHeight * 0.4f, 350.dp), 200.dp)
-                        
-                        OutlinedTextField(
-                            value = editedLyrics,
-                            onValueChange = { updateEditedLyrics(it) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(maxHeight),
-                            placeholder = {
-                                Text(
-                                    text = when (selectedFormat) {
-                                        LyricFormat.WORD_BY_WORD -> "Enter word-by-word lyrics JSON here…"
-                                        else -> context.getString(R.string.lyrics_placeholder)
-                                    },
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    OutlinedTextField(
+                        value = editedLyrics,
+                        onValueChange = { updateEditedLyrics(it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        placeholder = {
+                            Text(
+                                text = when (selectedFormat) {
+                                    LyricFormat.WORD_BY_WORD -> "Enter word-by-word lyrics JSON here…"
+                                    else -> context.getString(R.string.lyrics_placeholder)
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        },
+                        textStyle = MaterialTheme.typography.bodyMedium,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f),
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.3f)
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                }
+            }
+
+            // Sticky Footer with action buttons
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 3.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    ExpressiveButtonGroup(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        style = ButtonGroupStyle.Tonal
+                    ) {
+                        // Load File Button
+                        ExpressiveGroupButton(
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                loadLyricsLauncher.launch(
+                                    arrayOf(
+                                        "text/plain",
+                                        "text/*",
+                                        "text/x-lrc",
+                                        "application/x-lrc",
+                                        "application/json",
+                                        "application/octet-stream",
+                                        "*/*"
+                                    )
                                 )
                             },
-                            textStyle = MaterialTheme.typography.bodyMedium,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f),
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.3f)
-                            ),
-                            shape = RoundedCornerShape(16.dp)
-                        )
+                            modifier = Modifier.weight(1f),
+                            isStart = true
+                        ) {
+                            Icon(
+                                imageVector = MaterialSymbolIcon("file_open", filled = true),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                context.getString(R.string.bottomsheet_lyrics_load),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+
+                        // Save File Button
+                        ExpressiveGroupButton(
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                if (editedLyrics.isNotBlank()) {
+                                    saveLyricsLauncher.launch(defaultLyricsFileName)
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            enabled = editedLyrics.isNotBlank(),
+                            isEnd = true
+                        ) {
+                            Icon(
+                                imageVector = MaterialSymbolIcon("save", filled = true),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                context.getString(R.string.bottomsheet_lyrics_save),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Embed in File Button
+                    ExpressiveButtonGroup(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        style = ButtonGroupStyle.Tonal
+                    ) {
+                        ExpressiveGroupButton(
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                if (editedLyrics.isNotBlank()) {
+                                    onEmbedInFile(editedLyrics)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = editedLyrics.isNotBlank(),
+                            isStart = true,
+                            isEnd = true
+                        ) {
+                            Icon(
+                                imageVector = RhythmIcons.MusicNote,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(context.getString(R.string.bottomsheet_lyrics_embed))
+                        }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Action Buttons Row (sticky at bottom like LibraryTabOrderBottomSheet)
-            ExpressiveButtonGroup(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                style = ButtonGroupStyle.Tonal
-            ) {
-                // Load File Button
-                ExpressiveGroupButton(
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                        loadLyricsLauncher.launch(
-                            arrayOf(
-                                "text/plain",
-                                "text/*",
-                                "text/x-lrc",
-                                "application/x-lrc",
-                                "application/json",
-                                "application/octet-stream",
-                                "*/*"
-                            )
-                        )
-                    },
-                    modifier = Modifier.weight(1f),
-                    isStart = true
-                ) {
-                    Icon(
-                        imageVector = MaterialSymbolIcon("file_open", filled = true),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        context.getString(R.string.bottomsheet_lyrics_load),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                // Save File Button
-                ExpressiveGroupButton(
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                        if (editedLyrics.isNotBlank()) {
-                            saveLyricsLauncher.launch(defaultLyricsFileName)
-                        }
-                    },
-                    modifier = Modifier.weight(1f),
-                    enabled = editedLyrics.isNotBlank(),
-                    isEnd = true
-                ) {
-                    Icon(
-                        imageVector = MaterialSymbolIcon("save", filled = true),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        context.getString(R.string.bottomsheet_lyrics_save),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Embed in File Button
-            ExpressiveButtonGroup(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                style = ButtonGroupStyle.Tonal
-            ) {
-                ExpressiveGroupButton(
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                        if (editedLyrics.isNotBlank()) {
-                            onEmbedInFile(editedLyrics)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = editedLyrics.isNotBlank(),
-                    isStart = true,
-                    isEnd = true
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.MusicNote,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(context.getString(R.string.bottomsheet_lyrics_embed))
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

@@ -1009,6 +1009,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         ARTIST_DESC,
         ALBUM_ASC,
         ALBUM_DESC,
+        YEAR_ASC,
+        YEAR_DESC,
         DATE_ADDED_ASC,
         DATE_ADDED_DESC,
         DATE_MODIFIED_ASC,
@@ -6143,7 +6145,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 SortOrder.ARTIST_ASC -> SortOrder.ARTIST_DESC
                 SortOrder.ARTIST_DESC -> SortOrder.ALBUM_ASC
                 SortOrder.ALBUM_ASC -> SortOrder.ALBUM_DESC
-                SortOrder.ALBUM_DESC -> SortOrder.DATE_ADDED_ASC
+                SortOrder.ALBUM_DESC -> SortOrder.YEAR_ASC
+                SortOrder.YEAR_ASC -> SortOrder.YEAR_DESC
+                SortOrder.YEAR_DESC -> SortOrder.DATE_ADDED_ASC
                 SortOrder.DATE_ADDED_ASC -> SortOrder.DATE_ADDED_DESC
                 SortOrder.DATE_ADDED_DESC -> SortOrder.DATE_MODIFIED_ASC
                 SortOrder.DATE_MODIFIED_ASC -> SortOrder.DATE_MODIFIED_DESC
@@ -6158,6 +6162,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 SortOrder.ARTIST_DESC -> _songs.value.sortedByDescending { it.artist }
                 SortOrder.ALBUM_ASC -> _songs.value.sortedBy { it.album }
                 SortOrder.ALBUM_DESC -> _songs.value.sortedByDescending { it.album }
+                SortOrder.YEAR_ASC -> _songs.value.sortedBy { it.year }
+                SortOrder.YEAR_DESC -> _songs.value.sortedByDescending { it.year }
                 SortOrder.DATE_ADDED_ASC -> _songs.value.sortedBy { it.dateAdded }
                 SortOrder.DATE_ADDED_DESC -> _songs.value.sortedByDescending { it.dateAdded }
                 SortOrder.DATE_MODIFIED_ASC -> _songs.value.sortedBy { it.dateModified }
@@ -6172,6 +6178,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 SortOrder.ARTIST_DESC -> _albums.value.sortedByDescending { it.artist }
                 SortOrder.ALBUM_ASC -> _albums.value.sortedBy { it.title }
                 SortOrder.ALBUM_DESC -> _albums.value.sortedByDescending { it.title }
+                SortOrder.YEAR_ASC -> _albums.value.sortedBy { it.year }
+                SortOrder.YEAR_DESC -> _albums.value.sortedByDescending { it.year }
                 SortOrder.DATE_ADDED_ASC -> _albums.value.sortedBy { it.id.toLongOrNull() ?: 0L } // Placeholder for date added
                 SortOrder.DATE_ADDED_DESC -> _albums.value.sortedByDescending { it.id.toLongOrNull() ?: 0L } // Placeholder for date added
                 SortOrder.DATE_MODIFIED_ASC -> _albums.value.sortedBy { it.dateModified }
@@ -6191,8 +6199,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 }.thenBy { 
                     // Then sort by name according to current sort order
                     when (_sortOrder.value) {
-                        SortOrder.TITLE_ASC, SortOrder.ARTIST_ASC, SortOrder.ALBUM_ASC, SortOrder.DATE_ADDED_ASC, SortOrder.DATE_MODIFIED_ASC -> it.name
-                        SortOrder.TITLE_DESC, SortOrder.ARTIST_DESC, SortOrder.ALBUM_DESC, SortOrder.DATE_ADDED_DESC, SortOrder.DATE_MODIFIED_DESC -> it.name.reversed()
+                        SortOrder.TITLE_ASC, SortOrder.ARTIST_ASC, SortOrder.ALBUM_ASC, SortOrder.YEAR_ASC, SortOrder.DATE_ADDED_ASC, SortOrder.DATE_MODIFIED_ASC -> it.name
+                        SortOrder.TITLE_DESC, SortOrder.ARTIST_DESC, SortOrder.ALBUM_DESC, SortOrder.YEAR_DESC, SortOrder.DATE_ADDED_DESC, SortOrder.DATE_MODIFIED_DESC -> it.name.reversed()
                     }
                 }
             )
@@ -6217,6 +6225,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     SortOrder.ARTIST_DESC -> _songs.value.sortedByDescending { it.artist }
                     SortOrder.ALBUM_ASC -> _songs.value.sortedBy { it.album }
                     SortOrder.ALBUM_DESC -> _songs.value.sortedByDescending { it.album }
+                    SortOrder.YEAR_ASC -> _songs.value.sortedBy { it.year }
+                    SortOrder.YEAR_DESC -> _songs.value.sortedByDescending { it.year }
                     SortOrder.DATE_ADDED_ASC -> _songs.value.sortedBy { it.dateAdded }
                     SortOrder.DATE_ADDED_DESC -> _songs.value.sortedByDescending { it.dateAdded }
                     SortOrder.DATE_MODIFIED_ASC -> _songs.value.sortedBy { it.dateModified }
@@ -6231,6 +6241,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     SortOrder.ARTIST_DESC -> _albums.value.sortedByDescending { it.artist }
                     SortOrder.ALBUM_ASC -> _albums.value.sortedBy { it.title }
                     SortOrder.ALBUM_DESC -> _albums.value.sortedByDescending { it.title }
+                    SortOrder.YEAR_ASC -> _albums.value.sortedBy { it.year }
+                    SortOrder.YEAR_DESC -> _albums.value.sortedByDescending { it.year }
                     SortOrder.DATE_ADDED_ASC -> _albums.value.sortedBy { it.id.toLongOrNull() ?: 0L } // Placeholder for date added
                     SortOrder.DATE_ADDED_DESC -> _albums.value.sortedByDescending { it.id.toLongOrNull() ?: 0L } // Placeholder for date added
                     SortOrder.DATE_MODIFIED_ASC -> _albums.value.sortedBy { it.dateModified }
@@ -6252,6 +6264,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         when (newSortOrder) {
                             SortOrder.TITLE_ASC, SortOrder.ARTIST_ASC, SortOrder.ALBUM_ASC -> it.name
                             SortOrder.TITLE_DESC, SortOrder.ARTIST_DESC, SortOrder.ALBUM_DESC -> it.name.reversed()
+                            SortOrder.YEAR_ASC -> it.dateCreated
+                            SortOrder.YEAR_DESC -> -it.dateCreated // Descending
                             SortOrder.DATE_ADDED_ASC -> it.dateCreated
                             SortOrder.DATE_ADDED_DESC -> -it.dateCreated // Descending
                             SortOrder.DATE_MODIFIED_ASC -> it.dateModified

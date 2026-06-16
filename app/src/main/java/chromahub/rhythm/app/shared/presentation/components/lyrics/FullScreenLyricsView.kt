@@ -86,8 +86,12 @@ fun FullScreenLyricsView(
     var controlsVisible by remember { mutableStateOf(true) }
     var lastInteractionTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
-    fun userActivityDetected() {
+    fun showControls() {
         controlsVisible = true
+        lastInteractionTime = System.currentTimeMillis()
+    }
+
+    fun touchDetected() {
         lastInteractionTime = System.currentTimeMillis()
     }
 
@@ -207,7 +211,7 @@ fun FullScreenLyricsView(
                     awaitPointerEventScope {
                         while (true) {
                             awaitPointerEvent(PointerEventPass.Initial)
-                            userActivityDetected()
+                            touchDetected()
                         }
                     }
                 }
@@ -217,11 +221,7 @@ fun FullScreenLyricsView(
                 indication = null
             ) {
                 if (autoHideLyricsControls) {
-                    if (controlsVisible) {
-                        controlsVisible = false
-                    } else {
-                        userActivityDetected()
-                    }
+                    showControls()
                 }
             }
     ) {
