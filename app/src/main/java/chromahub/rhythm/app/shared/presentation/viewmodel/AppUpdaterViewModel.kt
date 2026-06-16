@@ -173,7 +173,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         AppVersion(
             versionName = BuildConfig.VERSION_NAME,
             versionCode = BuildConfig.VERSION_CODE,
-            releaseDate = "2026-06-15", // Update manually with each release
+            releaseDate = "2026-06-16", // Update manually with each release
             whatsNew = emptyList(),
             knownIssues = emptyList(),
             downloadUrl = "",
@@ -968,7 +968,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                             val contentLength = response.body.contentLength()
                             val totalLength = if (response.code == 206) {
                                 val range = response.header("Content-Range")
-                                range?.substringAfter("/")?.toLongOrNull() ?: contentLength
+                                range?.substringAfter("/")?.toLongOrNull() ?: 0L
                             } else {
                                 contentLength
                             }
@@ -1019,7 +1019,13 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                                 totalBytesRead += bytesRead
                                 
                                 // Update progress
-                                val totalBytes = if (totalLength > 0) totalLength else contentLength
+                                val totalBytes = if (totalLength > 0) {
+                                    totalLength
+                                } else if (response.code == 206 && resumePosition > 0) {
+                                    resumePosition + contentLength.coerceAtLeast(0)
+                                } else {
+                                    contentLength
+                                }
                                 if (totalBytes > 0) {
                                     val progress = (totalBytesRead.toFloat() / totalBytes.toFloat()) * 100f
                                     viewModelScope.launch {
@@ -1043,12 +1049,14 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                             
                             // Verify file integrity
                             val fileSize = file.length()
-                            // Use GitHub's reported APK size if available, otherwise fall back to HTTP headers
+                            // Prefer HTTP headers (Content-Range/Content-Length) which reflect the actual file
+                            // being downloaded. Fall back to GitHub API's expectedSize only if HTTP headers
+                            // are unavailable (e.g. chunked transfer with no Content-Length).
                             val httpExpectedSize = if (totalLength > 0) totalLength else contentLength
-                            val finalExpectedSize = if (expectedSize > 0) expectedSize else httpExpectedSize
-                            
+                            val finalExpectedSize = if (httpExpectedSize > 0) httpExpectedSize else expectedSize
+
                             if (finalExpectedSize > 0 && fileSize != finalExpectedSize) {
-                                Log.e(TAG, "Download corrupted: file size mismatch (expected: $finalExpectedSize [GitHub: $expectedSize, HTTP: $httpExpectedSize], actual: $fileSize)")
+                                Log.e(TAG, "Download corrupted: file size mismatch (expected: $finalExpectedSize [HTTP: $httpExpectedSize, GitHub: $expectedSize], actual: $fileSize)")
                                 viewModelScope.launch {
                                     file.delete() // Delete corrupted file
                                     handleDownloadFailure(downloadUrl, fileName, retryAttempt, "File size mismatch: expected $finalExpectedSize bytes, got $fileSize bytes")
