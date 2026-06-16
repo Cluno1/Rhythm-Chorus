@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.activities.MainActivity
 import chromahub.rhythm.app.features.local.data.repository.MusicRepository
+import chromahub.rhythm.app.shared.data.model.ScanPhase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -178,29 +179,31 @@ class LibraryNotificationManager(private val context: Application) {
                     return@collectLatest
                 }
 
-                val rawStage = progressState.stage.ifBlank { "Songs" }
-                if (rawStage.equals("Idle", ignoreCase = true)) {
+                val stage = progressState.stage
+                if (stage is ScanPhase.Idle) {
                     return@collectLatest
                 }
 
-                val stageLabel = when {
-                    rawStage.equals("Songs", ignoreCase = true) -> {
+                val stageLabel = when (stage) {
+                    is ScanPhase.Songs,
+                    is ScanPhase.Incremental -> {
                         context.getString(R.string.notification_media_scan_stage_songs)
                     }
 
-                    rawStage.equals("Saving Database", ignoreCase = true) -> {
+                    is ScanPhase.SavingDb -> {
                         context.getString(R.string.notification_media_scan_stage_saving)
                     }
 
-                    rawStage.equals("Complete", ignoreCase = true) -> {
+                    is ScanPhase.Complete -> {
                         context.getString(R.string.notification_media_scan_stage_finishing)
                     }
 
-                    rawStage.equals("Error", ignoreCase = true) -> {
+                    is ScanPhase.Error,
+                    is ScanPhase.PermissionDenied -> {
                         context.getString(R.string.notification_media_scan_failed)
                     }
 
-                    else -> rawStage
+                    is ScanPhase.Idle -> "" // handled above
                 }
 
                 val hasDeterminateProgress = progressState.total > 0
@@ -216,7 +219,7 @@ class LibraryNotificationManager(private val context: Application) {
                     stageLabel
                 }
 
-                val progressKey = "$rawStage|$safeCurrent|$safeTotal"
+                val progressKey = "${stage.displayName}|$safeCurrent|$safeTotal"
                 if (progressKey == lastMediaScanProgressKey) {
                     return@collectLatest
                 }

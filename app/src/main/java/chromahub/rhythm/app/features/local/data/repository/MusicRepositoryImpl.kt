@@ -57,6 +57,8 @@ import chromahub.rhythm.app.shared.data.model.Artist
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.LyricsSourcePreference
+import chromahub.rhythm.app.shared.data.model.MediaScanMode
+import chromahub.rhythm.app.shared.data.model.ScanPhase
 import chromahub.rhythm.app.shared.data.model.UserAudioDevice
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
 import chromahub.rhythm.app.shared.data.model.LyricsApiPriority
@@ -83,7 +85,7 @@ import chromahub.rhythm.app.features.local.data.database.entity.SongArtistEntity
 data class ScanProgress(
     val current: Int,
     val total: Int,
-    val stage: String, // "Songs", "Albums", "Artists", "Metadata"
+    val stage: ScanPhase,
     val estimatedTimeMs: Long = 0
 )
 
@@ -138,7 +140,7 @@ class MusicRepository(context: Context) {
     private val dateAddedPrefs: SharedPreferences by lazy { context.getSharedPreferences("song_date_added_cache", Context.MODE_PRIVATE) }
     
     // Scan progress tracking
-    private val _scanProgress = MutableStateFlow(ScanProgress(0, 0, "Idle"))
+    private val _scanProgress = MutableStateFlow(ScanProgress(0, 0, ScanPhase.Idle))
     val scanProgress: StateFlow<ScanProgress> = _scanProgress.asStateFlow()
     
     // Scan history
@@ -509,6 +511,7 @@ class MusicRepository(context: Context) {
     
     // ContentObserver for automatic updates
     private var mediaStoreObserver: ContentObserver? = null
+    private var mediaStorePlaylistObserver: ContentObserver? = null
     private var onMediaStoreChangeCallback: (() -> Unit)? = null
 
     /**
@@ -543,7 +546,7 @@ class MusicRepository(context: Context) {
     // Note: API services can be null if disabled via BuildConfig
 
     /**
-     * Register ContentObserver to monitor MediaStore changes
+     * Register ContentObservers to monitor MediaStore changes (audio and playlists).
      */
     fun registerMediaStoreObserver(onChange: () -> Unit) {
         if (mediaStoreObserver != null) {
@@ -552,10 +555,21 @@ class MusicRepository(context: Context) {
         }
         
         onMediaStoreChangeCallback = onChange
-        mediaStoreObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+        
+        // Observer for audio media changes (new/deleted/modified songs)
+        val audioObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-                Log.d(TAG, "MediaStore changed, triggering callback")
+                Log.d(TAG, "MediaStore audio changed, triggering callback")
+                onChange()
+            }
+        }
+        
+        // Observer for playlist changes
+        val playlistObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) {
+                super.onChange(selfChange)
+                Log.d(TAG, "MediaStore playlists changed, triggering callback")
                 onChange()
             }
         }
@@ -563,21 +577,32 @@ class MusicRepository(context: Context) {
         context.contentResolver.registerContentObserver(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             true,
-            mediaStoreObserver!!
+            audioObserver
         )
-        Log.d(TAG, "ContentObserver registered for MediaStore changes")
+        context.contentResolver.registerContentObserver(
+            MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
+            true,
+            playlistObserver
+        )
+        mediaStoreObserver = audioObserver
+        mediaStorePlaylistObserver = playlistObserver
+        Log.d(TAG, "ContentObservers registered for MediaStore audio and playlist changes")
     }
     
     /**
-     * Unregister ContentObserver
+     * Unregister ContentObservers
      */
     fun unregisterMediaStoreObserver() {
         mediaStoreObserver?.let {
             context.contentResolver.unregisterContentObserver(it)
             mediaStoreObserver = null
-            onMediaStoreChangeCallback = null
-            Log.d(TAG, "ContentObserver unregistered")
         }
+        mediaStorePlaylistObserver?.let {
+            context.contentResolver.unregisterContentObserver(it)
+            mediaStorePlaylistObserver = null
+        }
+        onMediaStoreChangeCallback = null
+        Log.d(TAG, "ContentObservers unregistered")
     }
 
     // LRU caches for artist images, album artwork, and lyrics to avoid memory leaks
@@ -691,7 +716,7 @@ class MusicRepository(context: Context) {
         if (!hasPermission) {
             Log.w(TAG, "MediaStore permission not granted. Cannot scan music library.")
             // Return empty list with error indication
-            _scanProgress.value = ScanProgress(0, 0, "Permission Denied", 0)
+            _scanProgress.value = ScanProgress(0, 0, ScanPhase.PermissionDenied, 0)
             return@withContext emptyList()
         }
 
@@ -732,7 +757,7 @@ class MusicRepository(context: Context) {
         var filteredByFormat = 0
         var filteredByQuality = 0
 
-        val mediaScanMode = appSettings.mediaScanMode.value
+        val mediaScanMode: MediaScanMode = appSettings.mediaScanMode.value
         val whitelistedFolders = appSettings.whitelistedFolders.value
         val includeHiddenWhitelistedMedia = appSettings.includeHiddenWhitelistedMedia.value
         
@@ -773,7 +798,7 @@ class MusicRepository(context: Context) {
         val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
 
         try {
-            _scanProgress.value = ScanProgress(0, 0, "Songs", 0)
+            _scanProgress.value = ScanProgress(0, 0, ScanPhase.Songs, 0)
             
             Log.d(TAG, "Querying MediaStore with selection: $selection")
             
@@ -786,7 +811,7 @@ class MusicRepository(context: Context) {
             )?.use { cursor ->
                 val count = cursor.count
                 Log.d(TAG, "MediaStore query successful: Found $count audio files to process")
-                _scanProgress.value = ScanProgress(0, count, "Songs", 0)
+                _scanProgress.value = ScanProgress(0, count, ScanPhase.Songs, 0)
                 
                 if (count == 0) {
                     Log.w(TAG, "No audio files found in MediaStore - this may indicate a permission or storage access issue on Android ${Build.VERSION.SDK_INT}")
@@ -846,7 +871,7 @@ class MusicRepository(context: Context) {
                     )
                 } catch (e: IllegalArgumentException) {
                     Log.e(TAG, "Required column not found in MediaStore on Android ${Build.VERSION.SDK_INT}", e)
-                    _scanProgress.value = ScanProgress(0, 0, "Error", 0)
+                    _scanProgress.value = ScanProgress(0, 0, ScanPhase.Error, 0)
                     return@withContext emptyList()
                 }
 
@@ -913,7 +938,7 @@ class MusicRepository(context: Context) {
                         
                         // Update progress periodically
                         if (processedCount % 10 == 0) {
-                            _scanProgress.value = ScanProgress(processedCount, count, "Songs", 0)
+                            _scanProgress.value = ScanProgress(processedCount, count, ScanPhase.Songs, 0)
                         }
                         
                         // Yield control periodically to avoid blocking
@@ -933,7 +958,7 @@ class MusicRepository(context: Context) {
 
                 // In whitelist mode, also scan explicit folders to include hidden/.nomedia files
                 // that MediaStore may not index.
-                if (mediaScanMode == "whitelist" && includeHiddenWhitelistedMedia && whitelistedFolders.isNotEmpty()) {
+                if (mediaScanMode == MediaScanMode.WHITELIST && includeHiddenWhitelistedMedia && whitelistedFolders.isNotEmpty()) {
                     val whitelistSongs = loadSongsFromWhitelistedFolders(
                         whitelistedFolders = whitelistedFolders,
                         seenPaths = seenPaths,
@@ -955,11 +980,11 @@ class MusicRepository(context: Context) {
                 
                 // Persist to Room synchronously so other initialization tasks can safely use the DB
                 Log.d(TAG, "Persisting ${songs.size} songs to disk cache synchronously before proceeding")
-                _scanProgress.value = ScanProgress(songs.size, count, "Saving Database", 0)
+                _scanProgress.value = ScanProgress(songs.size, count, ScanPhase.SavingDb, 0)
                 saveSongsToRoom(songs, clearArtistCache = true, previousSongs = cachedSongs)
                 
                 // Update scan progress to complete
-                _scanProgress.value = ScanProgress(songs.size, count, "Complete", duration)
+                _scanProgress.value = ScanProgress(songs.size, count, ScanPhase.Complete, duration)
                 
                 // Log errors if any
                 if (errors.isNotEmpty()) {
@@ -968,7 +993,7 @@ class MusicRepository(context: Context) {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Critical error during song scan", e)
-            _scanProgress.value = ScanProgress(0, 0, "Error", 0)
+            _scanProgress.value = ScanProgress(0, 0, ScanPhase.Error, 0)
             // Return partial results if available
             return@withContext songs
         }
@@ -1033,7 +1058,7 @@ class MusicRepository(context: Context) {
             )?.use { cursor ->
                 val count = cursor.count
                 Log.d(TAG, "Found $count new audio files")
-                _scanProgress.value = ScanProgress(0, count, "Incremental", 0)
+                _scanProgress.value = ScanProgress(0, count, ScanPhase.Incremental, 0)
                 
                 if (count == 0) {
                     return@withContext emptyList()
@@ -1097,7 +1122,7 @@ class MusicRepository(context: Context) {
                         }
                         processedCount++
                         if (processedCount % 10 == 0) {
-                            _scanProgress.value = ScanProgress(processedCount, count, "Incremental", 0)
+                            _scanProgress.value = ScanProgress(processedCount, count, ScanPhase.Incremental, 0)
                         }
                     } catch (e: Exception) {
                         Log.w(TAG, "Error processing new song at position ${cursor.position}", e)
@@ -1107,7 +1132,7 @@ class MusicRepository(context: Context) {
                 val duration = System.currentTimeMillis() - startTime
                 Log.d(TAG, "Incremental scan complete: ${newSongs.size} new songs in ${duration}ms")
                 Log.d(TAG, "Filtering stats - Format: $filteredByFormat, Quality: $filteredByQuality")
-                _scanProgress.value = ScanProgress(newSongs.size, count, "Complete", duration)
+                _scanProgress.value = ScanProgress(newSongs.size, count, ScanPhase.Complete, duration)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error during incremental scan", e)

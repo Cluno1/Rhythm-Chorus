@@ -1443,8 +1443,10 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     val useSmartUpdatePolling: StateFlow<Boolean> = _useSmartUpdatePolling.asStateFlow()
 
     // Media Scan Mode
-    private val _mediaScanMode = MutableStateFlow(prefs.getString(KEY_MEDIA_SCAN_MODE, "blacklist") ?: "blacklist")
-    val mediaScanMode: StateFlow<String> = _mediaScanMode.asStateFlow()
+    private val _mediaScanMode = MutableStateFlow(
+        MediaScanMode.fromValue(prefs.getString(KEY_MEDIA_SCAN_MODE, "blacklist") ?: "blacklist")
+    )
+    val mediaScanMode: StateFlow<MediaScanMode> = _mediaScanMode.asStateFlow()
 
     private val _includeHiddenWhitelistedMedia = MutableStateFlow(
         prefs.getBoolean(KEY_INCLUDE_HIDDEN_WHITELISTED_MEDIA, true)
@@ -3130,9 +3132,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         }
     }
 
-    fun setMediaScanMode(mode: String) {
+    fun setMediaScanMode(mode: MediaScanMode) {
         val changed = _mediaScanMode.value != mode
-        prefs.edit().putString(KEY_MEDIA_SCAN_MODE, mode).apply()
+        prefs.edit().putString(KEY_MEDIA_SCAN_MODE, mode.value).apply()
         _mediaScanMode.value = mode
         if (changed) {
             requestFullMediaRescanOnNextLaunch(reason = "media_scan_mode_changed")
@@ -4604,7 +4606,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _updateNotificationsEnabled.value = prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _updateStatusNotificationsEnabled.value = prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false)
         _useSmartUpdatePolling.value = prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, BuildConfig.FLAVOR != "fdroid")
-        _mediaScanMode.value = prefs.getString(KEY_MEDIA_SCAN_MODE, "blacklist") ?: "blacklist"
+        _mediaScanMode.value = MediaScanMode.fromValue(prefs.getString(KEY_MEDIA_SCAN_MODE, "blacklist") ?: "blacklist")
         _includeHiddenWhitelistedMedia.value = prefs.getBoolean(KEY_INCLUDE_HIDDEN_WHITELISTED_MEDIA, true)
         _updateCheckIntervalHours.value = prefs.getInt(KEY_UPDATE_CHECK_INTERVAL_HOURS, 6)
         

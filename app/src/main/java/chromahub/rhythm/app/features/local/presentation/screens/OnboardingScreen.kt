@@ -121,6 +121,7 @@ import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.data.model.AlbumViewType
 import chromahub.rhythm.app.shared.data.model.ArtistViewType
 import chromahub.rhythm.app.shared.data.model.AppSettings
+import chromahub.rhythm.app.shared.data.model.MediaScanMode
 import chromahub.rhythm.app.shared.presentation.components.common.DataProcessingLoader
 import chromahub.rhythm.app.shared.presentation.components.common.InitializationLoader
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveButtonGroup
@@ -7200,7 +7201,7 @@ fun EnhancedMediaScanContent(
 
     // Get current media scan mode preference
     val mediaScanMode by appSettings.mediaScanMode.collectAsState()
-    val isBlacklistMode = mediaScanMode == "blacklist"
+    val isBlacklistMode = mediaScanMode == MediaScanMode.BLACKLIST
     val blacklistedFolders by appSettings.blacklistedFolders.collectAsState()
     val whitelistedFolders by appSettings.whitelistedFolders.collectAsState()
 
@@ -7353,7 +7354,7 @@ fun EnhancedMediaScanContent(
                     blacklistedFolders = blacklistedFolders,
                     whitelistedFolders = whitelistedFolders,
                     onModeChange = { useBlacklist ->
-                        appSettings.setMediaScanMode(if (useBlacklist) "blacklist" else "whitelist")
+                        appSettings.setMediaScanMode(if (useBlacklist) MediaScanMode.BLACKLIST else MediaScanMode.WHITELIST)
                     },
                     onAddFolder = {
                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
@@ -7413,7 +7414,7 @@ fun EnhancedMediaScanContent(
                 blacklistedFolders = blacklistedFolders,
                 whitelistedFolders = whitelistedFolders,
                 onModeChange = { useBlacklist ->
-                    appSettings.setMediaScanMode(if (useBlacklist) "blacklist" else "whitelist")
+                    appSettings.setMediaScanMode(if (useBlacklist) MediaScanMode.BLACKLIST else MediaScanMode.WHITELIST)
                 },
                 onAddFolder = {
                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)

@@ -221,6 +221,7 @@ import chromahub.rhythm.app.util.M3ImageUtils
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
+import chromahub.rhythm.app.shared.data.model.ScanPhase
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -1879,10 +1880,9 @@ fun LibraryScreen(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = when (scanProgress.stage) {
-                                                "Songs" -> context.getString(R.string.library_scan_songs)
-                                                "Albums" -> context.getString(R.string.library_scan_albums)
-                                                "Artists" -> context.getString(R.string.library_scan_artists)
-                                                "Genres" -> context.getString(R.string.library_scan_genres)
+                                                is ScanPhase.Songs -> context.getString(R.string.library_scan_songs)
+                                                is ScanPhase.Incremental -> context.getString(R.string.library_scan_media)
+                                                is ScanPhase.SavingDb -> context.getString(R.string.library_scan_media)
                                                 else -> context.getString(R.string.library_scan_media)
                                             },
                                             style = MaterialTheme.typography.bodyMedium,

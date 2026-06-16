@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.LinearWavyProgressIndicator
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.shared.data.model.ScanPhase
 import chromahub.rhythm.app.shared.presentation.components.common.MediaScanningLoader
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
@@ -133,12 +134,12 @@ fun MediaScanLoader(
     // Update display based on real scan progress
     LaunchedEffect(scanProgress) {
         // Use real scan progress from repository
-        when (scanProgress.stage) {
-            "Idle" -> {
+        when (val stage = scanProgress.stage) {
+            is ScanPhase.Idle -> {
                 displayProgress = 0f
                 currentStep = "Initializing..."
             }
-            "Songs" -> {
+            is ScanPhase.Songs -> {
                 // Calculate progress based on current/total
                 val progress = if (scanProgress.total > 0) {
                     (scanProgress.current.toFloat() / scanProgress.total.toFloat()).coerceIn(0f, 0.85f)
@@ -148,7 +149,7 @@ fun MediaScanLoader(
                 displayProgress = progress
                 currentStep = "Scanning: ${scanProgress.current} of ${scanProgress.total} files..."
             }
-            "Incremental" -> {
+            is ScanPhase.Incremental -> {
                 val progress = if (scanProgress.total > 0) {
                     0.5f + (scanProgress.current.toFloat() / scanProgress.total.toFloat() * 0.35f)
                 } else {
@@ -157,7 +158,7 @@ fun MediaScanLoader(
                 displayProgress = progress
                 currentStep = "Checking for new music: ${scanProgress.current} of ${scanProgress.total}..."
             }
-            "Complete" -> {
+            is ScanPhase.Complete -> {
                 displayProgress = 0.95f
                 currentStep = "Finalizing scan (${scanProgress.estimatedTimeMs}ms)..."
                 delay(500)
@@ -170,7 +171,7 @@ fun MediaScanLoader(
                     onScanComplete()
                 }
             }
-            "Error" -> {
+            is ScanPhase.Error, is ScanPhase.PermissionDenied -> {
                 displayProgress = 0.5f
                 currentStep = "Error during scan - using cached data..."
                 delay(2000)
@@ -182,6 +183,10 @@ fun MediaScanLoader(
                     delay(500)
                     onScanComplete()
                 }
+            }
+            is ScanPhase.SavingDb -> {
+                displayProgress = 0.9f
+                currentStep = "Saving to database..."
             }
             else -> {
                 // Fallback to old behavior for unknown stages

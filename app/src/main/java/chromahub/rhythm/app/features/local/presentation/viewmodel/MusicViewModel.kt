@@ -36,6 +36,8 @@ import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.Artist
 import chromahub.rhythm.app.shared.data.model.LyricsSourcePreference
+import chromahub.rhythm.app.shared.data.model.MediaScanMode
+import chromahub.rhythm.app.shared.data.model.ScanPhase
 import chromahub.rhythm.app.features.local.data.repository.MusicRepository
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
 import chromahub.rhythm.app.shared.data.model.Playlist
@@ -468,7 +470,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         appSettings.whitelistedFolders
     ) { args ->
         val songs = args[0] as List<Song>
-        val mode = args[1] as String
+        val mode = args[1] as MediaScanMode
         val blacklistedIds = args[2] as List<String>
         val blacklistedFolders = args[3] as List<String>
         val whitelistedIds = args[4] as List<String>
@@ -479,7 +481,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     
     private suspend fun filterSongsAsync(
         songs: List<Song>,
-        mediaScanMode: String,
+        mediaScanMode: MediaScanMode,
         blacklistedIds: List<String>, 
         blacklistedFolders: List<String>,
         whitelistedIds: List<String>,
@@ -489,8 +491,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         val hasWhitelist = whitelistedIds.isNotEmpty() || whitelistedFolders.isNotEmpty()
         
         // Determine which filtering mode to use based on mediaScanMode setting
-        val useBlacklistMode = mediaScanMode == "blacklist"
-        val useWhitelistMode = mediaScanMode == "whitelist"
+        val useBlacklistMode = mediaScanMode == MediaScanMode.BLACKLIST
+        val useWhitelistMode = mediaScanMode == MediaScanMode.WHITELIST
         
         // If no filters are active for the current mode, return all songs
         if (useBlacklistMode && !hasBlacklist) {
@@ -502,7 +504,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         
         // Check if filter settings changed (to clear cache)
         val currentSettings = buildString {
-            append(mediaScanMode)
+            append(mediaScanMode.value)
             append('|')
             append(blacklistedIds.sorted().joinToString(","))
             append('|')
@@ -525,7 +527,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         var processed = 0
         
         for (song in songs) {
-            val cacheKey = "${song.id}_${song.path}_$mediaScanMode"
+            val cacheKey = "${song.id}_${song.path}_${mediaScanMode.value}"
             val cachedResult = filterCache[cacheKey]
             if (cachedResult != null) {
                 if (cachedResult) result.add(song)
@@ -584,7 +586,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         val endTime = System.currentTimeMillis()
-        Log.d(TAG, "Filtered ${songs.size} songs to ${result.size} in ${endTime - startTime}ms (mode: $mediaScanMode, cached: ${filterCache.size})")
+        Log.d(TAG, "Filtered ${songs.size} songs to ${result.size} in ${endTime - startTime}ms (mode: ${mediaScanMode.value}, cached: ${filterCache.size})")
         
         result
     }
@@ -1516,7 +1518,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         
         // Register ContentObserver for automatic MediaStore updates
         // Use a full refresh instead of incremental scan to detect removed/re-added songs.
-        // Cancel any pending refresh job before scheduling a new one (debounce pattern)
+        // Cancel any pending refresh job before scheduling a new one (debounce pattern).
         mediaStoreObserverRegisteredTimeMs = SystemClock.elapsedRealtime()
         repository.registerMediaStoreObserver {
             val timeSinceRegistration = SystemClock.elapsedRealtime() - mediaStoreObserverRegisteredTimeMs
@@ -1527,7 +1529,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             Log.d(TAG, "MediaStore changed, scheduling full library refresh")
             mediaStoreRefreshJob?.cancel()
             mediaStoreRefreshJob = viewModelScope.launch {
-                delay(3000) // Debounce - wait 3s for changes to fully settle before querying
+                // Reset debounce on each new change notification (rapid changes reset the timer)
+                var lastChangeMs = SystemClock.elapsedRealtime()
+                while (true) {
+                    delay(2000) // Debounce window
+                    val elapsedSinceLastChange = SystemClock.elapsedRealtime() - lastChangeMs
+                    if (elapsedSinceLastChange >= 1900) {
+                        // No new changes in the last ~2s window, proceed with refresh
+                        break
+                    }
+                    lastChangeMs = SystemClock.elapsedRealtime()
+                    Log.d(TAG, "Debounce reset: additional MediaStore changes detected, waiting again")
+                }
                 performMediaStoreRefresh()
             }
         }
@@ -1669,8 +1682,17 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 return@registerMediaStoreObserver
             }
             Log.d(TAG, "MediaStore changed, scheduling incremental scan")
-            viewModelScope.launch {
-                delay(2000) // Debounce - wait for changes to settle
+            mediaStoreRefreshJob?.cancel()
+            mediaStoreRefreshJob = viewModelScope.launch {
+                var lastChangeMs = SystemClock.elapsedRealtime()
+                while (true) {
+                    delay(2000)
+                    val elapsedSinceLastChange = SystemClock.elapsedRealtime() - lastChangeMs
+                    if (elapsedSinceLastChange >= 1900) {
+                        break
+                    }
+                    lastChangeMs = SystemClock.elapsedRealtime()
+                }
                 performIncrementalScan()
             }
         }
@@ -7879,8 +7901,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun removeBlacklistedSongsFromQueue() {
         mediaController?.let { controller ->
             val mediaScanMode = appSettings.mediaScanMode.value
-            val useBlacklist = mediaScanMode == "blacklist"
-            val useWhitelist = mediaScanMode == "whitelist"
+            val useBlacklist = mediaScanMode == MediaScanMode.BLACKLIST
+            val useWhitelist = mediaScanMode == MediaScanMode.WHITELIST
             val blacklistedIds = appSettings.blacklistedSongs.value
             val blacklistedFolders = appSettings.blacklistedFolders.value
             val whitelistedIds = appSettings.whitelistedSongs.value
