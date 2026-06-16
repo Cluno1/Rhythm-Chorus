@@ -13,11 +13,20 @@ These formats work out-of-the-box on all supported Android devices:
 | **FLAC** | `.flac` | Lossless | Up to 32-bit | Up to 384kHz | Recommended for lossless audio |
 | **ALAC** | `.m4a`, `.alac` | Lossless | Up to 32-bit | Up to 384kHz | Apple Lossless Audio Codec |
 | **MP3** | `.mp3` | Lossy | N/A | Up to 48kHz | All bitrates, VBR support |
-| **AAC** | `.m4a`, `.aac`, `.mp4` | Lossy | N/A | Up to 96kHz | AAC-LC, HE-AAC, HE-AACv2 |
-| **Vorbis** | `.ogg` | Lossy | N/A | Up to 192kHz | Ogg Vorbis audio |
+| **AAC** | `.m4a`, `.aac`, `.mp4`, `.adts`, `.m4b` | Lossy | N/A | Up to 96kHz | AAC-LC, HE-AAC, HE-AACv2; ADTS, audiobook (M4B) |
+| **Vorbis** | `.ogg`, `.oga` | Lossy | N/A | Up to 192kHz | Ogg Vorbis audio |
 | **Opus** | `.opus`, `.ogg` | Lossy/Lossless | N/A | Up to 48kHz | Modern, efficient codec |
 | **WAV** | `.wav` | Lossless | Up to 32-bit | Up to 192kHz | Uncompressed PCM audio |
 | **PCM** | Various | Lossless | Up to 32-bit | Up to 192kHz | Raw audio data |
+| **AIFF** | `.aiff`, `.aif` | Lossless | Up to 32-bit | Up to 192kHz | Apple audio interchange format |
+| **APE** | `.ape` | Lossless | Up to 24-bit | Up to 192kHz | Monkey's Audio (high compression) |
+| **WavPack** | `.wv` | Lossless | Up to 32-bit | Up to 192kHz | Hybrid lossless/lossy format |
+| **TAK** | `.tak` | Lossless | Up to 24-bit | Up to 192kHz | TOM's lossless Audio Kompressor |
+| **TTA** | `.tta` | Lossless | Up to 24-bit | Up to 96kHz | True Audio lossless |
+| **MIDI** | `.mid`, `.midi` | Instructions | N/A | N/A | Musical Instrument Digital Interface |
+| **Matroska** | `.mkv`, `.mka` | Varies | Varies | Varies | Container format (audio-only .mka) |
+| **WMA** | `.wma` | Lossy | N/A | Up to 48kHz | Windows Media Audio |
+| **WMA Lossless** | `.wma` | Lossless | Up to 24-bit | Up to 96kHz | Windows Media Audio Lossless |
 
 ---
 
@@ -29,6 +38,7 @@ These formats are decoded by the bundled FFmpeg extension (available in all buil
 |:---:|:---:|:---|
 | **EAC3-JOC (Dolby Atmos)** | `.eac3`, `.m4a`, `.mkv` | Decoded via FFmpeg; stereo/surround output |
 | **AC-3 (Dolby Digital)** | `.ac3`, `.m4a` | Decoded via FFmpeg extension |
+| **AC-4 (Dolby AC-4)** | `.ac4` | Decoded via FFmpeg extension |
 | **WMA** | `.wma` | Decoded via FFmpeg extension |
 
 ---
@@ -41,8 +51,12 @@ These formats require hardware support and may not work on all devices:
 |:---:|:---:|:---|
 | **Dolby Digital (AC-3)** | `.ac3`, `.m4a` | Also decoded via FFmpeg extension in Rhythm |
 | **Dolby Digital Plus (E-AC-3)** | `.eac3`, `.m4a` | Also decoded via FFmpeg (EAC3-JOC/Atmos supported) |
+| **Dolby AC-4** | `.ac4` | Next-gen Dolby; FFmpeg-decoded in Rhythm |
 | **DTS** | `.dts`, `.m4a` | Requires compatible device/hardware decoder |
+| **DTS-HD MA** | `.dts`, `.m4a` | High-resolution multichannel DTS |
+| **DTS:X** | `.dts`, `.m4a` | Object-based DTS surround |
 | **Dolby Atmos** | Various | EAC3-JOC decoded via FFmpeg; full Atmos requires hardware |
+| **DSD** | `.dsd`, `.dsf`, `.dff` | Super Audio CD; requires compatible DAC |
 | **WMA** | `.wma` | Also decoded via FFmpeg extension in Rhythm |
 
 ### Checking Device Compatibility
@@ -54,38 +68,53 @@ To check if your device supports Dolby/DTS:
 
 ---
 
-## ❌ Unsupported Formats
-
-These formats are **not supported** by Media3 ExoPlayer. You must convert them to play in Rhythm:
-
-| Format | Why Not Supported | Recommended Alternative |
-|:---:|:---|:---|
-| **APE** (Monkey's Audio) | Proprietary codec, no Android support | Convert to **FLAC** |
-| **DSD/DSF** | Super Audio CD format, niche codec | Convert to **FLAC** or **PCM** |
-| **MQA** | Proprietary MQA codec | Use **FLAC** version |
-| **WMA Lossless** | Microsoft proprietary, limited support | Convert to **FLAC** |
-| **AIFF** | Limited Android support | Convert to **WAV** |
-| **TAK** | Rare lossless format | Convert to **FLAC** |
-| **WavPack** | Limited mobile support | Convert to **FLAC** |
-| **MKA** (Matroska Audio) | Container not scanned/supported by the local media library | Extract audio stream (e.g. to **FLAC** or **M4A**) |
-
----
-
 ## 📊 Audio Quality Detection
 
-Rhythm automatically detects and displays quality badges in the player:
+Rhythm automatically detects and displays quality badges in the player, and provides **quality-based library filters** in the Songs tab:
+
+### Quality Badges
 
 | Badge | Criteria | Formats |
 |:---:|:---|:---|
-| **🔊 Lossless** | Lossless compression | FLAC, ALAC, WAV, PCM |
-| **🎭 Dolby** | Dolby Audio detected | AC-3, E-AC-3, Dolby Atmos |
-| **🎬 DTS** | DTS Audio detected | DTS, DTS-HD |
-| **📡 Hi-Res** | ≥48kHz sample rate OR lossless | FLAC ≥48kHz, Hi-Res WAV |
+| **STUDIO MASTER** | ≥24-bit/192kHz lossless | FLAC, ALAC, WAV, AIFF |
+| **HI-RES LOSSLESS** | ≥48kHz lossless (not Studio Master) | FLAC ≥48kHz, ALAC ≥48kHz |
+| **CD QUALITY** | 16-bit/44.1kHz lossless | FLAC, ALAC, WAV, PCM, AIFF |
+| **LOSSLESS** | Standard lossless compression | FLAC, ALAC, WAV, PCM, APE, WV, TAK, TTA, AIFF |
+| **DSD** | Direct Stream Digital | DSD, DSF, DFF |
+| **DOLBY ATMOS** | Dolby Atmos / TrueHD | EAC3-JOC, TrueHD |
+| **DOLBY DIGITAL PLUS** | Enhanced Dolby | E-AC-3 |
+| **DOLBY DIGITAL** | Standard Dolby | AC-3 |
+| **DTS** | DTS surround | DTS, DTS-HD MA, DTS:X |
+| **LOSSY** | Any lossy compression | MP3, AAC, OGG, Opus, WMA |
+
+### Quality-Based Library Filters
+
+The Songs tab in the Library screen provides dynamic filter chips that appear only when matching tracks are present:
+
+| Filter Category | What It Shows |
+|:---|:---|
+| **Studio Master** | 24-bit/192kHz+ lossless tracks |
+| **Hi-Res Lossless** | ≥48kHz lossless (excludes Studio Master, DSD, Dolby) |
+| **CD Quality** | 16-bit/44.1kHz lossless |
+| **Lossless** | Standard lossless (excludes hi-res, CD quality, DSD, Dolby) |
+| **Lossy** | All lossy-compressed tracks |
+| **DSD** | DSD/DSF/DFF tracks |
+| **Dolby Atmos** | Dolby Atmos or TrueHD tracks |
+| **Dolby Digital Plus** | E-AC-3 tracks |
+| **Dolby Digital** | AC-3 tracks |
+| **DTS** | DTS, DTS-HD MA, DTS:X tracks |
+| **Dolby / Surround** | Any surround (Dolby, DTS, multichannel) |
+| **High Quality** | Lossy ≥320kbps (not Dolby/surround) |
+| **Standard** | Lossy 128–319kbps (not Dolby/surround) |
+| **Mono** | Single-channel tracks |
+| **Short / Medium / Long** | Duration-based filters |
 
 ### Quality Detection Details
 
-- **Lossless Detection**: Based on codec type
-- **Hi-Res Detection**: Sample rate ≥48kHz or bit depth ≥24-bit
+- **Lossless Detection**: Based on codec type + file extension fallback
+- **Hi-Res Detection**: Sample rate ≥48kHz or calculated bit depth ≥18-bit
+- **Studio Master Detection**: Sample rate ≥192kHz or calculated bit depth ≥22-bit at ≥96kHz
+- **CD Quality Detection**: Lossless, sample rate ≤48kHz, calculated bit depth <20-bit
 - **Dolby/DTS Detection**: Codec identification from metadata
 - **Container Detection**: Parsed from file headers
 

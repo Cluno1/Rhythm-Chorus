@@ -500,7 +500,22 @@ class MainActivity : AppCompatActivity() {
                     uriStr.endsWith(".opus", ignoreCase = true) ||
                     uriStr.endsWith(".wma", ignoreCase = true) ||
                     uriStr.endsWith(".mkv", ignoreCase = true) ||
-                    uriStr.endsWith(".mka", ignoreCase = true)
+                    uriStr.endsWith(".mka", ignoreCase = true) ||
+                    uriStr.endsWith(".ac3", ignoreCase = true) ||
+                    uriStr.endsWith(".ac4", ignoreCase = true) ||
+                    uriStr.endsWith(".oga", ignoreCase = true) ||
+                    uriStr.endsWith(".mid", ignoreCase = true) ||
+                    uriStr.endsWith(".midi", ignoreCase = true) ||
+                    uriStr.endsWith(".adts", ignoreCase = true) ||
+                    uriStr.endsWith(".m4b", ignoreCase = true) ||
+                    uriStr.endsWith(".ape", ignoreCase = true) ||
+                    uriStr.endsWith(".wv", ignoreCase = true) ||
+                    uriStr.endsWith(".tta", ignoreCase = true) ||
+                    uriStr.endsWith(".tak", ignoreCase = true) ||
+                    uriStr.endsWith(".aiff", ignoreCase = true) ||
+                    uriStr.endsWith(".aif", ignoreCase = true) ||
+                    uriStr.endsWith(".dsf", ignoreCase = true) ||
+                    uriStr.endsWith(".dff", ignoreCase = true)
                 }
         } catch (e: Exception) {
             Log.e(TAG, "Error validating URI: $uri", e)

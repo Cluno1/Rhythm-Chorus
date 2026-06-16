@@ -3519,10 +3519,19 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             "ogg", "oga" -> "audio/ogg"
             "mkv", "mka" -> "audio/x-matroska"
             "mp3" -> "audio/mpeg"
-            "m4a" -> "audio/mp4"
+            "m4a", "m4b" -> "audio/mp4"
             "flac" -> "audio/flac"
             "wav" -> "audio/wav"
-            "aac" -> "audio/aac"
+            "aac", "adts" -> "audio/aac"
+            "ac3" -> "audio/ac3"
+            "ac4" -> "audio/ac4"
+            "mid", "midi" -> "audio/midi"
+            "ape" -> "audio/x-ape"
+            "wv" -> "audio/x-wavpack"
+            "tta" -> "audio/x-tta"
+            "tak" -> "audio/x-tak"
+            "aiff", "aif" -> "audio/aiff"
+            "dsf", "dff", "dsd" -> "audio/dsd"
             else -> null
         }
         return MediaItem.Builder()

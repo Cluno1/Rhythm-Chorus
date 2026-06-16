@@ -7,8 +7,8 @@ Complete guide to all features and capabilities in Rhythm Music Player.
 
 ### Professional Media3 ExoPlayer Engine
 - **Gapless Playback**: Seamless transitions between tracks
-- **High-Resolution Audio**: Support for FLAC, ALAC, WAV up to 192kHz/24-bit
-- **Format Support**: MP3, AAC, Opus, Vorbis, EAC3-JOC (Dolby Atmos) via FFmpeg, and more
+- **High-Resolution Audio**: Support for FLAC, ALAC, WAV, AIFF, APE up to 192kHz/32-bit
+- **Format Support**: MP3, AAC, Opus, Vorbis, FLAC, ALAC, WAV, AIFF, APE, WavPack, TAK, TTA, MIDI, AC-3, AC-4, EAC3-JOC (Dolby Atmos) via FFmpeg, WMA, DSD, DTS, DTS-HD MA, DTS:X, and more
 - **High-Resolution Audio Mode**: Preserve native sample rates and bit depths, bypassing Android processing
 - **Smart Buffering**: Optimized for smooth playback
 
@@ -97,12 +97,20 @@ Complete guide to all features and capabilities in Rhythm Music Player.
 ## 📚 Library Management
 
 ### Smart Organization
-- **Songs**: All tracks with sorting and filtering
+- **Songs**: All tracks with sorting and quality-based filtering
 - **Albums**: Album-based browsing with artwork
 - **Artists**: Artist-based organization with album grouping
 - **Playlists**: Custom and auto-generated playlists
 - **Genres**: Genre-based categorization
 - **Folders**: File system browser
+
+### Quality-Based Filter Chips
+The Songs tab includes dynamic quality filter chips that appear only when matching tracks exist:
+- **Lossless tiers**: Studio Master → Hi-Res Lossless → CD Quality → Lossless
+- **Surround formats**: Dolby Atmos, Dolby Digital Plus, Dolby Digital, DTS, Dolby / Surround
+- **Special**: DSD, Lossy, Mono
+- **Bitrate**: High Quality (≥320kbps), Standard (128–319kbps)
+- **Duration**: Short (<3m), Medium (3–5m), Long (>5m)
 
 ### A–Z Scroll Bar
 - **Alphabetical Navigation**: Drag along letter strip to jump to songs, albums, or artists

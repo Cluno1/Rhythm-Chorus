@@ -98,7 +98,7 @@ object AudioQualityDetector {
 
         // CRITICAL: First check if codec is explicitly LOSSY - these can NEVER be lossless
         // regardless of bitrate or bit depth. Lossy codecs discard data during encoding.
-        val isLossyCodec = normalizedCodec in listOf("MP3", "AAC", "OGG", "OPUS", "VORBIS", "AC-3", "AC3", "E-AC-3", "EAC3") ||
+        val isLossyCodec = normalizedCodec in listOf("MP3", "AAC", "OGG", "OPUS", "VORBIS", "AC-3", "AC3", "E-AC-3", "EAC3", "AC-4", "AC4", "MP2", "AMR", "AMR-NB", "AMR-WB") ||
                           (normalizedCodec.contains("WMA") && !normalizedCodec.contains("LOSSLESS"))
         
         // Determine if codec is inherently lossless
@@ -106,7 +106,8 @@ object AudioQualityDetector {
         val isLosslessCodec = !isLossyCodec && (
             normalizedCodec in listOf(
                 "FLAC", "ALAC", "WAV", "PCM", "APE", "DSD", "AIFF", "WMA LOSSLESS",
-                "TRUEHD", "MLP", "DTS-HD", "DTS-HD MA", "APPLE LOSSLESS", "FLAC LOSSLESS"
+                "TRUEHD", "MLP", "DTS-HD", "DTS-HD MA", "DTS:X", "MIDI",
+                "APPLE LOSSLESS", "FLAC LOSSLESS"
             ) || normalizedCodec.contains("LOSSLESS")
         )
         
@@ -128,7 +129,7 @@ object AudioQualityDetector {
 
         // Detect Dolby variants
         val isDolbyCodec = normalizedCodec in listOf(
-            "AC-3", "AC3", "E-AC-3", "EAC3", "DOLBY DIGITAL", "DOLBY DIGITAL PLUS",
+            "AC-3", "AC3", "AC-4", "AC4", "E-AC-3", "EAC3", "DOLBY DIGITAL", "DOLBY DIGITAL PLUS",
             "TRUEHD", "DOLBY TRUEHD", "ATMOS", "DOLBY ATMOS", "MLP"
         )
 

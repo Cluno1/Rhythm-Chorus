@@ -1766,8 +1766,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     
     // Media Scan Filtering
     private val _allowedFormats = MutableStateFlow(
-        prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka"))
-            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka")
+        prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b"))
+            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b")
     )
     val allowedFormats: StateFlow<Set<String>> = _allowedFormats.asStateFlow()
     

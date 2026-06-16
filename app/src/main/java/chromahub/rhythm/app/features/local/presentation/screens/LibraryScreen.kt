@@ -5895,11 +5895,15 @@ fun isLosslessAudio(song: Song): Boolean {
     if (codec.isNotEmpty()) {
         val isLossyCodec = codec.contains("MP3") || codec.contains("AAC") ||
                           codec.contains("OGG") || codec.contains("OPUS") ||
-                          codec.contains("VORBIS") || (codec.contains("WMA") && !codec.contains("LOSSLESS"))
+                          codec.contains("VORBIS") || codec.contains("AC-3") ||
+                          codec.contains("AC3") || codec.contains("E-AC-3") ||
+                          codec.contains("EAC3") || codec.contains("MP2") ||
+                          codec.contains("AMR") ||
+                          (codec.contains("WMA") && !codec.contains("LOSSLESS"))
 
         if (isLossyCodec) return false
 
-        val isLosslessCodec = codec in listOf("ALAC", "FLAC", "PCM", "WAV", "APE", "DSD", "TRUEHD", "DOLBY ATMOS", "DTS-HD MA", "AIFF", "WV", "TAK", "TTA") ||
+        val isLosslessCodec = codec in listOf("ALAC", "FLAC", "PCM", "WAV", "APE", "DSD", "TRUEHD", "DOLBY ATMOS", "DTS-HD MA", "DTS:X", "AIFF", "MIDI", "WV", "TAK", "TTA") ||
                              codec.contains("LOSSLESS", ignoreCase = true) ||
                              codec.contains("APPLE LOSSLESS", ignoreCase = true)
 
@@ -5916,7 +5920,11 @@ fun isLosslessAudio(song: Song): Boolean {
                               uri.endsWith(".dsd", ignoreCase = true) ||
                               uri.endsWith(".wv", ignoreCase = true) ||
                               uri.endsWith(".tta", ignoreCase = true) ||
-                              uri.endsWith(".tak", ignoreCase = true)
+                              uri.endsWith(".tak", ignoreCase = true) ||
+                              uri.endsWith(".mid", ignoreCase = true) ||
+                              uri.endsWith(".midi", ignoreCase = true) ||
+                              uri.endsWith(".dsf", ignoreCase = true) ||
+                              uri.endsWith(".dff", ignoreCase = true)
 
     if (isLosslessExtension) return true
 
@@ -5978,6 +5986,95 @@ fun isDolbyOrSurround(song: Song): Boolean {
            codec.contains("DTS")
 }
 
+fun isDSD(song: Song): Boolean {
+    val codec = song.codec?.uppercase() ?: ""
+    if (codec.contains("DSD")) return true
+    val uri = song.uri.toString()
+    return uri.endsWith(".dsd", ignoreCase = true) ||
+           uri.endsWith(".dsf", ignoreCase = true) ||
+           uri.endsWith(".dff", ignoreCase = true)
+}
+
+fun isDTS(song: Song): Boolean {
+    val codec = song.codec?.uppercase() ?: ""
+    return codec.contains("DTS") &&
+           !codec.contains("AC-3") &&
+           !codec.contains("DOLBY") &&
+           !codec.contains("TRUEHD") &&
+           !codec.contains("ATMOS")
+}
+
+fun isDolbyAtmos(song: Song): Boolean {
+    val codec = song.codec?.uppercase() ?: ""
+    return codec.contains("ATMOS") || codec.contains("TRUEHD")
+}
+
+fun isDolbyDigital(song: Song): Boolean {
+    val codec = song.codec?.uppercase() ?: ""
+    return (codec.contains("AC-3") || codec.contains("AC3")) &&
+           !codec.contains("ATMOS") &&
+           !codec.contains("TRUEHD") &&
+           !codec.contains("E-AC-3") &&
+           !codec.contains("EAC3")
+}
+
+fun isDolbyDigitalPlus(song: Song): Boolean {
+    val codec = song.codec?.uppercase() ?: ""
+    return (codec.contains("E-AC-3") || codec.contains("EAC3")) &&
+           !codec.contains("ATMOS") &&
+           !codec.contains("TRUEHD")
+}
+
+fun isLossyAudio(song: Song): Boolean {
+    val codec = song.codec?.uppercase() ?: ""
+    if (codec.isEmpty()) return false
+    val lossyCodecs = listOf("MP3", "AAC", "OGG", "OPUS", "VORBIS", "WMA")
+    val isLossyCodec = lossyCodecs.any { codec.contains(it) } &&
+                       !codec.contains("LOSSLESS")
+    if (isLossyCodec) return true
+    if (codec.contains("AC-3") || codec.contains("E-AC-3") || codec.contains("AC3") || codec.contains("EAC3") || codec.contains("AC4") || codec.contains("AC-4")) return true
+    if (codec == "MP2" || codec.contains("AMR")) return true
+    return false
+}
+
+fun isCDQuality(song: Song): Boolean {
+    if (!isLosslessAudio(song)) return false
+    if (isDolbyOrSurround(song)) return false
+    if (isDSD(song)) return false
+    val sampleRate = song.sampleRate ?: 0
+    val channels = song.channels ?: 2
+    if (sampleRate == 0) {
+        val codec = song.codec?.uppercase() ?: ""
+        return codec in listOf("ALAC", "FLAC", "PCM", "WAV", "AIFF")
+    }
+    if (sampleRate > 48000) return false
+    if (channels > 2) return false
+    val bitrate = song.bitrate ?: 0
+    if (bitrate > 0) {
+        val bitrateKbps = bitrate / 1000
+        val estimatedBitDepth = if (sampleRate > 0 && channels > 0)
+            (bitrateKbps * 1000) / (sampleRate * channels) else 0
+        if (estimatedBitDepth >= 20) return false
+    }
+    return true
+}
+
+fun isStudioMaster(song: Song): Boolean {
+    if (!isLosslessAudio(song)) return false
+    if (isDolbyOrSurround(song)) return false
+    if (isDSD(song)) return false
+    val sampleRate = song.sampleRate ?: 0
+    val bitrate = song.bitrate ?: 0
+    val channels = song.channels ?: 2
+    if (sampleRate >= 192000 && channels > 0) return true
+    if (bitrate > 0 && sampleRate > 0 && channels > 0) {
+        val bitrateKbps = bitrate / 1000
+        val estimatedBitDepth = (bitrateKbps * 1000) / (sampleRate * channels)
+        if (estimatedBitDepth >= 22 && sampleRate >= 96000) return true
+    }
+    return false
+}
+
 fun calculateSongCategories(
     preparedSongs: List<Song>,
     favoriteSongs: Set<String>,
@@ -5990,16 +6087,44 @@ fun calculateSongCategories(
         allCategories.add("❤️ Favorites")
     }
 
-    if (preparedSongs.any { isHiResLossless(it) && !isDolbyOrSurround(it) }) {
+    if (preparedSongs.any { isStudioMaster(it) }) {
+        allCategories.add("Studio Master")
+    }
+
+    if (preparedSongs.any { isHiResLossless(it) && !isDolbyOrSurround(it) && !isDSD(it) && !isStudioMaster(it) }) {
         allCategories.add("Hi-Res Lossless")
     }
 
-    if (preparedSongs.any { isRegularLossless(it) && !isDolbyOrSurround(it) }) {
+    if (preparedSongs.any { isCDQuality(it) }) {
+        allCategories.add("CD Quality")
+    }
+
+    if (preparedSongs.any { isRegularLossless(it) && !isDolbyOrSurround(it) && !isDSD(it) && !isCDQuality(it) && !isStudioMaster(it) }) {
         allCategories.add("Lossless")
     }
 
+    if (preparedSongs.any { isDSD(it) }) {
+        allCategories.add("DSD")
+    }
+
+    if (preparedSongs.any { isDolbyAtmos(it) }) {
+        allCategories.add("Dolby Atmos")
+    }
+
+    if (preparedSongs.any { isDolbyDigitalPlus(it) }) {
+        allCategories.add("Dolby Digital Plus")
+    }
+
+    if (preparedSongs.any { isDolbyDigital(it) }) {
+        allCategories.add("Dolby Digital")
+    }
+
+    if (preparedSongs.any { isDTS(it) }) {
+        allCategories.add("DTS")
+    }
+
     if (preparedSongs.any { isDolbyOrSurround(it) }) {
-        allCategories.add("Dolby")
+        allCategories.add("Dolby / Surround")
     }
 
     if (preparedSongs.any { (it.channels ?: 2) == 1 }) {
@@ -6022,6 +6147,10 @@ fun calculateSongCategories(
         if ((ratingDistribution[1] ?: 0) > 0) {
             allCategories.add("⭐ Liked")
         }
+    }
+
+    if (preparedSongs.any { isLossyAudio(it) }) {
+        allCategories.add("Lossy")
     }
 
     if (preparedSongs.any { song ->
@@ -6088,9 +6217,17 @@ fun filterSongsByCategory(
         "Medium (3-5 min)" -> preparedSongs.filter { it.duration in (3 * 60 * 1000)..(5 * 60 * 1000) }
         "Long (> 5 min)" -> preparedSongs.filter { it.duration > 5 * 60 * 1000 }
 
-        "Hi-Res Lossless" -> preparedSongs.filter { isHiResLossless(it) && !isDolbyOrSurround(it) }
-        "Lossless" -> preparedSongs.filter { isRegularLossless(it) && !isDolbyOrSurround(it) }
-        "Dolby" -> preparedSongs.filter { isDolbyOrSurround(it) }
+        "Studio Master" -> preparedSongs.filter { isStudioMaster(it) }
+        "Hi-Res Lossless" -> preparedSongs.filter { isHiResLossless(it) && !isDolbyOrSurround(it) && !isDSD(it) && !isStudioMaster(it) }
+        "CD Quality" -> preparedSongs.filter { isCDQuality(it) }
+        "Lossless" -> preparedSongs.filter { isRegularLossless(it) && !isDolbyOrSurround(it) && !isDSD(it) && !isCDQuality(it) && !isStudioMaster(it) }
+        "Lossy" -> preparedSongs.filter { isLossyAudio(it) }
+        "DSD" -> preparedSongs.filter { isDSD(it) }
+        "Dolby Atmos" -> preparedSongs.filter { isDolbyAtmos(it) }
+        "Dolby Digital Plus" -> preparedSongs.filter { isDolbyDigitalPlus(it) }
+        "Dolby Digital" -> preparedSongs.filter { isDolbyDigital(it) }
+        "DTS" -> preparedSongs.filter { isDTS(it) }
+        "Dolby / Surround" -> preparedSongs.filter { isDolbyOrSurround(it) }
         "Stereo" -> preparedSongs.filter { (it.channels ?: 2) == 2 && !isDolbyOrSurround(it) }
         "Mono" -> preparedSongs.filter { (it.channels ?: 2) == 1 }
 

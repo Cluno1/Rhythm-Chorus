@@ -1187,7 +1187,8 @@ class MusicRepository(context: Context) {
         }
 
         return extension in setOf(
-            "mp3", "m4a", "flac", "ogg", "opus", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka"
+            "mp3", "m4a", "flac", "ogg", "opus", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka",
+            "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b"
         )
     }
 
@@ -1776,6 +1777,17 @@ class MusicRepository(context: Context) {
                     it.contains("vorbis", ignoreCase = true) -> "Vorbis"
                     it.contains("wav", ignoreCase = true) -> "WAV"
                     it.contains("m4a", ignoreCase = true) -> "M4A"
+                    it.contains("ac4", ignoreCase = true) -> "AC-4"
+                    it.contains("ac3", ignoreCase = true) || it.contains("ac-3", ignoreCase = true) -> "AC-3"
+                    it.contains("eac3", ignoreCase = true) || it.contains("ec-3", ignoreCase = true) -> "E-AC-3"
+                    it.contains("truehd", ignoreCase = true) -> "TrueHD"
+                    it.contains("atmos", ignoreCase = true) -> "Dolby Atmos"
+                    it.contains("dts-hd", ignoreCase = true) || it.contains("dtshd", ignoreCase = true) -> "DTS-HD MA"
+                    it.contains("dts", ignoreCase = true) -> "DTS"
+                    it.contains("dsd", ignoreCase = true) -> "DSD"
+                    it.contains("wma", ignoreCase = true) -> "WMA"
+                    it.contains("midi", ignoreCase = true) -> "MIDI"
+                    it.contains("mp2", ignoreCase = true) -> "MP2"
                     else -> it.substringAfter("/").uppercase()
                 }
             }
@@ -3499,8 +3511,8 @@ class MusicRepository(context: Context) {
             
             Log.d(TAG, "ID3v2.$majorVersion.$minorVersion detected, flags: $flags")
             
-            // Only support v2.3 and v2.4
-            if (majorVersion < 3 || majorVersion > 4) {
+            // Support v2.2, v2.3, and v2.4
+            if (majorVersion < 2 || majorVersion > 4) {
                 Log.d(TAG, "Unsupported ID3 version: $majorVersion")
                 return@use null
             }
@@ -3569,25 +3581,31 @@ class MusicRepository(context: Context) {
     }
     
     /**
-     * NEW: Parse ID3v2 frames and extract USLT (lyrics) frame
+     * Parse ID3v2 frames and extract USLT (lyrics) or SYLT (synchronized lyrics) frame
+     * Supports ID3v2.2 (3-byte frame IDs), v2.3, and v2.4
      */
     private fun parseID3v2Frames(tagData: ByteArray, version: Int): LyricsData? {
         var pos = 0
         var frameCount = 0
-        val maxFrames = 1000 // Safety limit
+        val maxFrames = 1000
+        val isV2_2 = version == 2
         
-        while (pos < tagData.size - 10 && frameCount < maxFrames) {
+        val frameHeaderSize = if (isV2_2) 6 else 10
+        
+        while (pos < tagData.size - frameHeaderSize && frameCount < maxFrames) {
             frameCount++
             
-            // Check for padding (null bytes indicate end of frames)
             if (tagData[pos] == 0.toByte()) break
             
-            // Read frame header
-            val frameId = String(tagData.copyOfRange(pos, pos + 4), Charsets.ISO_8859_1)
+            val frameIdLen = if (isV2_2) 3 else 4
+            val frameId = String(tagData.copyOfRange(pos, pos + frameIdLen), Charsets.ISO_8859_1)
             
-            // Calculate frame size (different for v2.3 and v2.4)
-            val frameSize = if (version == 4) {
-                // v2.4 uses synchsafe integers
+            val frameSize = if (isV2_2) {
+                // v2.2 uses 3-byte big-endian integer
+                ((tagData[pos + 3].toInt() and 0xFF) shl 16) or
+                ((tagData[pos + 4].toInt() and 0xFF) shl 8) or
+                (tagData[pos + 5].toInt() and 0xFF)
+            } else if (version == 4) {
                 decodeSynchsafe(
                     tagData[pos + 4].toInt() and 0xFF,
                     tagData[pos + 5].toInt() and 0xFF,
@@ -3595,32 +3613,137 @@ class MusicRepository(context: Context) {
                     tagData[pos + 7].toInt() and 0xFF
                 )
             } else {
-                // v2.3 uses regular 32-bit integer
                 ((tagData[pos + 4].toInt() and 0xFF) shl 24) or
                 ((tagData[pos + 5].toInt() and 0xFF) shl 16) or
                 ((tagData[pos + 6].toInt() and 0xFF) shl 8) or
                 (tagData[pos + 7].toInt() and 0xFF)
             }
             
-            // Validate frame size
-            if (frameSize <= 0 || frameSize > tagData.size - pos - 10 || frameSize > 2_097_152) {
+            if (frameSize <= 0 || frameSize > tagData.size - pos - frameHeaderSize || frameSize > 2_097_152) {
                 Log.w(TAG, "Invalid frame size: $frameSize for $frameId")
                 break
             }
             
-            // Check if this is a USLT frame
-            if (frameId == "USLT") {
-                val lyricsData = parseUSLTFrame(tagData, pos + 10, frameSize)
-                if (lyricsData != null) {
-                    Log.d(TAG, "Successfully extracted USLT lyrics")
-                    return lyricsData
+            // Map v2.2 frame IDs to v2.3+ equivalents
+            val mappedFrameId = when (frameId) {
+                "ULT" -> "USLT"  // v2.2 unsynchronized lyrics
+                "SLT" -> "SYLT"  // v2.2 synchronized lyrics
+                else -> frameId
+            }
+            
+            when (mappedFrameId) {
+                "USLT" -> {
+                    val lyricsData = parseUSLTFrame(tagData, pos + frameHeaderSize, frameSize)
+                    if (lyricsData != null) {
+                        Log.d(TAG, "Successfully extracted USLT lyrics")
+                        return lyricsData
+                    }
+                }
+                "SYLT" -> {
+                    val lyricsData = parseSYLTFrame(tagData, pos + frameHeaderSize, frameSize)
+                    if (lyricsData != null) {
+                        Log.d(TAG, "Successfully extracted SYLT lyrics")
+                        return lyricsData
+                    }
                 }
             }
             
-            // Move to next frame
-            pos += 10 + frameSize
+            pos += frameHeaderSize + frameSize
         }
         
+        return null
+    }
+    
+    /**
+     * Parse SYLT (Synchronized lyrics) frame content
+     */
+    private fun parseSYLTFrame(data: ByteArray, offset: Int, size: Int): LyricsData? {
+        try {
+            if (size < 6) return null
+            
+            val encoding = data[offset].toInt() and 0xFF
+            val charset = when (encoding) {
+                0 -> Charsets.ISO_8859_1
+                1 -> Charsets.UTF_16
+                2 -> Charsets.UTF_16
+                3 -> Charsets.UTF_8
+                else -> Charsets.ISO_8859_1
+            }
+            val lang = String(data, offset + 1, 3, Charsets.ISO_8859_1)
+            val timestampFormat = data[offset + 4].toInt() and 0xFF
+            val contentType = data[offset + 5].toInt() and 0xFF
+            
+            var pos = offset + 6
+            val frameEnd = offset + size
+            
+            // Skip content descriptor
+            if (encoding == 1 || encoding == 2) {
+                while (pos + 1 < frameEnd) {
+                    if (data[pos] == 0.toByte() && data[pos + 1] == 0.toByte()) {
+                        pos += 2
+                        break
+                    }
+                    pos += 2
+                }
+            } else {
+                while (pos < frameEnd && data[pos] != 0.toByte()) pos++
+                if (pos < frameEnd) pos++
+            }
+            
+            // Parse sync entries: each entry has text (null-terminated) + timestamp (4 bytes)
+            val sb = StringBuilder()
+            while (pos + 5 <= frameEnd) {
+                val textEnd = if (encoding == 1 || encoding == 2) {
+                    var end = pos
+                    while (end + 1 < frameEnd) {
+                        if (data[end] == 0.toByte() && data[end + 1] == 0.toByte()) break
+                        end += 2
+                    }
+                    end
+                } else {
+                    var end = pos
+                    while (end < frameEnd && data[end] != 0.toByte()) end++
+                    end
+                }
+                
+                val text = String(data, pos, textEnd - pos, charset)
+                val delimLen = if (encoding == 1 || encoding == 2) 2 else 1
+                pos = textEnd + delimLen
+                
+                if (pos + 4 > frameEnd) break
+                
+                // Read timestamp based on format
+                val timestamp = when (timestampFormat) {
+                    1 -> { // Absolute milliseconds (32-bit big-endian)
+                        ((data[pos].toInt() and 0xFF) shl 24) or
+                        ((data[pos + 1].toInt() and 0xFF) shl 16) or
+                        ((data[pos + 2].toInt() and 0xFF) shl 8) or
+                        (data[pos + 3].toInt() and 0xFF)
+                    }
+                    2 -> { // Frames (for ID3v2, not CD frames)
+                        val frames = ((data[pos].toInt() and 0xFF) shl 24) or
+                                     ((data[pos + 1].toInt() and 0xFF) shl 16) or
+                                     ((data[pos + 2].toInt() and 0xFF) shl 8) or
+                                     (data[pos + 3].toInt() and 0xFF)
+                        (frames * 1000) / 75
+                    }
+                    else -> 0
+                }
+                pos += 4
+                
+                if (text.isNotBlank()) {
+                    if (sb.isNotEmpty()) sb.append('\n')
+                    sb.append("[$timestamp]$text")
+                }
+            }
+            
+            val lyrics = sb.toString()
+            if (lyrics.isNotBlank()) {
+                return parseLyricsData(lyrics)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to parse SYLT frame: ${e.message}")
+        }
         return null
     }
     

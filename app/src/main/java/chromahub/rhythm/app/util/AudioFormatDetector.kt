@@ -174,9 +174,11 @@ object AudioFormatDetector {
             mime.contains("truehd", ignoreCase = true) -> "TrueHD"
             mime.contains("atmos", ignoreCase = true) -> "Dolby Atmos"
             mime.contains("mlp", ignoreCase = true) -> "TrueHD" // MLP is TrueHD
+            mime.contains("ac4", ignoreCase = true) -> "AC-4"
             mime.contains("eac3", ignoreCase = true) || mime.contains("ec-3", ignoreCase = true) -> "E-AC-3"
             mime.contains("ac3", ignoreCase = true) || mime.contains("ac-3", ignoreCase = true) -> "AC-3"
             // Enhanced DTS detection
+            mime.contains("dts-x", ignoreCase = true) || mime.contains("dtsx", ignoreCase = true) -> "DTS:X"
             mime.contains("dts-hd", ignoreCase = true) || mime.contains("dtshd", ignoreCase = true) -> "DTS-HD MA"
             mime.contains("dts", ignoreCase = true) -> "DTS"
             // DSD support
@@ -186,17 +188,25 @@ object AudioFormatDetector {
             mime.contains("mpeg", ignoreCase = true) -> "MP3"
             mime.contains("raw", ignoreCase = true) || mime.contains("pcm", ignoreCase = true) -> "PCM"
             mime.contains("wav", ignoreCase = true) -> "WAV"
+            // Additional codecs from format compatibility
+            mime.contains("midi", ignoreCase = true) || mime.contains("mid", ignoreCase = true) -> "MIDI"
+            mime.contains("mp2", ignoreCase = true) -> "MP2"
+            mime.contains("amr", ignoreCase = true) -> "AMR"
+            mime.contains("mpegh", ignoreCase = true) || mime.contains("mpeg-h", ignoreCase = true) -> "MPEG-H"
+            mime.contains("lc3", ignoreCase = true) -> "LC3"
+            mime.contains("celt", ignoreCase = true) -> "CELT"
+            mime.contains("dra", ignoreCase = true) -> "DRA"
             else -> mime.substringAfter("/").uppercase()
         }
         
         // Determine if lossless based on codec
         // CRITICAL: Only codecs that preserve bit-perfect audio data are lossless
         // High bitrate does NOT make lossy codecs lossless (e.g., 320kbps MP3 is still lossy)
-        val isLossless = codec in listOf("ALAC", "FLAC", "PCM", "WAV", "APE", "DSD", "TrueHD", "Dolby Atmos", "DTS-HD MA", "AIFF") ||
+        val isLossless = codec in listOf("ALAC", "FLAC", "PCM", "WAV", "APE", "DSD", "TrueHD", "Dolby Atmos", "DTS-HD MA", "DTS:X", "AIFF", "MIDI") ||
                          codec.contains("LOSSLESS", ignoreCase = true)
         
         // Determine if Dolby (expanded detection)
-        val isDolby = codec in listOf("AC-3", "E-AC-3", "TrueHD", "Dolby Atmos") || 
+        val isDolby = codec in listOf("AC-3", "AC-4", "E-AC-3", "TrueHD", "Dolby Atmos") || 
                       codec.contains("ATMOS", ignoreCase = true) ||
                       codec.contains("TRUEHD", ignoreCase = true)
         

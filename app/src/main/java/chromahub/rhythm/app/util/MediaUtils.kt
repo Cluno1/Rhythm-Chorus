@@ -431,10 +431,19 @@ object MediaUtils {
             "ogg", "oga" -> "audio/ogg"
             "mkv", "mka" -> "audio/x-matroska"
             "mp3" -> "audio/mpeg"
-            "m4a" -> "audio/mp4"
+            "m4a", "m4b" -> "audio/mp4"
             "flac" -> "audio/flac"
             "wav" -> "audio/wav"
-            "aac" -> "audio/aac"
+            "aac", "adts" -> "audio/aac"
+            "ac3" -> "audio/ac3"
+            "ac4" -> "audio/ac4"
+            "mid", "midi" -> "audio/midi"
+            "ape" -> "audio/x-ape"
+            "wv" -> "audio/x-wavpack"
+            "tta" -> "audio/x-tta"
+            "tak" -> "audio/x-tak"
+            "aiff", "aif" -> "audio/aiff"
+            "dsf", "dff", "dsd" -> "audio/dsd"
             else -> type
         }
     }
@@ -687,8 +696,17 @@ object MediaUtils {
                     audioFormatInfo != null && audioFormatInfo.codec != "Unknown" -> audioFormatInfo.codec
                     mimeType.contains("mp3", ignoreCase = true) || extension == "mp3" -> "MP3"
                     mimeType.contains("flac", ignoreCase = true) || extension == "flac" -> "FLAC"
-                    mimeType.contains("ogg", ignoreCase = true) || extension == "ogg" -> "OGG"
+                    mimeType.contains("ogg", ignoreCase = true) || extension == "ogg" || extension == "oga" -> "OGG"
                     mimeType.contains("alac", ignoreCase = true) || extension == "alac" -> "ALAC"
+                    mimeType.contains("opus", ignoreCase = true) || extension == "opus" -> "Opus"
+                    mimeType.contains("ac3", ignoreCase = true) || mimeType.contains("ac-3", ignoreCase = true) || extension == "ac3" -> "AC-3"
+                    mimeType.contains("ac4", ignoreCase = true) || extension == "ac4" -> "AC-4"
+                    mimeType.contains("truehd", ignoreCase = true) -> "TrueHD"
+                    mimeType.contains("atmos", ignoreCase = true) -> "Dolby Atmos"
+                    mimeType.contains("dts-hd", ignoreCase = true) || mimeType.contains("dtshd", ignoreCase = true) -> "DTS-HD MA"
+                    mimeType.contains("dts", ignoreCase = true) -> "DTS"
+                    mimeType.contains("dsd", ignoreCase = true) -> "DSD"
+                    mimeType.contains("midi", ignoreCase = true) || extension == "mid" || extension == "midi" -> "MIDI"
                     extension == "m4a" -> {
                         // M4A can be AAC or ALAC - check with AudioFormatDetector
                         if (AudioFormatDetector.isALAC(context, song.uri)) "ALAC" else "AAC"
