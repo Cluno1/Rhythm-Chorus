@@ -1745,7 +1745,7 @@ private fun LocalNavigationContent(
                                 )
                     }
                 ) {
-                    EqualizerScreen(navController = navController)
+                    EqualizerScreen(navController = navController, viewModel = viewModel)
                 }
 
                 composable(Screen.TunerSleepTimer.route) {
@@ -1862,7 +1862,7 @@ private fun LocalNavigationContent(
                                 )
                     }
                 ) {
-                    RhythmStatsScreen(navController = navController)
+                    RhythmStatsScreen(navController = navController, viewModel = viewModel)
                 }
 
                 composable(
@@ -1885,7 +1885,7 @@ private fun LocalNavigationContent(
                                 )
                     }
                 ) {
-                    EqualizerScreen(navController = navController)
+                    EqualizerScreen(navController = navController, viewModel = viewModel)
                 }
 
                 composable(
