@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">Aún no hay canciones</string>
     <string name="library_no_artists">No se encontraron artistas</string>
+    <string name="library_unknown_year">Año desconocido</string>
     <string name="library_start_collection">Comienza a construir tu colección de música</string>
     <string name="library_sort_artists">Ordenar artistas por</string>
     <string name="library_storage_locations">Ubicaciones de almacenamiento</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">Listas de reproducción</string>
     <string name="settings_tab_albums">Álbumes</string>
     <string name="settings_tab_artists">Artistas</string>
+    <string name="settings_tab_dates">Fechas</string>
     <string name="settings_tab_explorer">Explorador</string>
     <string name="settings_tab_order_reset">Orden de tabulación restablecido al valor predeterminado</string>
     <string name="settings_tab_order_saved">Orden de tabulación guardado</string>

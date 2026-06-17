@@ -368,25 +368,16 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
     // Delimiter Configuration Bottom Sheet
     if (showDelimiterBottomSheet) {
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-        // Animation states
-        var showContent by remember { mutableStateOf(false) }
-        val contentAlpha by animateFloatAsState(
-            targetValue = if (showContent) 1f else 0f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            ),
-            label = "contentAlpha"
+        val commonDelimiters = listOf(
+            '/' to context.getString(R.string.delimiter_slash),
+            ';' to context.getString(R.string.delimiter_semicolon),
+            ',' to context.getString(R.string.delimiter_comma),
+            '+' to context.getString(R.string.delimiter_plus),
+            '&' to context.getString(R.string.delimiter_ampersand)
         )
 
-        LaunchedEffect(Unit) {
-            delay(100)
-            showContent = true
-        }
-
         ModalBottomSheet(
-        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
+            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
             onDismissRequest = { showDelimiterBottomSheet = false },
             sheetState = sheetState,
             dragHandle = {
@@ -397,31 +388,37 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
-            StandardBottomSheetHeader(
-                title = context.getString(R.string.settings_configure_delimiters),
-                subtitle = context.getString(R.string.settings_select_artist_separators),
-                visible = showContent
-            )
-
+            // Scrollable content
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .weight(1f)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp)
-                    .navigationBarsPadding()
-                    .graphicsLayer(alpha = contentAlpha)
             ) {
-
                 Spacer(modifier = Modifier.height(16.dp))
 
-                val commonDelimiters = listOf(
-                    '/' to context.getString(R.string.delimiter_slash),
-                    ';' to context.getString(R.string.delimiter_semicolon),
-                    ',' to context.getString(R.string.delimiter_comma),
-                    '+' to context.getString(R.string.delimiter_plus),
-                    '&' to context.getString(R.string.delimiter_ampersand)
-                )
+                // Inline header
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                ) {
+                    Text(
+                        text = context.getString(R.string.settings_configure_delimiters),
+                        style = MaterialTheme.typography.displayMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = context.getString(R.string.settings_select_artist_separators),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // Delimiter options in a responsive two-column layout
                 Column(
@@ -435,34 +432,17 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                         ) {
                             delimiterRow.forEach { (char, name) ->
                                 val isSelected = tempDelimiters.contains(char)
-
-                                // Master animation states
-                                var isPressed by remember { mutableStateOf(false) }
-                                val scale by animateFloatAsState(
-                                    targetValue = if (isPressed) 0.96f else 1f,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessLow
-                                    ),
-                                    label = "delimiter_scale"
-                                )
-
                                 val containerColor by animateColorAsState(
                                     targetValue = if (isSelected)
                                         MaterialTheme.colorScheme.primaryContainer
                                     else
                                         MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioNoBouncy,
-                                        stiffness = Spring.StiffnessMedium
-                                    ),
-                                    label = "delimiter_container_color"
+                                    label = "delimiter_color"
                                 )
 
                                 Card(
                                     onClick = {
                                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                        isPressed = true
                                         tempDelimiters = if (tempDelimiters.contains(char)) {
                                             tempDelimiters.replace(char.toString(), "")
                                         } else {
@@ -471,11 +451,7 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                                     },
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(130.dp)
-                                        .graphicsLayer {
-                                            scaleX = scale
-                                            scaleY = scale
-                                        },
+                                        .height(120.dp),
                                     shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(
                                         containerColor = containerColor
@@ -490,7 +466,6 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.Center
                                     ) {
-                                        // Delimiter Preview
                                         Box(
                                             modifier = Modifier
                                                 .size(48.dp)
@@ -513,9 +488,7 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                                                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                             )
                                         }
-
                                         Spacer(modifier = Modifier.height(8.dp))
-
                                         Text(
                                             text = name,
                                             style = MaterialTheme.typography.labelMedium,
@@ -528,20 +501,9 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
-
-                                        // Optional description could go here if needed
-                                    }
-                                }
-
-                                // Reset press state
-                                LaunchedEffect(isPressed) {
-                                    if (isPressed) {
-                                        delay(150)
-                                        isPressed = false
                                     }
                                 }
                             }
-
                             if (delimiterRow.size == 1) {
                                 Spacer(modifier = Modifier.weight(1f))
                             }
@@ -550,131 +512,55 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
+            }
 
-                // Action Buttons Row - Consistent with other bottom sheets
-                AnimatedVisibility(
-                    visible = showContent,
-                    enter = fadeIn(tween(500, delayMillis = 600)) +
-                            slideInVertically(
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                                    stiffness = Spring.StiffnessLow
-                                ),
-                                initialOffsetY = { 40 }
-                            )
+            // Sticky action buttons at bottom
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 3.dp
+            ) {
+                ExpressiveButtonGroup(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    style = ButtonGroupStyle.Tonal
                 ) {
-                    var savePressed by remember { mutableStateOf(false) }
-                    var resetPressed by remember { mutableStateOf(false) }
-
-                    val saveScale by animateFloatAsState(
-                        targetValue = if (savePressed) 0.96f else 1f,
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessMedium
-                        ),
-                        label = "saveScale"
-                    )
-
-                    val resetScale by animateFloatAsState(
-                        targetValue = if (resetPressed) 0.96f else 1f,
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessMedium
-                        ),
-                        label = "resetScale"
-                    )
-
-                    LaunchedEffect(savePressed) {
-                        if (savePressed) {
-                            delay(150)
-                            savePressed = false
-                        }
-                    }
-
-                    LaunchedEffect(resetPressed) {
-                        if (resetPressed) {
-                            delay(150)
-                            resetPressed = false
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ExpressiveGroupButton(
+                        onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            tempDelimiters = artistSeparatorDelimiters
+                        },
+                        modifier = Modifier.weight(1f),
+                        isStart = true
                     ) {
-                        // Reset Button - Secondary action
-                        OutlinedButton(
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                resetPressed = true
-                                tempDelimiters = artistSeparatorDelimiters // Reset to original
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(52.dp)
-                                .graphicsLayer {
-                                    scaleX = resetScale
-                                    scaleY = resetScale
-                                },
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.primary
-                            ),
-                            border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
-                                width = 1.5.dp
-                            )
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Refresh,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.ui_reset),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-
-                        // Save Changes Button - Primary action
-                        Button(
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                savePressed = true
-                                scope.launch {
-                                    appSettings.setArtistSeparatorDelimiters(tempDelimiters)
-                                    showDelimiterBottomSheet = false
-                                }
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(52.dp)
-                                .graphicsLayer {
-                                    scaleX = saveScale
-                                    scaleY = saveScale
-                                },
-                            shape = RoundedCornerShape(16.dp),
-                            enabled = tempDelimiters.isNotEmpty(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary,
-                                disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                            )
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Check,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.ui_save),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
+                        Icon(
+                            imageVector = RhythmIcons.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.ui_reset))
+                    }
+                    ExpressiveGroupButton(
+                        onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                            scope.launch {
+                                appSettings.setArtistSeparatorDelimiters(tempDelimiters)
+                                showDelimiterBottomSheet = false
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        isEnd = true,
+                        enabled = tempDelimiters.isNotEmpty()
+                    ) {
+                        Icon(
+                            imageVector = RhythmIcons.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.ui_save))
                     }
                 }
             }

@@ -190,6 +190,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import chromahub.rhythm.app.shared.presentation.components.player.formatDuration
 import java.util.concurrent.TimeUnit // Import TimeUnit for duration formatting
 import chromahub.rhythm.app.shared.presentation.components.common.PlaybackBufferingLoader
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistChooserBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.QueueBottomSheet
 import chromahub.rhythm.app.features.local.presentation.screens.LibraryTab
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
@@ -711,6 +712,8 @@ fun MaterialPlayerScreen(
     var showArtistSheet by remember { mutableStateOf(false) }
     var selectedAlbum by remember { mutableStateOf<Album?>(null) }
     var selectedArtist by remember { mutableStateOf<Artist?>(null) }
+    var candidateArtists by remember { mutableStateOf<List<Artist>>(emptyList()) }
+    var showArtistChooserSheet by remember { mutableStateOf(false) }
     var showCompactChipsSheet by remember { mutableStateOf(false) }
     var selectedSongForPlaylist by remember { mutableStateOf<Song?>(null) }
     var showAddToPlaylistSheetInternal by remember { mutableStateOf(false) }
@@ -1207,6 +1210,19 @@ fun MaterialPlayerScreen(
         )
     }
 
+    if (showArtistChooserSheet && candidateArtists.isNotEmpty()) {
+        ArtistChooserBottomSheet(
+            candidateArtists = candidateArtists,
+            onDismiss = { showArtistChooserSheet = false },
+            onArtistSelected = { artist ->
+                selectedArtist = artist
+                showArtistChooserSheet = false
+                showArtistSheet = true
+            },
+            haptic = haptic
+        )
+    }
+
     // Compact Mode Filter Chips Bottom Sheet
     if (showCompactChipsSheet) {
         val compactChipsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -1236,25 +1252,33 @@ fun MaterialPlayerScreen(
             },
             onArtist = {
                 song?.let { currentSong ->
-                    val artistForSong = if (groupByAlbumArtist) {
+                    val artistNames = if (groupByAlbumArtist) {
                         val explicitAlbumArtist = currentSong.albumArtist?.trim().orEmpty()
-                        val songArtistNames = if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
+                        if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
                             splitArtistNames(explicitAlbumArtist)
                         } else {
                             splitArtistNames(currentSong.artist)
                         }
-                        songArtistNames.firstNotNullOfOrNull { name ->
+                    } else {
+                        splitArtistNames(currentSong.artist)
+                    }
+
+                    if (artistNames.size <= 1) {
+                        val matched = artistNames.firstNotNullOfOrNull { name ->
                             artists.find { it.name.equals(name, ignoreCase = true) }
+                        } ?: artistNames.firstOrNull()?.trim()?.let { name ->
+                            Artist(id = name, name = name)
+                        }
+                        matched?.let {
+                            selectedArtist = it
+                            showArtistSheet = true
                         }
                     } else {
-                        val songArtistNames = splitArtistNames(currentSong.artist)
-                        songArtistNames.firstNotNullOfOrNull { name ->
-                            artists.find { it.name.equals(name, ignoreCase = true) }
+                        candidateArtists = artistNames.map { name ->
+                            artists.firstOrNull { it.name.trim().equals(name.trim(), ignoreCase = true) }
+                                ?: Artist(id = name.trim(), name = name.trim())
                         }
-                    }
-                    artistForSong?.let {
-                        selectedArtist = it
-                        showArtistSheet = true
+                        showArtistChooserSheet = true
                     }
                 }
             },
@@ -3439,30 +3463,34 @@ fun MaterialPlayerScreen(
                                                             haptic,
                                                             HapticType.HEAVY
                                                         )
-                                                        // Find the artist for the current song and show bottom sheet
                                                         song?.let { currentSong ->
-                                                            // Respect groupByAlbumArtist setting when finding artist
-                                                            val artistForSong = if (groupByAlbumArtist) {
-                                                                // When grouping by album artist, match split albumArtist (with split track fallback).
+                                                            val artistNames = if (groupByAlbumArtist) {
                                                                 val explicitAlbumArtist = currentSong.albumArtist?.trim().orEmpty()
-                                                                val songArtistNames = if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
+                                                                if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
                                                                     splitArtistNames(explicitAlbumArtist)
                                                                 } else {
                                                                     splitArtistNames(currentSong.artist)
                                                                 }
-                                                                songArtistNames.firstNotNullOfOrNull { name ->
+                                                            } else {
+                                                                splitArtistNames(currentSong.artist)
+                                                            }
+
+                                                            if (artistNames.size <= 1) {
+                                                                val matched = artistNames.firstNotNullOfOrNull { name ->
                                                                     artists.find { it.name.equals(name, ignoreCase = true) }
+                                                                } ?: artistNames.firstOrNull()?.trim()?.let { name ->
+                                                                    Artist(id = name, name = name)
+                                                                }
+                                                                matched?.let {
+                                                                    selectedArtist = it
+                                                                    showArtistSheet = true
                                                                 }
                                                             } else {
-                                                                // When not grouping, check if any split artist name matches
-                                                                val songArtistNames = splitArtistNames(currentSong.artist)
-                                                                songArtistNames.firstNotNullOfOrNull { name ->
-                                                                    artists.find { it.name.equals(name, ignoreCase = true) }
+                                                                candidateArtists = artistNames.map { name ->
+                                                                    artists.firstOrNull { it.name.trim().equals(name.trim(), ignoreCase = true) }
+                                                                        ?: Artist(id = name.trim(), name = name.trim())
                                                                 }
-                                                            }
-                                                            artistForSong?.let {
-                                                                selectedArtist = it
-                                                                showArtistSheet = true
+                                                                showArtistChooserSheet = true
                                                             }
                                                         }
                                                     },

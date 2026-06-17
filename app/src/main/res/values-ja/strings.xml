@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">まだ曲はありません</string>
     <string name="library_no_artists">アーティストが見つかりませんでした</string>
+    <string name="library_unknown_year">年代不明</string>
     <string name="library_start_collection">音楽コレクションの構築を開始する</string>
     <string name="library_sort_artists">アーティストの並べ替え基準</string>
     <string name="library_storage_locations">保管場所</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">プレイリスト</string>
     <string name="settings_tab_albums">アルバム</string>
     <string name="settings_tab_artists">アーティスト</string>
+    <string name="settings_tab_dates">日付</string>
     <string name="settings_tab_explorer">エクスプローラー</string>
     <string name="settings_tab_order_reset">タブオーダーをデフォルトに戻す</string>
     <string name="settings_tab_order_saved">タブオーダーを保存しました</string>

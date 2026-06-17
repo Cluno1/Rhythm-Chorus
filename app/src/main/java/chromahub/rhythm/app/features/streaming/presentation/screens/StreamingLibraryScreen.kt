@@ -2652,8 +2652,8 @@ private fun StreamingArtist.toLibraryArtist(
     val matchingSongs = if (librarySongs.isNotEmpty()) {
         librarySongs.filter { song ->
             song.artist.equals(name, ignoreCase = true) ||
-                ArtistSeparator.splitArtists(
-                    artistString = song.artist,
+                ArtistSeparator.splitArtistNames(
+                    song.artist,
                     delimiters = separatorDelimiters,
                     enabled = separatorEnabled
                 ).any { splitName -> splitName.equals(name, ignoreCase = true) }
@@ -2691,8 +2691,8 @@ private fun deriveArtistsFromSongs(
     return songs
         .filter { it.artist.isNotBlank() }
         .flatMap { song ->
-            val artistNames = ArtistSeparator.splitArtists(
-                artistString = song.artist,
+            val artistNames = ArtistSeparator.splitArtistNames(
+                song.artist,
                 delimiters = separatorDelimiters,
                 enabled = separatorEnabled
             )

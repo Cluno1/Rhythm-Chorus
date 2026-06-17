@@ -238,10 +238,16 @@ fun ExpressiveScrollBar(
     val gridMetricsTracker = remember(gridState) { AxisObservationTracker() }
     val expandedIndicatorWidth = (indicatorExpandedWidth + indicatorExpandedWidthBoost).coerceAtLeast(thickness)
 
+    val animatedOuterWidth by animateDpAsState(
+        targetValue = if (canScroll) expandedIndicatorWidth + paddingEnd else 0.dp,
+        animationSpec = tween(durationMillis = 200),
+        label = "OuterWidthAnimation"
+    )
+
     BoxWithConstraints(
         modifier = modifier
             .fillMaxHeight()
-            .width(if (canScroll) expandedIndicatorWidth + paddingEnd else 0.dp)
+            .width(animatedOuterWidth)
     ) {
         if (!canScroll) return@BoxWithConstraints
 

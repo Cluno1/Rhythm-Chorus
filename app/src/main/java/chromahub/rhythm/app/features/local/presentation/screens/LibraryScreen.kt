@@ -4,6 +4,7 @@ package chromahub.rhythm.app.features.local.presentation.screens
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
+import chromahub.rhythm.app.util.NaturalSortComparator
 
 import kotlin.math.abs
 
@@ -318,6 +319,7 @@ fun LibraryScreen(
                     "PLAYLISTS" -> context.getString(R.string.settings_tab_playlists)
                     "ALBUMS" -> context.getString(R.string.settings_tab_albums)
                     "ARTISTS" -> context.getString(R.string.settings_tab_artists)
+                    "DATES" -> context.getString(R.string.settings_tab_dates)
                     "EXPLORER" -> context.getString(R.string.settings_tab_explorer)
                     else -> tabId
                 }
@@ -764,6 +766,7 @@ fun LibraryScreen(
     var isRefreshing by remember { mutableStateOf(false) }
 
     val songsListState = rememberLazyListState()
+    val datesListState = rememberLazyListState()
     val playlistsListState = rememberLazyListState()
     val playlistsGridState = rememberLazyGridState()
     val albumsListState = rememberLazyListState()
@@ -782,6 +785,7 @@ fun LibraryScreen(
         derivedStateOf {
             when (visibleTabIds.getOrNull(selectedTabIndex)) {
                 "SONGS" -> songsListState.firstVisibleItemIndex == 0 && songsListState.firstVisibleItemScrollOffset == 0
+                "DATES" -> datesListState.firstVisibleItemIndex == 0 && datesListState.firstVisibleItemScrollOffset == 0
                 "PLAYLISTS" -> {
                     if (playlistViewType == PlaylistViewType.GRID) {
                         playlistsGridState.firstVisibleItemIndex == 0 && playlistsGridState.firstVisibleItemScrollOffset == 0
@@ -1038,7 +1042,7 @@ fun LibraryScreen(
                     }
                     
                     val currentTabId = visibleTabIds.getOrNull(selectedTabIndex)
-                    if (currentTabId == "SONGS" || currentTabId == "ALBUMS") {
+                    if (currentTabId == "SONGS" || currentTabId == "ALBUMS" || currentTabId == "DATES") {
                         var showSortMenu by remember { mutableStateOf(false) }
                         var pendingSortOrder by remember { mutableStateOf<MusicViewModel.SortOrder?>(null) }
                         
@@ -1386,6 +1390,7 @@ fun LibraryScreen(
                                             "PLAYLISTS" -> RhythmIcons.PlaylistFilled
                                             "ALBUMS" -> RhythmIcons.Music.Album
                                             "ARTISTS" -> RhythmIcons.Artist
+                                            "DATES" -> RhythmIcons.CalendarMonth
                                             "EXPLORER" -> RhythmIcons.Folder
                                             else -> RhythmIcons.Music.Song
                                         },
@@ -1782,6 +1787,44 @@ fun LibraryScreen(
                                         initialSortOption = artistSortOption,
                                         onSortOptionChange = { artistSortOption = it }
                                     )
+                                    "DATES" -> YearGroupedSongsContent(
+                                        songs = filteredSongs,
+                                        listState = datesListState,
+                                        onSongClick = onSongClick,
+                                        onAddToPlaylist = { song ->
+                                            songsToAddToPlaylist = listOf(song)
+                                            showAddToPlaylistSheet = true
+                                        },
+                                        onAddToQueue = onAddToQueue,
+                                        onPlayNext = { song -> musicViewModel.playNext(song) },
+                                        onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
+                                        favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
+                                        onGoToArtist = onArtistClick,
+                                        onGoToAlbum = onAlbumClick,
+                                        onShowSongInfo = { song ->
+                                            selectedSong = song
+                                            showSongInfoSheet = true
+                                        },
+                                        onAddToBlacklist = { song ->
+                                            appSettings.addToBlacklist(song.id)
+                                        },
+                                        onPlayQueue = onPlayQueue,
+                                        onPlayQueueFromIndex = onPlayQueueFromIndex,
+                                        onShuffleQueue = onShuffleQueue,
+                                        currentSong = currentSong,
+                                        isPlaying = isPlaying,
+                                        haptics = haptics,
+                                        enableRatingSystem = enableRatingSystem,
+                                        isSelectionMode = isSelectionMode,
+                                        selectedSongIds = selectedSongIds,
+                                        multiSelectionState = multiSelectionState,
+                                        onSongLongPress = onSongLongPress,
+                                        onSongSelectionToggle = onSongSelectionToggle,
+                                        onShowMultiSelectionSheet = { showMultiSelectionSheet = true },
+                                        onRefreshClick = onRefreshClick,
+                                        bottomPadding = adjustedSongsBottomPadding,
+                                        sortOrder = sortOrder
+                                    )
                                     "EXPLORER" -> SingleCardExplorerContent(
                                         songs = songs,
                                         onSongClick = onSongClick,
@@ -1912,6 +1955,7 @@ fun LibraryScreen(
                             "SONGS" -> songs.isNotEmpty()
                             "ALBUMS" -> albums.isNotEmpty()
                             "ARTISTS" -> false
+                            "DATES" -> songs.isNotEmpty()
                             "EXPLORER" -> explorerPath != null || explorerFolderSongs.isNotEmpty()
                             else -> false
                         }
@@ -1928,6 +1972,7 @@ fun LibraryScreen(
                         } else {
                             hasContent && when (activeTabId) {
                                 "SONGS" -> !songsScrollInProgress || songsScrollingUp
+                                "DATES" -> !songsScrollInProgress || songsScrollingUp
                                 "ALBUMS" -> {
                                     val isScrollingUp = if (albumViewType == AlbumViewType.GRID) albumsGridScrollingUp else albumsListScrollingUp
                                     val isScrolling = if (albumViewType == AlbumViewType.GRID) albumsGridScrollInProgress else albumsListScrollInProgress
@@ -1941,6 +1986,7 @@ fun LibraryScreen(
                         val bottomBarSongs = remember(activeTabId, filteredSongs, sortedAlbums, sortedArtists, explorerFolderSongs) {
                             when (activeTabId) {
                                 "SONGS" -> filteredSongs
+                                "DATES" -> filteredSongs
                                 "ALBUMS" -> sortedAlbums.flatMap { it.songs }
                                 "ARTISTS" -> sortedArtists.flatMap { it.songs }
                                 "EXPLORER" -> explorerFolderSongs
@@ -1962,26 +2008,27 @@ fun LibraryScreen(
                             ) {
                                 FloatingActionButton(
                                     onClick = {
-                                        locateScope.launch {
-                                            when (activeTabId) {
-                                                "SONGS" -> {
-                                                    val idx = filteredSongs.indexOfFirst { it.id == currentSong?.id }
-                                                    songsListState.animateScrollToItem(if (idx >= 0) idx else 0)
+                                            locateScope.launch {
+                                                when (activeTabId) {
+                                                    "SONGS" -> {
+                                                        val idx = filteredSongs.indexOfFirst { it.id == currentSong?.id }
+                                                        songsListState.animateScrollToItem(if (idx >= 0) idx else 0)
+                                                    }
+                                                    "DATES" -> datesListState.animateScrollToItem(0)
+                                                    "PLAYLISTS" -> {
+                                                        if (playlistViewType == PlaylistViewType.GRID) playlistsGridState.animateScrollToItem(0)
+                                                        else playlistsListState.animateScrollToItem(0)
+                                                    }
+                                                    "ALBUMS" -> {
+                                                        if (albumViewType == AlbumViewType.GRID) albumsGridState.animateScrollToItem(0)
+                                                        else albumsListState.animateScrollToItem(0)
+                                                    }
+                                                    "ARTISTS" -> {
+                                                        if (artistViewType == ArtistViewType.GRID) artistsGridState.animateScrollToItem(0)
+                                                        else artistsListState.animateScrollToItem(0)
+                                                    }
+                                                    "EXPLORER" -> explorerListState.animateScrollToItem(0)
                                                 }
-                                                "PLAYLISTS" -> {
-                                                    if (playlistViewType == PlaylistViewType.GRID) playlistsGridState.animateScrollToItem(0)
-                                                    else playlistsListState.animateScrollToItem(0)
-                                                }
-                                                "ALBUMS" -> {
-                                                    if (albumViewType == AlbumViewType.GRID) albumsGridState.animateScrollToItem(0)
-                                                    else albumsListState.animateScrollToItem(0)
-                                                }
-                                                "ARTISTS" -> {
-                                                    if (artistViewType == ArtistViewType.GRID) artistsGridState.animateScrollToItem(0)
-                                                    else artistsListState.animateScrollToItem(0)
-                                                }
-                                                "EXPLORER" -> explorerListState.animateScrollToItem(0)
-                                            }
                                         }
                                     },
                                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -2376,13 +2423,19 @@ fun SingleCardSongsContent(
         )
     } else {
         Box(modifier = Modifier.fillMaxSize()) {
-            val canScroll by remember(listState) { derivedStateOf { listState.canScrollForward || listState.canScrollBackward } }
+            val canScroll by remember(listState) {
+                derivedStateOf { listState.canScrollForward || listState.canScrollBackward }
+            }
+            val animatedEndPadding by animateDpAsState(
+                targetValue = if (canScroll) 36.dp else 16.dp,
+                animationSpec = tween(durationMillis = 200)
+            )
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
-                    end = if (canScroll) 36.dp else 16.dp,
+                    end = animatedEndPadding,
                     top = 16.dp,
                     bottom = bottomPadding + 80.dp
                 ),
@@ -2555,13 +2608,15 @@ fun SingleCardPlaylistsContent(
         Box(modifier = Modifier.fillMaxSize()) {
             val canScroll by remember(listState, gridState, playlistViewType) {
                 derivedStateOf {
-                    if (playlistViewType == PlaylistViewType.GRID) {
-                        gridState.canScrollForward || gridState.canScrollBackward
-                    } else {
-                        listState.canScrollForward || listState.canScrollBackward
-                    }
+                    if (playlistViewType == PlaylistViewType.GRID) gridState.canScrollForward || gridState.canScrollBackward
+                    else listState.canScrollForward || listState.canScrollBackward
                 }
             }
+            val animatedEndPadding by animateDpAsState(
+                targetValue = if (canScroll) 36.dp else 16.dp,
+                animationSpec = tween(durationMillis = 200)
+            )
+
             val playlistFastScrollLabelProvider = remember(preparedPlaylists, playlistSortOrder) {
                 { index: Int ->
                     playlistFastScrollLabel(
@@ -2578,7 +2633,7 @@ fun SingleCardPlaylistsContent(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         start = 16.dp,
-                        end = if (canScroll) 36.dp else 16.dp,
+                        end = animatedEndPadding,
                         top = 16.dp,
                         bottom = bottomPadding + 80.dp
                     ),
@@ -2613,7 +2668,7 @@ fun SingleCardPlaylistsContent(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         start = 16.dp,
-                        end = if (canScroll) 36.dp else 16.dp,
+                        end = animatedEndPadding,
                         top = 16.dp,
                         bottom = bottomPadding + 80.dp
                     ),
@@ -2710,13 +2765,15 @@ fun SingleCardAlbumsContent(
         Box(modifier = Modifier.fillMaxSize()) {
             val canScroll by remember(listState, gridState, albumViewType) {
                 derivedStateOf {
-                    if (albumViewType == AlbumViewType.GRID) {
-                        gridState.canScrollForward || gridState.canScrollBackward
-                    } else {
-                        listState.canScrollForward || listState.canScrollBackward
-                    }
+                    if (albumViewType == AlbumViewType.GRID) gridState.canScrollForward || gridState.canScrollBackward
+                    else listState.canScrollForward || listState.canScrollBackward
                 }
             }
+            val animatedEndPadding by animateDpAsState(
+                targetValue = if (canScroll) 36.dp else 16.dp,
+                animationSpec = tween(durationMillis = 200)
+            )
+
             val albumFastScrollLabelProvider = remember(preparedAlbums, sortOrder) {
                 { index: Int ->
                     albumFastScrollLabel(
@@ -2733,7 +2790,7 @@ fun SingleCardAlbumsContent(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         start = 16.dp,
-                        end = if (canScroll) 36.dp else 16.dp,
+                        end = animatedEndPadding,
                         top = 16.dp,
                         bottom = bottomPadding + 80.dp
                     ),
@@ -2769,7 +2826,7 @@ fun SingleCardAlbumsContent(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         start = 16.dp,
-                        end = if (canScroll) 36.dp else 16.dp,
+                        end = animatedEndPadding,
                         top = 16.dp,
                         bottom = bottomPadding + 80.dp
                     ),
@@ -4486,13 +4543,15 @@ fun SingleCardArtistsContent(
     Box(modifier = Modifier.fillMaxSize()) {
         val canScroll by remember(listState, gridState, isGridView) {
             derivedStateOf {
-                if (isGridView) {
-                    gridState.canScrollForward || gridState.canScrollBackward
-                } else {
-                    listState.canScrollForward || listState.canScrollBackward
-                }
+                if (isGridView) gridState.canScrollForward || gridState.canScrollBackward
+                else listState.canScrollForward || listState.canScrollBackward
             }
         }
+        val animatedEndPadding by animateDpAsState(
+            targetValue = if (canScroll) 36.dp else 16.dp,
+            animationSpec = tween(durationMillis = 200)
+        )
+
         val artistFastScrollLabelProvider = remember(sortedArtists, currentSortOption) {
             { index: Int ->
                 artistFastScrollLabel(
@@ -4509,7 +4568,7 @@ fun SingleCardArtistsContent(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
-                    end = if (canScroll) 36.dp else 16.dp,
+                    end = animatedEndPadding,
                     top = 16.dp,
                     bottom = bottomPadding + 80.dp
                 ),
@@ -4558,7 +4617,7 @@ fun SingleCardArtistsContent(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
-                    end = if (canScroll) 36.dp else 16.dp,
+                    end = animatedEndPadding,
                     top = 16.dp,
                     bottom = bottomPadding + 80.dp
                 ),
@@ -6263,6 +6322,163 @@ fun filterSongsByCategory(
         }
 
         else -> preparedSongs
+    }
+}
+
+@Composable
+fun YearGroupedSongsContent(
+    songs: List<Song>,
+    listState: LazyListState = rememberLazyListState(),
+    onSongClick: (Song) -> Unit,
+    onAddToPlaylist: (Song) -> Unit,
+    onAddToQueue: (Song) -> Unit,
+    onPlayNext: (Song) -> Unit = {},
+    onToggleFavorite: (Song) -> Unit = {},
+    favoriteSongs: Set<String> = emptySet(),
+    onGoToArtist: (Artist) -> Unit = {},
+    onGoToAlbum: (Album) -> Unit = {},
+    onShowSongInfo: (Song) -> Unit,
+    onAddToBlacklist: (Song) -> Unit,
+    onPlayQueue: (List<Song>) -> Unit = { _ -> },
+    onPlayQueueFromIndex: (List<Song>, Int) -> Unit = { _, _ -> },
+    onShuffleQueue: (List<Song>) -> Unit = { _ -> },
+    currentSong: Song? = null,
+    isPlaying: Boolean = false,
+    haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
+    enableRatingSystem: Boolean = true,
+    isSelectionMode: Boolean = false,
+    selectedSongIds: Set<String> = emptySet(),
+    multiSelectionState: chromahub.rhythm.app.features.local.presentation.viewmodel.MultiSelectionStateHolder? = null,
+    onSongLongPress: (Song) -> Unit = {},
+    onSongSelectionToggle: (Song) -> Unit = {},
+    onShowMultiSelectionSheet: () -> Unit = {},
+    onRefreshClick: (() -> Unit)? = null,
+    bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
+    sortOrder: MusicViewModel.SortOrder = MusicViewModel.SortOrder.TITLE_ASC
+) {
+    val context = LocalContext.current
+
+    val songsByYear = remember(songs, sortOrder) {
+        val groups = songs.groupBy { song ->
+            if (song.year > 0) song.year else null
+        }
+        val sortedYears = groups.keys.sortedByDescending { it ?: Int.MAX_VALUE }
+        sortedYears.map { year ->
+            val yearSongs = groups[year] ?: emptyList()
+            val sortedSongs = when (sortOrder) {
+                MusicViewModel.SortOrder.TITLE_ASC -> yearSongs.sortedWith(NaturalSortComparator.comparator<Song> { it.title })
+                MusicViewModel.SortOrder.TITLE_DESC -> yearSongs.sortedWith(NaturalSortComparator.comparator<Song> { it.title }.reversed())
+                MusicViewModel.SortOrder.ARTIST_ASC -> yearSongs.sortedWith(NaturalSortComparator.comparator<Song> { it.artist })
+                MusicViewModel.SortOrder.ARTIST_DESC -> yearSongs.sortedWith(NaturalSortComparator.comparator<Song> { it.artist }.reversed())
+                MusicViewModel.SortOrder.DATE_ADDED_DESC -> yearSongs.sortedByDescending { it.dateAdded }
+                MusicViewModel.SortOrder.DATE_ADDED_ASC -> yearSongs.sortedBy { it.dateAdded }
+                MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> yearSongs.sortedByDescending { it.dateModified }
+                MusicViewModel.SortOrder.DATE_MODIFIED_ASC -> yearSongs.sortedBy { it.dateModified }
+                else -> yearSongs
+            }
+            val label = year?.toString() ?: context.getString(R.string.library_unknown_year)
+            label to sortedSongs
+        }
+    }
+
+    if (songsByYear.isEmpty()) {
+        EmptyState(
+            message = "No dated songs found",
+            icon = RhythmIcons.CalendarMonth,
+            onRefresh = onRefreshClick
+        )
+        return
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        val canScroll by remember(listState) {
+            derivedStateOf { listState.canScrollForward || listState.canScrollBackward }
+        }
+        val animatedEndPadding by animateDpAsState(
+            targetValue = if (canScroll) 36.dp else 16.dp,
+            animationSpec = tween(durationMillis = 200)
+        )
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = animatedEndPadding,
+                top = 16.dp,
+                bottom = bottomPadding + 80.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
+        ) {
+            songsByYear.forEach { (yearLabel, yearSongs) ->
+                item(key = "header_$yearLabel", contentType = "yearHeader") {
+                    AnimateIn(modifier = Modifier.animateItem()) {
+                        Text(
+                            text = "$yearLabel (${yearSongs.size})",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
+                        )
+                    }
+                }
+                itemsIndexed(
+                    items = yearSongs,
+                    key = { _, song -> "datesong_${song.id}" },
+                    contentType = { _, _ -> "song" }
+                ) { index, song ->
+                    AnimateIn(modifier = Modifier.animateItem()) {
+                        val isSelected = selectedSongIds.contains(song.id)
+                        val selectionIndex = multiSelectionState?.getSelectionIndex(song.id)
+
+                        LibrarySongItemWrapper(
+                            song = song,
+                            onClick = {
+                                if (isSelectionMode) {
+                                    onSongSelectionToggle(song)
+                                } else {
+                                    val songIndex = yearSongs.indexOf(song)
+                                    if (songIndex >= 0) {
+                                        onPlayQueueFromIndex(yearSongs, songIndex)
+                                    } else {
+                                        onSongClick(song)
+                                    }
+                                }
+                            },
+                            onMoreClick = { onAddToPlaylist(song) },
+                            onAddToQueue = { onAddToQueue(song) },
+                            onPlayNext = { onPlayNext(song) },
+                            onToggleFavorite = { onToggleFavorite(song) },
+                            isFavorite = favoriteSongs.contains(song.id),
+                            onGoToArtist = { onGoToArtist(Artist(id = "", name = song.artist)) },
+                            onGoToAlbum = { onGoToAlbum(Album(id = "", title = song.album, artist = song.artist)) },
+                            onShowSongInfo = { onShowSongInfo(song) },
+                            onAddToBlacklist = { onAddToBlacklist(song) },
+                            currentSong = currentSong,
+                            isPlaying = isPlaying,
+                            haptics = haptics,
+                            enableRatingSystem = enableRatingSystem,
+                            itemShape = groupedLibraryItemShape(index, yearSongs.size),
+                            isSelected = isSelected,
+                            isSelectionMode = isSelectionMode,
+                            selectionIndex = selectionIndex,
+                            onLongPress = { onSongLongPress(song) }
+                        )
+                    }
+                }
+            }
+        }
+
+        val dateFastScrollLabelProvider = remember(songsByYear) {
+            { index: Int -> songsByYear.getOrNull(index)?.first ?: "" }
+        }
+
+        ExpressiveScrollBar(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+            listState = listState,
+            dragLabelProvider = dateFastScrollLabelProvider
+        )
     }
 }
 

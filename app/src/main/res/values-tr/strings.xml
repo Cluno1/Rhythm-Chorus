@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">Henüz şarkı yok</string>
     <string name="library_no_artists">Hiçbir sanatçı bulunamadı</string>
+    <string name="library_unknown_year">Bilinmeyen Yıl</string>
     <string name="library_start_collection">Müzik koleksiyonunuzu oluşturmaya başlayın</string>
     <string name="library_sort_artists">Sanatçıları Şuna Göre Sırala:</string>
     <string name="library_storage_locations">Depolama Konumları</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">Çalma listeleri</string>
     <string name="settings_tab_albums">Albümler</string>
     <string name="settings_tab_artists">Sanatçılar</string>
+    <string name="settings_tab_dates">Tarihler</string>
     <string name="settings_tab_explorer">Gezgin</string>
     <string name="settings_tab_order_reset">Sekme sırası varsayılana sıfırlandı</string>
     <string name="settings_tab_order_saved">Sekme sırası kaydedildi</string>

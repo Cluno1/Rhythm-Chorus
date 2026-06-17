@@ -43,6 +43,7 @@ import chromahub.rhythm.app.shared.data.model.PlaybackLocation
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Queue
 import chromahub.rhythm.app.shared.data.model.Song
+import chromahub.rhythm.app.shared.data.model.FolderNode
 import chromahub.rhythm.app.infrastructure.service.MediaPlaybackService
 import chromahub.rhythm.app.infrastructure.widget.WidgetUpdater
 import chromahub.rhythm.app.util.AudioDeviceManager
@@ -84,6 +85,7 @@ import chromahub.rhythm.app.util.PendingBatchWriteRequest
 import chromahub.rhythm.app.util.PendingLyricsWriteRequest
 import chromahub.rhythm.app.util.QueueUtils
 import chromahub.rhythm.app.util.GenreUtils
+import chromahub.rhythm.app.util.NaturalSortComparator
 import chromahub.rhythm.app.util.LyricLine
 import chromahub.rhythm.app.util.LyricsParser
 import chromahub.rhythm.app.util.ServiceStartUtils
@@ -632,24 +634,40 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val albums: StateFlow<List<Album>> = _albums
         .map { list -> list.distinctBy { it.id } }
         .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
+
+    private val _folderTree = MutableStateFlow<FolderNode?>(null)
+    val folderTree: StateFlow<FolderNode?> = _folderTree.asStateFlow()
     
+    private fun Song.rawAlbumGroupKey(): String =
+        (albumArtist?.trim()?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
+            ?: artist.trim().takeIf { it.isNotBlank() }
+            ?: "Unknown Artist").lowercase(java.util.Locale.ROOT)
+
     // Filtered albums excluding albums with all songs blacklisted
     val filteredAlbums: StateFlow<List<Album>> = kotlinx.coroutines.flow.combine(
         _albums,
         filteredSongs
     ) { albums, filteredSongs ->
         val filteredSongsGrouped = filteredSongs.groupBy { song ->
-            val albumName = song.album.trim().lowercase(java.util.Locale.ROOT)
-            val albumArtist = (song.albumArtist?.trim()?.takeIf { it.isNotBlank() }
-                ?: song.artist.trim().takeIf { it.isNotBlank() }
-                ?: "Unknown Artist").lowercase(java.util.Locale.ROOT)
-            albumName to albumArtist
+            song.album.trim().lowercase(java.util.Locale.ROOT) to song.rawAlbumGroupKey()
         }
 
         albums.mapNotNull { album ->
-            val key = album.title.trim().lowercase(java.util.Locale.ROOT) to album.artist.trim().lowercase(java.util.Locale.ROOT)
-            val albumSongs = filteredSongsGrouped[key]
-            if (albumSongs != null && albumSongs.isNotEmpty()) {
+            val albumNameKey = album.title.trim().lowercase(java.util.Locale.ROOT)
+            // Find matching group by album name; prefer exact artist match, fallback to any songs with matching name
+            val matchingGroup = filteredSongsGrouped.filterKeys { (name, _) ->
+                name == albumNameKey
+            }
+            val albumSongs = if (matchingGroup.size == 1) {
+                matchingGroup.values.first()
+            } else {
+                // Multiple groups with same album name - match by artist
+                val artistKey = album.artist.trim().lowercase(java.util.Locale.ROOT)
+                matchingGroup.entries.firstOrNull { (key, _) ->
+                    key.second == artistKey
+                }?.value ?: matchingGroup.values.flatten()
+            }
+            if (albumSongs.isNotEmpty()) {
                 val sortedSongs = albumSongs.sortedWith(
                     compareBy<Song> { it.discNumber }
                         .thenBy { it.trackNumber }
@@ -1249,6 +1267,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             _songs.value = songs
             _albums.value = albums
             _artists.value = artists
+            _folderTree.value = repository.buildFolderTree(songs)
             
             InitializationResult(true)
         } catch (e: Exception) {
@@ -1841,6 +1860,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             _songs.value = mergedSongs
             _albums.value = freshAlbums
             _artists.value = freshArtists
+            _folderTree.value = repository.buildFolderTree(mergedSongs)
             repository.updateAndPersistSongs(mergedSongs)
             appSettings.setLastScanTimestamp(System.currentTimeMillis())
             // Only invalidate the embedded artwork extraction flag when new songs have appeared.
@@ -6187,12 +6207,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             
             // Sort songs based on current sort order
             _songs.value = when (_sortOrder.value) {
-                SortOrder.TITLE_ASC -> _songs.value.sortedBy { it.title }
-                SortOrder.TITLE_DESC -> _songs.value.sortedByDescending { it.title }
-                SortOrder.ARTIST_ASC -> _songs.value.sortedBy { it.artist }
-                SortOrder.ARTIST_DESC -> _songs.value.sortedByDescending { it.artist }
-                SortOrder.ALBUM_ASC -> _songs.value.sortedBy { it.album }
-                SortOrder.ALBUM_DESC -> _songs.value.sortedByDescending { it.album }
+                SortOrder.TITLE_ASC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.title })
+                SortOrder.TITLE_DESC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.title }.reversed())
+                SortOrder.ARTIST_ASC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.artist })
+                SortOrder.ARTIST_DESC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.artist }.reversed())
+                SortOrder.ALBUM_ASC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.album })
+                SortOrder.ALBUM_DESC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.album }.reversed())
                 SortOrder.YEAR_ASC -> _songs.value.sortedBy { it.year }
                 SortOrder.YEAR_DESC -> _songs.value.sortedByDescending { it.year }
                 SortOrder.DATE_ADDED_ASC -> _songs.value.sortedBy { it.dateAdded }
@@ -6203,12 +6223,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             
             // Sort albums based on current sort order
             _albums.value = when (_sortOrder.value) {
-                SortOrder.TITLE_ASC -> _albums.value.sortedBy { it.title }
-                SortOrder.TITLE_DESC -> _albums.value.sortedByDescending { it.title }
-                SortOrder.ARTIST_ASC -> _albums.value.sortedBy { it.artist }
-                SortOrder.ARTIST_DESC -> _albums.value.sortedByDescending { it.artist }
-                SortOrder.ALBUM_ASC -> _albums.value.sortedBy { it.title }
-                SortOrder.ALBUM_DESC -> _albums.value.sortedByDescending { it.title }
+                SortOrder.TITLE_ASC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.title })
+                SortOrder.TITLE_DESC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.title }.reversed())
+                SortOrder.ARTIST_ASC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.artist })
+                SortOrder.ARTIST_DESC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.artist }.reversed())
+                SortOrder.ALBUM_ASC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.title })
+                SortOrder.ALBUM_DESC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.title }.reversed())
                 SortOrder.YEAR_ASC -> _albums.value.sortedBy { it.year }
                 SortOrder.YEAR_DESC -> _albums.value.sortedByDescending { it.year }
                 SortOrder.DATE_ADDED_ASC -> _albums.value.sortedBy { it.id.toLongOrNull() ?: 0L } // Placeholder for date added
@@ -6250,12 +6270,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 
                 // Sort songs based on new sort order
                 _songs.value = when (newSortOrder) {
-                    SortOrder.TITLE_ASC -> _songs.value.sortedBy { it.title }
-                    SortOrder.TITLE_DESC -> _songs.value.sortedByDescending { it.title }
-                    SortOrder.ARTIST_ASC -> _songs.value.sortedBy { it.artist }
-                    SortOrder.ARTIST_DESC -> _songs.value.sortedByDescending { it.artist }
-                    SortOrder.ALBUM_ASC -> _songs.value.sortedBy { it.album }
-                    SortOrder.ALBUM_DESC -> _songs.value.sortedByDescending { it.album }
+                    SortOrder.TITLE_ASC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.title })
+                    SortOrder.TITLE_DESC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.title }.reversed())
+                    SortOrder.ARTIST_ASC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.artist })
+                    SortOrder.ARTIST_DESC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.artist }.reversed())
+                    SortOrder.ALBUM_ASC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.album })
+                    SortOrder.ALBUM_DESC -> _songs.value.sortedWith(NaturalSortComparator.comparator<Song> { it.album }.reversed())
                     SortOrder.YEAR_ASC -> _songs.value.sortedBy { it.year }
                     SortOrder.YEAR_DESC -> _songs.value.sortedByDescending { it.year }
                     SortOrder.DATE_ADDED_ASC -> _songs.value.sortedBy { it.dateAdded }
@@ -6266,12 +6286,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 
                 // Sort albums based on new sort order
                 _albums.value = when (newSortOrder) {
-                    SortOrder.TITLE_ASC -> _albums.value.sortedBy { it.title }
-                    SortOrder.TITLE_DESC -> _albums.value.sortedByDescending { it.title }
-                    SortOrder.ARTIST_ASC -> _albums.value.sortedBy { it.artist }
-                    SortOrder.ARTIST_DESC -> _albums.value.sortedByDescending { it.artist }
-                    SortOrder.ALBUM_ASC -> _albums.value.sortedBy { it.title }
-                    SortOrder.ALBUM_DESC -> _albums.value.sortedByDescending { it.title }
+                    SortOrder.TITLE_ASC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.title })
+                    SortOrder.TITLE_DESC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.title }.reversed())
+                    SortOrder.ARTIST_ASC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.artist })
+                    SortOrder.ARTIST_DESC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.artist }.reversed())
+                    SortOrder.ALBUM_ASC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.title })
+                    SortOrder.ALBUM_DESC -> _albums.value.sortedWith(NaturalSortComparator.comparator<Album> { it.title }.reversed())
                     SortOrder.YEAR_ASC -> _albums.value.sortedBy { it.year }
                     SortOrder.YEAR_DESC -> _albums.value.sortedByDescending { it.year }
                     SortOrder.DATE_ADDED_ASC -> _albums.value.sortedBy { it.id.toLongOrNull() ?: 0L } // Placeholder for date added

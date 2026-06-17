@@ -2507,8 +2507,8 @@ private fun LocalNavigationContent(
                             onGoToArtist = { song ->
                                 val separatorEnabled = appSettings.artistSeparatorEnabled.value
                                 val delimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
-                                val candidates = ArtistSeparator.splitArtists(
-                                    artistString = song.artist,
+                                val candidates = ArtistSeparator.splitArtistNames(
+                                    song.artist,
                                     delimiters = delimiters,
                                     enabled = separatorEnabled
                                 )

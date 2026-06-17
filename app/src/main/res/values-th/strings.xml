@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">ยังไม่มีเพลง</string>
     <string name="library_no_artists">ไม่พบศิลปิน</string>
+    <string name="library_unknown_year">ไม่ทราบปีที่</string>
     <string name="library_start_collection">เริ่มสร้างคอลเลกชันเพลงของคุณ</string>
     <string name="library_sort_artists">จัดเรียงศิลปินตาม</string>
     <string name="library_storage_locations">สถานที่จัดเก็บ</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">เพลย์ลิสต์</string>
     <string name="settings_tab_albums">อัลบั้ม</string>
     <string name="settings_tab_artists">ศิลปิน</string>
+    <string name="settings_tab_dates">วันที่</string>
     <string name="settings_tab_explorer">นักสำรวจ</string>
     <string name="settings_tab_order_reset">ลำดับแท็บรีเซ็ตเป็นค่าเริ่มต้น</string>
     <string name="settings_tab_order_saved">บันทึกลำดับแท็บแล้ว</string>
@@ -2001,7 +2003,7 @@
     <string name="settings_broadcast_status_enabled_desc">สถานะการเล่นแบบออกอากาศ</string>
     <string name="settings_bluetooth_lyrics_enabled">โหมดเนื้อเพลงบลูทูธ</string>
     <string name="settings_bluetooth_lyrics_enabled_desc">ออกอากาศเนื้อเพลงปัจจุบันผ่านข้อมูลเมตาของ Bluetooth</string>
-    <string name="exp_go_mode">โหมดไป</string>
+    <string name="exp_go_mode">Go Mode</string>
     <string name="exp_go_mode_desc">สลับไปที่ Rhythm Go streaming mode</string>
 
     <!-- Home Screen Search Strings -->

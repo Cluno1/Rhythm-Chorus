@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">இன்னும் பாடல்கள் இல்லை</string>
     <string name="library_no_artists">கலைஞர்கள் இல்லை</string>
+    <string name="library_unknown_year">அறியப்படாத ஆண்டு</string>
     <string name="library_start_collection">உங்கள் இசைத் தொகுப்பை உருவாக்கத் தொடங்குங்கள்</string>
     <string name="library_sort_artists">கலைஞர்களை வரிசைப்படுத்தவும்</string>
     <string name="library_storage_locations">சேமிப்பக இடங்கள்</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">பிளேலிஸ்ட்கள்</string>
     <string name="settings_tab_albums">ஆல்பங்கள்</string>
     <string name="settings_tab_artists">கலைஞர்கள்</string>
+    <string name="settings_tab_dates">தேதிகள்</string>
     <string name="settings_tab_explorer">எக்ஸ்ப்ளோரர்</string>
     <string name="settings_tab_order_reset">டேப் ஆர்டர் இயல்புநிலைக்கு மீட்டமைக்கப்பட்டது</string>
     <string name="settings_tab_order_saved">தாவல் ஆர்டர் சேமிக்கப்பட்டது</string>

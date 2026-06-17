@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">Chưa có bài hát nào</string>
     <string name="library_no_artists">Không tìm thấy nghệ sĩ nào</string>
+    <string name="library_unknown_year">Năm không rõ</string>
     <string name="library_start_collection">Bắt đầu xây dựng bộ sưu tập nhạc của bạn</string>
     <string name="library_sort_artists">Sắp xếp nghệ sĩ theo</string>
     <string name="library_storage_locations">Vị trí lưu trữ</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">Danh sách phát</string>
     <string name="settings_tab_albums">Album</string>
     <string name="settings_tab_artists">Nghệ sĩ</string>
+    <string name="settings_tab_dates">Ngày tháng</string>
     <string name="settings_tab_explorer">Nhà thám hiểm</string>
     <string name="settings_tab_order_reset">Đặt lại thứ tự tab về mặc định</string>
     <string name="settings_tab_order_saved">Đã lưu thứ tự tab</string>

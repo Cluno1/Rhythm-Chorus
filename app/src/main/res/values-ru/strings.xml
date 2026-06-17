@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">Пока нет песен</string>
     <string name="library_no_artists">Художники не найдены</string>
+    <string name="library_unknown_year">Неизвестный год</string>
     <string name="library_start_collection">Начните собирать свою музыкальную коллекцию</string>
     <string name="library_sort_artists">Сортировать исполнителей по</string>
     <string name="library_storage_locations">Места хранения</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">Плейлисты</string>
     <string name="settings_tab_albums">Альбомы</string>
     <string name="settings_tab_artists">Художники</string>
+    <string name="settings_tab_dates">Даты</string>
     <string name="settings_tab_explorer">Исследователь</string>
     <string name="settings_tab_order_reset">Порядок табуляции восстановлен до значения по умолчанию.</string>
     <string name="settings_tab_order_saved">Порядок табуляции сохранен.</string>

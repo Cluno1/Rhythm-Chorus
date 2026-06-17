@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">Пісень ще немає</string>
     <string name="library_no_artists">Виконавців не знайдено</string>
+    <string name="library_unknown_year">Невідомий рік</string>
     <string name="library_start_collection">Почніть створювати свою музичну колекцію</string>
     <string name="library_sort_artists">Сортувати виконавців за</string>
     <string name="library_storage_locations">Місця зберігання</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">Списки відтворення</string>
     <string name="settings_tab_albums">Альбоми</string>
     <string name="settings_tab_artists">Художники</string>
+    <string name="settings_tab_dates">Дати</string>
     <string name="settings_tab_explorer">Провідник</string>
     <string name="settings_tab_order_reset">Порядок вкладок відновлено до стандартного</string>
     <string name="settings_tab_order_saved">Порядок вкладок збережено</string>

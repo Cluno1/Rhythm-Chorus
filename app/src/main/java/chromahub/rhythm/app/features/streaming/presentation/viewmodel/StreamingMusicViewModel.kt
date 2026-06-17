@@ -1198,8 +1198,8 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
         return songs
             .filter { it.artist.isNotBlank() }
             .flatMap { song ->
-                val artistNames = ArtistSeparator.splitArtists(
-                    artistString = song.artist,
+                val artistNames = ArtistSeparator.splitArtistNames(
+                    song.artist,
                     delimiters = separatorDelimiters,
                     enabled = separatorEnabled
                 )

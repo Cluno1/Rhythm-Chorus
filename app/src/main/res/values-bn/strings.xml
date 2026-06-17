@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">এখনও কোন গান</string>
     <string name="library_no_artists">কোনো শিল্পী পাওয়া যায়নি</string>
+    <string name="library_unknown_year">অজানা বছর</string>
     <string name="library_start_collection">আপনার সঙ্গীত সংগ্রহ নির্মাণ শুরু করুন</string>
     <string name="library_sort_artists">দ্বারা শিল্পী সাজান</string>
     <string name="library_storage_locations">স্টোরেজের অবস্থান</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">প্লেলিস্ট</string>
     <string name="settings_tab_albums">অ্যালবাম</string>
     <string name="settings_tab_artists">শিল্পী</string>
+    <string name="settings_tab_dates">তারিখ</string>
     <string name="settings_tab_explorer">এক্সপ্লোরার</string>
     <string name="settings_tab_order_reset">ট্যাব অর্ডার ডিফল্টে রিসেট</string>
     <string name="settings_tab_order_saved">ট্যাব অর্ডার সংরক্ষিত</string>

@@ -36,7 +36,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import chromahub.rhythm.app.util.ArtistSeparator
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.Artist
@@ -105,51 +108,68 @@ fun ArtistBottomSheet(
     val displaySongs = songs ?: allSongs
     val displayAlbums = albums ?: allAlbums
 
-    val splitArtistNames: (String) -> List<String> = remember {
-        { artistName ->
-            chromahub.rhythm.app.util.ArtistSeparator.splitArtistNames(
-                artistName = artistName,
-                delimiters = appSettings.artistSeparatorDelimiters.value,
-                enabled = appSettings.artistSeparatorEnabled.value
-            )
+    fun filterSongsForArtist(
+        songs: List<Song>, artist: Artist, groupByAlbumArtist: Boolean,
+        delimiters: String, enabled: Boolean
+    ): List<Song> = songs.filter { song ->
+        if (groupByAlbumArtist) {
+            val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
+            val songArtistNames = if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
+                ArtistSeparator.splitArtistNames(explicitAlbumArtist, delimiters, enabled)
+            } else {
+                ArtistSeparator.splitArtistNames(song.artist, delimiters, enabled)
+            }
+            songArtistNames.any { it.equals(artist.name, ignoreCase = true) }
+        } else {
+            ArtistSeparator.splitArtistNames(song.artist, delimiters, enabled)
+                .any { it.equals(artist.name, ignoreCase = true) }
         }
     }
 
-    val artistSongs = remember(displaySongs, artist, groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters) {
-        displaySongs.filter { song ->
-            if (groupByAlbumArtist) {
+    fun filterAlbumsForArtist(
+        albums: List<Album>, artist: Artist, groupByAlbumArtist: Boolean,
+        delimiters: String, enabled: Boolean
+    ): List<Album> = if (groupByAlbumArtist) {
+        albums.filter { album ->
+            album.songs.any { song ->
                 val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
                 val songArtistNames = if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
-                    splitArtistNames(explicitAlbumArtist)
+                    ArtistSeparator.splitArtistNames(explicitAlbumArtist, delimiters, enabled)
                 } else {
-                    splitArtistNames(song.artist)
+                    ArtistSeparator.splitArtistNames(song.artist, delimiters, enabled)
                 }
                 songArtistNames.any { it.equals(artist.name, ignoreCase = true) }
-            } else {
-                splitArtistNames(song.artist).any { it.equals(artist.name, ignoreCase = true) }
+            }
+        }
+    } else {
+        albums.filter { album ->
+            album.songs.any { song ->
+                ArtistSeparator.splitArtistNames(song.artist, delimiters, enabled)
+                    .any { it.equals(artist.name, ignoreCase = true) }
             }
         }
     }
 
-    val artistAlbums = remember(displayAlbums, artist, groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters) {
-        if (groupByAlbumArtist) {
-            displayAlbums.filter { album ->
-                album.songs.any { song ->
-                    val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
-                    val songArtistNames = if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
-                        splitArtistNames(explicitAlbumArtist)
-                    } else {
-                        splitArtistNames(song.artist)
-                    }
-                    songArtistNames.any { it.equals(artist.name, ignoreCase = true) }
-                }
-            }
-        } else {
-            displayAlbums.filter { album ->
-                album.songs.any { song ->
-                    splitArtistNames(song.artist).any { it.equals(artist.name, ignoreCase = true) }
-                }
-            }
+    val initialFilteredSongs = remember(displaySongs, artist, groupByAlbumArtist, artistSeparatorDelimiters, artistSeparatorEnabled) {
+        filterSongsForArtist(displaySongs, artist, groupByAlbumArtist, artistSeparatorDelimiters, artistSeparatorEnabled)
+    }
+    val initialFilteredAlbums = remember(displayAlbums, artist, groupByAlbumArtist, artistSeparatorDelimiters, artistSeparatorEnabled) {
+        filterAlbumsForArtist(displayAlbums, artist, groupByAlbumArtist, artistSeparatorDelimiters, artistSeparatorEnabled)
+    }
+
+    val artistSongs by produceState(initialValue = initialFilteredSongs,
+        displaySongs, artist, groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters
+    ) {
+        value = withContext(Dispatchers.Default) {
+            filterSongsForArtist(displaySongs, artist, groupByAlbumArtist, artistSeparatorDelimiters, artistSeparatorEnabled)
+        }
+    }
+
+    val artistAlbums by produceState(initialValue = initialFilteredAlbums,
+        displayAlbums, artist, groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters
+    ) {
+        value = withContext(Dispatchers.Default) {
+            filterAlbumsForArtist(displayAlbums, artist, groupByAlbumArtist, artistSeparatorDelimiters, artistSeparatorEnabled)
         }
     }
 

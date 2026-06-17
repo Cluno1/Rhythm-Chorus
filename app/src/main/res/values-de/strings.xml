@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">Noch keine Lieder</string>
     <string name="library_no_artists">Keine Künstler gefunden</string>
+    <string name="library_unknown_year">Unbekanntes Jahr</string>
     <string name="library_start_collection">Beginnen Sie mit dem Aufbau Ihrer Musiksammlung</string>
     <string name="library_sort_artists">Künstler sortieren nach</string>
     <string name="library_storage_locations">Speicherorte</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">Wiedergabelisten</string>
     <string name="settings_tab_albums">Alben</string>
     <string name="settings_tab_artists">Künstler</string>
+    <string name="settings_tab_dates">Termine</string>
     <string name="settings_tab_explorer">Entdecker</string>
     <string name="settings_tab_order_reset">Tab-Reihenfolge auf Standard zurückgesetzt</string>
     <string name="settings_tab_order_saved">Tab-Reihenfolge gespeichert</string>
@@ -2319,7 +2321,7 @@
     <string name="songinfobottomsheet_update_artwork_and_tags">Bildmaterial und Tags aktualisieren</string>
     <string name="songinfobottomsheet_fetching_artwork">Bildmaterial wird abgerufen...</string>
     <string name="updatebottomsheet_install">Installieren</string>
-    <string name="updatebottomsheet_update">Update</string>
+    <string name="updatebottomsheet_update">Aktualisieren</string>
     <string name="collapsibleheader_app_icon">App-Symbol</string>
     <string name="expressivecomponents_seek_back">Suche zurück</string>
     <string name="expressivecomponents_seek_forward">Suche nach vorne</string>
@@ -2909,7 +2911,7 @@
     <string name="shape_option_arch_desc">Bogenform</string>
     <string name="shape_option_clam_shell">Muschelschale</string>
     <string name="shape_option_clam_shell_desc">Muschelform</string>
-    <string name="shape_option_gem">Gem</string>
+    <string name="shape_option_gem">Juwel</string>
     <string name="shape_option_gem_desc">Edelsteinform</string>
     <string name="shape_option_semi_circle">Halbkreis</string>
     <string name="shape_option_semi_circle_desc">Halbkreis</string>

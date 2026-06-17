@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">Pas encore de chansons</string>
     <string name="library_no_artists">Aucun artiste trouvé</string>
+    <string name="library_unknown_year">Année inconnue</string>
     <string name="library_start_collection">Commencez à constituer votre collection de musique</string>
     <string name="library_sort_artists">Trier les artistes par</string>
     <string name="library_storage_locations">Emplacements de stockage</string>
@@ -1736,7 +1737,7 @@
     <string name="streaming_integration_services_empty">Aucun service connecté pour le moment</string>
     <string name="streaming_settings_title">Paramètres</string>
     <string name="streaming_settings_group_services">Prestations</string>
-    <string name="streaming_settings_group_actions">Actions</string>
+    <string name="streaming_settings_group_actions">Action</string>
     <string name="streaming_settings_preferred_service">Service privilégié</string>
     <string name="streaming_settings_quality">Qualité de diffusion</string>
     <string name="streaming_settings_service_sheet_desc">Choisissez quel service connecté Rhythm Go doit donner la priorité par défaut.</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">Listes de lecture</string>
     <string name="settings_tab_albums">Album</string>
     <string name="settings_tab_artists">Artistes</string>
+    <string name="settings_tab_dates">Dates</string>
     <string name="settings_tab_explorer">Explorateur</string>
     <string name="settings_tab_order_reset">Ordre de tabulation réinitialisé par défaut</string>
     <string name="settings_tab_order_saved">Ordre de tabulation enregistré</string>

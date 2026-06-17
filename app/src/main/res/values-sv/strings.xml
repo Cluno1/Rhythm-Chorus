@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">Inga låtar än</string>
     <string name="library_no_artists">Inga artister hittades</string>
+    <string name="library_unknown_year">Okänt år</string>
     <string name="library_start_collection">Börja bygga din musiksamling</string>
     <string name="library_sort_artists">Sortera artister efter</string>
     <string name="library_storage_locations">Lagringsplatser</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">Spellistor</string>
     <string name="settings_tab_albums">Album</string>
     <string name="settings_tab_artists">Konstnärer</string>
+    <string name="settings_tab_dates">Datum</string>
     <string name="settings_tab_explorer">Utforskare</string>
     <string name="settings_tab_order_reset">Tabordning återställd till standard</string>
     <string name="settings_tab_order_saved">Tabbordning sparad</string>
@@ -2070,7 +2072,7 @@
     <string name="settings_theme_import_font_desc">Importera din egen typsnittsfil (.ttf, .otf)</string>
 
     <!-- Player Customization Search Strings -->
-    <string name="settings_player_chip_order">Chip Order &amp; Visibility</string>
+    <string name="settings_player_chip_order">Chipordning och synlighet</string>
     <string name="settings_player_chip_order_desc">Anpassa och ordna om spelarens actionmarker</string>
     <string name="settings_lyrics_show_translation">Visa översättning</string>
     <string name="settings_lyrics_show_translation_desc">Visa översatta texter när de är tillgängliga</string>
@@ -2589,7 +2591,7 @@
     <string name="lyrics_source_embedded_first_desc">Testa ljudfilsmetadata → Online-API:er → .lrc-filer</string>
     <string name="lyrics_source_api_first">API Först</string>
     <string name="lyrics_source_api_first_desc">Prova onlinetjänster → Ljudmetadata → .lrc-filer</string>
-    <string name="lyrics_source_local_first">Local .lrc First</string>
+    <string name="lyrics_source_local_first">Lokal .lrc först</string>
     <string name="lyrics_source_local_first_desc">Prova .lrc-filer → Ljudmetadata → Online-API:er</string>
 
     <!-- Font / Color Customization Dialogs -->

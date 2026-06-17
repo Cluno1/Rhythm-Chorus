@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">Belum ada lagu</string>
     <string name="library_no_artists">Tidak ada artis yang ditemukan</string>
+    <string name="library_unknown_year">Tahun Tidak Diketahui</string>
     <string name="library_start_collection">Mulailah membangun koleksi musik Anda</string>
     <string name="library_sort_artists">Urutkan Artis Berdasarkan</string>
     <string name="library_storage_locations">Lokasi Penyimpanan</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">Daftar Putar</string>
     <string name="settings_tab_albums">Album</string>
     <string name="settings_tab_artists">Artis</string>
+    <string name="settings_tab_dates">Tanggal</string>
     <string name="settings_tab_explorer">Penjelajah</string>
     <string name="settings_tab_order_reset">Urutan tab diatur ulang ke default</string>
     <string name="settings_tab_order_saved">Urutan tab disimpan</string>

@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">Nog geen nummers</string>
     <string name="library_no_artists">Geen artiesten gevonden</string>
+    <string name="library_unknown_year">Onbekend jaar</string>
     <string name="library_start_collection">Begin met het opbouwen van je muziekcollectie</string>
     <string name="library_sort_artists">Sorteer artiesten op</string>
     <string name="library_storage_locations">Opslaglocaties</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">Afspeellijsten</string>
     <string name="settings_tab_albums">Albums</string>
     <string name="settings_tab_artists">Artiesten</string>
+    <string name="settings_tab_dates">Datums</string>
     <string name="settings_tab_explorer">Ontdekkingsreiziger</string>
     <string name="settings_tab_order_reset">Tabvolgorde teruggezet naar standaard</string>
     <string name="settings_tab_order_saved">Tabvolgorde opgeslagen</string>
@@ -2305,7 +2307,7 @@
     <string name="playbackbottomsheet_str_30x">3,0x</string>
     <string name="queuebottomsheet_played_songs_are_hidden">Afgespeelde nummers zijn verborgen in de wachtrij</string>
     <string name="songinfobottomsheet_song_artwork">Liedkunstwerk</string>
-    <string name="songinfobottomsheet_details">Details</string>
+    <string name="songinfobottomsheet_details">Bijzonderheden</string>
     <string name="songinfobottomsheet_change_artwork">Wijzig het artwork</string>
     <string name="songinfobottomsheet_remove_artwork">Illustraties verwijderen</string>
     <string name="songinfobottomsheet_artwork_fetched_successfully_click">Kunstwerk succesvol opgehaald! Klik op Opslaan om in te sluiten.</string>

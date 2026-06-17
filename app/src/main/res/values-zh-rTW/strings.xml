@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">還沒有歌曲</string>
     <string name="library_no_artists">未找到藝術家</string>
+    <string name="library_unknown_year">年份不明</string>
     <string name="library_start_collection">開始建立你的音樂收藏</string>
     <string name="library_sort_artists">藝術家排序依據</string>
     <string name="library_storage_locations">儲存位置</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">播放列表</string>
     <string name="settings_tab_albums">專輯</string>
     <string name="settings_tab_artists">藝術家</string>
+    <string name="settings_tab_dates">日期</string>
     <string name="settings_tab_explorer">探索者</string>
     <string name="settings_tab_order_reset">Tab 鍵順序重設為預設值</string>
     <string name="settings_tab_order_saved">Tab 鍵順序已儲存</string>

@@ -54,6 +54,7 @@ import chromahub.rhythm.app.shared.data.model.LyricsData
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.Artist
+import chromahub.rhythm.app.shared.data.model.FolderNode
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.LyricsSourcePreference
@@ -1568,6 +1569,30 @@ class MusicRepository(context: Context) {
             .maxByOrNull { candidate -> metadataQualityScore(candidate) }
     }
 
+    private val discTrackFromFilenameRegex = Regex(
+        """(?:cd|disc|disk|side)[\s._-]*(\d+)[\s._-]+(\d+)""", RegexOption.IGNORE_CASE
+    )
+    private val leadingTrackRegex = Regex("""^(\d{1,3})[-\s._]+""")
+
+    private fun inferTrackDiscFromFilename(filenameWithoutExt: String): Pair<Int, Int> {
+        if (filenameWithoutExt.isBlank()) return 0 to 1
+
+        val discTrackMatch = discTrackFromFilenameRegex.find(filenameWithoutExt)
+        if (discTrackMatch != null) {
+            val disc = discTrackMatch.groupValues[1].toIntOrNull() ?: 1
+            val track = discTrackMatch.groupValues[2].toIntOrNull() ?: 0
+            return track.coerceIn(0, 999) to disc
+        }
+
+        val leadingMatch = leadingTrackRegex.find(filenameWithoutExt)
+        if (leadingMatch != null) {
+            val track = leadingMatch.groupValues[1].toIntOrNull() ?: 0
+            return track.coerceIn(0, 999) to 1
+        }
+
+        return 0 to 1
+    }
+
     private fun createSongFromCursor(cursor: android.database.Cursor, indices: ColumnIndices, appSettings: AppSettings = AppSettings.getInstance(context)): Song? {
         return try {
             val id = cursor.getLong(indices.id)
@@ -1610,13 +1635,24 @@ class MusicRepository(context: Context) {
             val rawTrack = cursor.getInt(indices.track)
             // MediaStore encodes disc number in track: e.g. 1001 = disc 1, track 1.
             // Extract the actual track number by taking modulo 1000.
-            val track = if (rawTrack >= 1000) rawTrack % 1000 else rawTrack
+            val mediaStoreTrack = if (rawTrack >= 1000) rawTrack % 1000 else rawTrack
             
             // Extract disc number natively or fallback to track offset logic
             val fallbackDiscInfo = if (rawTrack >= 1000) rawTrack / 1000 else 1
-            val discNumber = if (indices.discNumber >= 0) {
+            val mediaStoreDisc = if (indices.discNumber >= 0) {
                 cursor.getInt(indices.discNumber).takeIf { it > 0 } ?: fallbackDiscInfo
             } else fallbackDiscInfo
+
+            // Infer track/disc from filename when MediaStore values are missing or zero
+            val filenameWithoutExt = filePath?.let { File(it).nameWithoutExtension }?.trim()
+            val (inferredTrack, inferredDisc) = if (filenameWithoutExt != null) {
+                inferTrackDiscFromFilename(filenameWithoutExt)
+            } else {
+                0 to 1
+            }
+
+            val track = if (mediaStoreTrack > 0) mediaStoreTrack else inferredTrack
+            val discNumber = if (mediaStoreDisc > 0) mediaStoreDisc else inferredDisc
             val year = cursor.getInt(indices.year)
             val observedDateAdded = cursor.getLong(indices.dateAdded) * 1000L
             val dateAdded = resolveStableDateAdded(filePath, observedDateAdded)
@@ -2084,29 +2120,55 @@ class MusicRepository(context: Context) {
         }
     }
 
+    private fun findBestAlbumArtist(songs: List<Song>): String? {
+        val foundAlbumArtists = songs
+            .map { it.albumArtist?.trim()?.takeIf { a -> a.isNotBlank() && !a.equals("<unknown>", ignoreCase = true) } }
+            .groupBy { it }
+            .mapValues { it.value.size }
+        val nonNullCount = foundAlbumArtists.filterKeys { it != null }.size
+        val nullCount = foundAlbumArtists[null] ?: 0
+
+        val theAlbumArtist = foundAlbumArtists.keys.find { it != null }
+        if (theAlbumArtist != null) {
+            val countWithAlbumArtist = foundAlbumArtists[theAlbumArtist]!!
+            if (countWithAlbumArtist >= songs.size / 2 && countWithAlbumArtist > nullCount * 2) {
+                return theAlbumArtist
+            }
+            return null
+        }
+
+        val bestMatch = songs
+            .map { it.artist.trim().takeUnless { a -> a.isBlank() || a.equals("<unknown>", ignoreCase = true) } ?: "Unknown Artist" }
+            .groupBy { it }
+            .maxByOrNull { it.value.size }
+        if (bestMatch == null || bestMatch.key.isBlank()) return null
+        if ((bestMatch.value.size.toFloat() / songs.size) < 0.6f) return null
+        return bestMatch.key
+    }
+
     suspend fun loadAlbums(): List<Album> = withContext(Dispatchers.IO) {
         val allSongs = loadSongs()
         
-        // Group songs by a combination of album name and album artist/artist
-        // (case-insensitive comparison) to ensure songs with same album name
-        // but different artists, or vice versa, are grouped properly.
+        // Group by (normalized album name, raw album artist) to keep distinct albums separate.
+        // Within each group, derive a smart best album artist for display.
         val groupedSongs = allSongs.groupBy { song ->
             val albumName = song.album.trim().lowercase(Locale.ROOT)
-            val albumArtist = (song.albumArtist?.trim()?.takeIf { it.isNotBlank() }
+            val rawGroupKey = (song.albumArtist?.trim()?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
                 ?: song.artist.trim().takeIf { it.isNotBlank() }
                 ?: "Unknown Artist").lowercase(Locale.ROOT)
-            albumName to albumArtist
+            albumName to rawGroupKey
         }
 
         val albums = groupedSongs.map { (key, albumSongs) ->
-            val firstSong = albumSongs.first()
-            val albumName = firstSong.album.trim().ifBlank { "Unknown Album" }
-            val albumArtist = firstSong.albumArtist?.trim()?.takeIf { it.isNotBlank() }
-                ?: firstSong.artist.trim().takeIf { it.isNotBlank() }
-                ?: "Unknown Artist"
+            val albumName = albumSongs.first().album.trim().ifBlank { "Unknown Album" }
             
+            val smartArtist = findBestAlbumArtist(albumSongs)
+                ?: albumSongs.first().albumArtist?.trim()?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
+                ?: albumSongs.first().artist.trim().takeIf { it.isNotBlank() }
+                ?: "Unknown Artist"
+
             // Generate a stable unique album ID by hashing the album name and artist combination.
-            val albumId = "hash_${(albumName + "|" + albumArtist).lowercase(Locale.ROOT).hashCode()}"
+            val albumId = "hash_${key.first}|${smartArtist.lowercase(Locale.ROOT)}"
             
             // Find the maximum year among the songs
             val year = albumSongs.maxOfOrNull { it.year } ?: 0
@@ -2124,8 +2186,8 @@ class MusicRepository(context: Context) {
             Album(
                 id = albumId,
                 title = albumName,
-                artist = albumArtist,
-                artworkUri = firstSong.artworkUri,
+                artist = smartArtist,
+                artworkUri = albumSongs.first().artworkUri,
                 year = year,
                 songs = sortedSongs,
                 numberOfSongs = sortedSongs.size,
@@ -2458,6 +2520,28 @@ class MusicRepository(context: Context) {
         Log.d(TAG, "Music data refresh complete.")
         
         return Triple(songs, albums, artists)
+    }
+
+    private var cachedFolderTree: FolderNode? = null
+    private var cachedFolderTreeSongsHash: Int = 0
+
+    private fun fastSongsHash(songs: List<Song>): Int {
+        var hash = songs.size
+        val step = maxOf(1, songs.size / 100)
+        for (i in songs.indices step step) {
+            hash = 31 * hash + songs[i].id.hashCode()
+        }
+        return hash
+    }
+
+    suspend fun getFolderTree(): FolderNode = withContext(Dispatchers.IO) {
+        val songs = loadSongs()
+        val songsHash = fastSongsHash(songs)
+        if (cachedFolderTree == null || songsHash != cachedFolderTreeSongsHash) {
+            cachedFolderTree = buildFolderTree(songs)
+            cachedFolderTreeSongsHash = songsHash
+        }
+        cachedFolderTree!!
     }
     
     /**
@@ -6233,5 +6317,111 @@ class MusicRepository(context: Context) {
             Log.e(TAG, "Error getting songs for album $albumId", e)
             emptyList()
         }
+    }
+
+    private val allowedCoverExtensions = setOf("jpg", "jpeg", "png", "webp", "bmp", "gif")
+
+    fun findBestCover(songFolder: File): File? {
+        var bestScore = 0
+        var bestFile: File? = null
+        try {
+            val files = songFolder.listFiles() ?: return null
+            for (file in files) {
+                if (file.extension.lowercase() !in allowedCoverExtensions) continue
+                var score = 1
+                when (file.extension.lowercase()) {
+                    "jpg" -> score += 3
+                    "png" -> score += 2
+                    "jpeg" -> score += 1
+                }
+                val nameLower = file.nameWithoutExtension.lowercase()
+                if (nameLower == "albumart") score += 24
+                else if (nameLower == "cover") score += 20
+                else if (nameLower.startsWith("albumart")) score += 16
+                else if (nameLower.startsWith("cover")) score += 12
+                else if (nameLower.contains("albumart")) score += 8
+                else if (nameLower.contains("cover")) score += 4
+                if (bestScore < score) {
+                    bestScore = score
+                    bestFile = file
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error scanning for cover art", e)
+        }
+        if (bestScore >= 3) return bestFile
+        return null
+    }
+
+    fun buildFolderTree(songs: List<Song>): FolderNode {
+        val rootMap = mutableMapOf<String, FolderTreeBuilderNode>()
+
+        for (song in songs) {
+            val filePath = song.path ?: continue
+            val file = File(filePath)
+            val parentPath = file.parent ?: continue
+            val segments = parentPath.replace("\\", "/")
+                .trim('/')
+                .split('/')
+                .filter { it.isNotBlank() }
+
+            var currentLevel = rootMap
+            var currentPath = ""
+            for (i in segments.indices) {
+                val segment = segments[i]
+                currentPath = if (currentPath.isEmpty()) segment else "$currentPath/$segment"
+                val node = currentLevel.getOrPut(segment) {
+                    FolderTreeBuilderNode(segment, currentPath)
+                }
+                if (i == segments.lastIndex) {
+                    node.songList.add(song)
+                    val trackAlbumId = song.albumId.toLongOrNull()
+                    if (node.albumId == null && node.songList.size == 1) {
+                        node.albumId = trackAlbumId
+                    } else if (trackAlbumId != null && trackAlbumId != node.albumId) {
+                        node.albumId = null
+                    }
+                }
+                currentLevel = node.children
+            }
+        }
+
+        fun buildNode(name: String, builderNode: FolderTreeBuilderNode): FolderNode {
+            val sortedSongs = builderNode.songList.sortedBy { it.trackNumber }
+            val coverUri = findBestCover(File(builderNode.path))?.let { Uri.fromFile(it) }
+            val subFolders = builderNode.children.map { (childName, childNode) ->
+                childName to buildNode(childName, childNode)
+            }.toMap()
+
+            val totalCount = sortedSongs.size + subFolders.values.sumOf { it.totalSongCount }
+
+            return FolderNode(
+                name = name,
+                path = builderNode.path,
+                subFolders = subFolders,
+                songs = sortedSongs,
+                albumId = builderNode.albumId,
+                coverUri = coverUri,
+                totalSongCount = totalCount
+            )
+        }
+
+        val rootSubFolders = rootMap.map { (name, node) -> name to buildNode(name, node) }.toMap()
+        return FolderNode(
+            name = "",
+            path = "/",
+            subFolders = rootSubFolders,
+            songs = emptyList(),
+            totalSongCount = rootSubFolders.values.sumOf { it.totalSongCount }
+        )
+    }
+
+    private class FolderTreeBuilderNode(
+        val name: String,
+        val path: String
+    ) {
+        val children = mutableMapOf<String, FolderTreeBuilderNode>()
+        val songList = mutableListOf<Song>()
+        var albumId: Long? = null
     }
 }

@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">لا توجد أغاني بعد</string>
     <string name="library_no_artists">لم يتم العثور على فنانين</string>
+    <string name="library_unknown_year">سنة غير معروفة</string>
     <string name="library_start_collection">ابدأ في بناء مجموعتك الموسيقية</string>
     <string name="library_sort_artists">فرز الفنانين حسب</string>
     <string name="library_storage_locations">مواقع التخزين</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">قوائم التشغيل</string>
     <string name="settings_tab_albums">الألبومات</string>
     <string name="settings_tab_artists">الفنانين</string>
+    <string name="settings_tab_dates">التواريخ</string>
     <string name="settings_tab_explorer">المستكشف</string>
     <string name="settings_tab_order_reset">تمت إعادة تعيين ترتيب الجدولة إلى الوضع الافتراضي</string>
     <string name="settings_tab_order_saved">تم حفظ ترتيب علامات التبويب</string>

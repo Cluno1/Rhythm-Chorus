@@ -411,6 +411,7 @@
     
     <string name="library_no_songs">अभी तक कोई गाना नहीं है</string>
     <string name="library_no_artists">कोई कलाकार नहीं मिला</string>
+    <string name="library_unknown_year">अज्ञात वर्ष</string>
     <string name="library_start_collection">अपना संगीत संग्रह बनाना शुरू करें</string>
     <string name="library_sort_artists">कलाकारों को क्रमबद्ध करें</string>
     <string name="library_storage_locations">भंडारण स्थान</string>
@@ -1817,6 +1818,7 @@
     <string name="settings_tab_playlists">प्लेलिस्ट</string>
     <string name="settings_tab_albums">एल्बम</string>
     <string name="settings_tab_artists">कलाकार</string>
+    <string name="settings_tab_dates">तारीखें</string>
     <string name="settings_tab_explorer">एक्सप्लोरर</string>
     <string name="settings_tab_order_reset">टैब ऑर्डर डिफ़ॉल्ट पर रीसेट हो गया</string>
     <string name="settings_tab_order_saved">टैब ऑर्डर सहेजा गया</string>
