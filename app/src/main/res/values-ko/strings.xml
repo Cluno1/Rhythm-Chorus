@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">조직 및 등급</string>
     <string name="settings_library_combine_discs">디스크 결합</string>
     <string name="settings_library_combine_discs_desc">다중 디스크 앨범을 하나의 연속 정렬로 병합</string>
+    <string name="settings_show_library_bottom_bar_always">라이브러리 하단 표시줄을 항상 표시합니다.</string>
+    <string name="settings_show_library_bottom_bar_always_desc">모든 탭 아래에 하단 표시줄을 표시하거나 숨기고 상단 표시줄 작업에 주요 작업을 표시합니다.</string>
     <string name="settings_show_keyboard_on_search_open">자동 초점 검색</string>
     <string name="settings_show_keyboard_on_search_open_desc">검색이 열릴 때 키보드 표시</string>
     <string name="settings_library_group_artwork">작품 렌더링</string>

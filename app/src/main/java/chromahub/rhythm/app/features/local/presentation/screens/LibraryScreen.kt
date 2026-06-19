@@ -309,6 +309,7 @@ fun LibraryScreen(
     val tabOrder by appSettings.libraryTabOrder.collectAsState()
     val hiddenTabs by appSettings.hiddenLibraryTabs.collectAsState()
     val enableRatingSystem by appSettings.enableRatingSystem.collectAsState()
+    val showLibraryBottomBarAlways by appSettings.showLibraryBottomBarAlways.collectAsState()
     
     val tabs = remember(tabOrder, hiddenTabs) {
         tabOrder
@@ -908,6 +909,18 @@ fun LibraryScreen(
         )
     }
 
+    val activeTabIdOuter = visibleTabIds.getOrNull(pagerState.currentPage) ?: ""
+    val bottomBarSongs = remember(activeTabIdOuter, filteredSongs, sortedAlbums, sortedArtists, explorerFolderSongs) {
+        when (activeTabIdOuter) {
+            "SONGS" -> filteredSongs
+            "DATES" -> filteredSongs
+            "ALBUMS" -> sortedAlbums.flatMap { it.songs }
+            "ARTISTS" -> sortedArtists.flatMap { it.songs }
+            "EXPLORER" -> explorerFolderSongs
+            else -> emptyList()
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
@@ -931,6 +944,35 @@ fun LibraryScreen(
                     )
                 },
                 actions = {
+                    val showShuffle = !showLibraryBottomBarAlways && !isSelectionMode && bottomBarSongs.isNotEmpty() && activeTabIdOuter != "ARTISTS"
+
+                    AnimatedVisibility(
+                        visible = showShuffle,
+                        enter = fadeIn() + expandHorizontally(),
+                        exit = fadeOut() + shrinkHorizontally()
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            FilledTonalIconButton(
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    onShuffleQueue(bottomBarSongs)
+                                },
+                                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                ),
+                                modifier = Modifier.size(42.dp)
+                            ) {
+                                Icon(
+                                    imageVector = RhythmIcons.Shuffle,
+                                    contentDescription = "Shuffle",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                    }
+
                     when (visibleTabIds.getOrNull(selectedTabIndex)) {
                         "ALBUMS" -> {
                             val buttonScale by animateFloatAsState(
@@ -1907,7 +1949,7 @@ fun LibraryScreen(
                         val shouldShowBottomBar = if (isSelectionMode) {
                             hasContent
                         } else {
-                            hasContent && when (activeTabId) {
+                            showLibraryBottomBarAlways && hasContent && when (activeTabId) {
                                 "SONGS" -> !songsScrollInProgress || songsScrollingUp
                                 "DATES" -> !songsScrollInProgress || songsScrollingUp
                                 "ALBUMS" -> {
@@ -1917,17 +1959,6 @@ fun LibraryScreen(
                                 }
                                 "EXPLORER" -> !explorerScrollInProgress || explorerScrollingUp
                                 else -> true
-                            }
-                        }
-                        
-                        val bottomBarSongs = remember(activeTabId, filteredSongs, sortedAlbums, sortedArtists, explorerFolderSongs) {
-                            when (activeTabId) {
-                                "SONGS" -> filteredSongs
-                                "DATES" -> filteredSongs
-                                "ALBUMS" -> sortedAlbums.flatMap { it.songs }
-                                "ARTISTS" -> sortedArtists.flatMap { it.songs }
-                                "EXPLORER" -> explorerFolderSongs
-                                else -> emptyList()
                             }
                         }
                         

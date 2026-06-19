@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">Organizasyon ve Derecelendirmeler</string>
     <string name="settings_library_combine_discs">Diskleri Birleştir</string>
     <string name="settings_library_combine_discs_desc">Çok diskli albümleri tek bir sürekli sıralamada birleştirin</string>
+    <string name="settings_show_library_bottom_bar_always">Kitaplığın alt çubuğunu her zaman göster</string>
+    <string name="settings_show_library_bottom_bar_always_desc">Alt çubuğu tüm sekmeler altında görünür tutun veya gizleyin ve üst çubuk eylemlerinde temel eylemleri gösterin</string>
     <string name="settings_show_keyboard_on_search_open">Otomatik Odak Arama</string>
     <string name="settings_show_keyboard_on_search_open_desc">Arama açıldığında klavyeyi göster</string>
     <string name="settings_library_group_artwork">Sanat Eseri Oluşturma</string>

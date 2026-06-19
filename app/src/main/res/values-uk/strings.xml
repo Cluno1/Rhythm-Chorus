@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">Організація та рейтинги</string>
     <string name="settings_library_combine_discs">Комбіновані диски</string>
     <string name="settings_library_combine_discs_desc">Об’єднайте багатодискові альбоми в одне безперервне сортування</string>
+    <string name="settings_show_library_bottom_bar_always">Завжди показувати нижню панель бібліотеки</string>
+    <string name="settings_show_library_bottom_bar_always_desc">Зберігайте нижню панель видимою під усіма вкладками або приховайте її та показуйте ключові дії на верхній панелі дій</string>
     <string name="settings_show_keyboard_on_search_open">Пошук автофокусування</string>
     <string name="settings_show_keyboard_on_search_open_desc">Показувати клавіатуру, коли відкривається пошук</string>
     <string name="settings_library_group_artwork">Візуалізація ілюстрацій</string>

@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">Organisation och betyg</string>
     <string name="settings_library_combine_discs">Kombinera skivor</string>
     <string name="settings_library_combine_discs_desc">Slå samman album med flera skivor till en kontinuerlig sortering</string>
+    <string name="settings_show_library_bottom_bar_always">Visa bibliotekets nedre fält alltid</string>
+    <string name="settings_show_library_bottom_bar_always_desc">Håll nedre fältet synligt under alla flikar, eller dölj det och visa nyckelåtgärder i det översta fältet.</string>
     <string name="settings_show_keyboard_on_search_open">Autofokussökning</string>
     <string name="settings_show_keyboard_on_search_open_desc">Visa tangentbordet när Sök öppnas</string>
     <string name="settings_library_group_artwork">Konstverksrendering</string>

@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">组织与评级</string>
     <string name="settings_library_combine_discs">组合光盘</string>
     <string name="settings_library_combine_discs_desc">将多光盘专辑合并为一个连续排序</string>
+    <string name="settings_show_library_bottom_bar_always">始终显示库底部栏</string>
+    <string name="settings_show_library_bottom_bar_always_desc">保持底栏在所有选项卡下可见，或隐藏它并在顶栏操作中显示关键操作</string>
     <string name="settings_show_keyboard_on_search_open">自动对焦搜索</string>
     <string name="settings_show_keyboard_on_search_open_desc">搜索打开时显示键盘</string>
     <string name="settings_library_group_artwork">艺术品渲染</string>

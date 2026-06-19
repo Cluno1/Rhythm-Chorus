@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">องค์กรและการให้คะแนน</string>
     <string name="settings_library_combine_discs">รวมแผ่นดิสก์</string>
     <string name="settings_library_combine_discs_desc">รวมอัลบั้มหลายดิสก์เป็นการจัดเรียงต่อเนื่องกัน</string>
+    <string name="settings_show_library_bottom_bar_always">แสดงแถบด้านล่างของไลบรารีเสมอ</string>
+    <string name="settings_show_library_bottom_bar_always_desc">ทำให้แถบด้านล่างมองเห็นได้ใต้แท็บทั้งหมด หรือซ่อนและแสดงการทำงานหลักในการทำงานของแถบด้านบน</string>
     <string name="settings_show_keyboard_on_search_open">ค้นหาโฟกัสอัตโนมัติ</string>
     <string name="settings_show_keyboard_on_search_open_desc">แสดงแป้นพิมพ์เมื่อการค้นหาเปิดขึ้น</string>
     <string name="settings_library_group_artwork">การแสดงผลงานศิลปะ</string>

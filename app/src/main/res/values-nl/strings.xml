@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">Organisatie en beoordelingen</string>
     <string name="settings_library_combine_discs">Combineer schijven</string>
     <string name="settings_library_combine_discs_desc">Voeg albums met meerdere schijven samen tot één doorlopende sortering</string>
+    <string name="settings_show_library_bottom_bar_always">Toon altijd de onderste balk van de bibliotheek</string>
+    <string name="settings_show_library_bottom_bar_always_desc">Houd de onderste balk zichtbaar onder alle tabbladen, of verberg deze en toon belangrijke acties in de acties in de bovenste balk</string>
     <string name="settings_show_keyboard_on_search_open">Autofocus zoeken</string>
     <string name="settings_show_keyboard_on_search_open_desc">Toetsenbord weergeven wanneer Zoeken wordt geopend</string>
     <string name="settings_library_group_artwork">Rendering van kunstwerken</string>

@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">Organisation &amp; Bewertungen</string>
     <string name="settings_library_combine_discs">Scheiben kombinieren</string>
     <string name="settings_library_combine_discs_desc">Multi-Disc-Alben in einer fortlaufenden Sortierung zusammenführen</string>
+    <string name="settings_show_library_bottom_bar_always">Untere Leiste der Bibliothek immer anzeigen</string>
+    <string name="settings_show_library_bottom_bar_always_desc">Lassen Sie die untere Leiste unter allen Registerkarten sichtbar oder blenden Sie sie aus und zeigen Sie wichtige Aktionen in den Aktionen der oberen Leiste an</string>
     <string name="settings_show_keyboard_on_search_open">Autofokus-Suche</string>
     <string name="settings_show_keyboard_on_search_open_desc">Tastatur anzeigen, wenn die Suche geöffnet wird</string>
     <string name="settings_library_group_artwork">Grafik-Rendering</string>

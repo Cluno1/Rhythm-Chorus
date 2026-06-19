@@ -69,6 +69,9 @@ import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
+import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
+import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShape
+import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
 import chromahub.rhythm.app.util.ImageUtils
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
@@ -357,6 +360,8 @@ private fun CreateNewPlaylistCard(
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
+    val arrowContainerShape = rememberExpressiveShape("COOKIE_7", CircleShape)
+
     Card(
         onClick = {
             HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
@@ -377,19 +382,19 @@ private fun CreateNewPlaylistCard(
                 .padding(vertical = 16.dp, horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Leading icon
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
+            Surface(
+                shape = arrowContainerShape,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(40.dp)
             ) {
-                Icon(
-                    imageVector = RhythmIcons.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = RhythmIcons.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
+                        tint = MaterialTheme.colorScheme.primaryContainer
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.width(16.dp))
@@ -424,6 +429,7 @@ private fun PlaylistCard(
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     var isPressed by remember { mutableStateOf(false) }
+    val playlistArtShape = rememberExpressiveShapeFor(ExpressiveShapeTarget.PLAYLIST_ART)
     
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.98f else 1f,
@@ -454,10 +460,9 @@ private fun PlaylistCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Leading playlist artwork/icon
             Surface(
                 modifier = Modifier.size(56.dp),
-                shape = RoundedCornerShape(14.dp),
+                shape = playlistArtShape,
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
                 tonalElevation = 2.dp
             ) {

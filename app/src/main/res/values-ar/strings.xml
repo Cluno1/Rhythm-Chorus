@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">التنظيم والتقييمات</string>
     <string name="settings_library_combine_discs">الجمع بين الأقراص</string>
     <string name="settings_library_combine_discs_desc">دمج الألبومات متعددة الأقراص في فرز واحد مستمر</string>
+    <string name="settings_show_library_bottom_bar_always">إظهار الشريط السفلي للمكتبة دائمًا</string>
+    <string name="settings_show_library_bottom_bar_always_desc">اجعل الشريط السفلي مرئيًا أسفل جميع علامات التبويب، أو قم بإخفائه وإظهار الإجراءات الرئيسية في إجراءات الشريط العلوي</string>
     <string name="settings_show_keyboard_on_search_open">بحث التركيز التلقائي</string>
     <string name="settings_show_keyboard_on_search_open_desc">إظهار لوحة المفاتيح عند فتح البحث</string>
     <string name="settings_library_group_artwork">تقديم العمل الفني</string>

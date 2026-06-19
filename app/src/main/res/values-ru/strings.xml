@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">Организация и рейтинги</string>
     <string name="settings_library_combine_discs">Объединение дисков</string>
     <string name="settings_library_combine_discs_desc">Объединение многодисковых альбомов в одну непрерывную сортировку.</string>
+    <string name="settings_show_library_bottom_bar_always">Всегда показывать нижнюю панель библиотеки.</string>
+    <string name="settings_show_library_bottom_bar_always_desc">Оставьте нижнюю панель видимой под всеми вкладками или скройте ее и покажите ключевые действия в действиях верхней панели.</string>
     <string name="settings_show_keyboard_on_search_open">Поиск автофокуса</string>
     <string name="settings_show_keyboard_on_search_open_desc">Показывать клавиатуру при открытии поиска</string>
     <string name="settings_library_group_artwork">Рендеринг графического изображения</string>

@@ -473,6 +473,16 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             settingKey = "libraryCombineDiscs"
         ))
         add(SearchableSettingItem(
+            id = "show_library_bottom_bar_always",
+            title = context.getString(R.string.settings_show_library_bottom_bar_always),
+            description = context.getString(R.string.settings_show_library_bottom_bar_always_desc),
+            keywords = listOf("bottom bar", "library", "visible", "visibility", "always", "hide", "show"),
+            icon = MaterialSymbolIcon("view_agenda"),
+            route = SettingsRoutes.LIBRARY_SETTINGS,
+            parentScreen = context.getString(R.string.settings_library_settings),
+            settingKey = "showLibraryBottomBarAlways"
+        ))
+        add(SearchableSettingItem(
             id = "auto_fetch_artwork",
             title = context.getString(R.string.librarysettingsscreen_autofetch_artwork),
             description = "Automatically search online APIs for missing cover artwork on startup",

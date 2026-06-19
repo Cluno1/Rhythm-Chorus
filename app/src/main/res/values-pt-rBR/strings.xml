@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">Organização e classificações</string>
     <string name="settings_library_combine_discs">Combinar discos</string>
     <string name="settings_library_combine_discs_desc">Mesclar álbuns de vários discos em uma classificação contínua</string>
+    <string name="settings_show_library_bottom_bar_always">Mostrar sempre a barra inferior da biblioteca</string>
+    <string name="settings_show_library_bottom_bar_always_desc">Mantenha a barra inferior visível em todas as guias ou oculte-a e mostre as principais ações nas ações da barra superior</string>
     <string name="settings_show_keyboard_on_search_open">Pesquisa de foco automático</string>
     <string name="settings_show_keyboard_on_search_open_desc">Mostrar teclado quando a Pesquisa for aberta</string>
     <string name="settings_library_group_artwork">Renderização de arte</string>

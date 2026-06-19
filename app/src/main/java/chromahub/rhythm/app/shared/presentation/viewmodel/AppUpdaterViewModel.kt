@@ -173,7 +173,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         AppVersion(
             versionName = BuildConfig.VERSION_NAME,
             versionCode = BuildConfig.VERSION_CODE,
-            releaseDate = "2026-06-16", // Update manually with each release
+            releaseDate = "2026-06-19", // Update manually with each release
             whatsNew = emptyList(),
             knownIssues = emptyList(),
             downloadUrl = "",

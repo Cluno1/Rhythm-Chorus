@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">সংস্থা এবং রেটিং</string>
     <string name="settings_library_combine_discs">ডিস্ক একত্রিত করুন</string>
     <string name="settings_library_combine_discs_desc">মাল্টি-ডিস্ক অ্যালবামগুলিকে একটি ক্রমাগত সাজাতে একত্রিত করুন</string>
+    <string name="settings_show_library_bottom_bar_always">সর্বদা লাইব্রেরির নিচের বার দেখান</string>
+    <string name="settings_show_library_bottom_bar_always_desc">নীচের বারটি সমস্ত ট্যাবের অধীনে দৃশ্যমান রাখুন, অথবা এটিকে লুকিয়ে রাখুন এবং শীর্ষ বারের ক্রিয়াগুলিতে মূল ক্রিয়াগুলি দেখান</string>
     <string name="settings_show_keyboard_on_search_open">অটো ফোকাস অনুসন্ধান</string>
     <string name="settings_show_keyboard_on_search_open_desc">অনুসন্ধান খুললে কীবোর্ড দেখান</string>
     <string name="settings_library_group_artwork">আর্টওয়ার্ক রেন্ডারিং</string>

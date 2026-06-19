@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">Organisasi &amp; Pemeringkatan</string>
     <string name="settings_library_combine_discs">Gabungkan Disk</string>
     <string name="settings_library_combine_discs_desc">Gabungkan album multi-disk menjadi satu jenis yang berkesinambungan</string>
+    <string name="settings_show_library_bottom_bar_always">Selalu tampilkan bilah bawah perpustakaan</string>
+    <string name="settings_show_library_bottom_bar_always_desc">Biarkan bilah bawah tetap terlihat di bawah semua tab, atau sembunyikan dan tampilkan tindakan utama di tindakan bilah atas</string>
     <string name="settings_show_keyboard_on_search_open">Pencarian Fokus Otomatis</string>
     <string name="settings_show_keyboard_on_search_open_desc">Tampilkan keyboard saat Pencarian terbuka</string>
     <string name="settings_library_group_artwork">Rendering Karya Seni</string>

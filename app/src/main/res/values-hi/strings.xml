@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">संगठन और रेटिंग</string>
     <string name="settings_library_combine_discs">कंबाइन डिस्क</string>
     <string name="settings_library_combine_discs_desc">मल्टी-डिस्क एल्बम को एक सतत सॉर्ट में मर्ज करें</string>
+    <string name="settings_show_library_bottom_bar_always">लाइब्रेरी बॉटम बार हमेशा दिखाएं</string>
+    <string name="settings_show_library_bottom_bar_always_desc">निचली पट्टी को सभी टैब के नीचे दृश्यमान रखें, या इसे छुपाएं और मुख्य क्रियाओं को शीर्ष पट्टी की क्रियाओं में दिखाएं</string>
     <string name="settings_show_keyboard_on_search_open">ऑटो फोकस खोज</string>
     <string name="settings_show_keyboard_on_search_open_desc">सर्च खुलने पर कीबोर्ड दिखाएं</string>
     <string name="settings_library_group_artwork">कलाकृति प्रतिपादन</string>

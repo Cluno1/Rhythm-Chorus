@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">Tổ chức &amp; xếp hạng</string>
     <string name="settings_library_combine_discs">Kết hợp đĩa</string>
     <string name="settings_library_combine_discs_desc">Hợp nhất các album nhiều đĩa thành một sắp xếp liên tục</string>
+    <string name="settings_show_library_bottom_bar_always">Luôn hiển thị thanh dưới cùng của thư viện</string>
+    <string name="settings_show_library_bottom_bar_always_desc">Giữ thanh dưới cùng hiển thị trong tất cả các tab hoặc ẩn nó và hiển thị các hành động chính trong các hành động của thanh trên cùng</string>
     <string name="settings_show_keyboard_on_search_open">Tìm kiếm lấy nét tự động</string>
     <string name="settings_show_keyboard_on_search_open_desc">Hiển thị bàn phím khi Tìm kiếm mở</string>
     <string name="settings_library_group_artwork">Kết xuất tác phẩm nghệ thuật</string>

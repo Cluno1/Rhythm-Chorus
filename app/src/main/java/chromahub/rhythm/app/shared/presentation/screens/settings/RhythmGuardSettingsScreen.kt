@@ -1918,239 +1918,251 @@ fun BackupRestoreSectionPickerBottomSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = RhythmIcons.Tune,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                        Column {
-                            Text(
-                                text = stringResource(R.string.rhythmguardsettingsscreen_choose_sections),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = stringResource(R.string.backup_restore_sections_enabled, selectedSectionCount, 3),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilledTonalButton(
-                            onClick = {
-                                onSectionsChange(
-                                    sections.copy(
-                                        includeGeneralSettings = true,
-                                        includeLibraryData = true,
-                                        includeStatsAndRhythmGuard = true
-                                    )
-                                )
-                            },
-                            enabled = !isProcessing,
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
-                        ) {
-                            Text(stringResource(R.string.autoeqprofileselector_all), style = MaterialTheme.typography.labelLarge)
-                        }
-                        FilledTonalButton(
-                            onClick = {
-                                onSectionsChange(
-                                    sections.copy(
-                                        includeGeneralSettings = false,
-                                        includeLibraryData = false,
-                                        includeStatsAndRhythmGuard = false
-                                    )
-                                )
-                            },
-                            enabled = !isProcessing,
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
-                        ) {
-                            Text(stringResource(R.string.rhythmguardsettingsscreen_none), style = MaterialTheme.typography.labelLarge)
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            val pickerItems = listOf(
-                Material3SettingsItem(
-                    icon = RhythmIcons.Settings,
-                    title = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.rhythmguardsettingsscreen_general_settings),
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Surface(
-                                shape = RoundedCornerShape(999.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.backup_restore_section_core),
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    },
-                    description = {
-                        Text(stringResource(R.string.backup_restore_section_core_desc))
-                    },
-                    trailingContent = {
-                        Column(horizontalAlignment = Alignment.End) {
-                            TunerAnimatedSwitch(
-                                checked = sections.includeGeneralSettings,
-                                onCheckedChange = { onSectionsChange(sections.copy(includeGeneralSettings = it)) }
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = if (sections.includeGeneralSettings) stringResource(R.string.backup_restore_status_included) else stringResource(R.string.backup_restore_status_excluded),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    },
-                    onClick = {
-                        onSectionsChange(sections.copy(includeGeneralSettings = !sections.includeGeneralSettings))
-                    }
-                ),
-                Material3SettingsItem(
-                    icon = RhythmIcons.Library,
-                    title = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.rhythmguardsettingsscreen_library_data),
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Surface(
-                                shape = RoundedCornerShape(999.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.backup_restore_section_collection),
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    },
-                    description = {
-                        Text(stringResource(R.string.backup_restore_section_collection_desc))
-                    },
-                    trailingContent = {
-                        Column(horizontalAlignment = Alignment.End) {
-                            TunerAnimatedSwitch(
-                                checked = sections.includeLibraryData,
-                                onCheckedChange = { onSectionsChange(sections.copy(includeLibraryData = it)) }
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = if (sections.includeLibraryData) stringResource(R.string.backup_restore_status_included) else stringResource(R.string.backup_restore_status_excluded),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    },
-                    onClick = {
-                        onSectionsChange(sections.copy(includeLibraryData = !sections.includeLibraryData))
-                    }
-                ),
-                Material3SettingsItem(
-                    icon = MaterialSymbolIcon("auto_graph"),
-                    title = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.rhythmguardsettingsscreen_stats_rhythm_guard),
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Surface(
-                                shape = RoundedCornerShape(999.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.backup_restore_section_insight),
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    },
-                    description = {
-                        Text(stringResource(R.string.backup_restore_section_insight_desc))
-                    },
-                    trailingContent = {
-                        Column(horizontalAlignment = Alignment.End) {
-                            TunerAnimatedSwitch(
-                                checked = sections.includeStatsAndRhythmGuard,
-                                onCheckedChange = { onSectionsChange(sections.copy(includeStatsAndRhythmGuard = it)) }
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = if (sections.includeStatsAndRhythmGuard) stringResource(R.string.backup_restore_status_included) else stringResource(R.string.backup_restore_status_excluded),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    },
-                    onClick = {
-                        onSectionsChange(sections.copy(includeStatsAndRhythmGuard = !sections.includeStatsAndRhythmGuard))
-                    }
-                )
-            )
-
             Box(
                 modifier = Modifier
+                    .weight(1f, fill = false)
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
             ) {
-                Material3SettingsGroup(
-                    items = pickerItems,
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Tune,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.rhythmguardsettingsscreen_choose_sections),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.backup_restore_sections_enabled, selectedSectionCount, 3),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                FilledTonalButton(
+                                    onClick = {
+                                        onSectionsChange(
+                                            sections.copy(
+                                                includeGeneralSettings = true,
+                                                includeLibraryData = true,
+                                                includeStatsAndRhythmGuard = true
+                                            )
+                                        )
+                                    },
+                                    enabled = !isProcessing,
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
+                                ) {
+                                    Text(stringResource(R.string.autoeqprofileselector_all), style = MaterialTheme.typography.labelLarge)
+                                }
+                                FilledTonalButton(
+                                    onClick = {
+                                        onSectionsChange(
+                                            sections.copy(
+                                                includeGeneralSettings = false,
+                                                includeLibraryData = false,
+                                                includeStatsAndRhythmGuard = false
+                                            )
+                                        )
+                                    },
+                                    enabled = !isProcessing,
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
+                                ) {
+                                    Text(stringResource(R.string.rhythmguardsettingsscreen_none), style = MaterialTheme.typography.labelLarge)
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    val pickerItems = listOf(
+                        Material3SettingsItem(
+                            icon = RhythmIcons.Settings,
+                            title = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.rhythmguardsettingsscreen_general_settings),
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(999.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.backup_restore_section_core),
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            },
+                            description = {
+                                Text(stringResource(R.string.backup_restore_section_core_desc))
+                            },
+                            trailingContent = {
+                                Column(horizontalAlignment = Alignment.End) {
+                                    TunerAnimatedSwitch(
+                                        checked = sections.includeGeneralSettings,
+                                        onCheckedChange = { onSectionsChange(sections.copy(includeGeneralSettings = it)) }
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = if (sections.includeGeneralSettings) stringResource(R.string.backup_restore_status_included) else stringResource(R.string.backup_restore_status_excluded),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            },
+                            onClick = {
+                                onSectionsChange(sections.copy(includeGeneralSettings = !sections.includeGeneralSettings))
+                            }
+                        ),
+                        Material3SettingsItem(
+                            icon = RhythmIcons.Library,
+                            title = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.rhythmguardsettingsscreen_library_data),
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(999.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.backup_restore_section_collection),
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            },
+                            description = {
+                                Text(stringResource(R.string.backup_restore_section_collection_desc))
+                            },
+                            trailingContent = {
+                                Column(horizontalAlignment = Alignment.End) {
+                                    TunerAnimatedSwitch(
+                                        checked = sections.includeLibraryData,
+                                        onCheckedChange = { onSectionsChange(sections.copy(includeLibraryData = it)) }
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = if (sections.includeLibraryData) stringResource(R.string.backup_restore_status_included) else stringResource(R.string.backup_restore_status_excluded),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            },
+                            onClick = {
+                                onSectionsChange(sections.copy(includeLibraryData = !sections.includeLibraryData))
+                            }
+                        ),
+                        Material3SettingsItem(
+                            icon = MaterialSymbolIcon("auto_graph"),
+                            title = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.rhythmguardsettingsscreen_stats_rhythm_guard),
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(999.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.backup_restore_section_insight),
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            },
+                            description = {
+                                Text(stringResource(R.string.backup_restore_section_insight_desc))
+                            },
+                            trailingContent = {
+                                Column(horizontalAlignment = Alignment.End) {
+                                    TunerAnimatedSwitch(
+                                        checked = sections.includeStatsAndRhythmGuard,
+                                        onCheckedChange = { onSectionsChange(sections.copy(includeStatsAndRhythmGuard = it)) }
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = if (sections.includeStatsAndRhythmGuard) stringResource(R.string.backup_restore_status_included) else stringResource(R.string.backup_restore_status_excluded),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            },
+                            onClick = {
+                                onSectionsChange(sections.copy(includeStatsAndRhythmGuard = !sections.includeStatsAndRhythmGuard))
+                            }
+                        )
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                    ) {
+                        Material3SettingsGroup(
+                            items = pickerItems,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(18.dp))

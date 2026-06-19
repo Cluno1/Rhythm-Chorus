@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">அமைப்பு மற்றும் மதிப்பீடுகள்</string>
     <string name="settings_library_combine_discs">டிஸ்க்குகளை இணைக்கவும்</string>
     <string name="settings_library_combine_discs_desc">மல்டி-டிஸ்க் ஆல்பங்களை ஒரு தொடர்ச்சியான வகையாக இணைக்கவும்</string>
+    <string name="settings_show_library_bottom_bar_always">எப்போதும் நூலகத்தின் கீழ்ப் பட்டியைக் காட்டு</string>
+    <string name="settings_show_library_bottom_bar_always_desc">அனைத்து தாவல்களின் கீழும் கீழ் பட்டியை தெரியும்படி வைக்கவும் அல்லது அதை மறைத்து முக்கிய செயல்களை மேல் பட்டியின் செயல்களில் காட்டவும்</string>
     <string name="settings_show_keyboard_on_search_open">ஆட்டோ ஃபோகஸ் தேடல்</string>
     <string name="settings_show_keyboard_on_search_open_desc">தேடல் திறக்கும் போது விசைப்பலகையைக் காட்டு</string>
     <string name="settings_library_group_artwork">கலைப்படைப்பு வழங்குதல்</string>

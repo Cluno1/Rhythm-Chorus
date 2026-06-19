@@ -178,6 +178,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_IGNORE_MEDIASTORE_COVERS = "ignore_mediastore_covers" // Legacy key kept for migration compatibility
         private const val KEY_LOSSLESS_ARTWORK = "lossless_artwork" // Show cover art without downscaling/compression
         private const val KEY_SHOW_LIBRARY_SECTION_HEADERS = "show_library_section_headers"
+        private const val KEY_SHOW_LIBRARY_BOTTOM_BAR_ALWAYS = "show_library_bottom_bar_always"
         
         // Audio Device Settings
         private const val KEY_LAST_AUDIO_DEVICE = "last_audio_device"
@@ -864,6 +865,10 @@ class AppSettings private constructor(context: Context) {
     // Show Library Section Headers
     private val _showLibrarySectionHeaders = MutableStateFlow(prefs.getBoolean(KEY_SHOW_LIBRARY_SECTION_HEADERS, true))
     val showLibrarySectionHeaders: StateFlow<Boolean> = _showLibrarySectionHeaders.asStateFlow()
+
+    // Show Library Bottom Bar Always
+    private val _showLibraryBottomBarAlways = MutableStateFlow(prefs.getBoolean(KEY_SHOW_LIBRARY_BOTTOM_BAR_ALWAYS, false))
+    val showLibraryBottomBarAlways: StateFlow<Boolean> = _showLibraryBottomBarAlways.asStateFlow()
     
     // Alphabet Bar Settings
     private val _showAlphabetBar = MutableStateFlow(prefs.getBoolean(KEY_SHOW_ALPHABET_BAR, false))
@@ -2283,6 +2288,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setShowLibrarySectionHeaders(enable: Boolean) {
         prefs.edit().putBoolean(KEY_SHOW_LIBRARY_SECTION_HEADERS, enable).apply()
         _showLibrarySectionHeaders.value = enable
+    }
+
+    fun setShowLibraryBottomBarAlways(enable: Boolean) {
+        prefs.edit().putBoolean(KEY_SHOW_LIBRARY_BOTTOM_BAR_ALWAYS, enable).apply()
+        _showLibraryBottomBarAlways.value = enable
     }
 
     fun requestFullMediaRescanOnNextLaunch(reason: String = "unspecified") {
@@ -4488,6 +4498,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _albumBottomSheetDiscFilter.value = prefs.getInt(KEY_ALBUM_BOTTOM_SHEET_DISC_FILTER, 0).coerceAtLeast(0)
         _albumBottomSheetGradientBlur.value = prefs.getBoolean(KEY_ALBUM_BOTTOM_SHEET_GRADIENT_BLUR, true)
         _showLibrarySectionHeaders.value = prefs.getBoolean(KEY_SHOW_LIBRARY_SECTION_HEADERS, true)
+        _showLibraryBottomBarAlways.value = prefs.getBoolean(KEY_SHOW_LIBRARY_BOTTOM_BAR_ALWAYS, false)
         
         // Audio Device Settings
         _lastAudioDevice.value = prefs.getString(KEY_LAST_AUDIO_DEVICE, null)

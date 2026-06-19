@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">組織と評価</string>
     <string name="settings_library_combine_discs">ディスクを結合する</string>
     <string name="settings_library_combine_discs_desc">複数ディスクのアルバムを 1 つの連続した並べ替えに結合します</string>
+    <string name="settings_show_library_bottom_bar_always">ライブラリの下部バーを常に表示する</string>
+    <string name="settings_show_library_bottom_bar_always_desc">下部バーをすべてのタブの下に表示したままにするか、非表示にして上部バーのアクションに主要なアクションを表示します</string>
     <string name="settings_show_keyboard_on_search_open">オートフォーカスサーチ</string>
     <string name="settings_show_keyboard_on_search_open_desc">検索を開いたときにキーボードを表示する</string>
     <string name="settings_library_group_artwork">アートワークのレンダリング</string>

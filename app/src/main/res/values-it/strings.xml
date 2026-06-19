@@ -1716,7 +1716,7 @@
 
     <!-- Updates Settings -->
     <string name="updates_status_error">Errore</string>
-    <string name="updates_rhythm_logo_cd">Rhythm Logo</string>
+    <string name="updates_rhythm_logo_cd">Logo Rhythm</string>
     <string name="updates_version_prefix">V %1$s</string>
     <string name="updates_released_prefix">Rilasciato: %1$s</string>
     <string name="updates_unknown_error">Si è verificato un errore sconosciuto</string>
@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">Organizzazione e valutazioni</string>
     <string name="settings_library_combine_discs">Combina dischi</string>
     <string name="settings_library_combine_discs_desc">Unisci album multidisco in un unico ordinamento continuo</string>
+    <string name="settings_show_library_bottom_bar_always">Mostra sempre la barra inferiore della libreria</string>
+    <string name="settings_show_library_bottom_bar_always_desc">Mantieni la barra inferiore visibile in tutte le schede oppure nascondila e mostra le azioni chiave nelle azioni della barra superiore</string>
     <string name="settings_show_keyboard_on_search_open">Ricerca della messa a fuoco automatica</string>
     <string name="settings_show_keyboard_on_search_open_desc">Mostra la tastiera all\'apertura della ricerca</string>
     <string name="settings_library_group_artwork">Rendering dell\'opera</string>

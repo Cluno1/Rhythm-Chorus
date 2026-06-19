@@ -166,6 +166,7 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
 
     val enableRatingSystem by appSettings.enableRatingSystem.collectAsState()
     val libraryCombineDiscs by appSettings.libraryCombineDiscs.collectAsState()
+    val showLibraryBottomBarAlways by appSettings.showLibraryBottomBarAlways.collectAsState()
     val preferSongArtwork by appSettings.preferSongArtwork.collectAsState()
     val losslessArtwork by appSettings.losslessArtwork.collectAsState()
     val albumBottomSheetGradientBlur by appSettings.albumBottomSheetGradientBlur.collectAsState()
@@ -207,6 +208,13 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
                         context.getString(R.string.settings_library_combine_discs_desc),
                         toggleState = libraryCombineDiscs,
                         onToggleChange = { appSettings.setLibraryCombineDiscs(it) }
+                    ),
+                    SettingItem(
+                        MaterialSymbolIcon("view_agenda"),
+                        context.getString(R.string.settings_show_library_bottom_bar_always),
+                        context.getString(R.string.settings_show_library_bottom_bar_always_desc),
+                        toggleState = showLibraryBottomBarAlways,
+                        onToggleChange = { appSettings.setShowLibraryBottomBarAlways(it) }
                     )
                 )
             ),

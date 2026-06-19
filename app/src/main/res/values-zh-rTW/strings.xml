@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">組織與評級</string>
     <string name="settings_library_combine_discs">組合光碟</string>
     <string name="settings_library_combine_discs_desc">將多光碟專輯合併為一個連續排序</string>
+    <string name="settings_show_library_bottom_bar_always">始終顯示庫底部欄</string>
+    <string name="settings_show_library_bottom_bar_always_desc">保持底欄在所有選項卡下可見，或隱藏它並在頂欄操作中顯示關鍵操作</string>
     <string name="settings_show_keyboard_on_search_open">自動對焦搜尋</string>
     <string name="settings_show_keyboard_on_search_open_desc">搜尋開啟時顯示鍵盤</string>
     <string name="settings_library_group_artwork">藝術品渲染</string>

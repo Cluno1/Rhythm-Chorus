@@ -2053,6 +2053,8 @@
     <string name="settings_library_group_organization">Organizacja i oceny</string>
     <string name="settings_library_combine_discs">Połącz dyski</string>
     <string name="settings_library_combine_discs_desc">Łączenie albumów wielopłytowych w jedno ciągłe sortowanie</string>
+    <string name="settings_show_library_bottom_bar_always">Zawsze pokazuj dolny pasek biblioteki</string>
+    <string name="settings_show_library_bottom_bar_always_desc">Zachowaj widoczność dolnego paska pod wszystkimi zakładkami lub ukryj go i pokaż kluczowe akcje w akcjach górnego paska</string>
     <string name="settings_show_keyboard_on_search_open">Wyszukiwanie automatycznego ustawiania ostrości</string>
     <string name="settings_show_keyboard_on_search_open_desc">Pokaż klawiaturę, gdy otworzy się wyszukiwanie</string>
     <string name="settings_library_group_artwork">Renderowanie grafiki</string>
