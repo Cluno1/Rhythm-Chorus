@@ -761,7 +761,6 @@ fun LibraryScreen(
     
     
     val isLibraryRefreshing by musicViewModel.isLibraryRefreshing.collectAsState()
-    val scanProgress by musicViewModel.scanProgress.collectAsState()
     val pullToRefreshState = rememberPullToRefreshState()
     var isRefreshing by remember { mutableStateOf(false) }
 
@@ -1885,69 +1884,7 @@ fun LibraryScreen(
                                     .padding(top = 8.dp)
                             }
                         ) {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                                ),
-                                shape = RoundedCornerShape(16.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    val infiniteTransition = rememberInfiniteTransition(label = "scanIconRotation")
-                                    val rotation by infiniteTransition.animateFloat(
-                                        initialValue = 0f,
-                                        targetValue = 360f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Restart
-                                        ),
-                                        label = "rotation"
-                                    )
-                                    
-                                    Icon(
-                                        imageVector = RhythmIcons.Refresh,
-                                        contentDescription = stringResource(R.string.settings_scanning),
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .graphicsLayer { rotationZ = rotation }
-                                    )
-                                    
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = when (scanProgress.stage) {
-                                                is ScanPhase.Songs -> context.getString(R.string.library_scan_songs)
-                                                is ScanPhase.Incremental -> context.getString(R.string.library_scan_media)
-                                                is ScanPhase.SavingDb -> context.getString(R.string.library_scan_media)
-                                                else -> context.getString(R.string.library_scan_media)
-                                            },
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                                        )
-                                        if (scanProgress.total > 0) {
-                                            Text(
-                                                text = "${scanProgress.current} / ${scanProgress.total}",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                                            )
-                                        }
-                                    }
-                                    
-                                                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(20.dp),
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        strokeWidth = 2.dp
-                                    )
-                                }
-                            }
+                            LibraryScanProgressBanner(musicViewModel = musicViewModel)
                         }
 
                         val activeTabId = visibleTabIds.getOrNull(pagerState.currentPage) ?: ""
@@ -6481,6 +6418,80 @@ fun YearGroupedSongsContent(
         )
     }
 }
+
+@Composable
+fun LibraryScanProgressBanner(
+    musicViewModel: MusicViewModel,
+    modifier: Modifier = Modifier
+) {
+    val scanProgress by musicViewModel.scanProgress.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val infiniteTransition = rememberInfiniteTransition(label = "scanIconRotation")
+            val rotation by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 360f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "rotation"
+            )
+            
+            Icon(
+                imageVector = RhythmIcons.Refresh,
+                contentDescription = stringResource(R.string.settings_scanning),
+                modifier = Modifier
+                    .size(24.dp)
+                    .graphicsLayer { rotationZ = rotation }
+            )
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = when (scanProgress.stage) {
+                        is ScanPhase.Songs -> context.getString(R.string.library_scan_songs)
+                        is ScanPhase.Incremental -> context.getString(R.string.library_scan_media)
+                        is ScanPhase.SavingDb -> context.getString(R.string.library_scan_media)
+                        else -> context.getString(R.string.library_scan_media)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                if (scanProgress.total > 0) {
+                    Text(
+                        text = "${scanProgress.current} / ${scanProgress.total}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                    )
+                }
+            }
+            
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                strokeWidth = 2.dp
+            )
+        }
+    }
+}
+
 
 
 

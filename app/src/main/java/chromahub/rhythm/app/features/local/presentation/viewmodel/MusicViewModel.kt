@@ -1830,16 +1830,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             val cachedSongMap = _songs.value.associateBy { it.id }
             // Run all heavy IO work off the main thread
             val (freshSongs, freshAlbums, freshArtists) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                repository.refreshMusicData()
-                val songs = repository.loadSongs(
-                    forceRefresh = false, // cache was just refreshed by refreshMusicData()
+                repository.refreshMusicData(
                     allowedFormats = allowedFormats.value,
                     minimumBitrate = minimumBitrate.value,
                     minimumDuration = minimumDuration.value
                 )
-                val albums = repository.loadAlbums()
-                val artists = repository.loadArtists()
-                Triple(songs, albums, artists)
             }
             // Merge cached metadata into fresh songs to preserve post-scan processing data
             val mergedSongs = freshSongs.map { fresh ->

@@ -1267,53 +1267,60 @@ fun RhythmTheme(
 ) {
     val context = LocalContext.current
     
-    val colorScheme = when {
-        // Album art colors take highest priority when available
-        colorSource == "ALBUM_ART" && extractedAlbumColorsJson != null -> {
-            getAlbumArtColorScheme(extractedAlbumColorsJson, darkTheme)
+    val colorScheme = remember(
+        darkTheme, amoledTheme, dynamicColor, customColorScheme,
+        colorSource, extractedAlbumColorsJson
+    ) {
+        when {
+            // Album art colors take highest priority when available
+            colorSource == "ALBUM_ART" && extractedAlbumColorsJson != null -> {
+                getAlbumArtColorScheme(extractedAlbumColorsJson, darkTheme)
+            }
+            // Dynamic Material You colors
+            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            }
+            // Custom preset color schemes
+            customColorScheme != "Default" -> getCustomColorScheme(customColorScheme, darkTheme)
+            // Default Rhythm color scheme
+            darkTheme -> DarkColorScheme
+            else -> LightColorScheme
+        }.let { scheme ->
+            // Apply AMOLED theme modifications if enabled and in dark mode
+            if (amoledTheme && darkTheme) {
+                scheme.copy(
+                    background = Color.Black,
+                    surface = Color.Black,
+                    surfaceVariant = Color(0xFF121212),
+                    surfaceContainer = Color(0xFF121212),
+                    surfaceContainerLow = Color(0xFF0A0A0A),
+                    surfaceContainerLowest = Color.Black,
+                    surfaceContainerHigh = Color(0xFF1E1E1E),
+                    surfaceContainerHighest = Color(0xFF2A2A2A),
+                    surfaceDim = Color.Black,
+                    surfaceBright = Color(0xFF2A2A2A)
+                )
+            } else scheme
         }
-        // Dynamic Material You colors
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        // Custom preset color schemes
-        customColorScheme != "Default" -> getCustomColorScheme(customColorScheme, darkTheme)
-        // Default Rhythm color scheme
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }.let { scheme ->
-        // Apply AMOLED theme modifications if enabled and in dark mode
-        if (amoledTheme && darkTheme) {
-            scheme.copy(
-                background = Color.Black,
-                surface = Color.Black,
-                surfaceVariant = Color(0xFF121212),
-                surfaceContainer = Color(0xFF121212),
-                surfaceContainerLow = Color(0xFF0A0A0A),
-                surfaceContainerLowest = Color.Black,
-                surfaceContainerHigh = Color(0xFF1E1E1E),
-                surfaceContainerHighest = Color(0xFF2A2A2A),
-                surfaceDim = Color.Black,
-                surfaceBright = Color(0xFF2A2A2A)
-            )
-        } else scheme
     }
     
-    // Load typography based on font source
-    val typography = when (fontSource) {
-        "CUSTOM" -> {
-            // Try to load custom font
-            val customFontFamily = FontLoader.loadCustomFont(context, customFontPath)
-            if (customFontFamily != null) {
-                getTypographyWithCustomFont(customFontFamily)
-            } else {
-                // Fall back to system font if custom font fails to load
+    // Load typography based on font source (cached across recompositions)
+    val typography = remember(customFont, fontSource, customFontPath, context) {
+        when (fontSource) {
+            "CUSTOM" -> {
+                // Try to load custom font
+                val customFontFamily = FontLoader.loadCustomFont(context, customFontPath)
+                if (customFontFamily != null) {
+                    getTypographyWithCustomFont(customFontFamily)
+                } else {
+                    // Fall back to system font if custom font fails to load
+                    getTypographyForFont(customFont)
+                }
+            }
+            else -> {
+                // Use system fonts
                 getTypographyForFont(customFont)
             }
-        }
-        else -> {
-            // Use system fonts
-            getTypographyForFont(customFont)
         }
     }
     

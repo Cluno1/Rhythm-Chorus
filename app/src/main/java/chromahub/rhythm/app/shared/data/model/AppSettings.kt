@@ -561,7 +561,8 @@ class AppSettings private constructor(context: Context) {
     }
     
     private val context: Context = context.applicationContext
-    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val originalPrefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = CachedSharedPreferences(originalPrefs)
 
     fun setInitialSettingsSubroute(route: String?) {
         prefs.edit().putString(KEY_INITIAL_SETTINGS_SUBROUTE, route).apply()
@@ -1791,25 +1792,25 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         migrateLegacyArtworkPreferenceIfNeeded()
         normalizeArtworkPreferenceStateIfNeeded()
 
-        // Schedule auto-backup if enabled
-        if (prefs.getBoolean(KEY_AUTO_BACKUP_ENABLED, false)) {
-            scheduleAutoBackup()
-        }
-        
-        // Schedule update notification worker if enabled
-        if (prefs.getBoolean(KEY_UPDATES_ENABLED, false) &&
-            prefs.getBoolean(KEY_AUTO_CHECK_FOR_UPDATES, false) &&
-            (
-                prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, false) ||
-                    prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false)
-                ) &&
-            prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, false)) {
-            scheduleUpdateNotificationWorker()
-        }
-
-        if (prefs.getBoolean(KEY_RHYTHM_PULSE_NOTIFICATIONS_ENABLED, false)) {
-            scheduleRhythmPulseNotificationWorker()
-        }
+        // Defer non-critical WorkManager scheduling to background thread
+        Thread {
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND)
+            if (prefs.getBoolean(KEY_AUTO_BACKUP_ENABLED, false)) {
+                scheduleAutoBackup()
+            }
+            if (prefs.getBoolean(KEY_UPDATES_ENABLED, false) &&
+                prefs.getBoolean(KEY_AUTO_CHECK_FOR_UPDATES, false) &&
+                (
+                    prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, false) ||
+                        prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false)
+                    ) &&
+                prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, false)) {
+                scheduleUpdateNotificationWorker()
+            }
+            if (prefs.getBoolean(KEY_RHYTHM_PULSE_NOTIFICATIONS_ENABLED, false)) {
+                scheduleRhythmPulseNotificationWorker()
+            }
+        }.apply { isDaemon = true }.start()
     }
 
     private fun migrateLegacyArtworkPreferenceIfNeeded() {
@@ -5587,4 +5588,25 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         }.apply()
         _expressiveShapePreset.value = "CUSTOM"
     }
+}
+
+private class CachedSharedPreferences(
+    private val original: SharedPreferences
+) : SharedPreferences by original {
+    private val cache: Map<String, *> = original.all
+
+    override fun getBoolean(key: String, defValue: Boolean): Boolean =
+        (cache[key] as? Boolean) ?: defValue
+    override fun getInt(key: String, defValue: Int): Int =
+        (cache[key] as? Int) ?: defValue
+    override fun getLong(key: String, defValue: Long): Long =
+        (cache[key] as? Long) ?: defValue
+    override fun getFloat(key: String, defValue: Float): Float =
+        (cache[key] as? Float) ?: defValue
+    override fun getString(key: String, defValue: String?): String? =
+        cache[key] as? String ?: defValue
+    override fun getStringSet(key: String, defValue: Set<String>?): Set<String>? =
+        @Suppress("UNCHECKED_CAST") (cache[key] as? Set<String>) ?: defValue
+    override fun contains(key: String): Boolean = cache.containsKey(key)
+    override fun getAll(): Map<String, *> = cache
 }

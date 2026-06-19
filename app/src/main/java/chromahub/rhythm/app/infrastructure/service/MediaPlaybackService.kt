@@ -989,12 +989,22 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         }
                     }
                     
-                    // Verify state was preserved
+                    // Verify state was preserved — ensure EQ hardware stays enabled to avoid DSP burst on disable
                     val currentlyEnabled = getEqualizerEnabledSafe()
-                    if (previouslyEnabled != currentlyEnabled && appSettings.equalizerEnabled.value)
-                    {
-                        Log.w(TAG, "Equalizer state changed after reinitialization! Was: $previouslyEnabled, Now: $currentlyEnabled, Expected: ${appSettings.equalizerEnabled.value}") // Force re-apply settings
-                       setEqualizerEnabled(appSettings.equalizerEnabled.value)
+                    if (previouslyEnabled != currentlyEnabled) {
+                        if (appSettings.equalizerEnabled.value) {
+                            Log.w(TAG, "Equalizer state changed after reinitialization! Was: $previouslyEnabled, Now: $currentlyEnabled, Expected: true")
+                            setEqualizerEnabled(true)
+                        } else {
+                            Log.d(TAG, "Re-enabling EQ hardware with flat bands after reinitialization")
+                            withEqualizerSafe("re-enable eq on reinit", Unit) { eq ->
+                                eq.enabled = true
+                                val numberOfBands = eq.numberOfBands.toInt()
+                                for (i in 0 until numberOfBands) {
+                                    eq.setBandLevel(i.toShort(), 0)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1175,12 +1185,31 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     private fun setEqualizerEnabledWithVolumeGuard(enabled: Boolean): Boolean {
         if (!::player.isInitialized || !player.isPlaying) {
-            return setEqualizerEnabledSafe(enabled)
+            if (!enabled) {
+                // When disabling: just zero bands — don't toggle hardware EQ to avoid DSP burst
+                withEqualizerSafe("set flat bands on disable", Unit) { eq ->
+                    val numberOfBands = eq.numberOfBands.toInt()
+                    for (i in 0 until numberOfBands) {
+                        eq.setBandLevel(i.toShort(), 0)
+                    }
+                }
+                return false
+            }
+            return setEqualizerEnabledSafe(true)
         }
 
         val restoreVolume = equalizerVolumeRestoreTarget ?: player.volume
         if (restoreVolume <= 0f) {
-            return setEqualizerEnabledSafe(enabled)
+            if (!enabled) {
+                withEqualizerSafe("set flat bands on disable", Unit) { eq ->
+                    val numberOfBands = eq.numberOfBands.toInt()
+                    for (i in 0 until numberOfBands) {
+                        eq.setBandLevel(i.toShort(), 0)
+                    }
+                }
+                return false
+            }
+            return setEqualizerEnabledSafe(true)
         }
 
         equalizerVolumeTransitionJob?.cancel()
@@ -1209,7 +1238,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 delay(drainDelay)
                 
                 // 3. Safely toggle the hardware equalizer enabled state while fully silent
-                actualState = setEqualizerEnabledSafe(enabled)
+                // When disabling: don't toggle hardware EQ — zeroing bands avoids AudioFlinger DSP reset bursts
+                if (enabled) {
+                    actualState = setEqualizerEnabledSafe(true)
+                } else {
+                    actualState = false
+                }
                 
                 // 4. Settle delay to allow Android AudioFlinger / hardware DSP to fully transition
                 // Extend deactivation settle delay to 550ms so driver pops finish in complete silence before volume ramps up
@@ -1707,7 +1741,11 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 // Broadcast current state back for UI verification
                 val actualState = getEqualizerEnabledSafe()
                 if (actualState != enabled) {
-                    Log.w(TAG, "Equalizer state verification failed. Requested: $enabled, Actual: $actualState")
+                    if (enabled) {
+                        Log.w(TAG, "Equalizer state verification failed. Requested: $enabled, Actual: $actualState")
+                    } else {
+                        Log.d(TAG, "Equalizer hardware kept enabled (software off) to avoid DSP burst")
+                    }
                 }
             }
             ACTION_SET_EQUALIZER_BAND -> {
@@ -2892,7 +2930,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             // Initialize equalizer directly (no dummy checks - they waste effect slots)
             try {
                 equalizer = android.media.audiofx.Equalizer(0, audioSessionId).apply {
-                    enabled = false
+                    enabled = true
                 }
                 Log.d(TAG, "Equalizer initialized with ${equalizer?.numberOfBands} bands for session $audioSessionId")
             } catch (e: Exception) {
@@ -2926,19 +2964,33 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 val shouldBeEnabled = appSettings.equalizerEnabled.value
                 Log.d(TAG, "Loading saved effects - EQ should be enabled: $shouldBeEnabled")
                 
-                // Load band levels (supports both 5-band legacy and 10-band)
-                val bandLevelsString = appSettings.equalizerBandLevels.value
-                val bandLevels = bandLevelsString.split(",").mapNotNull { it.toFloatOrNull() }
-                if (bandLevels.isNotEmpty()) {
-                    // Apply band levels first, then enable
-                    // Use the same interpolation logic as applyEqualizerPreset
-                    applyEqualizerPreset(bandLevels.toFloatArray())
+                if (shouldBeEnabled) {
+                    // Load band levels (supports both 5-band legacy and 10-band)
+                    val bandLevelsString = appSettings.equalizerBandLevels.value
+                    val bandLevels = bandLevelsString.split(",").mapNotNull { it.toFloatOrNull() }
+                    if (bandLevels.isNotEmpty()) {
+                        // Apply band levels first, then enable
+                        // Use the same interpolation logic as applyEqualizerPreset
+                        applyEqualizerPreset(bandLevels.toFloatArray())
+                    }
+                    // Enable equalizer AFTER applying levels to avoid audio glitches
+                    setEqualizerEnabledSafe(true)
+                } else {
+                    // Zero all bands — don't disable hardware EQ to avoid AudioFlinger DSP burst
+                    withEqualizerSafe("set flat bands on load", Unit) { eq ->
+                        val numberOfBands = eq.numberOfBands.toInt()
+                        for (i in 0 until numberOfBands) {
+                            eq.setBandLevel(i.toShort(), 0)
+                        }
+                    }
+                    // Keep hardware EQ enabled — software controls the "off" state via flat bands
+                    setEqualizerEnabledSafe(true)
                 }
                 
-                // Enable equalizer AFTER applying levels to avoid audio glitches
-                val actualState = setEqualizerEnabledSafe(shouldBeEnabled)
-                if (actualState != shouldBeEnabled) {
-                    Log.e(TAG, "EQ state mismatch after load! Expected: $shouldBeEnabled, Actual: $actualState")
+                val actualState = getEqualizerEnabledSafe()
+                if (!actualState) {
+                    Log.w(TAG, "EQ was unexpectedly disabled after load, re-enabling")
+                    setEqualizerEnabledSafe(true)
                 }
             } else {
                 Log.w(TAG, "Cannot load saved equalizer settings: equalizer is null")
@@ -3000,10 +3052,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             }
         } else {
             val actualState = setEqualizerEnabledWithVolumeGuard(false)
-            Log.d(TAG, "Equalizer disabled requested, actual enabled state: $actualState")
-            if (actualState) {
-                Log.e(TAG, "Equalizer state mismatch! Requested: false, Actual: true")
-            }
+            Log.d(TAG, "Equalizer disabled (hardware kept enabled with flat bands to avoid DSP burst)")
         }
     }
     

@@ -51,6 +51,15 @@
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="36">
         
+        <!--
+            Required for Macrobenchmark / Perfetto to measure frameDurationCpuMs.
+            The benchmark runner operates as the ADB shell user; profileable=true
+            allows it to attach Perfetto to this process.
+        -->
+        <profileable
+            android:shell="true"
+            tools:targetApi="29" />
+
         <!-- Media3 notification icon -->
         <meta-data
             android:name="androidx.media3.ui.PlayerNotificationManager.smallIcon"

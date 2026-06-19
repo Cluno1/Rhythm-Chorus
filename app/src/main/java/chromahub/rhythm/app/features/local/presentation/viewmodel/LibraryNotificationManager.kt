@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 
 class LibraryNotificationManager(private val context: Application) {
 
@@ -45,9 +46,14 @@ class LibraryNotificationManager(private val context: Application) {
     private var librarySetupProcessingObserved = false
     private var lastLibrarySetupProgressText: String? = null
     private var librarySetupCompletionDebounceJob: Job? = null
+    private var isChannelCreated = false
 
     fun ensureOperationsNotificationChannel() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        if (isChannelCreated) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            isChannelCreated = true
+            return
+        }
 
         val channel = NotificationChannel(
             OPERATIONS_NOTIFICATION_CHANNEL_ID,
@@ -59,6 +65,7 @@ class LibraryNotificationManager(private val context: Application) {
             enableVibration(false)
         }
         notificationManager.createNotificationChannel(channel)
+        isChannelCreated = true
     }
 
     private fun createMainActivityPendingIntent(requestCode: Int): PendingIntent {
@@ -173,16 +180,26 @@ class LibraryNotificationManager(private val context: Application) {
             indeterminate = true
         )
 
-        mediaScanNotificationJob = scope.launch {
-            repository.scanProgress.collectLatest { progressState ->
+        var lastPostTime = 0L
+        mediaScanNotificationJob = scope.launch(Dispatchers.Default) {
+            repository.scanProgress.collect { progressState ->
                 if (sequence != mediaScanNotificationSequence) {
-                    return@collectLatest
+                    return@collect
                 }
 
                 val stage = progressState.stage
                 if (stage is ScanPhase.Idle) {
-                    return@collectLatest
+                    return@collect
                 }
+
+                // Throttle notifications during progress phases to once every 500ms
+                val isProgressStage = stage is ScanPhase.Songs || stage is ScanPhase.Incremental
+                val isLastItem = progressState.total > 0 && progressState.current == progressState.total
+                val currentTime = System.currentTimeMillis()
+                if (isProgressStage && !isLastItem && currentTime - lastPostTime < 500L) {
+                    return@collect
+                }
+                lastPostTime = currentTime
 
                 val stageLabel = when (stage) {
                     is ScanPhase.Songs,
@@ -221,7 +238,7 @@ class LibraryNotificationManager(private val context: Application) {
 
                 val progressKey = "${stage.displayName}|$safeCurrent|$safeTotal"
                 if (progressKey == lastMediaScanProgressKey) {
-                    return@collectLatest
+                    return@collect
                 }
                 lastMediaScanProgressKey = progressKey
 

@@ -391,13 +391,27 @@ class MusicRepository(context: Context) {
             val appSettings = AppSettings.getInstance(context)
             val useEmbeddedArt = appSettings.preferSongArtwork.value
             val losslessArtwork = appSettings.isLosslessArtworkActive.value
+
+            // Batch-read artwork overrides to avoid per-song SharedPreferences IPC calls
+            val artworkAll = artworkPrefs.all
+            val removedOverrides = mutableMapOf<String, Boolean>()
+            val uriOverrides = mutableMapOf<String, Uri?>()
+            for ((key, value) in artworkAll) {
+                when {
+                    key.startsWith("removed_") -> removedOverrides[key.removePrefix("removed_")] = value as? Boolean ?: false
+                    key.startsWith("uri_") -> {
+                        val id = key.removePrefix("uri_")
+                        uriOverrides[id] = (value as? String)?.let { runCatching { Uri.parse(it) }.getOrNull() }
+                    }
+                }
+            }
+
             val songs = entities.mapNotNull { entity ->
                 try {
                     val songUri = Uri.parse(entity.uri)
                     
-                    val artworkRemovedOverride = artworkPrefs.getBoolean("removed_${entity.id}", false)
-                    val artworkUriOverride = artworkPrefs.getString("uri_${entity.id}", null)
-                        ?.let { runCatching { Uri.parse(it) }.getOrNull() }
+                    val artworkRemovedOverride = removedOverrides[entity.id] ?: false
+                    val artworkUriOverride = uriOverrides[entity.id]
 
                     val savedArtworkUri = entity.artworkUri?.let { Uri.parse(it) }
                     val savedArtworkUsable = when (savedArtworkUri?.scheme) {
@@ -937,8 +951,9 @@ class MusicRepository(context: Context) {
                         
                         processedCount++
                         
-                        // Update progress periodically
-                        if (processedCount % 10 == 0) {
+                        // Update progress periodically (dynamic frequency based on count to avoid UI lag)
+                        val progressUpdateInterval = if (count > 500) 100 else if (count > 100) 50 else 10
+                        if (processedCount % progressUpdateInterval == 0 || processedCount == count) {
                             _scanProgress.value = ScanProgress(processedCount, count, ScanPhase.Songs, 0)
                         }
                         
@@ -1122,7 +1137,9 @@ class MusicRepository(context: Context) {
                             newSongs.add(song)
                         }
                         processedCount++
-                        if (processedCount % 10 == 0) {
+                        // Update progress periodically (dynamic frequency based on count to avoid UI lag)
+                        val progressUpdateInterval = if (count > 500) 100 else if (count > 100) 50 else 10
+                        if (processedCount % progressUpdateInterval == 0 || processedCount == count) {
                             _scanProgress.value = ScanProgress(processedCount, count, ScanPhase.Incremental, 0)
                         }
                     } catch (e: Exception) {
@@ -6353,7 +6370,7 @@ class MusicRepository(context: Context) {
         return null
     }
 
-    fun buildFolderTree(songs: List<Song>): FolderNode {
+    suspend fun buildFolderTree(songs: List<Song>): FolderNode = withContext(Dispatchers.IO) {
         val rootMap = mutableMapOf<String, FolderTreeBuilderNode>()
 
         for (song in songs) {
@@ -6407,7 +6424,7 @@ class MusicRepository(context: Context) {
         }
 
         val rootSubFolders = rootMap.map { (name, node) -> name to buildNode(name, node) }.toMap()
-        return FolderNode(
+        FolderNode(
             name = "",
             path = "/",
             subFolders = rootSubFolders,

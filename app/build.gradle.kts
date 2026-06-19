@@ -5,6 +5,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    // Note: androidx.baselineprofile plugin is NOT applied here because it is
+    // incompatible with AGP 9.x. AGP 8.3+ includes native baseline profile
+    // support via com.android.application; the baselineProfile() dep below and
+    // the baseline-prof.txt file are sufficient.
     id("kotlin-parcelize")
 //    alias(libs.plugins.kotlin.serialization)
 }
@@ -17,8 +21,8 @@ android {
         applicationId = "chromahub.rhythm.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 514121075
-        versionName = "5.1.412.1075 Beta"
+        versionCode = 514121078
+        versionName = "5.1.412.1078 Beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -102,6 +106,14 @@ android {
             //isMinifyEnabled = false
             //isDebuggable = true
             signingConfig = releaseSigning
+        }
+        // Required by the macrobenchmark module for baseline profile generation.
+        // Mirrors release (fully minified + signed) so the profile reflects production.
+        create("benchmark") {
+            initWith(buildTypes.getByName("release"))
+            signingConfig = releaseSigning
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
         }
     }
     compileOptions {
@@ -252,6 +264,12 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+
+    // Baseline Profile – installer ensures the .prof asset is loaded into ART on first launch.
+    // AGP 9.x natively picks up app/src/main/baseline-prof/baseline-prof.txt without any
+    // additional plugin wiring; the baselineProfile() configuration is not available without
+    // the standalone plugin (which is AGP 8.x only).
+    implementation(libs.androidx.profileinstaller)
 
     // Testing
     testImplementation(libs.junit)
