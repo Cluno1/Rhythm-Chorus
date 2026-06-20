@@ -14,10 +14,10 @@ def parse_gradle_version_info():
     if os.path.exists(BUILD_GRADLE_PATH):
         with open(BUILD_GRADLE_PATH, "r", encoding="utf-8") as f:
             content = f.read()
-        name_match = re.search(r"versionName\s*=\s*overrideVersionName\s*\?:\s*\"(.*?)\"", content)
+        name_match = re.search(r"versionName\s*=\s*(?:overrideVersionName\s*\?:\s*)?\"(.*?)\"", content)
         if name_match:
             version_name = name_match.group(1)
-        code_match = re.search(r"versionCode\s*=\s*overrideVersionCode\s*\?:\s*(\d+)", content)
+        code_match = re.search(r"versionCode\s*=\s*(?:overrideVersionCode\s*\?:\s*)?(\d+)", content)
         if code_match:
             version_code = code_match.group(1)
     return version_name, version_code

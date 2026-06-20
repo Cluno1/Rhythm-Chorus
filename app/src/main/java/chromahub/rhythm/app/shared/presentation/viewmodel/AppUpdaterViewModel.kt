@@ -465,7 +465,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             
             // Extract build number if present (format like "b-127" or "build-127")
             val buildRegex = Regex("(?:b|build)-(\\d+)", RegexOption.IGNORE_CASE)
-            val buildNumber = buildRegex.find(cleaned)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+            val buildNumber = buildRegex.find(cleaned)?.groupValues?.get(1)?.filter { it.isDigit() }?.toIntOrNull() ?: 0
             
             // Split version and remove any suffix (like -alpha, -beta, etc.)
             val versionBase = cleaned.split(" ")[0].split("-")[0].split("_")[0]
@@ -478,10 +478,10 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             }
             
             // Parse version components with bounds checking
-            val major = versionParts.getOrNull(0)?.toIntOrNull() ?: 0
-            val minor = versionParts.getOrNull(1)?.toIntOrNull() ?: 0
-            val patch = versionParts.getOrNull(2)?.toIntOrNull() ?: 0
-            val subpatch = versionParts.getOrNull(3)?.toIntOrNull() ?: 0
+            val major = versionParts.getOrNull(0)?.filter { it.isDigit() }?.toIntOrNull() ?: 0
+            val minor = versionParts.getOrNull(1)?.filter { it.isDigit() }?.toIntOrNull() ?: 0
+            val patch = versionParts.getOrNull(2)?.filter { it.isDigit() }?.toIntOrNull() ?: 0
+            val subpatch = versionParts.getOrNull(3)?.filter { it.isDigit() }?.toIntOrNull() ?: 0
             
             return SemanticVersion(
                 major = major.coerceAtLeast(0),
@@ -501,13 +501,13 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
     private fun extractBuildNumber(versionString: String, versionParts: List<String>? = null): Int {
         val cleaned = versionString.trim().removePrefix("v")
         val buildRegex = Regex("(?:b|build)-(\\d+)", RegexOption.IGNORE_CASE)
-        val explicitBuildNumber = buildRegex.find(cleaned)?.groupValues?.get(1)?.toIntOrNull()
+        val explicitBuildNumber = buildRegex.find(cleaned)?.groupValues?.get(1)?.filter { it.isDigit() }?.toIntOrNull()
         if (explicitBuildNumber != null) {
             return explicitBuildNumber
         }
 
         val parts = versionParts ?: cleaned.split(" ")[0].split("-")[0].split("_")[0].split(".")
-        return parts.getOrNull(3)?.toIntOrNull() ?: 0
+        return parts.getOrNull(3)?.filter { it.isDigit() }?.toIntOrNull() ?: 0
     }
 
     private fun calculateVersionCode(versionString: String): Int {
@@ -515,10 +515,15 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         val versionBase = cleaned.split(" ")[0].split("-")[0].split("_")[0]
         val versionParts = versionBase.split(".")
         val codeString = buildString {
-            append(versionParts.getOrNull(0)?.toIntOrNull() ?: 0)
-            append(versionParts.getOrNull(1)?.toIntOrNull() ?: 0)
-            append(versionParts.getOrNull(2)?.toIntOrNull() ?: 0)
-            append(versionParts.getOrNull(3)?.toIntOrNull() ?: extractBuildNumber(cleaned, versionParts))
+            append(versionParts.getOrNull(0)?.filter { it.isDigit() }?.takeIf { it.isNotEmpty() } ?: "0")
+            append(versionParts.getOrNull(1)?.filter { it.isDigit() }?.takeIf { it.isNotEmpty() } ?: "0")
+            append(versionParts.getOrNull(2)?.filter { it.isDigit() }?.takeIf { it.isNotEmpty() } ?: "0")
+            val buildPart = versionParts.getOrNull(3)?.filter { it.isDigit() }
+            if (!buildPart.isNullOrEmpty()) {
+                append(buildPart)
+            } else {
+                append(extractBuildNumber(cleaned, versionParts).toString())
+            }
         }
 
         return codeString.toIntOrNull() ?: 0

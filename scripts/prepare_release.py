@@ -31,7 +31,7 @@ def suggest_version_name(release_type):
     if os.path.exists(BUILD_GRADLE_PATH):
         with open(BUILD_GRADLE_PATH, "r", encoding="utf-8") as f:
             gradle_content = f.read()
-        curr_name_match = re.search(r"versionName\s*=\s*overrideVersionName\s*\?:\s*\"(.*?)\"", gradle_content)
+        curr_name_match = re.search(r"versionName\s*=\s*(?:overrideVersionName\s*\?:\s*)?\"(.*?)\"", gradle_content)
         curr_name = curr_name_match.group(1) if curr_name_match else "5.1.412.1078 Beta"
         
         match = re.search(r"(\d+)\.(\d+)", curr_name)
@@ -154,8 +154,8 @@ def update_build_gradle(new_version_code, new_version_name):
     with open(BUILD_GRADLE_PATH, "r", encoding="utf-8") as f:
         content = f.read()
         
-    code_pattern = r"(versionCode\s*=\s*overrideVersionCode\s*\?:\s*)(\d+)"
-    name_pattern = r"(versionName\s*=\s*overrideVersionName\s*\?:\s*\")(.*?)(\")"
+    code_pattern = r"(versionCode\s*=\s*(?:overrideVersionCode\s*\?:\s*)?)(\d+)"
+    name_pattern = r"(versionName\s*=\s*(?:overrideVersionName\s*\?:\s*)?\")(.*?)(\")"
     date_pattern = r"(overrideReleaseDate\s*\?:\s*\")(\d{4}-\d{2}-\d{2})(\"\})"
     
     if not re.search(code_pattern, content):
@@ -171,9 +171,9 @@ def update_build_gradle(new_version_code, new_version_name):
         sys.exit(1)
         
     today_date = datetime.today().strftime('%Y-%m-%d')
-    content = re.sub(code_pattern, rf"\g<1>{new_version_code}", content)
-    content = re.sub(name_pattern, rf"\g<1>{new_version_name}\3", content)
-    content = re.sub(date_pattern, rf"\g<1>{today_date}\3", content)
+    content = re.sub(code_pattern, lambda m: m.group(1) + str(new_version_code), content)
+    content = re.sub(name_pattern, lambda m: m.group(1) + new_version_name + m.group(3), content)
+    content = re.sub(date_pattern, lambda m: m.group(1) + today_date + m.group(3), content)
     
     with open(BUILD_GRADLE_PATH, "w", encoding="utf-8") as f:
         f.write(content)
@@ -204,7 +204,7 @@ def main():
     print("=== Rhythm Release Preparation Tool ===")
     
     # Prompt release type
-    release_type = input("Enter release type [1: Stable, 2: Beta] (default: Stable): ").strip()
+    release_type = input("Enter release type [1: Stable, 2: Beta] (default: Stable): ").strip().replace("\ufeff", "")
     if release_type == "2":
         release_type = "Beta"
     else:
@@ -213,15 +213,16 @@ def main():
     # Get current versionName from build.gradle.kts to show as reference
     with open(BUILD_GRADLE_PATH, "r", encoding="utf-8") as f:
         gradle_content = f.read()
-    curr_name_match = re.search(r"versionName\s*=\s*overrideVersionName\s*\?:\s*\"(.*?)\"", gradle_content)
+    curr_name_match = re.search(r"versionName\s*=\s*(?:overrideVersionName\s*\?:\s*)?\"(.*?)\"", gradle_content)
     curr_name = curr_name_match.group(1) if curr_name_match else "unknown"
     print(f"Current version in build.gradle.kts: {curr_name}")
     
     # Suggest version name based on date-derived patch and commit count build
     suggested_name = suggest_version_name(release_type)
-    new_version_name = input(f"Enter the new version name (default: {suggested_name}): ").strip()
+    new_version_name = input(f"Enter the new version name (default: {suggested_name}): ").strip().replace("\ufeff", "")
     if not new_version_name:
         new_version_name = suggested_name
+    new_version_name = new_version_name.replace("\\", "").strip()
         
     try:
         new_version_code, (major, minor, patch, build) = parse_version_name(new_version_name)
@@ -235,7 +236,7 @@ def main():
     print("\nChangelog source:")
     print("  1. Git commits since last tag (Recommended - Real changes)")
     print("  2. Read from docs/CHANGELOG.md [Unreleased] section (Fallback)")
-    source_choice = input("Select source [1 or 2] (default: 1): ").strip()
+    source_choice = input("Select source [1 or 2] (default: 1): ").strip().replace("\ufeff", "")
     
     raw_unreleased = ""
     if source_choice == "2":
@@ -268,7 +269,7 @@ def main():
     print(f"Total Characters: {len(fastlane_content)}/500")
     print("---------------------------------\n")
     
-    confirm = input("Does this look correct? Proceed with file modifications? (y/N): ").strip().lower()
+    confirm = input("Does this look correct? Proceed with file modifications? (y/N): ").strip().lower().replace("\ufeff", "")
     if confirm != 'y':
         print("Aborted.")
         sys.exit(0)

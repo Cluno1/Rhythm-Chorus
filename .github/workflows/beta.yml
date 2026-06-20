@@ -54,8 +54,8 @@ jobs:
         id: version_info
         run: |
           # Parse current versionName & versionCode from build.gradle.kts
-          VERSION_NAME=$(grep -o "versionName = \".*\"" app/build.gradle.kts | cut -d'"' -f2)
-          VERSION_CODE=$(grep -o "versionCode = [0-9]*" app/build.gradle.kts | head -n 1 | awk '{print $3}')
+          VERSION_NAME=$(grep -E 'versionName\s*=' app/build.gradle.kts | grep -oE '"[^"]+"' | sed 's/"//g')
+          VERSION_CODE=$(grep -E 'versionCode\s*=' app/build.gradle.kts | grep -oE '[0-9]+' | head -n 1)
           
           if [ -z "$VERSION_CODE" ]; then
             VERSION_CODE=514121078
