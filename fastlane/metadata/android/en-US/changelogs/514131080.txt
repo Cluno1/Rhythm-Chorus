@@ -1,0 +1,7 @@
+Rhythm v5.1 - Beta Update
+
+• Added ability to share tracks from all song overflow menus
+• Fixed: all playlists missing in latest beta build  #437
+• Updated dependencies
+
+Thanks for using Rhythm ;)

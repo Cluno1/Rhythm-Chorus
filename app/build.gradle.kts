@@ -21,8 +21,14 @@ android {
         applicationId = "chromahub.rhythm.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 514121078
-        versionName = "5.1.412.1078 Beta"
+        
+        val overrideVersionCode = project.findProperty("versionCodeOverride")?.toString()?.toIntOrNull()
+        val overrideVersionName = project.findProperty("versionNameOverride")?.toString()
+        versionCode = overrideVersionCode ?: 514131080
+        versionName = overrideVersionName ?: "5.1.413.1080\ Beta"
+
+        val overrideReleaseDate = project.findProperty("releaseDateOverride")?.toString()
+        buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-06-20"}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
