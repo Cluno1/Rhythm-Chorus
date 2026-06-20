@@ -2524,6 +2524,18 @@ private fun LocalNavigationContent(
                                 if (artistRouteName.isNotBlank()) {
                                     navController.navigate(Screen.ArtistDetail.createRoute(artistRouteName))
                                 }
+                            },
+                            onShare = { song ->
+                                try {
+                                    val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                        type = "audio/*"
+                                        putExtra(android.content.Intent.EXTRA_STREAM, song.uri)
+                                        addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    }
+                                    context.startActivity(android.content.Intent.createChooser(shareIntent, "Share ${song.title}"))
+                                } catch (e: Exception) {
+                                    android.widget.Toast.makeText(context, R.string.materialplayerscreen_unable_to_share_file, android.widget.Toast.LENGTH_SHORT).show()
+                                }
                             }
                         )
                     }

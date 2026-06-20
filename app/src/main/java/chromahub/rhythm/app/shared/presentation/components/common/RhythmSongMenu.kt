@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
+import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.R
 
 private data class SongMenuItem(
@@ -37,6 +38,7 @@ private data class SongMenuItem(
 
 @Composable
 fun RhythmSongMenuContent(
+    song: Song? = null,
     onPlay: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
     onAddToQueue: (() -> Unit)? = null,
@@ -49,9 +51,24 @@ fun RhythmSongMenuContent(
     onGoToAlbum: (() -> Unit)? = null,
     onGoToArtist: (() -> Unit)? = null,
     onAddToBlacklist: (() -> Unit)? = null,
+    onShare: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val finalOnShare = onShare ?: song?.let { s ->
+        {
+            try {
+                val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                    type = "audio/*"
+                    putExtra(android.content.Intent.EXTRA_STREAM, s.uri)
+                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(android.content.Intent.createChooser(shareIntent, "Share ${s.title}"))
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(context, R.string.materialplayerscreen_unable_to_share_file, android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
     val menuItems = buildList {
         onPlay?.let { action ->
             add(
@@ -116,6 +133,17 @@ fun RhythmSongMenuContent(
                 SongMenuItem(
                     title = context.getString(R.string.library_action_add_to_playlist),
                     icon = RhythmIcons.AddToPlaylist,
+                    iconBgColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                    iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    onClick = action
+                )
+            )
+        }
+        finalOnShare?.let { action ->
+            add(
+                SongMenuItem(
+                    title = context.getString(R.string.action_share),
+                    icon = RhythmIcons.Share,
                     iconBgColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
                     iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
                     onClick = action

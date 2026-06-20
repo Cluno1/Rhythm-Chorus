@@ -667,6 +667,10 @@ fun PlaylistDetailScreen(
         PlaylistSongOptionsBottomSheet(
             song = selectedSongForOptions!!,
             onDismiss = { showSongOptionsSheet = false },
+            onShare = {
+                onShare(selectedSongForOptions!!)
+                showSongOptionsSheet = false
+            },
             onRemoveFromPlaylist = {
                 onRemoveSong(selectedSongForOptions!!, context.getString(R.string.playlist_removed_from_playlist, selectedSongForOptions!!.title))
                 showSongOptionsSheet = false

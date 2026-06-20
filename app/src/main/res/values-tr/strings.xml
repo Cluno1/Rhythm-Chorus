@@ -997,6 +997,7 @@
     <string name="action_choose">Seç</string>
     <string name="action_play">Oynat</string>
     <string name="action_shuffle">Karıştır</string>
+    <string name="action_share">Paylaş</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">Ayarlar</string>

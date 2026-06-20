@@ -997,6 +997,7 @@
     <string name="action_choose">Pilih</string>
     <string name="action_play">Mainkan</string>
     <string name="action_shuffle">Acak</string>
+    <string name="action_share">Bagikan</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">Pengaturan</string>

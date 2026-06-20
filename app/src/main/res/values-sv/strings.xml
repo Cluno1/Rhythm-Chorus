@@ -997,6 +997,7 @@
     <string name="action_choose">Välj</string>
     <string name="action_play">Spela</string>
     <string name="action_shuffle">Blanda</string>
+    <string name="action_share">Dela</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">Inställningar</string>
@@ -2250,7 +2251,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Välj ditt uppspelningsläge</string>
     <string name="onboardingscreen_local_offline_player">Lokal offlinespelare</string>
     <string name="onboardingscreen_play_audio_files_stored">Spela upp ljudfiler som är lagrade direkt på din enhet. Stöder avancerad lokal katalogskanning, statistik och temamatchning.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (strömmande)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Anslut till Jellyfin-, Subsonic- eller Navidrome-servrar för att streama hela ditt bibliotek när du är på språng, med cachingstöd för offlinelyssning.</string>
     <string name="onboardingscreen_playback_mode_tips">Tips för uppspelningsläge</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Byt enkelt när som helst i Inställningar &gt; Integration.</string>

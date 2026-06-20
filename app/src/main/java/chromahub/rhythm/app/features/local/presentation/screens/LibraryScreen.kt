@@ -3293,6 +3293,7 @@ fun LibrarySongItem(
                     }
                 } else {
                     RhythmSongMenuContent(
+                        song = song,
                         onPlayNext = {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             showDropdown = false

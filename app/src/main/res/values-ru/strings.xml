@@ -997,6 +997,7 @@
     <string name="action_choose">Выбрать</string>
     <string name="action_play">Играть</string>
     <string name="action_shuffle">Перемешать</string>
+    <string name="action_share">Поделиться</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">Настройки</string>

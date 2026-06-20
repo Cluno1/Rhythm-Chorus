@@ -997,6 +997,7 @@
     <string name="action_choose">เลือก</string>
     <string name="action_play">เล่น</string>
     <string name="action_shuffle">สับเปลี่ยน</string>
+    <string name="action_share">แชร์</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">การตั้งค่า</string>

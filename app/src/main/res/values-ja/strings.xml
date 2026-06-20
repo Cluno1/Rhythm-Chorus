@@ -997,6 +997,7 @@
     <string name="action_choose">選ぶ</string>
     <string name="action_play">遊ぶ</string>
     <string name="action_shuffle">シャッフル</string>
+    <string name="action_share">シェア</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">設定</string>

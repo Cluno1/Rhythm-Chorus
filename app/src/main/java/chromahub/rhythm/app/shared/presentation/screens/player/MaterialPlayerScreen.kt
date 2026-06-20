@@ -525,6 +525,21 @@ fun MaterialPlayerScreen(
     // Chip visibility state
     var showChips by remember { mutableStateOf(false) }
     
+    val shareSong: () -> Unit = {
+        song?.let { currentSong ->
+            try {
+                val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                    type = "audio/*"
+                    putExtra(android.content.Intent.EXTRA_STREAM, currentSong.uri)
+                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(android.content.Intent.createChooser(shareIntent, "Share ${currentSong.title}"))
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(context, R.string.materialplayerscreen_unable_to_share_file, android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
     // Collect chip order and hidden chips from settings
     val chipOrder by appSettings.playerChipOrder.collectAsState()
     val hiddenChips by appSettings.hiddenPlayerChips.collectAsState()
@@ -1277,20 +1292,7 @@ fun MaterialPlayerScreen(
                 }
             },
             onSongInfo = { showSongInfoSheet = true },
-            onShareFile = {
-                song?.let { currentSong ->
-                    try {
-                        val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                            type = "audio/*"
-                            putExtra(android.content.Intent.EXTRA_STREAM, currentSong.uri)
-                            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        }
-                        context.startActivity(android.content.Intent.createChooser(shareIntent, "Share ${currentSong.title}"))
-                    } catch (e: Exception) {
-                        android.widget.Toast.makeText(context, R.string.materialplayerscreen_unable_to_share_file, android.widget.Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
+            onShareFile = shareSong,
             haptic = haptic,
             isExtraSmallWidth = isExtraSmallWidth,
             isCompactWidth = isCompactWidth
@@ -3491,6 +3493,67 @@ fun MaterialPlayerScreen(
                                                         Icon(
                                                             imageVector = RhythmIcons.Music.Artist,
                                                             contentDescription = stringResource(R.string.cd_show_artist),
+                                                            modifier = Modifier.size(if (isExtraSmallWidth) 14.dp else 16.dp)
+                                                        )
+                                                    },
+                                                    modifier = Modifier
+                                                        .height(if (isExtraSmallWidth) 28.dp else 32.dp)
+                                                        .graphicsLayer {
+                                                            scaleX = scale
+                                                            scaleY = scale
+                                                        }
+                                                        .pointerInput(Unit) {
+                                                            detectTapGestures(
+                                                                onPress = {
+                                                                    isPressed = true
+                                                                    try {
+                                                                        awaitRelease()
+                                                                    } finally {
+                                                                        isPressed = false
+                                                                    }
+                                                                }
+                                                            )
+                                                        },
+                                                    shape = RoundedCornerShape(if (isExtraSmallWidth) 12.dp else 16.dp),
+                                                    colors = AssistChipDefaults.assistChipColors(
+                                                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                                        labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        leadingIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    ),
+                                                    border = null
+                                                )
+                                            }
+                                            "SHARE" -> {
+                                                var isPressed by remember { mutableStateOf(false) }
+                                                val scale by animateFloatAsState(
+                                                    targetValue = if (isPressed) 0.95f else 1f,
+                                                    animationSpec = spring(
+                                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                        stiffness = Spring.StiffnessLow
+                                                     ),
+                                                     label = "shareChipScale"
+                                                )
+                                                AssistChip(
+                                                    onClick = {
+                                                        HapticUtils.performHapticFeedback(
+                                                            context,
+                                                            haptic,
+                                                            HapticType.HEAVY
+                                                        )
+                                                        shareSong()
+                                                    },
+                                                    label = {
+                                                        Text(
+                                                            "Share",
+                                                            style = MaterialTheme.typography.labelLarge.copy(
+                                                                fontSize = if (isExtraSmallWidth) 11.sp else 12.sp
+                                                            )
+                                                        )
+                                                    },
+                                                    leadingIcon = {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.Share,
+                                                            contentDescription = "Share song",
                                                             modifier = Modifier.size(if (isExtraSmallWidth) 14.dp else 16.dp)
                                                         )
                                                     },

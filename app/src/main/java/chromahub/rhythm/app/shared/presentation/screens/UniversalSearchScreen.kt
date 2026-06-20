@@ -2040,128 +2040,165 @@ fun UniversalSongOptionsBottomSheet(
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            UniversalSongOptionGridItem(
-                                icon = RhythmIcons.SkipNext,
-                                text = stringResource(R.string.action_play_next),
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onPlayNext()
-                                }
-                            )
-                        }
-                        Box(modifier = Modifier.weight(1f)) {
-                            UniversalSongOptionGridItem(
-                                icon = RhythmIcons.Queue,
-                                text = stringResource(R.string.action_add_to_queue),
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onAddToQueue()
-                                }
-                            )
+                    val resolvedSong = remember(songObj) {
+                        if (songObj is Song) songObj else (songObj as StreamingSong).toLocalSong()
+                    }
+                    val onShare = {
+                        try {
+                            val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                type = "audio/*"
+                                putExtra(android.content.Intent.EXTRA_STREAM, resolvedSong.uri)
+                                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            context.startActivity(android.content.Intent.createChooser(shareIntent, "Share ${resolvedSong.title}"))
+                        } catch (e: Exception) {
+                            android.widget.Toast.makeText(context, R.string.materialplayerscreen_unable_to_share_file, android.widget.Toast.LENGTH_SHORT).show()
                         }
                     }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            UniversalSongOptionGridItem(
-                                icon = RhythmIcons.AddToPlaylist,
-                                text = stringResource(R.string.content_desc_add_to_playlist),
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onAddToPlaylist()
-                                }
-                            )
-                        }
-                        Box(modifier = Modifier.weight(1f)) {
-                            UniversalSongOptionGridItem(
-                                icon = if (isFavorite) RhythmIcons.Favorite else RhythmIcons.Favorite,
-                                text = if (isFavorite) stringResource(R.string.action_remove_from_favorites) else stringResource(R.string.action_add_to_favorites),
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onToggleFavorite()
-                                }
-                            )
-                        }
-                    }
+                    val isLocal = songObj is Song
+                    val primaryContainer = MaterialTheme.colorScheme.primaryContainer
+                    val onPrimaryContainer = MaterialTheme.colorScheme.onPrimaryContainer
+                    val secondaryContainer = MaterialTheme.colorScheme.secondaryContainer
+                    val onSecondaryContainer = MaterialTheme.colorScheme.onSecondaryContainer
+                    val tertiaryContainer = MaterialTheme.colorScheme.tertiaryContainer
+                    val onTertiaryContainer = MaterialTheme.colorScheme.onTertiaryContainer
+                    val errorContainer = MaterialTheme.colorScheme.errorContainer
+                    val errorColor = MaterialTheme.colorScheme.error
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            UniversalSongOptionGridItem(
-                                icon = RhythmIcons.Album,
-                                text = stringResource(R.string.multiselectionbottomsheet_go_to_album),
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onGoToAlbum()
-                                }
+                    val gridItems = remember(isLocal, isFavorite) {
+                        buildList {
+                            add(
+                                UniversalOptionItem(
+                                    icon = RhythmIcons.SkipNext,
+                                    text = context.getString(R.string.action_play_next),
+                                    containerColor = primaryContainer,
+                                    iconColor = onPrimaryContainer,
+                                    onClick = onPlayNext
+                                )
                             )
-                        }
-                        Box(modifier = Modifier.weight(1f)) {
-                            UniversalSongOptionGridItem(
-                                icon = RhythmIcons.Artist,
-                                text = stringResource(R.string.multiselectionbottomsheet_go_to_artist),
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onGoToArtist()
-                                }
+                            add(
+                                UniversalOptionItem(
+                                    icon = RhythmIcons.Queue,
+                                    text = context.getString(R.string.action_add_to_queue),
+                                    containerColor = primaryContainer,
+                                    iconColor = onPrimaryContainer,
+                                    onClick = onAddToQueue
+                                )
                             )
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            UniversalSongOptionGridItem(
-                                icon = RhythmIcons.Info,
-                                text = stringResource(R.string.action_song_info),
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onShowSongInfo()
-                                }
+                            add(
+                                UniversalOptionItem(
+                                    icon = RhythmIcons.AddToPlaylist,
+                                    text = context.getString(R.string.content_desc_add_to_playlist),
+                                    containerColor = primaryContainer,
+                                    iconColor = onPrimaryContainer,
+                                    onClick = onAddToPlaylist
+                                )
                             )
-                        }
-                        val isLocal = songObj is Song
-                        if (isLocal) {
-                            Box(modifier = Modifier.weight(1f)) {
-                                UniversalSongOptionGridItem(
-                                    icon = RhythmIcons.Block,
-                                    text = stringResource(R.string.action_add_to_blacklist),
-                                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                                    iconColor = MaterialTheme.colorScheme.error,
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                        onAddToBlacklist()
-                                    }
+                            add(
+                                UniversalOptionItem(
+                                    icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
+                                    text = if (isFavorite) context.getString(R.string.action_remove_from_favorites) else context.getString(R.string.action_add_to_favorites),
+                                    containerColor = tertiaryContainer,
+                                    iconColor = onTertiaryContainer,
+                                    onClick = onToggleFavorite
+                                )
+                            )
+                            add(
+                                UniversalOptionItem(
+                                    icon = RhythmIcons.Album,
+                                    text = context.getString(R.string.multiselectionbottomsheet_go_to_album),
+                                    containerColor = secondaryContainer,
+                                    iconColor = onSecondaryContainer,
+                                    onClick = onGoToAlbum
+                                )
+                            )
+                            add(
+                                UniversalOptionItem(
+                                    icon = RhythmIcons.Artist,
+                                    text = context.getString(R.string.multiselectionbottomsheet_go_to_artist),
+                                    containerColor = secondaryContainer,
+                                    iconColor = onSecondaryContainer,
+                                    onClick = onGoToArtist
+                                )
+                            )
+                            add(
+                                UniversalOptionItem(
+                                    icon = RhythmIcons.Info,
+                                    text = context.getString(R.string.action_song_info),
+                                    containerColor = secondaryContainer,
+                                    iconColor = onSecondaryContainer,
+                                    onClick = onShowSongInfo
+                                )
+                            )
+                            if (isLocal) {
+                                add(
+                                    UniversalOptionItem(
+                                        icon = RhythmIcons.Block,
+                                        text = context.getString(R.string.action_add_to_blacklist),
+                                        containerColor = errorContainer,
+                                        iconColor = errorColor,
+                                        onClick = onAddToBlacklist
+                                    )
                                 )
                             }
+                            add(
+                                UniversalOptionItem(
+                                    icon = RhythmIcons.Share,
+                                    text = context.getString(R.string.action_share),
+                                    containerColor = secondaryContainer,
+                                    iconColor = onSecondaryContainer,
+                                    onClick = onShare
+                                )
+                            )
+                        }
+                    }
+
+                    val chunks = remember(gridItems) { gridItems.chunked(2) }
+
+                    chunks.forEach { chunk ->
+                        if (chunk.size == 2) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    UniversalSongOptionGridItem(
+                                        icon = chunk[0].icon,
+                                        text = chunk[0].text,
+                                        containerColor = chunk[0].containerColor,
+                                        iconColor = chunk[0].iconColor,
+                                        onClick = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                            chunk[0].onClick()
+                                        }
+                                    )
+                                }
+                                Box(modifier = Modifier.weight(1f)) {
+                                    UniversalSongOptionGridItem(
+                                        icon = chunk[1].icon,
+                                        text = chunk[1].text,
+                                        containerColor = chunk[1].containerColor,
+                                        iconColor = chunk[1].iconColor,
+                                        onClick = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                            chunk[1].onClick()
+                                        }
+                                    )
+                                }
+                            }
                         } else {
-                            Spacer(modifier = Modifier.weight(1f))
+                            UniversalSongOptionGridItem(
+                                icon = chunk[0].icon,
+                                text = chunk[0].text,
+                                containerColor = chunk[0].containerColor,
+                                iconColor = chunk[0].iconColor,
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    chunk[0].onClick()
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
 
@@ -2171,6 +2208,14 @@ fun UniversalSongOptionsBottomSheet(
         }
     }
 }
+
+private data class UniversalOptionItem(
+    val icon: chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon,
+    val text: String,
+    val containerColor: Color,
+    val iconColor: Color,
+    val onClick: () -> Unit
+)
 
 @Composable
 private fun UniversalSongOptionsHeader(
@@ -2271,11 +2316,12 @@ private fun UniversalSongOptionGridItem(
     text: String,
     containerColor: Color,
     iconColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),

@@ -1430,6 +1430,7 @@ fun StreamingLibraryScreen(
                                         val isLiked = streamingSong != null && likedSongs.any { it.id == streamingSong.id }
 
                                         RhythmSongMenuContent(
+                                            song = localSong,
                                             onPlay = {
                                                 dismissMenu()
                                                 if (songIndex >= 0) {

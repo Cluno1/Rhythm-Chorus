@@ -793,7 +793,7 @@ class AppSettings private constructor(context: Context) {
     val libraryCombineDiscs: StateFlow<Boolean> = _libraryCombineDiscs.asStateFlow()
     
     // Player Chip Order (Add to Playlist and Edit chips are not reorderable - they stay fixed)
-    private val defaultChipOrder = listOf("FAVORITE", "SPEED", "PITCH", "EQUALIZER", "SLEEP_TIMER", "LYRICS", "ALBUM", "ARTIST")
+    private val defaultChipOrder = listOf("FAVORITE", "SPEED", "PITCH", "EQUALIZER", "SLEEP_TIMER", "LYRICS", "ALBUM", "ARTIST", "SHARE")
     private val _playerChipOrder = MutableStateFlow(
         prefs.getString(KEY_PLAYER_CHIP_ORDER, null)
             ?.split(",")
@@ -810,6 +810,9 @@ class AppSettings private constructor(context: Context) {
                     } else {
                         updated + "PITCH"
                     }
+                }
+                if (!updated.contains("SHARE")) {
+                    updated = updated + "SHARE"
                 }
                 updated
             }

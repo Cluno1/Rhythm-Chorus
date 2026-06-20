@@ -997,6 +997,7 @@
     <string name="action_choose">தேர்வு செய்யவும்</string>
     <string name="action_play">விளையாடு</string>
     <string name="action_shuffle">கலக்கு</string>
+    <string name="action_share">பகிர்வு</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">அமைப்புகள்</string>

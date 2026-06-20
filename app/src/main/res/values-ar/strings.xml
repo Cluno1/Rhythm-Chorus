@@ -997,6 +997,7 @@
     <string name="action_choose">اختر</string>
     <string name="action_play">العب</string>
     <string name="action_shuffle">خلط ورق اللعب</string>
+    <string name="action_share">شارك</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">الإعدادات</string>

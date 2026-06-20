@@ -997,6 +997,7 @@
     <string name="action_choose">选择</string>
     <string name="action_play">播放</string>
     <string name="action_shuffle">随机播放</string>
+    <string name="action_share">分享</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">设置</string>

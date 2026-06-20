@@ -997,6 +997,7 @@
     <string name="action_choose">चुनें</string>
     <string name="action_play">खेलें</string>
     <string name="action_shuffle">फेरबदल</string>
+    <string name="action_share">साझा करें</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">सेटिंग्स</string>

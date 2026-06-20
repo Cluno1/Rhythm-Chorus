@@ -494,6 +494,7 @@ fun ArtistBottomSheet(
                                                 },
                                                 trailingContent = {
                                                     SongTrailingMenu(
+                                                        song = song,
                                                         isFavorite = favoriteSongs.contains(song.id),
                                                         onPlayNext = { onPlayNext(song) },
                                                         onAddToQueue = { onAddToQueue(song) },
@@ -909,6 +910,7 @@ fun ArtistBottomSheet(
                                     },
                                     trailingContent = {
                                         SongTrailingMenu(
+                                            song = song,
                                             isFavorite = favoriteSongs.contains(song.id),
                                             onPlayNext = { onPlayNext(song) },
                                             onAddToQueue = { onAddToQueue(song) },
@@ -944,6 +946,7 @@ fun ArtistBottomSheet(
 
 @Composable
 private fun SongTrailingMenu(
+    song: Song,
     isFavorite: Boolean,
     onPlayNext: () -> Unit,
     onAddToQueue: () -> Unit,
@@ -988,6 +991,7 @@ private fun SongTrailingMenu(
             shape = RoundedCornerShape(20.dp)
         ) {
             RhythmSongMenuContent(
+                song = song,
                 onPlayNext = {
                     HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                     showDropdown = false

@@ -69,6 +69,7 @@ fun PlaylistSongOptionsBottomSheet(
     onShowSongInfo: () -> Unit,
     onGoToAlbum: () -> Unit,
     onGoToArtist: () -> Unit,
+    onShare: () -> Unit,
     showRemoveFromPlaylist: Boolean = true,
     haptics: HapticFeedback
 ) {
@@ -165,101 +166,128 @@ fun PlaylistSongOptionsBottomSheet(
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Row 1: Play next, Add to queue
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            SongOptionGridItem(
-                                icon = RhythmIcons.SkipNext,
-                                text = stringResource(R.string.action_play_next),
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onPlayNext()
-                                }
+                    val primaryContainer = MaterialTheme.colorScheme.primaryContainer
+                    val onPrimaryContainer = MaterialTheme.colorScheme.onPrimaryContainer
+                    val secondaryContainer = MaterialTheme.colorScheme.secondaryContainer
+                    val onSecondaryContainer = MaterialTheme.colorScheme.onSecondaryContainer
+
+                    val gridItems = remember {
+                        buildList {
+                            add(
+                                OptionItem(
+                                    icon = RhythmIcons.SkipNext,
+                                    text = context.getString(R.string.action_play_next),
+                                    containerColor = primaryContainer,
+                                    iconColor = onPrimaryContainer,
+                                    onClick = onPlayNext
+                                )
                             )
-                        }
-                        Box(modifier = Modifier.weight(1f)) {
-                            SongOptionGridItem(
-                                icon = RhythmIcons.Queue,
-                                text = stringResource(R.string.action_add_to_queue),
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onAddToQueue()
-                                }
+                            add(
+                                OptionItem(
+                                    icon = RhythmIcons.Queue,
+                                    text = context.getString(R.string.action_add_to_queue),
+                                    containerColor = primaryContainer,
+                                    iconColor = onPrimaryContainer,
+                                    onClick = onAddToQueue
+                                )
                             )
-                        }
-                    }
-                    
-                    // Row 2: Add to playlist, Go to album
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            SongOptionGridItem(
-                                icon = RhythmIcons.AddToPlaylist,
-                                text = stringResource(R.string.content_desc_add_to_playlist),
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onAddToPlaylist()
-                                }
+                            add(
+                                OptionItem(
+                                    icon = RhythmIcons.AddToPlaylist,
+                                    text = context.getString(R.string.content_desc_add_to_playlist),
+                                    containerColor = primaryContainer,
+                                    iconColor = onPrimaryContainer,
+                                    onClick = onAddToPlaylist
+                                )
                             )
-                        }
-                        Box(modifier = Modifier.weight(1f)) {
-                            SongOptionGridItem(
-                                icon = RhythmIcons.Album,
-                                text = stringResource(R.string.multiselectionbottomsheet_go_to_album),
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onGoToAlbum()
-                                }
+                            add(
+                                OptionItem(
+                                    icon = RhythmIcons.Album,
+                                    text = context.getString(R.string.multiselectionbottomsheet_go_to_album),
+                                    containerColor = secondaryContainer,
+                                    iconColor = onSecondaryContainer,
+                                    onClick = onGoToAlbum
+                                )
                             )
-                        }
-                    }
-                    
-                    // Row 3: Go to artist, Song info
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            SongOptionGridItem(
-                                icon = RhythmIcons.Artist,
-                                text = stringResource(R.string.multiselectionbottomsheet_go_to_artist),
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onGoToArtist()
-                                }
+                            add(
+                                OptionItem(
+                                    icon = RhythmIcons.Artist,
+                                    text = context.getString(R.string.multiselectionbottomsheet_go_to_artist),
+                                    containerColor = secondaryContainer,
+                                    iconColor = onSecondaryContainer,
+                                    onClick = onGoToArtist
+                                )
                             )
-                        }
-                        Box(modifier = Modifier.weight(1f)) {
-                            SongOptionGridItem(
-                                icon = RhythmIcons.Info,
-                                text = stringResource(R.string.action_song_info),
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                iconColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    onShowSongInfo()
-                                }
+                            add(
+                                OptionItem(
+                                    icon = RhythmIcons.Info,
+                                    text = context.getString(R.string.action_song_info),
+                                    containerColor = secondaryContainer,
+                                    iconColor = onSecondaryContainer,
+                                    onClick = onShowSongInfo
+                                )
+                            )
+                            add(
+                                OptionItem(
+                                    icon = RhythmIcons.Share,
+                                    text = context.getString(R.string.action_share),
+                                    containerColor = secondaryContainer,
+                                    iconColor = onSecondaryContainer,
+                                    onClick = onShare
+                                )
                             )
                         }
                     }
-                    
+
+                    val chunks = remember(gridItems) { gridItems.chunked(2) }
+
+                    chunks.forEach { chunk ->
+                        if (chunk.size == 2) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    SongOptionGridItem(
+                                        icon = chunk[0].icon,
+                                        text = chunk[0].text,
+                                        containerColor = chunk[0].containerColor,
+                                        iconColor = chunk[0].iconColor,
+                                        onClick = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                            chunk[0].onClick()
+                                        }
+                                    )
+                                }
+                                Box(modifier = Modifier.weight(1f)) {
+                                    SongOptionGridItem(
+                                        icon = chunk[1].icon,
+                                        text = chunk[1].text,
+                                        containerColor = chunk[1].containerColor,
+                                        iconColor = chunk[1].iconColor,
+                                        onClick = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                            chunk[1].onClick()
+                                        }
+                                    )
+                                }
+                            }
+                        } else {
+                            SongOptionGridItem(
+                                icon = chunk[0].icon,
+                                text = chunk[0].text,
+                                containerColor = chunk[0].containerColor,
+                                iconColor = chunk[0].iconColor,
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    chunk[0].onClick()
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
                     if (showRemoveFromPlaylist) {
-                        // Row 4: Remove from playlist (full width, error color)
                         SongOptionGridItem(
                             icon = RhythmIcons.Remove,
                             text = stringResource(R.string.cd_remove_from_playlist),
@@ -272,13 +300,21 @@ fun PlaylistSongOptionsBottomSheet(
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
     }
 }
+
+private data class OptionItem(
+    val icon: MaterialSymbolIcon,
+    val text: String,
+    val containerColor: Color,
+    val iconColor: Color,
+    val onClick: () -> Unit
+)
 
 @Composable
 private fun SongOptionGridItem(

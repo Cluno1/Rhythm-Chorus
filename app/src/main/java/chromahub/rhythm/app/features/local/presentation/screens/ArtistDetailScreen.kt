@@ -1281,6 +1281,7 @@ private fun ArtistSongItem(
                     shape = RoundedCornerShape(20.dp)
                 ) {
                     RhythmSongMenuContent(
+                        song = song,
                         onPlayNext = if (showPlayNextAction) {
                             {
                                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)

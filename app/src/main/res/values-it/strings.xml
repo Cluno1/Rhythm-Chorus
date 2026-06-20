@@ -997,6 +997,7 @@
     <string name="action_choose">Scegli</string>
     <string name="action_play">Gioca</string>
     <string name="action_shuffle">Riproduzione casuale</string>
+    <string name="action_share">Condividi</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">Impostazioni</string>

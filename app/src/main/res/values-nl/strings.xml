@@ -997,6 +997,7 @@
     <string name="action_choose">Kies</string>
     <string name="action_play">Afspelen</string>
     <string name="action_shuffle">Schudden</string>
+    <string name="action_share">Deel</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">Instellingen</string>
