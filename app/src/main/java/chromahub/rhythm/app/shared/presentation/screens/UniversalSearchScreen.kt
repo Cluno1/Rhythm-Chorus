@@ -1498,7 +1498,7 @@ fun UniversalSearchScreen(
                 onDismiss = { showSongInfoSheet = false },
                 appSettings = appSettings,
                 isStreamingMode = isSongInfoStreaming,
-                onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+                onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                     pendingMetadataEditCompleteCallback = onComplete
                     try {
                         localViewModel.saveMetadataChanges(
@@ -1511,6 +1511,9 @@ fun UniversalSearchScreen(
                             trackNumber = trackNumber,
                             artworkUri = artworkUri,
                             removeArtwork = removeArtwork,
+                            albumArtist = albumArtist,
+                            composer = composer,
+                            discNumber = discNumber,
                             onSuccess = { fileWriteSucceeded ->
                                 if (fileWriteSucceeded) {
                                     Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, Toast.LENGTH_SHORT).show()

@@ -242,6 +242,7 @@ dependencies {
     
     // Audio metadata editing
     implementation(libs.net.jthink.jaudiotagger)
+    implementation(libs.taglib)
     
     // Network
     implementation(libs.com.squareup.retrofit2.retrofit)

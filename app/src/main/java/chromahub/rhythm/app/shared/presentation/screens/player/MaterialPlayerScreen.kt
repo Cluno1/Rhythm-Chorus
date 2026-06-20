@@ -1024,7 +1024,7 @@ fun MaterialPlayerScreen(
             onDismiss = { showSongInfoSheet = false },
             appSettings = appSettings,
             isStreamingMode = isStreamingMode,
-            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                 pendingMetadataEditCompleteCallback = onComplete
                 try {
                     // Use the ViewModel's new metadata saving function
@@ -1038,6 +1038,9 @@ fun MaterialPlayerScreen(
                         trackNumber = trackNumber,
                         artworkUri = artworkUri,
                         removeArtwork = removeArtwork,
+                        albumArtist = albumArtist,
+                        composer = composer,
+                        discNumber = discNumber,
                         onSuccess = { fileWriteSucceeded ->
                             if (fileWriteSucceeded) {
                                 Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, Toast.LENGTH_SHORT).show()
@@ -1252,16 +1255,7 @@ fun MaterialPlayerScreen(
             },
             onArtist = {
                 song?.let { currentSong ->
-                    val artistNames = if (groupByAlbumArtist) {
-                        val explicitAlbumArtist = currentSong.albumArtist?.trim().orEmpty()
-                        if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
-                            splitArtistNames(explicitAlbumArtist)
-                        } else {
-                            splitArtistNames(currentSong.artist)
-                        }
-                    } else {
-                        splitArtistNames(currentSong.artist)
-                    }
+                    val artistNames = splitArtistNames(currentSong.artist)
 
                     if (artistNames.size <= 1) {
                         val matched = artistNames.firstNotNullOfOrNull { name ->
@@ -3464,16 +3458,7 @@ fun MaterialPlayerScreen(
                                                             HapticType.HEAVY
                                                         )
                                                         song?.let { currentSong ->
-                                                            val artistNames = if (groupByAlbumArtist) {
-                                                                val explicitAlbumArtist = currentSong.albumArtist?.trim().orEmpty()
-                                                                if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
-                                                                    splitArtistNames(explicitAlbumArtist)
-                                                                } else {
-                                                                    splitArtistNames(currentSong.artist)
-                                                                }
-                                                            } else {
-                                                                splitArtistNames(currentSong.artist)
-                                                            }
+                                                            val artistNames = splitArtistNames(currentSong.artist)
 
                                                             if (artistNames.size <= 1) {
                                                                 val matched = artistNames.firstNotNullOfOrNull { name ->

@@ -60,6 +60,9 @@ class LibraryMetadataManager(
         trackNumber: Int,
         artworkUri: Uri? = null,
         removeArtwork: Boolean = false,
+        albumArtist: String? = null,
+        composer: String? = null,
+        discNumber: Int = 1,
         onSuccess: (fileWriteSucceeded: Boolean) -> Unit,
         onError: (String) -> Unit,
         onPermissionRequired: ((PendingWriteRequest) -> Unit)? = null
@@ -105,7 +108,9 @@ class LibraryMetadataManager(
                     return@launch
                 }
 
-                val newAlbumArtist = if (song.albumArtist.isNullOrBlank() || song.albumArtist == song.artist) {
+                val finalAlbumArtist = if (!albumArtist.isNullOrBlank()) {
+                    albumArtist
+                } else if (song.albumArtist.isNullOrBlank() || song.albumArtist == song.artist) {
                     artist
                 } else {
                     song.albumArtist
@@ -123,7 +128,9 @@ class LibraryMetadataManager(
                         newTrackNumber = trackNumber,
                         artworkUri = tempArtworkUri,
                         removeArtwork = removeArtwork,
-                        newAlbumArtist = newAlbumArtist
+                        newAlbumArtist = finalAlbumArtist,
+                        newComposer = composer,
+                        newDiscNumber = discNumber
                     )
                 }
 
@@ -157,7 +164,8 @@ class LibraryMetadataManager(
                     year = year,
                     trackNumber = trackNumber,
                     artworkUri = updatedArtworkUri,
-                    albumArtist = newAlbumArtist
+                    albumArtist = finalAlbumArtist,
+                    discNumber = discNumber
                 )
                 
                 updateCurrentSongMetadata(updatedSong)
@@ -192,7 +200,9 @@ class LibraryMetadataManager(
                                     newTrackNumber = trackNumber,
                                     artworkUri = tempArtworkUri,
                                     removeArtwork = removeArtwork,
-                                    newAlbumArtist = newAlbumArtist
+                                    newAlbumArtist = finalAlbumArtist,
+                                    newComposer = composer,
+                                    newDiscNumber = discNumber
                                 )
                             }
                             
@@ -217,7 +227,9 @@ class LibraryMetadataManager(
                 Log.w(TAG, "RecoverableSecurityException - attempting createWriteRequest approach")
                 
                 val appContext = context.applicationContext
-                val newAlbumArtist = if (song.albumArtist.isNullOrBlank() || song.albumArtist == song.artist) {
+                val finalAlbumArtist = if (!albumArtist.isNullOrBlank()) {
+                    albumArtist
+                } else if (song.albumArtist.isNullOrBlank() || song.albumArtist == song.artist) {
                     artist
                 } else {
                     song.albumArtist
@@ -247,7 +259,9 @@ class LibraryMetadataManager(
                             }
                         }
                         else -> song.artworkUri
-                    }
+                    },
+                    albumArtist = finalAlbumArtist,
+                    discNumber = discNumber
                 )
                 updateCurrentSongMetadata(updatedSong)
                 
@@ -265,7 +279,9 @@ class LibraryMetadataManager(
                             newTrackNumber = trackNumber,
                             artworkUri = artworkUri,
                             removeArtwork = removeArtwork,
-                            newAlbumArtist = newAlbumArtist
+                            newAlbumArtist = finalAlbumArtist,
+                            newComposer = composer,
+                            newDiscNumber = discNumber
                         )
                     }
                     
@@ -599,7 +615,10 @@ class LibraryMetadataManager(
             if (songsNeedingPermission.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 try {
                     val contentResolver = appContext.contentResolver
-                    val pendingIntent = MediaStore.createWriteRequest(contentResolver, songsNeedingPermission.map { it.uri })
+                    val resolvedUris = songsNeedingPermission.map { 
+                        MediaUtils.getSpecificVolumeUri(appContext, it.id.toLongOrNull() ?: 0L) ?: it.uri 
+                    }
+                    val pendingIntent = MediaStore.createWriteRequest(contentResolver, resolvedUris)
                     val pendingRequest = PendingBatchWriteRequest(
                         intentSender = pendingIntent.intentSender,
                         songs = songsNeedingPermission,

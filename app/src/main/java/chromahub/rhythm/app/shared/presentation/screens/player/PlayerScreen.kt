@@ -247,17 +247,7 @@ fun PlayerScreen(
         }
 
         fun resolveArtistForSong(currentSong: Song): Artist? {
-            val groupByAlbumArtist = appSettings.groupByAlbumArtist.value
-            val artistNames = if (groupByAlbumArtist) {
-                val albumArtist = currentSong.albumArtist?.trim().orEmpty()
-                if (albumArtist.isNotBlank() && !albumArtist.equals("<unknown>", ignoreCase = true)) {
-                    splitArtistNames(albumArtist)
-                } else {
-                    splitArtistNames(currentSong.artist)
-                }
-            } else {
-                splitArtistNames(currentSong.artist)
-            }
+            val artistNames = splitArtistNames(currentSong.artist)
 
             val matched = artistNames.firstNotNullOfOrNull { name ->
                 artists.firstOrNull { it.name.equals(name, ignoreCase = true) }
@@ -366,12 +356,7 @@ fun PlayerScreen(
             },
             onShowArtistBottomSheet = {
                 song?.let { currentSong ->
-                    val albumArtist = currentSong.albumArtist?.trim().orEmpty()
-                    val artistNames = if (albumArtist.isNotBlank() && !albumArtist.equals("<unknown>", ignoreCase = true)) {
-                        splitArtistNames(albumArtist)
-                    } else {
-                        splitArtistNames(currentSong.artist)
-                    }
+                    val artistNames = splitArtistNames(currentSong.artist)
 
                     if (artistNames.size <= 1) {
                         currentSongArtistForSheet?.let { artist ->
@@ -477,7 +462,7 @@ fun PlayerScreen(
                 onDismiss = { showSongInfoSheet = false },
                 appSettings = appSettings,
                 isStreamingMode = isStreamingMode,
-                onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+                onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                     pendingMetadataEditCompleteCallback = onComplete
                     try {
                         musicViewModel.saveMetadataChanges(
@@ -490,6 +475,9 @@ fun PlayerScreen(
                             trackNumber = trackNumber,
                             artworkUri = artworkUri,
                             removeArtwork = removeArtwork,
+                            albumArtist = albumArtist,
+                            composer = composer,
+                            discNumber = discNumber,
                             onSuccess = { fileWriteSucceeded ->
                                 if (fileWriteSucceeded) {
                                     Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, Toast.LENGTH_SHORT).show()
@@ -555,17 +543,7 @@ fun PlayerScreen(
                 },
                 onArtist = {
                     song?.let { currentSong ->
-                        val groupByAlbumArtist = appSettings.groupByAlbumArtist.value
-                        val artistNames = if (groupByAlbumArtist) {
-                            val explicitAlbumArtist = currentSong.albumArtist?.trim().orEmpty()
-                            if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
-                                splitArtistNames(explicitAlbumArtist)
-                            } else {
-                                splitArtistNames(currentSong.artist)
-                            }
-                        } else {
-                            splitArtistNames(currentSong.artist)
-                        }
+                        val artistNames = splitArtistNames(currentSong.artist)
 
                         if (artistNames.size <= 1) {
                             currentSongArtistForSheet?.let { artist ->

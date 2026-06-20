@@ -169,7 +169,6 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
 
     val artistSeparatorEnabled by appSettings.artistSeparatorEnabled.collectAsState()
     val artistSeparatorDelimiters by appSettings.artistSeparatorDelimiters.collectAsState()
-    val groupByAlbumArtist by appSettings.groupByAlbumArtist.collectAsState()
 
     var showDelimiterBottomSheet by remember { mutableStateOf(false) }
     var tempDelimiters by remember { mutableStateOf(artistSeparatorDelimiters) }
@@ -207,21 +206,6 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                         }
                     )
                 ),
-            ),
-            SettingGroup(
-                title = context.getString(R.string.artist_library_organization),
-                items = listOf(
-                    SettingItem(
-                        RhythmIcons.Album,
-                        context.getString(R.string.artist_group_by_album_artist),
-                        context.getString(R.string.artist_group_by_album_artist_desc),
-                        toggleState = groupByAlbumArtist,
-                        onToggleChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            appSettings.setGroupByAlbumArtist(it)
-                        }
-                    )
-                )
             )
         )
 

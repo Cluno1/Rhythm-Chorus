@@ -467,7 +467,7 @@ fun HomeScreen(
             song = selectedSongForPlaylist,
             onDismiss = { showSongInfoSheet = false },
             appSettings = AppSettings.getInstance(context),
-            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                 pendingMetadataEditCompleteCallback = onComplete
                 musicViewModel.saveMetadataChanges(
                     song = selectedSongForPlaylist!!,
@@ -479,6 +479,9 @@ fun HomeScreen(
                     trackNumber = trackNumber,
                     artworkUri = artworkUri,
                     removeArtwork = removeArtwork,
+                    albumArtist = albumArtist,
+                    composer = composer,
+                    discNumber = discNumber,
                     onSuccess = { fileWriteSucceeded ->
                         if (fileWriteSucceeded) {
                             Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, Toast.LENGTH_SHORT).show()

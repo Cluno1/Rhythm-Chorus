@@ -24,6 +24,10 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.Extended
 import java.io.File
 import java.io.FileOutputStream
 import java.security.MessageDigest
+import com.kyant.taglib.Picture
+import com.kyant.taglib.TagLib
+import android.os.ParcelFileDescriptor
+
 
 /**
  * Exception wrapper for RecoverableSecurityException that includes the pending intent
@@ -52,7 +56,9 @@ data class PendingWriteRequest(
     val tempFilePath: String,
     val artworkUriString: String?,
     val removeArtwork: Boolean,
-    val newAlbumArtist: String? = null
+    val newAlbumArtist: String? = null,
+    val newComposer: String? = null,
+    val newDiscNumber: Int = 1
 )
 
 /**
@@ -820,6 +826,8 @@ object MediaUtils {
         song: Song,
         lyrics: String
     ): Boolean {
+        val targetUri = getSpecificVolumeUri(context, song.id.toLongOrNull() ?: 0L) ?: song.uri
+        val song = song.copy(uri = targetUri)
         return try {
             val contentResolver = context.contentResolver
 
@@ -854,7 +862,7 @@ object MediaUtils {
                 // Android 10: WRITE_EXTERNAL_STORAGE is granted; write via temp file + ContentResolver stream
                 try {
                     val extension = filePath?.substringAfterLast('.', "mp3") ?: "mp3"
-                    val tempFile = File(
+                    var tempFile = File(
                         context.cacheDir,
                         "temp_lyrics_${System.currentTimeMillis()}.$extension"
                     )
@@ -866,6 +874,7 @@ object MediaUtils {
                         if (!tempFile.exists() || tempFile.length() == 0L) {
                             throw Exception("Failed to copy file to temp for lyrics embedding")
                         }
+                        tempFile = adjustTempFileExtension(tempFile)
                         // Embed lyrics in temp file
                         val audioFileObj = AudioFileIO.read(tempFile)
                         val tag: Tag = audioFileObj.tag ?: audioFileObj.createDefaultTag()
@@ -982,6 +991,8 @@ object MediaUtils {
         song: Song,
         lyrics: String
     ): PendingLyricsWriteRequest? {
+        val targetUri = getSpecificVolumeUri(context, song.id.toLongOrNull() ?: 0L) ?: song.uri
+        val song = song.copy(uri = targetUri)
         return try {
             val contentResolver = context.contentResolver
             Log.d(TAG, "Creating lyrics write request for song: ${song.title}")
@@ -1029,7 +1040,7 @@ object MediaUtils {
             }
 
             val extension = filePath?.substringAfterLast('.', "mp3") ?: "mp3"
-            val tempFile = File(context.cacheDir, "temp_lyrics_perm_${System.currentTimeMillis()}.$extension")
+            var tempFile = File(context.cacheDir, "temp_lyrics_perm_${System.currentTimeMillis()}.$extension")
 
             // Copy original file
             contentResolver.openInputStream(song.uri)?.use { input ->
@@ -1040,6 +1051,8 @@ object MediaUtils {
                 Log.e(TAG, "Failed to copy file to temp for lyrics permission flow")
                 return null
             }
+
+            tempFile = adjustTempFileExtension(tempFile)
 
             // Write lyrics to temp
             val audioFileObj = org.jaudiotagger.audio.AudioFileIO.read(tempFile)
@@ -1062,6 +1075,8 @@ object MediaUtils {
         context: Context,
         pendingRequest: PendingLyricsWriteRequest
     ): Boolean {
+        val targetUri = getSpecificVolumeUri(context, pendingRequest.song.id.toLongOrNull() ?: 0L) ?: pendingRequest.song.uri
+        val pendingRequest = pendingRequest.copy(song = pendingRequest.song.copy(uri = targetUri))
         return try {
             val contentResolver = context.contentResolver
 
@@ -1148,8 +1163,12 @@ object MediaUtils {
         newTrackNumber: Int,
         artworkUri: Uri? = null,
         removeArtwork: Boolean = false,
-        newAlbumArtist: String? = null
+        newAlbumArtist: String? = null,
+        newComposer: String? = null,
+        newDiscNumber: Int = 1
     ): Boolean {
+        val targetUri = getSpecificVolumeUri(context, song.id.toLongOrNull() ?: 0L) ?: song.uri
+        val song = song.copy(uri = targetUri)
         return try {
             val contentResolver = context.contentResolver
 
@@ -1220,6 +1239,12 @@ object MediaUtils {
                 if (newAlbumArtist != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
                     put(MediaStore.Audio.Media.ALBUM_ARTIST, newAlbumArtist)
                 }
+                if (newComposer != null) {
+                    put(MediaStore.Audio.Media.COMPOSER, newComposer)
+                }
+                if (newDiscNumber > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                    put(MediaStore.Audio.Media.CD_TRACK_NUMBER, newDiscNumber)
+                }
             }
 
             // Update MediaStore first
@@ -1281,7 +1306,7 @@ object MediaUtils {
                     val extension = filePath?.substringAfterLast('.', "")?.takeIf { it.isNotEmpty() }
                         ?: song.uri.lastPathSegment?.substringAfterLast('.', "")?.takeIf { it.isNotEmpty() }
                         ?: "mp3"
-                    val tempFile = File(
+                    var tempFile = File(
                         context.cacheDir,
                         "temp_audio_${java.util.UUID.randomUUID()}.$extension"
                     )
@@ -1304,32 +1329,69 @@ object MediaUtils {
                             throw Exception("Failed to copy file to temp location")
                         }
 
-                        // Step 2: Modify metadata using jaudiotagger on temp file
+                        tempFile = adjustTempFileExtension(tempFile)
+
+                        // Step 2: Modify metadata in temp file
                         Log.d(TAG, "Step 2: Modifying metadata in temp file...")
-                        val audioFileObj = AudioFileIO.read(tempFile)
-                        val tag: Tag = audioFileObj.tag ?: audioFileObj.createDefaultTag()
-
-                        tag.setField(FieldKey.TITLE, newTitle)
-                        tag.setField(FieldKey.ARTIST, newArtist)
-                        tag.setField(FieldKey.ALBUM, newAlbum)
-                        if (newGenre.isNotBlank()) {
-                            tag.setField(FieldKey.GENRE, newGenre)
+                        val container = detectContainerFormat(tempFile.absolutePath)
+                        val useTagLib = container == DetectedContainer.MP4
+                        
+                        if (useTagLib) {
+                            Log.d(TAG, "Using TagLib for MP4/M4A metadata write")
+                            val tagLibSuccess = updateFileMetadataWithTagLib(
+                                context = context,
+                                file = tempFile,
+                                newTitle = newTitle,
+                                newArtist = newArtist,
+                                newAlbum = newAlbum,
+                                newGenre = newGenre,
+                                newYear = newYear,
+                                newTrackNumber = newTrackNumber,
+                                newAlbumArtist = newAlbumArtist,
+                                newComposer = newComposer,
+                                newDiscNumber = newDiscNumber,
+                                artworkUri = artworkUri,
+                                removeArtwork = removeArtwork
+                            )
+                            if (!tagLibSuccess) {
+                                throw Exception("TagLib failed to write metadata")
+                            }
                         } else {
-                            tag.deleteField(FieldKey.GENRE)
-                        }
-                        if (newYear > 0) {
-                            tag.setField(FieldKey.YEAR, newYear.toString())
-                        }
-                        if (newTrackNumber > 0) {
-                            tag.setField(FieldKey.TRACK, newTrackNumber.toString())
-                        }
-                        if (newAlbumArtist != null) {
-                            tag.setField(FieldKey.ALBUM_ARTIST, newAlbumArtist)
-                        }
-                        applyArtworkToTag(context, tag, artworkUri, removeArtwork)
+                            val audioFileObj = AudioFileIO.read(tempFile)
+                            val tag: Tag = audioFileObj.tag ?: audioFileObj.createDefaultTag()
 
-                        audioFileObj.tag = tag
-                        AudioFileIO.write(audioFileObj)
+                            tag.setField(FieldKey.TITLE, newTitle)
+                            tag.setField(FieldKey.ARTIST, newArtist)
+                            tag.setField(FieldKey.ALBUM, newAlbum)
+                            if (newGenre.isNotBlank()) {
+                                tag.setField(FieldKey.GENRE, newGenre)
+                            } else {
+                                tag.deleteField(FieldKey.GENRE)
+                            }
+                            if (newYear > 0) {
+                                tag.setField(FieldKey.YEAR, newYear.toString())
+                            }
+                            if (newTrackNumber > 0) {
+                                tag.setField(FieldKey.TRACK, newTrackNumber.toString())
+                            }
+                            if (newAlbumArtist != null) {
+                                tag.setField(FieldKey.ALBUM_ARTIST, newAlbumArtist)
+                            }
+                            if (newComposer != null) {
+                                if (newComposer.isNotBlank()) {
+                                    tag.setField(FieldKey.COMPOSER, newComposer)
+                                } else {
+                                    tag.deleteField(FieldKey.COMPOSER)
+                                }
+                            }
+                            if (newDiscNumber > 0) {
+                                tag.setField(FieldKey.DISC_NO, newDiscNumber.toString())
+                            }
+                            applyArtworkToTag(context, tag, artworkUri, removeArtwork)
+
+                            audioFileObj.tag = tag
+                            AudioFileIO.write(audioFileObj)
+                        }
                         Log.d(TAG, "Metadata written to temp file successfully")
 
                         // Step 3: Copy modified temp file back to original location
@@ -1448,38 +1510,73 @@ object MediaUtils {
                         Log.e(TAG, "File is not writable: $filePath")
                     } else {
                         try {
-                            val audioFileObj = AudioFileIO.read(audioFile)
-                            val tag: Tag = audioFileObj.tag ?: audioFileObj.createDefaultTag()
-
-                            tag.setField(FieldKey.TITLE, newTitle)
-                            tag.setField(FieldKey.ARTIST, newArtist)
-                            tag.setField(FieldKey.ALBUM, newAlbum)
-                            if (newGenre.isNotBlank()) {
-                                tag.setField(FieldKey.GENRE, newGenre)
+                            val container = detectContainerFormat(audioFile.absolutePath)
+                            val useTagLib = container == DetectedContainer.MP4
+                            
+                            if (useTagLib) {
+                                Log.d(TAG, "Using TagLib for MP4/M4A metadata write (Android 9-)")
+                                val tagLibSuccess = updateFileMetadataWithTagLib(
+                                    context = context,
+                                    file = audioFile,
+                                    newTitle = newTitle,
+                                    newArtist = newArtist,
+                                    newAlbum = newAlbum,
+                                    newGenre = newGenre,
+                                    newYear = newYear,
+                                    newTrackNumber = newTrackNumber,
+                                    newAlbumArtist = newAlbumArtist,
+                                    newComposer = newComposer,
+                                    newDiscNumber = newDiscNumber,
+                                    artworkUri = artworkUri,
+                                    removeArtwork = removeArtwork
+                                )
+                                if (!tagLibSuccess) {
+                                    throw Exception("TagLib failed to write metadata")
+                                }
+                                fileWriteSucceeded = true
                             } else {
-                                tag.deleteField(FieldKey.GENRE)
-                            }
-                            if (newYear > 0) {
-                                tag.setField(FieldKey.YEAR, newYear.toString())
-                            }
-                            if (newTrackNumber > 0) {
-                                tag.setField(FieldKey.TRACK, newTrackNumber.toString())
-                            }
-                            if (newAlbumArtist != null) {
-                                tag.setField(FieldKey.ALBUM_ARTIST, newAlbumArtist)
-                            }
-                            applyArtworkToTag(context, tag, artworkUri, removeArtwork)
+                                val audioFileObj = AudioFileIO.read(audioFile)
+                                val tag: Tag = audioFileObj.tag ?: audioFileObj.createDefaultTag()
 
-                            audioFileObj.tag = tag
-                            AudioFileIO.write(audioFileObj)
+                                tag.setField(FieldKey.TITLE, newTitle)
+                                tag.setField(FieldKey.ARTIST, newArtist)
+                                tag.setField(FieldKey.ALBUM, newAlbum)
+                                if (newGenre.isNotBlank()) {
+                                    tag.setField(FieldKey.GENRE, newGenre)
+                                } else {
+                                    tag.deleteField(FieldKey.GENRE)
+                                }
+                                if (newYear > 0) {
+                                    tag.setField(FieldKey.YEAR, newYear.toString())
+                                }
+                                if (newTrackNumber > 0) {
+                                    tag.setField(FieldKey.TRACK, newTrackNumber.toString())
+                                }
+                                if (newAlbumArtist != null) {
+                                    tag.setField(FieldKey.ALBUM_ARTIST, newAlbumArtist)
+                                }
+                                if (newComposer != null) {
+                                    if (newComposer.isNotBlank()) {
+                                        tag.setField(FieldKey.COMPOSER, newComposer)
+                                    } else {
+                                        tag.deleteField(FieldKey.COMPOSER)
+                                    }
+                                }
+                                if (newDiscNumber > 0) {
+                                    tag.setField(FieldKey.DISC_NO, newDiscNumber.toString())
+                                }
+                                applyArtworkToTag(context, tag, artworkUri, removeArtwork)
 
-                            fileWriteSucceeded = true
+                                audioFileObj.tag = tag
+                                AudioFileIO.write(audioFileObj)
+                                fileWriteSucceeded = true
+                            }
                             Log.d(
                                 TAG,
                                 "Successfully wrote metadata to file (Android 9-): $filePath"
                             )
                         } catch (e: Exception) {
-                            Log.e(TAG, "Failed to write metadata to file using jaudiotagger", e)
+                            Log.e(TAG, "Failed to write metadata to file", e)
                         }
                     }
                 }
@@ -1573,8 +1670,12 @@ object MediaUtils {
         newTrackNumber: Int,
         artworkUri: Uri? = null,
         removeArtwork: Boolean = false,
-        newAlbumArtist: String? = null
+        newAlbumArtist: String? = null,
+        newComposer: String? = null,
+        newDiscNumber: Int = 1
     ): PendingWriteRequest? {
+        val targetUri = getSpecificVolumeUri(context, song.id.toLongOrNull() ?: 0L) ?: song.uri
+        val song = song.copy(uri = targetUri)
         return try {
             val contentResolver = context.contentResolver
             Log.d(TAG, "Creating write request for song: ${song.title}")
@@ -1596,7 +1697,9 @@ object MediaUtils {
                     newTrackNumber = newTrackNumber,
                     artworkUri = artworkUri,
                     removeArtwork = removeArtwork,
-                    newAlbumArtist = newAlbumArtist
+                    newAlbumArtist = newAlbumArtist,
+                    newComposer = newComposer,
+                    newDiscNumber = newDiscNumber
                 )
             } catch (e: Exception) {
                 Log.w(TAG, "Could not pre-prepare metadata temp file; will retry after permission: ${e.message}")
@@ -1615,7 +1718,9 @@ object MediaUtils {
                 tempFilePath = tempFilePath ?: "", // empty string = retry in completion
                 artworkUriString = artworkUri?.toString(),
                 removeArtwork = removeArtwork,
-                newAlbumArtist = newAlbumArtist
+                newAlbumArtist = newAlbumArtist,
+                newComposer = newComposer,
+                newDiscNumber = newDiscNumber
             )
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create write request for song: ${song.title}", e)
@@ -1637,7 +1742,9 @@ object MediaUtils {
         newTrackNumber: Int,
         artworkUri: Uri? = null,
         removeArtwork: Boolean = false,
-        newAlbumArtist: String? = null
+        newAlbumArtist: String? = null,
+        newComposer: String? = null,
+        newDiscNumber: Int = 1
     ): String? {
         return try {
             val contentResolver = context.contentResolver
@@ -1661,7 +1768,7 @@ object MediaUtils {
             }
 
             val extension = filePath?.substringAfterLast('.', "mp3") ?: "mp3"
-            val tempFile = File(
+            var tempFile = File(
                 context.cacheDir,
                 "pending_metadata_${song.id}_${System.currentTimeMillis()}.$extension"
             )
@@ -1678,31 +1785,68 @@ object MediaUtils {
                 return null
             }
 
+            tempFile = adjustTempFileExtension(tempFile)
+
             // Modify metadata in temp file
-            val audioFileObj = AudioFileIO.read(tempFile)
-            val tag: Tag = audioFileObj.tag ?: audioFileObj.createDefaultTag()
-
-            tag.setField(FieldKey.TITLE, newTitle)
-            tag.setField(FieldKey.ARTIST, newArtist)
-            tag.setField(FieldKey.ALBUM, newAlbum)
-            if (newGenre.isNotBlank()) {
-                tag.setField(FieldKey.GENRE, newGenre)
+            val container = detectContainerFormat(tempFile.absolutePath)
+            val useTagLib = container == DetectedContainer.MP4
+            
+            if (useTagLib) {
+                Log.d(TAG, "Using TagLib for MP4/M4A metadata write in prepareTempFileWithMetadata")
+                val tagLibSuccess = updateFileMetadataWithTagLib(
+                    context = context,
+                    file = tempFile,
+                    newTitle = newTitle,
+                    newArtist = newArtist,
+                    newAlbum = newAlbum,
+                    newGenre = newGenre,
+                    newYear = newYear,
+                    newTrackNumber = newTrackNumber,
+                    newAlbumArtist = newAlbumArtist,
+                    newComposer = newComposer,
+                    newDiscNumber = newDiscNumber,
+                    artworkUri = artworkUri,
+                    removeArtwork = removeArtwork
+                )
+                if (!tagLibSuccess) {
+                    throw Exception("TagLib failed to write metadata")
+                }
             } else {
-                tag.deleteField(FieldKey.GENRE)
-            }
-            if (newYear > 0) {
-                tag.setField(FieldKey.YEAR, newYear.toString())
-            }
-            if (newTrackNumber > 0) {
-                tag.setField(FieldKey.TRACK, newTrackNumber.toString())
-            }
-            if (newAlbumArtist != null) {
-                tag.setField(FieldKey.ALBUM_ARTIST, newAlbumArtist)
-            }
-            applyArtworkToTag(context, tag, artworkUri, removeArtwork)
+                val audioFileObj = AudioFileIO.read(tempFile)
+                val tag: Tag = audioFileObj.tag ?: audioFileObj.createDefaultTag()
 
-            audioFileObj.tag = tag
-            AudioFileIO.write(audioFileObj)
+                tag.setField(FieldKey.TITLE, newTitle)
+                tag.setField(FieldKey.ARTIST, newArtist)
+                tag.setField(FieldKey.ALBUM, newAlbum)
+                if (newGenre.isNotBlank()) {
+                    tag.setField(FieldKey.GENRE, newGenre)
+                } else {
+                    tag.deleteField(FieldKey.GENRE)
+                }
+                if (newYear > 0) {
+                    tag.setField(FieldKey.YEAR, newYear.toString())
+                }
+                if (newTrackNumber > 0) {
+                    tag.setField(FieldKey.TRACK, newTrackNumber.toString())
+                }
+                if (newAlbumArtist != null) {
+                    tag.setField(FieldKey.ALBUM_ARTIST, newAlbumArtist)
+                }
+                if (newComposer != null) {
+                    if (newComposer.isNotBlank()) {
+                        tag.setField(FieldKey.COMPOSER, newComposer)
+                    } else {
+                        tag.deleteField(FieldKey.COMPOSER)
+                    }
+                }
+                if (newDiscNumber > 0) {
+                    tag.setField(FieldKey.DISC_NO, newDiscNumber.toString())
+                }
+                applyArtworkToTag(context, tag, artworkUri, removeArtwork)
+
+                audioFileObj.tag = tag
+                AudioFileIO.write(audioFileObj)
+            }
 
             Log.d(TAG, "Temp file with modified metadata created: ${tempFile.absolutePath}")
             tempFile.absolutePath
@@ -1724,6 +1868,8 @@ object MediaUtils {
         context: Context,
         pendingRequest: PendingWriteRequest
     ): Boolean {
+        val targetUri = getSpecificVolumeUri(context, pendingRequest.song.id.toLongOrNull() ?: 0L) ?: pendingRequest.song.uri
+        val pendingRequest = pendingRequest.copy(song = pendingRequest.song.copy(uri = targetUri))
         return try {
             val contentResolver = context.contentResolver
 
@@ -1743,7 +1889,9 @@ object MediaUtils {
                     newTrackNumber = pendingRequest.newTrackNumber,
                     artworkUri = pendingRequest.artworkUriString?.toUri(),
                     removeArtwork = pendingRequest.removeArtwork,
-                    newAlbumArtist = pendingRequest.newAlbumArtist
+                    newAlbumArtist = pendingRequest.newAlbumArtist,
+                    newComposer = pendingRequest.newComposer,
+                    newDiscNumber = pendingRequest.newDiscNumber
                 )
                 if (retryPath == null) {
                     Log.e(TAG, "Cannot write metadata: format not supported or file unreadable")
@@ -1784,6 +1932,12 @@ object MediaUtils {
                 }
                 if (pendingRequest.newAlbumArtist != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
                     put(MediaStore.Audio.Media.ALBUM_ARTIST, pendingRequest.newAlbumArtist)
+                }
+                if (pendingRequest.newComposer != null) {
+                    put(MediaStore.Audio.Media.COMPOSER, pendingRequest.newComposer)
+                }
+                if (pendingRequest.newDiscNumber > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                    put(MediaStore.Audio.Media.CD_TRACK_NUMBER, pendingRequest.newDiscNumber)
                 }
             }
 
@@ -2711,4 +2865,235 @@ object MediaUtils {
         }
         return null
     }
+
+    private fun adjustTempFileExtension(tempFile: File): File {
+        val container = detectContainerFormat(tempFile.absolutePath)
+        if (container != DetectedContainer.UNKNOWN) {
+            val currentExtension = tempFile.extension
+            val newExtension = container.canonicalExtension
+            if (currentExtension.lowercase() != newExtension.lowercase()) {
+                val newFile = File(
+                    tempFile.parentFile,
+                    tempFile.nameWithoutExtension + "." + newExtension
+                )
+                if (tempFile.renameTo(newFile)) {
+                    Log.d(TAG, "Renamed temp file from extension $currentExtension to detected extension $newExtension")
+                    return newFile
+                }
+            }
+        }
+        return tempFile
+    }
+
+    private enum class DetectedContainer(val canonicalExtension: String) {
+        MP3("mp3"),
+        MP4("m4a"),
+        FLAC("flac"),
+        OGG("ogg"),
+        WAV("wav"),
+        UNKNOWN("")
+    }
+
+    private fun detectContainerFormat(filePath: String): DetectedContainer {
+        return try {
+            File(filePath).inputStream().use { input ->
+                val header = ByteArray(512)
+                var bytesRead = 0
+                while (bytesRead < header.size) {
+                    val read = input.read(header, bytesRead, header.size - bytesRead)
+                    if (read <= 0) break
+                    bytesRead += read
+                }
+                if (bytesRead < 4) return DetectedContainer.UNKNOWN
+                when {
+                    header[0] == 'I'.code.toByte() &&
+                        header[1] == 'D'.code.toByte() &&
+                        header[2] == '3'.code.toByte() -> DetectedContainer.MP3
+                    header[0] == 0xFF.toByte() &&
+                        (header[1].toInt() and 0xE0) == 0xE0 -> DetectedContainer.MP3
+                    bytesRead >= 8 &&
+                        header[4] == 'f'.code.toByte() &&
+                        header[5] == 't'.code.toByte() &&
+                        header[6] == 'y'.code.toByte() &&
+                        header[7] == 'p'.code.toByte() -> DetectedContainer.MP4
+                    header[0] == 'f'.code.toByte() &&
+                        header[1] == 'L'.code.toByte() &&
+                        header[2] == 'a'.code.toByte() &&
+                        header[3] == 'C'.code.toByte() -> DetectedContainer.FLAC
+                    header[0] == 'O'.code.toByte() &&
+                        header[1] == 'g'.code.toByte() &&
+                        header[2] == 'g'.code.toByte() &&
+                        header[3] == 'S'.code.toByte() -> DetectedContainer.OGG
+                    bytesRead >= 12 &&
+                        header[0] == 'R'.code.toByte() &&
+                        header[1] == 'I'.code.toByte() &&
+                        header[2] == 'F'.code.toByte() &&
+                        header[3] == 'F'.code.toByte() &&
+                        header[8] == 'W'.code.toByte() &&
+                        header[9] == 'A'.code.toByte() &&
+                        header[10] == 'V'.code.toByte() &&
+                        header[11] == 'E'.code.toByte() -> DetectedContainer.WAV
+                    else -> DetectedContainer.UNKNOWN
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Container detection failed for $filePath")
+            DetectedContainer.UNKNOWN
+        }
+    }
+
+    fun getSpecificVolumeUri(context: Context, songId: Long): Uri? {
+        if (songId <= 0) return null
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val volumeName = try {
+                val projection = arrayOf(MediaStore.Audio.Media.VOLUME_NAME)
+                val selection = "${MediaStore.Audio.Media._ID} = ?"
+                val selectionArgs = arrayOf(songId.toString())
+                context.contentResolver.query(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    null
+                )?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.VOLUME_NAME))
+                    } else {
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                null
+            }
+
+            val targetVolume = if (volumeName != null && volumeName != MediaStore.VOLUME_EXTERNAL) {
+                volumeName
+            } else {
+                MediaStore.VOLUME_EXTERNAL_PRIMARY
+            }
+            MediaStore.Audio.Media.getContentUri(targetVolume, songId)
+        } else {
+            ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songId)
+        }
+    }
+
+    private fun updateFileMetadataWithTagLib(
+        context: Context,
+        file: File,
+        newTitle: String,
+        newArtist: String,
+        newAlbum: String,
+        newGenre: String,
+        newYear: Int,
+        newTrackNumber: Int,
+        newAlbumArtist: String?,
+        newComposer: String?,
+        newDiscNumber: Int,
+        artworkUri: Uri?,
+        removeArtwork: Boolean
+    ): Boolean {
+        return try {
+            Log.d(TAG, "TAGLIB: Opening file for edit: ${file.absolutePath}")
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE).use { fd ->
+                val metadataFd = fd.dup()
+                val existingMetadata = try {
+                    TagLib.getMetadata(metadataFd.detachFd())
+                } catch (e: Exception) {
+                    Log.w(TAG, "TAGLIB: Failed to read existing metadata, will overwrite", e)
+                    null
+                }
+                val propertyMap = HashMap(existingMetadata?.propertyMap ?: emptyMap())
+
+                propertyMap["TITLE"] = arrayOf(newTitle)
+                propertyMap["ARTIST"] = arrayOf(newArtist)
+                propertyMap["ALBUM"] = arrayOf(newAlbum)
+                
+                if (!newAlbumArtist.isNullOrBlank()) {
+                    propertyMap["ALBUMARTIST"] = arrayOf(newAlbumArtist)
+                } else {
+                    propertyMap.remove("ALBUMARTIST")
+                }
+                
+                if (!newComposer.isNullOrBlank()) {
+                    propertyMap["COMPOSER"] = arrayOf(newComposer)
+                } else {
+                    propertyMap.remove("COMPOSER")
+                }
+                
+                if (newGenre.isNotBlank()) {
+                    propertyMap["GENRE"] = arrayOf(newGenre)
+                } else {
+                    propertyMap.remove("GENRE")
+                }
+                
+                if (newTrackNumber > 0) {
+                    propertyMap["TRACKNUMBER"] = arrayOf(newTrackNumber.toString())
+                } else {
+                    propertyMap.remove("TRACKNUMBER")
+                }
+                
+                if (newDiscNumber > 0) {
+                    propertyMap["DISCNUMBER"] = arrayOf(newDiscNumber.toString())
+                } else {
+                    propertyMap.remove("DISCNUMBER")
+                }
+                
+                if (newYear > 0) {
+                    propertyMap["DATE"] = arrayOf(newYear.toString())
+                } else {
+                    propertyMap.remove("DATE")
+                }
+
+                val saveFd = fd.dup()
+                val metadataSaved = TagLib.savePropertyMap(saveFd.detachFd(), propertyMap)
+                if (!metadataSaved) {
+                    Log.e(TAG, "TAGLIB: Failed to save property map")
+                    return false
+                }
+
+                // Handle Artwork
+                if (removeArtwork) {
+                    val pictureFd = fd.dup()
+                    TagLib.savePictures(pictureFd.detachFd(), emptyArray())
+                    Log.d(TAG, "TAGLIB: Removed artwork")
+                } else if (artworkUri != null) {
+                    try {
+                        val mimeType = context.contentResolver.getType(artworkUri) ?: "image/jpeg"
+                        val artworkBytes = context.contentResolver.openInputStream(artworkUri)?.use { it.readBytes() }
+                        if (artworkBytes != null && artworkBytes.isNotEmpty()) {
+                            val picture = Picture(
+                                data = artworkBytes,
+                                description = "Front Cover",
+                                pictureType = "Front Cover",
+                                mimeType = mimeType
+                            )
+                            val pictureFd = fd.dup()
+                            val coverSaved = TagLib.savePictures(pictureFd.detachFd(), arrayOf(picture))
+                            if (!coverSaved) {
+                                Log.w(TAG, "TAGLIB: Failed to save cover art")
+                            } else {
+                                Log.d(TAG, "TAGLIB: Successfully saved cover art")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "TAGLIB: Failed to embed cover art", e)
+                    }
+                }
+            }
+
+            // Sync file
+            try {
+                java.io.RandomAccessFile(file, "rw").use { raf ->
+                    raf.fd.sync()
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "TAGLIB: sync failed", e)
+            }
+            true
+        } catch (e: Throwable) {
+            Log.e(TAG, "TAGLIB: Failed to update metadata", e)
+            false
+        }
+    }
 }
+

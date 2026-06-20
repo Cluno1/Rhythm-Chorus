@@ -2428,6 +2428,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         trackNumber: Int,
         artworkUri: Uri? = null,
         removeArtwork: Boolean = false,
+        albumArtist: String? = null,
+        composer: String? = null,
+        discNumber: Int = 1,
         onSuccess: (fileWriteSucceeded: Boolean) -> Unit,
         onError: (String) -> Unit,
         onPermissionRequired: ((PendingWriteRequest) -> Unit)? = null
@@ -2442,6 +2445,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             trackNumber = trackNumber,
             artworkUri = artworkUri,
             removeArtwork = removeArtwork,
+            albumArtist = albumArtist,
+            composer = composer,
+            discNumber = discNumber,
             onSuccess = onSuccess,
             onError = onError,
             onPermissionRequired = onPermissionRequired

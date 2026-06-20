@@ -842,7 +842,7 @@ class AppSettings private constructor(context: Context) {
     val hiddenPlayerChips: StateFlow<Set<String>> = _hiddenPlayerChips.asStateFlow()
     
     // Group By Album Artist
-    private val _groupByAlbumArtist = MutableStateFlow(prefs.getBoolean(KEY_GROUP_BY_ALBUM_ARTIST, true)) // Default true for better organization
+    private val _groupByAlbumArtist = MutableStateFlow(false)
     val groupByAlbumArtist: StateFlow<Boolean> = _groupByAlbumArtist.asStateFlow()
     
     // Prefer per-song embedded artwork over shared MediaStore album art.
@@ -2234,8 +2234,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
     
     fun setGroupByAlbumArtist(enable: Boolean) {
-        prefs.edit().putBoolean(KEY_GROUP_BY_ALBUM_ARTIST, enable).apply()
-        _groupByAlbumArtist.value = enable
+        prefs.edit().putBoolean(KEY_GROUP_BY_ALBUM_ARTIST, false).apply()
+        _groupByAlbumArtist.value = false
     }
 
     fun setPreferSongArtwork(enabled: Boolean) {
@@ -5604,7 +5604,16 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
 private class CachedSharedPreferences(
     private val original: SharedPreferences
 ) : SharedPreferences by original {
-    private val cache: Map<String, *> = original.all
+    @Volatile
+    private var cache: Map<String, *> = original.all
+
+    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+        cache = original.all
+    }
+
+    init {
+        original.registerOnSharedPreferenceChangeListener(listener)
+    }
 
     override fun getBoolean(key: String, defValue: Boolean): Boolean =
         (cache[key] as? Boolean) ?: defValue

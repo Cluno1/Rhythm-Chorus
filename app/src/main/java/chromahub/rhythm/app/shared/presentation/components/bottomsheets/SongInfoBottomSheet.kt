@@ -194,7 +194,7 @@ fun SongInfoBottomSheet(
     song: Song?,
     onDismiss: () -> Unit,
     appSettings: AppSettings,
-    onEditSong: ((title: String, artist: String, album: String, genre: String, year: Int, trackNumber: Int, artworkUri: Uri?, removeArtwork: Boolean, onComplete: (Boolean) -> Unit) -> Unit)? = null,
+    onEditSong: ((title: String, artist: String, album: String, genre: String, year: Int, trackNumber: Int, artworkUri: Uri?, removeArtwork: Boolean, albumArtist: String?, composer: String?, discNumber: Int, onComplete: (Boolean) -> Unit) -> Unit)? = null,
     onShowLyricsEditor: (() -> Unit)? = null,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     isStreamingMode: Boolean = false
@@ -741,8 +741,9 @@ fun SongInfoBottomSheet(
         if (showEditSheet) {
             EditSongSheet(
                 song = currentSong ?: song,
+                extendedInfo = extendedInfo,
                 onDismiss = { showEditSheet = false },
-                onSave = { title: String, artist: String, album: String, genre: String, year: Int, trackNumber: Int, artworkUri: Uri?, removeArtwork: Boolean, onComplete ->
+                onSave = { title: String, artist: String, album: String, genre: String, year: Int, trackNumber: Int, artworkUri: Uri?, removeArtwork: Boolean, albumArtist: String?, composer: String?, discNumber: Int, onComplete ->
                     currentSong = currentSong?.copy(
                         title = title,
                         artist = artist,
@@ -754,7 +755,9 @@ fun SongInfoBottomSheet(
                             removeArtwork -> null
                             artworkUri != null -> artworkUri
                             else -> currentSong?.artworkUri
-                        }
+                        },
+                        albumArtist = albumArtist,
+                        discNumber = discNumber
                     )
                     onEditSong?.invoke(
                         title,
@@ -764,7 +767,10 @@ fun SongInfoBottomSheet(
                         year,
                         trackNumber,
                         artworkUri,
-                        removeArtwork
+                        removeArtwork,
+                        albumArtist,
+                        composer,
+                        discNumber
                     ) { success ->
                         onComplete(success)
                         if (success) {
@@ -1148,8 +1154,9 @@ fun SongInfoBottomSheet(
         if (showEditSheet) {
             EditSongSheet(
                 song = currentSong ?: song,
+                extendedInfo = extendedInfo,
                 onDismiss = { showEditSheet = false },
-                onSave = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, onComplete ->
+                onSave = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                     currentSong = currentSong?.copy(
                         title = title,
                         artist = artist,
@@ -1161,7 +1168,9 @@ fun SongInfoBottomSheet(
                             removeArtwork -> null
                             artworkUri != null -> artworkUri
                             else -> currentSong?.artworkUri
-                        }
+                        },
+                        albumArtist = albumArtist,
+                        discNumber = discNumber
                     )
                     onEditSong?.invoke(
                         title,
@@ -1171,7 +1180,10 @@ fun SongInfoBottomSheet(
                         year,
                         trackNumber,
                         artworkUri,
-                        removeArtwork
+                        removeArtwork,
+                        albumArtist,
+                        composer,
+                        discNumber
                     ) { success ->
                         onComplete(success)
                         if (success) {
@@ -1797,6 +1809,7 @@ private fun FileInfoGridItem(
 @Composable
 private fun EditSongSheet(
     song: Song,
+    extendedInfo: ExtendedSongInfo?,
     onDismiss: () -> Unit,
     onSave: (
         title: String,
@@ -1807,6 +1820,9 @@ private fun EditSongSheet(
         trackNumber: Int,
         artworkUri: Uri?,
         removeArtwork: Boolean,
+        albumArtist: String?,
+        composer: String?,
+        discNumber: Int,
         onComplete: (success: Boolean) -> Unit
     ) -> Unit,
     onShowLyricsEditor: (() -> Unit)? = null,
@@ -1826,6 +1842,9 @@ private fun EditSongSheet(
     val originalGenre by remember(song.id) { mutableStateOf(song.genre ?: "") }
     val originalYear by remember(song.id) { mutableStateOf(if (song.year > 0) song.year.toString() else "") }
     val originalTrackNumber by remember(song.id) { mutableStateOf(if (song.trackNumber > 0) song.trackNumber.toString() else "") }
+    val originalAlbumArtist by remember(song.id) { mutableStateOf(song.albumArtist ?: extendedInfo?.albumArtist ?: "") }
+    val originalComposer by remember(song.id) { mutableStateOf(extendedInfo?.composer ?: "") }
+    val originalDiscNumber by remember(song.id) { mutableStateOf(if (song.discNumber > 0) song.discNumber.toString() else if ((extendedInfo?.discNumber ?: 0) > 0) extendedInfo!!.discNumber.toString() else "1") }
     
     var title by remember(song.id) { mutableStateOf(song.title) }
     var artist by remember(song.id) { mutableStateOf(song.artist) }
@@ -1833,6 +1852,9 @@ private fun EditSongSheet(
     var genre by remember(song.id) { mutableStateOf(song.genre ?: "") }
     var year by remember(song.id) { mutableStateOf(if (song.year > 0) song.year.toString() else "") }
     var trackNumber by remember(song.id) { mutableStateOf(if (song.trackNumber > 0) song.trackNumber.toString() else "") }
+    var albumArtist by remember(song.id) { mutableStateOf(song.albumArtist ?: extendedInfo?.albumArtist ?: "") }
+    var composer by remember(song.id) { mutableStateOf(extendedInfo?.composer ?: "") }
+    var discNumber by remember(song.id) { mutableStateOf(if (song.discNumber > 0) song.discNumber.toString() else if ((extendedInfo?.discNumber ?: 0) > 0) extendedInfo!!.discNumber.toString() else "1") }
     var selectedImageUri by remember(song.id) { mutableStateOf<Uri?>(null) }
     var removeArtwork by remember(song.id) { mutableStateOf(false) }
     val haptics = LocalHapticFeedback.current
@@ -1865,6 +1887,9 @@ private fun EditSongSheet(
         genre = originalGenre
         year = originalYear
         trackNumber = originalTrackNumber
+        albumArtist = originalAlbumArtist
+        composer = originalComposer
+        discNumber = originalDiscNumber
         selectedImageUri = null
         removeArtwork = false
         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
@@ -1874,6 +1899,7 @@ private fun EditSongSheet(
     val proceedWithSave = { 
         val yearInt = year.toIntOrNull() ?: 0
         val trackInt = trackNumber.toIntOrNull() ?: 0
+        val discInt = discNumber.toIntOrNull() ?: 1
         
         isSaving = true
         // Pass metadata with artwork intent to the save callback
@@ -1885,7 +1911,10 @@ private fun EditSongSheet(
             yearInt,
             trackInt,
             selectedImageUri,
-            removeArtwork
+            removeArtwork,
+            albumArtist.trim(),
+            composer.trim(),
+            discInt
         ) { success ->
             isSaving = false
             if (success) {
@@ -2242,6 +2271,38 @@ private fun EditSongSheet(
                                             singleLine = true
                                         )
 
+                                        // Album Artist field
+                                        OutlinedTextField(
+                                            value = albumArtist,
+                                            onValueChange = { albumArtist = it },
+                                            label = { Text("Album Artist") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = RhythmIcons.ArtistFilled,
+                                                    contentDescription = null
+                                                )
+                                            },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(16.dp),
+                                            singleLine = true
+                                        )
+
+                                        // Composer field
+                                        OutlinedTextField(
+                                            value = composer,
+                                            onValueChange = { composer = it },
+                                            label = { Text("Composer") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = RhythmIcons.Edit,
+                                                    contentDescription = null
+                                                )
+                                            },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(16.dp),
+                                            singleLine = true
+                                        )
+
                                         // Genre field
                                         OutlinedTextField(
                                             value = genre,
@@ -2283,6 +2344,22 @@ private fun EditSongSheet(
                                                 value = trackNumber,
                                                 onValueChange = { trackNumber = it },
                                                 label = { Text(stringResource(R.string.bottomsheet_track)) },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        imageVector = RhythmIcons.FormatListNumbered,
+                                                        contentDescription = null
+                                                    )
+                                                },
+                                                modifier = Modifier.weight(1f),
+                                                shape = RoundedCornerShape(16.dp),
+                                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                            )
+
+                                            // Disc number field
+                                            OutlinedTextField(
+                                                value = discNumber,
+                                                onValueChange = { discNumber = it },
+                                                label = { Text("Disc") },
                                                 leadingIcon = {
                                                     Icon(
                                                         imageVector = RhythmIcons.FormatListNumbered,
@@ -2864,6 +2941,38 @@ private fun EditSongSheet(
                                 singleLine = true
                             )
 
+                            // Album Artist field
+                            OutlinedTextField(
+                                value = albumArtist,
+                                onValueChange = { albumArtist = it },
+                                label = { Text("Album Artist") },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = RhythmIcons.ArtistFilled,
+                                        contentDescription = null
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                singleLine = true
+                            )
+
+                            // Composer field
+                            OutlinedTextField(
+                                value = composer,
+                                onValueChange = { composer = it },
+                                label = { Text("Composer") },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = RhythmIcons.Edit,
+                                        contentDescription = null
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                singleLine = true
+                            )
+
                             OutlinedTextField(
                                 value = genre,
                                 onValueChange = { genre = it },
@@ -2910,6 +3019,25 @@ private fun EditSongSheet(
                                         }
                                     },
                                     label = { Text(stringResource(R.string.bottomsheet_track)) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = RhythmIcons.FormatListNumbered,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(16.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                )
+
+                                OutlinedTextField(
+                                    value = discNumber,
+                                    onValueChange = { input ->
+                                        if (input.all { it.isDigit() } && input.length <= 3) {
+                                            discNumber = input
+                                        }
+                                    },
+                                    label = { Text("Disc") },
                                     leadingIcon = {
                                         Icon(
                                             imageVector = RhythmIcons.FormatListNumbered,
