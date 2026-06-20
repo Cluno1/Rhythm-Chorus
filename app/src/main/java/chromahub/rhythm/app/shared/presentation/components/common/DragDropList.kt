@@ -6,6 +6,8 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
@@ -41,6 +43,7 @@ fun <T> DragDropLazyColumn(
     lazyListState: LazyListState,
     onMove: (Int, Int) -> Unit,
     itemKey: (T) -> Any,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     itemContent: @Composable (item: T, isDragging: Boolean, index: Int) -> Unit
 ) {
     val edgeThresholdPx = 84f
@@ -149,6 +152,7 @@ fun <T> DragDropLazyColumn(
                 }
             )
         },
+        contentPadding = contentPadding,
         state = lazyListState
     ) {
         itemsIndexed(

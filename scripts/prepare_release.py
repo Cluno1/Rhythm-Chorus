@@ -1,0 +1,298 @@
+import os
+import re
+import sys
+import subprocess
+from datetime import datetime
+
+# Path constants
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BUILD_GRADLE_PATH = os.path.join(ROOT_DIR, "app", "build.gradle.kts")
+CHANGELOG_PATH = os.path.join(ROOT_DIR, "docs", "CHANGELOG.md")
+FASTLANE_DIR = os.path.join(ROOT_DIR, "fastlane", "metadata", "android", "en-US", "changelogs")
+
+def parse_version_name(version_name):
+    # Regex to extract major.minor.patch.build from name
+    match = re.search(r"(\d+)\.(\d+)\.(\d+)\.(\d+)", version_name)
+    if not match:
+        raise ValueError(f"Could not parse version code from version name '{version_name}'. Format must contain X.Y.Z.B")
+    
+    major = int(match.group(1))
+    minor = int(match.group(2))
+    patch = int(match.group(3))
+    build = int(match.group(4))
+    
+    # Formula: Major * 100000000 + Minor * 10000000 + Patch * 10000 + Build
+    version_code = major * 100000000 + minor * 10000000 + patch * 10000 + build
+    return version_code, (major, minor, patch, build)
+
+def suggest_version_name(release_type):
+    # Parse current version from build.gradle.kts to get major, minor
+    major, minor = "5", "1"
+    if os.path.exists(BUILD_GRADLE_PATH):
+        with open(BUILD_GRADLE_PATH, "r", encoding="utf-8") as f:
+            gradle_content = f.read()
+        curr_name_match = re.search(r"versionName\s*=\s*overrideVersionName\s*\?:\s*\"(.*?)\"", gradle_content)
+        curr_name = curr_name_match.group(1) if curr_name_match else "5.1.412.1078 Beta"
+        
+        match = re.search(r"(\d+)\.(\d+)", curr_name)
+        if match:
+            major = match.group(1)
+            minor = match.group(2)
+            
+    # Calculate patch (days since May 4, 2025)
+    start_date = datetime(2025, 5, 4)
+    patch = (datetime.today() - start_date).days
+    
+    # Calculate build number (git commit count + offset)
+    try:
+        commit_count = int(subprocess.check_output(["git", "rev-list", "--count", "HEAD"]).decode("utf-8").strip())
+    except Exception:
+        commit_count = 985
+        
+    try:
+        last_tag = subprocess.check_output(
+            ["git", "describe", "--tags", "--abbrev=0"],
+            stderr=subprocess.DEVNULL
+        ).decode("utf-8").strip()
+        
+        tag_build_match = re.search(r"\.(\d+)(?:-|$)", last_tag)
+        tag_build = int(tag_build_match.group(1)) if tag_build_match else 1078
+        
+        tag_commits = int(subprocess.check_output(["git", "rev-list", "--count", last_tag]).decode("utf-8").strip())
+        offset = tag_build - tag_commits
+    except Exception:
+        offset = 96
+        
+    build = commit_count + offset
+    suffix = " Beta" if release_type == "Beta" else ""
+    return f"{major}.{minor}.{patch}.{build}{suffix}"
+
+def extract_unreleased_changelog():
+    if not os.path.exists(CHANGELOG_PATH):
+        return ""
+    
+    with open(CHANGELOG_PATH, "r", encoding="utf-8") as f:
+        content = f.read()
+    
+    # Regex to find everything between ## [Unreleased] and the next ## [<version>]
+    match = re.search(r"##\s*\[Unreleased\](.*?)(\n##\s*\[|\Z)", content, re.DOTALL | re.IGNORECASE)
+    if not match:
+        return ""
+    
+    section = match.group(1).strip()
+    return section
+
+def get_commits_since_last_tag():
+    try:
+        # Get the last tag name
+        last_tag = subprocess.check_output(
+            ["git", "describe", "--tags", "--abbrev=0"],
+            stderr=subprocess.DEVNULL
+        ).decode("utf-8").strip()
+        log_cmd = ["git", "log", f"{last_tag}..HEAD", "--oneline"]
+        print(f"Fetching commits since last tag: {last_tag}")
+    except Exception:
+        # Fallback if no tags exist
+        log_cmd = ["git", "log", "--oneline"]
+        print("No previous tags found. Fetching all commits...")
+        
+    try:
+        log_output = subprocess.check_output(log_cmd).decode("utf-8").strip()
+        if not log_output:
+            return []
+            
+        commits = []
+        for line in log_output.splitlines():
+            parts = line.split(" ", 1)
+            if len(parts) > 1:
+                msg = parts[1].strip()
+                # Skip merge and release utility commits to keep clean
+                if msg.startswith("Merge branch") or msg.startswith("Merge pull request") or msg.startswith("Release "):
+                    continue
+                commits.append(msg)
+        return commits
+    except Exception as e:
+        print(f"Error fetching commits: {e}")
+        return []
+
+def format_fastlane_changelog(version_name, changes_text, release_type):
+    # Get major.minor
+    match = re.search(r"(\d+)\.(\d+)", version_name)
+    version_str = f"v{match.group(1)}.{match.group(2)}" if match else ""
+    
+    title = f"Rhythm {version_str} - {release_type} Update\n\n"
+    footer = "\nThanks for using Rhythm ;)"
+    
+    # Parse items
+    items = []
+    for line in changes_text.splitlines():
+        line = line.strip()
+        if line.startswith("-") or line.startswith("*") or line.startswith("•"):
+            item = re.sub(r"^[-*•]\s*", "", line)
+            # Remove markdown links, e.g. [text](url) -> text
+            item = re.sub(r"\[(.*?)\].*?", r"\1", item)
+            # Remove bold/italic markdown
+            item = item.replace("**", "").replace("_", "")
+            items.append(f"• {item}")
+            
+    # Assemble with max 500 chars limit (F-Droid restriction)
+    content = title
+    for item in items:
+        # Check if adding this item would exceed limit (reserving space for footer)
+        if len(content) + len(item) + 2 + len(footer) <= 500:
+            content += item + "\n"
+        else:
+            note = "• Various bug fixes and improvements.\n"
+            if len(content) + len(note) + len(footer) <= 500:
+                content += note
+            break
+            
+    content += footer
+    return content
+
+def update_build_gradle(new_version_code, new_version_name):
+    with open(BUILD_GRADLE_PATH, "r", encoding="utf-8") as f:
+        content = f.read()
+        
+    code_pattern = r"(versionCode\s*=\s*overrideVersionCode\s*\?:\s*)(\d+)"
+    name_pattern = r"(versionName\s*=\s*overrideVersionName\s*\?:\s*\")(.*?)(\")"
+    date_pattern = r"(overrideReleaseDate\s*\?:\s*\")(\d{4}-\d{2}-\d{2})(\"\})"
+    
+    if not re.search(code_pattern, content):
+        print("Error: Could not find versionCode pattern in build.gradle.kts")
+        sys.exit(1)
+        
+    if not re.search(name_pattern, content):
+        print("Error: Could not find versionName pattern in build.gradle.kts")
+        sys.exit(1)
+        
+    if not re.search(date_pattern, content):
+        print("Error: Could not find RELEASE_DATE pattern in build.gradle.kts")
+        sys.exit(1)
+        
+    today_date = datetime.today().strftime('%Y-%m-%d')
+    content = re.sub(code_pattern, rf"\g<1>{new_version_code}", content)
+    content = re.sub(name_pattern, rf"\g<1>{new_version_name}\3", content)
+    content = re.sub(date_pattern, rf"\g<1>{today_date}\3", content)
+    
+    with open(BUILD_GRADLE_PATH, "w", encoding="utf-8") as f:
+        f.write(content)
+        
+    print(f"Updated app/build.gradle.kts with versionCode={new_version_code}, versionName='{new_version_name}', releaseDate='{today_date}'")
+
+def update_changelog_file(new_version_name, raw_unreleased):
+    with open(CHANGELOG_PATH, "r", encoding="utf-8") as f:
+        content = f.read()
+        
+    today = datetime.today().strftime('%Y-%m-%d')
+    new_section = f"## [Unreleased]\n\n### Added\n- \n\n## [{new_version_name}] - {today}\n\n{raw_unreleased}\n"
+    
+    # Replace [Unreleased] section
+    pattern = r"##\s*\[Unreleased\](.*?)(\n##\s*\[|\Z)"
+    
+    def repl(m):
+        return new_section + m.group(2)
+        
+    content = re.sub(pattern, repl, content, flags=re.DOTALL | re.IGNORECASE)
+    
+    with open(CHANGELOG_PATH, "w", encoding="utf-8") as f:
+        f.write(content)
+        
+    print("Updated docs/CHANGELOG.md")
+
+def main():
+    print("=== Rhythm Release Preparation Tool ===")
+    
+    # Prompt release type
+    release_type = input("Enter release type [1: Stable, 2: Beta] (default: Stable): ").strip()
+    if release_type == "2":
+        release_type = "Beta"
+    else:
+        release_type = "Stable"
+        
+    # Get current versionName from build.gradle.kts to show as reference
+    with open(BUILD_GRADLE_PATH, "r", encoding="utf-8") as f:
+        gradle_content = f.read()
+    curr_name_match = re.search(r"versionName\s*=\s*overrideVersionName\s*\?:\s*\"(.*?)\"", gradle_content)
+    curr_name = curr_name_match.group(1) if curr_name_match else "unknown"
+    print(f"Current version in build.gradle.kts: {curr_name}")
+    
+    # Suggest version name based on date-derived patch and commit count build
+    suggested_name = suggest_version_name(release_type)
+    new_version_name = input(f"Enter the new version name (default: {suggested_name}): ").strip()
+    if not new_version_name:
+        new_version_name = suggested_name
+        
+    try:
+        new_version_code, (major, minor, patch, build) = parse_version_name(new_version_name)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+        
+    print(f"New Version Code: {new_version_code}")
+    
+    # Prompt for changelog source
+    print("\nChangelog source:")
+    print("  1. Git commits since last tag (Recommended - Real changes)")
+    print("  2. Read from docs/CHANGELOG.md [Unreleased] section (Fallback)")
+    source_choice = input("Select source [1 or 2] (default: 1): ").strip()
+    
+    raw_unreleased = ""
+    if source_choice == "2":
+        raw_unreleased = extract_unreleased_changelog()
+        has_notes = False
+        for line in raw_unreleased.splitlines():
+            line = line.strip()
+            if (line.startswith("-") or line.startswith("*") or line.startswith("•")) and len(line) > 2:
+                has_notes = True
+                break
+        if not has_notes:
+            print("No notes found in docs/CHANGELOG.md. Falling back to Git commits...")
+            source_choice = "1"
+            
+    if source_choice != "2":
+        commits = get_commits_since_last_tag()
+        if commits:
+            print(f"Found {len(commits)} commits.")
+            raw_unreleased = "### Added\n" + "\n".join([f"- {c}" for c in commits])
+        else:
+            print("No commits found since last tag.")
+            raw_unreleased = "### Added\n- Minor bug fixes and performance improvements."
+        
+    # Format Fastlane changelog
+    fastlane_content = format_fastlane_changelog(new_version_name, raw_unreleased, release_type)
+    
+    # Print Fastlane preview
+    print("\n--- Fastlane Changelog Preview ---")
+    print(fastlane_content)
+    print(f"Total Characters: {len(fastlane_content)}/500")
+    print("---------------------------------\n")
+    
+    confirm = input("Does this look correct? Proceed with file modifications? (y/N): ").strip().lower()
+    if confirm != 'y':
+        print("Aborted.")
+        sys.exit(0)
+        
+    # Modify build.gradle.kts
+    update_build_gradle(new_version_code, new_version_name)
+    
+    # Modify docs/CHANGELOG.md
+    update_changelog_file(new_version_name, raw_unreleased)
+    
+    # Write Fastlane file
+    os.makedirs(FASTLANE_DIR, exist_ok=True)
+    fastlane_file_path = os.path.join(FASTLANE_DIR, f"{new_version_code}.txt")
+    with open(fastlane_file_path, "w", encoding="utf-8") as f:
+        f.write(fastlane_content)
+    print(f"Created Fastlane changelog: {fastlane_file_path}")
+    
+    normalized_tag = f"v{new_version_name.lower().replace(' ', '-')}"
+    print("\nRelease files prepared successfully!")
+    print("\nTo build and release, run:")
+    print("  git add app/build.gradle.kts docs/CHANGELOG.md fastlane/metadata/android/en-US/changelogs/")
+    print(f"  git commit -m \"Release {new_version_name}\"")
+    print(f"  git tag {normalized_tag}")
+    print("  git push origin main --tags")
+
+if __name__ == "__main__":
+    main()

@@ -70,11 +70,14 @@ jobs:
             echo "value=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Generate Release Notes
+        run: python scripts/generate_release_notes.py "${{ github.ref_name }}" "${{ github.sha }}"
+
       - name: Github Release
         uses: softprops/action-gh-release@v2
         with:
           prerelease: ${{ steps.prerelease.outputs.value }}
-          generate_release_notes: true
+          body_path: release_notes.md
           files: |
             app/build/outputs/apk/github/release/Rhythm-*-githubRelease*.apk
             app/build/outputs/apk/github/release/Rhythm-*-githubRelease*.apk.sha256

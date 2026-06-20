@@ -219,6 +219,7 @@ fun ExpressiveScrollBar(
     modifier: Modifier = Modifier,
     listState: LazyListState? = null,
     gridState: LazyGridState? = null,
+    visible: Boolean = true,
     minHeight: Dp = 48.dp,
     thickness: Dp = 8.dp,
     indicatorExpandedWidth: Dp = 24.dp,
@@ -232,7 +233,7 @@ fun ExpressiveScrollBar(
 ) {
     val canScrollForward by remember(listState, gridState) { derivedStateOf { listState?.canScrollForward ?: gridState?.canScrollForward ?: false } }
     val canScrollBackward by remember(listState, gridState) { derivedStateOf { listState?.canScrollBackward ?: gridState?.canScrollBackward ?: false } }
-    val canScroll = canScrollForward || canScrollBackward
+    val canScroll = visible && (canScrollForward || canScrollBackward)
 
     val listMetricsTracker = remember(listState) { AxisObservationTracker() }
     val gridMetricsTracker = remember(gridState) { AxisObservationTracker() }

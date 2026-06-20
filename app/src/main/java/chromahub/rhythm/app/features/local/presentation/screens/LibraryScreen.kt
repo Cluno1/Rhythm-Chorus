@@ -255,6 +255,27 @@ import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveFill
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapes
 import androidx.compose.ui.res.stringResource
 
+private fun LazyListState.shouldShowScrollbar(): Boolean {
+    val layoutInfo = this.layoutInfo
+    val visibleItems = layoutInfo.visibleItemsInfo
+    if (visibleItems.isEmpty()) return false
+    val totalItems = layoutInfo.totalItemsCount
+    if (visibleItems.size < totalItems) return true
+    val lastItem = visibleItems.last()
+    val lastItemBottom = lastItem.offset + lastItem.size
+    return lastItemBottom > layoutInfo.viewportEndOffset - 80
+}
+
+private fun LazyGridState.shouldShowScrollbar(): Boolean {
+    val layoutInfo = this.layoutInfo
+    val visibleItems = layoutInfo.visibleItemsInfo
+    if (visibleItems.isEmpty()) return false
+    val totalItems = layoutInfo.totalItemsCount
+    if (visibleItems.size < totalItems) return true
+    val lastItem = visibleItems.last()
+    val lastItemBottom = lastItem.offset.y + lastItem.size.height
+    return lastItemBottom > layoutInfo.viewportEndOffset - 120
+}
 
 enum class LibraryTab { SONGS, PLAYLISTS, ALBUMS, ARTISTS, EXPLORER }
 
@@ -2395,7 +2416,7 @@ fun SingleCardSongsContent(
     } else {
         Box(modifier = Modifier.fillMaxSize()) {
             val canScroll by remember(listState) {
-                derivedStateOf { listState.canScrollForward || listState.canScrollBackward }
+                derivedStateOf { listState.shouldShowScrollbar() }
             }
             val animatedEndPadding by animateDpAsState(
                 targetValue = if (canScroll) 36.dp else 16.dp,
@@ -2497,8 +2518,9 @@ fun SingleCardSongsContent(
             ExpressiveScrollBar(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                    .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 16.dp),
                 listState = listState,
+                visible = canScroll,
                 dragLabelProvider = songFastScrollLabelProvider
             )
         }
@@ -2579,8 +2601,8 @@ fun SingleCardPlaylistsContent(
         Box(modifier = Modifier.fillMaxSize()) {
             val canScroll by remember(listState, gridState, playlistViewType) {
                 derivedStateOf {
-                    if (playlistViewType == PlaylistViewType.GRID) gridState.canScrollForward || gridState.canScrollBackward
-                    else listState.canScrollForward || listState.canScrollBackward
+                    if (playlistViewType == PlaylistViewType.GRID) gridState.shouldShowScrollbar()
+                    else listState.shouldShowScrollbar()
                 }
             }
             val animatedEndPadding by animateDpAsState(
@@ -2629,8 +2651,9 @@ fun SingleCardPlaylistsContent(
                 ExpressiveScrollBar(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 16.dp),
                     gridState = gridState,
+                    visible = canScroll,
                     dragLabelProvider = playlistFastScrollLabelProvider
                 )
             } else {
@@ -2665,8 +2688,9 @@ fun SingleCardPlaylistsContent(
                 ExpressiveScrollBar(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 16.dp),
                     listState = listState,
+                    visible = canScroll,
                     dragLabelProvider = playlistFastScrollLabelProvider
                 )
             }
@@ -2736,8 +2760,8 @@ fun SingleCardAlbumsContent(
         Box(modifier = Modifier.fillMaxSize()) {
             val canScroll by remember(listState, gridState, albumViewType) {
                 derivedStateOf {
-                    if (albumViewType == AlbumViewType.GRID) gridState.canScrollForward || gridState.canScrollBackward
-                    else listState.canScrollForward || listState.canScrollBackward
+                    if (albumViewType == AlbumViewType.GRID) gridState.shouldShowScrollbar()
+                    else listState.shouldShowScrollbar()
                 }
             }
             val animatedEndPadding by animateDpAsState(
@@ -2787,8 +2811,9 @@ fun SingleCardAlbumsContent(
                 ExpressiveScrollBar(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 16.dp),
                     gridState = gridState,
+                    visible = canScroll,
                     dragLabelProvider = albumFastScrollLabelProvider
                 )
             } else {
@@ -2824,8 +2849,9 @@ fun SingleCardAlbumsContent(
                 ExpressiveScrollBar(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                        .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 16.dp),
                     listState = listState,
+                    visible = canScroll,
                     dragLabelProvider = albumFastScrollLabelProvider
                 )
             }
@@ -4515,8 +4541,8 @@ fun SingleCardArtistsContent(
     Box(modifier = Modifier.fillMaxSize()) {
         val canScroll by remember(listState, gridState, isGridView) {
             derivedStateOf {
-                if (isGridView) gridState.canScrollForward || gridState.canScrollBackward
-                else listState.canScrollForward || listState.canScrollBackward
+                if (isGridView) gridState.shouldShowScrollbar()
+                else listState.shouldShowScrollbar()
             }
         }
         val animatedEndPadding by animateDpAsState(
@@ -4579,8 +4605,9 @@ fun SingleCardArtistsContent(
             ExpressiveScrollBar(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                    .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 16.dp),
                 gridState = gridState,
+                visible = canScroll,
                 dragLabelProvider = artistFastScrollLabelProvider
             )
         } else {
@@ -4623,8 +4650,9 @@ fun SingleCardArtistsContent(
             ExpressiveScrollBar(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                    .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 16.dp),
                 listState = listState,
+                visible = canScroll,
                 dragLabelProvider = artistFastScrollLabelProvider
             )
         }
@@ -6364,7 +6392,7 @@ fun YearGroupedSongsContent(
 
     Box(modifier = Modifier.fillMaxSize()) {
         val canScroll by remember(listState) {
-            derivedStateOf { listState.canScrollForward || listState.canScrollBackward }
+            derivedStateOf { listState.shouldShowScrollbar() }
         }
         val animatedEndPadding by animateDpAsState(
             targetValue = if (canScroll) 36.dp else 16.dp,
@@ -6447,8 +6475,9 @@ fun YearGroupedSongsContent(
         ExpressiveScrollBar(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 80.dp),
+                .padding(end = 4.dp, top = 16.dp, bottom = bottomPadding + 16.dp),
             listState = listState,
+            visible = canScroll,
             dragLabelProvider = dateFastScrollLabelProvider
         )
     }
