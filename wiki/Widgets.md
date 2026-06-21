@@ -318,7 +318,7 @@ Widgets update instantly for:
 
 - [Getting Started](https://github.com/cromaguy/Rhythm/wiki/Getting-Started)
 - [Features Overview](https://github.com/cromaguy/Rhythm/wiki/Features)
-- [Settings Guide](https://github.com/cromaguy/Rhythm/wiki/Settings)
+- [Getting Started](https://github.com/cromaguy/Rhythm/wiki/Getting-Started)
 - [Troubleshooting](https://github.com/cromaguy/Rhythm/wiki/Troubleshooting)
 
 ---

@@ -9,12 +9,12 @@ Complete guide to building Rhythm from source code. Whether you're contributing,
 ### Required Software
 
 #### 1. **Android Studio**
-- **Version**: Koala Feature Drop | 2024.1.2 or newer
+- **Version**: Ladybug or newer (2024.2+)
 - **Download**: [Android Studio](https://developer.android.com/studio)
 - **Components**: Android SDK, SDK Tools, Platform Tools
 
 #### 2. **Java Development Kit (JDK)**
-- **Version**: JDK 21 (required for Gradle 9.2.1 and AGP 9.2.1)
+- **Version**: JDK 21 or newer (required for Gradle 9.x and AGP 9.x)
 - **Download**: [Oracle JDK 21](https://www.oracle.com/java/technologies/downloads/#java21) or [OpenJDK 21](https://adoptium.net/temurin/releases/?version=21)
 
 #### 3. **Git**
@@ -72,11 +72,11 @@ Android Studio will automatically prompt to sync Gradle. If not:
 
 ### Step 1: Configure JDK in Android Studio
 
-Ensure correct JDK version:
+Ensure correct JDK version (21+):
 
 1. **File** → **Project Structure** → **SDK Location**
-2. Under **JDK Location**, verify JDK 17 is selected
-3. If not, click **Download JDK** and select version 17
+2. Under **JDK Location**, verify JDK 21 or newer is selected
+3. If not, click **Download JDK** and select version 21
 
 ### Step 2: Configure Android SDK
 
@@ -119,8 +119,8 @@ android {
         applicationId = "chromahub.rhythm.app"
         minSdk = 26          // Android 8.0
         targetSdk = 37       // Android 15
-        versionCode = 514081066
-        versionName = "5.1.408.1066"
+        versionCode = 514141085
+        versionName = "5.1.414.1085 Beta"
     }
     
     compileOptions {
@@ -147,18 +147,23 @@ Rhythm supports multiple build variants:
 
 #### **Debug Build** (Development)
 ```bash
-./gradlew assembleDebug
+# Specific flavor (recommended)
+./gradlew assembleFdroidDebug
+./gradlew assembleGithubDebug
 ```
-- Output: `app/build/outputs/apk/debug/app-debug.apk`
+- Output: `app/build/outputs/apk/fdroid/debug/` or `app/build/outputs/apk/github/debug/`
+- Files are named `Rhythm-{versionName}-{flavorVariant}-{abi}.apk` (e.g., `Rhythm-5.1.414.1085 Beta-fdroidDebug-arm64-v8a.apk`)
 - Features: Debugging enabled, logs enabled
 - Signing: Debug keystore (auto-generated)
 
 #### **Release Build** (Production)
 ```bash
-./gradlew assembleRelease
+# Specific flavor (recommended)
+./gradlew assembleFdroidRelease
+./gradlew assembleGithubRelease
 ```
-- Output: `app/build/outputs/apk/release/app-release-unsigned.apk`
-- Features: Optimized, ProGuard enabled
+- Output: `app/build/outputs/apk/fdroid/release/` or `app/build/outputs/apk/github/release/`
+- Features: Optimized, R8/ProGuard enabled
 - Signing: Requires signing configuration
 
 ---
@@ -177,49 +182,49 @@ keytool -genkey -v -keystore rhythm-release-key.jks \
 
 ### Configure Signing
 
-Create `keystore.properties` in project root (do NOT commit this file):
+Create `.config/keystore.properties` (do NOT commit this file):
 
 ```properties
-storePassword=YourStorePassword
-keyPassword=YourKeyPassword
-keyAlias=rhythm-key
-storeFile=../rhythm-release-key.jks
+store_file=../rhythm-release-key.jks
+store_password=YourStorePassword
+key_alias=rhythm-key
+key_password=YourKeyPassword
 ```
 
-Update `app/build.gradle.kts`:
+The actual `app/build.gradle.kts` expects these specific snake_case property names and uses a `getProperties()` helper:
 
 ```kotlin
-android {
-    signingConfigs {
-        create("release") {
-            val keystorePropertiesFile = rootProject.file("keystore.properties")
-            val keystoreProperties = Properties()
-            keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-            
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-        }
+// In app/build.gradle.kts (top level)
+val signingProperties = getProperties(".config/keystore.properties")
+val releaseSigning = if (signingProperties != null) {
+    signingConfigs.create("release") {
+        keyAlias = signingProperties.property("key_alias")
+        keyPassword = signingProperties.property("key_password")
+        storePassword = signingProperties.property("store_password")
+        storeFile = rootProject.file(signingProperties.property("store_file"))
     }
-    
-    buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-    }
+} else {
+    signingConfigs.getByName("debug")
+}
+
+// Applied to build types:
+release {
+    signingConfig = releaseSigning
+    isMinifyEnabled = true
+    proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 }
 ```
 
 ### Build Signed Release APK
 
 ```bash
-./gradlew assembleRelease
+./gradlew assembleGithubRelease
+# or
+./gradlew assembleFdroidRelease
 ```
 
-Output: `app/build/outputs/apk/release/app-release.apk`
+Output: Flavor-specific directory — `app/build/outputs/apk/github/release/` or `app/build/outputs/apk/fdroid/release/`
+APK naming: `Rhythm-{versionName}-{flavorVariant}-{abi}.apk`
 
 ---
 
@@ -229,12 +234,12 @@ Output: `app/build/outputs/apk/release/app-release.apk`
 
 **Windows:**
 ```cmd
-gradlew.bat clean assembleDebug
+.\gradlew.bat clean assembleGithubDebug
 ```
 
 **macOS/Linux:**
 ```bash
-./gradlew clean assembleDebug
+./gradlew clean assembleGithubDebug
 ```
 
 ### Common Gradle Tasks
@@ -243,10 +248,16 @@ gradlew.bat clean assembleDebug
 # Clean build artifacts
 ./gradlew clean
 
-# Build debug APK
-./gradlew assembleDebug
+# Build debug APK (specific flavor)
+./gradlew assembleGithubDebug
+./gradlew assembleFdroidDebug
 
-# Build release APK
+# Build release APK (specific flavor)
+./gradlew assembleGithubRelease
+./gradlew assembleFdroidRelease
+
+# All flavors at once
+./gradlew assembleDebug
 ./gradlew assembleRelease
 
 # Run unit tests
@@ -256,10 +267,8 @@ gradlew.bat clean assembleDebug
 ./gradlew lint
 
 # Install debug APK on connected device
-./gradlew installDebug
-
-# Build and install
-./gradlew clean assembleDebug installDebug
+./gradlew installGithubDebug
+./gradlew installFdroidDebug
 ```
 
 ---
@@ -363,7 +372,7 @@ Unsupported class file major version 61
 ```
 
 **Solution:**
-Ensure JDK 17 is configured in Android Studio.
+Ensure JDK 21 or newer is configured in Android Studio (File → Project Structure → SDK Location).
 
 ### Error 3: Out of Memory
 
@@ -415,15 +424,17 @@ Download NDK via **SDK Manager** → **SDK Tools** → **NDK (Side by side)**
 ## 📦 Build Outputs
 
 ### Debug APK
-- **Path**: `app/build/outputs/apk/debug/app-debug.apk`
+- **Path**: `app/build/outputs/apk/{flavor}/debug/` (e.g., `.../fdroid/debug/`)
+- **File**: `Rhythm-{versionName}-{flavor}Debug-{abi}.apk`
 - **Size**: ~50-60 MB
 - **Signing**: Debug keystore
 - **Debuggable**: Yes
 - **Optimized**: No
 
 ### Release APK
-- **Path**: `app/build/outputs/apk/release/app-release.apk`
-- **Size**: ~30-40 MB (ProGuard optimized)
+- **Path**: `app/build/outputs/apk/{flavor}/release/` (e.g., `.../fdroid/release/`)
+- **File**: `Rhythm-{versionName}-{flavor}Release-{abi}.apk`
+- **Size**: ~30-40 MB (R8/ProGuard optimized)
 - **Signing**: Release keystore
 - **Debuggable**: No
 - **Optimized**: Yes (R8/ProGuard)

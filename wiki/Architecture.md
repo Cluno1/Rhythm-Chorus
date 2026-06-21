@@ -19,29 +19,23 @@ Both modes leverage the `shared` and `infrastructure` layers:
 - **Infrastructure**: Common utilities for networking, permissions, and background workers are used by both modes.
 
 
-### StateFlow Pattern
+### State Observation
 
-Reactive state updates using Kotlin Flow.
+Playback state is observed via `Player.Listener` attached to the ExoPlayer `Player` interface.
 
 ```kotlin
-class PlayerViewModel : ViewModel() {
-    private val _state = MutableStateFlow(PlayerState.Idle)
-    val state: StateFlow<PlayerState> = _state.asStateFlow()
-    
-    fun updateState(newState: PlayerState) {
-        _state.value = newState
-    }
-}
+// Observe ExoPlayer state via MediaController
+mediaController.addListener(object : Player.Listener {
+    override fun onPlaybackStateChanged(state: Int) { ... }
+    override fun onIsPlayingChanged(isPlaying: Boolean) { ... }
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) { ... }
+})
 
+// In Compose, use collectAsState() on StateFlow from ViewModel
 @Composable
-fun PlayerScreen(viewModel: PlayerViewModel) {
-    val state by viewModel.state.collectAsState()
-    
-    when (state) {
-        is PlayerState.Playing -> ShowPlayingUI()
-        is PlayerState.Paused -> ShowPausedUI()
-        is PlayerState.Idle -> ShowIdleUI()
-    }
+fun PlayerScreen() {
+    val playbackState by viewModel.playbackState.collectAsState()
+    val isPlaying by viewModel.isPlaying.collectAsState()
 }
 ```
 
@@ -52,23 +46,28 @@ fun PlayerScreen(viewModel: PlayerViewModel) {
 ### API Integration
 
 ```kotlin
-interface LyricsApi {
-    @GET("get")
-    suspend fun getLyrics(
-        @Query("track_name") track: String,
-        @Query("artist_name") artist: String
-    ): LyricsResponse
+// LRCLib API for synchronized lyrics
+interface LRCLibApiService {
+    @GET("api/search")
+    suspend fun searchLyrics(
+        @Query("q") query: String
+    ): Response<List<LyricsData>>
 }
 
-class LyricsRepository(private val api: LyricsApi) {
-    suspend fun fetchLyrics(song: Song): Result<Lyrics> {
-        return try {
-            val response = api.getLyrics(song.title, song.artist)
-            Result.success(response.toLyrics())
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+// Deezer API for artwork
+interface DeezerApiService {
+    @GET("search/track")
+    suspend fun searchTrack(
+        @Query("q") query: String
+    ): Response<DeezerSearchResponse>
+}
+
+// YouTube Music API for artwork
+interface YouTubeMusicApiService {
+    @GET("api/music/song")
+    suspend fun searchSong(
+        @Query("q") query: String
+    ): Response<YouTubeMusicResponse>
 }
 ```
 
@@ -80,31 +79,15 @@ class LyricsRepository(private val api: LyricsApi) {
 
 ```kotlin
 class MusicViewModelTest {
+    @get:Rule
+    val rule = createAndroidComposeRule<MainActivity>()
+
     @Test
-    fun `playSong updates state correctly`() = runTest {
-        val viewModel = MusicViewModel()
-        val testSong = Song(/* test data */)
-        
-        viewModel.playSong(testSong)
-        
-        assertEquals(testSong, viewModel.currentSong.value)
-        assertEquals(PlaybackState.Playing, viewModel.playbackState.value)
+    fun `player displays current track title`() {
+        composeTestRule
+            .onNodeWithTag("track_title")
+            .assertIsDisplayed()
     }
-}
-```
-
-### UI Tests
-
-```kotlin
-@Test
-fun playerScreen_showsCorrectSongInfo() {
-    composeTestRule.setContent {
-        PlayerScreen(song = testSong)
-    }
-    
-    composeTestRule
-        .onNodeWithText(testSong.title)
-        .assertIsDisplayed()
 }
 ```
 
@@ -122,17 +105,17 @@ fun playerScreen_showsCorrectSongInfo() {
 ### Permissions
 
 ```kotlin
-object PermissionManager {
-    fun requestStoragePermission(activity: Activity) {
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                // Request READ_MEDIA_AUDIO
-            }
-            else -> {
-                // Request READ_EXTERNAL_STORAGE
-            }
-        }
-    }
+// Runtime permission requests are handled via Accompanist Permissions API
+// and AndroidX Activity Result API at the composable level
+@Composable
+fun RequestAudioPermission() {
+    val permissionState = rememberPermissionState(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            android.Manifest.permission.READ_MEDIA_AUDIO
+        else
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+    // LaunchedEffect to trigger request
 }
 ```
 
@@ -169,12 +152,21 @@ AsyncImage(
 ### Background Processing
 
 ```kotlin
-class MediaScanWorker : CoroutineWorker() {
-    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        // Heavy processing off main thread
-        scanMediaLibrary()
-        Result.success()
-    }
+// Media scanning happens via ContentResolver + MediaStore queries
+// in the MusicRepository layer, not in a dedicated worker
+suspend fun scanMedia(context: Context): List<PlayableItem> {
+    val projection = arrayOf(
+        MediaStore.Audio.Media._ID,
+        MediaStore.Audio.Media.TITLE,
+        MediaStore.Audio.Media.ARTIST,
+        MediaStore.Audio.Media.ALBUM,
+        MediaStore.Audio.Media.DATA
+    )
+    val cursor = context.contentResolver.query(
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        projection, null, null, null
+    )
+    // Parse cursor into PlayableItem list
 }
 ```
 
@@ -182,13 +174,24 @@ class MediaScanWorker : CoroutineWorker() {
 
 ## 📊 Dependency Injection
 
-Currently using manual DI. Future migration to Hilt planned.
+Currently using manual DI (manual constructor injection + service locator pattern in feature modules).
 
 ```kotlin
+// MusicViewModel receives a MediaController from MediaPlaybackService
+// and interacts with it directly for playback control
 class MusicViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: MusicRepository = MusicRepositoryImpl(
-        MediaStoreDataSource(application)
-    )
+    private var mediaController: MediaController? = null
+    private val _isPlaying = MutableStateFlow(false)
+    val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
+
+    fun onConnected(controller: MediaController) {
+        mediaController = controller
+        controller.addListener(object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                _isPlaying.value = isPlaying
+            }
+        })
+    }
 }
 ```
 
@@ -208,8 +211,8 @@ android {
         applicationId = "chromahub.rhythm.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 514081066
-        versionName = "5.1.408.1066"
+        versionCode = 514141085
+        versionName = "5.1.414.1085 Beta"
     }
     
     buildFeatures {
@@ -223,8 +226,8 @@ android {
 
 ```toml
 [versions]
-kotlin = "2.3.21"
-composeBom = "2026.05.01"
+kotlin = "2.4.0"
+composeBom = "2026.06.00"
 media3 = "1.10.1"
 
 [libraries]

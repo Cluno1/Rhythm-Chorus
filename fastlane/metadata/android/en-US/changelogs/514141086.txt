@@ -1,0 +1,11 @@
+Rhythm v5.1 - Stable Update
+
+• Added Song-Specific Lyrics Preferences and Custom LRC File Management
+• Fixed: Premature signaling of Instrumental lyrics #442
+• Added ability to share tracks from all song overflow menus
+• Fixed: all playlists missing in latest beta build  #437
+• Fixed: Backup button not showing  #435
+• Major optimizations made
+• Fixed Stats and Equalizer opening lag
+
+Thanks for using Rhythm ;)

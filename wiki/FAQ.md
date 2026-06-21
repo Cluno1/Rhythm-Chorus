@@ -14,7 +14,7 @@ Download from:
 
 ### Is Rhythm available on Google Play Store?
 
-Yes — very soon! Rhythm is coming to the Google Play Store. Currently it's distributed through GitHub, F-Droid, IzzyOnDroid, and Obtainium while Play Store review is finalized.
+Rhythm is currently distributed through GitHub, F-Droid, IzzyOnDroid, and Obtainium. A Google Play Store release is under review.
 
 ### How do I update Rhythm?
 
@@ -35,16 +35,19 @@ If you get "App not installed" error:
 
 ### What audio formats does Rhythm support?
 
-**Fully supported:**
-- Lossless: FLAC, ALAC, WAV, PCM
+**Built-in (platform decoders):**
+- Lossless: FLAC, ALAC, WAV, PCM, AIFF
 - Lossy: MP3, AAC, Opus, Vorbis
+- MIDI
 
-**Device-dependent:**
-- Dolby: AC-3, E-AC-3, Atmos (requires hardware support)
-- DTS (requires hardware support)
+**FFmpeg-decoded (bundled extension):**
+- Lossless: APE, WavPack, TAK, TTA, WMA Lossless
+- Lossy: WMA
+- Dolby: AC-3, EAC3-JOC (Atmos), AC-4
 
-**Not supported:**
-- APE, DSD/DSF, MQA, AIFF, WMA Lossless
+**Device-dependent (hardware required):**
+- DTS, DTS-HD MA, DTS:X
+- DSD/DSF/DFF (requires compatible DAC)
 
 📖 **Full details:** [Audio Formats Guide](https://github.com/cromaguy/Rhythm/wiki/Audio-Formats)
 
@@ -368,10 +371,6 @@ Yes, Rhythm works in split-screen/multi-window mode.
 ---
 
 ## 🔮 Future Plans
-
-### Is Android Auto support planned?
-
-Android Auto is already supported in Rhythm!
 
 ### Will there be a desktop version?
 

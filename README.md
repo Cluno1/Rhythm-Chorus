@@ -22,7 +22,7 @@
 [![Stars](https://img.shields.io/github/stars/cromaguy/Rhythm?style=flat-square&logo=star&color=ffc107&logoColor=white)](https://github.com/cromaguy/Rhythm/stargazers)
 [<img src="https://shields.rbtlog.dev/simple/chromahub.rhythm.app?style=flat-square" alt="RB shield">](https://shields.rbtlog.dev/chromahub.rhythm.app)
 
-### [🌐 Website](https://rhythmweb.vercel.app/) • [📥 Download](https://github.com/cromaguy/Rhythm/releases/latest) • [🎧 Discord](https://discord.gg/vpRrk8AdVW) • [💬 Telegram](https://t.me/RhythmSupport) • [📖 Wiki](https://github.com/cromaguy/Rhythm/wiki)
+### [🌐 Website](https://rhythmweb.vercel.app/) • [📥 Download](https://github.com/cromaguy/Rhythm/releases/latest) • [🎧 Discord](https://discord.gg/XjPyUYPQYc) • [💬 Telegram](https://t.me/RhythmSupport) • [📖 Wiki](https://github.com/cromaguy/Rhythm/wiki)
 
 </div>
 
@@ -30,13 +30,13 @@
 
 ## 💖 Support the Developer
 
-Building and maintaining **Rhythm** is a massive labor of love, provided completely free and open-source. Due to my recent hardware failure, I am currently unable to push updates. If you love using this app, please consider supporting my hardware fund so I can return to development!
+Building and maintaining **Rhythm** is a massive labor of love, provided completely free and open-source. If you love using this app, please consider supporting development!
 
 <div align="center">
 
-| 🎯 **Main Goal** | ☕ **One-Time Support** | 🤝 **Ongoing Sponsorship** |
-| :---: | :---: | :---: |
-| [![Laptop Fund](https://img.shields.io/badge/Laptop_Fund-Ko--fi-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/anjishnunandi/goal?g=0) | [![Ko-Fi](https://img.shields.io/badge/Buy_Me_A_Coffee-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/anjishnunandi)<br><br>[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](http://paypal.me/AnjishnuNandi) | [![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://patreon.com/AnjishnuNandi)<br><br>[![GitHub Sponsor](https://img.shields.io/badge/GitHub_Sponsors-EA4AAA?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/cromaguy) |
+| ☕ **One-Time Support** | 🤝 **Ongoing Sponsorship** |
+| :---: | :---: |
+| [![Ko-Fi](https://img.shields.io/badge/Buy_Me_A_Coffee-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/anjishnunandi)<br><br>[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](http://paypal.me/AnjishnuNandi) | [![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://patreon.com/AnjishnuNandi)<br><br>[![GitHub Sponsor](https://img.shields.io/badge/GitHub_Sponsors-EA4AAA?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/cromaguy) |
 
 </div>
 
@@ -171,7 +171,7 @@ Choose your preferred platform to download the latest version of Rhythm:
 
 </div>
 
-> 💡 **Note:** F-Droid, IzzyOnDroid, and GitHub releases include all features, including Deezer & YouTube Music artwork, LRCLib lyrics, and YouTube Music artwork. See [Build Variants](docs/BUILD_VARIANTS.md) for details. Need help? Check out the [Installation Guide](https://github.com/cromaguy/Rhythm/wiki/Installation-Guide).
+> 💡 **Note:** F-Droid, IzzyOnDroid, and GitHub releases include all features, including Deezer & YouTube Music artwork, LRCLib lyrics, and YouTube Music artwork. See [Build Variants](docs/BUILD_VARIANTS.md) or the [Wiki Build Instructions](https://github.com/cromaguy/Rhythm/wiki/Build-Instructions) for details. Need help? Check out the [Installation Guide](https://github.com/cromaguy/Rhythm/wiki/Installation-Guide).
 
 ---
 
@@ -195,7 +195,7 @@ We welcome contributions! See our [CONTRIBUTING.md](https://github.com/cromaguy/
 
 * 🐛 **Found a bug?** [Open an issue](https://github.com/cromaguy/Rhythm/issues)
 * 💡 **Have an idea?** [Request a feature](https://github.com/cromaguy/Rhythm/issues)
-* 💬 **Want to chat?** [Join Discord](https://discord.gg/vpRrk8AdVW), [Telegram](https://t.me/RhythmSupport) or [GitHub Discussions](https://github.com/cromaguy/Rhythm/discussions)
+* 💬 **Want to chat?** [Join Discord](https://discord.gg/XjPyUYPQYc), [Telegram](https://t.me/RhythmSupport) or [GitHub Discussions](https://github.com/cromaguy/Rhythm/discussions)
 * 📖 **Need help?** [Read the Wiki](https://github.com/cromaguy/Rhythm/wiki)
 
 ---

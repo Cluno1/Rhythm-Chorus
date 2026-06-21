@@ -4,14 +4,14 @@ Rhythm uses **Media3 ExoPlayer 1.10.1 + FFmpeg Decoder** for professional-grade 
 
 ---
 
-## ✅ Fully Supported Formats
+## ✅ Built-in Formats (Platform Decoders)
 
-These formats work out-of-the-box on all supported Android devices:
+These formats use Android's platform codecs and work on all supported devices:
 
 | Format | Container | Quality | Bit Depth | Sample Rate | Notes |
 |:---:|:---:|:---:|:---:|:---:|:---|
 | **FLAC** | `.flac` | Lossless | Up to 32-bit | Up to 384kHz | Recommended for lossless audio |
-| **ALAC** | `.m4a`, `.alac` | Lossless | Up to 32-bit | Up to 384kHz | Apple Lossless Audio Codec |
+| **ALAC** | `.m4a` | Lossless | Up to 32-bit | Up to 384kHz | Apple Lossless Audio Codec |
 | **MP3** | `.mp3` | Lossy | N/A | Up to 48kHz | All bitrates, VBR support |
 | **AAC** | `.m4a`, `.aac`, `.mp4`, `.adts`, `.m4b` | Lossy | N/A | Up to 96kHz | AAC-LC, HE-AAC, HE-AACv2; ADTS, audiobook (M4B) |
 | **Vorbis** | `.ogg`, `.oga` | Lossy | N/A | Up to 192kHz | Ogg Vorbis audio |
@@ -19,14 +19,7 @@ These formats work out-of-the-box on all supported Android devices:
 | **WAV** | `.wav` | Lossless | Up to 32-bit | Up to 192kHz | Uncompressed PCM audio |
 | **PCM** | Various | Lossless | Up to 32-bit | Up to 192kHz | Raw audio data |
 | **AIFF** | `.aiff`, `.aif` | Lossless | Up to 32-bit | Up to 192kHz | Apple audio interchange format |
-| **APE** | `.ape` | Lossless | Up to 24-bit | Up to 192kHz | Monkey's Audio (high compression) |
-| **WavPack** | `.wv` | Lossless | Up to 32-bit | Up to 192kHz | Hybrid lossless/lossy format |
-| **TAK** | `.tak` | Lossless | Up to 24-bit | Up to 192kHz | TOM's lossless Audio Kompressor |
-| **TTA** | `.tta` | Lossless | Up to 24-bit | Up to 96kHz | True Audio lossless |
 | **MIDI** | `.mid`, `.midi` | Instructions | N/A | N/A | Musical Instrument Digital Interface |
-| **Matroska** | `.mkv`, `.mka` | Varies | Varies | Varies | Container format (audio-only .mka) |
-| **WMA** | `.wma` | Lossy | N/A | Up to 48kHz | Windows Media Audio |
-| **WMA Lossless** | `.wma` | Lossless | Up to 24-bit | Up to 96kHz | Windows Media Audio Lossless |
 
 ---
 
@@ -34,30 +27,30 @@ These formats work out-of-the-box on all supported Android devices:
 
 These formats are decoded by the bundled FFmpeg extension (available in all builds):
 
-| Format | Container | Notes |
-|:---:|:---:|:---|
-| **EAC3-JOC (Dolby Atmos)** | `.eac3`, `.m4a`, `.mkv` | Decoded via FFmpeg; stereo/surround output |
-| **AC-3 (Dolby Digital)** | `.ac3`, `.m4a` | Decoded via FFmpeg extension |
-| **AC-4 (Dolby AC-4)** | `.ac4` | Decoded via FFmpeg extension |
-| **WMA** | `.wma` | Decoded via FFmpeg extension |
+| Format | Container | Quality | Bit Depth | Sample Rate | Notes |
+|:---:|:---:|:---:|:---:|:---:|:---|
+| **APE** | `.ape` | Lossless | Up to 24-bit | Up to 192kHz | Monkey's Audio (high compression) |
+| **WavPack** | `.wv` | Lossless | Up to 32-bit | Up to 192kHz | Hybrid lossless/lossy format |
+| **TAK** | `.tak` | Lossless | Up to 24-bit | Up to 192kHz | TOM's lossless Audio Kompressor |
+| **TTA** | `.tta` | Lossless | Up to 24-bit | Up to 96kHz | True Audio lossless |
+| **WMA** | `.wma` | Lossy | N/A | Up to 48kHz | Windows Media Audio |
+| **WMA Lossless** | `.wma` | Lossless | Up to 24-bit | Up to 96kHz | Windows Media Audio Lossless |
+| **AC-3 (Dolby Digital)** | `.ac3`, `.m4a` | Lossy | N/A | Up to 640kbps | Decoded via FFmpeg; may also use hardware decoder |
+| **EAC3-JOC (Dolby Atmos)** | `.eac3`, `.m4a`, `.mkv` | Lossy | N/A | Up to 6Mbps | Decoded via FFmpeg; stereo/surround output |
+| **AC-4 (Dolby AC-4)** | `.ac4` | Lossy | N/A | Up to 448kbps | Decoded via FFmpeg extension |
 
 ---
 
 ## ⚠️ Device-Dependent Formats
 
-These formats require hardware support and may not work on all devices:
+These require hardware support and may not work on all devices:
 
 | Format | Container | Notes |
 |:---:|:---:|:---|
-| **Dolby Digital (AC-3)** | `.ac3`, `.m4a` | Also decoded via FFmpeg extension in Rhythm |
-| **Dolby Digital Plus (E-AC-3)** | `.eac3`, `.m4a` | Also decoded via FFmpeg (EAC3-JOC/Atmos supported) |
-| **Dolby AC-4** | `.ac4` | Next-gen Dolby; FFmpeg-decoded in Rhythm |
 | **DTS** | `.dts`, `.m4a` | Requires compatible device/hardware decoder |
 | **DTS-HD MA** | `.dts`, `.m4a` | High-resolution multichannel DTS |
 | **DTS:X** | `.dts`, `.m4a` | Object-based DTS surround |
-| **Dolby Atmos** | Various | EAC3-JOC decoded via FFmpeg; full Atmos requires hardware |
 | **DSD** | `.dsd`, `.dsf`, `.dff` | Super Audio CD; requires compatible DAC |
-| **WMA** | `.wma` | Also decoded via FFmpeg extension in Rhythm |
 
 ### Checking Device Compatibility
 

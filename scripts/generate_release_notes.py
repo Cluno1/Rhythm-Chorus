@@ -42,7 +42,7 @@ def extract_release_notes(tag_name):
         content = f.read()
         
     version_esc = re.escape(version_str)
-    pattern = rf"##\s*\[\s*v?{version_esc}.*?\](.*?)(?=\n##\s*\[|\Z)"
+    pattern = rf"##\s*\[\s*v?{version_esc}.*?\][^\n]*\n(.*?)(?=\n##\s*\[|\Z)"
     
     match = re.search(pattern, content, re.DOTALL | re.IGNORECASE)
     if match:

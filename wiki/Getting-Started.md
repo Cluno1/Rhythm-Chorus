@@ -19,7 +19,7 @@ Rhythm features a dynamic onboarding process to personalize your music experienc
 10. **Library Organization 📚**: Configure tab visibility and folder browsing.
 11. **Media Scanning 🔍**: Set up blacklist/whitelist filters for your library.
 12. **Home Screen Widgets 📱**: Learn about available layouts and customization.
-13. **Integrations 🔗**: Connect Last.fm, Discord, and artwork APIs.
+13. **Integrations 🔗**: Connect artwork APIs (Deezer, YouTube Music).
 14. **Rhythm Stats 📊**: Explore listening insights and history.
 15. **Update Preferences ⬆️**: Configure update channels and polling.
 16. **Review Summary**: Final check of your configurations.
@@ -137,13 +137,12 @@ Browse by:
 ### Widget Types
 - **Legacy Widget**: RemoteViews with 7 responsive layouts
 - **Glance Widget**: Modern Material 3 with 6 responsive layouts
-- **Stats Widget**: Real-time playback statistics
+- **Lyrics Widget**: Display current song lyrics on home screen
 
 ### Widget Features
 - Real-time playback updates
 - Play/pause, skip controls
 - Current track, artist, album art
-- **Lyrics Widget**: Display current song lyrics on home screen
 - Background auto-updates via WorkManager
 
 ---

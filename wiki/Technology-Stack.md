@@ -192,20 +192,21 @@ org.jetbrains.kotlinx:kotlinx-coroutines-android
 Rhythm uses Kotlin Flow and Compose state for reactive UI updates:
 
 ```kotlin
-// ViewModel
-class PlayerViewModel : ViewModel() {
-    private val _playerState = MutableStateFlow<PlayerState>(PlayerState.Idle)
-    val playerState: StateFlow<PlayerState> = _playerState.asStateFlow()
-    
-    // Business logic...
-}
+// ViewModel observes ExoPlayer state via MediaController
+class MusicViewModel(application: Application) : AndroidViewModel(application) {
+    private var mediaController: MediaController? = null
 
-// Composable
-@Composable
-fun PlayerScreen(viewModel: PlayerViewModel) {
-    val playerState by viewModel.playerState.collectAsState()
-    
-    // UI updates automatically when state changes
+    val playbackState: StateFlow<@Player.State Int> = 
+        MutableStateFlow(Player.STATE_IDLE)
+
+    fun connect(controller: MediaController) {
+        mediaController = controller
+        controller.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                (playbackState as MutableStateFlow).value = state
+            }
+        })
+    }
 }
 ```
 
@@ -215,15 +216,13 @@ Data access abstracted through repositories:
 
 ```kotlin
 interface MusicRepository {
-    fun getAllSongs(): Flow<List<Song>>
-    suspend fun getSongById(id: Long): Song?
-}
-
-class MusicRepositoryImpl(
-    private val mediaStore: MediaStoreDataSource
-) : MusicRepository {
-    override fun getAllSongs(): Flow<List<Song>> = 
-        mediaStore.queryAllSongs()
+    fun getSongs(): Flow<List<PlayableItem>>
+    fun getAlbums(): Flow<List<AlbumItem>>
+    fun getArtists(): Flow<List<ArtistItem>>
+    fun getPlaylists(): Flow<List<PlaylistItem>>
+    suspend fun getSongById(id: String): PlayableItem?
+    suspend fun getAlbumById(id: String): AlbumItem?
+    suspend fun searchSongs(query: String): List<PlayableItem>
 }
 ```
 
@@ -272,21 +271,20 @@ class MusicRepositoryImpl(
 ### Glance Widgets (Modern)
 
 ```kotlin
-class RhythmWidget : GlanceAppWidget() {
+class RhythmMusicWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
-            RhythmWidgetContent()
+            RhythmMusicWidgetContent()
         }
     }
 }
 
 @Composable
-fun RhythmWidgetContent() {
-    val playerState = currentState<PlayerState>()
-    
+fun RhythmMusicWidgetContent() {
+    // Observe playback data via GlanceState
     // Material 3 widget UI
     MaterialTheme {
-        // Widget content...
+        // Widget content with play/pause, skip, track info, album art
     }
 }
 ```
@@ -294,13 +292,16 @@ fun RhythmWidgetContent() {
 ### Background Updates
 
 ```kotlin
-class WidgetUpdateWorker : CoroutineWorker() {
+class RhythmWidgetWorker(
+    context: Context,
+    params: WorkerParameters
+) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        // Update widget data
+        // Update widget data from current playback state
         GlanceAppWidgetManager(context)
-            .getGlanceIds(RhythmWidget::class.java)
+            .getGlanceIds(RhythmMusicWidget::class.java)
             .forEach { glanceId ->
-                RhythmWidget().update(context, glanceId)
+                RhythmMusicWidget().update(context, glanceId)
             }
         return Result.success()
     }
@@ -355,10 +356,10 @@ android {
 # gradle/libs.versions.toml
 [versions]
 agp = "9.2.1"
-kotlin = "2.3.21"
+kotlin = "2.4.0"
 ksp = "2.3.6"
-composeBom = "2026.05.01"
-material3 = "1.5.0-alpha20"
+composeBom = "2026.06.00"
+material3 = "1.5.0-alpha22"
 media3 = "1.10.1"
 
 [libraries]
@@ -367,28 +368,26 @@ androidx-material3-android = { group = "androidx.compose.material3", name = "mat
 androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
 ```
 
-## 🧪 Testing (Planned)
+## 🧪 Testing
 
 ### Unit Tests
-- ViewModel logic testing
+- ViewModel logic testing (JUnit 4)
 - Repository testing
 - Use case testing
 
 ### UI Tests
-- Compose UI testing
+- Compose UI testing (Compose Test)
 - Navigation testing
 - Integration testing
+- Macrobenchmark for baseline profiles
 
-```kotlin
-// Example unit test
-class PlayerViewModelTest {
-    @Test
-    fun `test play pause toggle`() = runTest {
-        val viewModel = PlayerViewModel()
-        viewModel.playPause()
-        assert(viewModel.playerState.value is PlayerState.Playing)
-    }
-}
+### Build & Run Tests
+```bash
+# Unit tests
+./gradlew test
+
+# Instrumented tests
+./gradlew connectedAndroidTest
 ```
 
 ## 🔐 Security & Privacy
@@ -407,12 +406,13 @@ class PlayerViewModelTest {
 - **Compose Optimization**: Remember, derivedStateOf, keys
 - **ExoPlayer Buffering**: Optimized buffer sizes
 
-## 🔄 CI/CD (Planned)
+## 🔄 CI/CD
 
-- GitHub Actions for builds
-- Automated testing
-- Release automation
-- Code quality checks
+- GitHub Actions for automated builds (android.yml, beta.yml, release.yml)
+- Automated testing on push
+- Release automation with signing
+- Code quality checks and linting
+- Reproducible build support
 
 ---
 

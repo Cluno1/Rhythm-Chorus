@@ -120,15 +120,11 @@
         </div>
     </section>
 
-    <!-- Search and Quick Navigation Section -->
     <section class="search-nav-section">
         <div class="container">
-            <!-- Search Bar -->
             <div class="page-search-wrapper">
-                <input type="text" class="page-search" placeholder="Search help topics...">
+                <input type="text" id="helpSearch" class="page-search" placeholder="Search help topics..." autocomplete="off">
             </div>
-
-            <!-- Quick Navigation -->
             <div class="quick-nav">
                 <div class="quick-nav-links">
                     <a href="#getting-started" class="quick-nav-link">
@@ -164,315 +160,426 @@
         </div>
     </section>
 
-    <section class="help-section">
-        <div class="container">
-            <div class="help-content">
+    <div class="help-layout">
+        <aside class="help-sidebar" id="helpSidebar">
+            <nav>
+                <a href="#getting-started" class="help-sidebar-link active" data-target="getting-started">
+                    <i class="fas fa-download"></i> Getting Started
+                </a>
+                <a href="#playing-music" class="help-sidebar-link" data-target="playing-music">
+                    <i class="fas fa-music"></i> Playing Music
+                </a>
+                <a href="#library-management" class="help-sidebar-link" data-target="library-management">
+                    <i class="fas fa-folder-open"></i> Library
+                </a>
+                <a href="#customization" class="help-sidebar-link" data-target="customization">
+                    <i class="fas fa-palette"></i> Customization
+                </a>
+                <a href="#settings-features" class="help-sidebar-link" data-target="settings-features">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                <a href="#troubleshooting" class="help-sidebar-link" data-target="troubleshooting">
+                    <i class="fas fa-question-circle"></i> Troubleshooting
+                </a>
+                <a href="#getting-help" class="help-sidebar-link" data-target="getting-help">
+                    <i class="fas fa-life-ring"></i> Support
+                </a>
+            </nav>
+        </aside>
 
-                <div id="getting-started" class="help-category">
-                    <h2><i class="fas fa-download"></i> Getting Started</h2>
-                    <div class="help-item">
-                        <h3>Installation & System Requirements</h3>
-                        <p>Rhythm requires Android 8.0+ (API 26) with 2GB RAM minimum and 50MB storage. Download from F-Droid, GitHub releases, IzzyOnDroid, or OpenAPK. For APK installation, enable "Install from unknown sources" in your device settings. The app is signed with an official keystore for security. You can also install via Obtainium for auto-updates from GitHub.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>First-Run Setup</h3>
-                        <p>On first launch, Rhythm guides you through a quick setup: grant storage/media permissions, configure audio output preferences, choose your theme (light/dark/system), set up media scan mode (whitelist/blacklist), and optionally restore a previous backup. After setup, a media scan populates your library.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Essential Permissions Explained</h3>
-                        <ul>
-                            <li><strong>Storage Access:</strong> Reads music files, album art, and manages playlists</li>
-                            <li><strong>Media Audio/Images:</strong> Access to music library and artwork (Android 13+)</li>
-                            <li><strong>Notifications:</strong> Playback controls, update alerts, and media session</li>
-                            <li><strong>Bluetooth:</strong> Wireless speaker/headphone support and device switching</li>
-                            <li><strong>Internet:</strong> LRCLib lyrics, Deezer/YouTube Music artwork, GitHub updates</li>
-                            <li><strong>Audio Settings:</strong> Volume control and audio focus management</li>
-                            <li><strong>Install Packages:</strong> In-app APK updates and installations</li>
-                            <li><strong>Media Playback Service:</strong> Background playback and lock screen controls</li>
-                        </ul>
-                    </div>
-                    <div class="help-item">
-                        <h3>Material You Dynamic Theming</h3>
-                        <p>Android 12+ users get automatic color extraction from wallpaper. Choose from light/dark modes or system default. Custom color schemes available in Settings → Appearance → Theme Customization for personalized theming. The app uses <strong>Material 3 Expressive</strong> design with adaptive shapes and fluid animations.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Dual-Mode Architecture (Local + Streaming)</h3>
-                        <p>Rhythm 5 introduced a groundbreaking <strong>Dual-Mode Architecture</strong>. Switch between Local Mode for your personal high-res collection and Streaming Mode for server-based playback (Subsonic, Navidrome, Jellyfin). Each mode has its own dedicated library, home screen, and playback UI. Switch modes from the navigation drawer or settings.</p>
-                    </div>
+        <div class="help-content">
+
+            <section id="getting-started" class="help-section-block" data-label="Getting Started">
+                <h2><i class="fas fa-download"></i> Getting Started</h2>
+                <div class="help-card">
+                    <h3>Installation & System Requirements</h3>
+                    <p>Rhythm requires Android 8.0+ (API 26) with 2GB RAM minimum and 50MB storage. Download from F-Droid, GitHub releases, IzzyOnDroid, or OpenAPK. For APK installation, enable "Install from unknown sources" in your device settings. The app is signed with an official keystore for security. You can also install via Obtainium for auto-updates from GitHub.</p>
+                </div>
+                <div class="help-card">
+                    <h3>First-Run Setup</h3>
+                    <p>On first launch, Rhythm guides you through a quick setup: grant storage/media permissions, configure audio output preferences, choose your theme (light/dark/system), set up media scan mode (whitelist/blacklist), and optionally restore a previous backup. After setup, a media scan populates your library.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Essential Permissions Explained</h3>
+                    <ul>
+                        <li><strong>Storage Access:</strong> Reads music files, album art, and manages playlists</li>
+                        <li><strong>Media Audio/Images:</strong> Access to music library and artwork (Android 13+)</li>
+                        <li><strong>Notifications:</strong> Playback controls, update alerts, and media session</li>
+                        <li><strong>Bluetooth:</strong> Wireless speaker/headphone support and device switching</li>
+                        <li><strong>Internet:</strong> LRCLib lyrics, Deezer/YouTube Music artwork, GitHub updates</li>
+                        <li><strong>Audio Settings:</strong> Volume control and audio focus management</li>
+                        <li><strong>Install Packages:</strong> In-app APK updates and installations</li>
+                        <li><strong>Media Playback Service:</strong> Background playback and lock screen controls</li>
+                    </ul>
+                </div>
+                <div class="help-card">
+                    <h3>Material You Dynamic Theming</h3>
+                    <p>Android 12+ users get automatic color extraction from wallpaper. Choose from light/dark modes or system default. Custom color schemes available in Settings → Appearance → Theme Customization for personalized theming. The app uses <strong>Material 3 Expressive</strong> design with adaptive shapes and fluid animations.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Dual-Mode Architecture (Local + Streaming)</h3>
+                    <p>Rhythm 5 introduced a groundbreaking <strong>Dual-Mode Architecture</strong>. Switch between Local Mode for your personal high-res collection and Streaming Mode for server-based playback (Subsonic, Navidrome, Jellyfin). Each mode has its own dedicated library, home screen, and playback UI. Switch modes from the navigation drawer or settings.</p>
+                </div>
+            </section>
+
+            <section id="playing-music" class="help-section-block" data-label="Playing Music">
+                <h2><i class="fas fa-music"></i> Playing Music</h2>
+                <div class="help-card">
+                    <h3>Professional Media3 ExoPlayer Engine</h3>
+                    <p>Rhythm uses Google's Media3 ExoPlayer + FFmpeg decoder for studio-quality audio with gapless playback and perfect track transitions. Supports FLAC, ALAC, MP3, AAC, OGG, WAV, Opus, EAC3-JOC/Dolby Atmos (via FFmpeg), and more. Enable <strong>High-Resolution Audio mode</strong> in Settings → Audio to bypass Android system processing for the purest possible output to your DAC or headphone amp.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Replay Gain & Crossfade</h3>
+                    <p><strong>Replay Gain</strong> normalizes perceived loudness across your library — choose between track gain (per-song) or album gain (maintains dynamic range within albums). Configure in Settings → Audio → Replay Gain. <strong>Crossfade</strong> smoothly blends the end of one track into the start of the next with adjustable duration (1–12 seconds).</p>
+                </div>
+                <div class="help-card">
+                    <h3>Advanced Playback Features</h3>
+                    <ul>
+                        <li><strong>Auto-Resume:</strong> Continues playback at exact position after app restart or device reboot</li>
+                        <li><strong>Smart Audio Focus:</strong> Handles phone calls, notifications, and other apps gracefully</li>
+                        <li><strong>Gapless Playback:</strong> Seamless transitions between tracks without silence</li>
+                        <li><strong>Multi-Select Batch Actions:</strong> Select multiple songs/albums/playlists to queue, share, or delete at once</li>
+                        <li><strong>Advanced Shuffle:</strong> True random, artist-aware, and weighted shuffle algorithms</li>
+                        <li><strong>Queue Management:</strong> Reorder, remove, and save playback queues with action dialogs</li>
+                        <li><strong>Active Song Highlighting:</strong> Visual indicators for currently playing tracks in lists</li>
+                        <li><strong>Rhythm Guard:</strong> Hearing safety — volume warning when listening at high levels for extended periods</li>
+                    </ul>
+                </div>
+                <div class="help-card">
+                    <h3>Synchronized Lyrics with Advanced Features</h3>
+                    <p>Real-time lyrics with community-driven LRCLib integration. Word-by-word highlighting for karaoke-style experience, tap timestamps to seek, auto-scroll during playback, and manual reload option. Sync adjustment controls for lyrics that are off-beat. Supports multiple languages, OGG/Vorbis embedded lyrics, and synchronized highlighting. Use the built-in lyrics editor to adjust sync offsets and save per-track. Open lyrics in <strong>full-screen view</strong> for an immersive experience. Add the <strong>Lyrics widget</strong> to your home screen to see current track lyrics at a glance. Configure API endpoints in Settings → Advanced → API Management.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Professional 10-Band Equalizer with AutoEQ</h3>
+                    <p>Sophisticated 10-band equalizer with frequency-specific controls, preset profiles, and custom settings. Adjust bass, midrange, treble, and create personalized audio profiles. AutoEQ integration provides tuned presets for 6000+ devices with import/export functionality. Real-time audio processing with high-quality filtering algorithms.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Sleep Timer with Advanced Features</h3>
+                    <p>Customizable sleep timers with preset durations, fade-out options, and playlist continuation. Visual countdown indicator, automatic pause at specified time, and flexible duration selection from minutes to hours.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Device Output & Bluetooth Management</h3>
+                    <p>Advanced audio output selection with automatic Bluetooth device detection and switching. Manual device selection, audio focus management, and support for multiple simultaneous outputs. Enhanced Bluetooth handling for calls and notifications.</p>
+                </div>
+            </section>
+
+            <section id="library-management" class="help-section-block" data-label="Library">
+                <h2><i class="fas fa-folder-open"></i> Library Management</h2>
+                <div class="help-card">
+                    <h3>Advanced Library Organization</h3>
+                    <p>Five main tabs: Songs, Albums, Artists, Playlists, and Explorer. Customize tab order and visibility in Settings → Library → Tab Order. Show/hide tabs based on your preferences. Each tab supports multiple sorting options and view preferences. The Explorer tab provides folder-based browsing with advanced storage access. In Streaming Mode, tabs reflect your server's media structure.</p>
+                </div>
+                <div class="help-card">
+                    <h3>A–Z Scroll Bar</h3>
+                    <p>Navigate large libraries instantly with the alphabetical scroll bar. Drag your finger along the letter strip to jump to songs, albums, or artists starting with that letter. The scroll bar appears automatically when your library exceeds a threshold. Configure its behavior in Settings → Library.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Lightning-Fast Fuzzy Search</h3>
+                    <p>Intelligent search across song titles, artists, albums, genres, and lyrics. Real-time results update as you type. Search supports partial matches, typos, and multiple keywords. Access search from any library tab. In Streaming Mode, search queries your server's catalogue.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Genre-Based Smart Organization</h3>
+                    <p>Automatic genre detection with intelligent categorization. Browse music by genre with smart detection and organization. Filter library by genres, view genre-specific collections, and organize music by musical style.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Advanced Media Scanning</h3>
+                    <ul>
+                        <li><strong>Full Scan Mode:</strong> Scans your entire library to ensure no songs are missed</li>
+                        <li><strong>Whitelist Mode:</strong> Include only specified folders for precise control</li>
+                        <li><strong>Blacklist Mode:</strong> Exclude unwanted directories and system folders</li>
+                        <li><strong>Explorer Integration:</strong> Manual folder browsing and selective adding</li>
+                        <li><strong>Real-time Updates:</strong> Trigger a rescan from Settings → Library → Rescan Media</li>
+                    </ul>
+                </div>
+                <div class="help-card">
+                    <h3>Comprehensive Playlist Management</h3>
+                    <p>Create, edit, delete, and organize playlists with drag-and-drop reordering, sorting, and multi-select removal. Import/export in M3U, PLS, and other formats. Smart playlist suggestions based on listening habits. Backup and restore playlist collections. Choose between grid and list views for playlist browsing. Streaming playlists sync with your server.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Multi-Select Batch Operations</h3>
+                    <p>Long-press any song, album, or playlist item to enter multi-select mode. Select as many items as you want, then choose from batch actions: Add to Queue, Play Next, Add to Playlist, Share, or Delete.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Rich Metadata & Artwork Editing</h3>
+                    <p>View and edit comprehensive song metadata including title, artist, album, genre, year, and track number. Edit album artwork with permission handling. Metadata changes propagate across all screens. Artwork fetched automatically from Deezer and YouTube Music.</p>
+                </div>
+            </section>
+
+            <section id="customization" class="help-section-block" data-label="Customization">
+                <h2><i class="fas fa-palette"></i> Customization</h2>
+                <div class="help-card">
+                    <h3>Material You Dynamic Theming</h3>
+                    <p>Android 12+ users get automatic color extraction from wallpaper. System automatically generates color schemes that adapt to your device's theme. Toggle between light/dark modes or follow system settings.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Advanced Theme Customization</h3>
+                    <p>Access Settings → Appearance → Theme Customization for complete control. Choose from predefined color schemes, create custom palettes, and preview themes before applying. Support for custom accent colors and theme variants.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Material Symbols & Expressive Design</h3>
+                    <p>Rhythm uses Material Symbols (variable-weight icon font) throughout the UI for crisp, scalable icons. The app follows Material 3 Expressive design language with adaptive shapes, fluid animations, and bold visual components.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Tablet-Optimized UI</h3>
+                    <p>On tablets, Rhythm automatically adapts with a multi-pane layout — library on the left, content on the right. The player screen, settings, and library views are all optimized for larger screens. Works in both portrait and landscape orientations.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Home Screen Widgets (Multiple Layouts)</h3>
+                    <p>Choose from multiple widget layouts (2x1 to 5x5) with real-time updates and Material 3 design. Customize playback controls, album art display, and information shown. Add the <strong>Lyrics widget</strong> to see current track lyrics on your home screen. Built with modern Glance framework for optimal performance and battery life.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Font Selection & Typography</h3>
+                    <p>Change the app's font from system fonts or import custom fonts. Access in Settings → Appearance → Font. Choose from various typography options to match your style preferences.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Library Tab Customization</h3>
+                    <p>Reorder navigation tabs (Songs, Albums, Artists, Playlists, Explorer) in Settings → Library → Tab Order. Arrange tabs to match your usage patterns and prioritize frequently used sections.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Grid vs List View Options</h3>
+                    <p>Choose between grid and list layouts for albums and artists. Grid view shows artwork prominently, list view provides more text information. Settings persist across app sessions.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Home Screen Customization</h3>
+                    <p>Reorder home screen sections with drag-and-drop in Settings → Home. Customize time and date formatting. Show/hide the <strong>Recents</strong> carousel for quick access to recently played tracks. Choose from different carousel styles. Set default screen to open on app launch.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Album Art Color Extraction</h3>
+                    <p>Dynamic theming based on album artwork colors. Extract vibrant colors from current track's artwork for immersive visual experience. Automatic color palette generation for consistent theming.</p>
+                </div>
+            </section>
+
+            <section id="settings-features" class="help-section-block" data-label="Settings">
+                <h2><i class="fas fa-cog"></i> Settings & Advanced Features</h2>
+                <div class="help-card">
+                    <h3>Smart Settings Search</h3>
+                    <p>Powerful search functionality in Settings with real-time filtering. Type keywords to instantly find any setting across all categories. No need to navigate through menus — search finds everything.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Comprehensive Backup & Restore</h3>
+                    <p>Complete backup solution for playlists, settings, themes, equalizer profiles, and preferences. Restore everything when reinstalling or switching devices. Includes theme preferences, custom color schemes, and all user configurations.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Advanced Sleep Timer</h3>
+                    <p>Flexible sleep timer with custom durations, fade-out effects, and playlist continuation options. Visual countdown indicator, automatic pause functionality, and presets for common durations.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Rhythm Stats 2.0</h3>
+                    <p>Comprehensive listening statistics broken into <strong>Overview</strong> (total play count, listening time, top genres), <strong>Songs</strong> (most played tracks), <strong>Albums</strong> (most played albums), <strong>Artists</strong> (favorite artists), and <strong>History</strong> (recent plays with timestamps). Stats reset at the start of each year with a summary notification. Access from the navigation drawer.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Offline Playback (Caching)</h3>
+                    <p>Streaming tracks are automatically cached locally for efficient replay. The cache reduces data usage and improves loading times for recently played tracks. Cache settings can be managed in Settings → Streaming.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Nearby Server Discovery</h3>
+                    <p>Rhythm can automatically discover Subsonic-compatible servers on your local network. When adding a server, tap "Discover" to scan for available servers without manually entering addresses. Works with Navidrome, Subsonic, and Jellyfin servers on the same subnet.</p>
+                </div>
+                <div class="help-card">
+                    <h3>API Management & Configuration</h3>
+                    <p>Configure API endpoints for lyrics (LRCLib) and artwork (Deezer, YouTube Music). Set custom API keys, manage rate limits, and switch between community and personal API services. Enable or disable individual APIs in Settings → Advanced → API Management.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Intelligent Cache Management</h3>
+                    <p>Advanced cache system with manual controls and performance monitoring. Separate caches for artwork and lyrics. Automatic cleanup, size limits, and cache refresh options. Monitor storage usage and optimize performance.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Auto-Updates & Beta Program</h3>
+                    <p>Automatic update checking via GitHub releases with in-app download and installation. Beta program access for early feature testing. Choose between stable and beta update channels. Background update downloads.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Privacy & Data Management</h3>
+                    <p>Complete control over data usage and privacy. Manage what data is sent to APIs, control artwork fetching, and configure offline capabilities. No personal data collection — everything stays on your device.</p>
+                </div>
+            </section>
+
+            <section id="troubleshooting" class="help-section-block" data-label="Troubleshooting">
+                <h2><i class="fas fa-question-circle"></i> Troubleshooting & Edge Cases</h2>
+
+                <h3 class="help-subheading">📦 Installation & Updates</h3>
+                <div class="help-card">
+                    <h3>App Won't Install / "App Not Installed" Error</h3>
+                    <p><strong>Signature mismatch</strong> is the most common cause — you cannot install a GitHub release APK over an F-Droid install (or vice versa) because they are signed with different keys. Uninstall the existing version first, then install from your preferred source. Stick to one source for updates.</p>
+                    <p><strong>Other causes:</strong> corrupted download (re-download the APK), insufficient storage (free up space), or Android blocking installation from unknown sources (enable in Settings → Security).</p>
+                </div>
+                <div class="help-card">
+                    <h3>Update Stuck or Fails to Download</h3>
+                    <p>In-app updates download from GitHub Releases. If the download gets stuck: check your internet connection, ensure sufficient storage, or try downloading the APK manually from the <a href="https://github.com/cromaguy/Rhythm/releases">Releases page</a>.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Beta vs Stable Channel Confusion</h3>
+                    <p>Beta builds are published as GitHub Pre-releases. To switch back to stable, uninstall the beta and install the latest stable APK. Your settings and playlists can be restored from backup. Beta builds may have unfinished features and higher battery usage.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Cannot Downgrade to an Older Version</h3>
+                    <p>Android does not allow installing an APK with a lower <code>versionCode</code> over a newer install. You must uninstall the current version first, then install the older APK. Create a backup first (Settings → Advanced → Backup & Restore) as uninstalling erases all data.</p>
                 </div>
 
-                <div id="playing-music" class="help-category">
-                    <h2><i class="fas fa-music"></i> Playing Music</h2>
-                    <div class="help-item">
-                        <h3>Professional Media3 ExoPlayer Engine</h3>
-                        <p>Rhythm uses Google's Media3 ExoPlayer + FFmpeg decoder for studio-quality audio with gapless playback and perfect track transitions. Supports FLAC, ALAC, MP3, AAC, OGG, WAV, Opus, EAC3-JOC/Dolby Atmos (via FFmpeg), and more. Enable <strong>High-Resolution Audio mode</strong> in Settings → Audio to bypass Android system processing for the purest possible output to your DAC or headphone amp.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Replay Gain & Crossfade</h3>
-                        <p><strong>Replay Gain</strong> normalizes perceived loudness across your library — choose between track gain (per-song) or album gain (maintains dynamic range within albums). Configure in Settings → Audio → Replay Gain. <strong>Crossfade</strong> smoothly blends the end of one track into the start of the next with adjustable duration (1–12 seconds).</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Advanced Playback Features</h3>
-                        <ul>
-                            <li><strong>Auto-Resume:</strong> Continues playback at exact position after app restart or device reboot</li>
-                            <li><strong>Smart Audio Focus:</strong> Handles phone calls, notifications, and other apps gracefully</li>
-                            <li><strong>Gapless Playback:</strong> Seamless transitions between tracks without silence</li>
-                            <li><strong>Multi-Select Batch Actions:</strong> Select multiple songs/albums/playlists to queue, share, or delete at once</li>
-                            <li><strong>Advanced Shuffle:</strong> True random, artist-aware, and weighted shuffle algorithms</li>
-                            <li><strong>Queue Management:</strong> Reorder, remove, and save playback queues with action dialogs</li>
-                            <li><strong>Active Song Highlighting:</strong> Visual indicators for currently playing tracks in lists</li>
-                            <li><strong>Rhythm Guard:</strong> Hearing safety — volume warning when listening at high levels for extended periods</li>
-                        </ul>
-                    </div>
-                    <div class="help-item">
-                        <h3>Synchronized Lyrics with Advanced Features</h3>
-                        <p>Real-time lyrics with community-driven LRCLib integration. Word-by-word highlighting for karaoke-style experience, tap timestamps to seek, auto-scroll during playback, and manual reload option. Sync adjustment controls for lyrics that are off-beat. Supports multiple languages, OGG/Vorbis embedded lyrics, and synchronized highlighting. Use the built-in lyrics editor to adjust sync offsets and save per-track. Open lyrics in <strong>full-screen view</strong> for an immersive experience. Add the <strong>Lyrics widget</strong> to your home screen to see current track lyrics at a glance. Configure API endpoints in Settings → Advanced → API Management.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Professional 10-Band Equalizer with AutoEQ</h3>
-                        <p>Sophisticated 10-band equalizer with frequency-specific controls, preset profiles, and custom settings. Adjust bass, midrange, treble, and create personalized audio profiles. AutoEQ integration provides tuned presets for 6000+ devices with import/export functionality. Real-time audio processing with high-quality filtering algorithms.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Sleep Timer with Advanced Features</h3>
-                        <p>Customizable sleep timers with preset durations, fade-out options, and playlist continuation. Visual countdown indicator, automatic pause at specified time, and flexible duration selection from minutes to hours.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Device Output & Bluetooth Management</h3>
-                        <p>Advanced audio output selection with automatic Bluetooth device detection and switching. Manual device selection, audio focus management, and support for multiple simultaneous outputs. Enhanced Bluetooth handling for calls and notifications.</p>
-                    </div>
+                <h3 class="help-subheading">🔍 Media Scanning & Library</h3>
+                <div class="help-card">
+                    <h3>Music Not Showing After Scan</h3>
+                    <p>Try these steps in order:</p>
+                    <ol>
+                        <li>Settings → Library → Rescan Media</li>
+                        <li>Check whitelist/blacklist — you may have excluded your music folder</li>
+                        <li>Use Explorer tab to manually verify files are accessible</li>
+                        <li>Ensure files are supported and not DRM-protected</li>
+                        <li>On Android 13+, verify <strong>Music and audio</strong> permission is granted</li>
+                        <li>Check if files are on external SD card — some Android versions restrict access</li>
+                        <li>In Streaming Mode, verify your server connection</li>
+                    </ol>
+                </div>
+                <div class="help-card">
+                    <h3>Duplicate Songs in Library</h3>
+                    <p>Duplicates appear when the same file exists in multiple scanned locations. Use Blacklist mode to exclude one location. Rhythm does not deduplicate by audio fingerprint.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Wrong or Missing Metadata</h3>
+                    <p>Rhythm reads metadata from file tags, not filenames. Use a tag editor like <strong>Mp3tag</strong> or <strong>MusicBrainz Picard</strong> to fix tags, then rescan (Settings → Library → Rescan Media).</p>
+                </div>
+                <div class="help-card">
+                    <h3>Files on SD Card / Network Shares Not Detected</h3>
+                    <p>Android's scoped storage limits external SD access. Use the Explorer tab to navigate manually. Rhythm does not support SMB/NFS — use <strong>Streaming Mode</strong> with a Subsonic/Navidrome/Jellyfin server for network playback.</p>
                 </div>
 
-                <div id="library-management" class="help-category">
-                    <h2><i class="fas fa-folder-open"></i> Library Management</h2>
-                    <div class="help-item">
-                        <h3>Advanced Library Organization</h3>
-                        <p>Five main tabs: Songs, Albums, Artists, Playlists, and Explorer. Customize tab order and visibility in Settings → Library → Tab Order. Show/hide tabs based on your preferences. Each tab supports multiple sorting options and view preferences. The Explorer tab provides folder-based browsing with advanced storage access. In Streaming Mode, tabs reflect your server's media structure.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>A–Z Scroll Bar</h3>
-                        <p>Navigate large libraries instantly with the alphabetical scroll bar. Drag your finger along the letter strip to jump to songs, albums, or artists starting with that letter. The scroll bar appears automatically when your library exceeds a threshold. Configure its behavior in Settings → Library.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Lightning-Fast Fuzzy Search</h3>
-                        <p>Intelligent search across song titles, artists, albums, genres, and lyrics. Real-time results update as you type. Search supports partial matches, typos, and multiple keywords. Access search from any library tab. In Streaming Mode, search queries your server's catalogue.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Genre-Based Smart Organization</h3>
-                        <p>Automatic genre detection with intelligent categorization. Browse music by genre with smart detection and organization. Filter library by genres, view genre-specific collections, and organize music by musical style. Enhanced genre recognition with better accuracy and UI integration.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Advanced Media Scanning</h3>
-                        <ul>
-                            <li><strong>Full Scan Mode:</strong> Scans your entire library to ensure no songs are missed</li>
-                            <li><strong>Whitelist Mode:</strong> Include only specified folders for precise control</li>
-                            <li><strong>Blacklist Mode:</strong> Exclude unwanted directories and system folders</li>
-                            <li><strong>Explorer Integration:</strong> Manual folder browsing and selective adding</li>
-                            <li><strong>Real-time Updates:</strong> Trigger a rescan from Settings → Library → Rescan Media</li>
-                        </ul>
-                    </div>
-                    <div class="help-item">
-                        <h3>Comprehensive Playlist Management</h3>
-                        <p>Create, edit, delete, and organize playlists with drag-and-drop reordering, sorting, and multi-select removal. Import/export in M3U, PLS, and other formats. Smart playlist suggestions based on listening habits. Backup and restore playlist collections. Choose between grid and list views for playlist browsing. Streaming playlists sync with your server.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Multi-Select Batch Operations</h3>
-                        <p>Long-press any song, album, or playlist item to enter multi-select mode. Select as many items as you want, then choose from batch actions: Add to Queue, Play Next, Add to Playlist, Share, or Delete. Makes managing large libraries effortless.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Rich Metadata & Artwork Editing</h3>
-                        <p>View and edit comprehensive song metadata including title, artist, album, genre, year, and track number. Edit album artwork with permission handling. Metadata changes propagate across all screens. Artwork fetched automatically from Deezer and YouTube Music.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Album Art & Visual Features</h3>
-                        <p>Automatic high-quality album art fetching from Deezer and YouTube Music. Color extraction for dynamic theming. Support for embedded artwork and external image files. Smart fallback logos for missing artwork.</p>
-                    </div>
+                <h3 class="help-subheading">🎵 Playback Issues</h3>
+                <div class="help-card">
+                    <h3>Audio Stuttering or Skipping</h3>
+                    <ul>
+                        <li><strong>High-res audio on weak devices:</strong> Disable High-Resolution Audio in Settings → Audio</li>
+                        <li><strong>Bluetooth interference:</strong> Move closer to device, avoid crowded 2.4GHz areas</li>
+                        <li><strong>Battery optimization:</strong> Exclude Rhythm (Settings → Apps → Rhythm → Battery → Unrestricted)</li>
+                        <li><strong>Corrupted files:</strong> Verify the file plays in another player</li>
+                    </ul>
+                </div>
+                <div class="help-card">
+                    <h3>No Sound / Wrong Audio Output</h3>
+                    <p>Check Device Output in the player screen (headphone icon). If Bluetooth is connected but no sound: disconnect and reconnect. After a phone call, audio may route to earpiece — toggle Bluetooth off/on.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Playback Stops When App Is Swiped Away</h3>
+                    <p>OEMs aggressively kill background services. Common fixes:</p>
+                    <ul>
+                        <li><strong>Samsung:</strong> Settings → Apps → Rhythm → Battery → Unrestricted</li>
+                        <li><strong>Xiaomi:</strong> Settings → Apps → Manage apps → Rhythm → Autostart → On. Lock app in recents</li>
+                        <li><strong>OnePlus/Oppo:</strong> Settings → Battery → Battery optimization → Don't optimize</li>
+                        <li><strong>Huawei:</strong> Settings → Apps → Rhythm → App launch → Manage manually → Allow all</li>
+                        <li>Also disable "Pause app activity if unused" in Developer Options</li>
+                    </ul>
+                </div>
+                <div class="help-card">
+                    <h3>Gapless / Crossfade Issues</h3>
+                    <p>FLAC, ALAC, MP3, AAC, and Opus support gapless playback. WAV files do not carry gap information. Crossfade takes priority over gapless — disable crossfade for true gapless. If crossfade causes popping, reduce duration or disable it.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Replay Gain Not Applying</h3>
+                    <p>Replay Gain requires <strong>REPLAYGAIN_TRACK_GAIN</strong> or <strong>REPLAYGAIN_ALBUM_GAIN</strong> tags. Use MusicBrainz Picard to add them. This is an experimental feature.</p>
                 </div>
 
-                <div id="customization" class="help-category">
-                    <h2><i class="fas fa-palette"></i> Customization</h2>
-                    <div class="help-item">
-                        <h3>Material You Dynamic Theming</h3>
-                        <p>Android 12+ users get automatic color extraction from wallpaper. System automatically generates color schemes that adapt to your device's theme. Toggle between light/dark modes or follow system settings.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Advanced Theme Customization</h3>
-                        <p>Access Settings → Appearance → Theme Customization for complete control. Choose from predefined color schemes, create custom palettes, and preview themes before applying. Support for custom accent colors and theme variants.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Material Symbols & Expressive Design</h3>
-                        <p>Rhythm uses Material Symbols (variable-weight icon font) throughout the UI for crisp, scalable icons. The app follows Material 3 Expressive design language with adaptive shapes, fluid animations, and bold visual components.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Tablet-Optimized UI</h3>
-                        <p>On tablets, Rhythm automatically adapts with a multi-pane layout — library on the left, content on the right. The player screen, settings, and library views are all optimized for larger screens. Works in both portrait and landscape orientations.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Home Screen Widgets (Multiple Layouts)</h3>
-                        <p>Choose from multiple widget layouts (2x1 to 5x5) with real-time updates and Material 3 design. Customize playback controls, album art display, and information shown. Add the <strong>Lyrics widget</strong> to see current track lyrics on your home screen. Built with modern Glance framework for optimal performance and battery life.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Font Selection & Typography</h3>
-                        <p>Change the app's font from system fonts or import custom fonts. Access in Settings → Appearance → Font. Choose from various typography options to match your style preferences.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Library Tab Customization</h3>
-                        <p>Reorder navigation tabs (Songs, Albums, Artists, Playlists, Explorer) in Settings → Library → Tab Order. Arrange tabs to match your usage patterns and prioritize frequently used sections.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Grid vs List View Options</h3>
-                        <p>Choose between grid and list layouts for albums and artists. Grid view shows artwork prominently, list view provides more text information. Settings persist across app sessions.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Home Screen Customization</h3>
-                        <p>Reorder home screen sections with drag-and-drop in Settings → Home. Customize time and date formatting. Show/hide the <strong>Recents</strong> carousel for quick access to recently played tracks. Choose from different carousel styles. Set default screen to open on app launch.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Album Art Color Extraction</h3>
-                        <p>Dynamic theming based on album artwork colors. Extract vibrant colors from current track's artwork for immersive visual experience. Automatic color palette generation for consistent theming.</p>
-                    </div>
+                <h3 class="help-subheading">🔊 Equalizer & Audio Effects</h3>
+                <div class="help-card">
+                    <h3>Equalizer Not Affecting Sound</h3>
+                    <p>Ensure EQ is enabled in Settings → Audio → Equalizer. Some Bluetooth devices or USB DACs bypass Android's audio mixer — disable High-Resolution Audio mode. Restart app after toggling.</p>
+                </div>
+                <div class="help-card">
+                    <h3>AutoEQ Preset Sounds Wrong</h3>
+                    <p>AutoEQ presets are community-measured. Try presets from similar headphone models. Manually adjust and save as a custom profile. Import/Export EQ settings to share.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Third-Party EQ Conflicts</h3>
+                    <p>Apps like <strong>Wavelet</strong> or device EQs conflict with Rhythm's built-in EQ. Only one EQ can process audio at a time. Disable one of them.</p>
                 </div>
 
-                <div id="settings-features" class="help-category">
-                    <h2><i class="fas fa-cog"></i> Settings & Advanced Features</h2>
-                    <div class="help-item">
-                        <h3>Smart Settings Search</h3>
-                        <p>Powerful search functionality in Settings with real-time filtering. Type keywords to instantly find any setting across all categories. No need to navigate through menus — search finds everything.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Comprehensive Backup & Restore</h3>
-                        <p>Complete backup solution for playlists, settings, themes, equalizer profiles, and preferences. Restore everything when reinstalling or switching devices. Includes theme preferences, custom color schemes, and all user configurations.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Advanced Sleep Timer</h3>
-                        <p>Flexible sleep timer with custom durations, fade-out effects, and playlist continuation options. Visual countdown indicator, automatic pause functionality, and presets for common durations. Enhanced with playlist-aware behavior.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Rhythm Stats 2.0</h3>
-                        <p>Comprehensive listening statistics broken into <strong>Overview</strong> (total play count, listening time, top genres), <strong>Songs</strong> (most played tracks), <strong>Albums</strong> (most played albums), <strong>Artists</strong> (favorite artists), and <strong>History</strong> (recent plays with timestamps). Stats reset at the start of each year with a summary notification. Access from the navigation drawer.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Rhythm Go (Offline Mode for Streaming)</h3>
-                        <p>Download tracks from your streaming server (Subsonic/Navidrome/Jellyfin) for offline playback. Perfect for commuting, flights, or areas with limited connectivity. Downloaded tracks appear in a dedicated "Downloaded" section. Manage storage in Settings → Streaming → Rhythm Go.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Nearby Server Discovery</h3>
-                        <p>Rhythm can automatically discover Subsonic-compatible servers on your local network. When adding a server, tap "Discover" to scan for available servers without manually entering addresses. Works with Navidrome, Subsonic, and Jellyfin servers on the same subnet.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>API Management & Configuration</h3>
-                        <p>Configure API endpoints for lyrics (LRCLib) and artwork (Deezer, YouTube Music). Set custom API keys, manage rate limits, and switch between community and personal API services. Enable or disable individual APIs in Settings → Advanced → API Management.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Intelligent Cache Management</h3>
-                        <p>Advanced cache system with manual controls and performance monitoring. Separate caches for artwork and lyrics. Automatic cleanup, size limits, and cache refresh options. Monitor storage usage and optimize performance.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Auto-Updates & Beta Program</h3>
-                        <p>Automatic update checking via GitHub releases with in-app download and installation. Beta program access for early feature testing. Choose between stable and beta update channels. Background update downloads.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Enhanced Device Output Management</h3>
-                        <p>Sophisticated audio output selection with automatic Bluetooth device detection and switching. Manual device selection, audio focus management, and support for multiple simultaneous outputs. Enhanced handling for calls and notifications.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Advanced Audio Controls</h3>
-                        <p>Independent volume control with system integration options. Audio focus management for seamless interaction with other apps. Replay Gain loudness normalization, Crossfade duration, and advanced audio routing capabilities.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Player Customization & Statistics</h3>
-                        <p>Customize player chip arrangement and layout in Settings → Player. Rearrange controls to match your preferences. Access Rhythm Stats 2.0 for detailed listening analytics including play counts, favorite tracks, and history.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Gesture & Progress Customization</h3>
-                        <p>Configure gesture controls for mini and full player screens. Customize progress bar appearance and behavior. Enable/disable swipe gestures for track navigation and control sensitivity.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Privacy & Data Management</h3>
-                        <p>Complete control over data usage and privacy. Manage what data is sent to APIs, control artwork fetching, and configure offline capabilities. No personal data collection — everything stays on your device.</p>
-                    </div>
+                <h3 class="help-subheading">🎤 Lyrics & Artwork</h3>
+                <div class="help-card">
+                    <h3>Lyrics Not Loading or Wrong Timings</h3>
+                    <p>Lyrics come from <strong>LRCLib</strong>. Check internet and API settings. Use the sync adjustment in lyrics view to shift timings. Instrumental or obscure tracks may have no lyrics.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Artwork Not Fetching</h3>
+                    <p>Verify Deezer/YouTube Music API is enabled. Clear artwork cache (Settings → Advanced → Cache Management). Set artwork manually via the song info screen for missing albums.</p>
                 </div>
 
-                <div id="troubleshooting" class="help-category">
-                    <h2><i class="fas fa-question-circle"></i> Troubleshooting</h2>
-                    <div class="help-item">
-                        <h3>Music Not Showing in Library</h3>
-                        <p>Go to Settings → Library → Rescan Media. Check whitelist/blacklist settings. Use Explorer to manually add folders. If you're in Streaming Mode, verify your server connection in Settings → Streaming.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Permission & Storage Issues</h3>
-                        <p>Go to Settings → Apps → Rhythm → Permissions and grant storage access manually. Restart app after granting permissions. Check if files are in accessible locations.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Playback Problems</h3>
-                        <ul>
-                            <li><strong>Audio Glitches:</strong> Clear cache in Settings → Advanced → Cache Management</li>
-                            <li><strong>No Sound:</strong> Check Device Output settings and Bluetooth connections</li>
-                            <li><strong>Gapless Issues:</strong> Ensure tracks are in compatible formats (FLAC, ALAC preferred)</li>
-                        </ul>
-                    </div>
-                    <div class="help-item">
-                        <h3>USB DAC Support & Connection Dialogs</h3>
-                        <p><strong>Why does no USB popup appear when I connect my DAC?</strong> Unlike audio players that implement custom user-space USB drivers (which prompt with an OS dialog to bypass the kernel), Rhythm routes audio through Android's native high-resolution audio pathways. Under <strong>App</strong> routing on Android 14+, the app requests exclusive bit-perfect playback directly from the OS <code>AudioManager</code>. Since it uses official native platform APIs, the DAC is connected automatically and silently without displaying a USB permission dialog.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Lyrics Not Loading</h3>
-                        <p>Check internet connection and API settings. Try manual reload in lyrics view. Some tracks may not have lyrics available in LRCLib database.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Artwork Not Showing</h3>
-                        <p>Clear artwork cache in Settings → Advanced. Check Deezer API configuration. Some albums may not have available artwork.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>App Performance Issues</h3>
-                        <p>Clear all caches, restart app. Check for updates. If issues persist, check crash logs in Settings → Advanced → Crash Logs.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Memory Leaks & ANR Detection</h3>
-                        <p>Debug builds include LeakCanary and ANR monitoring. Check logs for memory issues. Restart app if experiencing slowdowns.</p>
-                    </div>
+                <h3 class="help-subheading">🌐 Streaming Mode</h3>
+                <div class="help-card">
+                    <h3>Cannot Connect to Server</h3>
+                    <ul>
+                        <li>Verify URL includes protocol (<code>https://</code> or <code>http://</code>)</li>
+                        <li>Ensure server is running and network-accessible</li>
+                        <li>Check credentials</li>
+                        <li>For self-signed SSL, install the certificate on your device</li>
+                        <li>Try <strong>Discover</strong> for local network servers</li>
+                    </ul>
+                </div>
+                <div class="help-card">
+                    <h3>Streaming Quality Too Low</h3>
+                    <p>Your server may be transcoding. Check server transcoding settings (Navidrome: Settings → Transcoding, Jellyfin: Playback). For best quality, disable bitrate limits.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Server Online but Library Empty</h3>
+                    <p>Ensure your server has indexed music and your user account has library access. Try another Subsonic client to verify server health.</p>
                 </div>
 
-                <div id="getting-help" class="help-category">
-                    <h2><i class="fas fa-life-ring"></i> Getting Help & Community</h2>
-                    <div class="help-item">
-                        <h3>Telegram Community Support</h3>
-                        <p>Join our active Telegram community for help, discussions, and feature requests: <a href="https://t.me/RhythmSupport" target="_blank">t.me/RhythmSupport</a></p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Discord Server</h3>
-                        <p>Chat with the community on Discord: <a href="https://discord.gg/XjPyUYPQYc" target="_blank">discord.gg/XjPyUYPQYc</a>. Get help, share setups, and discuss upcoming features.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>GitHub Issues & Bug Reports</h3>
-                        <p>Report bugs or request features on GitHub: <a href="https://github.com/cromaguy/Rhythm/issues" target="_blank">github.com/cromaguy/Rhythm/issues</a>. Include crash logs when reporting issues.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Beta Program</h3>
-                        <p>Join our beta program for early access to new features. Access beta builds via GitHub releases or obtain updates from the Beta channel. Provide feedback to help shape Rhythm's development.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Crash Logs & Diagnostics</h3>
-                        <p>Access crash logs in Settings → Advanced → Crash Log History. Include relevant logs when reporting issues for faster resolution.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>Feature Requests & Discussions</h3>
-                        <p>Share ideas for new features in our GitHub Discussions, Telegram group, or Discord server. Community feedback drives our development roadmap.</p>
-                    </div>
-                    <div class="help-item">
-                        <h3>System Requirements & Compatibility</h3>
-                        <ul>
-                            <li><strong>Android:</strong> 8.0 or higher (API 26+)</li>
-                            <li><strong>RAM:</strong> 2GB minimum, 4GB recommended</li>
-                            <li><strong>Storage:</strong> 50MB app + space for cache</li>
-                            <li><strong>Internet:</strong> Required for lyrics, artwork, streaming, and updates</li>
-                            <li><strong>Audio:</strong> Any Android-compatible audio output</li>
-                        </ul>
-                    </div>
+                <h3 class="help-subheading">📱 Widgets & Performance</h3>
+                <div class="help-card">
+                    <h3>Widget Not Updating</h3>
+                    <p>Remove and re-add the widget. Ensure music is playing. Exclude Rhythm from battery optimization. Some launchers have widget refresh delays.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Lyrics Widget Lagging</h3>
+                    <p>Widget refreshes via WorkManager periodically. Play a new track and wait 10–30 seconds. If still behind, remove and re-add.</p>
+                </div>
+                <div class="help-card">
+                    <h3>High Battery Drain / Device Heating</h3>
+                    <p>Disable High-Resolution Audio and EQ if not needed. Standard-quality files consume less CPU. Exclude from battery optimization. If overheating persists, check for other running apps.</p>
                 </div>
 
-            </div>
+                <h3 class="help-subheading">💾 Backup & Device-Specific</h3>
+                <div class="help-card">
+                    <h3>Backup Fails or Partial Restore</h3>
+                    <p>Ensure sufficient storage and storage permission is granted. Backups are version-dependent — cross-version restore is best-effort. Transfer backup files manually to a new device.</p>
+                </div>
+                <div class="help-card">
+                    <h3>Permission Denied (OEM Quirks)</h3>
+                    <p><strong>Xiaomi:</strong> Permission → Show all permissions → enable all. <strong>Samsung:</strong> Allow background activity. <strong>Oppo/Realme:</strong> Allow background app management. After enabling, force-stop Rhythm and restart.</p>
+                </div>
+                <div class="help-card">
+                    <h3>USB DAC Not Outputting Audio</h3>
+                    <p>Rhythm uses Android's native audio framework — no USB dialog appears. Verify DAC is detected by device. Ensure Developer Options → "Disable USB audio routing" is OFF. Try another player to confirm DAC works.</p>
+                </div>
+                <div class="help-card">
+                    <h3>App Crashes on Launch</h3>
+                    <p>Clear app data (Settings → Apps → Rhythm → Storage → Clear Data). If persists, reinstall. Report crashes with logs from Settings → Advanced → Crash Log History.</p>
+                </div>
+            </section>
+
+            <section id="getting-help" class="help-section-block" data-label="Support">
+                <h2><i class="fas fa-life-ring"></i> Getting Help & Community</h2>
+                <div class="help-card">
+                    <h3>Telegram Community</h3>
+                    <p>Join our active Telegram group for live help and discussions: <a href="https://t.me/RhythmSupport" target="_blank">t.me/RhythmSupport</a></p>
+                </div>
+                <div class="help-card">
+                    <h3>Discord Server</h3>
+                    <p>Chat with the community: <a href="https://discord.gg/XjPyUYPQYc" target="_blank">discord.gg/XjPyUYPQYc</a></p>
+                </div>
+                <div class="help-card">
+                    <h3>GitHub Issues</h3>
+                    <p>Report bugs or request features: <a href="https://github.com/cromaguy/Rhythm/issues" target="_blank">github.com/cromaguy/Rhythm/issues</a>. Include crash logs from Settings → Advanced → Crash Log History.</p>
+                </div>
+                <div class="help-card">
+                    <h3>System Requirements</h3>
+                    <ul>
+                        <li><strong>Android:</strong> 8.0+ (API 26+)</li>
+                        <li><strong>RAM:</strong> 2GB minimum, 4GB recommended</li>
+                        <li><strong>Storage:</strong> 50MB app + cache space</li>
+                        <li><strong>Internet:</strong> Required for lyrics, artwork, streaming, and updates</li>
+                    </ul>
+                </div>
+            </section>
+
         </div>
-    </section>
+    </div>
 
     <footer id="contact" role="contentinfo">
         <div class="container">

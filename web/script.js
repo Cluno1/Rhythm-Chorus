@@ -79,7 +79,7 @@ const updateData = {
             <ul>
                 <li>📜 <strong>A-Z Scroll Bar</strong> - Jump to any letter instantly in your library with the new expressive scroll bar.</li>
                 <li>🎵 <strong>Rhythm Lyrics Widget</strong> - A brand-new Glance widget that displays synced lyrics right on your home screen.</li>
-                <li>🔍 <strong>Nearby Server Discovery</strong> - Automatically discover Rhythm Go servers on your network.</li>
+                <li>🔍 <strong>Nearby Server Discovery</strong> - Automatically discover Subsonic-compatible servers on your network.</li>
                 <li>🎚️ <strong>Replay Gain</strong> - Experimental support for volume normalization across tracks.</li>
                 <li>🖼️ <strong>Local Artist Images</strong> - Assign and display artist images from your local storage.</li>
             </ul>
@@ -1079,220 +1079,65 @@ document.querySelectorAll('.scroll-to-download').forEach(button => {
     });
 });
 
-// Help Page Functionality - Material 3 Expressive
+// Help Page Functionality
 document.addEventListener('DOMContentLoaded', () => {
-    // Help section collapsible functionality with improved animations
-    const helpCategories = document.querySelectorAll('.help-category');
+    const helpContent = document.querySelector('.help-content');
+    const searchInput = document.getElementById('helpSearch');
+    const sidebarLinks = document.querySelectorAll('.help-sidebar-link');
+    const sections = document.querySelectorAll('.help-section-block');
+    const header = document.querySelector('header');
+    const headerHeight = header ? header.offsetHeight : 80;
 
-    helpCategories.forEach((category, categoryIndex) => {
-        const header = category.querySelector('h2');
-        const content = category.querySelectorAll('.help-item');
+    // Build mobile sidebar
+    const sidebar = document.getElementById('helpSidebar');
+    if (sidebar) {
+        const mobileNav = document.createElement('div');
+        mobileNav.className = 'mobile-sidebar';
+        const navClone = sidebar.querySelector('nav').cloneNode(true);
+        navClone.querySelectorAll('a').forEach(a => a.className = 'mobile-sidebar-link');
+        mobileNav.appendChild(navClone);
+        helpContent.parentElement.insertBefore(mobileNav, helpContent);
+    }
 
-        // Set initial animation delays for staggered entry
-        category.style.setProperty('--category-delay', `${categoryIndex * 0.1}s`);
-
-        // Add click event to category headers
-        header.addEventListener('click', () => {
-            const isExpanded = category.classList.contains('expanded');
-
-            // Close all categories first with smooth animation
-            helpCategories.forEach(cat => {
-                if (cat !== category) {
-                    cat.classList.remove('expanded');
-                    const items = cat.querySelectorAll('.help-item');
-                    items.forEach((item, index) => {
-                        item.style.setProperty('--item-delay', '0s');
-                        item.classList.remove('item-visible');
-                    });
-                }
-            });
-
-            // Toggle current category
-            if (!isExpanded) {
-                category.classList.add('expanded');
-                content.forEach((item, index) => {
-                    // Set staggered animation delay
-                    item.style.setProperty('--item-delay', `${index * 0.08}s`);
-                    // Use requestAnimationFrame for smooth animation triggering
-                    requestAnimationFrame(() => {
-                        item.classList.add('item-visible');
-                    });
-                });
-            } else {
-                category.classList.remove('expanded');
-                content.forEach(item => {
-                    item.classList.remove('item-visible');
-                });
-            }
-        });
-
-        // Initially hide all help items with CSS classes
-        content.forEach(item => {
-            item.classList.remove('item-visible');
-        });
-    });
-
-    // Help search functionality - Material 3 Express
-    const searchInput = document.querySelector('.page-search');
+    // Search filter
     if (searchInput) {
-        let searchTimeout;
-
-        // Add search icon and loading state
-        const searchWrapper = searchInput.parentElement;
-        const searchIcon = document.createElement('i');
-        searchIcon.className = 'fas fa-search';
-        searchWrapper.appendChild(searchIcon);
-
-        // Enhanced search functionality with debouncing
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            const searchTerm = e.target.value.toLowerCase().trim();
-
-            // Visual feedback
-            searchIcon.className = searchTerm.length > 0 ? 'fas fa-times' : 'fas fa-search';
-
-            searchTimeout = setTimeout(() => {
-                const helpItems = document.querySelectorAll('.help-item');
-                const helpCategories = document.querySelectorAll('.help-category');
-
-                if (searchTerm.length === 0) {
-                    // Smooth show all items
-                    helpItems.forEach((item, index) => {
-                        setTimeout(() => {
-                            item.style.display = 'block';
-                            item.style.opacity = '1';
-                            item.style.transform = 'scale(1) translateY(0)';
-                        }, index * 50);
-                    });
-                    helpCategories.forEach(category => {
-                        category.style.display = 'block';
-                    });
-                    return;
-                }
-
-                // Search with animation
-                let visibleCount = 0;
-                helpItems.forEach((item, index) => {
-                    const text = item.textContent.toLowerCase();
-                    const isVisible = text.includes(searchTerm);
-
-                    if (isVisible) {
-                        visibleCount++;
-                        setTimeout(() => {
-                            item.style.display = 'block';
-                            item.style.opacity = '1';
-                            item.style.transform = 'scale(1) translateY(0)';
-                        }, index * 30);
-                    } else {
-                        item.style.opacity = '0';
-                        item.style.transform = 'scale(0.95) translateY(-10px)';
-                        setTimeout(() => {
-                            item.style.display = 'none';
-                        }, 200);
-                    }
-                });
-
-                // Hide categories that have no visible items
-                helpCategories.forEach(category => {
-                    const visibleItems = category.querySelectorAll('.help-item[style*="display: block"]');
-                    if (visibleItems.length > 0) {
-                        category.style.display = 'block';
-                        category.style.opacity = '1';
-                        category.style.transform = 'translateY(0)';
-                    } else {
-                        category.style.opacity = '0';
-                        category.style.transform = 'translateY(-20px)';
-                        setTimeout(() => {
-                            category.style.display = 'none';
-                        }, 300);
-                    }
-                });
-
-                // Show "no results" message if needed
-                let noResultsMsg = document.querySelector('.no-results');
-                if (visibleCount === 0 && searchTerm.length > 0) {
-                    if (!noResultsMsg) {
-                        noResultsMsg = document.createElement('div');
-                        noResultsMsg.className = 'no-results';
-                        noResultsMsg.style.cssText = `
-                            text-align: center;
-                            padding: 40px;
-                            color: var(--on-surface-variant);
-                            font-size: 18px;
-                            animation: fadeIn 0.3s ease;
-                        `;
-                        noResultsMsg.innerHTML = `
-                            <i class="fas fa-search" style="font-size: 48px; color: var(--surface-variant); margin-bottom: 16px; display: block;"></i>
-                            No results found for "${searchTerm}"
-                        `;
-                        document.querySelector('.help-content').appendChild(noResultsMsg);
-                    }
-                } else if (noResultsMsg) {
-                    noResultsMsg.remove();
-                }
-            }, 300);
-        });
-
-        // Clear search on icon click
-        searchIcon.addEventListener('click', () => {
-            if (searchInput.value.length > 0) {
-                searchInput.value = '';
-                searchInput.dispatchEvent(new Event('input'));
-            }
+        searchInput.addEventListener('input', () => {
+            const term = searchInput.value.toLowerCase().trim();
+            document.querySelectorAll('.help-card').forEach(card => {
+                const match = term === '' || card.textContent.toLowerCase().includes(term);
+                card.style.display = match ? '' : 'none';
+            });
+            document.querySelectorAll('.help-section-block').forEach(section => {
+                const visible = term === '' || Array.from(section.querySelectorAll('.help-card')).some(c => c.style.display !== 'none');
+                section.style.display = visible ? '' : 'none';
+            });
         });
     }
 
-    // Add smooth scrolling to help category links
-    const helpLinks = document.querySelectorAll('a[href^="#"]');
-    helpLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            const targetId = link.getAttribute('href');
-            const targetElement = document.querySelector(targetId);
+    // Scroll spy
+    function updateActiveLink() {
+        let current = '';
+        const scrollY = window.scrollY + headerHeight + 20;
+        sections.forEach(s => {
+            if (s.offsetTop <= scrollY) current = s.id;
+        });
+        document.querySelectorAll('.help-sidebar-link, .mobile-sidebar-link').forEach(link => {
+            link.classList.toggle('active', link.dataset.target === current);
+        });
+    }
 
-            if (targetElement) {
-                e.preventDefault();
+    window.addEventListener('scroll', updateActiveLink);
+    updateActiveLink();
 
-                // Use scrollIntoView with block: 'start' and adjust for header
-                const header = document.querySelector('header');
-                const headerHeight = header ? header.offsetHeight : 80;
-
-                // Temporarily adjust scroll-margin-top for smooth scrolling
-                targetElement.style.scrollMarginTop = `${headerHeight + 20}px`;
-
-                targetElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-
-                // Reset scroll-margin-top after scrolling
-                setTimeout(() => {
-                    targetElement.style.scrollMarginTop = '';
-                }, 1000);
+    // Smooth scroll on sidebar click
+    document.querySelectorAll('.help-sidebar-link, .mobile-sidebar-link').forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const target = document.getElementById(link.dataset.target);
+            if (target) {
+                window.scrollTo({ top: target.offsetTop - headerHeight - 10, behavior: 'smooth' });
             }
         });
-    });
-
-    // Add animation on scroll for help items
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-
-    // Observe help categories
-    document.querySelectorAll('.help-category').forEach(category => {
-        category.style.opacity = '0';
-        category.style.transform = 'translateY(30px)';
-        category.style.transition = 'all 0.6s ease';
-        observer.observe(category);
     });
 });
 
@@ -1323,7 +1168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Reading progress indicator for help page
-    if (document.querySelector('.help-section')) {
+    if (document.querySelector('.help-layout')) {
         const progressBar = document.createElement('div');
         progressBar.className = 'reading-progress';
         document.body.appendChild(progressBar);

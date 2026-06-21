@@ -31,14 +31,13 @@ All flavors belong to the `distribution` dimension, ensuring they're mutually ex
 **BuildConfig Flags:**
 ```kotlin
 ENABLE_YOUTUBE_MUSIC = true
-ENABLE_SPOTIFY_CANVAS = true
+ENABLE_SPOTIFY_SEARCH = true
 ENABLE_LYRICALLY_API = true
 ENABLE_DEEZER = true
 ENABLE_LRCLIB = true
-ENABLE_SPOTIFY_SEARCH = true
 ```
 
-**Default Settings:** APIs and auto-updates disabled by default (opt-in for F-Droid compliance)
+**Default Settings:** All features enabled. APIs and auto-updates disabled by default (opt-in for F-Droid compliance).
 
 **Philosophy:** FOSS users expect maximum functionality. F-Droid isn't bound by corporate app store policies, but opt-in defaults ensure compliance.
 
@@ -52,14 +51,13 @@ ENABLE_SPOTIFY_SEARCH = true
 **BuildConfig Flags:**
 ```kotlin
 ENABLE_YOUTUBE_MUSIC = true
-ENABLE_SPOTIFY_CANVAS = true
+ENABLE_SPOTIFY_SEARCH = true
 ENABLE_LYRICALLY_API = true
 ENABLE_DEEZER = true
 ENABLE_LRCLIB = true
-ENABLE_SPOTIFY_SEARCH = true
 ```
 
-**Default Settings:** APIs and auto-updates enabled by default (opt-out available)
+**Default Settings:** All features enabled. APIs and auto-updates enabled by default (opt-out available).
 
 **Use Case:** Users who download directly from GitHub releases get the full-featured experience.
 
@@ -140,14 +138,20 @@ Each variant has a `config.xml` with boolean resources:
 **fdroid/res/values/config.xml:**
 ```xml
 <bool name="feature_youtube_music_available">true</bool>
-<bool name="feature_spotify_canvas_available">true</bool>
+<bool name="feature_apple_music_available">true</bool>
+<bool name="feature_deezer_available">true</bool>
+<bool name="feature_lrclib_available">true</bool>
+<bool name="feature_spotify_search_available">true</bool>
 <string name="distribution_channel">F-Droid</string>
 ```
 
 **github/res/values/config.xml:**
 ```xml
 <bool name="feature_youtube_music_available">true</bool>
-<bool name="feature_spotify_canvas_available">true</bool>
+<bool name="feature_apple_music_available">true</bool>
+<bool name="feature_deezer_available">true</bool>
+<bool name="feature_lrclib_available">true</bool>
+<bool name="feature_spotify_search_available">true</bool>
 <string name="distribution_channel">GitHub</string>
 ```
 
@@ -158,13 +162,13 @@ Each variant has a `config.xml` with boolean resources:
 ### APK Naming Convention
 
 ```
-Rhythm-{versionName}-{suffix}-{flavor}-{buildType}.apk
+Rhythm-{versionName}-{flavorVariant}-{abi}.apk
 ```
 
 **Examples:**
 ```
-Rhythm-5.0.403.1056-fdroid-fdroid-release.apk
-Rhythm-5.0.403.1056-gh-github-release.apk
+Rhythm-5.1.414.1085 Beta-fdroidRelease-arm64-v8a.apk
+Rhythm-5.1.414.1085 Beta-githubRelease-armeabi-v7a.apk
 ```
 
 ### Output Locations
@@ -220,7 +224,7 @@ app/build/generated/source/buildConfig/fdroid/release/chromahub/rhythm/app/Build
 Should contain:
 ```java
 public static final boolean ENABLE_YOUTUBE_MUSIC = true;
-public static final boolean ENABLE_SPOTIFY_CANVAS = true;
+public static final boolean ENABLE_SPOTIFY_SEARCH = true;
 ```
 
 **GitHub:**
@@ -231,7 +235,7 @@ app/build/generated/source/buildConfig/github/release/chromahub/rhythm/app/Build
 Should contain:
 ```java
 public static final boolean ENABLE_YOUTUBE_MUSIC = true;
-public static final boolean ENABLE_SPOTIFY_CANVAS = true;
+public static final boolean ENABLE_SPOTIFY_SEARCH = true;
 ```
 
 ---
@@ -277,8 +281,8 @@ Add to `.fdroid.yml` or `metadata/*.yml`:
 
 ```yaml
 Builds:
-  - versionName: 5.0.403.1056
-    versionCode: 504031056
+  - versionName: 5.1.414.1085 Beta
+    versionCode: 514141085
     gradle:
       - fdroid
     
@@ -402,5 +406,5 @@ A: Single package name simplifies distribution across different channels.
 
 ---
 
-*Last Updated: January 19, 2026*  
+*Last Updated: June 22, 2026*  
 *Rhythm Music Player Build System Documentation*

@@ -6228,9 +6228,9 @@ fun EnhancedUpdaterContent(
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                if (isCheckingForUpdates || isDownloading) {
+                if (isCheckingForUpdates) {
                     M3LinearLoader(
-                        progress = if (isDownloading) downloadProgress / 100f else null,
+                        progress = null,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(10.dp)
@@ -6534,9 +6534,9 @@ fun EnhancedUpdaterContent(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            if (isCheckingForUpdates || isDownloading) {
+            if (isCheckingForUpdates) {
                 M3LinearLoader(
-                    progress = if (isDownloading) downloadProgress / 100f else null,
+                    progress = null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(10.dp)

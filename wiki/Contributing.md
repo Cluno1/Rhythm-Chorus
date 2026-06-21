@@ -21,7 +21,7 @@ Found a bug? Help us fix it!
 3. Fill in all required information:
    - Android version (e.g., Android 14)
    - Device model (e.g., Pixel 7)
-   - Rhythm version (e.g., v4.0.310.853)
+    - Rhythm version (e.g., v5.1.414.1085 Beta)
    - Steps to reproduce
    - Expected vs actual behavior
    - Screenshots/logs if applicable
@@ -84,9 +84,9 @@ Ready to code? Here's how to start!
 
 ### Prerequisites
 
-- **Android Studio**: Latest stable version (Hedgehog or newer)
-- **JDK**: 17 or higher
-- **Kotlin**: 1.9.22+ (bundled with AS)
+- **Android Studio**: Latest stable version (Ladybug or newer)
+- **JDK**: 21 or higher (required for Gradle 9.x)
+- **Kotlin**: 2.4.x (bundled with Android Studio)
 - **Git**: For version control
 - **Android Device/Emulator**: API 26+ for testing
 
@@ -161,21 +161,29 @@ fun SongItem(
 
 - **MVVM Pattern**: ViewModels for business logic
 - **Repository Pattern**: Data access abstraction
-- **Dependency Injection**: Manual DI or Hilt (future)
+- **Dependency Injection**: Manual DI
 - **Clean Architecture**: Separation of concerns
 
 ### File Organization
 
 ```
 app/src/main/java/chromahub/rhythm/app/
+├── core/
+│   └── domain/           # Domain interfaces and models
 ├── features/
-│   └── local/
-│       ├── data/          # Data layer
-│       ├── domain/        # Business logic
-│       └── presentation/  # UI components
-├── shared/               # Shared utilities
-├── infrastructure/       # Services, workers
-└── activities/          # Activities
+│   ├── local/            # Local playback features
+│   │   ├── data/         # Data layer
+│   │   ├── domain/       # Business logic
+│   │   └── presentation/ # UI components
+│   └── streaming/        # Streaming playback features
+│       ├── data/         # Network and data layer
+│       ├── domain/       # Business logic
+│       ├── di/           # Streaming DI modules
+│       ├── infrastructure/ # Streaming services
+│       └── presentation/ # UI components
+├── shared/               # Shared utilities, themes, navigation
+├── infrastructure/       # Player, widgets, workers, network
+└── network/              # Network client configuration
 ```
 
 ### Comments
@@ -209,14 +217,10 @@ fun playSong(song: Song, startPosition: Long = 0L) {
 ```kotlin
 @Test
 fun `test playback state updates correctly`() {
-    // Arrange
-    val viewModel = MusicViewModel()
-    
-    // Act
-    viewModel.playSong(testSong)
-    
-    // Assert
-    assertEquals(PlaybackState.Playing, viewModel.playbackState.value)
+    val player = ExoPlayer.Builder(context).build()
+    player.prepare()
+    player.play()
+    assertThat(player.playbackState).isEqualTo(Player.STATE_READY)
 }
 ```
 
@@ -380,7 +384,7 @@ Before submitting PR, verify:
 - [ ] No new compiler warnings
 - [ ] Follows Kotlin code style
 - [ ] UI matches Material 3 guidelines
-- [ ] Works on API 26-36
+- [ ] Works on API 26+ (compileSdk 37)
 - [ ] Tested on physical device
 - [ ] No hardcoded strings (use resources)
 - [ ] Added/updated documentation

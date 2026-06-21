@@ -3841,367 +3841,280 @@ footer {
   }
 }
 
-.help-section {
-  padding: 80px 0 60px 0;
-  background: var(--background);
-  position: relative;
-}
+/* ==============================
+   Help Page - Two Column Layout
+   ============================== */
 
-.help-content {
+/* Two column layout */
+.help-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 32px;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 40px 24px 60px;
+  align-items: start;
 }
 
-/* Material 3 Expressive Help Cards */
-.help-category {
-  background-color: var(--secondary-container);
-  border-radius: 16px;
-  padding: 20px; /* Reduced from 24px */
-  margin-bottom: 20px; /* Reduced from 24px */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Material 3 standard easing */
-  position: relative;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(30px);
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: var(--category-delay, 0s);
-  cursor: pointer;
+/* Sidebar */
+.help-sidebar {
+  position: sticky;
+  top: 90px;
 }
 
-.help-category::before {
-  content: none;
+.help-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.help-category:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-.help-category.expanded {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
-}
-
-.help-category h2 {
-  color: var(--primary);
-  font-size: 20px; /* Reduced from 24px */
-  font-weight: 600;
-  margin-bottom: 0;
+.help-sidebar-link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  position: relative;
-  z-index: 1;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-}
-
-.help-category:hover h2 {
-  color: var(--on-secondary-container);
-}
-
-.help-category.expanded h2 {
-  color: var(--primary);
-  margin-bottom: 24px;
-}
-
-.help-category h2 i {
-  color: var(--secondary);
-  font-size: 24px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.help-category:hover h2 i {
-  transform: scale(1.1) rotate(5deg);
-  color: var(--primary);
-}
-
-.help-category.expanded h2 i {
-  color: var(--primary);
-}
-
-.help-item {
-  margin-bottom: 14px; /* Reduced from 16px */
-  padding: 16px; /* Reduced from 20px */
-  background: var(--background);
-  border-radius: 12px;
-  border-left: 4px solid var(--primary);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  opacity: 0;
-  transform: translateY(-20px) scale(0.95);
-  pointer-events: none;
-  display: none; /* Completely hide collapsed items */
-}
-
-.help-item.item-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
-  display: block; /* Show expanded items */
-  animation: itemSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: var(--item-delay, 0s);
-}
-
-.help-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(to bottom, var(--primary), var(--secondary));
-  opacity: 0.8;
-  transition: opacity 0.3s ease;
-}
-
-.help-item:hover {
-  background: var(--surface-variant);
-  transform: translateX(4px) scale(1.02);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border-left-color: var(--secondary);
-}
-
-.help-item:hover::before {
-  opacity: 1;
-}
-
-.help-item h3 {
-  color: var(--on-background);
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-}
-
-.help-item h3::before {
-  content: "▶";
-  color: var(--primary);
-  margin-right: 8px;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: var(--on-surface-variant);
   font-size: 14px;
-  transition: all 0.3s ease;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.15s;
 }
 
-.help-item:hover h3::before {
-  transform: scale(1.2);
-  color: var(--secondary);
-}
-
-.help-item p {
-  color: var(--on-surface-variant);
-  line-height: 1.6;
-  margin-bottom: 12px;
+.help-sidebar-link i {
+  width: 18px;
+  text-align: center;
   font-size: 15px;
-  position: relative;
-  z-index: 1;
-}
-
-.help-item ul {
-  margin-left: 20px;
-  color: var(--on-surface-variant);
-  position: relative;
-  z-index: 1;
-}
-
-.help-item li {
-  margin-bottom: 8px;
-  line-height: 1.5;
-  font-size: 15px;
-  position: relative;
-  padding-left: 8px;
-}
-
-.help-item li::before {
-  content: "•";
   color: var(--primary);
-  font-weight: bold;
-  position: absolute;
-  left: -12px;
-  top: 0;
+  opacity: 0.7;
 }
 
-.help-item strong {
+.help-sidebar-link:hover {
+  background: var(--surface-variant);
+  color: var(--on-background);
+}
+
+.help-sidebar-link.active {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-weight: 600;
+}
+
+.help-sidebar-link.active i {
+  opacity: 1;
+}
+
+/* Main content area */
+.help-content {
+  min-width: 0;
+}
+
+/* Section blocks */
+.help-section-block {
+  margin-bottom: 40px;
+  scroll-margin-top: 90px;
+}
+
+.help-section-block h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--outline-variant);
+}
+
+.help-section-block h2 i {
+  font-size: 20px;
+}
+
+/* Subheadings inside sections */
+.help-subheading {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 28px 0 14px;
+  padding: 8px 14px;
+  background: var(--surface-variant);
+  border-radius: 8px;
+  border-left: 3px solid var(--primary);
+}
+
+/* Cards */
+.help-card {
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  transition: box-shadow 0.2s;
+}
+
+.help-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.help-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--on-background);
+  margin-bottom: 10px;
+}
+
+.help-card p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--on-surface-variant);
+  margin-bottom: 8px;
+}
+
+.help-card p:last-child {
+  margin-bottom: 0;
+}
+
+.help-card ul, .help-card ol {
+  margin: 6px 0 0 18px;
+  color: var(--on-surface-variant);
+}
+
+.help-card li {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+.help-card li::marker {
+  color: var(--primary);
+}
+
+.help-card strong {
   color: var(--primary);
   font-weight: 600;
 }
 
-/* Responsive Help Page - Material 3 Express */
-@media (max-width: 768px) {
-  .help-section {
-    padding: 60px 0 40px 0;
+.help-card a {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.help-card code {
+  background: var(--surface-variant);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--primary);
+}
+
+/* Mobile sidebar */
+.mobile-sidebar {
+  display: none;
+}
+
+/* ==============================
+   Responsive
+   ============================== */
+
+@media (max-width: 900px) {
+  .help-layout {
+    grid-template-columns: 1fr;
+    padding: 24px 16px 40px;
   }
 
-  .help-category {
-    padding: 24px;
-    margin-bottom: 24px;
+  .help-sidebar {
+    display: none;
+  }
+
+  .mobile-sidebar {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 16px 12px;
+    margin: -8px 0 16px;
+    scrollbar-width: none;
+  }
+
+  .mobile-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-sidebar nav {
+    display: flex;
+    gap: 8px;
+  }
+
+  .mobile-sidebar-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
     border-radius: 20px;
+    background: var(--surface-variant);
+    color: var(--on-surface-variant);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.15s;
   }
 
-  .help-category h2 {
-    font-size: 20px;
-    margin-bottom: 20px;
+  .mobile-sidebar-link i {
+    font-size: 13px;
+    color: var(--primary);
+    opacity: 0.7;
   }
 
-  .help-category h2 i {
-    font-size: 20px;
+  .mobile-sidebar-link.active {
+    background: var(--primary-container);
+    color: var(--on-primary-container);
   }
 
-  .help-item {
-    padding: 16px;
-    margin-bottom: 16px;
-    border-radius: 12px;
+  .mobile-sidebar-link.active i {
+    opacity: 1;
   }
 
-  .help-item h3 {
-    font-size: 16px;
+  .help-hero {
+    padding: 40px 0 32px;
+  }
+
+  .help-hero h1 {
+    font-size: 26px;
+  }
+
+  .help-section-block h2 {
+    font-size: 19px;
   }
 }
 
 @media (max-width: 480px) {
-  .help-section {
-    padding: 40px 0 30px 0;
+  .help-hero {
+    padding: 32px 0 24px;
   }
 
-  .help-category {
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 16px;
+  .help-hero h1 {
+    font-size: 22px;
   }
 
-  .help-category h2 {
-    font-size: 18px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 16px;
+  .help-card {
+    padding: 14px 16px;
   }
 
-  .help-category h2 i {
-    font-size: 18px;
-  }
-
-  .help-item {
-    padding: 14px;
-    margin-bottom: 14px;
-    border-radius: 12px;
-  }
-
-  .help-item h3 {
+  .help-card h3 {
     font-size: 15px;
   }
 
-  .help-item p {
+  .help-card p, .help-card li {
+    font-size: 13px;
+  }
+
+  .help-subheading {
     font-size: 14px;
-  }
-
-  .help-item li {
-    font-size: 14px;
+    padding: 6px 12px;
   }
 }
-
-/* Enhanced Help Category Animations - Material 3 Express */
-.help-category {
-  position: relative;
-  overflow: hidden;
-  animation: slideInUp 0.6s ease-out forwards;
-}
-
-.help-category:nth-child(1) { animation-delay: 0.1s; }
-.help-category:nth-child(2) { animation-delay: 0.2s; }
-.help-category:nth-child(3) { animation-delay: 0.3s; }
-.help-category:nth-child(4) { animation-delay: 0.4s; }
-.help-category:nth-child(5) { animation-delay: 0.5s; }
-.help-category:nth-child(6) { animation-delay: 0.6s; }
-.help-category:nth-child(7) { animation-delay: 0.7s; }
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Help Item Stagger Animation */
-.help-item {
-  animation: fadeInScale 0.5s ease-out forwards;
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.help-category.expanded .help-item:nth-child(1) { animation-delay: 0.1s; }
-.help-category.expanded .help-item:nth-child(2) { animation-delay: 0.2s; }
-.help-category.expanded .help-item:nth-child(3) { animation-delay: 0.3s; }
-.help-category.expanded .help-item:nth-child(4) { animation-delay: 0.4s; }
-.help-category.expanded .help-item:nth-child(5) { animation-delay: 0.5s; }
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Material 3 Ripple Effect for Help Links */
-.hero-nav-link {
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-nav-link::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
-  pointer-events: none;
-}
-
-.hero-nav-link:active::after {
-  width: 300px;
-  height: 300px;
-}
-
-/* Loading Animation for Help Items */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.help-item {
-  animation: fadeInUp 0.6s ease-out forwards;
-}
-
-/* Stagger animation for multiple items */
-.help-item:nth-child(1) { animation-delay: 0.1s; }
-.help-item:nth-child(2) { animation-delay: 0.2s; }
-.help-item:nth-child(3) { animation-delay: 0.3s; }
-.help-item:nth-child(4) { animation-delay: 0.4s; }
-.help-item:nth-child(5) { animation-delay: 0.5s; }
 
 /* Back to Top Button for Help Page */
 .back-to-top {
@@ -4292,3 +4205,6 @@ footer {
 .donation-links a i {
   margin-right: 6px;
 }
+
+/* Troubleshooting Subheaders */
+

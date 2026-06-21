@@ -395,15 +395,6 @@ Beyond local playback, Rhythm supports a complete streaming ecosystem:
 
 ---
 
-## 🔮 Upcoming Features
-
-### In Development / Planned
-- Desktop companion app
-- Cloud sync
-- Collaborative playlists
-- Advanced visualizations
-- Podcast support
-
 ---
 
 **Want more details?** Check out:
