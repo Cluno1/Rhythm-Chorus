@@ -4492,7 +4492,16 @@ class MusicRepository(context: Context) {
         sourcePreference: LyricsSourcePreference = LyricsSourcePreference.API_FIRST,
         forceRefresh: Boolean = false
     ): LyricsData? = withContext(Dispatchers.IO) {
-        Log.d(TAG, "===== FETCH LYRICS START: $artist - $title (songId=$songId, forceRefresh=$forceRefresh, source=$sourcePreference) =====")
+        val appSettings = AppSettings.getInstance(context)
+        val songSpecificPreference = songId?.let { appSettings.getSongLyricsPreference(it) }
+        val finalSourcePreference = when (songSpecificPreference) {
+            "online" -> LyricsSourcePreference.API_FIRST
+            "embedded" -> LyricsSourcePreference.EMBEDDED_FIRST
+            "lrc" -> LyricsSourcePreference.LOCAL_FIRST
+            else -> sourcePreference
+        }
+
+        Log.d(TAG, "===== FETCH LYRICS START: $artist - $title (songId=$songId, forceRefresh=$forceRefresh, source=$finalSourcePreference, songSpecificPreference=$songSpecificPreference) =====")
         
         if (artist.isBlank() || title.isBlank())
             return@withContext LyricsData("No lyrics available for this song", null, null)
@@ -4520,7 +4529,7 @@ class MusicRepository(context: Context) {
 
         // Define source fetchers
         val fetchFromLocal: suspend () -> LyricsData? = {
-            findLocalLyrics(artist, title)
+            findLocalLyrics(artist, title, songId)
         }
         
         val fetchFromEmbedded: suspend () -> LyricsData? = {
@@ -4552,7 +4561,7 @@ class MusicRepository(context: Context) {
         }
         
         // Try sources in order based on preference, with fallback to others
-        val sourceFetchers = when (sourcePreference) {
+        val sourceFetchers = when (finalSourcePreference) {
             LyricsSourcePreference.API_FIRST -> listOf(fetchFromAPI, fetchFromEmbedded, fetchFromLocal)
             LyricsSourcePreference.EMBEDDED_FIRST -> listOf(fetchFromEmbedded, fetchFromAPI, fetchFromLocal)
             LyricsSourcePreference.LOCAL_FIRST -> listOf(fetchFromLocal, fetchFromEmbedded, fetchFromAPI)
@@ -4889,12 +4898,12 @@ class MusicRepository(context: Context) {
      * Finds local lyrics file in app's files directory OR next to the music file
      * Supports both .lrc files (in music folder) and .json cache files (in app folder)
      */
-    private fun findLocalLyrics(artist: String, title: String): LyricsData? {
-        Log.d(TAG, "===== findLocalLyrics START: $artist - $title =====")
+    private fun findLocalLyrics(artist: String, title: String, songId: String? = null): LyricsData? {
+        Log.d(TAG, "===== findLocalLyrics START: $artist - $title (songId=$songId) =====")
         
         // First, check for .lrc file next to the music file
         try {
-            val lrcLyrics = findLrcFileForSong(artist, title)
+            val lrcLyrics = findLrcFileForSong(artist, title, songId)
             if (lrcLyrics != null) {
                 Log.d(TAG, "===== FOUND LOCAL .LRC FILE =====")
                 return lrcLyrics
@@ -4972,7 +4981,7 @@ class MusicRepository(context: Context) {
      * Searches for .lrc file next to the music file
      * Looks for files with same name as the song or generic patterns
      */
-    private fun findLrcFileForSong(artist: String, title: String): LyricsData? {
+    private fun findLrcFileForSong(artist: String, title: String, songId: String? = null): LyricsData? {
         try {
             // Find the song in MediaStore to get its path
             val projection = arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.DATA)
@@ -4996,6 +5005,19 @@ class MusicRepository(context: Context) {
                         val songNameWithoutExt = songFile.nameWithoutExtension
                         
                         if (directory != null && directory.exists()) {
+                            // Check for custom tagged LRC file name
+                            val appSettings = AppSettings.getInstance(context)
+                            val customLrcName = songId?.let { appSettings.getSongCustomLrcFile(it) }
+                            if (customLrcName != null) {
+                                val lyricFile = File(directory, customLrcName)
+                                if (lyricFile.exists() && lyricFile.canRead()) {
+                                    val ext = lyricFile.extension.lowercase()
+                                    val content = lyricFile.readText()
+                                    val parsed = parseLocalLyricsFile(content, ext)
+                                    if (parsed != null) return parsed
+                                }
+                            }
+
                             val extensions = listOf("lrc", "elrc", "ttml", "srt")
                             for (ext in extensions) {
                                 val lyricFile = File(directory, "$songNameWithoutExt.$ext")

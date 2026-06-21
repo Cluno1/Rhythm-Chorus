@@ -845,6 +845,7 @@ fun PlayerScreen(
             lyricsData = lyrics,
             songTitle = song?.title ?: stringResource(R.string.rating_unknown),
             initialTimeOffset = lyricsTimeOffset,
+            song = song,
             onDismiss = { showLyricsEditorDialog = false },
             onSave = { editedLyrics, timeOffset, format ->
                 musicViewModel.saveEditedLyrics(editedLyrics, timeOffset, format)

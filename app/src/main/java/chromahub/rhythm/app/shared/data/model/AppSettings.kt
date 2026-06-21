@@ -551,6 +551,10 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_INITIAL_SETTINGS_SUBROUTE = "initial_settings_subroute"
         private const val KEY_INITIAL_STREAMING_ROUTE = "initial_streaming_route"
         
+        const val KEY_SONG_LYRICS_PREFERENCES = "song_lyrics_preferences"
+        const val KEY_SONG_CUSTOM_LRC_FILES = "song_custom_lrc_files"
+        const val KEY_LRC_RENAME_BEHAVIOR = "lrc_rename_behavior"
+        
         @Volatile
         private var INSTANCE: AppSettings? = null
         
@@ -1081,6 +1085,40 @@ class AppSettings private constructor(context: Context) {
         }
     )
     val songRatings: StateFlow<Map<String, Int>> = _songRatings.asStateFlow()
+
+    // Song Lyrics Preferences - Map of songId to source preference ("online", "embedded", "lrc")
+    private val _songLyricsPreferences = MutableStateFlow<Map<String, String>>(
+        try {
+            val json = prefs.getString(KEY_SONG_LYRICS_PREFERENCES, null)
+            if (json != null) {
+                Gson().fromJson(json, object : TypeToken<Map<String, String>>() {}.type)
+            } else {
+                emptyMap()
+            }
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    )
+    val songLyricsPreferences: StateFlow<Map<String, String>> = _songLyricsPreferences.asStateFlow()
+
+    // Custom LRC Files - Map of songId to custom LRC filename
+    private val _songCustomLrcFiles = MutableStateFlow<Map<String, String>>(
+        try {
+            val json = prefs.getString(KEY_SONG_CUSTOM_LRC_FILES, null)
+            if (json != null) {
+                Gson().fromJson(json, object : TypeToken<Map<String, String>>() {}.type)
+            } else {
+                emptyMap()
+            }
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    )
+    val songCustomLrcFiles: StateFlow<Map<String, String>> = _songCustomLrcFiles.asStateFlow()
+
+    // LRC Rename Behavior - "ask", "always", "never"
+    private val _lrcRenameBehavior = MutableStateFlow(prefs.getString(KEY_LRC_RENAME_BEHAVIOR, "ask") ?: "ask")
+    val lrcRenameBehavior: StateFlow<String> = _lrcRenameBehavior.asStateFlow()
     
     // Enable/Disable Rating System
     private val _enableRatingSystem = MutableStateFlow(prefs.getBoolean(KEY_ENABLE_RATING_SYSTEM, true))
@@ -3953,7 +3991,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             key == KEY_BLACKLISTED_FOLDERS ||
             key == KEY_WHITELISTED_SONGS ||
             key == KEY_WHITELISTED_FOLDERS ||
-            key == KEY_PINNED_FOLDERS
+            key == KEY_PINNED_FOLDERS ||
+            key == KEY_SONG_LYRICS_PREFERENCES ||
+            key == KEY_SONG_CUSTOM_LRC_FILES
     }
 
     private fun isRhythmGuardTransientRuntimeKey(key: String): Boolean {
@@ -4728,6 +4768,179 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _playerShowSongInfoOnArtwork.value = prefs.getBoolean(KEY_PLAYER_SHOW_SONG_INFO_ON_ARTWORK, true)
         _playerArtworkCornerRadius.value = prefs.getInt(KEY_PLAYER_ARTWORK_CORNER_RADIUS, 28)
         _playerShowAudioQualityBadges.value = prefs.getBoolean(KEY_PLAYER_SHOW_AUDIO_QUALITY_BADGES, true)
+        
+        // Lyrics song preferences and renaming behavior
+        _lrcRenameBehavior.value = prefs.getString(KEY_LRC_RENAME_BEHAVIOR, "ask") ?: "ask"
+        _songLyricsPreferences.value = try {
+            val json = prefs.getString(KEY_SONG_LYRICS_PREFERENCES, null)
+            if (json != null) Gson().fromJson(json, object : TypeToken<Map<String, String>>() {}.type) else emptyMap()
+        } catch (e: Exception) { emptyMap() }
+        _songCustomLrcFiles.value = try {
+            val json = prefs.getString(KEY_SONG_CUSTOM_LRC_FILES, null)
+            if (json != null) Gson().fromJson(json, object : TypeToken<Map<String, String>>() {}.type) else emptyMap()
+        } catch (e: Exception) { emptyMap() }
+    }
+
+    fun getSongLyricsPreference(songId: String): String? {
+        return _songLyricsPreferences.value[songId]
+    }
+
+    fun setSongLyricsPreference(songId: String, preference: String?) {
+        val currentPrefs = _songLyricsPreferences.value.toMutableMap()
+        if (preference == null) {
+            currentPrefs.remove(songId)
+        } else {
+            currentPrefs[songId] = preference
+        }
+        _songLyricsPreferences.value = currentPrefs
+        prefs.edit().putString(KEY_SONG_LYRICS_PREFERENCES, Gson().toJson(currentPrefs)).apply()
+    }
+
+    fun getSongCustomLrcFile(songId: String): String? {
+        return _songCustomLrcFiles.value[songId]
+    }
+
+    fun setSongCustomLrcFile(songId: String, path: String?) {
+        val currentFiles = _songCustomLrcFiles.value.toMutableMap()
+        if (path == null) {
+            currentFiles.remove(songId)
+        } else {
+            currentFiles[songId] = path
+        }
+        _songCustomLrcFiles.value = currentFiles
+        prefs.edit().putString(KEY_SONG_CUSTOM_LRC_FILES, Gson().toJson(currentFiles)).apply()
+    }
+
+    fun setLrcRenameBehavior(value: String) {
+        _lrcRenameBehavior.value = value
+        prefs.edit().putString(KEY_LRC_RENAME_BEHAVIOR, value).apply()
+    }
+
+    fun exportLyricsPreferencesToCsv(context: Context, uri: Uri): Boolean {
+        return try {
+            val contentResolver = context.contentResolver
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                val writer = java.io.BufferedWriter(java.io.OutputStreamWriter(outputStream))
+                writer.write("Song ID,Title,Artist,Source Preference,Custom LRC Filename\n")
+                
+                val currentPrefs = _songLyricsPreferences.value
+                val customFiles = _songCustomLrcFiles.value
+                val allSongIds = currentPrefs.keys + customFiles.keys
+                
+                val songMeta = mutableMapOf<String, Pair<String, String>>()
+                try {
+                    val projection = arrayOf(android.provider.MediaStore.Audio.Media._ID, android.provider.MediaStore.Audio.Media.TITLE, android.provider.MediaStore.Audio.Media.ARTIST)
+                    context.contentResolver.query(
+                        android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        projection,
+                        null,
+                        null,
+                        null
+                    )?.use { cursor ->
+                        val idCol = cursor.getColumnIndex(android.provider.MediaStore.Audio.Media._ID)
+                        val titleCol = cursor.getColumnIndex(android.provider.MediaStore.Audio.Media.TITLE)
+                        val artistCol = cursor.getColumnIndex(android.provider.MediaStore.Audio.Media.ARTIST)
+                        while (cursor.moveToNext()) {
+                            val id = cursor.getString(idCol)
+                            val title = cursor.getString(titleCol).orEmpty()
+                            val artist = cursor.getString(artistCol).orEmpty()
+                            songMeta[id] = Pair(title, artist)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("AppSettings", "Error querying song metadata for CSV export", e)
+                }
+
+                for (id in allSongIds) {
+                    val meta = songMeta[id]
+                    val title = meta?.first?.replace("\"", "\"\"") ?: ""
+                    val artist = meta?.second?.replace("\"", "\"\"") ?: ""
+                    val pref = currentPrefs[id] ?: ""
+                    val file = customFiles[id] ?: ""
+                    
+                    writer.write("\"$id\",\"$title\",\"$artist\",\"$pref\",\"$file\"\n")
+                }
+                writer.flush()
+            }
+            true
+        } catch (e: Exception) {
+            Log.e("AppSettings", "Failed to export lyrics preferences to CSV", e)
+            false
+        }
+    }
+
+    fun importLyricsPreferencesFromCsv(context: Context, uri: Uri): Boolean {
+        return try {
+            val contentResolver = context.contentResolver
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                val reader = java.io.BufferedReader(java.io.InputStreamReader(inputStream))
+                val header = reader.readLine() // Read header
+                
+                val currentPrefs = _songLyricsPreferences.value.toMutableMap()
+                val currentFiles = _songCustomLrcFiles.value.toMutableMap()
+                
+                var line = reader.readLine()
+                while (line != null) {
+                    val tokens = parseCsvLine(line)
+                    if (tokens.size >= 5) {
+                        val id = tokens[0].trim()
+                        val pref = tokens[3].trim()
+                        val file = tokens[4].trim()
+                        
+                        if (id.isNotEmpty()) {
+                            if (pref.isNotEmpty()) {
+                                currentPrefs[id] = pref
+                            } else {
+                                currentPrefs.remove(id)
+                            }
+                            
+                            if (file.isNotEmpty()) {
+                                currentFiles[id] = file
+                            } else {
+                                currentFiles.remove(id)
+                            }
+                        }
+                    }
+                    line = reader.readLine()
+                }
+                
+                _songLyricsPreferences.value = currentPrefs
+                prefs.edit().putString(KEY_SONG_LYRICS_PREFERENCES, Gson().toJson(currentPrefs)).apply()
+                
+                _songCustomLrcFiles.value = currentFiles
+                prefs.edit().putString(KEY_SONG_CUSTOM_LRC_FILES, Gson().toJson(currentFiles)).apply()
+            }
+            true
+        } catch (e: Exception) {
+            Log.e("AppSettings", "Failed to import lyrics preferences from CSV", e)
+            false
+        }
+    }
+
+    private fun parseCsvLine(line: String): List<String> {
+        val result = mutableListOf<String>()
+        var inQuotes = false
+        var currentToken = StringBuilder()
+        var i = 0
+        while (i < line.length) {
+            val c = line[i]
+            if (c == '"') {
+                if (inQuotes && i + 1 < line.length && line[i + 1] == '"') {
+                    currentToken.append('"')
+                    i++ // Skip next quote
+                } else {
+                    inQuotes = !inQuotes
+                }
+            } else if (c == ',' && !inQuotes) {
+                result.add(currentToken.toString())
+                currentToken = StringBuilder()
+            } else {
+                currentToken.append(c)
+            }
+            i++
+        }
+        result.add(currentToken.toString())
+        return result
     }
     
     // ==================== Widget Settings ====================

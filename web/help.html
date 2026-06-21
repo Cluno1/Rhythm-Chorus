@@ -411,6 +411,10 @@
                         </ul>
                     </div>
                     <div class="help-item">
+                        <h3>USB DAC Support & Connection Dialogs</h3>
+                        <p><strong>Why does no USB popup appear when I connect my DAC?</strong> Unlike audio players that implement custom user-space USB drivers (which prompt with an OS dialog to bypass the kernel), Rhythm routes audio through Android's native high-resolution audio pathways. Under <strong>App</strong> routing on Android 14+, the app requests exclusive bit-perfect playback directly from the OS <code>AudioManager</code>. Since it uses official native platform APIs, the DAC is connected automatically and silently without displaying a USB permission dialog.</p>
+                    </div>
+                    <div class="help-item">
                         <h3>Lyrics Not Loading</h3>
                         <p>Check internet connection and API settings. Try manual reload in lyrics view. Some tracks may not have lyrics available in LRCLib database.</p>
                     </div>

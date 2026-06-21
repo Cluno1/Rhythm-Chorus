@@ -393,6 +393,15 @@ Before diving into specific issues, try these general fixes:
    - Disconnect all Bluetooth devices
    - Reconnect desired device
 
+### USB DAC Support & Android Popups
+
+**Symptoms:**
+- USB DAC is connected but no Android USB permission dialog (e.g., "Allow Rhythm to access [USB Device]?") appears.
+
+**Explanation & Verification:**
+1. **Silent Native Routing:** Rhythm routes audio to USB DACs natively using standard Android OS audio routing and Android 14's native `setPreferredMixerAttributes` API (App mode). Since this relies on official system-level APIs instead of custom user-space USB drivers, **no USB permission popup is expected or required.** The DAC receives high-resolution playback silently.
+2. **Verify Playback:** You can verify the DAC is active by checking your DAC's hardware LED color/indicator or ensuring "DAC / USB Audio" settings are configured under **Experimental Features** in Settings.
+
 ---
 
 ## 💾 Backup & Restore

@@ -4086,6 +4086,7 @@ fun MaterialPlayerScreen(
             lyricsData = lyrics,
             songTitle = song?.title ?: stringResource(R.string.rating_unknown),
             initialTimeOffset = musicViewModel.lyricsTimeOffset.collectAsState().value,
+            song = song,
             onDismiss = { showLyricsEditorDialog = false },
             onSave = { editedLyrics, timeOffset, format ->
                 // Save lyrics to cache and update current lyrics immediately with offset

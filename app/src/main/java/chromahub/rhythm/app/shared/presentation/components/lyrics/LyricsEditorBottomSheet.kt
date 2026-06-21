@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -76,6 +77,15 @@ import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.LyricsFileUtils
 import chromahub.rhythm.app.util.RhythmLyricsParser
 import chromahub.rhythm.app.shared.data.model.LyricsData
+import chromahub.rhythm.app.shared.data.model.Song
+import chromahub.rhythm.app.shared.data.model.AppSettings
+import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -94,6 +104,7 @@ fun LyricsEditorBottomSheet(
     lyricsData: LyricsData?,
     songTitle: String,
     initialTimeOffset: Int = 0,
+    song: Song? = null,
     onDismiss: () -> Unit,
     onSave: (String, Int, String) -> Unit,
     onRefresh: () -> Unit = {},
@@ -312,6 +323,65 @@ fun LyricsEditorBottomSheet(
         }
     }
 
+    val appSettings = remember { AppSettings.getInstance(context) }
+    val songLyricsPreferences by appSettings.songLyricsPreferences.collectAsState()
+    val songCustomLrcFiles by appSettings.songCustomLrcFiles.collectAsState()
+    val lrcRenameBehavior by appSettings.lrcRenameBehavior.collectAsState()
+
+    var showRenameDialog by remember { mutableStateOf(false) }
+    var pendingUri by remember { mutableStateOf<Uri?>(null) }
+    var pendingFileName by remember { mutableStateOf("") }
+    var pendingExpectedName by remember { mutableStateOf("") }
+    var pendingLyrics by remember { mutableStateOf("") }
+    var rememberChoiceCheckbox by remember { mutableStateOf(false) }
+
+    fun applyLoadedLyrics(loadedLyrics: String) {
+        val loadedTrimmed = loadedLyrics.trim()
+        
+        val isWordByWordJson = (loadedTrimmed.startsWith("[") || loadedTrimmed.startsWith("{")) && 
+            (loadedTrimmed.contains("\"timestamp\"") || loadedTrimmed.contains("\"words\""))
+            
+        val isLrc = loadedLyrics.contains(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]"))
+        
+        if (isWordByWordJson) {
+            editedWordByWord = loadedLyrics
+            editedSource = loadedLyrics
+            try {
+                val parsed = RhythmLyricsParser.parseWordByWordLyrics(loadedLyrics)
+                editedLineByLine = RhythmLyricsParser.toLRCFormat(parsed)
+            } catch (_: Exception) {
+                editedLineByLine = ""
+            }
+        } else if (isLrc) {
+            editedLineByLine = loadedLyrics
+            editedSource = loadedLyrics
+            editedWordByWord = ""
+        } else {
+            editedSource = loadedLyrics
+            editedLineByLine = loadedLyrics
+            editedWordByWord = ""
+        }
+        Toast.makeText(context, R.string.lyrics_loaded_success, Toast.LENGTH_SHORT).show()
+    }
+
+    suspend fun performRename(
+        context: Context,
+        sourceUri: Uri,
+        parentDir: File?,
+        destFileName: String,
+        content: String
+    ): Boolean = withContext(Dispatchers.IO) {
+        if (parentDir == null || !parentDir.exists()) return@withContext false
+        try {
+            val destFile = File(parentDir, destFileName)
+            destFile.writeText(content)
+            true
+        } catch (e: Exception) {
+            Log.e("LyricsEditor", "Failed to write renamed file", e)
+            false
+        }
+    }
+
     // File picker launcher for loading .lrc files
     val loadLyricsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -325,32 +395,45 @@ fun LyricsEditorBottomSheet(
 
                     if (result.lyrics != null) {
                         val loadedLyrics = result.lyrics
-                        val loadedTrimmed = loadedLyrics.trim()
+                        val loadedFileName = getDocumentDisplayName(selectedUri)
                         
-                        val isWordByWordJson = (loadedTrimmed.startsWith("[") || loadedTrimmed.startsWith("{")) && 
-                            (loadedTrimmed.contains("\"timestamp\"") || loadedTrimmed.contains("\"words\""))
+                        if (song != null && song.path != null && loadedFileName != null) {
+                            val songFile = File(song.path)
+                            val songNameWithoutExt = songFile.nameWithoutExtension
+                            val loadedExt = File(loadedFileName).extension.lowercase().ifEmpty { "lrc" }
+                            val expectedLrcName = "$songNameWithoutExt.$loadedExt"
                             
-                        val isLrc = loadedLyrics.contains(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]"))
-                        
-                        if (isWordByWordJson) {
-                            editedWordByWord = loadedLyrics
-                            editedSource = loadedLyrics
-                            try {
-                                val parsed = RhythmLyricsParser.parseWordByWordLyrics(loadedLyrics)
-                                editedLineByLine = RhythmLyricsParser.toLRCFormat(parsed)
-                            } catch (_: Exception) {
-                                editedLineByLine = ""
+                            if (!loadedFileName.equals(expectedLrcName, ignoreCase = true)) {
+                                when (lrcRenameBehavior) {
+                                    "always" -> {
+                                        val success = performRename(context, selectedUri, songFile.parentFile, expectedLrcName, loadedLyrics)
+                                        if (!success) {
+                                            appSettings.setSongCustomLrcFile(song.id, loadedFileName)
+                                            Toast.makeText(context, "Could not rename (permission denied). Tagged custom file instead.", Toast.LENGTH_LONG).show()
+                                        } else {
+                                            Toast.makeText(context, "File renamed to $expectedLrcName successfully.", Toast.LENGTH_SHORT).show()
+                                        }
+                                        applyLoadedLyrics(loadedLyrics)
+                                    }
+                                    "never" -> {
+                                        appSettings.setSongCustomLrcFile(song.id, loadedFileName)
+                                        applyLoadedLyrics(loadedLyrics)
+                                    }
+                                    else -> { // "ask"
+                                        pendingUri = selectedUri
+                                        pendingFileName = loadedFileName
+                                        pendingExpectedName = expectedLrcName
+                                        pendingLyrics = loadedLyrics
+                                        rememberChoiceCheckbox = false
+                                        showRenameDialog = true
+                                    }
+                                }
+                            } else {
+                                applyLoadedLyrics(loadedLyrics)
                             }
-                        } else if (isLrc) {
-                            editedLineByLine = loadedLyrics
-                            editedSource = loadedLyrics
-                            editedWordByWord = ""
                         } else {
-                            editedSource = loadedLyrics
-                            editedLineByLine = loadedLyrics
-                            editedWordByWord = ""
+                            applyLoadedLyrics(loadedLyrics)
                         }
-                        Toast.makeText(context, R.string.lyrics_loaded_success, Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(
                             context,
@@ -436,6 +519,190 @@ fun LyricsEditorBottomSheet(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            if (song != null) {
+                val songId = song.id
+                val currentPref = songLyricsPreferences[songId]
+                val customLrc = songCustomLrcFiles[songId]
+                
+                var dropdownExpanded by remember { mutableStateOf(false) }
+                
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Source Preference",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = when (currentPref) {
+                                    "online" -> "Online first"
+                                    "embedded" -> "Embedded first"
+                                    "lrc" -> "Local LRC file first"
+                                    else -> "Default (App settings)"
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Box {
+                            FilledTonalButton(
+                                onClick = { dropdownExpanded = true },
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("Change")
+                                Icon(
+                                    imageVector = MaterialSymbolIcon("arrow_drop_down", filled = true),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = dropdownExpanded,
+                                onDismissRequest = { dropdownExpanded = false },
+                                modifier = Modifier
+                                    .widthIn(min = 220.dp)
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .padding(4.dp),
+                                shape = RoundedCornerShape(20.dp)
+                            ) {
+                                val options = listOf(
+                                    Triple(null, "Default (App settings)", "settings"),
+                                    Triple("online", "Online first", "cloud"),
+                                    Triple("embedded", "Embedded first", "music_note"),
+                                    Triple("lrc", "Local LRC file first", "storage")
+                                )
+                                
+                                val outerRadius = 16.dp
+                                val innerRadius = 4.dp
+                                val itemSpacing = 3.dp
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalArrangement = Arrangement.spacedBy(itemSpacing)
+                                ) {
+                                    options.forEachIndexed { index, (prefValue, label, iconName) ->
+                                        val itemShape = when {
+                                            options.size == 1 -> RoundedCornerShape(outerRadius)
+                                            index == 0 -> RoundedCornerShape(
+                                                topStart = outerRadius, topEnd = outerRadius,
+                                                bottomStart = innerRadius, bottomEnd = innerRadius
+                                            )
+                                            index == options.size - 1 -> RoundedCornerShape(
+                                                topStart = innerRadius, topEnd = innerRadius,
+                                                bottomStart = outerRadius, bottomEnd = outerRadius
+                                            )
+                                            else -> RoundedCornerShape(innerRadius)
+                                        }
+
+                                        Surface(
+                                            onClick = {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                appSettings.setSongLyricsPreference(songId, prefValue)
+                                                dropdownExpanded = false
+                                            },
+                                            shape = itemShape,
+                                            color = MaterialTheme.colorScheme.surfaceContainer,
+                                            contentColor = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Surface(
+                                                    modifier = Modifier.size(28.dp),
+                                                    shape = CircleShape,
+                                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                                                ) {
+                                                    Box(
+                                                        contentAlignment = Alignment.Center,
+                                                        modifier = Modifier.fillMaxSize()
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = MaterialSymbolIcon(iconName, filled = true),
+                                                            contentDescription = null,
+                                                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                            modifier = Modifier.size(16.dp)
+                                                        )
+                                                    }
+                                                }
+
+                                                Spacer(modifier = Modifier.width(10.dp))
+
+                                                Text(
+                                                    text = label,
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    fontWeight = FontWeight.Medium,
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (customLrc != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceContainerLowest, RoundedCornerShape(8.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                modifier = Modifier.weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = MaterialSymbolIcon("description", filled = true),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = customLrc,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    appSettings.setSongCustomLrcFile(songId, null)
+                                },
+                                modifier = Modifier.height(32.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text("Clear", style = MaterialTheme.typography.labelMedium)
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             // Format Selector Button Group like Theme Switcher
             AnimatedVisibility(
@@ -896,11 +1163,116 @@ fun LyricsEditorBottomSheet(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(context.getString(R.string.bottomsheet_lyrics_embed))
                         }
-                    }
                 }
             }
         }
+
+        if (showRenameDialog && song != null) {
+            AlertDialog(
+                onDismissRequest = { 
+                    showRenameDialog = false 
+                    appSettings.setSongCustomLrcFile(song.id, pendingFileName)
+                    applyLoadedLyrics(pendingLyrics)
+                },
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon("drive_file_rename_outline", filled = true),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Text(
+                            text = "Rename LRC File?",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                text = {
+                    Column {
+                        Text(
+                            text = "The loaded LRC file name '$pendingFileName' is different from the song's file name. Would you like to rename it to match the song or associate it as a custom tagged file?",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = rememberChoiceCheckbox,
+                                onCheckedChange = { rememberChoiceCheckbox = it }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Remember my choice (Don't ask again)",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showRenameDialog = false
+                            if (rememberChoiceCheckbox) {
+                                appSettings.setLrcRenameBehavior("always")
+                            }
+                            scope.launch {
+                                val songFile = File(song.path!!)
+                                val success = performRename(context, pendingUri!!, songFile.parentFile, pendingExpectedName, pendingLyrics)
+                                if (!success) {
+                                    appSettings.setSongCustomLrcFile(song.id, pendingFileName)
+                                    Toast.makeText(context, "Could not rename (permission denied). Tagged custom file instead.", Toast.LENGTH_LONG).show()
+                                } else {
+                                    Toast.makeText(context, "File renamed successfully.", Toast.LENGTH_SHORT).show()
+                                }
+                                applyLoadedLyrics(pendingLyrics)
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon("drive_file_rename_outline", filled = true),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Rename")
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {
+                            showRenameDialog = false
+                            if (rememberChoiceCheckbox) {
+                                appSettings.setLrcRenameBehavior("never")
+                            }
+                            appSettings.setSongCustomLrcFile(song.id, pendingFileName)
+                            applyLoadedLyrics(pendingLyrics)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon("label", filled = true),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Tag / Keep custom")
+                    }
+                }
+            )
+        }
     }
+}
 }
 
 @Composable

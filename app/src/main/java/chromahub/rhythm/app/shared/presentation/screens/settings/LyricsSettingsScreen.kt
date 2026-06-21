@@ -170,6 +170,38 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
     val lyricsSourcePreference by appSettings.lyricsSourcePreference.collectAsState()
     var showPriorityBottomSheet by remember { mutableStateOf(false) }
 
+    val scope = rememberCoroutineScope()
+
+    val exportCsvLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                val success = appSettings.exportLyricsPreferencesToCsv(context, it)
+                if (success) {
+                    Toast.makeText(context, "Exported successfully", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Export failed", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    val importCsvLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                val success = appSettings.importLyricsPreferencesFromCsv(context, it)
+                if (success) {
+                    Toast.makeText(context, "Imported successfully", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Import failed", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
     val showLyrics by appSettings.showLyrics.collectAsState()
     val tapLyricsToFullScreen by appSettings.tapLyricsToFullScreen.collectAsState()
     val keepScreenOnLyrics by appSettings.keepScreenOnLyrics.collectAsState()
@@ -642,6 +674,67 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
                                 toggleState = translationAutoWord,
                                 onToggleChange = { appSettings.setTranslationAutoWord(it) }
                             )
+                        )
+                    ),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+            }
+
+            // Lyrics File & Data Management
+            item {
+                val lrcRenameBehavior by appSettings.lrcRenameBehavior.collectAsState()
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Lyrics File & Data Management",
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                )
+
+                Material3SettingsGroup(
+                    items = listOf(
+                        Material3SettingsItem(
+                            icon = MaterialSymbolIcon("drive_file_rename_outline"),
+                            title = { Text("LRC Rename Behavior") },
+                            description = {
+                                Text(
+                                    text = when (lrcRenameBehavior) {
+                                        "always" -> "Always rename to match song"
+                                        "never" -> "Never rename (always tag)"
+                                        else -> "Ask every time"
+                                    }
+                                )
+                            },
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                                val nextBehavior = when (lrcRenameBehavior) {
+                                    "ask" -> "always"
+                                    "always" -> "never"
+                                    else -> "ask"
+                                }
+                                appSettings.setLrcRenameBehavior(nextBehavior)
+                            }
+                        ),
+                        Material3SettingsItem(
+                            icon = MaterialSymbolIcon("upload"),
+                            title = { Text("Export Lyrics Preferences") },
+                            description = { Text("Backup song-specific source settings and custom tags to CSV") },
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.HEAVY)
+                                exportCsvLauncher.launch("rhythm_lyrics_preferences.csv")
+                            }
+                        ),
+                        Material3SettingsItem(
+                            icon = MaterialSymbolIcon("download"),
+                            title = { Text("Import Lyrics Preferences") },
+                            description = { Text("Restore song-specific source settings and custom tags from CSV") },
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.HEAVY)
+                                importCsvLauncher.launch("*/*")
+                            }
                         )
                     ),
                     containerColor = MaterialTheme.colorScheme.surfaceContainer

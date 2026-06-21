@@ -76,6 +76,12 @@ Yes! Rhythm includes:
 - Import/export custom profiles
 - Bass boost and virtualizer effects
 
+### Does Rhythm support USB DACs / bit-perfect playback?
+
+Yes! Rhythm supports USB DACs natively:
+- **Android 14+ (Bit-Perfect Mode):** If you enable **App** routing under Settings → Audio, Rhythm requests exclusive bit-perfect USB routing via the native Android `setPreferredMixerAttributes` API on supported devices.
+- **Why is there no USB popup?** Rhythm plays audio through the Android system's native high-resolution audio pathways rather than bypassing the OS with a custom user-space driver. Since it goes through official APIs, the DAC is connected automatically and silently without displaying a USB permission dialog.
+
 ---
 
 ## 🎤 Lyrics
