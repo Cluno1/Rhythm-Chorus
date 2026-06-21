@@ -4,6 +4,19 @@ import sys
 import subprocess
 from datetime import datetime
 
+def input_with_default(prompt, default):
+    try:
+        import readline
+        readline.set_startup_hook(lambda: readline.insert_text(default))
+        try:
+            val = input(prompt)
+            return val if val else default
+        finally:
+            readline.set_startup_hook()
+    except ImportError:
+        val = input(f"{prompt} [{default}]: ").strip().replace("\ufeff", "")
+        return val if val else default
+
 # Path constants
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD_GRADLE_PATH = os.path.join(ROOT_DIR, "app", "build.gradle.kts")
@@ -82,15 +95,16 @@ def extract_unreleased_changelog():
     section = match.group(1).strip()
     return section
 
-def get_commits_since_last_tag():
+def get_commits_since_last_tag(previous_tag=None):
     try:
-        # Get the last tag name
-        last_tag = subprocess.check_output(
-            ["git", "describe", "--tags", "--abbrev=0"],
-            stderr=subprocess.DEVNULL
-        ).decode("utf-8").strip()
-        log_cmd = ["git", "log", f"{last_tag}..HEAD", "--oneline"]
-        print(f"Fetching commits since last tag: {last_tag}")
+        if not previous_tag:
+            # Get the last tag name
+            previous_tag = subprocess.check_output(
+                ["git", "describe", "--tags", "--abbrev=0"],
+                stderr=subprocess.DEVNULL
+            ).decode("utf-8").strip()
+        log_cmd = ["git", "log", f"{previous_tag}..HEAD", "--oneline"]
+        print(f"Fetching commits since tag: {previous_tag}")
     except Exception:
         # Fallback if no tags exist
         log_cmd = ["git", "log", "--oneline"]
@@ -219,9 +233,7 @@ def main():
     
     # Suggest version name based on date-derived patch and commit count build
     suggested_name = suggest_version_name(release_type)
-    new_version_name = input(f"Enter the new version name (default: {suggested_name}): ").strip().replace("\ufeff", "")
-    if not new_version_name:
-        new_version_name = suggested_name
+    new_version_name = input_with_default("Enter the new version name", suggested_name)
     new_version_name = new_version_name.replace("\\", "").strip()
         
     try:
@@ -252,12 +264,40 @@ def main():
             source_choice = "1"
             
     if source_choice != "2":
-        commits = get_commits_since_last_tag()
+        # Get recent tags to prompt the user
+        try:
+            tags_output = subprocess.check_output(
+                ["git", "tag", "--sort=-v:refname"],
+                stderr=subprocess.DEVNULL
+            ).decode("utf-8").strip().splitlines()
+            recent_tags = [t.strip() for t in tags_output if t.strip()][:5]
+        except Exception:
+            recent_tags = []
+
+        selected_tag = None
+        if recent_tags:
+            print("\nSelect the previous tag to generate changelog from:")
+            for idx, tag in enumerate(recent_tags):
+                print(f"  {idx + 1}. {tag}")
+            print(f"  {len(recent_tags) + 1}. Custom tag name / branch / commit")
+            
+            choice = input(f"Select option [1-{len(recent_tags) + 1}] (default: 1): ").strip().replace("\ufeff", "")
+            if not choice:
+                selected_tag = recent_tags[0]
+            elif choice.isdigit() and 1 <= int(choice) <= len(recent_tags):
+                selected_tag = recent_tags[int(choice) - 1]
+            elif choice.isdigit() and int(choice) == len(recent_tags) + 1:
+                selected_tag = input("Enter custom tag name or commit/branch: ").strip().replace("\ufeff", "")
+            else:
+                # User typed a tag/branch/commit name directly
+                selected_tag = choice
+                
+        commits = get_commits_since_last_tag(selected_tag)
         if commits:
             print(f"Found {len(commits)} commits.")
             raw_unreleased = "### Added\n" + "\n".join([f"- {c}" for c in commits])
         else:
-            print("No commits found since last tag.")
+            print("No commits found.")
             raw_unreleased = "### Added\n- Minor bug fixes and performance improvements."
         
     # Format Fastlane changelog

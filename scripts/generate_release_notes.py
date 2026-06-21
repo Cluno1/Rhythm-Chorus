@@ -71,22 +71,22 @@ def clean_changelog_content(raw_notes):
                 
     return cleaned_items
 
-def get_commits_between_tags(current_tag):
+def get_commits_between_tags(current_tag, previous_tag=None):
     try:
-        # Get list of tags sorted by version
-        tags_output = subprocess.check_output(
-            ["git", "tag", "--sort=-v:refname"],
-            stderr=subprocess.DEVNULL
-        ).decode("utf-8").strip().splitlines()
-        
-        tags = [t.strip() for t in tags_output if t.strip()]
-        
-        previous_tag = None
-        if current_tag in tags:
-            idx = tags.index(current_tag)
-            # Find the next older tag
-            if idx + 1 < len(tags):
-                previous_tag = tags[idx + 1]
+        if not previous_tag:
+            # Get list of tags sorted by version
+            tags_output = subprocess.check_output(
+                ["git", "tag", "--sort=-v:refname"],
+                stderr=subprocess.DEVNULL
+            ).decode("utf-8").strip().splitlines()
+            
+            tags = [t.strip() for t in tags_output if t.strip()]
+            
+            if current_tag in tags:
+                idx = tags.index(current_tag)
+                # Find the next older tag
+                if idx + 1 < len(tags):
+                    previous_tag = tags[idx + 1]
                 
         if previous_tag:
             log_cmd = ["git", "log", f"{previous_tag}..{current_tag}", "--oneline"]
@@ -114,11 +114,12 @@ def get_commits_between_tags(current_tag):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python generate_release_notes.py <tag_name> [commit_sha]")
+        print("Usage: python generate_release_notes.py <tag_name> [commit_sha] [previous_tag]")
         sys.exit(1)
         
     tag_name = sys.argv[1]
     commit_sha = sys.argv[2] if len(sys.argv) > 2 else os.environ.get("GITHUB_SHA", "unknown")
+    custom_prev_tag = sys.argv[3] if len(sys.argv) > 3 else None
     
     is_beta = "beta" in tag_name.lower() or "alpha" in tag_name.lower() or "rc" in tag_name.lower()
     
@@ -137,7 +138,7 @@ def main():
                     
     if not bullets:
         print("No changelog entries found in docs/CHANGELOG.md. Fetching commits since the previous tag...")
-        commits = get_commits_between_tags(tag_name)
+        commits = get_commits_between_tags(tag_name, custom_prev_tag)
         if commits:
             bullets = [f"- **Added:** {c}" for c in commits]
         else:
