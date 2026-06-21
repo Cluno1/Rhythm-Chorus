@@ -402,7 +402,8 @@ object LyricsParser {
                     text = cleanedText,
                     voiceTag = voiceTag ?: mainLine.speaker?.name?.lowercase(),
                     translation = translation,
-                    romanization = romanization
+                    romanization = romanization,
+                    endTime = if (mainLine.end > 0uL && !mainLine.endIsImplicit) mainLine.end.toLong() else null
                 )
             }.sortedBy { it.timestamp }
         }
@@ -583,7 +584,8 @@ data class LyricLine(
     val text: String,
     val voiceTag: String? = null, // Voice tag (v1, v2, v3, etc.) for multi-voice lyrics
     val translation: String? = null, // Translation text (if present)
-    val romanization: String? = null // Romanization text (if present)
+    val romanization: String? = null, // Romanization text (if present)
+    val endTime: Long? = null
 )
 
 /**

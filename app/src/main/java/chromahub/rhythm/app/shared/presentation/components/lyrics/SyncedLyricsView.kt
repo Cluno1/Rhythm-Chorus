@@ -94,18 +94,33 @@ private fun buildSyncedLyricsItems(lines: List<LyricLine>): List<SyncedLyricsIte
                 val nextLine = filtered[idx + 1].second
                 val intervalToNext = nextLine.timestamp - line.timestamp
 
-                if (intervalToNext >= longGapThreshold) {
-                    val gapStart = line.timestamp + vocalEstimate
-                    val gapDuration = (nextLine.timestamp - gapStart).coerceAtLeast(0L)
-
-                    if (gapDuration >= 1800L) {
-                        add(
-                            SyncedLyricsItem.Gap(
-                                duration = gapDuration,
-                                startTime = gapStart
-                            )
-                        )
+                var explicitGapStart: Long? = line.endTime
+                if (explicitGapStart == null) {
+                    for (i in origIdx + 1 until filtered[idx + 1].first) {
+                        if (lines[i].text.isBlank()) {
+                            explicitGapStart = lines[i].timestamp
+                            break
+                        }
                     }
+                }
+
+                val hasExplicitGap = explicitGapStart != null
+                val gapStart = explicitGapStart ?: (line.timestamp + vocalEstimate)
+                val gapDuration = (nextLine.timestamp - gapStart).coerceAtLeast(0L)
+
+                val shouldAddGap = if (hasExplicitGap) {
+                    gapDuration >= 1800L
+                } else {
+                    intervalToNext >= longGapThreshold && gapDuration >= 1800L
+                }
+
+                if (shouldAddGap) {
+                    add(
+                        SyncedLyricsItem.Gap(
+                            duration = gapDuration,
+                            startTime = gapStart
+                        )
+                    )
                 }
             }
         }
