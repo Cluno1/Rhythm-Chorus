@@ -121,12 +121,13 @@ jobs:
 
           RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
 
-          CAPTION="${BADGE}
-
-🏷️ *Tag:* \`${{ github.ref_name }}\`
-📅 *Date:* \`$(date +%Y-%m-%d)\`
-
-[📥 View Full Release & Changelog](${RELEASE_URL})"
+          CAPTION="${BADGE}"
+          CAPTION+=$'\n\n'
+          CAPTION+="🏷️ *Tag:* \`${{ github.ref_name }}\`"
+          CAPTION+=$'\n'
+          CAPTION+="📅 *Date:* \`$(date +%Y-%m-%d)\`"
+          CAPTION+=$'\n\n'
+          CAPTION+="[📥 View Full Release & Changelog](${RELEASE_URL})"
 
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
             -F "chat_id=${TELEGRAM_CHAT_ID}" \

@@ -123,16 +123,19 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          CAPTION="🎵 *Rhythm Beta Build*
-
-📦 *Version:* \`${{ steps.version_info.outputs.name }}\`
-🔢 *Build \#:* \`${{ steps.version_info.outputs.commit_count }}\`
-🔗 *Commit:* \`${{ steps.version_info.outputs.short_sha }}\`
-📅 *Date:* \`$(date +%Y-%m-%d)\`
-
-⚠️ _This is a beta build\. Report issues on GitHub\._
-
-[🔍 View Actions Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          CAPTION="🎵 *Rhythm Beta Build*"
+          CAPTION+=$'\n\n'
+          CAPTION+="📦 *Version:* \`${{ steps.version_info.outputs.name }}\`"
+          CAPTION+=$'\n'
+          CAPTION+="🔢 *Build \#:* \`${{ steps.version_info.outputs.commit_count }}\`"
+          CAPTION+=$'\n'
+          CAPTION+="🔗 *Commit:* \`${{ steps.version_info.outputs.short_sha }}\`"
+          CAPTION+=$'\n'
+          CAPTION+="📅 *Date:* \`$(date +%Y-%m-%d)\`"
+          CAPTION+=$'\n\n'
+          CAPTION+="⚠️ _This is a beta build\. Report issues on GitHub\._"
+          CAPTION+=$'\n\n'
+          CAPTION+="[🔍 View Actions Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
 
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
             -F "chat_id=${TELEGRAM_CHAT_ID}" \
