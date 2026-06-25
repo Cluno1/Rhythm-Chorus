@@ -15,6 +15,9 @@ import java.util.zip.ZipOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
+// Marker exception used to signal a Rhythm backup file was selected in the single-playlist import flow
+class RhythmBackupDetectedException(val backupJson: String) : Exception("Rhythm backup file detected")
+
 /**
  * Utility class for importing and exporting playlists in various formats
  */
@@ -208,7 +211,71 @@ object PlaylistImportExportUtils {
     }
     
     /**
-     * Imports a playlist from a file
+     * Returns true when the given JSON string is a Rhythm app backup
+     * (i.e. it contains the "backup_version" and "playlists_data" keys).
+     */
+    fun isRhythmBackupJson(json: String): Boolean {
+        return try {
+            val map = Gson().fromJson(json, Map::class.java) as? Map<*, *> ?: return false
+            map.containsKey("backup_version") && map.containsKey("playlists_data")
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Imports ALL playlists from a Rhythm app backup JSON.
+     *
+     * A Rhythm backup stores playlists as a `List<Playlist>` JSON string under the
+     * `playlists_data` key.  Each song's URI is matched against [availableSongs] so that
+     * only locally-present tracks are kept.
+     */
+    fun importPlaylistsFromRhythmBackup(
+        context: Context,
+        backupJson: String,
+        availableSongs: List<Song>
+    ): Result<List<Playlist>> {
+        return try {
+            val backupMap = Gson().fromJson(backupJson, Map::class.java) as? Map<*, *>
+                ?: return Result.failure(IllegalArgumentException("Invalid Rhythm backup JSON"))
+
+            val playlistsData = backupMap["playlists_data"] as? String
+                ?: return Result.failure(IllegalArgumentException("No playlist data found in backup"))
+
+            val type = object : TypeToken<List<Playlist>>() {}.type
+            val rawPlaylists: List<Playlist> = GsonUtils.gson.fromJson(playlistsData, type)
+                ?: return Result.failure(IllegalArgumentException("Failed to parse playlists from backup"))
+
+            // Build a URI -> Song lookup for fast matching
+            val songByUri = availableSongs.associateBy { it.uri.toString() }
+
+            val restoredPlaylists = rawPlaylists.map { playlist ->
+                val matchedSongs = playlist.songs.mapNotNull { song ->
+                    // Primary: match by URI (fast, exact)
+                    songByUri[song.uri.toString()]
+                        // Fallback: match by title + artist (handles URI changes across reinstalls)
+                        ?: availableSongs.find { available ->
+                            available.title.equals(song.title, ignoreCase = true) &&
+                            available.artist.equals(song.artist, ignoreCase = true)
+                        }
+                }
+                playlist.copy(songs = matchedSongs)
+            }
+
+            Log.d(TAG, "Imported ${restoredPlaylists.size} playlists from Rhythm backup")
+            Result.success(restoredPlaylists)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error importing playlists from Rhythm backup", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Imports a playlist from a file.
+     *
+     * If the selected file is a full Rhythm app backup (detected via [isRhythmBackupJson]),
+     * a [RhythmBackupDetectedException] is thrown so that the caller can redirect to
+     * [importPlaylistsFromRhythmBackup] for batch import.
      */
     fun importPlaylist(
         context: Context,
@@ -225,12 +292,18 @@ object PlaylistImportExportUtils {
             }
             val fileName = getFileName(context, uri)
             
+            // Detect Rhythm backup files early so the ViewModel can handle batch import
+            val trimmedContent = content.trim()
+            if ((fileName.endsWith(".json", true) || (trimmedContent.startsWith("{") && trimmedContent.endsWith("}"))) &&
+                isRhythmBackupJson(trimmedContent)) {
+                throw RhythmBackupDetectedException(trimmedContent)
+            }
+
             val filePathMap = buildFilePathToSongMap(context, availableSongs)
             val m3uDirectory = getM3uDirectoryPath(context, uri)
             
             Log.d(TAG, "Importing playlist: $fileName, M3U directory: $m3uDirectory")
             
-            val trimmedContent = content.trim()
             val resolvedFormat = when {
                 fileName.endsWith(".json", true) || (trimmedContent.startsWith("{") && trimmedContent.endsWith("}")) -> "json"
                 fileName.endsWith(".m3u", true) || fileName.endsWith(".m3u8", true) || trimmedContent.startsWith("#EXTM3U", true) -> "m3u"
@@ -247,6 +320,9 @@ object PlaylistImportExportUtils {
             
             Log.d(TAG, "Successfully imported playlist '${playlist.name}' with ${playlist.songs.size} songs")
             Result.success(playlist)
+        } catch (e: RhythmBackupDetectedException) {
+            // Re-throw so the ViewModel can redirect to batch import
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Error importing playlist from $uri", e)
             Result.failure(e)

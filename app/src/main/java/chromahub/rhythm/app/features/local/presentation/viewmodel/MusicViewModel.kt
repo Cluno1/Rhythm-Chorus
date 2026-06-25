@@ -51,6 +51,7 @@ import chromahub.rhythm.app.util.EqualizerUtils
 import chromahub.rhythm.app.util.GsonUtils
 import chromahub.rhythm.app.util.MediaUtils
 import chromahub.rhythm.app.util.PlaylistImportExportUtils
+import chromahub.rhythm.app.util.RhythmBackupDetectedException
 import chromahub.rhythm.app.util.PlaybackCommandSerializer
 import chromahub.rhythm.app.util.RhythmLyricsParser
 import com.google.common.util.concurrent.ListenableFuture
@@ -6055,7 +6056,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
     
     /**
-     * Imports a playlist from a file URI
+     * Imports a playlist from a file URI.
+     *
+     * Handles three cases:
+     *  1. A regular single-playlist file (JSON/M3U/PLS) → single-playlist import as before.
+     *  2. A Rhythm app backup JSON → batch import of ALL playlists in the backup.
+     *  3. Any other error → failure callback.
      */
     fun importPlaylist(
         uri: Uri,
@@ -6146,6 +6152,69 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         )
                     }
                 )
+            } catch (e: RhythmBackupDetectedException) {
+                // The selected file is a full Rhythm app backup — import ALL playlists from it
+                Log.d(TAG, "Rhythm backup detected during playlist import; switching to batch import")
+                try {
+                    val batchResult = withContext(Dispatchers.IO) {
+                        PlaylistImportExportUtils.importPlaylistsFromRhythmBackup(
+                            context = getApplication<Application>(),
+                            backupJson = e.backupJson,
+                            availableSongs = _songs.value
+                        )
+                    }
+
+                    batchResult.fold(
+                        onSuccess = { importedPlaylists ->
+                            val existingNames = _playlists.value.map { it.name }.toSet()
+                            val dedupedPlaylists = importedPlaylists.map { playlist ->
+                                if (existingNames.contains(playlist.name)) {
+                                    playlist.copy(name = "${playlist.name} (Imported)")
+                                } else {
+                                    playlist
+                                }
+                            }
+
+                            _playlists.value = _playlists.value + dedupedPlaylists
+                            savePlaylists()
+
+                            val playlistCount = dedupedPlaylists.size
+                            val totalSongs = dedupedPlaylists.sumOf { it.songs.size }
+                            Log.d(TAG, "Batch import from Rhythm backup: $playlistCount playlists, $totalSongs songs")
+
+                            val message = "Successfully imported $playlistCount playlist(s) with $totalSongs song(s) from Rhythm backup."
+                            onResult(Result.success(message))
+                            showOperationResultNotification(
+                                notificationId = PLAYLIST_IMPORT_NOTIFICATION_ID,
+                                title = context.getString(R.string.notification_playlist_import_title),
+                                content = message,
+                                isError = false
+                            )
+                            onRestartRequired?.invoke()
+                        },
+                        onFailure = { exception ->
+                            Log.e(TAG, "Failed batch import from Rhythm backup", exception)
+                            onResult(Result.failure(exception))
+                            showOperationResultNotification(
+                                notificationId = PLAYLIST_IMPORT_NOTIFICATION_ID,
+                                title = context.getString(R.string.notification_playlist_import_title),
+                                content = context.getString(R.string.notification_playlist_import_failed),
+                                isError = true,
+                                autoDismissMs = 8000L
+                            )
+                        }
+                    )
+                } catch (batchEx: Exception) {
+                    Log.e(TAG, "Error during batch import from Rhythm backup", batchEx)
+                    onResult(Result.failure(batchEx))
+                    showOperationResultNotification(
+                        notificationId = PLAYLIST_IMPORT_NOTIFICATION_ID,
+                        title = context.getString(R.string.notification_playlist_import_title),
+                        content = context.getString(R.string.notification_playlist_import_failed),
+                        isError = true,
+                        autoDismissMs = 8000L
+                    )
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error in importPlaylist", e)
                 onResult(Result.failure(e))
