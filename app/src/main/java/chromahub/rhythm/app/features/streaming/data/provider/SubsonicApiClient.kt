@@ -28,7 +28,7 @@ class SubsonicApiClient(context: Context) {
     @Volatile
     private var credentials: Credentials? = loadCredentials()
 
-    private val okHttpClient = OkHttpClient.Builder()
+    private val okHttpClient = UserTrustManager.buildUserTrustingHttpClientBuilder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(15, TimeUnit.SECONDS)

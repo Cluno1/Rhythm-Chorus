@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network Security Configuration
+    Allows the app to trust both system CAs and user-installed CAs (e.g. custom CA
+    imported into Android for self-signed / private PKI Navidrome/Jellyfin setups).
+
+    Without <certificates src="user"/>, OkHttp's default TrustManager only honours
+    system-pre-installed CAs even though Android itself shows the certificate as
+    trusted, causing:
+        java.security.cert.CertPathValidatorException:
+            Trust anchor for certification path not found.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <!-- Trust pre-installed system CAs (default behaviour) -->
+            <certificates src="system" />
+            <!-- Also trust user-installed CAs so custom/self-signed root CAs work -->
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
