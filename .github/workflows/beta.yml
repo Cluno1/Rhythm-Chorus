@@ -109,7 +109,8 @@ jobs:
             echo "No APK found — skipping notifications."
             echo "path=" >> $GITHUB_OUTPUT
           else
-            echo "path=$APK_PATH" >> $GITHUB_OUTPUT
+            cp "$APK_PATH" /tmp/rhythm-beta.apk
+            echo "path=/tmp/rhythm-beta.apk" >> $GITHUB_OUTPUT
             echo "Found APK: $APK_PATH"
           fi
 
