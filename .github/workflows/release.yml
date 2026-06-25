@@ -74,6 +74,7 @@ jobs:
         run: python scripts/generate_release_notes.py "${{ github.ref_name }}" "${{ github.sha }}"
 
       - name: Github Release
+        id: gh_release
         uses: softprops/action-gh-release@v2
         with:
           prerelease: ${{ steps.prerelease.outputs.value }}
@@ -85,3 +86,125 @@ jobs:
             app/build/outputs/apk/fdroid/release/Rhythm-*-fdroidRelease*.apk
             app/build/outputs/apk/fdroid/release/Rhythm-*-fdroidRelease*.apk.sha256
             app/build/outputs/apk/fdroid/release/Rhythm-*-fdroidRelease*.apk.md5
+
+      # ── Notifications ────────────────────────────────────────────────────────
+
+      - name: Locate GitHub-flavor Release APK
+        if: success()
+        id: find_apk
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/github/release -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "No APK found — skipping notifications."
+            echo "path=" >> $GITHUB_OUTPUT
+          else
+            echo "path=$APK_PATH" >> $GITHUB_OUTPUT
+            echo "Found APK: $APK_PATH"
+          fi
+
+      - name: Send Release APK to Telegram
+        if: >
+          success() &&
+          steps.find_apk.outputs.path != '' &&
+          secrets.TELEGRAM_BOT_TOKEN != '' &&
+          secrets.TELEGRAM_CHAT_ID != ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          IS_BETA="${{ steps.prerelease.outputs.value }}"
+          if [ "$IS_BETA" = "true" ]; then
+            BADGE="🔶 *Rhythm Beta Release*"
+          else
+            BADGE="✅ *Rhythm Stable Release*"
+          fi
+
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
+
+          CAPTION="${BADGE}
+
+🏷️ *Tag:* \`${{ github.ref_name }}\`
+📅 *Date:* \`$(date +%Y-%m-%d)\`
+
+[📥 View Full Release & Changelog](${RELEASE_URL})"
+
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+            -F "chat_id=${TELEGRAM_CHAT_ID}" \
+            -F "document=@${{ steps.find_apk.outputs.path }}" \
+            -F "caption=${CAPTION}" \
+            -F "parse_mode=MarkdownV2" \
+            | tee /tmp/tg_response.json \
+            && grep -q '"ok":true' /tmp/tg_response.json \
+            && echo "✅ Telegram notification sent." \
+            || { echo "❌ Telegram notification failed:"; cat /tmp/tg_response.json; exit 1; }
+
+      - name: Send Release notification to Discord
+        if: >
+          success() &&
+          secrets.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          IS_BETA="${{ steps.prerelease.outputs.value }}"
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
+          RELEASE_DATE="$(date +%Y-%m-%d)"
+
+          if [ "$IS_BETA" = "true" ]; then
+            EMBED_COLOR=16744272   # orange #FF8010
+            EMBED_TITLE="🔶 Rhythm Beta Release"
+            EMBED_DESC="A new **beta release** of Rhythm is now available on GitHub!"
+            NOTE="This is a **beta/pre-release** build. Please report issues on [GitHub Issues](https://github.com/${{ github.repository }}/issues)."
+          else
+            EMBED_COLOR=5763719    # green #57F287
+            EMBED_TITLE="✅ Rhythm Stable Release"
+            EMBED_DESC="A new **stable release** of Rhythm is now available — update recommended!"
+            NOTE="Turn on **Auto-Backup** in Settings so you can always recover your data."
+          fi
+
+          cat > /tmp/discord_payload.json <<EOF
+          {
+            "username": "Rhythm Releases",
+            "avatar_url": "https://github.com/cromaguy/Rhythm/raw/main/assets/icon.png",
+            "embeds": [
+              {
+                "title": "${EMBED_TITLE}",
+                "description": "${EMBED_DESC}",
+                "url": "${RELEASE_URL}",
+                "color": ${EMBED_COLOR},
+                "fields": [
+                  {
+                    "name": "🏷️ Tag",
+                    "value": "\`${{ github.ref_name }}\`",
+                    "inline": true
+                  },
+                  {
+                    "name": "📅 Date",
+                    "value": "${RELEASE_DATE}",
+                    "inline": true
+                  },
+                  {
+                    "name": "📥 Download",
+                    "value": "[GitHub Release Page](${RELEASE_URL})",
+                    "inline": false
+                  },
+                  {
+                    "name": "💡 Tip",
+                    "value": "${NOTE}",
+                    "inline": false
+                  }
+                ],
+                "footer": {
+                  "text": "Rhythm CI • Release Channel"
+                },
+                "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+              }
+            ]
+          }
+          EOF
+
+          curl -s -X POST "${DISCORD_WEBHOOK_URL}" \
+            -H "Content-Type: application/json" \
+            -d @/tmp/discord_payload.json \
+            | tee /tmp/discord_response.json \
+            && echo "✅ Discord notification sent." \
+            || { echo "❌ Discord notification failed:"; cat /tmp/discord_response.json; exit 1; }

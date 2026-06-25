@@ -76,6 +76,8 @@ jobs:
           
           echo "code=$NEW_VERSION_CODE" >> $GITHUB_OUTPUT
           echo "name=$NEW_VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
           echo "Computed Version Code: $NEW_VERSION_CODE"
           echo "Computed Version Name: $NEW_VERSION_NAME"
 
@@ -95,3 +97,117 @@ jobs:
             app/build/outputs/apk/github/release/Rhythm-*-githubRelease*.apk
             app/build/outputs/apk/fdroid/release/Rhythm-*-fdroidRelease*.apk
           retention-days: 14
+
+      # ── Notifications ────────────────────────────────────────────────────────
+
+      - name: Locate GitHub-flavor Beta APK
+        if: success()
+        id: find_apk
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/github/release -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "No APK found — skipping notifications."
+            echo "path=" >> $GITHUB_OUTPUT
+          else
+            echo "path=$APK_PATH" >> $GITHUB_OUTPUT
+            echo "Found APK: $APK_PATH"
+          fi
+
+      - name: Send Beta APK to Telegram
+        if: >
+          success() &&
+          steps.find_apk.outputs.path != '' &&
+          secrets.TELEGRAM_BOT_TOKEN != '' &&
+          secrets.TELEGRAM_CHAT_ID != ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          CAPTION="🎵 *Rhythm Beta Build*
+
+📦 *Version:* \`${{ steps.version_info.outputs.name }}\`
+🔢 *Build \#:* \`${{ steps.version_info.outputs.commit_count }}\`
+🔗 *Commit:* \`${{ steps.version_info.outputs.short_sha }}\`
+📅 *Date:* \`$(date +%Y-%m-%d)\`
+
+⚠️ _This is a beta build\. Report issues on GitHub\._
+
+[🔍 View Actions Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+            -F "chat_id=${TELEGRAM_CHAT_ID}" \
+            -F "document=@${{ steps.find_apk.outputs.path }}" \
+            -F "caption=${CAPTION}" \
+            -F "parse_mode=MarkdownV2" \
+            | tee /tmp/tg_response.json \
+            && grep -q '"ok":true' /tmp/tg_response.json \
+            && echo "✅ Telegram notification sent." \
+            || { echo "❌ Telegram notification failed:"; cat /tmp/tg_response.json; exit 1; }
+
+      - name: Send Beta notification to Discord
+        if: >
+          success() &&
+          secrets.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BUILD_DATE="$(date +%Y-%m-%d)"
+
+          cat > /tmp/discord_payload.json <<EOF
+          {
+            "username": "Rhythm CI",
+            "avatar_url": "https://github.com/cromaguy/Rhythm/raw/main/assets/icon.png",
+            "embeds": [
+              {
+                "title": "🎵 Rhythm Beta Build Available",
+                "description": "A new beta build has been compiled and is ready for testing.",
+                "url": "${RUN_URL}",
+                "color": 7340031,
+                "fields": [
+                  {
+                    "name": "📦 Version",
+                    "value": "\`${{ steps.version_info.outputs.name }}\`",
+                    "inline": false
+                  },
+                  {
+                    "name": "🔢 Build #",
+                    "value": "\`${{ steps.version_info.outputs.commit_count }}\`",
+                    "inline": true
+                  },
+                  {
+                    "name": "🔗 Commit",
+                    "value": "\`${{ steps.version_info.outputs.short_sha }}\`",
+                    "inline": true
+                  },
+                  {
+                    "name": "📅 Date",
+                    "value": "${BUILD_DATE}",
+                    "inline": true
+                  },
+                  {
+                    "name": "📥 Download APK",
+                    "value": "[Open Actions Run](${RUN_URL}) → Download from the Artifacts section",
+                    "inline": false
+                  },
+                  {
+                    "name": "⚠️ Note",
+                    "value": "This is a **beta build**. Please report any issues on [GitHub Issues](https://github.com/${{ github.repository }}/issues).",
+                    "inline": false
+                  }
+                ],
+                "footer": {
+                  "text": "Rhythm CI • Beta Channel"
+                },
+                "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+              }
+            ]
+          }
+          EOF
+
+          curl -s -X POST "${DISCORD_WEBHOOK_URL}" \
+            -H "Content-Type: application/json" \
+            -d @/tmp/discord_payload.json \
+            | tee /tmp/discord_response.json \
+            && echo "✅ Discord notification sent." \
+            || { echo "❌ Discord notification failed:"; cat /tmp/discord_response.json; exit 1; }
