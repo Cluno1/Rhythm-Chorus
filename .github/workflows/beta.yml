@@ -147,10 +147,10 @@ jobs:
           HTTP_CODE=$(curl -s -o /tmp/tg_response.json -w "%{http_code}" \
             --connect-timeout 15 --max-time 60 \
             -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
-            -F "chat_id=${TELEGRAM_CHAT_ID}" \
+            --form-string "chat_id=${TELEGRAM_CHAT_ID}" \
             -F "document=@${{ steps.find_apk.outputs.path }}" \
-            -F "caption=${CAPTION}" \
-            -F "parse_mode=HTML")
+            --form-string "caption=${CAPTION}" \
+            --form-string "parse_mode=HTML")
           echo "HTTP $HTTP_CODE"
           if [ "$HTTP_CODE" = "200" ] && grep -q '"ok":true' /tmp/tg_response.json 2>/dev/null; then
             echo "✅ Telegram notification sent."
