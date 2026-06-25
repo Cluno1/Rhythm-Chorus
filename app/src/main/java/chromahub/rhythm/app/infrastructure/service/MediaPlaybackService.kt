@@ -2749,6 +2749,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         val intent = Intent(BROADCAST_SLEEP_TIMER_STATUS).apply {
             putExtra(EXTRA_TIMER_ACTIVE, timerActive)
             putExtra(EXTRA_REMAINING_TIME, remainingTimeMs)
+            setPackage(packageName)
         }
         sendBroadcast(intent)
 
