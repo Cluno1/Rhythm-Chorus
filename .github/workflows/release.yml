@@ -117,30 +117,37 @@ jobs:
           fi
           IS_BETA="${{ steps.prerelease.outputs.value }}"
           if [ "$IS_BETA" = "true" ]; then
-            BADGE="🔶 *Rhythm Beta Release*"
+            BADGE="🔶 <b>Rhythm Beta Release</b>"
           else
-            BADGE="✅ *Rhythm Stable Release*"
+            BADGE="✅ <b>Rhythm Stable Release</b>"
           fi
-
           RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
-
           CAPTION="${BADGE}"
           CAPTION+=$'\n\n'
-          CAPTION+="🏷️ *Tag:* \`${{ github.ref_name }}\`"
+          CAPTION+="🏷️ <b>Tag:</b> <code>${{ github.ref_name }}</code>"
           CAPTION+=$'\n'
-          CAPTION+="📅 *Date:* \`$(date +%Y-%m-%d)\`"
+          CAPTION+="📅 <b>Date:</b> <code>$(date +%Y-%m-%d)</code>"
           CAPTION+=$'\n\n'
-          CAPTION+="[📥 View Full Release & Changelog](${RELEASE_URL})"
-
-          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+          CAPTION+="<a href=\"${RELEASE_URL}\">📥 View Full Release & Changelog</a>"
+          if [ ! -f "${{ steps.find_apk.outputs.path }}" ]; then
+            echo "❌ APK file not found at ${{ steps.find_apk.outputs.path }}"
+            exit 1
+          fi
+          HTTP_CODE=$(curl -s -o /tmp/tg_response.json -w "%{http_code}" \
+            --connect-timeout 15 --max-time 60 \
+            -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
             -F "chat_id=${TELEGRAM_CHAT_ID}" \
             -F "document=@${{ steps.find_apk.outputs.path }}" \
             -F "caption=${CAPTION}" \
-            -F "parse_mode=MarkdownV2" \
-            | tee /tmp/tg_response.json \
-            && grep -q '"ok":true' /tmp/tg_response.json \
-            && echo "✅ Telegram notification sent." \
-            || { echo "❌ Telegram notification failed:"; cat /tmp/tg_response.json; exit 1; }
+            -F "parse_mode=HTML")
+          echo "HTTP $HTTP_CODE"
+          if [ "$HTTP_CODE" = "200" ] && grep -q '"ok":true' /tmp/tg_response.json 2>/dev/null; then
+            echo "✅ Telegram notification sent."
+          else
+            echo "❌ Telegram notification failed:"
+            cat /tmp/tg_response.json 2>/dev/null || echo "(empty response)"
+            exit 1
+          fi
 
       - name: Send Release notification to Discord
         if: success()

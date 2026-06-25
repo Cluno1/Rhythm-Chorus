@@ -126,29 +126,39 @@ jobs:
             echo "⚠️ Telegram secrets not set — skipping."
             exit 0
           fi
-          CAPTION="🎵 *Rhythm Beta Build*"
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          CAPTION="🎵 <b>Rhythm Beta Build</b>"
           CAPTION+=$'\n\n'
-          CAPTION+="📦 *Version:* \`${{ steps.version_info.outputs.name }}\`"
+          CAPTION+="📦 <b>Version:</b> <code>${{ steps.version_info.outputs.name }}</code>"
           CAPTION+=$'\n'
-          CAPTION+="🔢 *Build \#:* \`${{ steps.version_info.outputs.commit_count }}\`"
+          CAPTION+="🔢 <b>Build #:</b> <code>${{ steps.version_info.outputs.commit_count }}</code>"
           CAPTION+=$'\n'
-          CAPTION+="🔗 *Commit:* \`${{ steps.version_info.outputs.short_sha }}\`"
+          CAPTION+="🔗 <b>Commit:</b> <code>${{ steps.version_info.outputs.short_sha }}</code>"
           CAPTION+=$'\n'
-          CAPTION+="📅 *Date:* \`$(date +%Y-%m-%d)\`"
+          CAPTION+="📅 <b>Date:</b> <code>$(date +%Y-%m-%d)</code>"
           CAPTION+=$'\n\n'
-          CAPTION+="⚠️ _This is a beta build\. Report issues on GitHub\._"
+          CAPTION+="⚠️ <i>This is a beta build. Report issues on GitHub.</i>"
           CAPTION+=$'\n\n'
-          CAPTION+="[🔍 View Actions Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-
-          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+          CAPTION+="<a href=\"${RUN_URL}\">🔍 View Actions Run</a>"
+          if [ ! -f "${{ steps.find_apk.outputs.path }}" ]; then
+            echo "❌ APK file not found at ${{ steps.find_apk.outputs.path }}"
+            exit 1
+          fi
+          HTTP_CODE=$(curl -s -o /tmp/tg_response.json -w "%{http_code}" \
+            --connect-timeout 15 --max-time 60 \
+            -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
             -F "chat_id=${TELEGRAM_CHAT_ID}" \
             -F "document=@${{ steps.find_apk.outputs.path }}" \
             -F "caption=${CAPTION}" \
-            -F "parse_mode=MarkdownV2" \
-            | tee /tmp/tg_response.json \
-            && grep -q '"ok":true' /tmp/tg_response.json \
-            && echo "✅ Telegram notification sent." \
-            || { echo "❌ Telegram notification failed:"; cat /tmp/tg_response.json; exit 1; }
+            -F "parse_mode=HTML")
+          echo "HTTP $HTTP_CODE"
+          if [ "$HTTP_CODE" = "200" ] && grep -q '"ok":true' /tmp/tg_response.json 2>/dev/null; then
+            echo "✅ Telegram notification sent."
+          else
+            echo "❌ Telegram notification failed:"
+            cat /tmp/tg_response.json 2>/dev/null || echo "(empty response)"
+            exit 1
+          fi
 
       - name: Send Beta notification to Discord
         if: success()
