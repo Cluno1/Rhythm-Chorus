@@ -116,13 +116,15 @@ jobs:
       - name: Send Beta APK to Telegram
         if: >
           success() &&
-          steps.find_apk.outputs.path != '' &&
-          secrets.TELEGRAM_BOT_TOKEN != '' &&
-          secrets.TELEGRAM_CHAT_ID != ''
+          steps.find_apk.outputs.path != ''
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "⚠️ Telegram secrets not set — skipping."
+            exit 0
+          fi
           CAPTION="🎵 *Rhythm Beta Build*"
           CAPTION+=$'\n\n'
           CAPTION+="📦 *Version:* \`${{ steps.version_info.outputs.name }}\`"
@@ -148,12 +150,14 @@ jobs:
             || { echo "❌ Telegram notification failed:"; cat /tmp/tg_response.json; exit 1; }
 
       - name: Send Beta notification to Discord
-        if: >
-          success() &&
-          secrets.DISCORD_WEBHOOK_URL != ''
+        if: success()
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "⚠️ Discord webhook URL not set — skipping."
+            exit 0
+          fi
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           BUILD_DATE="$(date +%Y-%m-%d)"
 
