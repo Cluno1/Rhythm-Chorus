@@ -100,11 +100,11 @@ jobs:
 
       # ── Notifications ────────────────────────────────────────────────────────
 
-      - name: Locate GitHub-flavor Beta APK
+      - name: Locate universal Beta APK
         if: success()
         id: find_apk
         run: |
-          APK_PATH=$(find app/build/outputs/apk/github/release -name "*.apk" | head -n 1)
+          APK_PATH=$(find app/build/outputs/apk/github/release -name "*universal*.apk" | head -n 1)
           if [ -z "$APK_PATH" ]; then
             echo "No APK found — skipping notifications."
             echo "path=" >> $GITHUB_OUTPUT
