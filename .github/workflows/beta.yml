@@ -104,7 +104,7 @@ jobs:
         if: success()
         id: find_apk
         run: |
-          APK_PATH=$(find app/build/outputs/apk/github/release -name "*universal*.apk" | head -n 1)
+          APK_PATH=$(find app/build/outputs/apk/github/release -name "Rhythm-*-githubRelease.apk" ! -name "*-arm64-v8a.apk" ! -name "*-armeabi-v7a.apk" ! -name "*-x86_64.apk" ! -name "*-x86.apk" | head -n 1)
           if [ -z "$APK_PATH" ]; then
             echo "No APK found — skipping notifications."
             echo "path=" >> $GITHUB_OUTPUT
