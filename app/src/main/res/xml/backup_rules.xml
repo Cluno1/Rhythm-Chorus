@@ -10,5 +10,6 @@
     <include domain="sharedpref" path="rhythm_preferences.xml"/>
     
     <!-- Exclude Room database to avoid stale cached library data surviving reinstalls -->
+    <include domain="database" path="rhythm_database*"/>
     <exclude domain="database" path="rhythm_database*"/>
 </full-backup-content>
