@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.1.416.1093 Beta] - 2026-06-26
+
+### Added
+- Minor Improvements
+- Fixed Sleep Timer
+- Fixed Lyrics Embedding 
+- Fixed: Sleep timer remaining time not counted down #450
+- Fixed: cannot import playlists from json backup #449
+- Fixed: Connection failed: java.security.cert.CertPathValidatorException: Trust anchor for certification path not found. #451
+
 ## [5.1.415.1089 Beta] - 2026-06-25
 
 ### Added
