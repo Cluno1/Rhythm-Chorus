@@ -5,15 +5,11 @@
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <!-- Exclude Room database to avoid stale cached library data surviving reinstalls -->
+        <exclude domain="database" path="rhythm_database*"/>
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <!-- Exclude Room database to avoid stale cached library data surviving reinstalls -->
+        <exclude domain="database" path="rhythm_database*"/>
     </device-transfer>
-    -->
 </data-extraction-rules>

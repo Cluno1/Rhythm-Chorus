@@ -9,6 +9,6 @@
     <!-- Include our app's shared preferences -->
     <include domain="sharedpref" path="rhythm_preferences.xml"/>
     
-    <!-- Exclude any sensitive data if needed -->
-    <!-- <exclude domain="sharedpref" path="sensitive_data.xml"/> -->
+    <!-- Exclude Room database to avoid stale cached library data surviving reinstalls -->
+    <exclude domain="database" path="rhythm_database*"/>
 </full-backup-content>

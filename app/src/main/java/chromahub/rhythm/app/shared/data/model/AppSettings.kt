@@ -855,9 +855,9 @@ class AppSettings private constructor(context: Context) {
     // Prefer per-song embedded artwork over shared MediaStore album art.
     private val _preferSongArtwork = MutableStateFlow(
         if (prefs.contains(KEY_PREFER_SONG_ARTWORK)) {
-            prefs.getBoolean(KEY_PREFER_SONG_ARTWORK, false)
+            prefs.getBoolean(KEY_PREFER_SONG_ARTWORK, true)
         } else {
-            prefs.getBoolean(KEY_IGNORE_MEDIASTORE_COVERS, false)
+            prefs.getBoolean(KEY_IGNORE_MEDIASTORE_COVERS, true)
         }
     )
     val preferSongArtwork: StateFlow<Boolean> = _preferSongArtwork.asStateFlow()
@@ -866,7 +866,7 @@ class AppSettings private constructor(context: Context) {
     val ignoreMediaStoreCovers: StateFlow<Boolean> = preferSongArtwork
 
     // Lossless Artwork - Show cover art as-is without compression
-    private val _losslessArtwork = MutableStateFlow(prefs.getBoolean(KEY_LOSSLESS_ARTWORK, false))
+    private val _losslessArtwork = MutableStateFlow(prefs.getBoolean(KEY_LOSSLESS_ARTWORK, true))
     val losslessArtwork: StateFlow<Boolean> = _losslessArtwork.asStateFlow()
 
     // Show Library Section Headers
@@ -4534,9 +4534,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _songsSortOrder.value = prefs.getString(KEY_SONGS_SORT_ORDER, "TITLE_ASC") ?: "TITLE_ASC"
         _libraryCombineDiscs.value = prefs.getBoolean(KEY_LIBRARY_COMBINE_DISCS, false)
         _preferSongArtwork.value = if (prefs.contains(KEY_PREFER_SONG_ARTWORK)) {
-            prefs.getBoolean(KEY_PREFER_SONG_ARTWORK, false)
+            prefs.getBoolean(KEY_PREFER_SONG_ARTWORK, true)
         } else {
-            prefs.getBoolean(KEY_IGNORE_MEDIASTORE_COVERS, false)
+            prefs.getBoolean(KEY_IGNORE_MEDIASTORE_COVERS, true)
         }
         _albumBottomSheetDiscFilter.value = prefs.getInt(KEY_ALBUM_BOTTOM_SHEET_DISC_FILTER, 0).coerceAtLeast(0)
         _albumBottomSheetGradientBlur.value = prefs.getBoolean(KEY_ALBUM_BOTTOM_SHEET_GRADIENT_BLUR, true)

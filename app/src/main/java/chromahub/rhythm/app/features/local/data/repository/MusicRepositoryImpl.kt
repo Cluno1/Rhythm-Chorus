@@ -424,7 +424,17 @@ class MusicRepository(context: Context) {
 
                     val embeddedCachedArtwork = if (useEmbeddedArt) {
                         if (savedArtworkIsEmbeddedCache && savedArtworkUsable) {
-                            savedArtworkUri
+                            val fileName = savedArtworkUri?.path?.let { File(it).name } ?: ""
+                            val isLosslessFile = fileName.startsWith("embedded_art_lossless_")
+                            if (isLosslessFile == losslessArtwork) {
+                                savedArtworkUri
+                            } else {
+                                chromahub.rhythm.app.util.MediaUtils.getCachedEmbeddedAlbumArtUri(
+                                    cacheDir = context.cacheDir,
+                                    songUri = songUri,
+                                    lossless = losslessArtwork
+                                )
+                            }
                         } else {
                             chromahub.rhythm.app.util.MediaUtils.getCachedEmbeddedAlbumArtUri(
                                 cacheDir = context.cacheDir,
@@ -757,10 +767,16 @@ class MusicRepository(context: Context) {
         if (!shouldForceRefresh && cachedSongs == null) {
             val diskCached = loadSongsFromRoom()
             if (diskCached != null && diskCached.isNotEmpty()) {
-                cachedSongs = diskCached
-                cacheTimestamp = System.currentTimeMillis()
-                Log.d(TAG, "Restored ${diskCached.size} songs from Room cache")
-                return@withContext diskCached
+                if (isLibraryStale()) {
+                    Log.d(TAG, "Newer files found in MediaStore, invalidating Room cache and rescanning")
+                    invalidatePersistentLibraryCachesForForcedRescan()
+                    shouldForceRefresh = true
+                } else {
+                    cachedSongs = diskCached
+                    cacheTimestamp = System.currentTimeMillis()
+                    Log.d(TAG, "Restored ${diskCached.size} songs from Room cache")
+                    return@withContext diskCached
+                }
             }
         }
         
@@ -1002,6 +1018,7 @@ class MusicRepository(context: Context) {
                 
                 // Update scan progress to complete
                 _scanProgress.value = ScanProgress(songs.size, count, ScanPhase.Complete, duration)
+                appSettings.setLastScanTimestamp(System.currentTimeMillis())
                 
                 // Log errors if any
                 if (errors.isNotEmpty()) {
@@ -4033,7 +4050,12 @@ class MusicRepository(context: Context) {
             }
         }
         
-        // Clean up the lyrics text
+        val customTimedLyrics = parseCustomTimedLyrics(lyrics)
+        if (customTimedLyrics != null) {
+            Log.d(TAG, "Successfully parsed embedded custom word-timing lyrics")
+            return customTimedLyrics
+        }
+
         val cleanedLyrics = sanitizeLyricsText(lyrics)
 
         if (cleanedLyrics.isBlank()) {
@@ -4166,6 +4188,70 @@ class MusicRepository(context: Context) {
                 null
             }
         }
+    }
+
+    private fun parseCustomTimedLyrics(lyrics: String): LyricsData? {
+        if (!lyrics.contains("|")) return null
+
+        val tagRegex = Regex("<([^>]*?)>", RegexOption.DOT_MATCHES_ALL)
+        val wordTimestamps = mutableListOf<Pair<Long, Long>>()
+
+        for (tagMatch in tagRegex.findAll(lyrics)) {
+            val content = tagMatch.groupValues[1]
+            if (!content.contains(":")) continue
+            val entries = content.split("|").map { it.trim().trimEnd('>').trim() }
+            for (entry in entries) {
+                if (entry.isBlank()) continue
+                val lastColon = entry.lastIndexOf(':')
+                if (lastColon < 0) continue
+                val secondLastColon = entry.lastIndexOf(':', lastColon - 1)
+                if (secondLastColon < 0) continue
+                val endSecs = entry.substring(lastColon + 1).toDoubleOrNull() ?: continue
+                val startSecs = entry.substring(secondLastColon + 1, lastColon).toDoubleOrNull() ?: continue
+                wordTimestamps.add((startSecs * 1000).toLong() to (endSecs * 1000).toLong())
+            }
+        }
+        if (wordTimestamps.isEmpty()) return null
+
+        val lrcTimestampRegex = Regex("\\[\\d{1,2}:\\d{2}(?:\\.\\d{2,3})?]")
+        val cleanText = lyrics.replace(tagRegex, "").replace(lrcTimestampRegex, "").trim()
+
+        val textLines = cleanText.lines().map { it.trim() }.filter { it.isNotEmpty() }
+
+        val enhancedLines = mutableListOf<EnhancedLyricLine>()
+        var wordIdx = 0
+
+        for (line in textLines) {
+            val lineWords = line.split(Regex("\\s+")).filter { it.isNotEmpty() }
+            if (lineWords.isEmpty()) continue
+
+            val lineEnhancedWords = lineWords.mapIndexed { localIdx, wordText ->
+                val globalIdx = wordIdx + localIdx
+                if (globalIdx < wordTimestamps.size) {
+                    val (startMs, endMs) = wordTimestamps[globalIdx]
+                    EnhancedWord(text = wordText, timestamp = startMs, endtime = endMs)
+                } else {
+                    val prevWord = enhancedLines.lastOrNull()?.words?.lastOrNull()
+                    val fallbackMs = prevWord?.endtime ?: 0L
+                    EnhancedWord(text = wordText, timestamp = fallbackMs, endtime = fallbackMs)
+                }
+            }
+            wordIdx += lineWords.size
+
+            val lineStart = lineEnhancedWords.firstOrNull()?.timestamp ?: 0L
+            val lineEnd = lineEnhancedWords.lastOrNull()?.endtime ?: lineStart
+            enhancedLines.add(EnhancedLyricLine(lineEnhancedWords, lineStart, lineEnd))
+        }
+
+        if (enhancedLines.isEmpty()) return null
+
+        val wordByWordJson = convertEnhancedLRCToWordByWord(enhancedLines)
+        val plainText = enhancedLines.joinToString("\n") { line ->
+            line.words.joinToString(" ") { it.text }
+        }
+
+        Log.d(TAG, "Parsed ${wordTimestamps.size} word timestamps across ${enhancedLines.size} lines")
+        return LyricsData(plainText, syncedLyrics = null, wordByWordJson, source = "Embedded")
     }
 
     private fun sanitizeLyricsText(input: String): String {
@@ -4393,11 +4479,12 @@ class MusicRepository(context: Context) {
      */
     private fun normalizePlainLRC(lrcContent: String): String {
         val lrcRegex = Regex("""^\[(\d{1,2}):(\d{2}(?:\.\d{2,3})?)\](.*)$""", RegexOption.MULTILINE)
+        val wordTimestampRegex = Regex("<\\d{1,3}:\\d{2}(?:\\.\\d{2,3})?>")
         return lrcContent.lines().map { line ->
             val matchResult = lrcRegex.matchEntire(line.trim())
             if (matchResult != null) {
                 val timestamp = matchResult.groupValues[0].substring(0, matchResult.groupValues[0].indexOf(']') + 1)
-                val text = matchResult.groupValues[3]
+                val text = matchResult.groupValues[3].replace(wordTimestampRegex, "")
                 val normalizedText = LyricsParser.normalizeWordFlowText(text)
                 "$timestamp$normalizedText"
             } else {
@@ -4642,114 +4729,106 @@ class MusicRepository(context: Context) {
         val fetchLyrically = suspend {
             if (NetworkClient.isLyricallyApiEnabled() && itunesSearchApiService != null && rhythmLyricsApiService != null) {
                 try {
-                    val term1 = "$cleanArtist $cleanTitle"
-                        .replace(Regex("[/\\-;,.&]"), " ")
-                        .replace(Regex("\\s+"), " ")
-                        .trim()
-                    Log.d(TAG, "Lyrically API: Searching iTunes with primary term: $term1")
-                    var searchResponse = itunesSearchApiService.searchSongs(term = term1, limit = 30)
-                    
-                    if (searchResponse.results.isEmpty()) {
-                        val firstArtist = cleanArtist.split(Regex("[,;&]")).first().trim()
-                        val term2 = "$firstArtist $cleanTitle"
-                            .replace(Regex("[/\\-;,.&]"), " ")
-                            .replace(Regex("\\s+"), " ")
-                            .trim()
-                        Log.d(TAG, "Lyrically API: Searching iTunes with secondary term: $term2")
-                        searchResponse = itunesSearchApiService.searchSongs(term = term2, limit = 30)
-                    }
-                    
-                    if (searchResponse.results.isEmpty()) {
-                        val term3 = cleanTitle
-                            .replace(Regex("[/\\-;,.&]"), " ")
-                            .replace(Regex("\\s+"), " ")
-                            .trim()
-                        Log.d(TAG, "Lyrically API: Searching iTunes with tertiary title-only term: $term3")
-                        searchResponse = itunesSearchApiService.searchSongs(term = term3, limit = 50)
-                    }
+                    fun sanitizeTerm(t: String) = t.replace(Regex("[/\\-;,.&]"), " ").replace(Regex("\\s+"), " ").trim()
 
-                    // Find the best match using metadata similarity
-                    val bestTrack = searchResponse.results.firstOrNull { result ->
+                    val terms = listOfNotNull(
+                        sanitizeTerm("$cleanArtist $cleanTitle"),
+                        "$cleanArtist $cleanTitle",
+                        sanitizeTerm("$artist $title"),
+                        "$artist $title",
+                        cleanArtist.split(Regex("[,;&]")).first().trim().let { firstArtist ->
+                            if (firstArtist != cleanArtist) sanitizeTerm("$firstArtist $cleanTitle") else null
+                        },
+                        sanitizeTerm(cleanTitle),
+                        sanitizeTerm(title)
+                    ).distinct()
+
+                    val allResults = mutableListOf<chromahub.rhythm.app.network.ITunesTrackResult>()
+                    for (term in terms) {
+                        val resp = itunesSearchApiService.searchSongs(term = term, limit = 50)
+                        Log.d(TAG, "Lyrically API: term=\"$term\" returned ${resp.results.size} results")
+                        allResults.addAll(resp.results)
+                    }
+                    Log.d(TAG, "Lyrically API: total ${allResults.size} results across ${terms.size} terms, top: ${allResults.take(3).joinToString { "${it.trackName} - ${it.artistName}" }}")
+
+                    // strict match: title + artist must match
+                    val bestTrack = allResults.firstOrNull { result ->
                         val resultTitleCanon = canonicalizeForMatch(result.trackName ?: "")
                         val resultArtistCanon = canonicalizeForMatch(result.artistName ?: "")
                         val targetTitleCanon = canonicalizeForMatch(cleanTitle)
                         val targetArtistCanon = canonicalizeForMatch(cleanArtist)
-
-                        val titleMatches = resultTitleCanon.contains(targetTitleCanon) || targetTitleCanon.contains(resultTitleCanon)
-                        val artistMatches = resultArtistCanon.contains(targetArtistCanon) || targetArtistCanon.contains(resultArtistCanon)
-                        titleMatches && artistMatches
+                        (resultTitleCanon.contains(targetTitleCanon) || targetTitleCanon.contains(resultTitleCanon)) &&
+                        (resultArtistCanon.contains(targetArtistCanon) || targetArtistCanon.contains(resultArtistCanon))
                     }
-
-                    bestTrack?.let { track ->
-                        Log.d(TAG, "Lyrically API: Found matching iTunes track ID: ${track.trackId} (${track.trackName})")
-                        val lyricsResponse = rhythmLyricsApiService.getLyrics(track.trackId.toString())
-                        
-                        var content: List<RhythmLyricsLine>? = null
-                        var isSyllable = false
-                        
-                        if (!lyricsResponse.ttmlContent.isNullOrBlank()) {
-                            Log.d(TAG, "Lyrically API: TTML content is present. Parsing TTML on client...")
-                            val parsedTtml = RhythmLyricsParser.parseTtmlLyrics(lyricsResponse.ttmlContent)
-                            if (parsedTtml.isNotEmpty()) {
-                                content = parsedTtml
-                                isSyllable = true
-                            }
+                    // fallback: title-only match for songs where iTunes has a different artist spelling
+                    val bestTrackByTitle = if (bestTrack == null) {
+                        allResults.firstOrNull { result ->
+                            val resultTitleCanon = canonicalizeForMatch(result.trackName ?: "")
+                            val targetTitleCanon = canonicalizeForMatch(cleanTitle)
+                            resultTitleCanon.contains(targetTitleCanon) || targetTitleCanon.contains(resultTitleCanon)
                         }
-                        
-                        if (content == null || content.isEmpty()) {
-                            Log.d(TAG, "Lyrically API: Using pre-parsed content from response...")
-                            val rawContent = lyricsResponse.content
-                            isSyllable = lyricsResponse.type == "Syllable"
-                            if (isSyllable && rawContent != null) {
-                                // Shift the part flags to the right for each line to correct the server-side bug
-                                content = rawContent.map { line ->
-                                    val words = line.text
-                                    if (words != null && words.isNotEmpty()) {
-                                        val shiftedWords = words.mapIndexed { idx, word ->
-                                            val isPart = if (idx > 0) {
-                                                words[idx - 1].part ?: false
-                                            } else {
-                                                false
-                                            }
-                                            word.copy(part = isPart)
-                                        }
-                                        line.copy(text = shiftedWords)
-                                    } else {
-                                        line
-                                    }
+                    } else null
+
+                    // prefer strict match, fall back to title-only, then top unmatched results
+                    val candidates = listOfNotNull(bestTrack, bestTrackByTitle).ifEmpty {
+                        allResults.take(5)
+                    }
+                    var lyricallyResult: LyricsData? = null
+                    for (track in candidates) {
+                        try {
+                            Log.d(TAG, "Lyrically API: Trying track ID ${track.trackId} (${track.trackName})")
+                            val lyricsResponse = rhythmLyricsApiService.getLyrics(track.trackId.toString())
+
+                            var content: List<RhythmLyricsLine>? = null
+                            var isSyllable = false
+
+                            if (!lyricsResponse.ttmlContent.isNullOrBlank()) {
+                                val parsedTtml = RhythmLyricsParser.parseTtmlLyrics(lyricsResponse.ttmlContent)
+                                if (parsedTtml.isNotEmpty()) {
+                                    content = parsedTtml
+                                    isSyllable = true
                                 }
-                            } else {
-                                content = rawContent
                             }
-                        }
-                        
-                        if (content != null && content.isNotEmpty()) {
-                            val wordByWordJson = Gson().toJson(content)
-                            val parsedLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
-                            val lrc = RhythmLyricsParser.toLRCFormat(parsedLines)
-                            val plain = RhythmLyricsParser.toPlainText(parsedLines)
 
-                            if (isSyllable) {
-                                Log.d(TAG, "Lyrically API: Syllable (Word-by-word) lyrics found and parsed successfully")
-                                LyricsData(
-                                    plainLyrics = plain,
-                                    syncedLyrics = lrc,
-                                    wordByWordLyrics = wordByWordJson,
-                                    source = "Lyrically",
-                                    isCorrected = true
-                                )
-                            } else {
-                                Log.d(TAG, "Lyrically API: Line-synced or plain lyrics found (non-Syllable), caching as backup")
-                                lyricallyBackup = LyricsData(
-                                    plainLyrics = plain,
-                                    syncedLyrics = lrc,
-                                    wordByWordLyrics = null,
-                                    source = "Lyrically"
-                                )
-                                null
+                            if (content == null || content.isEmpty()) {
+                                val rawContent = lyricsResponse.content
+                                isSyllable = lyricsResponse.type == "Syllable"
+                                if (isSyllable && rawContent != null) {
+                                    content = rawContent.map { line ->
+                                        val words = line.text
+                                        if (words != null && words.isNotEmpty()) {
+                                            val shiftedWords = words.mapIndexed { idx, word ->
+                                                val isPart = if (idx > 0) words[idx - 1].part ?: false else false
+                                                word.copy(part = isPart)
+                                            }
+                                            line.copy(text = shiftedWords)
+                                        } else line
+                                    }
+                                } else {
+                                    content = rawContent
+                                }
                             }
-                        } else null
+
+                            if (content != null && content.isNotEmpty()) {
+                                val wordByWordJson = Gson().toJson(content)
+                                val parsedLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
+                                val lrc = RhythmLyricsParser.toLRCFormat(parsedLines)
+                                val plain = RhythmLyricsParser.toPlainText(parsedLines)
+                                val source = "Lyrically"
+
+                                if (isSyllable) {
+                                    lyricallyResult = LyricsData(plain, lrc, wordByWordJson, source, isCorrected = true)
+                                } else {
+                                    lyricallyResult = LyricsData(plain, lrc, null, source)
+                                }
+                                Log.d(TAG, "Lyrically API: lyrics found for track ${track.trackId} (syllable=$isSyllable)")
+                                break
+                            }
+                        } catch (e: Exception) {
+                            Log.d(TAG, "Lyrically API: track ${track.trackId} failed (${e.message}), trying next candidate")
+                        }
                     }
+                    lyricallyResult
                 } catch (e: Exception) {
                     Log.e(TAG, "Lyrically API fetch failed: ${e.message}", e)
                     null
@@ -4851,7 +4930,6 @@ class MusicRepository(context: Context) {
             }
         }
 
-        // ---- Final Fallback Chain (Priority 3 & 4) ----
         if (lrclibPlainBackup != null) {
             Log.d(TAG, "Fallback Chain: Returning cached LRCLib plain lyrics")
             return lrclibPlainBackup
@@ -5137,7 +5215,6 @@ class MusicRepository(context: Context) {
         try {
             if (lrcContent.isBlank()) return null
             
-            val lines = lrcContent.lines()
             val syncedLines = mutableListOf<String>()
             val plainLines = mutableListOf<String>()
             var hasSyncedLyrics = false
@@ -5145,7 +5222,12 @@ class MusicRepository(context: Context) {
             // Pattern to match LRC timestamps [mm:ss.xx] or [mm:ss]
             val timestampPattern = Regex("\\[(\\d{2}):(\\d{2})(?:\\.(\\d{2,3}))?\\](.*)") 
             
-            // Check for Enhanced LRC format with word-level timestamps
+            val customTimedLyrics = parseCustomTimedLyrics(lrcContent)
+            if (customTimedLyrics != null) {
+                Log.d(TAG, "Successfully parsed custom word-timing lyrics in .lrc file")
+                return customTimedLyrics
+            }
+
             val hasWordTimestamps = LyricsParser.hasWordTimestamps(lrcContent)
             
             if (hasWordTimestamps) {
@@ -5173,6 +5255,8 @@ class MusicRepository(context: Context) {
                     return LyricsData(plainText, syncedLrc, wordByWordJson)
                 }
             }
+            
+            val lines = lrcContent.lines()
             
             // Standard LRC format (line-by-line only)
             for (line in lines) {
@@ -5441,10 +5525,12 @@ class MusicRepository(context: Context) {
         for (i in updatedSongs.indices) {
             val song = updatedSongs[i]
             
-            // Check if song already has a valid cached embedded artwork URI and if it exists
             val hasValidArtwork = song.artworkUri?.let { uri ->
                 if (isEmbeddedArtworkCacheUri(uri)) {
-                    uri.path?.let { File(it).exists() } == true
+                    val path = uri.path ?: return@let false
+                    val fileName = File(path).name
+                    val isLosslessFile = fileName.startsWith("embedded_art_lossless_")
+                    File(path).exists() && isLosslessFile == lossless
                 } else {
                     false
                 }
@@ -5830,6 +5916,49 @@ class MusicRepository(context: Context) {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to invalidate persistent caches for forced media rescan", e)
         }
+    }
+
+    private fun isLibraryStale(): Boolean {
+        try {
+            val appSettings = AppSettings.getInstance(context)
+            val lastScan = appSettings.lastScanTimestamp.value
+            if (lastScan <= 0L) return false
+
+            val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+            } else {
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+            }
+            val selection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%') AND ${MediaStore.Audio.Media.DURATION} > 10000 AND ${MediaStore.Audio.Media.DATE_ADDED} > ?"
+
+            val cursor = context.contentResolver.query(
+                collection,
+                arrayOf(MediaStore.Audio.Media._ID),
+                selection,
+                arrayOf(lastScan.toString()),
+                null
+            )
+
+            val hasNewerFiles = cursor?.let { it.count > 0 } ?: false
+            cursor?.close()
+
+            if (hasNewerFiles) {
+                Log.d(TAG, "Staleness check: newer files found after lastScan=$lastScan, Room cache is stale")
+            }
+            return hasNewerFiles
+        } catch (e: Exception) {
+            Log.w(TAG, "Staleness check failed, assuming cache is valid", e)
+            return false
+        }
+    }
+
+    fun hasArtworkMatchingLossless(song: Song, lossless: Boolean): Boolean {
+        val uri = song.artworkUri ?: return false
+        if (!isEmbeddedArtworkCacheUri(uri)) return false
+        val path = uri.path ?: return false
+        val fileName = File(path).name
+        val isLosslessFile = fileName.startsWith("embedded_art_lossless_")
+        return File(path).exists() && isLosslessFile == lossless
     }
 
     private fun clearEmbeddedArtworkFileCaches() {

@@ -1673,10 +1673,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val isCompleted = appSettings.embeddedArtworkExtractionCompleted.value
                 if (preferSongArtwork && !isCompleted) {
                     val initialSongs = _songs.value
-                    // A song needs embedded art extraction if it has NO artwork at all OR
-                    // if its artwork is NOT a cached embedded artwork URI (e.g. it is a MediaStore fallback).
-                    val songsNeedingExtraction = initialSongs.count {
-                        it.artworkUri == null || !repository.isEmbeddedArtworkCacheUri(it.artworkUri)
+                    val songsNeedingExtraction = initialSongs.count { song ->
+                        song.artworkUri == null ||
+                        !repository.isEmbeddedArtworkCacheUri(song.artworkUri) ||
+                        !repository.hasArtworkMatchingLossless(song, losslessArtwork)
                     }
 
                     if (songsNeedingExtraction == 0) {
@@ -1861,13 +1861,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             val mergedSongs = freshSongs.map { fresh ->
                 val cached = cachedSongMap[fresh.id]
                 if (cached != null) {
+                    val keepEmbedded = repository.isEmbeddedArtworkCacheUri(cached.artworkUri) &&
+                        cached.artworkUri?.path?.let { File(it).exists() } == true
                     fresh.copy(
                         genre = fresh.genre ?: cached.genre,
                         bitrate = fresh.bitrate ?: cached.bitrate,
                         sampleRate = fresh.sampleRate ?: cached.sampleRate,
                         channels = fresh.channels ?: cached.channels,
                         codec = fresh.codec ?: cached.codec,
-                        artworkUri = fresh.artworkUri ?: cached.artworkUri
+                        artworkUri = if (keepEmbedded) cached.artworkUri else (fresh.artworkUri ?: cached.artworkUri)
                     )
                 } else {
                     fresh
