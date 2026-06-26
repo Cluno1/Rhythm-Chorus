@@ -875,12 +875,10 @@ object MediaUtils {
                             throw Exception("Failed to copy file to temp for lyrics embedding")
                         }
                         tempFile = adjustTempFileExtension(tempFile)
-                        // Embed lyrics in temp file
-                        val audioFileObj = AudioFileIO.read(tempFile)
-                        val tag: Tag = audioFileObj.tag ?: audioFileObj.createDefaultTag()
-                        tag.setField(FieldKey.LYRICS, lyrics)
-                        audioFileObj.tag = tag
-                        AudioFileIO.write(audioFileObj)
+                        // Embed lyrics in temp file with format-aware routing
+                        if (!embedLyricsInAudioFile(tempFile, lyrics)) {
+                            throw Exception("Failed to embed lyrics in temp file")
+                        }
                         // Write temp back via ContentResolver (WRITE_EXTERNAL_STORAGE covers API 29)
                         val outputStream = contentResolver.openOutputStream(song.uri, "wt")
                         if (outputStream != null) {
@@ -893,12 +891,7 @@ object MediaUtils {
                             if (filePath != null) {
                                 val audioFile = File(filePath)
                                 if (audioFile.exists() && audioFile.canWrite()) {
-                                    val af = AudioFileIO.read(audioFile)
-                                    val t: Tag = af.tag ?: af.createDefaultTag()
-                                    t.setField(FieldKey.LYRICS, lyrics)
-                                    af.tag = t
-                                    AudioFileIO.write(af)
-                                    fileWriteSucceeded = true
+                                    fileWriteSucceeded = embedLyricsInAudioFile(audioFile, lyrics)
                                 }
                             }
                         }
@@ -914,12 +907,7 @@ object MediaUtils {
                         try {
                             val audioFile = File(filePath)
                             if (audioFile.exists() && audioFile.canWrite()) {
-                                val af = AudioFileIO.read(audioFile)
-                                val t: Tag = af.tag ?: af.createDefaultTag()
-                                t.setField(FieldKey.LYRICS, lyrics)
-                                af.tag = t
-                                AudioFileIO.write(af)
-                                fileWriteSucceeded = true
+                                fileWriteSucceeded = embedLyricsInAudioFile(audioFile, lyrics)
                             }
                         } catch (e2: Exception) {
                             Log.e(TAG, "Direct path write also failed", e2)
@@ -932,12 +920,7 @@ object MediaUtils {
                     val audioFile = File(filePath)
                     if (audioFile.exists() && audioFile.canWrite()) {
                         try {
-                            val audioFileObj = AudioFileIO.read(audioFile)
-                            val tag: Tag = audioFileObj.tag ?: audioFileObj.createDefaultTag()
-                            tag.setField(FieldKey.LYRICS, lyrics)
-                            audioFileObj.tag = tag
-                            AudioFileIO.write(audioFileObj)
-                            fileWriteSucceeded = true
+                            fileWriteSucceeded = embedLyricsInAudioFile(audioFile, lyrics)
                         } catch (e: Exception) {
                             Log.e(TAG, "Failed to embed lyrics using jaudiotagger", e)
                         }
@@ -979,9 +962,8 @@ object MediaUtils {
     fun isSupportedByJaudiotagger(extension: String): Boolean {
         return when (extension.lowercase()) {
             "mp3", "flac", "ogg", "wav", "wave", "aif", "aiff",
-            "mp4", "m4a", "m4p", "m4b", "wma", "dsf", "dff" -> true
-            // opus files use OGG container but Opus codec; jaudiotagger cannot handle them
-            "opus" -> false
+            "mp4", "m4a", "m4p", "m4b", "wma", "dsf", "dff",
+            "opus" -> true
             else -> false
         }
     }
@@ -1054,12 +1036,11 @@ object MediaUtils {
 
             tempFile = adjustTempFileExtension(tempFile)
 
-            // Write lyrics to temp
-            val audioFileObj = org.jaudiotagger.audio.AudioFileIO.read(tempFile)
-            val tag = audioFileObj.tag ?: audioFileObj.createDefaultTag()
-            tag.setField(org.jaudiotagger.tag.FieldKey.LYRICS, lyrics)
-            audioFileObj.tag = tag
-            org.jaudiotagger.audio.AudioFileIO.write(audioFileObj)
+            // Write lyrics to temp with format-aware routing
+            if (!embedLyricsInAudioFile(tempFile, lyrics)) {
+                Log.e(TAG, "Failed to embed lyrics in temp file during prep")
+                return null
+            }
 
             tempFile.absolutePath
         } catch (e: Exception) {
@@ -1334,10 +1315,10 @@ object MediaUtils {
                         // Step 2: Modify metadata in temp file
                         Log.d(TAG, "Step 2: Modifying metadata in temp file...")
                         val container = detectContainerFormat(tempFile.absolutePath)
-                        val useTagLib = container == DetectedContainer.MP4
+                        val useTagLib = container != DetectedContainer.UNKNOWN
                         
                         if (useTagLib) {
-                            Log.d(TAG, "Using TagLib for MP4/M4A metadata write")
+                            Log.d(TAG, "Using TagLib for metadata write (detected: $container)")
                             val tagLibSuccess = updateFileMetadataWithTagLib(
                                 context = context,
                                 file = tempFile,
@@ -1511,10 +1492,10 @@ object MediaUtils {
                     } else {
                         try {
                             val container = detectContainerFormat(audioFile.absolutePath)
-                            val useTagLib = container == DetectedContainer.MP4
+                            val useTagLib = container != DetectedContainer.UNKNOWN
                             
                             if (useTagLib) {
-                                Log.d(TAG, "Using TagLib for MP4/M4A metadata write (Android 9-)")
+                                Log.d(TAG, "Using TagLib for metadata write (Android 9-, detected: $container)")
                                 val tagLibSuccess = updateFileMetadataWithTagLib(
                                     context = context,
                                     file = audioFile,
@@ -1789,10 +1770,10 @@ object MediaUtils {
 
             // Modify metadata in temp file
             val container = detectContainerFormat(tempFile.absolutePath)
-            val useTagLib = container == DetectedContainer.MP4
+            val useTagLib = container != DetectedContainer.UNKNOWN
             
             if (useTagLib) {
-                Log.d(TAG, "Using TagLib for MP4/M4A metadata write in prepareTempFileWithMetadata")
+                Log.d(TAG, "Using TagLib for metadata write in prepareTempFileWithMetadata (detected: $container)")
                 val tagLibSuccess = updateFileMetadataWithTagLib(
                     context = context,
                     file = tempFile,
@@ -3093,6 +3074,80 @@ object MediaUtils {
         } catch (e: Throwable) {
             Log.e(TAG, "TAGLIB: Failed to update metadata", e)
             false
+        }
+    }
+
+    private fun embedLyricsWithTagLib(file: File, lyrics: String): Boolean {
+        return try {
+            Log.d(TAG, "TAGLIB: Opening file for lyrics embed: ${file.absolutePath}")
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE).use { fd ->
+                val metadataFd = fd.dup()
+                val existingMetadata = try {
+                    TagLib.getMetadata(metadataFd.detachFd())
+                } catch (e: Exception) {
+                    Log.w(TAG, "TAGLIB: Failed to read existing metadata for lyrics", e)
+                    null
+                }
+                val propertyMap = HashMap(existingMetadata?.propertyMap ?: emptyMap())
+
+                if (lyrics.isNotBlank()) {
+                    propertyMap["LYRICS"] = arrayOf(lyrics)
+                } else {
+                    propertyMap.remove("LYRICS")
+                }
+
+                val saveFd = fd.dup()
+                val metadataSaved = TagLib.savePropertyMap(saveFd.detachFd(), propertyMap)
+                if (!metadataSaved) {
+                    Log.e(TAG, "TAGLIB: Failed to save property map with lyrics")
+                    return false
+                }
+            }
+            try {
+                java.io.RandomAccessFile(file, "rw").use { raf ->
+                    raf.fd.sync()
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "TAGLIB: sync failed after lyrics embed", e)
+            }
+            true
+        } catch (e: Throwable) {
+            Log.e(TAG, "TAGLIB: Failed to embed lyrics", e)
+            false
+        }
+    }
+
+    private fun embedLyricsInAudioFile(audioFile: File, lyrics: String): Boolean {
+        return try {
+            val audioFileObj = AudioFileIO.read(audioFile)
+            val tag: Tag = audioFileObj.tag ?: audioFileObj.createDefaultTag()
+            tag.setField(FieldKey.LYRICS, lyrics)
+            audioFileObj.tag = tag
+            AudioFileIO.write(audioFileObj)
+            true
+        } catch (e: Exception) {
+            Log.w(TAG, "JAudioTagger failed for lyrics embed, falling back to TagLib", e)
+            embedLyricsWithTagLib(audioFile, lyrics)
+        }
+    }
+
+    fun readLyricsViaTagLib(filePath: String): String? {
+        return try {
+            val file = File(filePath)
+            if (!file.exists() || !file.canRead()) return null
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                val metadata = TagLib.getMetadata(fd.detachFd())
+                val propertyMap = metadata?.propertyMap ?: emptyMap()
+                val lyricsValues = propertyMap["LYRICS"]
+                if (!lyricsValues.isNullOrEmpty() && lyricsValues[0].isNotBlank()) {
+                    lyricsValues[0]
+                } else {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "TAGLIB: Failed to read lyrics", e)
+            null
         }
     }
 }

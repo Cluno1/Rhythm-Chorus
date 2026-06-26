@@ -339,16 +339,36 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         MediaPlaybackService.EXTRA_REMAINING_TIME,
                         0L
                     ).coerceAtLeast(0L)
+                    val totalMs = intent.getLongExtra(
+                        MediaPlaybackService.EXTRA_TOTAL_TIME,
+                        0L
+                    ).coerceAtLeast(0L)
+
+                    // Ignore stale "timer stopped" broadcasts that arrive during
+                    // the service's internal timer-rewrite transition.  This covers
+                    // BOTH the synchronous stopSleepTimer() inside startSleepTimer()
+                    // AND the old coroutine's CancellationException handler which
+                    // can fire up to ~1s later (at the next delay suspension point).
+                    val gracePeriod = 3_000L
+                    if (!timerActive && remainingMs == 0L) {
+                        val elapsed = SystemClock.elapsedRealtime() - sleepTimerStartRealtimeMs
+                        if (elapsed < gracePeriod) {
+                            return@onReceive
+                        }
+                    }
 
                     if (timerActive) {
                         val remainingSeconds = ((remainingMs + 999L) / 1000L).coerceAtLeast(1L)
+                        val totalSeconds = ((totalMs + 999L) / 1000L).coerceAtLeast(1L)
                         _sleepTimerActive.value = true
                         _sleepTimerRemainingSeconds.value = remainingSeconds
+                        _sleepTimerTotalSeconds.value = totalSeconds
                         sleepTimerJob?.cancel()
                         sleepTimerJob = null
                     } else {
                         _sleepTimerActive.value = false
                         _sleepTimerRemainingSeconds.value = 0L
+                        _sleepTimerTotalSeconds.value = 0L
                         sleepTimerJob?.cancel()
                         sleepTimerJob = null
                     }
@@ -8213,12 +8233,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     
     // Clean sleep timer functionality
     fun startSleepTimer(minutes: Int, action: SleepAction) {
-        // Stop any existing timer first
-        stopSleepTimer()
+        // Cancel any local fallback timer — the service handles cleanup internally.
+        sleepTimerJob?.cancel()
+        sleepTimerJob = null
 
         val safeMinutes = minutes.coerceAtLeast(1)
         val totalSeconds = safeMinutes * 60L
         val totalDurationMs = totalSeconds * 1000L
+
+        sleepTimerStartRealtimeMs = SystemClock.elapsedRealtime()
         _sleepTimerActive.value = true
         _sleepTimerRemainingSeconds.value = totalSeconds
         _sleepTimerAction.value = action.name
@@ -8247,10 +8270,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         )
 
         if (serviceCommandSent) {
-            return
+            return  // grace period covers stale broadcasts during the transition
         }
 
         // Fallback: maintain local timer behavior if service command fails.
+        sleepTimerStartRealtimeMs = 0L  // no service → no stale broadcasts to ignore
         sleepTimerJob = viewModelScope.launch {
             var remaining = totalSeconds
 
@@ -8279,6 +8303,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     
     fun stopSleepTimer() {
         Log.d(TAG, "Stopping sleep timer")
+        sleepTimerStartRealtimeMs = 0L
         sleepTimerJob?.cancel()
         sleepTimerJob = null
         _sleepTimerActive.value = false
@@ -8679,10 +8704,22 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private val _sleepTimerRemainingSeconds = MutableStateFlow(0L)
     val sleepTimerRemainingSeconds: StateFlow<Long> = _sleepTimerRemainingSeconds.asStateFlow()
     
+    private val _sleepTimerTotalSeconds = MutableStateFlow(0L)
+    val sleepTimerTotalSeconds: StateFlow<Long> = _sleepTimerTotalSeconds.asStateFlow()
+    
     private val _sleepTimerAction = MutableStateFlow("FADE_OUT")
     val sleepTimerAction: StateFlow<String> = _sleepTimerAction.asStateFlow()
     
     private var sleepTimerJob: kotlinx.coroutines.Job? = null
+    
+    /**
+     * Realtime timestamp (SystemClock.elapsedRealtime()) of the most recent
+     * startSleepTimer() call. Used to ignore stale "timer stopped" broadcasts
+     * that arrive during the service's internal timer-rewrite transition
+     * (including the old coroutine's CancellationException handler which can
+     * fire up to ~1s later).
+     */
+    private var sleepTimerStartRealtimeMs = 0L
     
     // Sleep timer state is synchronized from service status broadcasts.
     

@@ -28,6 +28,7 @@ import chromahub.rhythm.app.network.extractArtistImageUrl
 import chromahub.rhythm.app.network.extractAlbumImageUrl
 import chromahub.rhythm.app.network.extractArtistBrowseId
 import chromahub.rhythm.app.network.extractAlbumBrowseId
+import chromahub.rhythm.app.util.MediaUtils
 import chromahub.rhythm.app.network.extractArtistThumbnail
 import chromahub.rhythm.app.network.extractAlbumCover
 import okhttp3.Request
@@ -2958,6 +2959,15 @@ class MusicRepository(context: Context) {
                 return retrieverLyrics
             }
             
+            // Final fallback: TagLib (handles formats that jaudiotagger cannot read)
+            Log.d(TAG, "===== TRYING TAGLIB =====")
+            val tagLibLyrics = filePath?.let { MediaUtils.readLyricsViaTagLib(it) }
+            if (!tagLibLyrics.isNullOrBlank()) {
+                Log.d(TAG, "===== FOUND LYRICS VIA TAGLIB =====")
+                val parsed = parseLyricsData(tagLibLyrics)
+                if (parsed != null) return parsed
+            }
+            
             Log.d(TAG, "===== NO EMBEDDED LYRICS FOUND =====")
             null
         } catch (e: Exception) {
@@ -3009,10 +3019,11 @@ class MusicRepository(context: Context) {
                         return@use extractLyricsFromM4A(filePath)
                     }
                     
-                    // For OGG files, try direct Vorbis comment parsing
+                    // For OGG/Opus files, try direct Vorbis comment parsing
                     if (filePath?.endsWith(".ogg", ignoreCase = true) == true || 
-                        filePath?.endsWith(".oga", ignoreCase = true) == true) {
-                        Log.d(TAG, "===== Detected OGG/Vorbis file, trying OGG extraction =====")
+                        filePath?.endsWith(".oga", ignoreCase = true) == true ||
+                        filePath?.endsWith(".opus", ignoreCase = true) == true) {
+                        Log.d(TAG, "===== Detected OGG/Opus file, trying OGG extraction =====")
                         return@use extractLyricsFromOGG(filePath)
                     }
                     

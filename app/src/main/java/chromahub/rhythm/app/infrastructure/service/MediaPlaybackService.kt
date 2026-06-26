@@ -495,6 +495,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         const val BROADCAST_SLEEP_TIMER_STATUS = "chromahub.rhythm.app.broadcast.SLEEP_TIMER_STATUS"
         const val EXTRA_TIMER_ACTIVE = "timer_active"
         const val EXTRA_REMAINING_TIME = "remaining_time"
+        const val EXTRA_TOTAL_TIME = "total_time"
 
         // Broadcast actions for shuffle updates
         const val ACTION_SHUFFLE_STATE_CHANGED = "chromahub.rhythm.app.action.SHUFFLE_STATE_CHANGED"
@@ -2644,15 +2645,22 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         broadcastSleepTimerStatus()
         
         sleepTimerJob = serviceScope.launch {
+            // Capture start time locally so the previous coroutine's
+            // CancellationException handler (which may call resetSleepTimer()
+            // up to ~1s later) cannot corrupt the new timer's computation.
+            val localStartTime = sleepTimerStartTime
+            val localFadeOut = fadeOut
+            val localPauseOnly = pauseOnly
+
             try {
-                if (fadeOut && durationMs > 10000) { // Only fade if duration > 10 seconds
+                if (localFadeOut && durationMs > 10000) { // Only fade if duration > 10 seconds
                     // Regular updates until fade start time (last 10 seconds)
                     val fadeStartTime = durationMs - 10000
                     var remainingTime = durationMs
                     
                     while (remainingTime > 10000) {
                         delay(1000) // Update every second
-                        remainingTime = durationMs - (System.currentTimeMillis() - sleepTimerStartTime)
+                        remainingTime = durationMs - (System.currentTimeMillis() - localStartTime)
                         if (remainingTime <= 0) break
                         broadcastSleepTimerStatus()
                     }
@@ -2676,14 +2684,14 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     var remainingTime = durationMs
                     while (remainingTime > 0) {
                         delay(1000) // Update every second
-                        remainingTime = durationMs - (System.currentTimeMillis() - sleepTimerStartTime)
+                        remainingTime = durationMs - (System.currentTimeMillis() - localStartTime)
                         if (remainingTime <= 0) break
                         broadcastSleepTimerStatus()
                     }
                 }
                 
                 // Timer finished - pause or stop playback
-                if (pauseOnly) {
+                if (localPauseOnly) {
                     player.pause()
                     Log.d(TAG, "Sleep timer paused playback")
                 } else {
@@ -2692,7 +2700,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 }
                 
                 // Reset volume if it was changed during fade
-                if (fadeOut) {
+                if (localFadeOut) {
                     player.volume = 1.0f
                 }
                 
@@ -2700,7 +2708,10 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 
             } catch (e: CancellationException) {
                 Log.d(TAG, "Sleep timer was cancelled")
-                resetSleepTimer()
+                // Do NOT call resetSleepTimer() here — it would zero the shared
+                // sleepTimerDurationMs / sleepTimerStartTime fields that a newly
+                // started timer coroutine depends on for its broadcastSleepTimerStatus()
+                // calls.  stopSleepTimer() already handles cleanup synchronously.
             } catch (e: Exception) {
                 Log.e(TAG, "Error in sleep timer", e)
                 resetSleepTimer()
@@ -2749,6 +2760,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         val intent = Intent(BROADCAST_SLEEP_TIMER_STATUS).apply {
             putExtra(EXTRA_TIMER_ACTIVE, timerActive)
             putExtra(EXTRA_REMAINING_TIME, remainingTimeMs)
+            putExtra(EXTRA_TOTAL_TIME, sleepTimerDurationMs)
             setPackage(packageName)
         }
         sendBroadcast(intent)
