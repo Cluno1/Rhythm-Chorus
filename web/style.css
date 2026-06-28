@@ -94,17 +94,17 @@ a:hover {
 
 /* Skip Link for Accessibility */
 .skip-link {
-  position: absolute;
-  top: -40px;
+  position: fixed;
+  top: -100px;
   left: 6px;
   background: var(--primary);
   color: var(--on-primary);
   padding: 8px 16px;
   text-decoration: none;
   border-radius: var(--radius-sm);
-  z-index: 1000;
+  z-index: 9999;
   font-weight: 500;
-  transition: var(--transition);
+  transition: top 0.2s ease;
 }
 
 .skip-link:focus {
@@ -486,7 +486,7 @@ nav ul li a:hover::after {
   content: none; /* Remove the old pattern */
 }
 
-.animated-circles {
+.rotating-shapes {
   position: absolute;
   top: 0;
   left: 0;
@@ -494,276 +494,51 @@ nav ul li a:hover::after {
   height: 100%;
   overflow: hidden;
   z-index: 0;
+  pointer-events: none;
 }
 
-.circle {
+.rotating-shape {
   position: absolute;
+  opacity: 0.08;
+  will-change: transform;
+}
+
+.rotating-shape svg {
   display: block;
-  list-style: none;
-  width: 20px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.15);
-  animation: moveCircles 25s linear infinite;
-  bottom: -150px;
-  border-radius: 50%;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
-.circle.x1 {
-  left: 25%;
-  width: 80px;
-  height: 80px;
-  animation-delay: 0s;
-  animation-duration: 20s;
+.rotating-shape polygon {
+  fill: var(--on-primary-container);
+  stroke: var(--on-primary-container);
 }
 
-.circle.x2 {
-  left: 10%;
-  width: 20px;
-  height: 20px;
-  animation-delay: 2s;
-  animation-duration: 15s;
+.shape-1 {
+  width: 480px;
+  height: 480px;
+  bottom: -120px;
+  left: -100px;
+  animation: rotateClockwise 50s linear infinite;
 }
 
-.circle.x3 {
-  left: 70%;
-  width: 20px;
-  height: 20px;
-  animation-delay: 4s;
-  animation-duration: 25s;
+.shape-2 {
+  width: 360px;
+  height: 360px;
+  top: -80px;
+  right: -60px;
+  animation: rotateCounterClockwise 60s linear infinite;
 }
 
-.circle.x4 {
-  left: 40%;
-  width: 60px;
-  height: 60px;
-  animation-delay: 0s;
-  animation-duration: 18s;
+@keyframes rotateClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-.circle.x5 {
-  left: 65%;
-  width: 20px;
-  height: 20px;
-  animation-delay: 0s;
-  animation-duration: 10s;
-}
-
-.circle.x6 {
-  left: 75%;
-  width: 110px;
-  height: 110px;
-  animation-delay: 3s;
-  animation-duration: 30s;
-}
-
-.circle.x7 {
-  left: 35%;
-  width: 340px;
-  height: 340px;
-  animation-delay: 7s;
-  animation-duration: 22s;
-}
-
-.circle.x8 {
-  left: 50%;
-  width: 25px;
-  height: 25px;
-  animation-delay: 15s;
-  animation-duration: 40s;
-}
-
-.circle.x9 {
-  left: 20%;
-  width: 15px;
-  height: 15px;
-  animation-delay: 2s;
-  animation-duration: 35s;
-}
-
-.circle.x10 {
-  left: 85%;
-  width: 240px;
-  height: 240px;
-  animation-delay: 0s;
-  animation-duration: 11s;
-}
-
-@keyframes moveCircles {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(calc(var(--x-end) * 1vw), calc(var(--y-end) * 1vh)) scale(var(--scale-end));
-    opacity: 0;
-  }
-}
-
-.circle {
-  /* ... existing properties ... */
-  animation: moveCircles var(--duration) linear infinite;
-  /* Add custom properties for animation */
-  --x-end: 0;
-  --y-end: -100;
-  --scale-end: 1;
-  --duration: 25s;
-}
-
-.circle.x1 {
-  left: 25%;
-  bottom: -150px; /* Enters from bottom */
-  width: 80px;
-  height: 80px;
-  animation-delay: 0s;
-  --duration: 20s;
-  --x-end: 15;
-  --y-end: -120;
-  --scale-end: 1.2;
-}
-
-.circle.x2 {
-  left: 10%;
-  bottom: -150px; /* Enters from bottom */
-  width: 20px;
-  height: 20px;
-  animation-delay: 2s;
-  --duration: 15s;
-  --x-end: -10;
-  --y-end: -110;
-  --scale-end: 0.8;
-}
-
-.circle.x3 {
-  left: 70%;
-  bottom: -150px; /* Enters from bottom */
-  width: 20px;
-  height: 20px;
-  animation-delay: 4s;
-  --duration: 25s;
-  --x-end: 20;
-  --y-end: -130;
-  --scale-end: 1.1;
-}
-
-.circle.x4 {
-  left: 40%;
-  top: -150px; /* Enters from top */
-  width: 60px;
-  height: 60px;
-  animation-delay: 0s;
-  --duration: 18s;
-  --x-end: -15;
-  --y-end: 120;
-  --scale-end: 0.9;
-}
-
-.circle.x5 {
-  right: -150px; /* Enters from right */
-  top: 30%;
-  width: 20px;
-  height: 20px;
-  animation-delay: 0s;
-  --duration: 10s;
-  --x-end: -120;
-  --y-end: -5;
-  --scale-end: 1.3;
-}
-
-.circle.x6 {
-  left: -150px; /* Enters from left */
-  top: 60%;
-  width: 110px;
-  height: 110px;
-  animation-delay: 3s;
-  --duration: 30s;
-  --x-end: 120;
-  --y-end: -20;
-  --scale-end: 0.7;
-}
-
-.circle.x7 {
-  left: -150px; /* Enters from bottom-left corner */
-  bottom: -150px;
-  width: 150px;
-  height: 150px;
-  animation-delay: 7s;
-  --duration: 22s;
-  --x-end: 150;
-  --y-end: -150;
-  --scale-end: 1.5;
-}
-
-.circle.x8 {
-  right: -150px; /* Enters from top-right corner */
-  top: -150px;
-  width: 25px;
-  height: 25px;
-  animation-delay: 15s;
-  --duration: 40s;
-  --x-end: -150;
-  --y-end: 150;
-  --scale-end: 0.6;
-}
-
-.circle.x9 {
-  left: 20%;
-  bottom: -150px; /* Enters from bottom */
-  width: 15px;
-  height: 15px;
-  animation-delay: 2s;
-  --duration: 35s;
-  --x-end: 12;
-  --y-end: -115;
-  --scale-end: 1.1;
-}
-
-.circle.x10 {
-  left: 85%;
-  top: -150px; /* Enters from top */
-  width: 150px;
-  height: 150px;
-  animation-delay: 0s;
-  --duration: 11s;
-  --x-end: -18;
-  --y-end: 105;
-  --scale-end: 0.9;
-}
-
-.circle.x11 {
-  left: 5%;
-  top: -100px; /* Enters from top-left corner */
-  width: 90px;
-  height: 90px;
-  animation-delay: 1s;
-  --duration: 28s;
-  --x-end: 100;
-  --y-end: 130;
-  --scale-end: 1.1;
-}
-
-.circle.x12 {
-  right: -100px; /* Enters from right side */
-  bottom: 10%;
-  width: 70px;
-  height: 70px;
-  animation-delay: 5s;
-  --duration: 17s;
-  --x-end: -110;
-  --y-end: -10;
-  --scale-end: 0.95;
-}
-
-.circle.x13 {
-  left: 50%;
-  bottom: -100px; /* Enters from bottom-center */
-  width: 120px;
-  height: 120px;
-  animation-delay: 8s;
-  --duration: 23s;
-  --x-end: 0;
-  --y-end: -140;
-  --scale-end: 1.3;
+@keyframes rotateCounterClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
 }
 
 .hero-content {
@@ -833,6 +608,20 @@ nav ul li a:hover::after {
     max-width: 280px;
     height: auto;
   }
+
+  .shape-1 {
+    width: 320px;
+    height: 320px;
+    bottom: -80px;
+    left: -60px;
+  }
+
+  .shape-2 {
+    width: 240px;
+    height: 240px;
+    top: -50px;
+    right: -40px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -859,6 +648,20 @@ nav ul li a:hover::after {
 
   .hero-image img {
     max-width: 220px;
+  }
+
+  .shape-1 {
+    width: 200px;
+    height: 200px;
+    bottom: -50px;
+    left: -40px;
+  }
+
+  .shape-2 {
+    width: 150px;
+    height: 150px;
+    top: -30px;
+    right: -25px;
   }
 }
 
@@ -4204,6 +4007,121 @@ footer {
 
 .donation-links a i {
   margin-right: 6px;
+}
+
+/* ===== Entry Animations ===== */
+@keyframes enterFadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes enterScaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes enterFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.enter-fade-up    { animation: enterFadeUp  0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+.enter-scale-in   { animation: enterScaleIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+.enter-fade-in    { animation: enterFadeIn  0.8s ease both; }
+
+.loaded header {
+  animation: enterFadeDown 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  animation-delay: 0.05s;
+}
+@keyframes enterFadeDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.loaded .hero {
+  animation: enterScaleIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  animation-delay: 0.15s;
+}
+
+.loaded section {
+  animation: enterFadeUp 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+.loaded section:nth-of-type(1) { animation-delay: 0.2s; }
+.loaded section:nth-of-type(2) { animation-delay: 0.3s; }
+.loaded section:nth-of-type(3) { animation-delay: 0.4s; }
+.loaded section:nth-of-type(4) { animation-delay: 0.5s; }
+.loaded section:nth-of-type(5) { animation-delay: 0.6s; }
+.loaded section:nth-of-type(6) { animation-delay: 0.7s; }
+.loaded section:nth-of-type(7) { animation-delay: 0.8s; }
+.loaded section:nth-of-type(8) { animation-delay: 0.9s; }
+
+.loaded footer {
+  animation: enterFadeIn 0.8s ease both;
+  animation-delay: 0.5s;
+}
+
+.loaded .feature-card {
+  animation: enterScaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+.loaded .feature-card:nth-child(1) { animation-delay: 0.25s; }
+.loaded .feature-card:nth-child(2) { animation-delay: 0.32s; }
+.loaded .feature-card:nth-child(3) { animation-delay: 0.39s; }
+.loaded .feature-card:nth-child(4) { animation-delay: 0.46s; }
+.loaded .feature-card:nth-child(5) { animation-delay: 0.53s; }
+.loaded .feature-card:nth-child(6) { animation-delay: 0.6s; }
+.loaded .feature-card:nth-child(7) { animation-delay: 0.67s; }
+.loaded .feature-card:nth-child(8) { animation-delay: 0.74s; }
+
+.loaded .update-item {
+  animation: enterFadeUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+.loaded .update-item:nth-child(1) { animation-delay: 0.2s; }
+.loaded .update-item:nth-child(2) { animation-delay: 0.3s; }
+.loaded .update-item:nth-child(3) { animation-delay: 0.4s; }
+.loaded .update-item:nth-child(4) { animation-delay: 0.5s; }
+.loaded .update-item:nth-child(5) { animation-delay: 0.6s; }
+
+.loaded .help-section-block {
+  animation: enterFadeUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+.loaded .help-section-block:nth-child(1) { animation-delay: 0.15s; }
+.loaded .help-section-block:nth-child(2) { animation-delay: 0.25s; }
+.loaded .help-section-block:nth-child(3) { animation-delay: 0.35s; }
+.loaded .help-section-block:nth-child(4) { animation-delay: 0.45s; }
+.loaded .help-section-block:nth-child(5) { animation-delay: 0.55s; }
+.loaded .help-section-block:nth-child(6) { animation-delay: 0.65s; }
+.loaded .help-section-block:nth-child(7) { animation-delay: 0.75s; }
+.loaded .help-section-block:nth-child(8) { animation-delay: 0.85s; }
+
+.loaded .help-card {
+  animation: enterFadeUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+.loaded .help-section-block .help-card:nth-of-type(1) { animation-delay: 0.05s; }
+.loaded .help-section-block .help-card:nth-of-type(2) { animation-delay: 0.1s; }
+.loaded .help-section-block .help-card:nth-of-type(3) { animation-delay: 0.15s; }
+.loaded .help-section-block .help-card:nth-of-type(4) { animation-delay: 0.2s; }
+.loaded .help-section-block .help-card:nth-of-type(5) { animation-delay: 0.25s; }
+.loaded .help-section-block .help-card:nth-of-type(6) { animation-delay: 0.3s; }
+.loaded .help-section-block .help-card:nth-of-type(7) { animation-delay: 0.35s; }
+.loaded .help-section-block .help-card:nth-of-type(8) { animation-delay: 0.4s; }
+.loaded .help-section-block .help-card:nth-of-type(9) { animation-delay: 0.45s; }
+.loaded .help-section-block .help-card:nth-of-type(10) { animation-delay: 0.5s; }
+
+.loaded .download-option-btn {
+  animation: enterFadeUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+.loaded .download-option-btn:nth-child(1) { animation-delay: 0.25s; }
+.loaded .download-option-btn:nth-child(2) { animation-delay: 0.35s; }
+
+.loaded .hero-content {
+  animation: enterFadeUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  animation-delay: 0.2s;
+}
+
+.loaded .hero-image {
+  animation: enterScaleIn 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  animation-delay: 0.35s;
+}
+
+.loaded .screenshot-item {
+  animation: enterScaleIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
 }
 
 /* Troubleshooting Subheaders */

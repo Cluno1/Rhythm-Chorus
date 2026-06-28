@@ -999,14 +999,176 @@ function setupPreloader() {
     window.addEventListener('load', () => {
         setTimeout(() => {
             preloader.classList.add('hidden');
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    document.body.classList.add('loaded');
+                });
+            });
         }, 300);
     });
+}
+
+// Dynamic Material 3 Color Generator
+function setupDynamicColors() {
+    var SEED_KEY = 'rhythm_m3_seed';
+    var seedHue = sessionStorage.getItem(SEED_KEY);
+    if (!seedHue) {
+        seedHue = Math.floor(Math.random() * 360);
+        sessionStorage.setItem(SEED_KEY, seedHue);
+    } else {
+        seedHue = parseInt(seedHue, 10);
+    }
+
+    function hslToHex(h, s, l) {
+        var H = h / 360, S = s / 100, L = l / 100;
+        var a = S * Math.min(L, 1 - L);
+        function f(n) {
+            var k = (n + H * 12) % 12;
+            var color = L - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+            return Math.round(255 * color).toString(16).padStart(2, '0');
+        }
+        return '#' + f(0) + f(8) + f(4);
+    }
+
+    function hexToRgb(hex) {
+        var r = parseInt(hex.slice(1, 3), 16);
+        var g = parseInt(hex.slice(3, 5), 16);
+        var b = parseInt(hex.slice(5, 7), 16);
+        return r + ', ' + g + ', ' + b;
+    }
+
+    function hslStr(h, s, l) { return Math.round(h) + ', ' + Math.round(s) + '%, ' + Math.round(l) + '%'; }
+
+    function generatePalette(hue, dark) {
+        var H = hue, H2 = (hue + 30) % 360, H3 = (hue + 60) % 360;
+        if (dark) {
+            return {
+                '--primary': hslToHex(H, 50, 80),
+                '--on-primary': hslToHex(H, 70, 18),
+                '--primary-container': hslToHex(H, 50, 28),
+                '--on-primary-container': hslToHex(H, 40, 90),
+                '--secondary': hslToHex(H2, 40, 75),
+                '--on-secondary': hslToHex(H2, 50, 18),
+                '--secondary-container': hslToHex(H2, 40, 28),
+                '--on-secondary-container': hslToHex(H2, 35, 90),
+                '--tertiary': hslToHex(H3, 40, 75),
+                '--on-tertiary': hslToHex(H3, 50, 18),
+                '--tertiary-container': hslToHex(H3, 40, 28),
+                '--on-tertiary-container': hslToHex(H3, 35, 90),
+                '--error': '#F2B8B5', '--on-error': '#601410',
+                '--error-container': '#8C1D18', '--on-error-container': '#F9DEDC',
+                '--background': hslToHex(H, 6, 6),
+                '--on-background': hslToHex(H, 4, 90),
+                '--surface': hslToHex(H, 6, 6),
+                '--on-surface': hslToHex(H, 4, 90),
+                '--surface-variant': hslToHex(H2, 8, 28),
+                '--on-surface-variant': hslToHex(H2, 8, 80),
+                '--outline': hslToHex(H2, 10, 60),
+                '--outline-variant': hslToHex(H2, 8, 38),
+                '--shadow': '#000000',
+                '--inverse-surface': hslToHex(H, 4, 90),
+                '--inverse-on-surface': hslToHex(H, 6, 18),
+                '--inverse-primary': hslToHex(H, 60, 40),
+                '--surface-tint': hslToHex(H, 50, 80),
+                '--ripple': 'rgba(' + hexToRgb(hslToHex(H, 50, 80)) + ', 0.12)',
+                '--surface-hsl': hslStr(H, 6, 6),
+                '--surface-container-lowest': hslToHex(H, 5, 4),
+                '--surface-container-low': hslToHex(H, 6, 8),
+                '--surface-container': hslToHex(H, 6, 12),
+                '--surface-container-high': hslToHex(H, 6, 16),
+                '--surface-container-highest': hslToHex(H, 6, 20),
+                '--primary-light': hslToHex(H, 50, 28),
+                '--primary-dark': hslToHex(H, 70, 18),
+                '--on-primary-dark': hslToHex(H, 50, 80),
+                '--accent': hslToHex(H2, 40, 75),
+                '--dark': hslToHex(H, 4, 90),
+                '--dark-light': hslToHex(H2, 8, 80),
+                '--light': hslToHex(H, 6, 6),
+                '--text-dark': hslToHex(H, 4, 90),
+                '--text-light': hslToHex(H, 70, 18),
+                '--success': '#06d6a0', '--warning': '#ffbe0b', '--danger': '#ef476f',
+                '--gray': hslToHex(H2, 8, 28),
+                '--gray-dark': hslToHex(H2, 10, 60)
+            };
+        }
+        return {
+            '--primary': hslToHex(H, 60, 40),
+            '--on-primary': '#FFFFFF',
+            '--primary-container': hslToHex(H, 50, 90),
+            '--on-primary-container': hslToHex(H, 70, 10),
+            '--secondary': hslToHex(H2, 45, 50),
+            '--on-secondary': '#FFFFFF',
+            '--secondary-container': hslToHex(H2, 40, 90),
+            '--on-secondary-container': hslToHex(H2, 55, 10),
+            '--tertiary': hslToHex(H3, 45, 50),
+            '--on-tertiary': '#FFFFFF',
+            '--tertiary-container': hslToHex(H3, 40, 90),
+            '--on-tertiary-container': hslToHex(H3, 55, 10),
+            '--error': '#B3261E', '--on-error': '#FFFFFF',
+            '--error-container': '#F9DEDC', '--on-error-container': '#410E0B',
+            '--background': hslToHex(H, 8, 94),
+            '--on-background': hslToHex(H, 10, 10),
+            '--surface': hslToHex(H, 6, 98),
+            '--on-surface': hslToHex(H, 10, 10),
+            '--surface-variant': hslToHex(H2, 10, 90),
+            '--on-surface-variant': hslToHex(H2, 10, 30),
+            '--outline': hslToHex(H2, 12, 50),
+            '--outline-variant': hslToHex(H2, 10, 80),
+            '--shadow': '#000000',
+            '--inverse-surface': hslToHex(H, 6, 18),
+            '--inverse-on-surface': hslToHex(H, 4, 95),
+            '--inverse-primary': hslToHex(H, 50, 80),
+            '--surface-tint': hslToHex(H, 60, 40),
+            '--ripple': 'rgba(' + hexToRgb(hslToHex(H, 60, 40)) + ', 0.12)',
+            '--surface-hsl': hslStr(H, 6, 98),
+            '--surface-container-lowest': hslToHex(H, 5, 100),
+            '--surface-container-low': hslToHex(H, 6, 96),
+            '--surface-container': hslToHex(H, 6, 94),
+            '--surface-container-high': hslToHex(H, 6, 92),
+            '--surface-container-highest': hslToHex(H, 6, 90),
+            '--primary-light': hslToHex(H, 50, 90),
+            '--primary-dark': hslToHex(H, 70, 30),
+            '--on-primary-dark': hslToHex(H, 40, 85),
+            '--accent': hslToHex(H2, 45, 50),
+            '--dark': hslToHex(H, 10, 10),
+            '--dark-light': hslToHex(H2, 10, 30),
+            '--light': hslToHex(H, 8, 94),
+            '--text-dark': hslToHex(H, 10, 10),
+            '--text-light': '#FFFFFF',
+            '--success': '#06d6a0', '--warning': '#ffbe0b', '--danger': '#ef476f',
+            '--gray': hslToHex(H2, 10, 90),
+            '--gray-dark': hslToHex(H2, 12, 50)
+        };
+    }
+
+    var lightColors = generatePalette(seedHue, false);
+    var darkColors = generatePalette(seedHue, true);
+
+    function applyThemeColors(isDark) {
+        var colors = isDark ? darkColors : lightColors;
+        var root = document.documentElement;
+        for (var key in colors) {
+            if (colors.hasOwnProperty(key)) {
+                root.style.setProperty(key, colors[key]);
+            }
+        }
+    }
+
+    applyThemeColors(document.body.classList.contains('dark-mode'));
+
+    var darkModeSwitch = document.getElementById('darkModeSwitch');
+    if (darkModeSwitch) {
+        darkModeSwitch.addEventListener('change', function () {
+            applyThemeColors(this.checked);
+        });
+    }
 }
 
 // Initialize all functionality
 document.addEventListener('DOMContentLoaded', () => {
     setupScrollAnimations();
     setupDarkModeToggle();
+    setupDynamicColors();
     setupPreloader();
 
     const currentPage = window.location.pathname.split('/').pop();

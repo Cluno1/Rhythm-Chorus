@@ -92,20 +92,17 @@
 
     <main id="main-content" role="main">
     <section class="hero">
-        <div class="animated-circles">
-            <div class="circle x1"></div>
-            <div class="circle x2"></div>
-            <div class="circle x3"></div>
-            <div class="circle x4"></div>
-            <div class="circle x5"></div>
-            <div class="circle x6"></div>
-            <div class="circle x7"></div>
-            <div class="circle x8"></div>
-            <div class="circle x9"></div>
-            <div class="circle x10"></div>
-            <div class="circle x11"></div>
-            <div class="circle x12"></div>
-            <div class="circle x13"></div>
+        <div class="rotating-shapes">
+            <div class="rotating-shape shape-1">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="61.9,82.1 43.3,100 24.9,82.1 0,75 6.3,50.1 0,25 24.7,17.9 43.3,0 61.8,17.9 86.6,25 80.5,49.9 86.6,75" stroke-linejoin="round" stroke-width="36"/>
+                </svg>
+            </div>
+            <div class="rotating-shape shape-2">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,0 60.4,11.4 75,6.7 78.3,21.7 93.3,25 88.7,39.7 100,50 88.7,60.4 93.3,75 78.3,78.3 75,93.3 60.4,88.7 50,100 39.7,88.7 25,93.3 21.7,78.3 6.7,75 11.4,60.4 0,50 11.4,39.7 6.7,25 21.7,21.7 25,6.7 39.7,11.4" stroke-linejoin="round" stroke-width="28"/>
+                </svg>
+            </div>
         </div>
         <div class="container">
             <div class="hero-content">
@@ -148,7 +145,7 @@
                         <span>Settings</span>
                     </a>
                     <a href="#troubleshooting" class="quick-nav-link">
-                        <i class="fas fa-question-circle"></i>
+                        <i class="fas fa-circle-question"></i>
                         <span>Troubleshooting</span>
                     </a>
                     <a href="#getting-help" class="quick-nav-link">
@@ -179,7 +176,7 @@
                     <i class="fas fa-cog"></i> Settings
                 </a>
                 <a href="#troubleshooting" class="help-sidebar-link" data-target="troubleshooting">
-                    <i class="fas fa-question-circle"></i> Troubleshooting
+                    <i class="fas fa-circle-question"></i> Troubleshooting
                 </a>
                 <a href="#getting-help" class="help-sidebar-link" data-target="getting-help">
                     <i class="fas fa-life-ring"></i> Support
@@ -394,9 +391,9 @@
             </section>
 
             <section id="troubleshooting" class="help-section-block" data-label="Troubleshooting">
-                <h2><i class="fas fa-question-circle"></i> Troubleshooting & Edge Cases</h2>
+                <h2><i class="fas fa-circle-question"></i> Troubleshooting & Edge Cases</h2>
 
-                <h3 class="help-subheading">📦 Installation & Updates</h3>
+                <h3 class="help-subheading"><i class="fas fa-box"></i> Installation & Updates</h3>
                 <div class="help-card">
                     <h3>App Won't Install / "App Not Installed" Error</h3>
                     <p><strong>Signature mismatch</strong> is the most common cause — you cannot install a GitHub release APK over an F-Droid install (or vice versa) because they are signed with different keys. Uninstall the existing version first, then install from your preferred source. Stick to one source for updates.</p>
@@ -415,7 +412,7 @@
                     <p>Android does not allow installing an APK with a lower <code>versionCode</code> over a newer install. You must uninstall the current version first, then install the older APK. Create a backup first (Settings → Advanced → Backup & Restore) as uninstalling erases all data.</p>
                 </div>
 
-                <h3 class="help-subheading">🔍 Media Scanning & Library</h3>
+                <h3 class="help-subheading"><i class="fas fa-search"></i> Media Scanning & Library</h3>
                 <div class="help-card">
                     <h3>Music Not Showing After Scan</h3>
                     <p>Try these steps in order:</p>
@@ -442,7 +439,7 @@
                     <p>Android's scoped storage limits external SD access. Use the Explorer tab to navigate manually. Rhythm does not support SMB/NFS — use <strong>Streaming Mode</strong> with a Subsonic/Navidrome/Jellyfin server for network playback.</p>
                 </div>
 
-                <h3 class="help-subheading">🎵 Playback Issues</h3>
+                <h3 class="help-subheading"><i class="fas fa-music"></i> Playback Issues</h3>
                 <div class="help-card">
                     <h3>Audio Stuttering or Skipping</h3>
                     <ul>
@@ -476,7 +473,7 @@
                     <p>Replay Gain requires <strong>REPLAYGAIN_TRACK_GAIN</strong> or <strong>REPLAYGAIN_ALBUM_GAIN</strong> tags. Use MusicBrainz Picard to add them. This is an experimental feature.</p>
                 </div>
 
-                <h3 class="help-subheading">🔊 Equalizer & Audio Effects</h3>
+                <h3 class="help-subheading"><i class="fas fa-sliders"></i> Equalizer & Audio Effects</h3>
                 <div class="help-card">
                     <h3>Equalizer Not Affecting Sound</h3>
                     <p>Ensure EQ is enabled in Settings → Audio → Equalizer. Some Bluetooth devices or USB DACs bypass Android's audio mixer — disable High-Resolution Audio mode. Restart app after toggling.</p>
@@ -490,7 +487,7 @@
                     <p>Apps like <strong>Wavelet</strong> or device EQs conflict with Rhythm's built-in EQ. Only one EQ can process audio at a time. Disable one of them.</p>
                 </div>
 
-                <h3 class="help-subheading">🎤 Lyrics & Artwork</h3>
+                <h3 class="help-subheading"><i class="fas fa-microphone"></i> Lyrics & Artwork</h3>
                 <div class="help-card">
                     <h3>Lyrics Not Loading or Wrong Timings</h3>
                     <p>Lyrics come from <strong>LRCLib</strong>. Check internet and API settings. Use the sync adjustment in lyrics view to shift timings. Instrumental or obscure tracks may have no lyrics.</p>
@@ -500,7 +497,7 @@
                     <p>Verify Deezer/YouTube Music API is enabled. Clear artwork cache (Settings → Advanced → Cache Management). Set artwork manually via the song info screen for missing albums.</p>
                 </div>
 
-                <h3 class="help-subheading">🌐 Streaming Mode</h3>
+                <h3 class="help-subheading"><i class="fas fa-globe"></i> Streaming Mode</h3>
                 <div class="help-card">
                     <h3>Cannot Connect to Server</h3>
                     <ul>
@@ -520,7 +517,7 @@
                     <p>Ensure your server has indexed music and your user account has library access. Try another Subsonic client to verify server health.</p>
                 </div>
 
-                <h3 class="help-subheading">📱 Widgets & Performance</h3>
+                <h3 class="help-subheading"><i class="fas fa-mobile-screen-button"></i> Widgets & Performance</h3>
                 <div class="help-card">
                     <h3>Widget Not Updating</h3>
                     <p>Remove and re-add the widget. Ensure music is playing. Exclude Rhythm from battery optimization. Some launchers have widget refresh delays.</p>
@@ -534,7 +531,7 @@
                     <p>Disable High-Resolution Audio and EQ if not needed. Standard-quality files consume less CPU. Exclude from battery optimization. If overheating persists, check for other running apps.</p>
                 </div>
 
-                <h3 class="help-subheading">💾 Backup & Device-Specific</h3>
+                <h3 class="help-subheading"><i class="fas fa-save"></i> Backup & Device-Specific</h3>
                 <div class="help-card">
                     <h3>Backup Fails or Partial Restore</h3>
                     <p>Ensure sufficient storage and storage permission is granted. Backups are version-dependent — cross-version restore is best-effort. Transfer backup files manually to a new device.</p>
@@ -616,28 +613,28 @@
                 <div class="footer-section">
                     <h3>Documentation</h3>
                     <ul class="footer-links">
-                        <li><a href="https://github.com/cromaguy/Rhythm/wiki">📖 Wiki Home</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/Getting-Started">🚀 Getting Started</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/Features">✨ Features Guide</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/Troubleshooting">🔧 Troubleshooting</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/FAQ">❓ FAQ</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/wiki"><i class="fas fa-book"></i> Wiki Home</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/Getting-Started"><i class="fas fa-rocket"></i> Getting Started</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/Features"><i class="fas fa-star"></i> Features Guide</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/Troubleshooting"><i class="fas fa-wrench"></i> Troubleshooting</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/FAQ"><i class="fas fa-circle-question"></i> FAQ</a></li>
                     </ul>
                     <h3>Resources</h3>
                     <ul class="footer-links">
-                        <li><a href="https://github.com/cromaguy/Rhythm/releases">📦 Releases</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/LICENSE">📄 License (GPL v3)</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/docs/SECURITY.md">🔒 Security Policy</a></li>
-                        <li><a href="privacy.html">🛡️ Privacy Policy</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/releases"><i class="fas fa-box"></i> Releases</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/LICENSE"><i class="fas fa-file-lines"></i> License (GPL v3)</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/docs/SECURITY.md"><i class="fas fa-lock"></i> Security Policy</a></li>
+                        <li><a href="privacy.html"><i class="fas fa-shield-halved"></i> Privacy Policy</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h3>Contribute</h3>
                     <ul class="footer-links">
-                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/docs/CONTRIBUTING.md">📝 Contributing Guide</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm/pulls">💻 Submit Pull Request</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm/issues">🐛 Report Issues</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm/discussions">💡 Discussions</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/docs/CODE_OF_CONDUCT.md">🤝 Code of Conduct</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/docs/CONTRIBUTING.md"><i class="fas fa-file-pen"></i> Contributing Guide</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/pulls"><i class="fas fa-laptop-code"></i> Submit Pull Request</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/issues"><i class="fas fa-bug"></i> Report Issues</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/discussions"><i class="fas fa-lightbulb"></i> Discussions</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/docs/CODE_OF_CONDUCT.md"><i class="fas fa-handshake"></i> Code of Conduct</a></li>
                     </ul>
                     <h3>Contact</h3>
                     <ul class="footer-links">

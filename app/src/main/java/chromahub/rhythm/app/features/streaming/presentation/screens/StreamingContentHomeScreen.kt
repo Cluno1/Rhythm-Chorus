@@ -34,17 +34,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.carousel.CarouselDefaults
 import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
@@ -74,23 +69,24 @@ import androidx.compose.ui.unit.sp
 import java.util.Calendar
 import androidx.compose.foundation.clickable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveCard
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapes
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import chromahub.rhythm.app.shared.presentation.components.common.RhythmGuardCard
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -210,14 +206,12 @@ fun StreamingContentHomeScreen(
     val pullToRefreshState = rememberPullToRefreshState()
     val isRefreshing = isLoading
 
-    // Use internal state for album sheet instead of the parameter callback
     val handleAlbumClick: (StreamingAlbum) -> Unit = { album ->
         if (album.tracks.isEmpty()) {
             selectedAlbumForSheet = album
             scope.launch {
                 val tracks = viewModel.getAlbumSongs(album)
                 if (tracks.isNotEmpty()) {
-                    // Update state with loaded tracks
                     selectedAlbumForSheet = album.copy(tracks = tracks)
                 }
             }
@@ -354,11 +348,7 @@ fun StreamingContentHomeScreen(
             if (isSelectedServiceConnected) {
                 ExpressiveFilledIconButton(
                     onClick = {
-                        HapticUtils.performHapticFeedback(
-                            context,
-                            haptics,
-                            HapticType.HEAVY
-                        )
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                         showSectionOrderBottomSheet = true
                     },
                     colors = IconButtonDefaults.filledIconButtonColors(
@@ -409,118 +399,26 @@ fun StreamingContentHomeScreen(
             }
         ) {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(40.dp),
                 contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding())
             ) {
 
-            when {
-                !isSelectedServiceConnected -> {
-                    item {
-                        StreamingHomeStateCard(
-                            title = stringResource(id = R.string.streaming_home_selected_service_unavailable),
-                            subtitle = stringResource(
-                                id = R.string.streaming_home_connect_selected_service,
-                                selectedServiceName
-                            ),
-                            icon = MaterialSymbolIcon("cloud_off", filled = true),
-                            iconContainerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.45f),
-                            iconTint = MaterialTheme.colorScheme.onErrorContainer,
-                            actionText = stringResource(id = R.string.streaming_manage_service),
-                            onAction = {
-                                HapticUtils.performHapticFeedback(
-                                    context,
-                                    haptics,
-                                    HapticType.HEAVY
-                                )
-                                if (serviceIdForConfig.isNotBlank()) {
-                                    onConfigureService(serviceIdForConfig)
-                                } else {
-                                    onNavigateToSettings()
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                        )
-                    }
-                }
-
-                isSelectedServiceConnected && (isLoading || !hasLoadedHomeContent) -> {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .height(loadingSectionHeight)
-                                .fillMaxWidth()
-                                .padding(vertical = 24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
+                when {
+                    !isSelectedServiceConnected -> {
+                        item {
                             StreamingHomeStateCard(
-                                title = stringResource(id = R.string.streaming_library_syncing),
-                                subtitle = stringResource(id = R.string.streaming_home_widget_empty_hint),
-                                icon = MaterialSymbolIcon("history", filled = true),
-                                iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                showProgressIndicator = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp)
-                            )
-                        }
-                    }
-                }
-
-                !homeErrorMessage.isNullOrBlank() && !hasAnyWidgetContent -> {
-                    item {
-                        StreamingHomeStateCard(
-                            title = stringResource(id = R.string.streaming_home_selected_service_unavailable),
-                            subtitle = homeErrorMessage,
-                            icon = RhythmIcons.Info,
-                            iconContainerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.45f),
-                            iconTint = MaterialTheme.colorScheme.onErrorContainer,
-                            actionText = stringResource(id = R.string.streaming_manage_service),
-                            onAction = {
-                                HapticUtils.performHapticFeedback(
-                                    context,
-                                    haptics,
-                                    HapticType.HEAVY
-                                )
-                                if (serviceIdForConfig.isNotBlank()) {
-                                    onConfigureService(serviceIdForConfig)
-                                } else {
-                                    onNavigateToSettings()
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                        )
-                    }
-                }
-
-                isSelectedServiceConnected && !hasAnyWidgetContent -> {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .fillMaxWidth()
-                                .padding(vertical = 24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            StreamingHomeStateCard(
-                                title = stringResource(id = R.string.streaming_home_no_content_title),
-                                subtitle = stringResource(id = R.string.streaming_home_no_content_hint),
-                                icon = RhythmIcons.HomeFilled,
-                                iconContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                iconTint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                title = stringResource(id = R.string.streaming_home_selected_service_unavailable),
+                                subtitle = stringResource(
+                                    id = R.string.streaming_home_connect_selected_service,
+                                    selectedServiceName
+                                ),
+                                icon = MaterialSymbolIcon("cloud_off", filled = true),
+                                iconContainerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.45f),
+                                iconTint = MaterialTheme.colorScheme.onErrorContainer,
                                 actionText = stringResource(id = R.string.streaming_manage_service),
                                 onAction = {
-                                    HapticUtils.performHapticFeedback(
-                                        context,
-                                        haptics,
-                                        HapticType.HEAVY
-                                    )
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                     if (serviceIdForConfig.isNotBlank()) {
                                         onConfigureService(serviceIdForConfig)
                                     } else {
@@ -533,284 +431,348 @@ fun StreamingContentHomeScreen(
                             )
                         }
                     }
-                }
 
-                else -> {
-                    visibleSections.forEach { sectionId ->
-                        when (sectionId) {
-                        STREAMING_SECTION_PLAYLISTS -> {
-                            item(key = "streaming_section_playlists") {
-                                Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                                    val playlists = (savedPlaylists + featuredPlaylists).distinctBy { it.id }
-                                    Column(
-                                        modifier = Modifier.padding(vertical = 12.dp),
-                                        verticalArrangement = Arrangement.spacedBy(20.dp)
-                                    ) {
-                                        StreamingWidgetSectionTitle(
-                                            title = stringResource(id = R.string.library_tab_playlists),
-                                            subtitle = stringResource(R.string.streamingcontenthomescreen_your_connected_streaming_service)
-                                        )
-
-                                        if (playlists.isEmpty()) {
-                                            StreamingSectionEmptyCard(
-                                                icon = MaterialSymbolIcon("playlist_play"),
-                                                title = stringResource(R.string.streamingcontenthomescreen_no_playlists_found),
-                                                subtitle = stringResource(R.string.streamingcontenthomescreen_create_playlists_on_your)
-                                            )
-                                        } else {
-                                            LazyRow(
-                                                contentPadding = PaddingValues(0.dp),
-                                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                                modifier = Modifier.fillMaxWidth()
-                                            ) {
-                                                items(
-                                                    items = playlists,
-                                                    key = { playlist -> playlist.id }
-                                                ) { playlist ->
-                                                    StreamingPlaylistWidgetCard(
-                                                        playlist = playlist,
-                                                        onClick = { onNavigateToPlaylist(playlist) }
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                    isSelectedServiceConnected && (isLoading || !hasLoadedHomeContent) -> {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .height(loadingSectionHeight)
+                                    .fillMaxWidth()
+                                    .padding(vertical = 24.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                StreamingHomeStateCard(
+                                    title = stringResource(id = R.string.streaming_library_syncing),
+                                    subtitle = stringResource(id = R.string.streaming_home_widget_empty_hint),
+                                    icon = MaterialSymbolIcon("history", filled = true),
+                                    iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    showProgressIndicator = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp)
+                                )
                             }
                         }
+                    }
 
-                        STREAMING_SECTION_DISCOVER -> {
-                            item(key = "streaming_section_discover") {
-                                Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                                    if (recommendationWidgetSongs.isEmpty()) {
-                                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                                            StreamingSectionEmptyCard(
-                                                icon = RhythmIcons.HeadphonesFilled,
-                                                title = stringResource(id = R.string.streaming_home_widget_recommended_empty),
-                                                subtitle = stringResource(id = R.string.streaming_home_widget_empty_hint)
-                                            )
-                                        }
+                    !homeErrorMessage.isNullOrBlank() && !hasAnyWidgetContent -> {
+                        item {
+                            StreamingHomeStateCard(
+                                title = stringResource(id = R.string.streaming_home_selected_service_unavailable),
+                                subtitle = homeErrorMessage,
+                                icon = RhythmIcons.Info,
+                                iconContainerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.45f),
+                                iconTint = MaterialTheme.colorScheme.onErrorContainer,
+                                actionText = stringResource(id = R.string.streaming_manage_service),
+                                onAction = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    if (serviceIdForConfig.isNotBlank()) {
+                                        onConfigureService(serviceIdForConfig)
                                     } else {
-                                        StreamingRecommendationsCarousel(
-                                            songs = recommendationWidgetSongs,
-                                            autoScrollEnabled = discoverAutoScroll,
-                                            autoScrollIntervalSeconds = discoverAutoScrollInterval,
-                                            onPlaySong = { _, index ->
-                                                viewModel.playQueue(
-                                                    queue = recommendationWidgetSongs,
-                                                    startIndex = index,
-                                                    shuffle = false
-                                                )
-                                            },
-                                            onOpenAlbum = { song ->
-                                                song.albumId?.let { albumId ->
-                                                    handleAlbumClick(
-                                                        chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum(
-                                                            id = albumId,
-                                                            title = song.album,
-                                                            artist = song.albumArtist ?: song.artist,
-                                                            artworkUri = song.artworkUri,
-                                                            songCount = 0,
-                                                            year = null,
-                                                            sourceType = song.sourceType
-                                                        )
-                                                    )
-                                                }
-                                            }
-                                        )
+                                        onNavigateToSettings()
                                     }
-                                }
-                            }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp)
+                            )
                         }
+                    }
 
-                        STREAMING_SECTION_RHYTHM_GUARD -> {
-                            item(key = "streaming_section_rhythm_guard") {
-                                Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                                    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                                        StreamingWidgetSectionTitle(
-                                            title = stringResource(id = R.string.settings_rhythm_guard),
-                                            subtitle = stringResource(id = R.string.settings_rhythm_guard_list_desc)
-                                        )
-
-                                        RhythmGuardCard(
-                                            rhythmGuardMode = rhythmGuardMode,
-                                            rhythmGuardRecommendedMinutes = rhythmGuardRecommendedMinutes,
-                                            todayListeningMinutes = todayListeningMinutes,
-                                            isGuardTimeoutActive = isRhythmGuardTimeoutActive,
-                                            guardTimeoutRemainingMs = rhythmGuardTimeoutRemainingMs,
-                                            onCardClick = {
-                                                HapticUtils.performHapticFeedback(
-                                                    context,
-                                                    haptics,
-                                                    HapticType.HEAVY
-                                                )
-                                                onNavigateToRhythmGuard()
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        STREAMING_SECTION_ARTISTS -> {
-                            item(key = "streaming_section_artists") {
-                                Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                                    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                                        StreamingWidgetSectionTitle(
-                                            title = stringResource(id = R.string.home_top_artists),
-                                            subtitle = stringResource(id = R.string.home_top_artists_subtitle)
-                                        )
-
-                                        if (streamingArtists.isEmpty()) {
-                                            StreamingSectionEmptyCard(
-                                                icon = RhythmIcons.ArtistFilled,
-                                                title = stringResource(id = R.string.home_no_artists),
-                                                subtitle = stringResource(id = R.string.home_no_artists_desc)
-                                            )
+                    isSelectedServiceConnected && !hasAnyWidgetContent -> {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .fillMaxWidth()
+                                    .padding(vertical = 24.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                StreamingHomeStateCard(
+                                    title = stringResource(id = R.string.streaming_home_no_content_title),
+                                    subtitle = stringResource(id = R.string.streaming_home_no_content_hint),
+                                    icon = RhythmIcons.HomeFilled,
+                                    iconContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    iconTint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    actionText = stringResource(id = R.string.streaming_manage_service),
+                                    onAction = {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                        if (serviceIdForConfig.isNotBlank()) {
+                                            onConfigureService(serviceIdForConfig)
                                         } else {
-                                            StreamingArtistsSection(
-                                                artists = streamingArtists,
-                                                onArtistClick = onNavigateToArtist
-                                            )
+                                            onNavigateToSettings()
                                         }
-                                    }
-                                }
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp)
+                                )
                             }
                         }
+                    }
 
-                        STREAMING_SECTION_RHYTHM_STATS -> {
-                            item(key = "streaming_section_rhythm_stats") {
-                                Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                                    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                                        StreamingWidgetSectionTitle(
-                                            title = stringResource(id = R.string.settings_rhythm_stats),
-                                            subtitle = stringResource(id = R.string.settings_rhythm_stats_desc)
-                                        )
-
-                                        StreamingRhythmStatsCard(
-                                            listeningDurationMs = totalListeningDurationMs,
-                                            songsPlayed = songsPlayedForStats,
-                                            uniqueArtists = uniqueArtistsForStats,
-                                            onCardClick = {
-                                                HapticUtils.performHapticFeedback(
-                                                    context,
-                                                    haptics,
-                                                    HapticType.HEAVY
-                                                )
-                                                onNavigateToRhythmStats()
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        STREAMING_SECTION_RECENTLY_PLAYED -> {
-                            item(key = "streaming_section_recent") {
-                                Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                                    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                                        StreamingWidgetSectionTitle(
-                                            title = stringResource(id = R.string.home_section_recently_played),
-                                            subtitle = stringResource(id = R.string.home_recently_played_subtitle),
-                                            onPlayAll = recentSongsForSelectedService.takeIf { it.isNotEmpty() }
-                                                ?.let { songs ->
-                                                    {
-                                                        HapticUtils.performHapticFeedback(
-                                                            context,
-                                                            haptics,
-                                                            HapticType.HEAVY
-                                                        )
-                                                        viewModel.playQueue(
-                                                            queue = songs,
-                                                            startIndex = 0,
-                                                            shuffle = false
-                                                        )
-                                                    }
-                                                },
-                                            onShufflePlay = recentSongsForSelectedService.takeIf { it.size > 1 }
-                                                ?.let { songs ->
-                                                    {
-                                                        HapticUtils.performHapticFeedback(
-                                                            context,
-                                                            haptics,
-                                                            HapticType.HEAVY
-                                                        )
-                                                        viewModel.playQueue(
-                                                            queue = songs,
-                                                            startIndex = 0,
-                                                            shuffle = true
-                                                        )
-                                                    }
-                                                }
-                                        )
-
-                                        if (recentSongsForSelectedService.isEmpty()) {
-                                            StreamingSectionEmptyCard(
-                                                icon = MaterialSymbolIcon("history"),
-                                                title = stringResource(id = R.string.home_no_recent_activity),
-                                                subtitle = stringResource(id = R.string.home_no_recent_activity_desc)
-                                            )
-                                        } else {
-                                            LazyRow(
-                                                contentPadding = PaddingValues(0.dp),
-                                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                                modifier = Modifier.fillMaxWidth()
+                    else -> {
+                        visibleSections.forEach { sectionId ->
+                            when (sectionId) {
+                                STREAMING_SECTION_PLAYLISTS -> {
+                                    item(key = "streaming_section_playlists") {
+                                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                                            val playlists = (savedPlaylists + featuredPlaylists).distinctBy { it.id }
+                                            Column(
+                                                modifier = Modifier.padding(vertical = 12.dp),
+                                                verticalArrangement = Arrangement.spacedBy(20.dp)
                                             ) {
-                                                itemsIndexed(
-                                                    items = recentSongsForSelectedService,
-                                                    key = { _, song -> song.id }
-                                                ) { index, song ->
-                                                    StreamingSongWidgetCard(
-                                                        song = song,
-                                                        onPlaySong = {
-                                                            viewModel.playQueue(
-                                                                queue = recentSongsForSelectedService,
-                                                                startIndex = index,
-                                                                shuffle = false
+                                                StreamingWidgetSectionTitle(
+                                                    title = stringResource(id = R.string.library_tab_playlists),
+                                                    subtitle = stringResource(R.string.streamingcontenthomescreen_your_connected_streaming_service)
+                                                )
+
+                                                if (playlists.isEmpty()) {
+                                                    StreamingSectionEmptyCard(
+                                                        icon = MaterialSymbolIcon("playlist_play"),
+                                                        title = stringResource(R.string.streamingcontenthomescreen_no_playlists_found),
+                                                        subtitle = stringResource(R.string.streamingcontenthomescreen_create_playlists_on_your)
+                                                    )
+                                                } else {
+                                                    LazyRow(
+                                                        contentPadding = PaddingValues(0.dp),
+                                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    ) {
+                                                        items(
+                                                            items = playlists,
+                                                            key = { playlist -> playlist.id }
+                                                        ) { playlist ->
+                                                            StreamingPlaylistWidgetCard(
+                                                                playlist = playlist,
+                                                                onClick = { onNavigateToPlaylist(playlist) }
                                                             )
                                                         }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                STREAMING_SECTION_DISCOVER -> {
+                                    item(key = "streaming_section_discover") {
+                                        Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                                            if (recommendationWidgetSongs.isEmpty()) {
+                                                Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                                                    StreamingSectionEmptyCard(
+                                                        icon = RhythmIcons.HeadphonesFilled,
+                                                        title = stringResource(id = R.string.streaming_home_widget_recommended_empty),
+                                                        subtitle = stringResource(id = R.string.streaming_home_widget_empty_hint)
+                                                    )
+                                                }
+                                            } else {
+                                                StreamingRecommendationsCarousel(
+                                                    songs = recommendationWidgetSongs,
+                                                    autoScrollEnabled = discoverAutoScroll,
+                                                    autoScrollIntervalSeconds = discoverAutoScrollInterval,
+                                                    onPlaySong = { _, index ->
+                                                        viewModel.playQueue(
+                                                            queue = recommendationWidgetSongs,
+                                                            startIndex = index,
+                                                            shuffle = false
+                                                        )
+                                                    },
+                                                    onOpenAlbum = { song ->
+                                                        song.albumId?.let { albumId ->
+                                                            handleAlbumClick(
+                                                                chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum(
+                                                                    id = albumId,
+                                                                    title = song.album,
+                                                                    artist = song.albumArtist ?: song.artist,
+                                                                    artworkUri = song.artworkUri,
+                                                                    songCount = 0,
+                                                                    year = null,
+                                                                    sourceType = song.sourceType
+                                                                )
+                                                            )
+                                                        }
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+
+                                STREAMING_SECTION_RHYTHM_GUARD -> {
+                                    item(key = "streaming_section_rhythm_guard") {
+                                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                                StreamingWidgetSectionTitle(
+                                                    title = stringResource(id = R.string.settings_rhythm_guard),
+                                                    subtitle = stringResource(id = R.string.settings_rhythm_guard_list_desc)
+                                                )
+
+                                                StreamingRhythmGuardPill(
+                                                    rhythmGuardMode = rhythmGuardMode,
+                                                    recommendedMinutes = rhythmGuardRecommendedMinutes,
+                                                    todayMinutes = todayListeningMinutes,
+                                                    isTimeoutActive = isRhythmGuardTimeoutActive,
+                                                    onClick = {
+                                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                        onNavigateToRhythmGuard()
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+
+                                STREAMING_SECTION_ARTISTS -> {
+                                    item(key = "streaming_section_artists") {
+                                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                                            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                                                StreamingWidgetSectionTitle(
+                                                    title = stringResource(id = R.string.home_top_artists),
+                                                    subtitle = stringResource(id = R.string.home_top_artists_subtitle)
+                                                )
+
+                                                if (streamingArtists.isEmpty()) {
+                                                    StreamingSectionEmptyCard(
+                                                        icon = RhythmIcons.ArtistFilled,
+                                                        title = stringResource(id = R.string.home_no_artists),
+                                                        subtitle = stringResource(id = R.string.home_no_artists_desc)
+                                                    )
+                                                } else {
+                                                    StreamingArtistsSection(
+                                                        artists = streamingArtists,
+                                                        onArtistClick = onNavigateToArtist
                                                     )
                                                 }
                                             }
                                         }
                                     }
                                 }
-                            }
-                        }
 
-                        STREAMING_SECTION_NEW_RELEASES -> {
-                            item(key = "streaming_section_new_releases") {
-                                Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                                    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                                        StreamingWidgetSectionTitle(
-                                            title = stringResource(id = R.string.streaming_home_widget_new_releases_title),
-                                            subtitle = stringResource(
-                                                id = R.string.streaming_home_widget_new_releases_subtitle,
-                                                selectedServiceName
-                                            )
-                                        )
+                                STREAMING_SECTION_RHYTHM_STATS -> {
+                                    item(key = "streaming_section_rhythm_stats") {
+                                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                                            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                                                StreamingWidgetSectionTitle(
+                                                    title = stringResource(id = R.string.settings_rhythm_stats),
+                                                    subtitle = stringResource(id = R.string.settings_rhythm_stats_desc)
+                                                )
 
-                                        if (newReleases.isEmpty()) {
-                                            StreamingSectionEmptyCard(
-                                                icon = MaterialSymbolIcon("new_releases", filled = true),
-                                                title = stringResource(id = R.string.streaming_home_widget_new_releases_empty),
-                                                subtitle = stringResource(id = R.string.streaming_home_widget_empty_hint)
-                                            )
-                                        } else {
-                                            LazyRow(
-                                                contentPadding = PaddingValues(0.dp),
-                                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                                modifier = Modifier.fillMaxWidth()
-                                            ) {
-                                                items(
-                                                    items = newReleases.take(12),
-                                                    key = { it.id }
-                                                ) { album ->
-                                                    StreamingAlbumWidgetCard(
-                                                        album = album,
-                                                        onPlayAlbum = { viewModel.playAlbum(album) },
-                                                        onAlbumClick = { handleAlbumClick(album) }
+                                                StreamingRhythmStatsCard(
+                                                    listeningDurationMs = totalListeningDurationMs,
+                                                    songsPlayed = songsPlayedForStats,
+                                                    uniqueArtists = uniqueArtistsForStats,
+                                                    onCardClick = {
+                                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                        onNavigateToRhythmStats()
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+
+                                STREAMING_SECTION_RECENTLY_PLAYED -> {
+                                    item(key = "streaming_section_recent") {
+                                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                                            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                                                StreamingWidgetSectionTitle(
+                                                    title = stringResource(id = R.string.home_section_recently_played),
+                                                    subtitle = stringResource(id = R.string.home_recently_played_subtitle),
+                                                    onPlayAll = recentSongsForSelectedService.takeIf { it.isNotEmpty() }
+                                                        ?.let { songs ->
+                                                            {
+                                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                                viewModel.playQueue(
+                                                                    queue = songs,
+                                                                    startIndex = 0,
+                                                                    shuffle = false
+                                                                )
+                                                            }
+                                                        },
+                                                    onShufflePlay = recentSongsForSelectedService.takeIf { it.size > 1 }
+                                                        ?.let { songs ->
+                                                            {
+                                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                                viewModel.playQueue(
+                                                                    queue = songs,
+                                                                    startIndex = 0,
+                                                                    shuffle = true
+                                                                )
+                                                            }
+                                                        }
+                                                )
+
+                                                if (recentSongsForSelectedService.isEmpty()) {
+                                                    StreamingSectionEmptyCard(
+                                                        icon = MaterialSymbolIcon("history"),
+                                                        title = stringResource(id = R.string.home_no_recent_activity),
+                                                        subtitle = stringResource(id = R.string.home_no_recent_activity_desc)
                                                     )
+                                                } else {
+                                                    LazyRow(
+                                                        contentPadding = PaddingValues(0.dp),
+                                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    ) {
+                                                        itemsIndexed(
+                                                            items = recentSongsForSelectedService,
+                                                            key = { _, song -> song.id }
+                                                        ) { index, song ->
+                                                            StreamingSongWidgetCard(
+                                                                song = song,
+                                                                onPlaySong = {
+                                                                    viewModel.playQueue(
+                                                                        queue = recentSongsForSelectedService,
+                                                                        startIndex = index,
+                                                                        shuffle = false
+                                                                    )
+                                                                }
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                STREAMING_SECTION_NEW_RELEASES -> {
+                                    item(key = "streaming_section_new_releases") {
+                                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                                            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                                                StreamingWidgetSectionTitle(
+                                                    title = stringResource(id = R.string.streaming_home_widget_new_releases_title),
+                                                    subtitle = stringResource(
+                                                        id = R.string.streaming_home_widget_new_releases_subtitle,
+                                                        selectedServiceName
+                                                    )
+                                                )
+
+                                                if (newReleases.isEmpty()) {
+                                                    StreamingSectionEmptyCard(
+                                                        icon = MaterialSymbolIcon("new_releases", filled = true),
+                                                        title = stringResource(id = R.string.streaming_home_widget_new_releases_empty),
+                                                        subtitle = stringResource(id = R.string.streaming_home_widget_empty_hint)
+                                                    )
+                                                } else {
+                                                    LazyRow(
+                                                        contentPadding = PaddingValues(0.dp),
+                                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    ) {
+                                                        items(
+                                                            items = newReleases.take(12),
+                                                            key = { it.id }
+                                                        ) { album ->
+                                                            StreamingAlbumWidgetCard(
+                                                                album = album,
+                                                                onPlayAlbum = { viewModel.playAlbum(album) },
+                                                                onAlbumClick = { handleAlbumClick(album) }
+                                                            )
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -820,61 +782,56 @@ fun StreamingContentHomeScreen(
                         }
                     }
                 }
-            }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(30.dp))
+                item {
+                    Spacer(modifier = Modifier.height(30.dp))
+                }
             }
         }
 
-        // Album BottomSheet
         if (showAlbumBottomSheet && selectedAlbumForSheet != null) {
             val albumForSheet = selectedAlbumForSheet!!
             val streamingTracks = albumForSheet.tracks
             val libraryAlbum = albumForSheet.toLibraryAlbum(recentlyPlayedSongs)
             
-                AlbumBottomSheet(
-                    album = libraryAlbum,
-                    onDismiss = {
-                        showAlbumBottomSheet = false
-                        selectedAlbumForSheet = null
-                    },
-                    onSongClick = { song ->
-                        val streamingSong = streamingTracks.firstOrNull { it.id == song.id }
-                        streamingSong?.let { ss ->
-                            viewModel.playQueue(queue = listOf(ss), startIndex = 0, shuffle = false)
-                        }
-                    },
-                    onPlayAll = { songs ->
-                        if (streamingTracks.isNotEmpty()) {
-                            viewModel.playQueue(queue = streamingTracks, startIndex = 0, shuffle = false)
-                        }
-                    },
-                    onShufflePlay = { songs ->
-                        if (streamingTracks.isNotEmpty()) {
-                            val startIndex = (0 until streamingTracks.size).random()
-                            viewModel.playQueue(queue = streamingTracks, startIndex = startIndex, shuffle = true)
-                        }
-                    },
-                    onAddToQueue = { },
-                    onAddSongToPlaylist = { },
-                    onPlayerClick = { },
-                    sheetState = albumSheetState,
-                    haptics = haptics,
-                    showPlayNextAction = false,
-                    showAddToQueueAction = false,
-                    showToggleFavoriteAction = false,
-                    showAddToPlaylistAction = false,
-                    showSongInfoAction = false,
-                    showAddToBlacklistAction = false,
-                    currentSong = null,
-                    isPlaying = false
-                )
-            
+            AlbumBottomSheet(
+                album = libraryAlbum,
+                onDismiss = {
+                    showAlbumBottomSheet = false
+                    selectedAlbumForSheet = null
+                },
+                onSongClick = { song ->
+                    val streamingSong = streamingTracks.firstOrNull { it.id == song.id }
+                    streamingSong?.let { ss ->
+                        viewModel.playQueue(queue = listOf(ss), startIndex = 0, shuffle = false)
+                    }
+                },
+                onPlayAll = { _ ->
+                    if (streamingTracks.isNotEmpty()) {
+                        viewModel.playQueue(queue = streamingTracks, startIndex = 0, shuffle = false)
+                    }
+                },
+                onShufflePlay = { _ ->
+                    if (streamingTracks.isNotEmpty()) {
+                        val startIndex = (0 until streamingTracks.size).random()
+                        viewModel.playQueue(queue = streamingTracks, startIndex = startIndex, shuffle = true)
+                    }
+                },
+                onAddToQueue = { },
+                onAddSongToPlaylist = { },
+                onPlayerClick = { },
+                sheetState = albumSheetState,
+                haptics = haptics,
+                showPlayNextAction = false,
+                showAddToQueueAction = false,
+                showToggleFavoriteAction = false,
+                showAddToPlaylistAction = false,
+                showSongInfoAction = false,
+                showAddToBlacklistAction = false,
+                currentSong = null,
+                isPlaying = false
+            )
         }
     }
-}
 }
 
 @Composable
@@ -889,24 +846,24 @@ private fun StreamingHomeStateCard(
     onAction: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    ExpressiveElevatedCard(
         modifier = modifier,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
-        elevation = noShadowCardElevation()
+        shape = ExpressiveShapes.Large
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Surface(
                 shape = CircleShape,
                 color = iconContainerColor,
-                modifier = Modifier.size(44.dp)
+                modifier = Modifier.size(48.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     if (showProgressIndicator) {
@@ -916,57 +873,53 @@ private fun StreamingHomeStateCard(
                             imageVector = icon,
                             contentDescription = null,
                             tint = iconTint,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
             }
 
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
 
             if (actionText != null && onAction != null) {
-                Button(
-                    onClick = onAction,
+                ExpressiveButtonGroup(
+                    style = ButtonGroupStyle.Filled,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = actionText)
+                    ExpressiveGroupButton(
+                        onClick = onAction,
+                        isStart = true,
+                        isEnd = true,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = actionText,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }
     }
-}
-
-@Composable
-private fun StreamingDisconnectedStateCard(
-    selectedServiceName: String,
-    onConfigureService: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    StreamingHomeStateCard(
-        title = stringResource(id = R.string.streaming_home_selected_service_unavailable),
-        subtitle = stringResource(
-            id = R.string.streaming_home_connect_selected_service,
-            selectedServiceName
-        ),
-        icon = MaterialSymbolIcon("cloud_off", filled = true),
-        iconContainerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.45f),
-        iconTint = MaterialTheme.colorScheme.onErrorContainer,
-        actionText = stringResource(id = R.string.streaming_manage_service),
-        onAction = onConfigureService,
-        modifier = modifier
-    )
 }
 
 @Composable
@@ -987,7 +940,7 @@ private fun StreamingWidgetSectionTitle(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Black,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
@@ -1009,7 +962,7 @@ private fun StreamingWidgetSectionTitle(
                         Text(
                             text = stringResource(id = R.string.action_play),
                             style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -1030,7 +983,7 @@ private fun StreamingWidgetSectionTitle(
                             Text(
                                 text = stringResource(id = R.string.action_shuffle),
                                 style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -1041,169 +994,122 @@ private fun StreamingWidgetSectionTitle(
 }
 
 @Composable
-private fun StreamingGreetingWidgetCard(
-    greeting: String,
-    quote: String,
-    selectedServiceName: String,
-    onNavigateToSearch: () -> Unit
+private fun StreamingRhythmGuardPill(
+    rhythmGuardMode: String,
+    recommendedMinutes: Int,
+    todayMinutes: Int,
+    isTimeoutActive: Boolean,
+    onClick: () -> Unit
 ) {
-    val context = LocalContext.current
-    val haptics = LocalHapticFeedback.current
-
-    // Mirror local HomeScreen's ModernWelcomeSection design and text logic
-    val configuration = LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp
-    val isCompactWidth = screenWidthDp < 400
-    val isTablet = screenWidthDp >= 600
-
-    val greetingFontSize = when {
-        isCompactWidth -> 28.sp
-        isTablet -> 36.sp
-        else -> 32.sp
-    }
-    val messageFontSize = when {
-        isCompactWidth -> 12.sp
-        isTablet -> 16.sp
-        else -> 14.sp
-    }
-    val quoteFontSize = when {
-        isCompactWidth -> 11.sp
-        isTablet -> 14.sp
-        else -> 12.sp
+    val modeLabel = remember(rhythmGuardMode) {
+        when (rhythmGuardMode) {
+            AppSettings.RHYTHM_GUARD_MODE_AUTO -> "Adaptive Guard"
+            AppSettings.RHYTHM_GUARD_MODE_MANUAL -> "Manual Guard"
+            else -> "Guard Off"
+        }
     }
 
-    val timeBasedQuote = remember {
-        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        when {
-            hour in 0..4 -> listOf(
-                context.getString(R.string.home_quote_late_night_1),
-                context.getString(R.string.home_quote_late_night_2),
-                context.getString(R.string.home_quote_late_night_3),
-                context.getString(R.string.home_quote_late_night_4)
-            )
-            hour in 5..11 -> listOf(
-                context.getString(R.string.home_quote_morning_1),
-                context.getString(R.string.home_quote_morning_2),
-                context.getString(R.string.home_quote_morning_3),
-                context.getString(R.string.home_quote_morning_4)
-            )
-            hour in 12..16 -> listOf(
-                context.getString(R.string.home_quote_afternoon_1),
-                context.getString(R.string.home_quote_afternoon_2),
-                context.getString(R.string.home_quote_afternoon_3),
-                context.getString(R.string.home_quote_afternoon_4)
-            )
-            hour in 17..20 -> listOf(
-                context.getString(R.string.home_quote_evening_1),
-                context.getString(R.string.home_quote_evening_2),
-                context.getString(R.string.home_quote_evening_3),
-                context.getString(R.string.home_quote_evening_4)
-            )
-            else -> listOf(
-                context.getString(R.string.home_quote_night_1),
-                context.getString(R.string.home_quote_night_2),
-                context.getString(R.string.home_quote_night_3),
-                context.getString(R.string.home_quote_night_4)
-            )
-        }.random()
+    val progressFraction = remember(todayMinutes, recommendedMinutes) {
+        (todayMinutes.toFloat() / recommendedMinutes.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f)
     }
 
-    ExpressiveCard(
+    val animatedProgress by animateFloatAsState(
+        targetValue = progressFraction,
+        animationSpec = androidx.compose.animation.core.spring(stiffness = androidx.compose.animation.core.Spring.StiffnessLow),
+        label = "guard_progress"
+    )
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = tween(durationMillis = 100),
+        label = "guard_scale"
+    )
+
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                onNavigateToSearch()
-            },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
-        shape = ExpressiveShapes.ExtraLarge
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(18.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                repeat(3) {
-                    Text(
-                        text = "✨",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.alpha(0.12f)
+            if (animatedProgress > 0f) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .align(Alignment.CenterStart)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(fraction = animatedProgress)
+                            .background(
+                                if (isTimeoutActive) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
+                                else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                            )
                     )
                 }
             }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 0.dp)
+                val controlsShape = rememberExpressiveShapeFor(
+                    ExpressiveShapeTarget.PLAYER_CONTROLS,
+                    fallbackShape = CircleShape
+                )
+
+                Surface(
+                    shape = controlsShape,
+                    color = if (isTimeoutActive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                    contentColor = if (isTimeoutActive) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(36.dp)
                 ) {
-                    val infiniteTransition = rememberInfiniteTransition(label = "emoji_pulse")
-                    val emojiScale by infiniteTransition.animateFloat(
-                        initialValue = 1f,
-                        targetValue = 1.1f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(2000),
-                            repeatMode = RepeatMode.Reverse
-                        ),
-                        label = "emoji_scale"
-                    )
-
-                    Text(
-                        text = "☀️",
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier
-                            .padding(end = 12.dp)
-                            .graphicsLayer { scaleX = emojiScale; scaleY = emojiScale }
-                    )
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = greeting,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-
-                        Text(
-                            text = timeBasedQuote,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                            modifier = Modifier.padding(top = 5.dp)
-                        )
-                    }
-
-                    ExpressiveFilledIconButton(
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                            onNavigateToSearch()
-                        },
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.size(46.dp)
-                    ) {
+                    Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = RhythmIcons.SearchFilled,
-                            contentDescription = context.getString(R.string.cd_search),
-                            modifier = Modifier.size(24.dp)
+                            imageVector = if (isTimeoutActive) MaterialSymbolIcon("hourglass_empty", filled = true) else RhythmIcons.Security,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = modeLabel,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = if (isTimeoutActive) "Listening limit exceeded" else "$todayMinutes min / $recommendedMinutes min limit",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Icon(
+                    imageVector = MaterialSymbolIcon("chevron_right"),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }
 }
-
-
 
 @Composable
 private fun StreamingRhythmStatsCard(
@@ -1221,10 +1127,14 @@ private fun StreamingRhythmStatsCard(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth().clickable { onCardClick() },
-            shape = RoundedCornerShape(32.dp),
-            color = MaterialTheme.colorScheme.primaryContainer
+        ExpressiveElevatedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCardClick() },
+            shape = ExpressiveShapes.SquircleLarge,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
@@ -1234,12 +1144,14 @@ private fun StreamingRhythmStatsCard(
                     imageVector = RhythmIcons.Player.Timer,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(28.dp).padding(bottom = 8.dp)
+                    modifier = Modifier
+                        .size(28.dp)
+                        .padding(bottom = 8.dp)
                 )
                 Text(
                     text = if (listeningTimeHours < 1) "< 1h" else "${listeningTimeHours}h",
                     style = MaterialTheme.typography.displayMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Black,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
@@ -1254,10 +1166,14 @@ private fun StreamingRhythmStatsCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Surface(
-                modifier = Modifier.weight(1f).clickable { onCardClick() },
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer
+            ExpressiveCard(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onCardClick() },
+                shape = ExpressiveShapes.Large,
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -1267,7 +1183,9 @@ private fun StreamingRhythmStatsCard(
                         imageVector = RhythmIcons.Music.MusicNote,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(24.dp).padding(bottom = 4.dp)
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(bottom = 4.dp)
                     )
                     Text(
                         text = "$songsPlayed",
@@ -1283,10 +1201,14 @@ private fun StreamingRhythmStatsCard(
                 }
             }
 
-            Surface(
-                modifier = Modifier.weight(1f).clickable { onCardClick() },
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.tertiaryContainer
+            ExpressiveCard(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onCardClick() },
+                shape = ExpressiveShapes.Large,
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                )
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -1296,7 +1218,9 @@ private fun StreamingRhythmStatsCard(
                         imageVector = RhythmIcons.Artist,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                        modifier = Modifier.size(24.dp).padding(bottom = 4.dp)
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(bottom = 4.dp)
                     )
                     Text(
                         text = "$uniqueArtists",
@@ -1448,24 +1372,23 @@ private fun StreamingRecommendationsCarousel(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        androidx.compose.material3.Button(
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                onPlaySong(song, page)
-                            },
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(percent = 50),
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp),
-                            modifier = Modifier.height(56.dp)
-                        ) {
-                            Text(
-                                text = context.getString(R.string.action_play),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.ExtraBold
-                            )
+                        ExpressiveButtonGroup(style = ButtonGroupStyle.Filled) {
+                            ExpressiveGroupButton(
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    onPlaySong(song, page)
+                                },
+                                isStart = true,
+                                isEnd = true,
+                                modifier = Modifier.height(56.dp)
+                            ) {
+                                Text(
+                                    text = context.getString(R.string.action_play),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                )
+                            }
                         }
 
                         Row(
@@ -1491,64 +1414,29 @@ private fun StreamingRecommendationsCarousel(
 }
 
 @Composable
-private fun StreamingLoadingCard(modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        elevation = noShadowCardElevation()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            androidx.compose.material3.ContainedLoadingIndicator()
-
-            Text(
-                text = stringResource(id = R.string.streaming_status_loading),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center
-            )
-
-            Text(
-                text = stringResource(id = R.string.streaming_library_syncing),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
 private fun StreamingSectionEmptyCard(
     icon: MaterialSymbolIcon,
     title: String,
     subtitle: String
 ) {
-    Card(
+    ExpressiveCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
-        elevation = noShadowCardElevation()
+        shape = ExpressiveShapes.Large
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Surface(
-                shape = MaterialTheme.shapes.large,
+                shape = rememberExpressiveShapeFor(target = ExpressiveShapeTarget.ALBUM_ART),
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
-                modifier = Modifier.size(54.dp)
+                modifier = Modifier.size(56.dp)
             ) {
                 Icon(
                     imageVector = icon,
@@ -1558,19 +1446,25 @@ private fun StreamingSectionEmptyCard(
                 )
             }
 
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }
@@ -1589,8 +1483,8 @@ private fun StreamingSongWidgetCard(
             onPlaySong()
         },
         modifier = Modifier
-            .width(180.dp)
-            .height(80.dp),
+            .width(190.dp)
+            .height(88.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
@@ -1599,13 +1493,13 @@ private fun StreamingSongWidgetCard(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             M3ImageUtils.TrackImage(
                 imageUrl = song.artworkUri,
                 trackName = song.title,
-                modifier = Modifier.size(52.dp),
+                modifier = Modifier.size(64.dp),
                 applyExpressiveShape = true
             )
 
@@ -1618,7 +1512,7 @@ private fun StreamingSongWidgetCard(
                 Text(
                     text = song.title,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface
@@ -1636,7 +1530,8 @@ private fun StreamingSongWidgetCard(
             Icon(
                 imageVector = RhythmIcons.Play,
                 contentDescription = stringResource(id = R.string.cd_play),
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -1859,49 +1754,6 @@ private fun StreamingArtistsSection(
     }
 }
 
-private fun streamingGroupedBottomSheetItemShape(index: Int, totalCount: Int): RoundedCornerShape {
-    if (totalCount <= 1) return RoundedCornerShape(24.dp)
-
-    return when (index) {
-        0 -> RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 8.dp)
-        totalCount - 1 -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
-        else -> RoundedCornerShape(8.dp)
-    }
-}
-
-private fun streamingSectionIcon(sectionId: String): MaterialSymbolIcon {
-    return when (sectionId) {
-        STREAMING_SECTION_DISCOVER -> MaterialSymbolIcon("recommend")
-        STREAMING_SECTION_RHYTHM_GUARD -> RhythmIcons.Security
-        STREAMING_SECTION_RHYTHM_STATS -> MaterialSymbolIcon("auto_graph")
-        STREAMING_SECTION_RECENTLY_PLAYED -> MaterialSymbolIcon("history")
-        STREAMING_SECTION_NEW_RELEASES -> MaterialSymbolIcon("new_releases", filled = true)
-        else -> RhythmIcons.Music.Song
-    }
-}
-
-private fun streamingSectionSubtitleRes(sectionId: String): Int? {
-    return when (sectionId) {
-        STREAMING_SECTION_DISCOVER -> R.string.home_explore_music
-        STREAMING_SECTION_RHYTHM_GUARD -> R.string.settings_rhythm_guard_list_desc
-        STREAMING_SECTION_RHYTHM_STATS -> R.string.settings_rhythm_stats_desc
-        STREAMING_SECTION_RECENTLY_PLAYED -> R.string.home_recently_played_subtitle
-        STREAMING_SECTION_NEW_RELEASES -> R.string.streaming_home_widget_new_releases_empty
-        else -> null
-    }
-}
-
-private fun streamingSectionTitleRes(sectionId: String): Int {
-    return when (sectionId) {
-        STREAMING_SECTION_DISCOVER -> R.string.home_section_discover
-        STREAMING_SECTION_RHYTHM_GUARD -> R.string.settings_rhythm_guard
-        STREAMING_SECTION_RHYTHM_STATS -> R.string.settings_rhythm_stats
-        STREAMING_SECTION_RECENTLY_PLAYED -> R.string.home_section_recently_played
-        STREAMING_SECTION_NEW_RELEASES -> R.string.home_section_new_releases
-        else -> R.string.home
-    }
-}
-
 private fun normalizeStreamingSectionId(sectionId: String): String {
     return when (sectionId.trim()) {
         "STATS" -> STREAMING_SECTION_RHYTHM_STATS
@@ -1909,44 +1761,6 @@ private fun normalizeStreamingSectionId(sectionId: String): String {
         "PLAYLISTS" -> STREAMING_SECTION_PLAYLISTS
         else -> sectionId.trim()
     }
-}
-
-private fun rhythmGuardModeDisplayName(mode: String): String {
-    return when (mode) {
-        AppSettings.RHYTHM_GUARD_MODE_AUTO -> "Adaptive Guard"
-        AppSettings.RHYTHM_GUARD_MODE_MANUAL -> "Manual Guard"
-        else -> "Guard Off"
-    }
-}
-
-@Composable
-private fun noShadowCardElevation() = CardDefaults.cardElevation(
-    defaultElevation = 0.dp,
-    pressedElevation = 0.dp,
-    focusedElevation = 0.dp,
-    hoveredElevation = 0.dp,
-    draggedElevation = 0.dp
-)
-
-private fun formatListeningDurationShort(durationMs: Long): String {
-    if (durationMs <= 0L) return "0m"
-
-    val totalMinutes = durationMs / 60_000L
-    val hours = totalMinutes / 60L
-    val minutes = totalMinutes % 60L
-
-    return when {
-        hours <= 0L -> "${minutes}m"
-        minutes == 0L -> "${hours}h"
-        else -> "${hours}h ${minutes}m"
-    }
-}
-
-private fun formatCompactDuration(durationMs: Long): String {
-    val totalSeconds = (durationMs / 1_000L).coerceAtLeast(0L)
-    val minutes = totalSeconds / 60L
-    val seconds = totalSeconds % 60L
-    return if (minutes > 0L) "${minutes}m ${seconds}s" else "${seconds}s"
 }
 
 private fun Song.toStreamingSongOrNull(defaultServiceId: String): StreamingSong? {
