@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.2.417.1095 Beta] - 2026-07-01
+
+### Added
+- Handle missing picker and suggest folders #455
+- Fixed: cannot import playlists from json backup #449
+- Minor Improvements
+
 ## [5.1.416.1093 Beta] - 2026-06-26
 
 ### Added

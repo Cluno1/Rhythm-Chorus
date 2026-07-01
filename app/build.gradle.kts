@@ -24,11 +24,11 @@ android {
         
         val overrideVersionCode = project.findProperty("versionCodeOverride")?.toString()?.toIntOrNull()
         val overrideVersionName = project.findProperty("versionNameOverride")?.toString()
-        versionCode = overrideVersionCode ?: 514161093
-        versionName = overrideVersionName ?: "5.1.416.1093 Beta"
+        versionCode = overrideVersionCode ?: 524171095
+        versionName = overrideVersionName ?: "5.2.417.1095 Beta"
 
         val overrideReleaseDate = project.findProperty("releaseDateOverride")?.toString()
-        buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-06-26"}\"")
+        buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-07-01"}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
