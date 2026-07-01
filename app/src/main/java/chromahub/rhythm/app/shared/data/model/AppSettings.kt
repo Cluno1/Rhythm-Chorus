@@ -566,8 +566,7 @@ class AppSettings private constructor(context: Context) {
     }
     
     private val context: Context = context.applicationContext
-    private val originalPrefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    private val prefs: SharedPreferences = CachedSharedPreferences(originalPrefs)
+    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun setInitialSettingsSubroute(route: String?) {
         prefs.edit().putString(KEY_INITIAL_SETTINGS_SUBROUTE, route).apply()
@@ -5781,6 +5780,20 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
     
     /**
+     * Synchronously commits all pending SharedPreferences edits to disk.
+     * This blocks the calling thread until all outstanding asynchronous apply() writes
+     * have been fully written to storage.
+     */
+    fun commit() {
+        try {
+            prefs.edit().commit()
+            Log.d("AppSettings", "Synchronously committed all pending preference changes to disk")
+        } catch (e: Exception) {
+            Log.e("AppSettings", "Failed to commit preferences", e)
+        }
+    }
+
+    /**
      * Randomize all expressive shape targets with randomly picked shapes.
      * Sets the preset to CUSTOM after randomizing.
      */
@@ -5815,34 +5828,4 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         }.apply()
         _expressiveShapePreset.value = "CUSTOM"
     }
-}
-
-private class CachedSharedPreferences(
-    private val original: SharedPreferences
-) : SharedPreferences by original {
-    @Volatile
-    private var cache: Map<String, *> = original.all
-
-    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-        cache = original.all
-    }
-
-    init {
-        original.registerOnSharedPreferenceChangeListener(listener)
-    }
-
-    override fun getBoolean(key: String, defValue: Boolean): Boolean =
-        (cache[key] as? Boolean) ?: defValue
-    override fun getInt(key: String, defValue: Int): Int =
-        (cache[key] as? Int) ?: defValue
-    override fun getLong(key: String, defValue: Long): Long =
-        (cache[key] as? Long) ?: defValue
-    override fun getFloat(key: String, defValue: Float): Float =
-        (cache[key] as? Float) ?: defValue
-    override fun getString(key: String, defValue: String?): String? =
-        cache[key] as? String ?: defValue
-    override fun getStringSet(key: String, defValue: Set<String>?): Set<String>? =
-        @Suppress("UNCHECKED_CAST") (cache[key] as? Set<String>) ?: defValue
-    override fun contains(key: String): Boolean = cache.containsKey(key)
-    override fun getAll(): Map<String, *> = cache
 }

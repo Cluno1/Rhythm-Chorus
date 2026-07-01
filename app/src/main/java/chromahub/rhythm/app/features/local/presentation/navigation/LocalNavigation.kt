@@ -7,6 +7,7 @@ import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -780,49 +781,7 @@ private fun LocalNavigationContent(
 
     Scaffold(
         modifier = modifier,
-        snackbarHost = {
-            SnackbarHost(snackbarHostState) { data ->
-                val isRemovalSnackbar = data.visuals.message.contains("removed from playlist")
-
-                Snackbar(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                    action = {
-                        data.visuals.actionLabel?.let { label ->
-                            TextButton(onClick = { data.performAction() }) {
-                                Text(
-                                    label
-                                )
-                            }
-                        }
-                    },
-                    actionOnNewLine = data.visuals.actionLabel != null && data.visuals.message.length > 50,
-                    shape = ExpressiveShapes.Full, // Expressive pill shape
-                    containerColor = if (isRemovalSnackbar) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = if (isRemovalSnackbar) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer,
-                    actionContentColor = if (isRemovalSnackbar) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                    content = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(vertical = 12.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (isRemovalSnackbar) RhythmIcons.Delete else RhythmIcons.Actions.Check,
-                                contentDescription = if (isRemovalSnackbar) "Removed" else "Info",
-                                tint = if (isRemovalSnackbar) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Text(
-                                text = data.visuals.message,
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                )
-            }
-        },
+        snackbarHost = {},
         bottomBar = {
             val bottomChromeVisible = showMiniPlayer || showBottomNav
             val bottomChromeAlpha by animateFloatAsState(
@@ -1354,9 +1313,7 @@ private fun LocalNavigationContent(
                         },
                         onAddSongToPlaylist = { song, playlistId ->
                             viewModel.addSongToPlaylist(song, playlistId) { message ->
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(message)
-                                }
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             }
                         },
                         onNavigateToStats = {
@@ -1551,15 +1508,13 @@ private fun LocalNavigationContent(
                                 showAddToPlaylistSheet = false
                                 selectedSongForPlaylist = null
                             },
-                            onAddToPlaylist = { playlist ->
-                                viewModel.addSongToPlaylist(selectedSongForPlaylist!!, playlist.id) { message ->
-                                    coroutineScope.launch {
-                                        snackbarHostState.showSnackbar(message)
-                                    }
-                                }
-                                showAddToPlaylistSheet = false
-                                selectedSongForPlaylist = null
-                            },
+                             onAddToPlaylist = { playlist ->
+                                 viewModel.addSongToPlaylist(selectedSongForPlaylist!!, playlist.id) { message ->
+                                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                 }
+                                 showAddToPlaylistSheet = false
+                                 selectedSongForPlaylist = null
+                             },
                             onCreateNewPlaylist = {
                                 songForCreatePlaylistDialog = selectedSongForPlaylist
                                 showCreatePlaylistDialog = true
@@ -1583,9 +1538,7 @@ private fun LocalNavigationContent(
                             onConfirmWithSong = { name ->
                                 if (songForCreatePlaylistDialog != null) {
                                     viewModel.createPlaylist(name, listOf(songForCreatePlaylistDialog!!)) { message ->
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar(message)
-                                        }
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                     }
                                 } else {
                                     viewModel.createPlaylist(name)
@@ -2025,9 +1978,7 @@ private fun LocalNavigationContent(
                         onAddSongToPlaylist = { song, playlistId ->
                             // Add song to playlist
                             viewModel.addSongToPlaylist(song, playlistId) { message ->
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(message)
-                                }
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             }
                         },
                         onCreatePlaylist = { name ->
@@ -2053,14 +2004,10 @@ private fun LocalNavigationContent(
                             ) { result ->
                                 result.fold(
                                     onSuccess = { message ->
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar(message)
-                                        }
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                     },
                                     onFailure = { error ->
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar("Export failed: ${error.message}")
-                                        }
+                                        Toast.makeText(context, "Export failed: ${error.message}", Toast.LENGTH_SHORT).show()
                                     }
                                 )
                                 resultCallback(result)
@@ -2071,14 +2018,10 @@ private fun LocalNavigationContent(
                             viewModel.importPlaylist(uri, { result ->
                                 result.fold(
                                     onSuccess = { message ->
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar(message)
-                                        }
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                     },
                                     onFailure = { error ->
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar("Import failed: ${error.message}")
-                                        }
+                                        Toast.makeText(context, "Import failed: ${error.message}", Toast.LENGTH_SHORT).show()
                                     }
                                 )
                                 resultCallback(result)
@@ -2195,9 +2138,7 @@ private fun LocalNavigationContent(
                             onConfirmWithSong = { name ->
                                 if (songForDialog != null) {
                                     viewModel.createPlaylist(name, listOf(songForDialog)) { message ->
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar(message)
-                                        }
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                     }
                                 } else {
                                     viewModel.createPlaylist(name)
@@ -2323,9 +2264,7 @@ private fun LocalNavigationContent(
                         },
                         onAddSongToPlaylist = { song, playlistId ->
                             viewModel.addSongToPlaylist(song, playlistId) { message ->
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(message)
-                                }
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             }
                         },
                         onCreatePlaylist = { name ->
@@ -2474,9 +2413,7 @@ private fun LocalNavigationContent(
                                     song,
                                     playlistId
                                 ) { snackbarMessage ->
-                                    coroutineScope.launch {
-                                        snackbarHostState.showSnackbar(snackbarMessage)
-                                    }
+                                    Toast.makeText(context, snackbarMessage, Toast.LENGTH_SHORT).show()
                                 }
                             },
                             onRenamePlaylist = { newName ->
@@ -2739,9 +2676,7 @@ private fun LocalNavigationContent(
                             },
                             onAddToPlaylist = { playlist ->
                                 viewModel.addSongToPlaylist(selectedSongForPlaylist!!, playlist.id) { message ->
-                                    coroutineScope.launch {
-                                        snackbarHostState.showSnackbar(message)
-                                    }
+                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                 }
                                 showAddToPlaylistSheet = false
                                 selectedSongForPlaylist = null
@@ -2769,9 +2704,7 @@ private fun LocalNavigationContent(
                             onConfirmWithSong = { name ->
                                 if (songForCreatePlaylistDialog != null) {
                                     viewModel.createPlaylist(name, listOf(songForCreatePlaylistDialog!!)) { message ->
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar(message)
-                                        }
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                     }
                                 } else {
                                     viewModel.createPlaylist(name)
@@ -2994,23 +2927,19 @@ private fun LocalNavigationContent(
                                                 songs[0],
                                                 targetPlaylistId
                                             ) { message ->
-                                                coroutineScope.launch {
-                                                    snackbarHostState.showSnackbar(message)
-                                                }
+                                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                             }
                                         } else {
                                             val (successCount, playlistName) = viewModel.addSongsToPlaylist(
                                                 songs,
                                                 targetPlaylistId
                                             )
-                                            coroutineScope.launch {
-                                                val message = when {
-                                                    successCount == 0 -> "No songs added - they may already be in the playlist"
-                                                    successCount == songs.size -> "Added $successCount songs to $playlistName"
-                                                    else -> "Added $successCount of ${songs.size} songs to $playlistName"
-                                                }
-                                                snackbarHostState.showSnackbar(message)
+                                            val message = when {
+                                                successCount == 0 -> "No songs added - they may already be in the playlist"
+                                                successCount == songs.size -> "Added $successCount songs to $playlistName"
+                                                else -> "Added $successCount of ${songs.size} songs to $playlistName"
                                             }
+                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                         }
                                     }
                                 )
@@ -3046,9 +2975,7 @@ private fun LocalNavigationContent(
                                         songToAdd,
                                         newPlaylist.id
                                     ) { message ->
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar(message)
-                                        }
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                     }
                                     viewModel.clearSelectedSongForPlaylist()
                                     navigateBackOrToLanding()

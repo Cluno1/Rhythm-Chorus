@@ -6257,6 +6257,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun restartApp() {
         val context = getApplication<Application>().applicationContext
         
+        // Synchronously commit all pending SharedPreferences edits to disk before killing the process
+        appSettings.commit()
+        
         // Create restart intent
         val packageManager = context.packageManager
         val intent = packageManager.getLaunchIntentForPackage(context.packageName)
