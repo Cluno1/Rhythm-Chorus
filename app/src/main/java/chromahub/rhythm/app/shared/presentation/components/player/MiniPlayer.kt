@@ -20,6 +20,7 @@ fun MiniPlayer(
     onSkipPrevious: () -> Unit = {},
     onDismiss: () -> Unit = {},
     isMediaLoading: Boolean = false,
+    verticalDragEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -37,6 +38,7 @@ fun MiniPlayer(
             onSkipPrevious = onSkipPrevious,
             onDismiss = onDismiss,
             isMediaLoading = isMediaLoading,
+            verticalDragEnabled = verticalDragEnabled,
             modifier = modifier
         )
     } else {
@@ -50,6 +52,7 @@ fun MiniPlayer(
             onSkipPrevious = onSkipPrevious,
             onDismiss = onDismiss,
             isMediaLoading = isMediaLoading,
+            verticalDragEnabled = verticalDragEnabled,
             modifier = modifier
         )
     }

@@ -292,6 +292,8 @@ fun MaterialPlayerScreen(
     navController: NavController,
     isStreamingMode: Boolean = false,
     onOpenFullScreenLyrics: () -> Unit = {},
+    swipeToDismissEnabled: Boolean = true,
+    expansionFraction: Float = 1f,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -750,22 +752,49 @@ fun MaterialPlayerScreen(
     }
 
     // Entry animation states - staggered like LyricsEditorBottomSheet
-    var showHeader by remember { mutableStateOf(false) }
-    var showAlbumArt by remember { mutableStateOf(false) }
-    var showPlayerControls by remember { mutableStateOf(false) }
-    var showBottomButtons by remember { mutableStateOf(false) }
+    var showHeader by remember { mutableStateOf(true) }
+    var showAlbumArt by remember { mutableStateOf(true) }
+    var showPlayerControls by remember { mutableStateOf(true) }
+    var showBottomButtons by remember { mutableStateOf(true) }
 
-    // Trigger staggered entry animations
-    LaunchedEffect(Unit) {
-        delay(50)
-        showHeader = true
-        delay(100) // 150ms total
-        showAlbumArt = true
-        delay(100) // 250ms total
-        showPlayerControls = true
-        delay(100) // 350ms total
-        showBottomButtons = true
+    val localEntranceFraction = if (swipeToDismissEnabled) {
+        var animateEntrance by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            animateEntrance = true
+        }
+        animateFloatAsState(
+            targetValue = if (animateEntrance) 1f else 0f,
+            animationSpec = spring(stiffness = Spring.StiffnessLow),
+            label = "localEntranceFraction"
+        ).value
+    } else {
+        expansionFraction
     }
+
+    val line1Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.0f) / 0.5f).coerceIn(0f, 1f))
+    val line2Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.1f) / 0.5f).coerceIn(0f, 1f))
+    val line3Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.2f) / 0.5f).coerceIn(0f, 1f))
+    val line4Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.3f) / 0.5f).coerceIn(0f, 1f))
+    val line5Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.4f) / 0.5f).coerceIn(0f, 1f))
+    val line6Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.5f) / 0.5f).coerceIn(0f, 1f))
+
+    val line1Alpha = line1Fraction
+    val line1TranslationY = with(LocalDensity.current) { -16.dp.toPx() * (1f - line1Fraction) }
+
+    val line2Alpha = line2Fraction
+    val line2TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line2Fraction) }
+
+    val line3Alpha = line3Fraction
+    val line3TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line3Fraction) }
+
+    val line4Alpha = line4Fraction
+    val line4TranslationY = with(LocalDensity.current) { 48.dp.toPx() * (1f - line4Fraction) }
+
+    val line5Alpha = line5Fraction
+    val line5TranslationY = with(LocalDensity.current) { 48.dp.toPx() * (1f - line5Fraction) }
+
+    val line6Alpha = line6Fraction
+    val line6TranslationY = with(LocalDensity.current) { 64.dp.toPx() * (1f - line6Fraction) }
     
     // Swipe to dismiss gesture state - enhanced for mini player-like transition
     var swipeOffsetY by remember { mutableStateOf(0f) }
@@ -1309,84 +1338,95 @@ fun MaterialPlayerScreen(
             HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
             onBack()
         },
-        screenModifier = Modifier
-            .graphicsLayer {
-                val swipeProgress = (animatedSwipeOffset / screenHeight).coerceIn(0f, 1f)
-                val swipeScale = 1f - (swipeProgress * 0.10f)
-                val swipeAlpha = 1f - (swipeProgress * 0.42f)
-                val swipeCornerRadius = (swipeProgress * 26f).dp
+        screenModifier = if (swipeToDismissEnabled) {
+            Modifier
+                .graphicsLayer {
+                    val swipeProgress = (animatedSwipeOffset / screenHeight).coerceIn(0f, 1f)
+                    val swipeScale = 1f - (swipeProgress * 0.10f)
+                    val swipeAlpha = 1f - (swipeProgress * 0.42f)
+                    val swipeCornerRadius = (swipeProgress * 26f).dp
 
-                // Apply swipe transitions to the whole scaffold so header and content dismiss together.
-                alpha = swipeAlpha
-                translationY = animatedSwipeOffset
-                scaleX = swipeScale
-                scaleY = swipeScale
+                    // Apply swipe transitions to the whole scaffold so header and content dismiss together.
+                    alpha = swipeAlpha
+                    translationY = animatedSwipeOffset
+                    scaleX = swipeScale
+                    scaleY = swipeScale
 
-                // Add subtle corner radius animation (simulating mini player collapse)
-                clip = true
-                shape = RoundedCornerShape(
-                    topStart = swipeCornerRadius,
-                    topEnd = swipeCornerRadius,
-                    bottomStart = 0.dp,
-                    bottomEnd = 0.dp
-                )
-            }
-            .pointerInput(gesturePlayerSwipeDismiss) {
-                if (gesturePlayerSwipeDismiss) {
-                    var velocityTracker = 0f
+                    // Add subtle corner radius animation (simulating mini player collapse)
+                    clip = true
+                    shape = RoundedCornerShape(
+                        topStart = swipeCornerRadius,
+                        topEnd = swipeCornerRadius,
+                        bottomStart = 0.dp,
+                        bottomEnd = 0.dp
+                    )
+                }
+                .pointerInput(gesturePlayerSwipeDismiss) {
+                    if (gesturePlayerSwipeDismiss) {
+                        var velocityTracker = 0f
 
-                    detectVerticalDragGestures(
-                        onDragStart = {
-                            isDragging = true
-                            isSwipeDismissing = false
-                            velocityTracker = 0f
-                        },
-                        onVerticalDrag = { change, dragAmount ->
-                            // Only allow downward swipes
-                            if (dragAmount > 0) {
-                                change.consume()
-                                val currentSwipeProgress = (swipeOffsetY / screenHeight).coerceIn(0f, 1f)
-                                val dragResistance = (1f - (currentSwipeProgress * 0.35f)).coerceAtLeast(0.55f)
-                                swipeOffsetY = (swipeOffsetY + dragAmount * dragResistance).coerceIn(0f, dismissTargetOffset)
-                                velocityTracker = (dragAmount * 0.55f) + (velocityTracker * 0.45f)
-                            }
-                        },
-                        onDragEnd = {
-                            isDragging = false
-
-                            val fastSwipeThreshold = 900f
-                            val shouldDismiss = swipeOffsetY > swipeDismissThreshold ||
-                                (velocityTracker > fastSwipeThreshold && swipeOffsetY > screenHeight * 0.03f)
-
-                            if (shouldDismiss) {
-                                HapticUtils.performHapticFeedback(
-                                    context,
-                                    haptic,
-                                    HapticType.HEAVY
-                                )
-                                scope.launch {
-                                    isSwipeDismissing = true
-                                    swipeOffsetY = dismissTargetOffset
-                                    delay(240)
-                                    onBack()
+                        detectVerticalDragGestures(
+                            onDragStart = {
+                                isDragging = true
+                                isSwipeDismissing = false
+                                velocityTracker = 0f
+                            },
+                            onVerticalDrag = { change, dragAmount ->
+                                // Only allow downward swipes
+                                if (dragAmount > 0) {
+                                    change.consume()
+                                    val currentSwipeProgress = (swipeOffsetY / screenHeight).coerceIn(0f, 1f)
+                                    val dragResistance = (1f - (currentSwipeProgress * 0.35f)).coerceAtLeast(0.55f)
+                                    swipeOffsetY = (swipeOffsetY + dragAmount * dragResistance).coerceIn(0f, dismissTargetOffset)
+                                    velocityTracker = (dragAmount * 0.55f) + (velocityTracker * 0.45f)
                                 }
-                            } else {
+                            },
+                            onDragEnd = {
+                                isDragging = false
+
+                                val fastSwipeThreshold = 900f
+                                val shouldDismiss = swipeOffsetY > swipeDismissThreshold ||
+                                    (velocityTracker > fastSwipeThreshold && swipeOffsetY > screenHeight * 0.03f)
+
+                                if (shouldDismiss) {
+                                    HapticUtils.performHapticFeedback(
+                                        context,
+                                        haptic,
+                                        HapticType.HEAVY
+                                    )
+                                    scope.launch {
+                                        isSwipeDismissing = true
+                                        swipeOffsetY = dismissTargetOffset
+                                        delay(240)
+                                        onBack()
+                                    }
+                                } else {
+                                    isSwipeDismissing = false
+                                    swipeOffsetY = 0f
+                                }
+                            },
+                            onDragCancel = {
+                                isDragging = false
                                 isSwipeDismissing = false
                                 swipeOffsetY = 0f
                             }
-                        },
-                        onDragCancel = {
-                            isDragging = false
-                            isSwipeDismissing = false
-                            swipeOffsetY = 0f
-                        }
-                    )
+                        )
+                    }
                 }
-            },
+        } else {
+            Modifier
+        },
         containerColor = playerBackgroundColor, // Use surfaceContainer for player screen header
         actions = {
-            // Song info display in actions
-            if (song != null) {
+            Row(
+                modifier = Modifier.graphicsLayer {
+                    alpha = line1Alpha
+                    translationY = line1TranslationY
+                },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Song info display in actions
+                if (song != null) {
                 Column(
                     horizontalAlignment = Alignment.End,
                     modifier = Modifier
@@ -1452,6 +1492,7 @@ fun MaterialPlayerScreen(
                     tint = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.size(20.dp)
                 )
+            }
             }
         }
     ) { modifier ->
@@ -1531,6 +1572,10 @@ fun MaterialPlayerScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
+                            .graphicsLayer {
+                                alpha = line3Alpha
+                                translationY = line3TranslationY
+                            }
                             .padding(
                                 horizontal = when {
                                     isExtraSmallWidth -> 12.dp
@@ -1672,10 +1717,10 @@ fun MaterialPlayerScreen(
                                     val combinedScale = albumScale * (1f - currentSwipeProgress * 0.2f)
                                     scaleX = combinedScale
                                     scaleY = combinedScale
-                                    alpha = albumAlpha * (1f - currentSwipeProgress * 0.3f)
+                                    alpha = albumAlpha * (1f - currentSwipeProgress * 0.3f) * line2Alpha
                                     
                                     // Move upward slightly as if collapsing to mini player position
-                                    translationY = -currentSwipeProgress * 100f
+                                    translationY = -currentSwipeProgress * 100f + line2TranslationY
                                     
                                     // Apply horizontal translation for track swipe and track change animation
                                     translationX = artworkTranslationX + albumSlideOffset
@@ -2491,6 +2536,10 @@ fun MaterialPlayerScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .graphicsLayer {
+                                        alpha = line4Alpha
+                                        translationY = line4TranslationY
+                                    }
                                     .padding(
                                         horizontal = when {
                                             isExtraSmallWidth -> 8.dp
@@ -2681,7 +2730,14 @@ fun MaterialPlayerScreen(
 
                         // Main player controls with Expressive Material 3 button group
                         // Full width container with same padding as toggle buttons
-                        chromahub.rhythm.app.shared.presentation.components.common.ExpressivePlayerControlGroup(
+                        Box(
+                            modifier = Modifier
+                                .graphicsLayer {
+                                    alpha = line5Alpha
+                                    translationY = line5TranslationY
+                                }
+                        ) {
+                            chromahub.rhythm.app.shared.presentation.components.common.ExpressivePlayerControlGroup(
                             isPlaying = isPlaying && !showLoaderInPlayPauseButton,
                             showSeekButtons = playerShowSeekButtons && canSeek,
                             onPrevious = {
@@ -2747,10 +2803,18 @@ fun MaterialPlayerScreen(
                                 }
                             )
                         )
+                        }
 
                         Spacer(modifier = Modifier.height(if (isTablet) 28.dp else if (isCompactHeight) 12.dp else if (isExtraSmallWidth) 20.dp else 28.dp))
 
                         // Secondary action buttons with Expressive Toggle Button Group
+                        Box(
+                            modifier = Modifier
+                                .graphicsLayer {
+                                    alpha = line6Alpha
+                                    translationY = line6TranslationY
+                                }
+                        ) {
                         chromahub.rhythm.app.shared.presentation.components.common.ExpressiveToggleButtonGroup(
                             shuffleEnabled = isShuffleEnabled,
                             lyricsVisible = showLyricsView,
@@ -2797,6 +2861,7 @@ fun MaterialPlayerScreen(
                             isCompactHeight = isCompactHeight,
                             isCompactWidth = isCompactWidth
                         )
+                        }
 
                         Spacer(modifier = Modifier.height(if (isCompactHeight) 8.dp else if (isExtraSmallWidth) 12.dp else 20.dp))
 
@@ -3693,6 +3758,10 @@ fun MaterialPlayerScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .graphicsLayer {
+                                    alpha = line6Alpha
+                                    translationY = line6TranslationY
+                                }
                                 .padding(
                                     horizontal = when {
                                         isExtraSmallWidth -> 4.dp

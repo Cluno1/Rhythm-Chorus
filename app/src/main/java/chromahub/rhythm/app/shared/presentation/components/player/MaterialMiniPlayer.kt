@@ -85,6 +85,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring.StiffnessMediumLow
@@ -138,6 +139,7 @@ fun MaterialMiniPlayer(
     onSkipPrevious: () -> Unit = {},
     onDismiss: () -> Unit = {},
     isMediaLoading: Boolean = false,
+    verticalDragEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -323,118 +325,152 @@ fun MaterialMiniPlayer(
                     alpha = alphaValue
                 }
         }
-            .pointerInput(miniPlayerSwipeGestures, useTabletLayout) {
+            .pointerInput(miniPlayerSwipeGestures, useTabletLayout, verticalDragEnabled) {
                 if (miniPlayerSwipeGestures) {
-                    detectDragGestures(
-                        onDragStart = { 
-                            // Reset the last haptic offsets on new drag
-                            lastHapticOffset = 0f
-                            lastHapticOffsetX = 0f
-                            if (useTabletLayout) {
-                                // For tablets, reset position for dismiss check
-                                miniPlayerOffset = Offset.Zero
-                            }
-                            
-                            // Initial feedback when starting to drag - respecting settings
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                        },
-                        onDragEnd = {
-                            if (useTabletLayout) {
-                                // Tablet: check for dismiss
-                                if (miniPlayerOffset.y > swipeDownThreshold) {
-                                    // Swipe down detected, dismiss mini player
-                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                    isDismissingPlayer = true
-                                } else {
-                                    // Snap back to original position
+                    if (verticalDragEnabled) {
+                        detectDragGestures(
+                            onDragStart = { 
+                                // Reset the last haptic offsets on new drag
+                                lastHapticOffset = 0f
+                                lastHapticOffsetX = 0f
+                                if (useTabletLayout) {
+                                    // For tablets, reset position for dismiss check
                                     miniPlayerOffset = Offset.Zero
-                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                 }
-                            } else {
-                                // Phone: Determine which gesture was dominant
-                                val absX = abs(offsetX)
-                                val absY = abs(offsetY)
                                 
-                                if (absX > absY) {
-                                    // Horizontal swipe is dominant
-                                    if (offsetX < -swipeHorizontalThreshold) {
-                                        // Swipe left - next track
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                        onSkipNext()
-                                    } else if (offsetX > swipeHorizontalThreshold) {
-                                        // Swipe right - previous track
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                        onSkipPrevious()
-                                    } else {
-                                        // Not enough swipe distance
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    }
-                                } else {
-                                    // Vertical swipe is dominant
-                                    if (offsetY < -swipeUpThreshold) {
-                                        // Swipe up detected, open player with stronger feedback
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                        onPlayerClick()
-                                    } else if (offsetY > swipeDownThreshold) {
-                                        // Swipe down detected, dismiss mini player with stronger feedback
+                                // Initial feedback when starting to drag - respecting settings
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            },
+                            onDragEnd = {
+                                if (useTabletLayout) {
+                                    // Tablet: check for dismiss
+                                    if (miniPlayerOffset.y > swipeDownThreshold) {
+                                        // Swipe down detected, dismiss mini player
                                         HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                         isDismissingPlayer = true
                                     } else {
-                                        // Snap-back haptic when releasing before threshold
+                                        // Snap back to original position
+                                        miniPlayerOffset = Offset.Zero
                                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    }
+                                } else {
+                                    // Phone: Determine which gesture was dominant
+                                    val absX = abs(offsetX)
+                                    val absY = abs(offsetY)
+                                    
+                                    if (absX > absY) {
+                                        // Horizontal swipe is dominant
+                                        if (offsetX < -swipeHorizontalThreshold) {
+                                            // Swipe left - next track
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                            onSkipNext()
+                                        } else if (offsetX > swipeHorizontalThreshold) {
+                                            // Swipe right - previous track
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                            onSkipPrevious()
+                                        } else {
+                                            // Not enough swipe distance
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                        }
+                                    } else {
+                                        // Vertical swipe is dominant
+                                        if (offsetY < -swipeUpThreshold) {
+                                            // Swipe up detected, open player with stronger feedback
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                            onPlayerClick()
+                                        } else if (offsetY > swipeDownThreshold) {
+                                            // Swipe down detected, dismiss mini player with stronger feedback
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                            isDismissingPlayer = true
+                                        } else {
+                                            // Snap-back haptic when releasing before threshold
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                        }
+                                    }
+                                }
+                                
+                                // Reset offsets if not dismissing
+                                if (!isDismissingPlayer) {
+                                    offsetY = 0f
+                                    offsetX = 0f
+                                }
+                            },
+                            onDragCancel = {
+                                // Feedback when drag canceled
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                // Reset offsets if not dismissing
+                                if (!isDismissingPlayer) {
+                                    offsetY = 0f
+                                    offsetX = 0f
+                                    if (useTabletLayout) {
+                                        miniPlayerOffset = Offset.Zero
+                                    }
+                                }
+                            },
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                if (useTabletLayout) {
+                                    // For tablets, update position for moving
+                                    miniPlayerOffset += dragAmount
+                                } else {
+                                    // Update offsets for both horizontal and vertical gestures
+                                    offsetX += dragAmount.x
+                                    offsetY += dragAmount.y
+                                    
+                                    // Provide interval haptic feedback during drag
+                                    // For vertical swipes
+                                    if (abs(offsetY) > abs(offsetX)) {
+                                        // Vertical is dominant
+                                        if (offsetY < 0 && abs(offsetY) - abs(lastHapticOffset) > swipeUpThreshold / 3) {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                            lastHapticOffset = offsetY
+                                        } else if (offsetY > 0 && abs(offsetY) - abs(lastHapticOffset) > swipeDownThreshold / 3) {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                            lastHapticOffset = offsetY
+                                        }
+                                    } else {
+                                        // Horizontal is dominant
+                                        if (abs(offsetX) - abs(lastHapticOffsetX) > swipeHorizontalThreshold / 3) {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                            lastHapticOffsetX = offsetX
+                                        }
                                     }
                                 }
                             }
-                            
-                            // Reset offsets if not dismissing
-                            if (!isDismissingPlayer) {
-                                offsetY = 0f
-                                offsetX = 0f
-                            }
-                        },
-                        onDragCancel = {
-                            // Feedback when drag canceled
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            // Reset offsets if not dismissing
-                            if (!isDismissingPlayer) {
-                                offsetY = 0f
-                                offsetX = 0f
-                                if (useTabletLayout) {
-                                    miniPlayerOffset = Offset.Zero
-                                }
-                            }
-                        },
-                        onDrag = { change, dragAmount ->
-                        change.consume()
-                        if (useTabletLayout) {
-                            // For tablets, update position for moving
-                            miniPlayerOffset += dragAmount
-                        } else {
-                            // Update offsets for both horizontal and vertical gestures
-                            offsetX += dragAmount.x
-                            offsetY += dragAmount.y
-                            
-                            // Provide interval haptic feedback during drag
-                            // For vertical swipes
-                            if (abs(offsetY) > abs(offsetX)) {
-                                // Vertical is dominant
-                                if (offsetY < 0 && abs(offsetY) - abs(lastHapticOffset) > swipeUpThreshold / 3) {
+                        )
+                    } else {
+                        // Only horizontal drag for skip next/previous!
+                        detectHorizontalDragGestures(
+                            onDragStart = {
+                                lastHapticOffsetX = 0f
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            },
+                            onDragEnd = {
+                                if (offsetX < -swipeHorizontalThreshold) {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    onSkipNext()
+                                } else if (offsetX > swipeHorizontalThreshold) {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    onSkipPrevious()
+                                } else {
                                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    lastHapticOffset = offsetY
-                                } else if (offsetY > 0 && abs(offsetY) - abs(lastHapticOffset) > swipeDownThreshold / 3) {
-                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    lastHapticOffset = offsetY
                                 }
-                            } else {
-                                // Horizontal is dominant
+                                offsetX = 0f
+                            },
+                            onDragCancel = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                offsetX = 0f
+                            },
+                            onHorizontalDrag = { change, dragAmount ->
+                                change.consume()
+                                offsetX += dragAmount
                                 if (abs(offsetX) - abs(lastHapticOffsetX) > swipeHorizontalThreshold / 3) {
                                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                     lastHapticOffsetX = offsetX
                                 }
                             }
-                        }
+                        )
                     }
-                    )
                 }
             },
         interactionSource = interactionSource
@@ -875,7 +911,7 @@ fun MaterialMiniPlayer(
                             .fillMaxWidth()
                             .padding(
                                 horizontal = if (isCompactHeight) 12.dp else 20.dp,
-                                vertical = if (isCompactHeight) 8.dp else 16.dp
+                                vertical = if (isCompactHeight) 6.dp else 10.dp
                             ),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = spacedBy(if (isCompactHeight) 8.dp else 16.dp)

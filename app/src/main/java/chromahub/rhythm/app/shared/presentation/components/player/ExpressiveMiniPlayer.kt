@@ -18,6 +18,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
@@ -68,6 +69,7 @@ fun ExpressiveMiniPlayer(
     onSkipPrevious: () -> Unit = {},
     onDismiss: () -> Unit = {},
     isMediaLoading: Boolean = false,
+    verticalDragEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -230,19 +232,81 @@ fun ExpressiveMiniPlayer(
                         translationX = translationOffsetX
                         alpha = alphaValue
                     }
-                    .pointerInput(miniPlayerSwipeGestures) {
+                    .pointerInput(miniPlayerSwipeGestures, verticalDragEnabled) {
                         if (miniPlayerSwipeGestures) {
-                            detectDragGestures(
-                                onDragStart = {
-                                    lastHapticOffset = 0f
-                                    lastHapticOffsetX = 0f
-                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                },
-                                onDragEnd = {
-                                    val absX = abs(offsetX)
-                                    val absY = abs(offsetY)
+                            if (verticalDragEnabled) {
+                                detectDragGestures(
+                                    onDragStart = {
+                                        lastHapticOffset = 0f
+                                        lastHapticOffsetX = 0f
+                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    },
+                                    onDragEnd = {
+                                        val absX = abs(offsetX)
+                                        val absY = abs(offsetY)
 
-                                    if (absX > absY) {
+                                        if (absX > absY) {
+                                            if (offsetX < -swipeHorizontalThreshold) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                onSkipNext()
+                                            } else if (offsetX > swipeHorizontalThreshold) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                onSkipPrevious()
+                                            } else {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                            }
+                                        } else {
+                                            if (offsetY < -swipeUpThreshold) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                onPlayerClick()
+                                            } else if (offsetY > swipeDownThreshold) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                isDismissingPlayer = true
+                                            } else {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                            }
+                                        }
+
+                                        if (!isDismissingPlayer) {
+                                            offsetY = 0f
+                                            offsetX = 0f
+                                        }
+                                    },
+                                    onDragCancel = {
+                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                        if (!isDismissingPlayer) {
+                                            offsetY = 0f
+                                            offsetX = 0f
+                                        }
+                                    },
+                                    onDrag = { change, dragAmount ->
+                                        change.consume()
+                                        offsetX += dragAmount.x
+                                        offsetY += dragAmount.y
+
+                                        if (abs(offsetY) > abs(offsetX)) {
+                                            if (offsetY < 0 && abs(offsetY) - abs(lastHapticOffset) > swipeUpThreshold / 3) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                lastHapticOffset = offsetY
+                                            } else if (offsetY > 0 && abs(offsetY) - abs(lastHapticOffset) > swipeDownThreshold / 3) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                lastHapticOffset = offsetY
+                                            }
+                                        } else {
+                                            if (abs(offsetX) - abs(lastHapticOffsetX) > swipeHorizontalThreshold / 3) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                lastHapticOffsetX = offsetX
+                                            }
+                                        }
+                                    }
+                                )
+                            } else {
+                                detectHorizontalDragGestures(
+                                    onDragStart = {
+                                        lastHapticOffsetX = 0f
+                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    },
+                                    onDragEnd = {
                                         if (offsetX < -swipeHorizontalThreshold) {
                                             HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                             onSkipNext()
@@ -252,51 +316,22 @@ fun ExpressiveMiniPlayer(
                                         } else {
                                             HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                         }
-                                    } else {
-                                        if (offsetY < -swipeUpThreshold) {
-                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                            onPlayerClick()
-                                        } else if (offsetY > swipeDownThreshold) {
-                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                            isDismissingPlayer = true
-                                        } else {
-                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                        }
-                                    }
-
-                                    if (!isDismissingPlayer) {
-                                        offsetY = 0f
                                         offsetX = 0f
-                                    }
-                                },
-                                onDragCancel = {
-                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    if (!isDismissingPlayer) {
-                                        offsetY = 0f
+                                    },
+                                    onDragCancel = {
+                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                         offsetX = 0f
-                                    }
-                                },
-                                onDrag = { change, dragAmount ->
-                                    change.consume()
-                                    offsetX += dragAmount.x
-                                    offsetY += dragAmount.y
-
-                                    if (abs(offsetY) > abs(offsetX)) {
-                                        if (offsetY < 0 && abs(offsetY) - abs(lastHapticOffset) > swipeUpThreshold / 3) {
-                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                            lastHapticOffset = offsetY
-                                        } else if (offsetY > 0 && abs(offsetY) - abs(lastHapticOffset) > swipeDownThreshold / 3) {
-                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                            lastHapticOffset = offsetY
-                                        }
-                                    } else {
+                                    },
+                                    onHorizontalDrag = { change, dragAmount ->
+                                        change.consume()
+                                        offsetX += dragAmount
                                         if (abs(offsetX) - abs(lastHapticOffsetX) > swipeHorizontalThreshold / 3) {
                                             HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                             lastHapticOffsetX = offsetX
                                         }
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                     .clickable(

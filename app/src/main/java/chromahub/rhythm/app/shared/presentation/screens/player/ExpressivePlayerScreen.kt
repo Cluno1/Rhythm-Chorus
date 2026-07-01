@@ -155,6 +155,8 @@ fun ExpressivePlayerScreen(
     location: PlaybackLocation?,
     appSettings: AppSettings,
     onOpenFullScreenLyrics: () -> Unit = {},
+    swipeToDismissEnabled: Boolean = true,
+    expansionFraction: Float = 1f,
     modifier: Modifier = Modifier
 ) {
     BackHandler(onBack = onBack)
@@ -227,21 +229,49 @@ fun ExpressivePlayerScreen(
     }
 
     // Entry animation states - staggered
-    var showHeader by remember { mutableStateOf(false) }
-    var showAlbumArt by remember { mutableStateOf(false) }
-    var showPlayerControls by remember { mutableStateOf(false) }
-    var showBottomButtons by remember { mutableStateOf(false) }
+    var showHeader by remember { mutableStateOf(true) }
+    var showAlbumArt by remember { mutableStateOf(true) }
+    var showPlayerControls by remember { mutableStateOf(true) }
+    var showBottomButtons by remember { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
-        delay(50)
-        showHeader = true
-        delay(100) // 150ms total
-        showAlbumArt = true
-        delay(100) // 250ms total
-        showPlayerControls = true
-        delay(100) // 350ms total
-        showBottomButtons = true
+    val localEntranceFraction = if (swipeToDismissEnabled) {
+        var animateEntrance by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            animateEntrance = true
+        }
+        animateFloatAsState(
+            targetValue = if (animateEntrance) 1f else 0f,
+            animationSpec = spring(stiffness = Spring.StiffnessLow),
+            label = "localEntranceFraction"
+        ).value
+    } else {
+        expansionFraction
     }
+
+    val line1Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.0f) / 0.5f).coerceIn(0f, 1f))
+    val line2Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.1f) / 0.5f).coerceIn(0f, 1f))
+    val line3Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.2f) / 0.5f).coerceIn(0f, 1f))
+    val line4Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.3f) / 0.5f).coerceIn(0f, 1f))
+    val line5Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.4f) / 0.5f).coerceIn(0f, 1f))
+    val line6Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.5f) / 0.5f).coerceIn(0f, 1f))
+
+    val line1Alpha = line1Fraction
+    val line1TranslationY = with(LocalDensity.current) { -16.dp.toPx() * (1f - line1Fraction) }
+
+    val line2Alpha = line2Fraction
+    val line2TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line2Fraction) }
+
+    val line3Alpha = line3Fraction
+    val line3TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line3Fraction) }
+
+    val line4Alpha = line4Fraction
+    val line4TranslationY = with(LocalDensity.current) { 48.dp.toPx() * (1f - line4Fraction) }
+
+    val line5Alpha = line5Fraction
+    val line5TranslationY = with(LocalDensity.current) { 48.dp.toPx() * (1f - line5Fraction) }
+
+    val line6Alpha = line6Fraction
+    val line6TranslationY = with(LocalDensity.current) { 64.dp.toPx() * (1f - line6Fraction) }
 
     val artworkClipShape = if (lyricsVisible) {
         RoundedCornerShape(artworkCornerRadius)
@@ -317,59 +347,63 @@ fun ExpressivePlayerScreen(
     )
     val clampedSwipeCornerRadius = swipeCornerRadius.coerceAtLeast(0f)
 
-    val swipeMinimizeModifier = modifier
-        .graphicsLayer {
-            val swipeProgress = (animatedSwipeOffset / screenHeightPx).coerceIn(0f, 1f)
-            translationY = animatedSwipeOffset
-            val scaleTarget = 1f - (swipeProgress * 0.15f)
-            scaleX = scaleTarget
-            scaleY = scaleTarget
-            alpha = (1f - (swipeProgress * 1.5f)).coerceIn(0f, 1f)
-            clip = true
-            shape = RoundedCornerShape(clampedSwipeCornerRadius.dp)
-        }
-        .pointerInput(screenHeightPx) {
-            detectVerticalDragGestures(
-                onDragStart = {
-                    isDraggingSwipe = true
-                    isSwipeMinimizing = false
-                },
-                onVerticalDrag = { change, dragAmount ->
-                    if (dragAmount > 0f) {
-                        change.consume()
-                        val currentSwipeProgress = (swipeOffsetY / screenHeightPx).coerceIn(0f, 1f)
-                        val dragResistance = (1f - (currentSwipeProgress * 0.5f)).coerceAtLeast(0.4f)
-                        swipeOffsetY = (swipeOffsetY + dragAmount * dragResistance).coerceIn(0f, swipeDismissTarget)
-                    }
-                },
-                onDragEnd = {
-                    isDraggingSwipe = false
-                    if (swipeOffsetY > swipeDismissThreshold) {
-                        HapticUtils.performHapticFeedback(
-                            context,
-                            haptic,
-                            HapticType.HEAVY
-                        )
-                        isSwipeMinimizing = true
-                        swipeOffsetY = swipeDismissTarget
-                        coroutineScope.launch {
-                            delay(180)
-                            onBack()
+    val swipeMinimizeModifier = if (swipeToDismissEnabled) {
+        modifier
+            .graphicsLayer {
+                val swipeProgress = (animatedSwipeOffset / screenHeightPx).coerceIn(0f, 1f)
+                translationY = animatedSwipeOffset
+                val scaleTarget = 1f - (swipeProgress * 0.15f)
+                scaleX = scaleTarget
+                scaleY = scaleTarget
+                alpha = (1f - (swipeProgress * 1.5f)).coerceIn(0f, 1f)
+                clip = true
+                shape = RoundedCornerShape(clampedSwipeCornerRadius.dp)
+            }
+            .pointerInput(screenHeightPx) {
+                detectVerticalDragGestures(
+                    onDragStart = {
+                        isDraggingSwipe = true
+                        isSwipeMinimizing = false
+                    },
+                    onVerticalDrag = { change, dragAmount ->
+                        if (dragAmount > 0f) {
+                            change.consume()
+                            val currentSwipeProgress = (swipeOffsetY / screenHeightPx).coerceIn(0f, 1f)
+                            val dragResistance = (1f - (currentSwipeProgress * 0.5f)).coerceAtLeast(0.4f)
+                            swipeOffsetY = (swipeOffsetY + dragAmount * dragResistance).coerceIn(0f, swipeDismissTarget)
+                        }
+                    },
+                    onDragEnd = {
+                        isDraggingSwipe = false
+                        if (swipeOffsetY > swipeDismissThreshold) {
+                            HapticUtils.performHapticFeedback(
+                                context,
+                                haptic,
+                                HapticType.HEAVY
+                            )
+                            isSwipeMinimizing = true
+                            swipeOffsetY = swipeDismissTarget
+                            coroutineScope.launch {
+                                delay(180)
+                                onBack()
+                                isSwipeMinimizing = false
+                                swipeOffsetY = 0f
+                            }
+                        } else {
                             isSwipeMinimizing = false
                             swipeOffsetY = 0f
                         }
-                    } else {
+                    },
+                    onDragCancel = {
+                        isDraggingSwipe = false
                         isSwipeMinimizing = false
                         swipeOffsetY = 0f
                     }
-                },
-                onDragCancel = {
-                    isDraggingSwipe = false
-                    isSwipeMinimizing = false
-                    swipeOffsetY = 0f
-                }
-            )
-        }
+                )
+            }
+    } else {
+        modifier
+    }
 
     FixedHeaderScreen(
         title = "",
@@ -382,6 +416,11 @@ fun ExpressivePlayerScreen(
                 exit = fadeOut() + slideOutVertically { -it / 2 }
             ) {
                 Row(
+                    modifier = Modifier
+                        .graphicsLayer {
+                            alpha = line1Alpha
+                            translationY = line1TranslationY
+                        },
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.End
                 ) {
@@ -486,7 +525,11 @@ fun ExpressivePlayerScreen(
                     modifier = modifier
                 ) {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize()
+                            .graphicsLayer {
+                                alpha = line2Alpha
+                                translationY = line2TranslationY
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         AnimatedContent(
@@ -629,6 +672,10 @@ fun ExpressivePlayerScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .graphicsLayer {
+                                    alpha = line3Alpha
+                                    translationY = line3TranslationY
+                                }
                                 .padding(bottom = if (isCompactHeight) 8.dp else 16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -722,7 +769,12 @@ fun ExpressivePlayerScreen(
                                 modifier = Modifier.padding(if (isCompactWidth) 12.dp else 20.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .graphicsLayer {
+                                            alpha = line4Alpha
+                                            translationY = line4TranslationY
+                                        },
                                     horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -771,7 +823,12 @@ fun ExpressivePlayerScreen(
                                 Spacer(modifier = Modifier.height(if (isCompactHeight) 8.dp else 16.dp))
 
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .graphicsLayer {
+                                            alpha = line5Alpha
+                                            translationY = line5TranslationY
+                                        },
                                     horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -914,6 +971,10 @@ fun ExpressivePlayerScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .graphicsLayer {
+                                alpha = line6Alpha
+                                translationY = line6TranslationY
+                            }
                             .padding(
                                 start = if (isCompactWidth) 12.dp else 24.dp,
                                 end = if (isCompactWidth) 12.dp else 24.dp

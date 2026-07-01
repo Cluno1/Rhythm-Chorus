@@ -114,6 +114,7 @@ import chromahub.rhythm.app.shared.presentation.components.dialogs.CreatePlaylis
 import chromahub.rhythm.app.shared.presentation.components.dialogs.QueueActionDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.QueueListActionDialog
 import chromahub.rhythm.app.shared.presentation.components.player.MiniPlayer
+import chromahub.rhythm.app.shared.presentation.components.player.RhythmPlayerSheet
 import chromahub.rhythm.app.shared.presentation.components.player.SleepTimerBottomSheetNew
 import chromahub.rhythm.app.features.local.presentation.screens.LibraryScreen
 import chromahub.rhythm.app.features.local.presentation.screens.HomeScreen
@@ -559,6 +560,10 @@ fun LocalNavigation(
                     onSkipPrevious = onSkipPrevious,
                     onMiniPlayerDismiss = {
                         isMiniPlayerDismissed = true
+                        if (isPlaying) {
+                            onPlayPause()
+                        }
+                        viewModel.clearQueue()
                     },
                     showMiniPlayer = showMiniPlayer,
                     showBottomNav = false, // Hide nav bar in content for tablet
@@ -618,6 +623,10 @@ fun LocalNavigation(
                 onSkipPrevious = onSkipPrevious,
                     onMiniPlayerDismiss = {
                         isMiniPlayerDismissed = true
+                        if (isPlaying) {
+                            onPlayPause()
+                        }
+                        viewModel.clearQueue()
                     },
                 showMiniPlayer = showMiniPlayer,
                 showBottomNav = showBottomNav,
@@ -732,6 +741,17 @@ private fun LocalNavigationContent(
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
+
+    val showAddToPlaylistSheet = remember { mutableStateOf(false) }
+    val showCreatePlaylistDialog = remember { mutableStateOf(false) }
+    val songForCreatePlaylistDialog = remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
+
+    LaunchedEffect(viewModel.selectedSongForPlaylist.collectAsState().value) {
+        if (viewModel.selectedSongForPlaylist.value != null) {
+            showAddToPlaylistSheet.value = true
+        }
+    }
+
     val navigateToTopLevel: (String) -> Unit = { route ->
         navController.navigate(route) {
             popUpTo(navController.graph.findStartDestination().id) {
@@ -791,7 +811,7 @@ private fun LocalNavigationContent(
             )
             val miniPlayerBottomOffset by animateDpAsState(
                 targetValue = when {
-                    showBottomNav -> MusicDimensions.bottomNavigationHeight + 16.dp
+                    showBottomNav -> MusicDimensions.bottomNavigationHeight + 12.dp
                     currentRoute == Screen.Search.route -> 88.dp // Height of search bar + padding
                     else -> 8.dp
                 },
@@ -802,7 +822,7 @@ private fun LocalNavigationContent(
                 label = "local_miniplayer_bottom_offset"
             )
 
-            val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 84.dp else 96.dp
+            val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 84.dp else 110.dp
             val gradientHeight by animateDpAsState(
                 targetValue = when {
                     showBottomNav && showMiniPlayer -> MusicDimensions.bottomNavigationHeight + 16.dp + miniPlayerHeight + 32.dp
@@ -849,56 +869,131 @@ private fun LocalNavigationContent(
                         .align(Alignment.BottomCenter)
                 ) {
 
-                // Global MiniPlayer (hidden on full player screen) with bounce entrance animation
-                // Show at bottom on phones, or on right side if tablet miniplayer is enabled
-                AnimatedVisibility(
-                    visible = showMiniPlayer,
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                    enter = slideInVertically(
-                        initialOffsetY = { fullHeight -> fullHeight },
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ) + fadeIn(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ),
-                    exit = slideOutVertically(
-                        targetOffsetY = { fullHeight -> fullHeight / 2 },
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ) + fadeOut(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
+                // Global RhythmPlayerSheet
+                val showPlayerSheet = currentSong != null && (showMiniPlayer || currentRoute == Screen.Player.route)
+                if (showPlayerSheet) {
+                    val bottomBarHeightPx = with(LocalDensity.current) { MusicDimensions.bottomNavigationHeight.roundToPx() }
+                    RhythmPlayerSheet(
+                        isExpanded = currentRoute == Screen.Player.route,
+                        onExpand = {
+                            navController.navigate(Screen.Player.route)
+                        },
+                        onCollapse = {
+                            navigateBackOrToLanding()
+                        },
+                        onMiniPlayerDismiss = {
+                            onMiniPlayerDismiss()
+                        },
+                        song = currentSong,
+                        isPlaying = isPlaying,
+                        progress = progress,
+                        location = currentDevice,
+                        queuePosition = viewModel.currentQueue.collectAsState().value.currentIndex + 1,
+                        queueTotal = viewModel.currentQueue.collectAsState().value.songs.size,
+                        onPlayPause = onPlayPause,
+                        onSkipNext = onSkipNext,
+                        onSkipPrevious = onSkipPrevious,
+                        onSeek = { position ->
+                            viewModel.seekTo(position)
+                        },
+                        onLyricsSeek = onLyricsSeek,
+                        onLocationClick = {
+                            viewModel.showOutputSwitcherDialog()
+                        },
+                        onQueueClick = {
+                            // Handled internally by PlayerScreen
+                        },
+                        isShuffleEnabled = isShuffleEnabled,
+                        repeatMode = repeatMode,
+                        isFavorite = isFavorite,
+                        showLyrics = showLyrics,
+                        onlineOnlyLyrics = showOnlineOnlyLyrics,
+                        lyrics = lyrics,
+                        isLoadingLyrics = isLoadingLyrics,
+                        onRetryLyrics = {
+                            viewModel.retryFetchLyrics()
+                        },
+                        volume = viewModel.volume.collectAsState().value,
+                        isMuted = viewModel.isMuted.collectAsState().value,
+                        onVolumeChange = { volume ->
+                            viewModel.setVolume(volume)
+                        },
+                        onToggleMute = {
+                            viewModel.toggleMute()
+                        },
+                        onRefreshDevices = {
+                            viewModel.startDeviceMonitoringOnDemand()
+                        },
+                        onStopDeviceMonitoring = {
+                            viewModel.stopDeviceMonitoringOnDemand()
+                        },
+                        locations = viewModel.locations.collectAsState().value,
+                        onLocationSelect = { location ->
+                            viewModel.setCurrentDevice(location)
+                        },
+                        onMaxVolume = {
+                            viewModel.maxVolume()
+                        },
+                        playlists = playlists,
+                        queue = viewModel.currentQueue.collectAsState().value.songs,
+                        onSongClick = { song ->
+                            viewModel.playSong(song)
+                        },
+                        onSongClickAtIndex = { index ->
+                            viewModel.playSongAtIndex(index)
+                        },
+                        onRemoveFromQueueAtIndex = { index ->
+                            viewModel.removeFromQueueAtIndex(index)
+                        },
+                        onMoveQueueItem = { fromIndex, toIndex ->
+                            viewModel.moveQueueItem(fromIndex, toIndex)
+                        },
+                        onAddSongsToQueue = {
+                            viewModel.addSongsToQueue()
+                        },
+                        onNavigateToLibrary = { tab ->
+                            navController.navigate(Screen.Library.createRoute(tab)) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        showAddToPlaylistSheet = showAddToPlaylistSheet.value,
+                        onAddToPlaylistSheetDismiss = {
+                            showAddToPlaylistSheet.value = false
+                            viewModel.clearSelectedSongForPlaylist()
+                        },
+                        onAddSongToPlaylist = { song, playlistId ->
+                            viewModel.addSongToPlaylist(song, playlistId) { message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        onCreatePlaylist = { name ->
+                            viewModel.createPlaylist(name)
+                        },
+                        onShowCreatePlaylistDialog = { song ->
+                            songForCreatePlaylistDialog.value = song
+                            showCreatePlaylistDialog.value = true
+                        },
+                        onClearQueue = {
+                            viewModel.clearQueue()
+                        },
+                        isMediaLoading = viewModel.isBuffering.collectAsState().value,
+                        isSeeking = viewModel.isSeeking.collectAsState().value,
+                        songs = viewModel.filteredSongs.collectAsState().value,
+                        albums = viewModel.albums.collectAsState().value,
+                        artists = viewModel.artists.collectAsState().value,
+                        onPlayAlbumSongs = { songs -> viewModel.playSongs(songs) },
+                        onShuffleAlbumSongs = { songs -> viewModel.playShuffled(songs) },
+                        onPlayArtistSongs = { songs -> viewModel.playSongs(songs) },
+                        onShuffleArtistSongs = { songs -> viewModel.playShuffled(songs) },
+                        appSettings = appSettings,
+                        musicViewModel = viewModel,
+                        navController = navController,
+                        miniPlayerBottomOffset = miniPlayerBottomOffset
                     )
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = miniPlayerBottomOffset)
-                    ) {
-                        MiniPlayer(
-                            song = currentSong,
-                            isPlaying = isPlaying,
-                            progress = progress,
-                            onPlayPause = onPlayPause,
-                            onPlayerClick = onPlayerClick,
-                            onSkipNext = onSkipNext,
-                            onSkipPrevious = onSkipPrevious,
-                            onDismiss = {
-                                onMiniPlayerDismiss()
-                            },
-                            isMediaLoading = viewModel.isBuffering.collectAsState().value,
-                            modifier = Modifier.align(Alignment.BottomEnd)
-                        )
-                    }
                 }
 
                 // Navigation bar shown only on specific routes with spring animation
@@ -2110,195 +2205,7 @@ private fun LocalNavigationContent(
                         )
                     }
                 ) {
-                    val showAddToPlaylistSheet = remember { mutableStateOf(false) }
-                    val showCreatePlaylistDialog = remember { mutableStateOf(false) }
-                    val songForCreatePlaylistDialog = remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
-
-                    // If we're returning from AddToPlaylist route with a song to add, show the bottom sheet
-                    LaunchedEffect(viewModel.selectedSongForPlaylist.collectAsState().value) {
-                        if (viewModel.selectedSongForPlaylist.value != null) {
-                            showAddToPlaylistSheet.value = true
-                        }
-                    }
-
-                    // Show create playlist dialog if needed
-                    if (showCreatePlaylistDialog.value) {
-                        val songForDialog = songForCreatePlaylistDialog.value
-                        CreatePlaylistDialog(
-                            onDismiss = {
-                                showCreatePlaylistDialog.value = false
-                                songForCreatePlaylistDialog.value = null
-                            },
-                            onConfirm = { name ->
-                                viewModel.createPlaylist(name)
-                                showCreatePlaylistDialog.value = false
-                                songForCreatePlaylistDialog.value = null
-                            },
-                            song = songForDialog,
-                            onConfirmWithSong = { name ->
-                                if (songForDialog != null) {
-                                    viewModel.createPlaylist(name, listOf(songForDialog)) { message ->
-                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                    }
-                                } else {
-                                    viewModel.createPlaylist(name)
-                                }
-                                showCreatePlaylistDialog.value = false
-                                songForCreatePlaylistDialog.value = null
-                            }
-                        )
-                    }
-
-                    PlayerScreen(
-                        song = currentSong,
-                        isPlaying = isPlaying,
-                        progress = progress,
-                        location = currentDevice,
-                        queuePosition = viewModel.currentQueue.collectAsState().value.currentIndex + 1,
-                        queueTotal = viewModel.currentQueue.collectAsState().value.songs.size,
-                        onPlayPause = onPlayPause,
-                        onSkipNext = onSkipNext,
-                        onSkipPrevious = onSkipPrevious,
-                        onSeek = { position ->
-                            // Use the progress-based seekTo method directly
-                            Log.d(
-                                "LyricsSeek",
-                                "Navigation onSeek - Position: $position, Duration: ${currentSong?.duration}s"
-                            )
-                            viewModel.seekTo(position)
-                        },
-                        onLyricsSeek = onLyricsSeek,
-                        onBack = {
-                            navigateBackOrToLanding()
-                        },
-                        onLocationClick = {
-                            // Show the system output switcher dialog directly
-                            viewModel.showOutputSwitcherDialog()
-                        },
-                        onQueueClick = {
-                            // Show queue bottom sheet directly in PlayerScreen
-                            // No need to navigate to a separate screen
-                        },
-                        onToggleShuffle = {
-                            viewModel.toggleShuffle()
-                        },
-                        onToggleRepeat = {
-                            viewModel.toggleRepeatMode()
-                        },
-                        onToggleFavorite = {
-                            viewModel.toggleFavorite()
-                        },
-                        onAddToPlaylist = {
-                            currentSong?.let { song ->
-                                viewModel.setSelectedSongForPlaylist(song)
-                                showAddToPlaylistSheet.value = true
-                            }
-                        },
-                        isShuffleEnabled = isShuffleEnabled,
-                        repeatMode = repeatMode,
-                        isFavorite = isFavorite,
-                        showLyrics = showLyrics,
-                        onlineOnlyLyrics = showOnlineOnlyLyrics,
-                        lyrics = lyrics,
-                        isLoadingLyrics = isLoadingLyrics,
-                        onRetryLyrics = {
-                            viewModel.retryFetchLyrics()
-                        },
-                        volume = viewModel.volume.collectAsState().value,
-                        isMuted = viewModel.isMuted.collectAsState().value,
-                        onVolumeChange = { volume ->
-                            viewModel.setVolume(volume)
-                        },
-                        onToggleMute = {
-                            viewModel.toggleMute()
-                        },
-                        onRefreshDevices = {
-                            viewModel.startDeviceMonitoringOnDemand()
-                        },
-                        onStopDeviceMonitoring = {
-                            viewModel.stopDeviceMonitoringOnDemand()
-                        },
-                        locations = viewModel.locations.collectAsState().value,
-                        onLocationSelect = { location ->
-                            viewModel.setCurrentDevice(location)
-                        },
-                        onMaxVolume = {
-                            viewModel.maxVolume()
-                        },
-                        playlists = playlists,
-                        queue = viewModel.currentQueue.collectAsState().value.songs,
-                        onSongClick = { song ->
-                            // Play the selected song from the queue (fallback for non-indexed clicks)
-                            viewModel.playSong(song)
-                        },
-                        onSongClickAtIndex = { index ->
-                            // Play song at specific index to handle duplicates correctly
-                            viewModel.playSongAtIndex(index)
-                        },
-                        onRemoveFromQueueAtIndex = { index ->
-                            viewModel.removeFromQueueAtIndex(index)
-                        },
-                        onMoveQueueItem = { fromIndex, toIndex ->
-                            viewModel.moveQueueItem(fromIndex, toIndex)
-                        },
-                        onAddSongsToQueue = {
-                            // This parameter is now unused in PlayerScreen, as navigation is handled directly
-                            // within the QueueBottomSheet's onAddSongsClick.
-                            // However, keeping it here for API compatibility if needed elsewhere.
-                            viewModel.addSongsToQueue()
-                        },
-                        onNavigateToLibrary = { tab ->
-                            // Navigate to the LibraryScreen with the specified tab
-                            navController.navigate(Screen.Library.createRoute(tab)) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        showAddToPlaylistSheet = showAddToPlaylistSheet.value,
-                        onAddToPlaylistSheetDismiss = {
-                            showAddToPlaylistSheet.value = false
-                            viewModel.clearSelectedSongForPlaylist()
-                        },
-                        onAddSongToPlaylist = { song, playlistId ->
-                            viewModel.addSongToPlaylist(song, playlistId) { message ->
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        onCreatePlaylist = { name ->
-                            viewModel.createPlaylist(name)
-                        },
-                        onShowCreatePlaylistDialog = { song ->
-                            songForCreatePlaylistDialog.value = song
-                            showCreatePlaylistDialog.value = true
-                        },
-                        onClearQueue = {
-                            // Use the proper clearQueue method
-                            viewModel.clearQueue()
-                        },
-                        // New parameters for loader control and bottom sheets
-                        isMediaLoading = viewModel.isBuffering.collectAsState().value,
-                        isSeeking = viewModel.isSeeking.collectAsState().value,
-                        onShowAlbumBottomSheet = {
-                            // This is now handled internally by the PlayerScreen
-                        },
-                        onShowArtistBottomSheet = {
-                            // This is now handled internally by the PlayerScreen
-                        },
-                        // Pass album and artist data for bottom sheets
-                        songs = viewModel.filteredSongs.collectAsState().value,
-                        albums = viewModel.albums.collectAsState().value,
-                        artists = viewModel.artists.collectAsState().value,
-                        onPlayAlbumSongs = { songs -> viewModel.playSongs(songs) },
-                        onShuffleAlbumSongs = { songs -> viewModel.playShuffled(songs) },
-                        onPlayArtistSongs = { songs -> viewModel.playSongs(songs) },
-                        onShuffleArtistSongs = { songs -> viewModel.playShuffled(songs) },
-                        appSettings = appSettings,
-                        musicViewModel = viewModel,
-                        navController = navController
-                    )
+                    Box(modifier = Modifier.fillMaxSize())
                 }
 
                 // Add playlist detail screen
@@ -3057,6 +2964,33 @@ private fun LocalNavigationContent(
             musicViewModel = viewModel,
             onScanComplete = {
                 // Media scan loader will hide automatically when isMediaScanning becomes false
+            }
+        )
+    }
+
+    if (showCreatePlaylistDialog.value) {
+        val songForDialog = songForCreatePlaylistDialog.value
+        CreatePlaylistDialog(
+            onDismiss = {
+                showCreatePlaylistDialog.value = false
+                songForCreatePlaylistDialog.value = null
+            },
+            onConfirm = { name ->
+                viewModel.createPlaylist(name)
+                showCreatePlaylistDialog.value = false
+                songForCreatePlaylistDialog.value = null
+            },
+            song = songForDialog,
+            onConfirmWithSong = { name ->
+                if (songForDialog != null) {
+                    viewModel.createPlaylist(name, listOf(songForDialog)) { message ->
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    viewModel.createPlaylist(name)
+                }
+                showCreatePlaylistDialog.value = false
+                songForCreatePlaylistDialog.value = null
             }
         )
     }

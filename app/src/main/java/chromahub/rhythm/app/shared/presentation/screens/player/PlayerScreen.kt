@@ -155,6 +155,8 @@ fun PlayerScreen(
     musicViewModel: MusicViewModel,
     navController: NavController,
     isStreamingMode: Boolean = false,
+    swipeToDismissEnabled: Boolean = true,
+    expansionFraction: Float = 1f,
     modifier: Modifier = Modifier
 ) {
     val playerThemeId by appSettings.playerThemeId.collectAsState()
@@ -382,6 +384,8 @@ fun PlayerScreen(
             onBack = onBack,
             location = location,
             appSettings = appSettings,
+            swipeToDismissEnabled = swipeToDismissEnabled,
+            expansionFraction = expansionFraction,
             modifier = modifier
         )
 
@@ -807,6 +811,8 @@ fun PlayerScreen(
             navController = navController,
             isStreamingMode = isStreamingMode,
             onOpenFullScreenLyrics = { showFullScreenLyrics = true },
+            swipeToDismissEnabled = swipeToDismissEnabled,
+            expansionFraction = expansionFraction,
             modifier = modifier
         )
     }

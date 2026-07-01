@@ -93,6 +93,7 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AlbumBot
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.dialogs.CreatePlaylistDialog
 import chromahub.rhythm.app.shared.presentation.components.player.MiniPlayer
+import chromahub.rhythm.app.shared.presentation.components.player.RhythmPlayerSheet
 import chromahub.rhythm.app.features.local.presentation.navigation.Screen
 import chromahub.rhythm.app.features.local.presentation.screens.AddToPlaylistScreen
 import chromahub.rhythm.app.features.local.presentation.screens.ArtistDetailScreen
@@ -238,6 +239,16 @@ fun StreamingNavigation(
             (!requiresConnectedServiceForRailRoute || hasConnectedService)
 
     var isMiniPlayerDismissed by rememberSaveable { mutableStateOf(false) }
+
+    val showAddToPlaylistSheet = remember { mutableStateOf(false) }
+    val showCreatePlaylistDialog = remember { mutableStateOf(false) }
+    val songForCreatePlaylistDialog = remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
+
+    LaunchedEffect(localMusicViewModel.selectedSongForPlaylist.collectAsState().value) {
+        if (localMusicViewModel.selectedSongForPlaylist.value != null) {
+            showAddToPlaylistSheet.value = true
+        }
+    }
 
     LaunchedEffect(currentSong?.id, isPlaying) {
         // Re-show mini-player when playback becomes active, including replaying the same song.
@@ -466,7 +477,7 @@ fun StreamingNavigation(
                 label = "streaming_bottom_chrome_alpha"
             )
             val miniPlayerBottomOffset by animateDpAsState(
-                targetValue = if (showBottomNavValue) MusicDimensions.bottomNavigationHeight + 16.dp else 8.dp,
+                targetValue = if (showBottomNavValue) MusicDimensions.bottomNavigationHeight + 12.dp else 8.dp,
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioNoBouncy,
                     stiffness = Spring.StiffnessLow
@@ -474,7 +485,7 @@ fun StreamingNavigation(
                 label = "streaming_miniplayer_bottom_offset"
             )
 
-            val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 84.dp else 96.dp
+            val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 84.dp else 110.dp
             val gradientHeight by animateDpAsState(
                 targetValue = when {
                     showBottomNavValue && showMiniPlayer -> MusicDimensions.bottomNavigationHeight + 16.dp + miniPlayerHeight + 32.dp
@@ -521,62 +532,181 @@ fun StreamingNavigation(
                         .align(Alignment.BottomCenter)
                 ) {
 
-                AnimatedVisibility(
-                    visible = showMiniPlayer,
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                    enter = slideInVertically(
-                        initialOffsetY = { fullHeight -> fullHeight },
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ) + fadeIn(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ),
-                    exit = slideOutVertically(
-                        targetOffsetY = { fullHeight -> fullHeight / 2 },
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ) + fadeOut(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    )
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = miniPlayerBottomOffset)
-                    ) {
-                        // Only render MiniPlayer if currentSong is not null
-                        currentSong?.let { song ->
-                                MiniPlayer(
-                                    song = song,
-                                    isPlaying = isPlaying,
-                                    progress = { progress },
-                                    onPlayPause = { localMusicViewModel.togglePlayPause() },
-                                    onPlayerClick = {
-                                        onNavigateToPlayer()
-                                        navController.navigate(StreamingScreen.Player.route) {
-                                            launchSingleTop = true
-                                        }
-                                    },
-                                    onSkipNext = { localMusicViewModel.skipToNext() },
-                                    onSkipPrevious = { localMusicViewModel.skipToPrevious() },
-                                    onDismiss = {
-                                        isMiniPlayerDismissed = true
-                                    },
-                                    isMediaLoading = isMediaLoading,
-                                    modifier = Modifier.align(Alignment.BottomEnd)
-                                )
+                // Global RhythmPlayerSheet
+                val showPlayerSheet = currentSong != null && (showMiniPlayer || currentRoute == StreamingScreen.Player.route)
+                if (showPlayerSheet) {
+                    val bottomBarHeightPx = with(LocalDensity.current) { MusicDimensions.bottomNavigationHeight.roundToPx() }
+                    val savedPlaylists by streamingMusicViewModel.savedPlaylists.collectAsState()
+                    val mappedPlaylists = remember(savedPlaylists) {
+                        savedPlaylists.map { it.toLibraryPlaylist() }
+                    }
+                    val playerSongs = remember(currentSong, queueState.songs) {
+                        val queueSongs = queueState.songs
+                        if (queueSongs.isNotEmpty()) {
+                            queueSongs
+                        } else {
+                            currentSong?.let { listOf(it) }.orEmpty()
                         }
                     }
+                    var fetchedCurrentAlbumSongs by remember(currentSong?.id, streamingCurrentSong?.albumId) {
+                        mutableStateOf<List<Song>>(emptyList())
+                    }
+
+                    LaunchedEffect(streamingCurrentSong?.id, streamingCurrentSong?.albumId) {
+                        val activeStreamingSong = streamingCurrentSong
+                        val albumId = activeStreamingSong?.albumId?.takeIf { it.isNotBlank() }
+                        if (activeStreamingSong == null || albumId == null) {
+                            fetchedCurrentAlbumSongs = emptyList()
+                            return@LaunchedEffect
+                        }
+
+                        val albumTracks = streamingMusicViewModel.getAlbumSongs(
+                            StreamingAlbum(
+                                id = albumId,
+                                title = activeStreamingSong.album,
+                                artist = activeStreamingSong.albumArtist?.takeIf { it.isNotBlank() }
+                                    ?: activeStreamingSong.artist,
+                                artworkUri = activeStreamingSong.artworkUri,
+                                songCount = 0,
+                                year = activeStreamingSong.releaseDate?.take(4)?.toIntOrNull(),
+                                sourceType = activeStreamingSong.sourceType
+                            )
+                        )
+
+                        fetchedCurrentAlbumSongs = albumTracks.mapNotNull { it.toLocalSong() }
+                    }
+
+                    val allKnownPlayerSongs = remember(currentSong, playerSongs, streamingAddSongsCandidates) {
+                        (
+                            streamingAddSongsCandidates.mapNotNull { it.toLocalSong() } +
+                                playerSongs +
+                                currentSong?.let { listOf(it) }.orEmpty()
+                            )
+                            .distinctBy { it.id }
+                    }
+                    val allKnownPlayerSongsWithAlbumFetch = remember(allKnownPlayerSongs, fetchedCurrentAlbumSongs) {
+                        (allKnownPlayerSongs + fetchedCurrentAlbumSongs).distinctBy { it.id }
+                    }
+                    val playerAlbums = remember(currentSong, playerSongs, allKnownPlayerSongsWithAlbumFetch) {
+                        buildStreamingPlayerAlbums(
+                            currentSong = currentSong,
+                            queueSongs = playerSongs,
+                            catalogSongs = allKnownPlayerSongsWithAlbumFetch
+                        )
+                    }
+                    val playerArtists = remember(currentSong, playerSongs, playerAlbums) {
+                        buildStreamingPlayerArtists(currentSong, playerSongs, playerAlbums)
+                    }
+
+                    RhythmPlayerSheet(
+                        isExpanded = currentRoute == StreamingScreen.Player.route,
+                        onExpand = {
+                            onNavigateToPlayer()
+                            navController.navigate(StreamingScreen.Player.route) {
+                                launchSingleTop = true
+                            }
+                        },
+                        onCollapse = {
+                            navController.popBackStack()
+                        },
+                        onMiniPlayerDismiss = {
+                            isMiniPlayerDismissed = true
+                            if (isPlaying) {
+                                localMusicViewModel.togglePlayPause()
+                            }
+                            localMusicViewModel.clearQueue()
+                        },
+                        song = currentSong,
+                        isPlaying = isPlaying,
+                        progress = { progress },
+                        location = currentDevice,
+                        queuePosition = (queueState.currentIndex + 1).coerceAtLeast(1),
+                        queueTotal = queueState.songs.size.coerceAtLeast(1),
+                        onPlayPause = { localMusicViewModel.togglePlayPause() },
+                        isStreamingMode = true,
+                        onSkipNext = { localMusicViewModel.skipToNext() },
+                        onSkipPrevious = { localMusicViewModel.skipToPrevious() },
+                        onSeek = { position -> streamingMusicViewModel.seekTo(position) },
+                        onLyricsSeek = { lyricPositionMs ->
+                            streamingMusicViewModel.seekTo(lyricPositionMs.coerceAtLeast(0L))
+                        },
+                        onLocationClick = { localMusicViewModel.showOutputSwitcherDialog() },
+                        onQueueClick = {},
+                        locations = locations,
+                        onLocationSelect = { location -> localMusicViewModel.setCurrentDevice(location) },
+                        volume = volume,
+                        isMuted = isMuted,
+                        onVolumeChange = { newVolume -> localMusicViewModel.setVolume(newVolume) },
+                        onToggleMute = { localMusicViewModel.toggleMute() },
+                        onMaxVolume = { localMusicViewModel.maxVolume() },
+                        onRefreshDevices = { localMusicViewModel.startDeviceMonitoringOnDemand() },
+                        onStopDeviceMonitoring = { localMusicViewModel.stopDeviceMonitoringOnDemand() },
+                        onToggleShuffle = { localMusicViewModel.toggleShuffle() },
+                        onToggleRepeat = { localMusicViewModel.toggleRepeatMode() },
+                        onToggleFavorite = { 
+                            val activeStreamingSong = streamingCurrentSong ?: currentSong?.let { localSong ->
+                                streamingAddSongsCandidatesById[localSong.id]
+                            }
+                            if (activeStreamingSong != null) {
+                                val isLiked = streamingLikedSongIds.contains(activeStreamingSong.id)
+                                if (isLiked) {
+                                    streamingMusicViewModel.unlikeSong(activeStreamingSong)
+                                } else {
+                                    streamingMusicViewModel.likeSong(activeStreamingSong)
+                                }
+                            }
+                        },
+                        isShuffleEnabled = isShuffleEnabled,
+                        repeatMode = repeatMode,
+                        isFavorite = streamingCurrentSong?.let { streamingLikedSongIds.contains(it.id) } == true,
+                        showLyrics = showLyrics,
+                        onlineOnlyLyrics = showOnlineOnlyLyrics,
+                        lyrics = lyrics,
+                        isLoadingLyrics = isLoadingLyrics,
+                        onRetryLyrics = { localMusicViewModel.retryFetchLyrics() },
+                        playlists = mappedPlaylists,
+                        showAddToPlaylistSheet = showAddToPlaylistSheet.value,
+                        onAddToPlaylist = { showAddToPlaylistSheet.value = true },
+                        onAddToPlaylistSheetDismiss = { showAddToPlaylistSheet.value = false },
+                        onAddSongToPlaylist = { song, playlistId ->
+                            val streamingSong = streamingMusicViewModel.currentSong.value
+                            if (streamingSong != null && streamingSong.id == song.id) {
+                                streamingMusicViewModel.addSongToPlaylist(playlistId, streamingSong)
+                            }
+                            showAddToPlaylistSheet.value = false
+                        },
+                        onCreatePlaylist = { name ->
+                            streamingMusicViewModel.createPlaylist(name)
+                            showAddToPlaylistSheet.value = false
+                        },
+                        onShowCreatePlaylistDialog = { song ->
+                            songForCreatePlaylistDialog.value = song
+                            showCreatePlaylistDialog.value = true
+                        },
+                        queue = queueState.songs,
+                        onSongClick = { song -> localMusicViewModel.playSong(song) },
+                        onSongClickAtIndex = { index -> localMusicViewModel.playSongAtIndex(index) },
+                        onRemoveFromQueueAtIndex = { index -> localMusicViewModel.removeFromQueueAtIndex(index) },
+                        onMoveQueueItem = { fromIndex, toIndex ->
+                            localMusicViewModel.moveQueueItem(fromIndex, toIndex)
+                        },
+                        onAddSongsToQueue = { navigateToTopLevel(StreamingScreen.Search.route) },
+                        onNavigateToLibrary = { navigateToTopLevel(StreamingScreen.Library.route) },
+                        onClearQueue = { localMusicViewModel.clearQueue() },
+                        isMediaLoading = isMediaLoading,
+                        isSeeking = isSeeking,
+                        songs = allKnownPlayerSongsWithAlbumFetch,
+                        albums = playerAlbums,
+                        artists = playerArtists,
+                        onPlayAlbumSongs = { albumSongs -> localMusicViewModel.playSongs(albumSongs) },
+                        onShuffleAlbumSongs = { albumSongs -> localMusicViewModel.playShuffled(albumSongs) },
+                        onPlayArtistSongs = { artistSongs -> localMusicViewModel.playSongs(artistSongs) },
+                        onShuffleArtistSongs = { artistSongs -> localMusicViewModel.playShuffled(artistSongs) },
+                        appSettings = appSettings,
+                        musicViewModel = localMusicViewModel,
+                        navController = navController,
+                        miniPlayerBottomOffset = miniPlayerBottomOffset
+                    )
                 }
 
                 AnimatedVisibility(
@@ -1630,259 +1760,9 @@ fun StreamingNavigation(
             }
 
             composable(
-                route = StreamingScreen.Player.route,
-                enterTransition = {
-                    slideInVertically(
-                        initialOffsetY = { it },
-                        animationSpec = spring(
-                            dampingRatio = 0.75f,
-                            stiffness = Spring.StiffnessMediumLow
-                        )
-                    ) + scaleIn(
-                        initialScale = 0.85f,
-                        animationSpec = spring(
-                            dampingRatio = 0.75f,
-                            stiffness = Spring.StiffnessMediumLow
-                        )
-                    ) + fadeIn(
-                        animationSpec = tween(durationMillis = 200)
-                    )
-                },
-                exitTransition = {
-                    slideOutVertically(
-                        targetOffsetY = { it },
-                        animationSpec = spring(
-                            dampingRatio = 0.8f,
-                            stiffness = Spring.StiffnessMedium
-                        )
-                    ) + scaleOut(
-                        targetScale = 0.85f,
-                        animationSpec = spring(
-                            dampingRatio = 0.8f,
-                            stiffness = Spring.StiffnessMedium
-                        )
-                    ) + fadeOut(
-                        animationSpec = tween(durationMillis = 200)
-                    )
-                },
-                popExitTransition = {
-                    slideOutVertically(
-                        targetOffsetY = { it },
-                        animationSpec = spring(
-                            dampingRatio = 0.8f,
-                            stiffness = Spring.StiffnessMedium
-                        )
-                    ) + scaleOut(
-                        targetScale = 0.85f,
-                        animationSpec = spring(
-                            dampingRatio = 0.8f,
-                            stiffness = Spring.StiffnessMedium
-                        )
-                    ) + fadeOut(
-                        animationSpec = tween(durationMillis = 200)
-                    )
-                },
-                popEnterTransition = {
-                    slideInVertically(
-                        initialOffsetY = { it },
-                        animationSpec = spring(
-                            dampingRatio = 0.75f,
-                            stiffness = Spring.StiffnessMediumLow
-                        )
-                    ) + scaleIn(
-                        initialScale = 0.85f,
-                        animationSpec = spring(
-                            dampingRatio = 0.75f,
-                            stiffness = Spring.StiffnessMediumLow
-                        )
-                    ) + fadeIn(
-                        animationSpec = tween(durationMillis = 200)
-                    )
-                }
+                route = StreamingScreen.Player.route
             ) {
-                val playerSongs = remember(currentSong, queueState.songs) {
-                    val queueSongs = queueState.songs
-                    if (queueSongs.isNotEmpty()) {
-                        queueSongs
-                    } else {
-                        currentSong?.let { listOf(it) }.orEmpty()
-                    }
-                }
-                var fetchedCurrentAlbumSongs by remember(currentSong?.id, streamingCurrentSong?.albumId) {
-                    mutableStateOf<List<Song>>(emptyList())
-                }
-
-                LaunchedEffect(streamingCurrentSong?.id, streamingCurrentSong?.albumId) {
-                    val activeStreamingSong = streamingCurrentSong
-                    val albumId = activeStreamingSong?.albumId?.takeIf { it.isNotBlank() }
-                    if (activeStreamingSong == null || albumId == null) {
-                        fetchedCurrentAlbumSongs = emptyList()
-                        return@LaunchedEffect
-                    }
-
-                    val albumTracks = streamingMusicViewModel.getAlbumSongs(
-                        StreamingAlbum(
-                            id = albumId,
-                            title = activeStreamingSong.album,
-                            artist = activeStreamingSong.albumArtist?.takeIf { it.isNotBlank() }
-                                ?: activeStreamingSong.artist,
-                            artworkUri = activeStreamingSong.artworkUri,
-                            songCount = 0,
-                            year = activeStreamingSong.releaseDate?.take(4)?.toIntOrNull(),
-                            sourceType = activeStreamingSong.sourceType
-                        )
-                    )
-
-                    fetchedCurrentAlbumSongs = albumTracks.mapNotNull { it.toLocalSong() }
-                }
-
-                val allKnownPlayerSongs = remember(currentSong, playerSongs, streamingAddSongsCandidates) {
-                    (
-                        streamingAddSongsCandidates.mapNotNull { it.toLocalSong() } +
-                            playerSongs +
-                            currentSong?.let { listOf(it) }.orEmpty()
-                        )
-                        .distinctBy { it.id }
-                }
-                val allKnownPlayerSongsWithAlbumFetch = remember(allKnownPlayerSongs, fetchedCurrentAlbumSongs) {
-                    (allKnownPlayerSongs + fetchedCurrentAlbumSongs).distinctBy { it.id }
-                }
-                val playerAlbums = remember(currentSong, playerSongs, allKnownPlayerSongsWithAlbumFetch) {
-                    buildStreamingPlayerAlbums(
-                        currentSong = currentSong,
-                        queueSongs = playerSongs,
-                        catalogSongs = allKnownPlayerSongsWithAlbumFetch
-                    )
-                }
-                val playerArtists = remember(currentSong, playerSongs, playerAlbums) {
-                    buildStreamingPlayerArtists(currentSong, playerSongs, playerAlbums)
-                }
-                
-                var showAddToPlaylistSheet by remember { mutableStateOf(false) }
-                var showCreatePlaylistDialog by remember { mutableStateOf(false) }
-                var songForCreatePlaylistDialog by remember { mutableStateOf<Song?>(null) }
-                val savedPlaylists by streamingMusicViewModel.savedPlaylists.collectAsState()
-                val mappedPlaylists = remember(savedPlaylists) {
-                    savedPlaylists.map { it.toLibraryPlaylist() }
-                }
-
-                PlayerScreen(
-                    song = currentSong,
-                    isPlaying = isPlaying,
-                    progress = { progress },
-                    location = currentDevice,
-                    queuePosition = (queueState.currentIndex + 1).coerceAtLeast(1),
-                    queueTotal = queueState.songs.size.coerceAtLeast(1),
-                    onPlayPause = { localMusicViewModel.togglePlayPause() },
-                    isStreamingMode = true,
-                    onSkipNext = { localMusicViewModel.skipToNext() },
-                    onSkipPrevious = { localMusicViewModel.skipToPrevious() },
-                    onSeek = { position -> streamingMusicViewModel.seekTo(position) },
-                    onLyricsSeek = { lyricPositionMs ->
-                        streamingMusicViewModel.seekTo(lyricPositionMs.coerceAtLeast(0L))
-                    },
-                    onBack = { navController.popBackStack() },
-                    onLocationClick = { localMusicViewModel.showOutputSwitcherDialog() },
-                    onQueueClick = {},
-                    locations = locations,
-                    onLocationSelect = { location -> localMusicViewModel.setCurrentDevice(location) },
-                    volume = volume,
-                    isMuted = isMuted,
-                    onVolumeChange = { newVolume -> localMusicViewModel.setVolume(newVolume) },
-                    onToggleMute = { localMusicViewModel.toggleMute() },
-                    onMaxVolume = { localMusicViewModel.maxVolume() },
-                    onRefreshDevices = { localMusicViewModel.startDeviceMonitoringOnDemand() },
-                    onStopDeviceMonitoring = { localMusicViewModel.stopDeviceMonitoringOnDemand() },
-                    onToggleShuffle = { localMusicViewModel.toggleShuffle() },
-                    onToggleRepeat = { localMusicViewModel.toggleRepeatMode() },
-                    onToggleFavorite = { 
-                        val activeStreamingSong = streamingCurrentSong ?: currentSong?.let { localSong ->
-                            streamingAddSongsCandidatesById[localSong.id]
-                        }
-                        if (activeStreamingSong != null) {
-                            val isLiked = streamingLikedSongIds.contains(activeStreamingSong.id)
-                            if (isLiked) {
-                                streamingMusicViewModel.unlikeSong(activeStreamingSong)
-                            } else {
-                                streamingMusicViewModel.likeSong(activeStreamingSong)
-                            }
-                        }
-                    },
-                    isShuffleEnabled = isShuffleEnabled,
-                    repeatMode = repeatMode,
-                    isFavorite = streamingCurrentSong?.let { streamingLikedSongIds.contains(it.id) } == true,
-                    showLyrics = showLyrics,
-                    onlineOnlyLyrics = showOnlineOnlyLyrics,
-                    lyrics = lyrics,
-                    isLoadingLyrics = isLoadingLyrics,
-                    onRetryLyrics = { localMusicViewModel.retryFetchLyrics() },
-                    playlists = mappedPlaylists,
-                    showAddToPlaylistSheet = showAddToPlaylistSheet,
-                    onAddToPlaylist = { showAddToPlaylistSheet = true },
-                    onAddToPlaylistSheetDismiss = { showAddToPlaylistSheet = false },
-                    onAddSongToPlaylist = { song, playlistId ->
-                        val streamingSong = streamingMusicViewModel.currentSong.value
-                        if (streamingSong != null && streamingSong.id == song.id) {
-                            streamingMusicViewModel.addSongToPlaylist(playlistId, streamingSong)
-                        }
-                        showAddToPlaylistSheet = false
-                    },
-                    onCreatePlaylist = { name ->
-                        streamingMusicViewModel.createPlaylist(name)
-                        showAddToPlaylistSheet = false
-                    },
-                    onShowCreatePlaylistDialog = { song ->
-                        songForCreatePlaylistDialog = song
-                        showCreatePlaylistDialog = true
-                    },
-                    queue = queueState.songs,
-                    onSongClick = { song -> localMusicViewModel.playSong(song) },
-                    onSongClickAtIndex = { index -> localMusicViewModel.playSongAtIndex(index) },
-                    onRemoveFromQueueAtIndex = { index -> localMusicViewModel.removeFromQueueAtIndex(index) },
-                    onMoveQueueItem = { fromIndex, toIndex ->
-                        localMusicViewModel.moveQueueItem(fromIndex, toIndex)
-                    },
-                    onAddSongsToQueue = { navigateToTopLevel(StreamingScreen.Search.route) },
-                    onNavigateToLibrary = { navigateToTopLevel(StreamingScreen.Library.route) },
-                    onClearQueue = { localMusicViewModel.clearQueue() },
-                    isMediaLoading = isMediaLoading,
-                    isSeeking = isSeeking,
-                    songs = allKnownPlayerSongsWithAlbumFetch,
-                    albums = playerAlbums,
-                    artists = playerArtists,
-                    onPlayAlbumSongs = { albumSongs -> localMusicViewModel.playSongs(albumSongs) },
-                    onShuffleAlbumSongs = { albumSongs -> localMusicViewModel.playShuffled(albumSongs) },
-                    onPlayArtistSongs = { artistSongs -> localMusicViewModel.playSongs(artistSongs) },
-                    onShuffleArtistSongs = { artistSongs -> localMusicViewModel.playShuffled(artistSongs) },
-                    appSettings = appSettings,
-                    musicViewModel = localMusicViewModel,
-                    navController = navController
-                )
-                
-                if (showCreatePlaylistDialog) {
-                    chromahub.rhythm.app.shared.presentation.components.dialogs.CreatePlaylistDialog(
-                        onDismiss = {
-                            showCreatePlaylistDialog = false
-                            songForCreatePlaylistDialog = null
-                        },
-                        onConfirm = { name ->
-                            streamingMusicViewModel.createPlaylist(name)
-                            showCreatePlaylistDialog = false
-                            songForCreatePlaylistDialog = null
-                        },
-                        song = songForCreatePlaylistDialog,
-                        onConfirmWithSong = { name ->
-                            val streamingSong = streamingMusicViewModel.currentSong.value
-                            if (streamingSong != null && songForCreatePlaylistDialog != null && streamingSong.id == songForCreatePlaylistDialog!!.id) {
-                                streamingMusicViewModel.createPlaylist(name, listOf(streamingSong))
-                            } else {
-                                streamingMusicViewModel.createPlaylist(name)
-                            }
-                            showCreatePlaylistDialog = false
-                            songForCreatePlaylistDialog = null
-                        }
-                    )
-                }
+                Box(modifier = Modifier.fillMaxSize())
             }
 
             composable(
@@ -2090,6 +1970,32 @@ fun StreamingNavigation(
         StreamingNavigationLayout(
             contentModifier = modifier,
             showBottomNavValue = showBottomNav
+        )
+    }
+
+    if (showCreatePlaylistDialog.value) {
+        val songForDialog = songForCreatePlaylistDialog.value
+        CreatePlaylistDialog(
+            onDismiss = {
+                showCreatePlaylistDialog.value = false
+                songForCreatePlaylistDialog.value = null
+            },
+            onConfirm = { name ->
+                streamingMusicViewModel.createPlaylist(name)
+                showCreatePlaylistDialog.value = false
+                songForCreatePlaylistDialog.value = null
+            },
+            song = songForDialog,
+            onConfirmWithSong = { name ->
+                val streamingSong = streamingMusicViewModel.currentSong.value
+                if (streamingSong != null && songForDialog != null && streamingSong.id == songForDialog.id) {
+                    streamingMusicViewModel.createPlaylist(name, listOf(streamingSong))
+                } else {
+                    streamingMusicViewModel.createPlaylist(name)
+                }
+                showCreatePlaylistDialog.value = false
+                songForCreatePlaylistDialog.value = null
+            }
         )
     }
 }
