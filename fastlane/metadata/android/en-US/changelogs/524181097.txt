@@ -1,0 +1,8 @@
+Rhythm v5.2 - Beta Update
+
+• Refactor lyrics fetching with multi-source support
+• Handle missing picker and suggest folders #455
+• Fixed: cannot import playlists from json backup #449
+• Minor Improvements
+
+Thanks for using Rhythm ;)

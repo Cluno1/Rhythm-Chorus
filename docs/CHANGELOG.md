@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.2.418.1097 Beta] - 2026-07-01
+
+### Added
+- Refactor lyrics fetching with multi-source support
+- Handle missing picker and suggest folders #455
+- Fixed: cannot import playlists from json backup #449
+- Minor Improvements
+
 ## [5.2.417.1095 Beta] - 2026-07-01
 
 ### Added
