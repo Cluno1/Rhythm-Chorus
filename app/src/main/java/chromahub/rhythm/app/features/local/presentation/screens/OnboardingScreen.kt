@@ -113,6 +113,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.ActivityNotFoundException
+import android.widget.Toast
 import android.provider.DocumentsContract
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -7358,8 +7360,12 @@ fun EnhancedMediaScanContent(
                     },
                     onAddFolder = {
                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                        folderPickerLauncher.launch(intent)
+                        try {
+                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                            folderPickerLauncher.launch(intent)
+                        } catch (e: ActivityNotFoundException) {
+                            Toast.makeText(context, context.getString(R.string.error_no_document_app), Toast.LENGTH_LONG).show()
+                        }
                     },
                     onRemoveFolder = { folder ->
                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
@@ -7418,8 +7424,12 @@ fun EnhancedMediaScanContent(
                 },
                 onAddFolder = {
                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                    folderPickerLauncher.launch(intent)
+                    try {
+                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                        folderPickerLauncher.launch(intent)
+                    } catch (e: ActivityNotFoundException) {
+                        Toast.makeText(context, context.getString(R.string.error_no_document_app), Toast.LENGTH_LONG).show()
+                    }
                 },
                 onRemoveFolder = { folder ->
                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)

@@ -3096,6 +3096,7 @@
     <string name="playlist_count_format">%1$d playlists</string>
     <string name="ui_song_count">1 song</string>
     <string name="duration_minutes_format">%1$dm</string>
+    <string name="error_no_document_app">No system document picker found to select a folder.</string>
 </resources>
 
 

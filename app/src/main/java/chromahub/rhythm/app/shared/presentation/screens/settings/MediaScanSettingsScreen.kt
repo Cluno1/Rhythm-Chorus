@@ -15,6 +15,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.ActivityNotFoundException
 import android.net.Uri
 import android.os.Build
 import android.provider.DocumentsContract
@@ -251,6 +252,26 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
         }
     }
 
+    val detectedMusicFolders = remember(allSongs) {
+        allSongs.mapNotNull { song ->
+            val path = song.path ?: if (song.uri.scheme == "file") song.uri.path else null
+            path?.let { p ->
+                try {
+                    File(p).parent
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }.distinct().sorted()
+    }
+
+    val suggestedFolders = remember(detectedMusicFolders, filteredFoldersList) {
+        val currentSet = filteredFoldersList.toSet()
+        detectedMusicFolders.filter { folder ->
+            !currentSet.contains(folder)
+        }
+    }
+
     val settingGroups = listOf(
         SettingGroup(
             title = context.getString(R.string.settings_mode_selection),
@@ -328,8 +349,12 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                     context.getString(R.string.settings_add_folder_desc, if (currentMode == MediaScanMode.BLACKLIST) context.getString(R.string.settings_block) else context.getString(R.string.settings_whitelist)),
                     onClick = {
                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                        folderPickerLauncher.launch(intent)
+                        try {
+                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                            folderPickerLauncher.launch(intent)
+                        } catch (e: ActivityNotFoundException) {
+                            Toast.makeText(context, context.getString(R.string.error_no_document_app), Toast.LENGTH_LONG).show()
+                        }
                     }
                 ),
                 SettingItem(
@@ -911,87 +936,179 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
 
                 // Folders list
                 LazyColumn(
-            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
+                    contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f, fill = false)
                         .heightIn(max = 400.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(filteredFoldersList, key = { "folder_${it.hashCode()}" }) { folder ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Row(
+                    if (filteredFoldersList.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = if (currentMode == MediaScanMode.BLACKLIST) "Currently Blocked Folders" else "Currently Whitelisted Folders",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                        items(filteredFoldersList, key = { "folder_${it.hashCode()}" }) { folder ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clip(CircleShape)
+                                            .background(
+                                                if (currentMode == MediaScanMode.BLACKLIST)
+                                                    MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                                                else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Folder,
+                                            contentDescription = null,
+                                            tint = if (currentMode == MediaScanMode.BLACKLIST)
+                                                MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(16.dp))
+
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = File(folder).name.ifEmpty { context.getString(R.string.settings_root) },
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = folder,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+
+                                    FilledIconButton(
+                                        onClick = {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                            if (currentMode == MediaScanMode.BLACKLIST) {
+                                                appSettings.removeFolderFromBlacklist(folder)
+                                            } else {
+                                                appSettings.removeFolderFromWhitelist(folder)
+                                            }
+                                        },
+                                        colors = IconButtonDefaults.filledIconButtonColors(
+                                            containerColor = if (currentMode == MediaScanMode.BLACKLIST)
+                                                MaterialTheme.colorScheme.errorContainer
+                                            else MaterialTheme.colorScheme.primaryContainer
+                                        )
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Close,
+                                            contentDescription = context.getString(R.string.cd_remove),
+                                            tint = if (currentMode == MediaScanMode.BLACKLIST)
+                                                MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (suggestedFolders.isNotEmpty()) {
+                        item {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Suggested Folders (Detected Music)",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                        items(suggestedFolders, key = { "suggested_${it.hashCode()}" }) { folder ->
+                            Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            if (currentMode == MediaScanMode.BLACKLIST)
-                                                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-                                            else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Folder,
-                                        contentDescription = null,
-                                        tint = if (currentMode == MediaScanMode.BLACKLIST)
-                                            MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(16.dp))
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = File(folder).name.ifEmpty { context.getString(R.string.settings_root) },
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = folder,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-
-                                FilledIconButton(
-                                    onClick = {
+                                    .clickable {
                                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                         if (currentMode == MediaScanMode.BLACKLIST) {
-                                            appSettings.removeFolderFromBlacklist(folder)
+                                            appSettings.addFolderToBlacklist(folder)
                                         } else {
-                                            appSettings.removeFolderFromWhitelist(folder)
+                                            appSettings.addFolderToWhitelist(folder)
                                         }
                                     },
-                                    colors = IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = if (currentMode == MediaScanMode.BLACKLIST)
-                                            MaterialTheme.colorScheme.errorContainer
-                                        else MaterialTheme.colorScheme.primaryContainer
-                                    )
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clip(CircleShape)
+                                            .background(
+                                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Folder,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(16.dp))
+
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = File(folder).name.ifEmpty { context.getString(R.string.settings_root) },
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = folder,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+
                                     Icon(
-                                        imageVector = RhythmIcons.Close,
-                                        contentDescription = context.getString(R.string.cd_remove),
-                                        tint = if (currentMode == MediaScanMode.BLACKLIST)
-                                            MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
+                                        imageVector = RhythmIcons.Add,
+                                        contentDescription = "Add folder",
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
@@ -1008,8 +1125,12 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                     Button(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                            folderPickerLauncher.launch(intent)
+                            try {
+                                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                                folderPickerLauncher.launch(intent)
+                            } catch (e: ActivityNotFoundException) {
+                                Toast.makeText(context, context.getString(R.string.error_no_document_app), Toast.LENGTH_LONG).show()
+                            }
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
