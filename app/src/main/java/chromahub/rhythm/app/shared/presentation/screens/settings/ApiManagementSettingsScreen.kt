@@ -112,6 +112,7 @@ import chromahub.rhythm.app.shared.presentation.components.common.ProgressStyle
 import chromahub.rhythm.app.shared.presentation.components.common.ThumbStyle
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.LicensesBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.UpdateBottomSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.LyricallySourcesBottomSheet
 import chromahub.rhythm.app.ui.utils.LazyListStateSaver
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeProvider
@@ -171,6 +172,7 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
     val lrclibApiEnabled by appSettings.lrclibApiEnabled.collectAsState()
     val ytMusicApiEnabled by appSettings.ytMusicApiEnabled.collectAsState()
     val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
+    var showLyricallySourcesBottomSheet by remember { mutableStateOf(false) }
 
     CollapsibleHeaderScreen(
         title = context.getString(R.string.settings_api_management),
@@ -244,7 +246,13 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                                     title = stringResource(R.string.apimanagementsettingsscreen_lyrically),
                                     description = "Word-by-word synchronized lyrics (Highest Quality)",
                                     toggleState = lyricallyApiEnabled,
-                                    onToggleChange = { enabled -> appSettings.setLyricallyApiEnabled(enabled) }
+                                    onToggleChange = { enabled -> appSettings.setLyricallyApiEnabled(enabled) },
+                                    onClick = {
+                                        if (lyricallyApiEnabled) {
+                                            HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                                            showLyricallySourcesBottomSheet = true
+                                        }
+                                    }
                                 )
                             )
                         )
@@ -320,6 +328,14 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                     }
                 }
             }
+        }
+
+        if (showLyricallySourcesBottomSheet) {
+            LyricallySourcesBottomSheet(
+                onDismiss = { showLyricallySourcesBottomSheet = false },
+                appSettings = appSettings,
+                haptics = hapticFeedback
+            )
         }
     }
 }

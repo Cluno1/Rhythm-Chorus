@@ -173,6 +173,8 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_CHIP_ORDER = "player_chip_order"
         private const val KEY_HIDDEN_LIBRARY_TABS = "hidden_library_tabs"
         private const val KEY_HIDDEN_PLAYER_CHIPS = "hidden_player_chips"
+        private const val KEY_LYRICALLY_SOURCES_ORDER = "lyrically_sources_order"
+        private const val KEY_DISABLED_LYRICALLY_SOURCES = "disabled_lyrically_sources"
         private const val KEY_GROUP_BY_ALBUM_ARTIST = "group_by_album_artist" // New setting for album artist grouping
         private const val KEY_PREFER_SONG_ARTWORK = "prefer_song_artwork" // Prefer per-song embedded artwork over shared album art
         private const val KEY_IGNORE_MEDIASTORE_COVERS = "ignore_mediastore_covers" // Legacy key kept for migration compatibility
@@ -846,6 +848,36 @@ class AppSettings private constructor(context: Context) {
             ?: emptySet()
     )
     val hiddenPlayerChips: StateFlow<Set<String>> = _hiddenPlayerChips.asStateFlow()
+    
+    // Lyrically Sources Order
+    val defaultLyricallySources = listOf(
+        "APPLE_MUSIC",
+        "SPOTIFY",
+        "NETEASE",
+        "QQ_MUSIC",
+        "KUGOU",
+        "YOUTUBE",
+        "DEEZER",
+        "MUSIXMATCH",
+        "GENIUS"
+    )
+    private val _lyricallySourcesOrder = MutableStateFlow(
+        prefs.getString(KEY_LYRICALLY_SOURCES_ORDER, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() && it in defaultLyricallySources }
+            ?.takeIf { it.isNotEmpty() }
+            ?: defaultLyricallySources
+    )
+    val lyricallySourcesOrder: StateFlow<List<String>> = _lyricallySourcesOrder.asStateFlow()
+
+    private val _disabledLyricallySources = MutableStateFlow(
+        prefs.getString(KEY_DISABLED_LYRICALLY_SOURCES, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() && it in defaultLyricallySources }
+            ?.toSet()
+            ?: if (BuildConfig.FLAVOR == "fdroid") defaultLyricallySources.toSet() else emptySet()
+    )
+    val disabledLyricallySources: StateFlow<Set<String>> = _disabledLyricallySources.asStateFlow()
     
     // Group By Album Artist
     private val _groupByAlbumArtist = MutableStateFlow(false)
@@ -2271,6 +2303,25 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         val hiddenString = sanitizedHiddenChips.joinToString(",")
         prefs.edit().putString(KEY_HIDDEN_PLAYER_CHIPS, hiddenString).apply()
         _hiddenPlayerChips.value = sanitizedHiddenChips
+    }
+
+    fun setLyricallySourcesOrder(order: List<String>) {
+        val sanitized = order.filter { it in defaultLyricallySources }
+        val orderString = sanitized.joinToString(",")
+        prefs.edit().putString(KEY_LYRICALLY_SOURCES_ORDER, orderString).apply()
+        _lyricallySourcesOrder.value = sanitized
+    }
+
+    fun resetLyricallySourcesOrder() {
+        prefs.edit().remove(KEY_LYRICALLY_SOURCES_ORDER).apply()
+        _lyricallySourcesOrder.value = defaultLyricallySources
+    }
+
+    fun setDisabledLyricallySources(disabled: Set<String>) {
+        val sanitized = disabled.filter { it in defaultLyricallySources }.toSet()
+        val disabledString = sanitized.joinToString(",")
+        prefs.edit().putString(KEY_DISABLED_LYRICALLY_SOURCES, disabledString).apply()
+        _disabledLyricallySources.value = sanitized
     }
     
     fun setGroupByAlbumArtist(enable: Boolean) {
@@ -4644,6 +4695,16 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _ytMusicApiEnabled.value = prefs.getBoolean(KEY_YTMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _spotifyApiEnabled.value = prefs.getBoolean(KEY_SPOTIFY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _lyricallyApiEnabled.value = prefs.getBoolean(KEY_LYRICALLY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _lyricallySourcesOrder.value = prefs.getString(KEY_LYRICALLY_SOURCES_ORDER, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() && it in defaultLyricallySources }
+            ?.takeIf { it.isNotEmpty() }
+            ?: defaultLyricallySources
+        _disabledLyricallySources.value = prefs.getString(KEY_DISABLED_LYRICALLY_SOURCES, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() && it in defaultLyricallySources }
+            ?.toSet()
+            ?: if (BuildConfig.FLAVOR == "fdroid") defaultLyricallySources.toSet() else emptySet()
         _autoFetchArtwork.value = prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, false)
         _spotifyClientId.value = prefs.getString(KEY_SPOTIFY_CLIENT_ID, "") ?: ""
         _spotifyClientSecret.value = prefs.getString(KEY_SPOTIFY_CLIENT_SECRET, "") ?: ""

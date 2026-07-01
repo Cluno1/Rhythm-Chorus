@@ -376,9 +376,26 @@ fun applyAutoWordSync(syncedLyrics: SemanticLyrics.SyncedLyrics) {
         if (line.words != null) return@forEach
         if (line.text.isBlank()) return@forEach
         if (line.end <= line.start) return@forEach
+        // Don't inject fake word timings into instrumental / gap markers
+        if (LrcUtils.isInstrumentalLine(line.text)) return@forEach
         val tokens = line.text.split(Regex("\\s+")).filter { it.isNotBlank() }
         if (tokens.size < 2) return@forEach
-        val lineDuration = line.end - line.start
+
+        // When the end time is implicit (= next line's start), the line duration includes
+        // silence/gaps. Cap it to a realistic singing duration so word timings don't bleed
+        // into what should be a gap. Heuristic: ~120 ms per character, capped at 8 s.
+        val implicitEnd = line.end
+        val effectiveEnd: ULong = if (line.endIsImplicit) {
+            val totalChars = line.text.trim().length
+            val estimatedMs = (totalChars * 120L).coerceIn(500L, 8000L)
+            val estimated = line.start + estimatedMs.toULong()
+            // Never exceed the actual implicit end
+            minOf(estimated, implicitEnd)
+        } else {
+            implicitEnd
+        }
+
+        val lineDuration = effectiveEnd - line.start
         val totalChars = tokens.sumOf { it.length }
         var charIdx = 0
         val newWords = mutableListOf<SemanticLyrics.Word>()
@@ -390,7 +407,7 @@ fun applyAutoWordSync(syncedLyrics: SemanticLyrics.SyncedLyrics) {
             val charRatio = token.length.toFloat() / totalChars
             val wordDuration = (lineDuration.toFloat() * charRatio).toULong()
             val wordStart = line.start + accumulatedTime
-            val wordEndInclusive = if (i == tokens.lastIndex) line.end - 1uL
+            val wordEndInclusive = if (i == tokens.lastIndex) effectiveEnd - 1uL
                 else wordStart + wordDuration - 1uL
             newWords.add(SemanticLyrics.Word(wordStart, wordEndInclusive, tokenStart..<tokenEnd, isRtl = false))
             accumulatedTime += wordDuration

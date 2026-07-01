@@ -51,6 +51,9 @@ import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolI
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.M3ImageUtils
+import chromahub.rhythm.app.util.LrcUtils
+import chromahub.rhythm.app.util.SemanticLyrics
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.luminance
 import kotlinx.coroutines.delay
 import chromahub.rhythm.app.R
@@ -620,8 +623,27 @@ fun FullScreenLyricsView(
                         }
 
                         else -> {
-                            val wordByWordLyrics = remember(lyrics) {
-                                lyrics?.getWordByWordLyricsOrNull()
+                            val appSettings = remember { AppSettings.getInstance(context) }
+                            val translationAutoWord by appSettings.translationAutoWord.collectAsState()
+                            val wordByWordLyrics = remember(lyrics, translationAutoWord) {
+                                lyrics?.getWordByWordLyricsOrNull() ?: run {
+                                    if (translationAutoWord && lyrics?.syncedLyrics != null) {
+                                        try {
+                                            val options = LrcUtils.LrcParserOptions(
+                                                trim = true, multiLine = true, errorText = null, autoWordSync = true
+                                            )
+                                            val parsed = LrcUtils.parseLyrics(
+                                                lyrics.syncedLyrics, audioMimeType = null,
+                                                parserOptions = options, format = LrcUtils.LyricFormat.LRC
+                                            )
+                                            if (parsed is SemanticLyrics.SyncedLyrics) {
+                                                LrcUtils.convertSemanticLyricsToWordByWord(parsed)
+                                            } else null
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                    } else null
+                                }
                             }
 
                             if (wordByWordLyrics != null) {
@@ -888,8 +910,27 @@ fun FullScreenLyricsView(
                         }
 
                         else -> {
-                            val wordByWordLyrics = remember(lyrics) {
-                                lyrics?.getWordByWordLyricsOrNull()
+                            val appSettingsInst = remember { AppSettings.getInstance(context) }
+                            val translationAutoWord2 by appSettingsInst.translationAutoWord.collectAsState()
+                            val wordByWordLyrics = remember(lyrics, translationAutoWord2) {
+                                lyrics?.getWordByWordLyricsOrNull() ?: run {
+                                    if (translationAutoWord2 && lyrics?.syncedLyrics != null) {
+                                        try {
+                                            val options = LrcUtils.LrcParserOptions(
+                                                trim = true, multiLine = true, errorText = null, autoWordSync = true
+                                            )
+                                            val parsed = LrcUtils.parseLyrics(
+                                                lyrics.syncedLyrics, audioMimeType = null,
+                                                parserOptions = options, format = LrcUtils.LyricFormat.LRC
+                                            )
+                                            if (parsed is SemanticLyrics.SyncedLyrics) {
+                                                LrcUtils.convertSemanticLyricsToWordByWord(parsed)
+                                            } else null
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                    } else null
+                                }
                             }
 
                             if (wordByWordLyrics != null) {

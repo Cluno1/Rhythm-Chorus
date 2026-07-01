@@ -23,6 +23,7 @@ import androidx.media3.common.util.ParsableByteArray
 import androidx.media3.extractor.metadata.id3.BinaryFrame
 import androidx.media3.extractor.metadata.id3.TextInformationFrame
 import androidx.media3.extractor.metadata.vorbis.VorbisComment
+import com.google.gson.Gson
 import chromahub.rhythm.app.util.SemanticLyrics.SyncedLyrics
 import java.io.File
 import java.nio.charset.Charset
@@ -171,5 +172,76 @@ object LrcUtils {
             Log.e(TAG, Log.getThrowableString(e)!!)
             return errorText
         }
+    }
+
+    fun isInstrumentalLine(text: String): Boolean {
+        val clean = text.trim().lowercase().removeSurrounding("[", "]").removeSurrounding("(", ")").trim()
+        return clean == "instrumental" ||
+               clean == "no vocals" ||
+               clean == "music" ||
+               clean == "instrumental break" ||
+               clean == "instrumental track" ||
+               clean == "pure instrumental" ||
+               clean == "no lyrics" ||
+               clean == "♪" ||
+               clean == "♫" ||
+               clean == "🎶"
+    }
+
+    fun convertSemanticLyricsToWordByWord(syncedLyrics: SyncedLyrics): String? {
+        val rhythmWordLines = syncedLyrics.text.mapNotNull { line ->
+            // Skip translated/romanization lines — only process primary lines
+            if (line.isTranslated) return@mapNotNull null
+
+            // Skip instrumental / gap lines — leave them as timing gaps
+            if (isInstrumentalLine(line.text)) return@mapNotNull null
+
+            val words = line.words
+            val wordMaps: List<Map<String, Any>> = if (words != null) {
+                // Real word-by-word data from the parser
+                words.mapNotNull { word ->
+                    val text = try {
+                        line.text.substring(word.charRange)
+                    } catch (e: Exception) { "" }
+                    if (text.isBlank() || isInstrumentalLine(text)) return@mapNotNull null
+                    mapOf(
+                        "text" to text,
+                        "part" to false,
+                        "timestamp" to word.begin.toLong(),
+                        "endtime" to (word.endInclusive ?: word.begin).toLong()
+                    )
+                }
+            } else {
+                // auto-sync skipped this line (e.g. single-word line or no duration).
+                // Synthesise a single word entry spanning the whole line so it still renders.
+                val trimmed = line.text.trim()
+                if (trimmed.isBlank()) return@mapNotNull null
+                listOf(
+                    mapOf(
+                        "text" to trimmed,
+                        "part" to false,
+                        "timestamp" to line.start.toLong(),
+                        "endtime" to if (line.end > line.start) (line.end - 1uL).toLong()
+                                     else line.start.toLong()
+                    )
+                )
+            }
+
+            if (wordMaps.isEmpty()) return@mapNotNull null
+
+            // Use the actual last word's endtime as line endtime so WordByWordLyricsView's
+            // gap detection measures singing-end → next-line-start, not implicit-next-start.
+            val lineEndtime = wordMaps.maxOfOrNull {
+                (it["endtime"] as? Long) ?: 0L
+            } ?: line.end.toLong()
+
+            mutableMapOf<String, Any>(
+                "text" to wordMaps,
+                "background" to false,
+                "timestamp" to line.start.toLong(),
+                "endtime" to lineEndtime
+            )
+        }
+        return if (rhythmWordLines.isNotEmpty()) Gson().toJson(rhythmWordLines) else null
     }
 }

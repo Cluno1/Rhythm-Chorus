@@ -2388,6 +2388,8 @@
     <string name="aboutscreen_support_development">Support Development</string>
     <string name="aboutscreen_discord_community">Discord Community</string>
     <string name="apimanagementsettingsscreen_lyrically">Lyrically</string>
+    <string name="lyrically_sources_title">Lyrically Sources</string>
+    <string name="lyrically_sources_desc">Configure and prioritize lyrics sources inside Lyrically. Word-by-word sources will be tried first, falling back to synced/plain ones.</string>
     <string name="apimanagementsettingsscreen_github">GitHub</string>
     <string name="apimanagementsettingsscreen_app_updates_and_release">App updates and release information</string>
     <string name="backuprestoresettingsscreen_choose_backup_sections">Choose Backup Sections</string>

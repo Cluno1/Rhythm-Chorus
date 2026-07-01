@@ -21,6 +21,12 @@ interface DeezerApiService {
         @Query("q") query: String,
         @Query("limit") limit: Int = 25 // Increased limit to get more results
     ): DeezerAlbumSearchResponse
+
+    @GET("search")
+    suspend fun searchTracks(
+        @Query("q") query: String,
+        @Query("limit") limit: Int = 25
+    ): DeezerTrackSearchResponse
 }
 
 // ---------- DTOs ----------
@@ -78,4 +84,25 @@ data class DeezerAlbumArtist(
     @SerializedName("picture_medium") val pictureMedium: String? = null,
     @SerializedName("picture_big") val pictureBig: String? = null,
     @SerializedName("picture_xl") val pictureXl: String? = null
+)
+
+data class DeezerTrackSearchResponse(
+    val data: List<DeezerTrack> = emptyList()
+)
+
+data class DeezerTrack(
+    val id: Long,
+    val title: String,
+    val artist: DeezerTrackArtist?,
+    val album: DeezerTrackAlbum?
+)
+
+data class DeezerTrackArtist(
+    val id: Long,
+    val name: String
+)
+
+data class DeezerTrackAlbum(
+    val id: Long,
+    val title: String
 )

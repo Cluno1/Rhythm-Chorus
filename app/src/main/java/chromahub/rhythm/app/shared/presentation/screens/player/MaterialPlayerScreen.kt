@@ -171,6 +171,9 @@ import chromahub.rhythm.app.util.ImageUtils
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.LyricsFileUtils
+import chromahub.rhythm.app.util.LrcUtils
+import chromahub.rhythm.app.util.SemanticLyrics
+import androidx.compose.runtime.collectAsState
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import kotlinx.coroutines.Dispatchers
@@ -2225,8 +2228,26 @@ fun MaterialPlayerScreen(
 
                                                 else -> {
                                                     // Check for word-by-word lyrics first (highest quality)
-                                                    val wordByWordLyrics = remember(lyrics) {
-                                                        lyrics?.getWordByWordLyricsOrNull()
+                                                    val translationAutoWord by appSettings.translationAutoWord.collectAsState()
+                                                    val wordByWordLyrics = remember(lyrics, translationAutoWord) {
+                                                        lyrics?.getWordByWordLyricsOrNull() ?: run {
+                                                            if (translationAutoWord && lyrics?.syncedLyrics != null) {
+                                                                try {
+                                                                    val options = LrcUtils.LrcParserOptions(
+                                                                        trim = true, multiLine = true, errorText = null, autoWordSync = true
+                                                                    )
+                                                                    val parsed = LrcUtils.parseLyrics(
+                                                                        lyrics.syncedLyrics, audioMimeType = null,
+                                                                        parserOptions = options, format = LrcUtils.LyricFormat.LRC
+                                                                    )
+                                                                    if (parsed is SemanticLyrics.SyncedLyrics) {
+                                                                        LrcUtils.convertSemanticLyricsToWordByWord(parsed)
+                                                                    } else null
+                                                                } catch (e: Exception) {
+                                                                    null
+                                                                }
+                                                            } else null
+                                                        }
                                                     }
                                                     
                                                     if (wordByWordLyrics != null) {

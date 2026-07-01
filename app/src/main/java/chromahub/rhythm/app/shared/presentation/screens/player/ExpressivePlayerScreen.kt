@@ -87,6 +87,9 @@ import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.M3ImageUtils
+import chromahub.rhythm.app.util.LrcUtils
+import chromahub.rhythm.app.util.SemanticLyrics
+import androidx.compose.runtime.collectAsState
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.widget.Toast
@@ -1175,8 +1178,27 @@ private fun RhythmPlayerLyricsPanel(
             }
 
             else -> {
-                val wordByWordLyrics = remember(lyrics) {
-                    lyrics?.getWordByWordLyricsOrNull()
+                val localAppSettings = remember { chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context) }
+                val translationAutoWord by localAppSettings.translationAutoWord.collectAsState()
+                val wordByWordLyrics = remember(lyrics, translationAutoWord) {
+                    lyrics?.getWordByWordLyricsOrNull() ?: run {
+                        if (translationAutoWord && lyrics?.syncedLyrics != null) {
+                            try {
+                                val options = LrcUtils.LrcParserOptions(
+                                    trim = true, multiLine = true, errorText = null, autoWordSync = true
+                                )
+                                val parsed = LrcUtils.parseLyrics(
+                                    lyrics.syncedLyrics, audioMimeType = null,
+                                    parserOptions = options, format = LrcUtils.LyricFormat.LRC
+                                )
+                                if (parsed is SemanticLyrics.SyncedLyrics) {
+                                    LrcUtils.convertSemanticLyricsToWordByWord(parsed)
+                                } else null
+                            } catch (e: Exception) {
+                                null
+                            }
+                        } else null
+                    }
                 }
 
                 if (wordByWordLyrics != null) {
