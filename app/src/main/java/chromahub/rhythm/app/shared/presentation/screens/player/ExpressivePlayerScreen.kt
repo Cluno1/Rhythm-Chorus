@@ -262,16 +262,9 @@ fun ExpressivePlayerScreen(
     val line2TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line2Fraction) }
 
     val line3Alpha = line3Fraction
-    val line3TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line3Fraction) }
-
     val line4Alpha = line4Fraction
-    val line4TranslationY = with(LocalDensity.current) { 48.dp.toPx() * (1f - line4Fraction) }
-
     val line5Alpha = line5Fraction
-    val line5TranslationY = with(LocalDensity.current) { 48.dp.toPx() * (1f - line5Fraction) }
-
     val line6Alpha = line6Fraction
-    val line6TranslationY = with(LocalDensity.current) { 64.dp.toPx() * (1f - line6Fraction) }
 
     val artworkClipShape = if (lyricsVisible) {
         RoundedCornerShape(artworkCornerRadius)
@@ -674,7 +667,6 @@ fun ExpressivePlayerScreen(
                                 .fillMaxWidth()
                                 .graphicsLayer {
                                     alpha = line3Alpha
-                                    translationY = line3TranslationY
                                 }
                                 .padding(bottom = if (isCompactHeight) 8.dp else 16.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -768,14 +760,13 @@ fun ExpressivePlayerScreen(
                             Column(
                                 modifier = Modifier.padding(if (isCompactWidth) 12.dp else 20.dp)
                             ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .graphicsLayer {
-                                            alpha = line4Alpha
-                                            translationY = line4TranslationY
-                                        },
-                                    horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp),
+                                 Row(
+                                     modifier = Modifier
+                                         .fillMaxWidth()
+                                         .graphicsLayer {
+                                             alpha = line4Alpha
+                                         },
+                                     horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Surface(
@@ -822,14 +813,13 @@ fun ExpressivePlayerScreen(
 
                                 Spacer(modifier = Modifier.height(if (isCompactHeight) 8.dp else 16.dp))
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .graphicsLayer {
-                                            alpha = line5Alpha
-                                            translationY = line5TranslationY
-                                        },
-                                    horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp),
+                                 Row(
+                                     modifier = Modifier
+                                         .fillMaxWidth()
+                                         .graphicsLayer {
+                                             alpha = line5Alpha
+                                         },
+                                     horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Surface(
@@ -973,7 +963,6 @@ fun ExpressivePlayerScreen(
                             .fillMaxWidth()
                             .graphicsLayer {
                                 alpha = line6Alpha
-                                translationY = line6TranslationY
                             }
                             .padding(
                                 start = if (isCompactWidth) 12.dp else 24.dp,

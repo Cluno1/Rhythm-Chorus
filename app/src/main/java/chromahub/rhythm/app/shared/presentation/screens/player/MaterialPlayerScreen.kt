@@ -785,16 +785,9 @@ fun MaterialPlayerScreen(
     val line2TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line2Fraction) }
 
     val line3Alpha = line3Fraction
-    val line3TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line3Fraction) }
-
     val line4Alpha = line4Fraction
-    val line4TranslationY = with(LocalDensity.current) { 48.dp.toPx() * (1f - line4Fraction) }
-
     val line5Alpha = line5Fraction
-    val line5TranslationY = with(LocalDensity.current) { 48.dp.toPx() * (1f - line5Fraction) }
-
     val line6Alpha = line6Fraction
-    val line6TranslationY = with(LocalDensity.current) { 64.dp.toPx() * (1f - line6Fraction) }
     
     // Swipe to dismiss gesture state - enhanced for mini player-like transition
     var swipeOffsetY by remember { mutableStateOf(0f) }
@@ -1574,7 +1567,6 @@ fun MaterialPlayerScreen(
                             .fillMaxWidth()
                             .graphicsLayer {
                                 alpha = line3Alpha
-                                translationY = line3TranslationY
                             }
                             .padding(
                                 horizontal = when {
@@ -2538,7 +2530,6 @@ fun MaterialPlayerScreen(
                                     .fillMaxWidth()
                                     .graphicsLayer {
                                         alpha = line4Alpha
-                                        translationY = line4TranslationY
                                     }
                                     .padding(
                                         horizontal = when {
@@ -2731,11 +2722,9 @@ fun MaterialPlayerScreen(
                         // Main player controls with Expressive Material 3 button group
                         // Full width container with same padding as toggle buttons
                         Box(
-                            modifier = Modifier
-                                .graphicsLayer {
-                                    alpha = line5Alpha
-                                    translationY = line5TranslationY
-                                }
+                            modifier = Modifier.graphicsLayer {
+                                alpha = line5Alpha
+                            }
                         ) {
                             chromahub.rhythm.app.shared.presentation.components.common.ExpressivePlayerControlGroup(
                             isPlaying = isPlaying && !showLoaderInPlayPauseButton,
@@ -2809,11 +2798,9 @@ fun MaterialPlayerScreen(
 
                         // Secondary action buttons with Expressive Toggle Button Group
                         Box(
-                            modifier = Modifier
-                                .graphicsLayer {
-                                    alpha = line6Alpha
-                                    translationY = line6TranslationY
-                                }
+                            modifier = Modifier.graphicsLayer {
+                                alpha = line6Alpha
+                            }
                         ) {
                         chromahub.rhythm.app.shared.presentation.components.common.ExpressiveToggleButtonGroup(
                             shuffleEnabled = isShuffleEnabled,
@@ -3760,7 +3747,6 @@ fun MaterialPlayerScreen(
                                 .fillMaxWidth()
                                 .graphicsLayer {
                                     alpha = line6Alpha
-                                    translationY = line6TranslationY
                                 }
                                 .padding(
                                     horizontal = when {
