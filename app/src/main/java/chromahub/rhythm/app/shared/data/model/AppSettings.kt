@@ -293,6 +293,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_GENRE_DETECTION_COMPLETED = "genre_detection_completed"
         private const val KEY_AUDIO_METADATA_EXTRACTION_COMPLETED = "audio_metadata_extraction_completed"
         private const val KEY_EMBEDDED_ARTWORK_EXTRACTION_COMPLETED = "embedded_artwork_extraction_completed"
+        private const val KEY_EMBEDDED_ARTWORK_EXTRACTION_LOSSLESS_STATUS = "embedded_artwork_extraction_lossless_status"
 
         // App Updater Settings
         private const val KEY_AUTO_CHECK_FOR_UPDATES = "auto_check_for_updates"
@@ -1498,6 +1499,11 @@ class AppSettings private constructor(context: Context) {
     )
     val embeddedArtworkExtractionCompleted: StateFlow<Boolean> = _embeddedArtworkExtractionCompleted.asStateFlow()
 
+    private val _embeddedArtworkExtractionLosslessStatus = MutableStateFlow(
+        prefs.getBoolean(KEY_EMBEDDED_ARTWORK_EXTRACTION_LOSSLESS_STATUS, false)
+    )
+    val embeddedArtworkExtractionLosslessStatus: StateFlow<Boolean> = _embeddedArtworkExtractionLosslessStatus.asStateFlow()
+
     // App Updater Settings
 private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CHECK_FOR_UPDATES, BuildConfig.FLAVOR != "fdroid"))
     val autoCheckForUpdates: StateFlow<Boolean> = _autoCheckForUpdates.asStateFlow()
@@ -2392,6 +2398,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             .putBoolean(KEY_INITIAL_MEDIA_SCAN_COMPLETED, false)
             .putBoolean(KEY_GENRE_DETECTION_COMPLETED, false)
             .putBoolean(KEY_EMBEDDED_ARTWORK_EXTRACTION_COMPLETED, false)
+            .putBoolean(KEY_EMBEDDED_ARTWORK_EXTRACTION_LOSSLESS_STATUS, false)
             .putLong(KEY_LAST_SCAN_TIMESTAMP, 0L)
             .putLong(KEY_LAST_SCAN_DURATION, 0L)
             .apply()
@@ -2400,6 +2407,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _genreDetectionCompleted.value = false
         _audioMetadataExtractionCompleted.value = false
         _embeddedArtworkExtractionCompleted.value = false
+        _embeddedArtworkExtractionLosslessStatus.value = false
         _lastScanTimestamp.value = 0L
         _lastScanDuration.value = 0L
 
@@ -3163,6 +3171,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setEmbeddedArtworkExtractionCompleted(completed: Boolean) {
         prefs.edit().putBoolean(KEY_EMBEDDED_ARTWORK_EXTRACTION_COMPLETED, completed).apply()
         _embeddedArtworkExtractionCompleted.value = completed
+    }
+
+    fun setEmbeddedArtworkExtractionLosslessStatus(lossless: Boolean) {
+        prefs.edit().putBoolean(KEY_EMBEDDED_ARTWORK_EXTRACTION_LOSSLESS_STATUS, lossless).apply()
+        _embeddedArtworkExtractionLosslessStatus.value = lossless
     }
 
     // App Updater Settings Methods

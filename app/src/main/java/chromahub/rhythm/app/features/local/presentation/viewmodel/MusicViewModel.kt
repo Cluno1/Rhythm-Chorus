@@ -1076,6 +1076,83 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
         
+        // Dynamically update library artwork when preferSongArtwork or isLosslessArtworkActive changes.
+        viewModelScope.launch {
+            var previousState = Pair(
+                appSettings.preferSongArtwork.value,
+                appSettings.isLosslessArtworkActive.value
+            )
+
+            combine(
+                appSettings.preferSongArtwork,
+                appSettings.isLosslessArtworkActive
+            ) { preferSongArtwork, losslessArtwork ->
+                Pair(preferSongArtwork, losslessArtwork)
+            }.collect { newState ->
+                if (!_isInitialized.value || newState == previousState) {
+                    return@collect
+                }
+                
+                val preferSongArtworkChanged = newState.first != previousState.first
+                val losslessChanged = newState.second != previousState.second
+                previousState = newState
+
+                Log.d(TAG, "Artwork settings changed dynamically: preferSongArtwork=${newState.first}, losslessArtwork=${newState.second}")
+                
+                try {
+                    // Reset extraction completed flag to allow background extraction for the new format
+                    if (preferSongArtworkChanged || (newState.first && losslessChanged)) {
+                        appSettings.setEmbeddedArtworkExtractionCompleted(false)
+                    }
+
+                    // Invalidate caches and reload
+                    withContext(Dispatchers.IO) {
+                        repository.clearInMemoryCaches()
+                        val freshSongs = repository.loadSongs()
+                        withContext(Dispatchers.Main) {
+                            _songs.value = freshSongs
+                        }
+                        val freshAlbums = repository.loadAlbums()
+                        val freshArtists = repository.loadArtists()
+                        withContext(Dispatchers.Main) {
+                            _albums.value = freshAlbums
+                            _artists.value = freshArtists
+                        }
+                    }
+
+                    // Trigger background extraction if preferSongArtwork is enabled
+                    val preferSongArtwork = newState.first
+                    val losslessArtwork = newState.second
+                    if (preferSongArtwork) {
+                        launch(Dispatchers.IO) {
+                            try {
+                                val currentSongs = _songs.value
+                                val songsNeedingExtraction = currentSongs.count { song ->
+                                    song.artworkUri == null ||
+                                    !repository.isEmbeddedArtworkCacheUri(song.artworkUri) ||
+                                    !repository.hasArtworkMatchingLossless(song, losslessArtwork)
+                                }
+                                if (songsNeedingExtraction > 0) {
+                                    Log.d(TAG, "Starting dynamic background embedded artwork extraction for $songsNeedingExtraction songs")
+                                    val updated = repository.extractEmbeddedArtworkForSongs(currentSongs, losslessArtwork)
+                                    withContext(Dispatchers.Main) {
+                                        _songs.value = updated
+                                    }
+                                    repository.updateAndPersistSongs(updated)
+                                }
+                                appSettings.setEmbeddedArtworkExtractionLosslessStatus(losslessArtwork)
+                                appSettings.setEmbeddedArtworkExtractionCompleted(true)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Error in dynamic background embedded artwork extraction", e)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error updating library artwork on settings change", e)
+                }
+            }
+        }
+
         // Listen for blacklist/whitelist changes and refresh playlists accordingly
         // This runs independently but only acts after initialization completes
         viewModelScope.launch {
@@ -1671,7 +1748,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val preferSongArtwork = appSettings.preferSongArtwork.value
                 val losslessArtwork = appSettings.isLosslessArtworkActive.value
                 val isCompleted = appSettings.embeddedArtworkExtractionCompleted.value
-                if (preferSongArtwork && !isCompleted) {
+                val lastLosslessStatus = appSettings.embeddedArtworkExtractionLosslessStatus.value
+                val needsRun = !isCompleted || lastLosslessStatus != losslessArtwork
+
+                if (preferSongArtwork && needsRun) {
                     val initialSongs = _songs.value
                     val songsNeedingExtraction = initialSongs.count { song ->
                         song.artworkUri == null ||
@@ -1681,6 +1761,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
                     if (songsNeedingExtraction == 0) {
                         Log.d(TAG, "All ${initialSongs.size} songs already have cached embedded artwork, skipping extraction")
+                        appSettings.setEmbeddedArtworkExtractionLosslessStatus(losslessArtwork)
                         appSettings.setEmbeddedArtworkExtractionCompleted(true)
                         return@launch
                     }
@@ -1697,11 +1778,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         }
                         // Persist the updated song snapshot so the repository cache stays aligned.
                         repository.updateAndPersistSongs(updatedSongs)
+                        appSettings.setEmbeddedArtworkExtractionLosslessStatus(losslessArtwork)
                         appSettings.setEmbeddedArtworkExtractionCompleted(true)
                         Log.d(TAG, "Background embedded art extraction complete for ${currentSongs.size} songs")
                     }
                 } else {
-                    Log.d(TAG, "Embedded artwork extraction already completed or disabled (preferSongArtwork=$preferSongArtwork, completed=$isCompleted), skipping")
+                    Log.d(TAG, "Embedded artwork extraction already completed or disabled (preferSongArtwork=$preferSongArtwork, completed=$isCompleted, statusMatched=${lastLosslessStatus == losslessArtwork}), skipping")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error during background embedded art extraction", e)

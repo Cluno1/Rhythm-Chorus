@@ -198,7 +198,40 @@ class MusicRepository(context: Context) {
         previousSongs: List<Song>? = cachedSongs
     ) {
         try {
+            // Load existing artwork URIs from DB to check for lossless versions
+            val existingSongs = runCatching { songDao.getAllSongs().associate { it.id to it.artworkUri } }.getOrNull() ?: emptyMap()
+
             val entities = songs.map { song ->
+                val existingArtworkUriStr = existingSongs[song.id]
+                val incomingArtworkUriStr = song.artworkUri?.toString()
+                
+                val finalArtworkUriStr = if (existingArtworkUriStr != null && incomingArtworkUriStr != null) {
+                    val existingIsEmbedded = isEmbeddedArtworkCacheUri(Uri.parse(existingArtworkUriStr))
+                    val incomingIsEmbedded = isEmbeddedArtworkCacheUri(Uri.parse(incomingArtworkUriStr))
+                    
+                    if (existingIsEmbedded && incomingIsEmbedded) {
+                        val existingKey = getArtworkCacheKeyFromUri(Uri.parse(existingArtworkUriStr))
+                        val incomingKey = getArtworkCacheKeyFromUri(Uri.parse(incomingArtworkUriStr))
+                        
+                        if (existingKey != null && existingKey == incomingKey) {
+                            val existingIsLossless = existingArtworkUriStr.contains("embedded_art_lossless_")
+                            val incomingIsLossless = incomingArtworkUriStr.contains("embedded_art_lossless_")
+                            
+                            if (existingIsLossless && !incomingIsLossless) {
+                                existingArtworkUriStr
+                            } else {
+                                incomingArtworkUriStr
+                            }
+                        } else {
+                            incomingArtworkUriStr
+                        }
+                    } else {
+                        incomingArtworkUriStr
+                    }
+                } else {
+                    incomingArtworkUriStr ?: existingArtworkUriStr
+                }
+
                 SongEntity(
                     id = song.id,
                     title = song.title,
@@ -207,7 +240,7 @@ class MusicRepository(context: Context) {
                     albumId = song.albumId,
                     duration = song.duration,
                     uri = song.uri.toString(),
-                    artworkUri = song.artworkUri?.toString(),
+                    artworkUri = finalArtworkUriStr,
                     trackNumber = song.trackNumber,
                     year = song.year,
                     genre = song.genre,
@@ -222,6 +255,7 @@ class MusicRepository(context: Context) {
                     path = song.path
                 )
             }
+            val entitiesById = entities.associateBy { it.id }
 
             val songsWithMetadata =
                 songs.count { it.bitrate != null && it.sampleRate != null && it.channels != null && it.codec != null }
@@ -247,30 +281,7 @@ class MusicRepository(context: Context) {
 
                 val chunkSize = 200
                 changedSongs.chunked(chunkSize).forEach { chunk ->
-                    val chunkEntities = chunk.map { song ->
-                        SongEntity(
-                            id = song.id,
-                            title = song.title,
-                            artist = song.artist,
-                            album = song.album,
-                            albumId = song.albumId,
-                            duration = song.duration,
-                            uri = song.uri.toString(),
-                            artworkUri = song.artworkUri?.toString(),
-                            trackNumber = song.trackNumber,
-                            year = song.year,
-                            genre = song.genre,
-                            dateAdded = song.dateAdded,
-                            dateModified = song.dateModified,
-                            albumArtist = song.albumArtist,
-                            bitrate = song.bitrate,
-                            sampleRate = song.sampleRate,
-                            channels = song.channels,
-                            codec = song.codec,
-                            discNumber = song.discNumber,
-                            path = song.path
-                        )
-                    }
+                    val chunkEntities = chunk.mapNotNull { song -> entitiesById[song.id] }
                     val chunkSongIds = chunk.map { it.id }
                     val relationshipSets = buildSongArtistRelationshipSets(chunk)
 
@@ -430,11 +441,32 @@ class MusicRepository(context: Context) {
                             if (isLosslessFile == losslessArtwork) {
                                 savedArtworkUri
                             } else {
-                                chromahub.rhythm.app.util.MediaUtils.getCachedEmbeddedAlbumArtUri(
-                                    cacheDir = context.cacheDir,
-                                    songUri = songUri,
-                                    lossless = losslessArtwork
-                                )
+                                val savedFile = savedArtworkUri?.path?.let { File(it) }
+                                val parentDir = savedFile?.parentFile ?: File(context.cacheDir, "embedded_artwork")
+                                val baseName = fileName
+                                    .removePrefix("embedded_art_lossless_")
+                                    .removePrefix("embedded_art_")
+                                    .substringBefore('.')
+                                
+                                val extensions = listOf("jpg", "png", "webp")
+                                var preferredFile: File? = null
+                                for (ext in extensions) {
+                                    val candidate = File(parentDir, if (losslessArtwork) {
+                                        "embedded_art_lossless_${baseName}.${ext}"
+                                    } else {
+                                        "embedded_art_${baseName}.${ext}"
+                                    })
+                                    if (candidate.exists() && candidate.length() > 0L) {
+                                        preferredFile = candidate
+                                        break
+                                    }
+                                }
+                                
+                                if (preferredFile != null) {
+                                    Uri.fromFile(preferredFile)
+                                } else {
+                                    savedArtworkUri
+                                }
                             }
                         } else {
                             chromahub.rhythm.app.util.MediaUtils.getCachedEmbeddedAlbumArtUri(
@@ -534,6 +566,15 @@ class MusicRepository(context: Context) {
         }
 
         return false
+    }
+
+    fun getArtworkCacheKeyFromUri(uri: Uri): String? {
+        val path = uri.path ?: return null
+        val fileName = File(path).name
+        return fileName
+            .removePrefix("embedded_art_lossless_")
+            .removePrefix("embedded_art_")
+            .substringBefore('.')
     }
     
     // ContentObserver for automatic updates
