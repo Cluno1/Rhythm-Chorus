@@ -101,6 +101,7 @@ import chromahub.rhythm.app.shared.presentation.components.common.rememberExpres
 import chromahub.rhythm.app.shared.presentation.components.dialogs.AppRestartDialog
 import chromahub.rhythm.app.util.AppRestarter
 import chromahub.rhythm.app.core.domain.model.StreamingQuality
+import chromahub.rhythm.app.shared.presentation.components.player.VolumeSlider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -860,85 +861,19 @@ private fun VolumeControlCard(
             Spacer(modifier = Modifier.height(20.dp))
             
             // Volume controls
-            Row(
+            VolumeSlider(
+                value = currentVolume,
+                onValueChange = { newVolume ->
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                    if (useSystemVolume) {
+                        setSystemVolume(newVolume)
+                    } else {
+                        onVolumeChange(newVolume)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Volume down button
-                IconButton(
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        if (useSystemVolume) {
-                            val newVolume = (systemVolume - 0.1f).coerceAtLeast(0f)
-                            setSystemVolume(newVolume)
-                        } else {
-                            val newVolume = (volume - 0.1f).coerceAtLeast(0f)
-                            onVolumeChange(newVolume)
-                        }
-                    },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
-                            CircleShape
-                        )
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.Remove,
-                        contentDescription = stringResource(R.string.content_desc_decrease_volume),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                
-                // Volume slider
-                Slider(
-                    value = currentVolume,
-                    onValueChange = { newVolume ->
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                        if (useSystemVolume) {
-                            setSystemVolume(newVolume)
-                        } else {
-                            onVolumeChange(newVolume)
-                        }
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 12.dp),
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
-                    )
-                )
-                
-                // Volume up button
-                IconButton(
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        if (useSystemVolume) {
-                            val newVolume = (systemVolume + 0.1f).coerceAtMost(1f)
-                            setSystemVolume(newVolume)
-                        } else {
-                            val newVolume = (volume + 0.1f).coerceAtMost(1f)
-                            onVolumeChange(newVolume)
-                        }
-                    },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
-                            CircleShape
-                        )
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.Add,
-                        contentDescription = stringResource(R.string.content_desc_increase_volume),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
+                accentColor = MaterialTheme.colorScheme.primary
+            )
             
             Spacer(modifier = Modifier.height(16.dp))
             

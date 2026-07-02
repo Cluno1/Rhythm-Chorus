@@ -273,6 +273,8 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_SPOTIFY_CLIENT_SECRET = "spotify_client_secret"
         private const val KEY_LYRICALLY_API_ENABLED = "lyrically_api_enabled"
         private const val KEY_AUTO_FETCH_ARTWORK = "auto_fetch_artwork"
+        private const val KEY_APPLE_CANVAS_ENABLED = "apple_canvas_enabled"
+        private const val KEY_APPLE_CANVAS_NETWORK_MODE = "apple_canvas_network_mode"
         
         // General Broadcast Status Settings (for Tasker, KWGT, etc.)
         private const val KEY_BROADCAST_STATUS_ENABLED = "broadcast_status_enabled"
@@ -1393,6 +1395,14 @@ class AppSettings private constructor(context: Context) {
     
     private val _autoFetchArtwork = MutableStateFlow(prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, false))
     val autoFetchArtwork: StateFlow<Boolean> = _autoFetchArtwork.asStateFlow()
+
+    private val _appleCanvasEnabled = MutableStateFlow(prefs.getBoolean(KEY_APPLE_CANVAS_ENABLED, true))
+    val appleCanvasEnabled: StateFlow<Boolean> = _appleCanvasEnabled.asStateFlow()
+
+    private val _appleCanvasNetworkMode = MutableStateFlow(
+        CanvasNetworkMode.fromOrdinal(prefs.getInt(KEY_APPLE_CANVAS_NETWORK_MODE, CanvasNetworkMode.BOTH.ordinal))
+    )
+    val appleCanvasNetworkMode: StateFlow<CanvasNetworkMode> = _appleCanvasNetworkMode.asStateFlow()
     
     private val _spotifyClientId = MutableStateFlow(prefs.getString(KEY_SPOTIFY_CLIENT_ID, "") ?: "")
     val spotifyClientId: StateFlow<String> = _spotifyClientId.asStateFlow()
@@ -3062,6 +3072,16 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     
     
     // API Enable/Disable Methods
+    fun setAppleCanvasEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_APPLE_CANVAS_ENABLED, enabled).apply()
+        _appleCanvasEnabled.value = enabled
+    }
+
+    fun setAppleCanvasNetworkMode(mode: CanvasNetworkMode) {
+        prefs.edit().putInt(KEY_APPLE_CANVAS_NETWORK_MODE, mode.ordinal).apply()
+        _appleCanvasNetworkMode.value = mode
+    }
+
     fun setDeezerApiEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_DEEZER_API_ENABLED, enabled).apply()
         _deezerApiEnabled.value = enabled
@@ -4708,6 +4728,10 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _ytMusicApiEnabled.value = prefs.getBoolean(KEY_YTMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _spotifyApiEnabled.value = prefs.getBoolean(KEY_SPOTIFY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _lyricallyApiEnabled.value = prefs.getBoolean(KEY_LYRICALLY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _appleCanvasEnabled.value = prefs.getBoolean(KEY_APPLE_CANVAS_ENABLED, true)
+        _appleCanvasNetworkMode.value = CanvasNetworkMode.fromOrdinal(
+            prefs.getInt(KEY_APPLE_CANVAS_NETWORK_MODE, CanvasNetworkMode.BOTH.ordinal)
+        )
         _lyricallySourcesOrder.value = prefs.getString(KEY_LYRICALLY_SOURCES_ORDER, null)
             ?.split(",")
             ?.filter { it.isNotBlank() && it in defaultLyricallySources }

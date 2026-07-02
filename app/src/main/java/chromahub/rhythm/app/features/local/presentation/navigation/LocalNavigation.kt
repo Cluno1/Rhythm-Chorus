@@ -906,6 +906,8 @@ private fun LocalNavigationContent(
                         isShuffleEnabled = isShuffleEnabled,
                         repeatMode = repeatMode,
                         isFavorite = isFavorite,
+                        onToggleFavorite = onToggleFavorite,
+                        onAddToPlaylist = { showAddToPlaylistSheet.value = true },
                         showLyrics = showLyrics,
                         onlineOnlyLyrics = showOnlineOnlyLyrics,
                         lyrics = lyrics,

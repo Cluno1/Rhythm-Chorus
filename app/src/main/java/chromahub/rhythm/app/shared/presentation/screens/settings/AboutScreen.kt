@@ -518,7 +518,7 @@ fun AboutScreen(
                             context = context,
                             haptics = haptics,
                             name = "Christian",
-                            role = "Collab & Project Booming's Lead Dev",
+                            role = "Guide & Booming Music's Lead Dev",
                             githubUsername = "mardous",
                             avatarUrl = "https://github.com/mardous.png"
                         ),
@@ -526,7 +526,7 @@ fun AboutScreen(
                             context = context,
                             haptics = haptics,
                             name = "theovilardo",
-                            role = "Collab & Project PixelPlayer's Lead Dev",
+                            role = "Guide & PixelPlayer's Lead Dev",
                             githubUsername = "theovilardo",
                             avatarUrl = "https://github.com/theovilardo.png"
                         ),
@@ -534,15 +534,23 @@ fun AboutScreen(
                             context = context,
                             haptics = haptics,
                             name = "Nick",
-                            role = "Gramophone project's maintainer (testing & code)",
+                            role = "Guide & Gramophone's Maintainer",
                             githubUsername = "nift4",
                             avatarUrl = "https://github.com/nift4.png"
                         ),
                         createCommunityMemberItem(
                             context = context,
                             haptics = haptics,
+                            name = "vivi",
+                            role = "Guide & Vivi Music's Lead Dev",
+                            githubUsername = "vivizzz007",
+                            avatarUrl = "https://github.com/vivizzz007.png"
+                        ),
+                        createCommunityMemberItem(
+                            context = context,
+                            haptics = haptics,
                             name = "Alex",
-                            role = "Network API integrations",
+                            role = "Lyrically API's Lead Dev",
                             githubUsername = "Paxsenix0",
                             avatarUrl = "https://github.com/Paxsenix0.png"
                         )

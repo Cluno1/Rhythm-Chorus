@@ -70,6 +70,15 @@ fun LicensesBottomSheet(
             haptic = haptic
         ),
         licenseItem(
+            name = "VIVI Music",
+            description = "More Than Just Music — Your Ultimate Audio Experience",
+            license = "GPL v3.0 License",
+            url = "https://github.com/vivizzz007/vivi-music",
+            icon = RhythmIcons.Connectivity.OpenInNew,
+            context = context,
+            haptic = haptic
+        ),
+        licenseItem(
             name = "Booming Music",
             description = "Modern, offline-focused local music player for Android",
             license = "GPL v3.0 License",

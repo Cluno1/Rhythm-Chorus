@@ -55,6 +55,8 @@ jobs:
         fi
 
     - name: Build with Gradle (GitHub flavor only)
+      env:
+        APPLE_MUSIC_FALLBACK_TOKEN: ${{ secrets.APPLE_MUSIC_FALLBACK_TOKEN }}
       run: ./gradlew assembleGithubRelease assembleGithubDebug
 
     - name: Generate build info

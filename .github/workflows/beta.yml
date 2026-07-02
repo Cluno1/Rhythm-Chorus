@@ -82,6 +82,8 @@ jobs:
           echo "Computed Version Name: $NEW_VERSION_NAME"
 
       - name: Build with Gradle (GitHub and F-Droid release variants)
+        env:
+          APPLE_MUSIC_FALLBACK_TOKEN: ${{ secrets.APPLE_MUSIC_FALLBACK_TOKEN }}
         run: |
           ./gradlew assembleGithubRelease assembleFdroidRelease \
             -PversionCodeOverride=${{ steps.version_info.outputs.code }} \

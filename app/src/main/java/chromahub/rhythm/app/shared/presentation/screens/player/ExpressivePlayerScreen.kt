@@ -6,6 +6,7 @@ import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -88,6 +89,8 @@ import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.M3ImageUtils
 import chromahub.rhythm.app.util.LrcUtils
+import chromahub.rhythm.app.network.CanvasArtwork
+import chromahub.rhythm.app.shared.presentation.components.player.CanvasArtworkPlayer
 import chromahub.rhythm.app.util.SemanticLyrics
 import androidx.compose.runtime.collectAsState
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -119,6 +122,8 @@ fun ExpressivePlayerScreen(
     song: Song?,
     isPlaying: Boolean,
     isFavorite: Boolean,
+    canvasArtwork: CanvasArtwork? = null,
+    canvasLoading: Boolean = false,
     progress: () -> Float,
     currentTimeStr: String,
     totalTimeStr: String,
@@ -159,8 +164,6 @@ fun ExpressivePlayerScreen(
     expansionFraction: Float = 1f,
     modifier: Modifier = Modifier
 ) {
-    BackHandler(onBack = onBack)
-
     val artworkScale by animateFloatAsState(
         targetValue = if (isPlaying) 1.0f else 0.85f,
         animationSpec = spring(
@@ -639,6 +642,48 @@ fun ExpressivePlayerScreen(
                                         name = song?.title,
                                         expressiveShape = playerArtworkShape
                                     )
+
+                                    if (canvasArtwork?.preferredAnimationUrl != null) {
+                                        CanvasArtworkPlayer(
+                                            primaryUrl = canvasArtwork.animated,
+                                            fallbackUrl = canvasArtwork.videoUrl,
+                                            isPlaying = isPlaying,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clip(artworkClipShape)
+                                        )
+                                    }
+
+                                    // Canvas loading badge
+                                    if (canvasLoading && canvasArtwork == null) {
+                                        androidx.compose.foundation.layout.Box(
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .padding(10.dp)
+                                                .background(
+                                                    MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.82f),
+                                                    androidx.compose.foundation.shape.RoundedCornerShape(50)
+                                                )
+                                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                M3CircularLoader(
+                                                    modifier = Modifier.size(12.dp),
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    strokeWidth = 2f
+                                                )
+                                                Text(
+                                                    text = "Canvas",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

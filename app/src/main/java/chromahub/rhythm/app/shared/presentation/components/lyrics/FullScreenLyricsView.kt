@@ -37,9 +37,13 @@ import androidx.compose.ui.unit.sp
 import chromahub.rhythm.app.shared.data.model.LyricsData
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.data.model.AppSettings
+import chromahub.rhythm.app.network.CanvasArtwork
+import chromahub.rhythm.app.shared.presentation.components.player.CanvasArtworkPlayer
+import chromahub.rhythm.app.shared.presentation.components.common.M3CircularLoader
 import androidx.compose.material3.ContainedLoadingIndicator
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
@@ -75,6 +79,8 @@ fun FullScreenLyricsView(
     onClose: () -> Unit,
     onShowLyricsEditor: () -> Unit,
     onNavigateToLyricsSettings: () -> Unit,
+    canvasArtwork: CanvasArtwork? = null,
+    canvasLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -205,10 +211,23 @@ fun FullScreenLyricsView(
         label = "ArtworkThumbnailScale"
     )
 
+    val nestedScrollConnection = remember {
+        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+            override fun onPreScroll(
+                available: androidx.compose.ui.geometry.Offset,
+                source: androidx.compose.ui.input.nestedscroll.NestedScrollSource
+            ): androidx.compose.ui.geometry.Offset {
+                showControls()
+                return androidx.compose.ui.geometry.Offset.Zero
+            }
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(baseBgColor)
+            .nestedScroll(nestedScrollConnection)
             .pointerInput(autoHideLyricsControls) {
                 if (autoHideLyricsControls) {
                     awaitPointerEventScope {
@@ -231,65 +250,80 @@ fun FullScreenLyricsView(
         // 1. DYNAMIC BACKGROUND: Blurred scaled album art with animated moving orbs (if enabled)
         if (showLyricsBackgroundArtwork) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .blur(56.dp)
-                    .alpha(0.68f)
+                modifier = Modifier.fillMaxSize()
             ) {
-                // Blurred base cover art
-                M3ImageUtils.M3MediaImage(
-                    data = song?.artworkUri,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    shape = RoundedCornerShape(0.dp),
-                    type = M3PlaceholderType.TRACK,
-                    name = song?.title,
-                    expressiveShape = RoundedCornerShape(0.dp)
-                )
-
-                // Dynamic Gradient Overlay 1 (Golden-accented Warm Aura)
+                // Blurred base cover art + canvas player + moving gradient auras (drawn underneath)
                 Box(
                     modifier = Modifier
-                        .size(340.dp)
-                        .align(Alignment.TopStart)
-                        .graphicsLayer {
-                            translationX = translationX1
-                            translationY = translationY1
-                            scaleX = pulseScale1
-                            scaleY = pulseScale1
-                            rotationZ = rotationAngle
-                        }
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
-                                    Color.Transparent
-                                )
-                            )
-                        )
-                )
+                        .fillMaxSize()
+                        .blur(56.dp)
+                        .alpha(0.68f)
+                ) {
+                    // Blurred base cover art
+                    M3ImageUtils.M3MediaImage(
+                        data = song?.artworkUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        shape = RoundedCornerShape(0.dp),
+                        type = M3PlaceholderType.TRACK,
+                        name = song?.title,
+                        expressiveShape = RoundedCornerShape(0.dp)
+                    )
 
-                // Dynamic Gradient Overlay 2 (Cooler Toned Aurora Accent)
-                Box(
-                    modifier = Modifier
-                        .size(420.dp)
-                        .align(Alignment.BottomEnd)
-                        .graphicsLayer {
-                            translationX = -translationX1 * 0.8f
-                            translationY = -translationY1 * 0.9f
-                            scaleX = pulseScale2
-                            scaleY = pulseScale2
-                            rotationZ = -rotationAngle * 1.2f
-                        }
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f),
-                                    Color.Transparent
+                    // Animated canvas player (blurred along with backdrop)
+                    if (canvasArtwork?.preferredAnimationUrl != null) {
+                        CanvasArtworkPlayer(
+                            primaryUrl = canvasArtwork.animated,
+                            fallbackUrl = canvasArtwork.videoUrl,
+                            isPlaying = isPlaying,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    // Dynamic Gradient Overlay 1 (Golden-accented Warm Aura)
+                    Box(
+                        modifier = Modifier
+                            .size(340.dp)
+                            .align(Alignment.TopStart)
+                            .graphicsLayer {
+                                translationX = translationX1
+                                translationY = translationY1
+                                scaleX = pulseScale1
+                                scaleY = pulseScale1
+                                rotationZ = rotationAngle
+                            }
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                                        Color.Transparent
+                                    )
                                 )
                             )
-                        )
-                )
+                    )
+
+                    // Dynamic Gradient Overlay 2 (Cooler Toned Aurora Accent)
+                    Box(
+                        modifier = Modifier
+                            .size(420.dp)
+                            .align(Alignment.BottomEnd)
+                            .graphicsLayer {
+                                translationX = -translationX1 * 0.8f
+                                translationY = -translationY1 * 0.9f
+                                scaleX = pulseScale2
+                                scaleY = pulseScale2
+                                rotationZ = -rotationAngle * 1.2f
+                            }
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
+                    )
+                }
             }
 
             // Dynamic dim layer to boost readability of text overlay based on theme

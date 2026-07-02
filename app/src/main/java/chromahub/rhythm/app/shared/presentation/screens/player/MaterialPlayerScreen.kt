@@ -150,6 +150,8 @@ import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
+import chromahub.rhythm.app.network.CanvasArtwork
+import chromahub.rhythm.app.shared.presentation.components.player.CanvasArtworkPlayer
 import chromahub.rhythm.app.shared.presentation.components.common.WaveSlider
 import chromahub.rhythm.app.shared.presentation.components.common.StyledProgressBar
 import chromahub.rhythm.app.shared.presentation.components.common.ProgressStyle
@@ -224,6 +226,8 @@ import androidx.compose.ui.res.stringResource
 fun MaterialPlayerScreen(
     song: Song?,
     isPlaying: Boolean,
+    canvasArtwork: CanvasArtwork? = null,
+    canvasLoading: Boolean = false,
     progress: () -> Float,
     location: PlaybackLocation?,
     queuePosition: Int = 1,
@@ -1803,6 +1807,48 @@ fun MaterialPlayerScreen(
                                                     .fillMaxSize()
                                                     .clip(playerArtworkShape)
                                             )
+
+                                            if (canvasArtwork?.preferredAnimationUrl != null) {
+                                                CanvasArtworkPlayer(
+                                                    primaryUrl = canvasArtwork.animated,
+                                                    fallbackUrl = canvasArtwork.videoUrl,
+                                                    isPlaying = isPlaying,
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .clip(playerArtworkShape)
+                                                )
+                                            }
+
+                                            // Canvas loading badge — shown while API is fetching
+                                            if (canvasLoading && canvasArtwork == null) {
+                                                androidx.compose.foundation.layout.Box(
+                                                    modifier = Modifier
+                                                        .align(androidx.compose.ui.Alignment.TopEnd)
+                                                        .padding(10.dp)
+                                                        .background(
+                                                            MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.82f),
+                                                            RoundedCornerShape(50)
+                                                        )
+                                                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                                                    contentAlignment = androidx.compose.ui.Alignment.Center
+                                                ) {
+                                                    Row(
+                                                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp)
+                                                    ) {
+                                                        M3CircularLoader(
+                                                            modifier = Modifier.size(12.dp),
+                                                            color = MaterialTheme.colorScheme.primary,
+                                                            strokeWidth = 2f
+                                                        )
+                                                        Text(
+                                                            text = "Canvas",
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            color = MaterialTheme.colorScheme.onSurface
+                                                        )
+                                                    }
+                                                }
+                                            }
 
                                             // Art overlay: bottom-heavy vertical gradient
                                             if (playerShowGradientOverlay && !isTablet) {

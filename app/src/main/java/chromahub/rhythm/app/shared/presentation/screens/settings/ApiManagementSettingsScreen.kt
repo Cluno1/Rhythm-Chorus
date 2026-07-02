@@ -173,6 +173,9 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
     val ytMusicApiEnabled by appSettings.ytMusicApiEnabled.collectAsState()
     val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
     var showLyricallySourcesBottomSheet by remember { mutableStateOf(false) }
+    val appleCanvasEnabled by appSettings.appleCanvasEnabled.collectAsState()
+    val appleCanvasNetworkMode by appSettings.appleCanvasNetworkMode.collectAsState()
+    var showCanvasNetworkModeDialog by remember { mutableStateOf(false) }
 
     CollapsibleHeaderScreen(
         title = context.getString(R.string.settings_api_management),
@@ -258,6 +261,29 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                         )
                     }
 
+                    add(
+                        toMaterial3SettingsItem(
+                            context = context,
+                            hapticFeedback = hapticFeedback,
+                            item = SettingItem(
+                                icon = MaterialSymbolIcon("movie"),
+                                title = "Apple Music Motion Canvas",
+                                description = "Dynamic animated album artwork - " + when (appleCanvasNetworkMode) {
+                                    chromahub.rhythm.app.shared.data.model.CanvasNetworkMode.WIFI_ONLY -> "Only on Wi-Fi"
+                                    chromahub.rhythm.app.shared.data.model.CanvasNetworkMode.BOTH -> "Wi-Fi & Cellular"
+                                },
+                                toggleState = appleCanvasEnabled,
+                                onToggleChange = { enabled -> appSettings.setAppleCanvasEnabled(enabled) },
+                                onClick = {
+                                    if (appleCanvasEnabled) {
+                                        HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                                        showCanvasNetworkModeDialog = true
+                                    }
+                                }
+                            )
+                        )
+                    )
+
                     if (chromahub.rhythm.app.BuildConfig.ENABLE_YOUTUBE_MUSIC) {
                         add(
                             toMaterial3SettingsItem(
@@ -335,6 +361,15 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                 onDismiss = { showLyricallySourcesBottomSheet = false },
                 appSettings = appSettings,
                 haptics = hapticFeedback
+            )
+        }
+
+        if (showCanvasNetworkModeDialog) {
+            CanvasNetworkModeDialog(
+                onDismiss = { showCanvasNetworkModeDialog = false },
+                appSettings = appSettings,
+                context = context,
+                haptic = hapticFeedback
             )
         }
     }

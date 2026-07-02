@@ -84,6 +84,12 @@ import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.R
 import androidx.compose.ui.res.stringResource
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import chromahub.rhythm.app.network.AppleMusicCanvasProvider
+import chromahub.rhythm.app.network.CanvasArtwork
+import chromahub.rhythm.app.shared.data.model.CanvasNetworkMode
+import chromahub.rhythm.app.core.utils.NetworkUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -162,13 +168,49 @@ fun PlayerScreen(
     val playerThemeId by appSettings.playerThemeId.collectAsState()
     var showFullScreenLyrics by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = showFullScreenLyrics) {
-        showFullScreenLyrics = false
+    BackHandler(enabled = (expansionFraction > 0.5f) || showFullScreenLyrics) {
+        if (showFullScreenLyrics) {
+            showFullScreenLyrics = false
+        } else {
+            onBack()
+        }
     }
 
     val context = LocalContext.current
     val lyricsTimeOffset by musicViewModel.lyricsTimeOffset.collectAsState()
     var showLyricsEditorDialog by remember { mutableStateOf(false) }
+
+    val appleCanvasEnabled by appSettings.appleCanvasEnabled.collectAsState()
+    val appleCanvasNetworkMode by appSettings.appleCanvasNetworkMode.collectAsState()
+    var canvasArtwork by remember(song?.id) { mutableStateOf<CanvasArtwork?>(null) }
+    var canvasLoading by remember(song?.id) { mutableStateOf(false) }
+
+    LaunchedEffect(song?.id, appleCanvasEnabled, appleCanvasNetworkMode) {
+        // Reset immediately so stale canvas from previous track is gone
+        canvasArtwork = null
+        canvasLoading = false
+
+        if (song != null && appleCanvasEnabled) {
+            val hasNetwork = if (appleCanvasNetworkMode == CanvasNetworkMode.WIFI_ONLY) {
+                NetworkUtils.isWifiConnected(context)
+            } else {
+                NetworkUtils.isNetworkAvailable(context)
+            }
+            if (hasNetwork) {
+                canvasLoading = true
+                val result = withContext(Dispatchers.IO) {
+                    AppleMusicCanvasProvider.getBySongArtist(
+                        song = song.title,
+                        artist = song.artist,
+                        album = song.album
+                    )
+                }
+                canvasLoading = false
+                canvasArtwork = result
+            }
+        }
+    }
+
 
     val lyricsWritePermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
@@ -384,6 +426,8 @@ fun PlayerScreen(
             onBack = onBack,
             location = location,
             appSettings = appSettings,
+            canvasArtwork = if (showFullScreenLyrics) null else canvasArtwork,
+            canvasLoading = if (showFullScreenLyrics) false else canvasLoading,
             swipeToDismissEnabled = swipeToDismissEnabled,
             expansionFraction = expansionFraction,
             modifier = modifier
@@ -811,6 +855,8 @@ fun PlayerScreen(
             navController = navController,
             isStreamingMode = isStreamingMode,
             onOpenFullScreenLyrics = { showFullScreenLyrics = true },
+            canvasArtwork = if (showFullScreenLyrics) null else canvasArtwork,
+            canvasLoading = if (showFullScreenLyrics) false else canvasLoading,
             swipeToDismissEnabled = swipeToDismissEnabled,
             expansionFraction = expansionFraction,
             modifier = modifier
@@ -842,6 +888,8 @@ fun PlayerScreen(
             onClose = { showFullScreenLyrics = false },
             onShowLyricsEditor = { showLyricsEditorDialog = true },
             onNavigateToLyricsSettings = { navController.navigate(Screen.TunerLyrics.route) },
+            canvasArtwork = canvasArtwork,
+            canvasLoading = canvasLoading,
             modifier = Modifier.fillMaxSize()
         )
     }

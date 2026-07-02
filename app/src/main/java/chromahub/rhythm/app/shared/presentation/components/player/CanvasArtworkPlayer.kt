@@ -1,0 +1,159 @@
+package chromahub.rhythm.app.shared.presentation.components.player
+
+import android.view.TextureView
+import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import androidx.annotation.OptIn
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
+import java.util.Locale
+
+@OptIn(UnstableApi::class)
+@Composable
+fun CanvasArtworkPlayer(
+    primaryUrl: String?,
+    fallbackUrl: String?,
+    isPlaying: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val primary = primaryUrl?.takeIf { it.isNotBlank() }
+    val fallback = fallbackUrl?.takeIf { it.isNotBlank() }
+    val initial = primary ?: fallback ?: return
+
+    var currentUrl by remember(initial) { mutableStateOf(initial) }
+    var isVideoReady by remember(initial) { mutableStateOf(false) }
+    var videoAspectRatio by remember(initial) { mutableStateOf(0f) }
+
+    // Keep isPlaying up to date without rebuilding the player
+    val currentIsPlaying by rememberUpdatedState(isPlaying)
+
+    val exoPlayer = remember(initial) {
+        ExoPlayer.Builder(context)
+            .build()
+            .apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(C.USAGE_MEDIA)
+                        .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                        .build(),
+                    /* handleAudioFocus= */ false,
+                )
+                volume = 0f
+                repeatMode = Player.REPEAT_MODE_ONE
+                playWhenReady = isPlaying
+            }
+    }
+
+    // Sync play/pause state
+    LaunchedEffect(isPlaying) {
+        exoPlayer.playWhenReady = isPlaying
+    }
+
+    // Error fallback and aspect ratio listener
+    DisposableEffect(exoPlayer, primary, fallback) {
+        val listener = object : Player.Listener {
+            override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                val next = if (currentUrl == primary) fallback else null
+                if (!next.isNullOrBlank()) {
+                    currentUrl = next
+                    isVideoReady = false
+                }
+            }
+
+            override fun onRenderedFirstFrame() {
+                isVideoReady = true
+            }
+
+            override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
+                if (videoSize.width > 0 && videoSize.height > 0) {
+                    videoAspectRatio = (videoSize.width.toFloat() * videoSize.pixelWidthHeightRatio) / videoSize.height
+                }
+            }
+        }
+        exoPlayer.addListener(listener)
+        onDispose { exoPlayer.removeListener(listener) }
+    }
+
+    // Load media when URL changes
+    LaunchedEffect(currentUrl) {
+        val normalized = currentUrl.trim()
+        val isM3u8 = normalized.contains(".m3u8", ignoreCase = true)
+            || normalized.lowercase(Locale.ROOT).substringBefore("?").endsWith(".m3u8")
+        val isApple = normalized.contains("apple.com") || normalized.contains("itunes.apple")
+        val mimeType = when {
+            isM3u8 || isApple -> MimeTypes.APPLICATION_M3U8
+            normalized.lowercase(Locale.ROOT).contains(".mp4") -> MimeTypes.VIDEO_MP4
+            else -> MimeTypes.APPLICATION_M3U8
+        }
+
+        val mediaItem = MediaItem.Builder()
+            .setUri(normalized)
+            .setMimeType(mimeType)
+            .build()
+
+        isVideoReady = false
+        videoAspectRatio = 0f
+        exoPlayer.stop()
+        exoPlayer.clearMediaItems()
+        exoPlayer.setMediaItem(mediaItem)
+        exoPlayer.prepare()
+        exoPlayer.playWhenReady = currentIsPlaying
+    }
+
+    // Release when leaving composition
+    DisposableEffect(exoPlayer) {
+        onDispose { exoPlayer.release() }
+    }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (isVideoReady) 1f else 0f,
+        animationSpec = tween(durationMillis = 500),
+        label = "canvasAlpha"
+    )
+
+    AndroidView(
+        factory = { ctx ->
+            AspectRatioFrameLayout(ctx).apply {
+                layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+
+                // Ensure TextureView is added only once to avoid re-creation issues
+                if (childCount == 0) {
+                    val textureView = TextureView(ctx).apply {
+                        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                    }
+                    addView(textureView)
+                    // TextureView is required for proper layering and Compose layout blurs/blends
+                    exoPlayer.setVideoTextureView(textureView)
+                }
+            }
+        },
+        update = { view ->
+            if (videoAspectRatio > 0f) {
+                view.setAspectRatio(videoAspectRatio)
+            }
+        },
+        modifier = modifier.alpha(alpha),
+    )
+}
