@@ -181,9 +181,97 @@ object AppleMusicCanvasProvider {
         val result = searchAndFetchMotion(song, artist, album, storefront, "songs")
         if (result != null) {
             cache[key] = CacheEntry(result, System.currentTimeMillis() + CACHE_TTL_MS)
+            return@withContext result
+        }
+
+        // Fallback: if song search returned null, try searching for the album of the song
+        if (!album.isNullOrBlank()) {
+            AppleCanvasLogger.d("Song search returned null for '$song' by '$artist'. Falling back to album search for '$album'...")
+            val albumResult = searchAndFetchMotion(term = album, artist = artist, album = null, storefront = storefront, type = "albums")
+            if (albumResult != null) {
+                val songResult = albumResult.copy(name = song)
+                cache[key] = CacheEntry(songResult, System.currentTimeMillis() + CACHE_TTL_MS)
+                return@withContext songResult
+            }
+        }
+
+        return@withContext null
+    }
+
+    suspend fun getByAlbumArtist(
+        album: String,
+        artist: String,
+        storefront: String = "us",
+    ): CanvasArtwork? = withContext(Dispatchers.IO) {
+        val key = cacheKey("album", album, artist, storefront)
+        cache[key]?.takeIf { it.expiresAtMs > System.currentTimeMillis() }?.let { return@withContext it.value }
+
+        val result = searchAndFetchMotion(term = album, artist = artist, album = null, storefront = storefront, type = "albums")
+        if (result != null) {
+            cache[key] = CacheEntry(result, System.currentTimeMillis() + CACHE_TTL_MS)
         }
         return@withContext result
     }
+
+    suspend fun getAlbumDescription(
+        album: String,
+        artist: String,
+        storefront: String = "us",
+    ): String? = withContext(Dispatchers.IO) {
+        try {
+            val query = if (album.contains(artist, ignoreCase = true)) album else "$artist $album"
+            val token = getOrFetchToken()
+            val urlBuilder = "https://amp-api.music.apple.com/v1/catalog/$storefront/search".toHttpUrl().newBuilder()
+            urlBuilder.addQueryParameter("term", query)
+            urlBuilder.addQueryParameter("types", "albums")
+            urlBuilder.addQueryParameter("limit", "5")
+            urlBuilder.addQueryParameter("extend", "editorialNotes")
+
+            val request = Request.Builder()
+                .url(urlBuilder.build())
+                .header("Authorization", "Bearer $token")
+                .header("Origin", "https://music.apple.com")
+                .header("Referer", "https://music.apple.com/")
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                if (response.code != 200) return@use null
+                val bodyStr = response.body?.string() ?: return@use null
+                val root = JsonParser.parseString(bodyStr).asJsonObject
+                val resultsObj = root.getAsJsonObject("results") ?: return@use null
+                val typeObj = resultsObj.getAsJsonObject("albums") ?: return@use null
+                val dataArray = typeObj.getAsJsonArray("data") ?: return@use null
+
+                for (itemElement in dataArray) {
+                    val obj = itemElement.asJsonObject
+                    val attributes = obj.getAsJsonObject("attributes") ?: continue
+                    val resultArtistName = attributes.get("artistName")?.asString ?: ""
+                    val resultName = attributes.get("name")?.asString ?: ""
+
+                    if (artistMatches(artist, resultArtistName) &&
+                        (resultName.equals(album, ignoreCase = true) ||
+                         resultName.contains(album, ignoreCase = true) ||
+                         album.contains(resultName, ignoreCase = true))
+                    ) {
+                        val editorialNotes = attributes.getAsJsonObject("editorialNotes")
+                        if (editorialNotes != null) {
+                            val description = editorialNotes.get("standard")?.asString
+                                ?: editorialNotes.get("short")?.asString
+                            if (!description.isNullOrBlank()) {
+                                return@use description.replace(Regex("<[^>]*>"), "").trim()
+                            }
+                        }
+                    }
+                }
+                null
+            }
+        } catch (e: Exception) {
+            AppleCanvasLogger.e("Error fetching album description", e)
+            null
+        }
+    }
+
 
     private suspend fun searchAndFetchMotion(
         term: String,

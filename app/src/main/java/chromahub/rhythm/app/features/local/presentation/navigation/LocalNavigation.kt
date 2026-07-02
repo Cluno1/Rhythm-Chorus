@@ -124,6 +124,7 @@ import chromahub.rhythm.app.shared.presentation.screens.player.PlayerScreen
 
 import chromahub.rhythm.app.features.local.presentation.screens.PlaylistDetailScreen
 import chromahub.rhythm.app.features.local.presentation.screens.ArtistDetailScreen
+import chromahub.rhythm.app.features.local.presentation.screens.AlbumDetailScreen
 import chromahub.rhythm.app.shared.presentation.screens.settings.SettingsScreenWrapper
 import chromahub.rhythm.app.shared.presentation.screens.settings.*
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
@@ -145,6 +146,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -207,6 +209,9 @@ sealed class Screen(val route: String) {
     }
     object ArtistDetail : Screen("artist/{artistName}") {
         fun createRoute(artistName: String) = "artist/${Uri.encode(artistName)}"
+    }
+    object AlbumDetail : Screen("album/{albumId}?albumName={albumName}") {
+        fun createRoute(albumId: String, albumName: String) = "album/${Uri.encode(albumId)}?albumName=${Uri.encode(albumName)}"
     }
     
     // Tuner Settings Subroutes
@@ -788,14 +793,7 @@ private fun LocalNavigationContent(
             navigateToTopLevel(Screen.Settings.route)
         }
     }
-    val isOnStartRoute = remember(currentRoute, startDestination) {
-        currentRoute.substringBefore("?") == startDestination.substringBefore("?")
-    }
 
-    // Ensure Android system back mirrors toolbar back behavior on all non-start routes.
-    BackHandler(enabled = !isOnStartRoute) {
-        navigateBackOrToLanding()
-    }
 
     val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
 
@@ -1347,7 +1345,9 @@ private fun LocalNavigationContent(
                         currentSong = currentSong,
                         isPlaying = isPlaying,
                         onSongClick = onPlaySong,
-                        onAlbumClick = onPlayAlbum,
+                        onAlbumClick = { album ->
+                            navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
+                        },
                         onArtistClick = onPlayArtist,
                         onPlayPause = onPlayPause,
                         onPlayerClick = {
@@ -1447,254 +1447,33 @@ private fun LocalNavigationContent(
                 ) {
                     val streamingViewModel: chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
-                    var showAlbumBottomSheet by remember { mutableStateOf(false) }
-                    var selectedAlbumForSheet by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Album?>(null) }
-                    val albumBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-                    val favoriteSongs by viewModel.favoriteSongs.collectAsState()
-                    val context = LocalContext.current
-
-                    var showAddToPlaylistSheet by remember { mutableStateOf(false) }
-                    var selectedSongForPlaylist by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
-                    var showCreatePlaylistDialog by remember { mutableStateOf(false) }
-                    var songForCreatePlaylistDialog by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
-                    var showSongInfoSheet by remember { mutableStateOf(false) }
-                    var selectedSongForInfo by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
-                    var pendingMetadataEditCompleteCallback by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
-
-                    val writePermissionLauncher = rememberLauncherForActivityResult(
-                        contract = androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult()
-                    ) { result: ActivityResult ->
-                        if (result.resultCode == android.app.Activity.RESULT_OK) {
-                            if (viewModel.pendingBatchWriteRequest.value != null) {
-                                viewModel.completeBatchMetadataWriteAfterPermission(
-                                    onSuccess = {
-                                        android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
-                                    },
-                                    onError = { errorMessage ->
-                                        android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
-                                    }
-                                )
-                            } else {
-                                viewModel.completeMetadataWriteAfterPermission(
-                                    onSuccess = {
-                                        android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
-                                        pendingMetadataEditCompleteCallback?.invoke(true)
-                                        pendingMetadataEditCompleteCallback = null
-                                    },
-                                    onError = { errorMessage ->
-                                        android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
-                                        pendingMetadataEditCompleteCallback?.invoke(false)
-                                        pendingMetadataEditCompleteCallback = null
-                                    }
-                                )
-                            }
-                        } else {
-                            if (viewModel.pendingBatchWriteRequest.value != null) {
-                                viewModel.cancelPendingBatchMetadataWrite()
-                            } else {
-                                viewModel.cancelPendingMetadataWrite()
-                                pendingMetadataEditCompleteCallback?.invoke(false)
-                                pendingMetadataEditCompleteCallback = null
-                            }
-                            android.widget.Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, android.widget.Toast.LENGTH_LONG).show()
-                        }
-                    }
-
-                    chromahub.rhythm.app.shared.presentation.screens.UniversalSearchScreen(
-                        localViewModel = viewModel,
-                        streamingViewModel = streamingViewModel,
-                        onLocalSongClick = { song ->
-                            viewModel.playSongFromSearch(song, songs)
-                            navController.navigate(Screen.Player.route)
-                        },
-                        onLocalAlbumClick = { album ->
-                            selectedAlbumForSheet = album
-                            showAlbumBottomSheet = true
-                        },
-                        onLocalArtistClick = { artist -> navController.navigate(Screen.ArtistDetail.createRoute(artist.name)) },
-                        onLocalPlaylistClick = { playlist -> navController.navigate(Screen.PlaylistDetail.createRoute(playlist.id)) },
-                        onStreamingSongClick = { song ->
-                            streamingViewModel.playSong(song)
-                            navController.navigate(Screen.Player.route)
-                        },
-                        onStreamingAlbumClick = { streamingAlbum ->
-                            appSettings.setInitialStreamingRoute("streaming_search")
-                        },
-                        onStreamingArtistClick = { artist ->
-                            appSettings.setInitialStreamingRoute("streaming_artist/${Uri.encode(artist.id)}?artistName=${Uri.encode(artist.name)}")
-                        },
-                        onStreamingPlaylistClick = { playlist ->
-                            appSettings.setInitialStreamingRoute("streaming_playlist/${Uri.encode(playlist.id)}")
-                        },
-                        onBack = { navigateToLanding() }
-                    )
-
-                    // local album sheet
-                    val activeAlbum = remember(albums, selectedAlbumForSheet) {
-                        selectedAlbumForSheet?.let { sel -> albums.find { it.id == sel.id } } ?: selectedAlbumForSheet
-                    }
-
-                    if (showAlbumBottomSheet && activeAlbum != null) {
-                        AlbumBottomSheet(
-                            album = activeAlbum,
-                            onDismiss = {
-                                showAlbumBottomSheet = false
-                                selectedAlbumForSheet = null
+                    SlideUpCornerWrapper {
+                        chromahub.rhythm.app.shared.presentation.screens.UniversalSearchScreen(
+                            localViewModel = viewModel,
+                            streamingViewModel = streamingViewModel,
+                            onLocalSongClick = { song ->
+                                viewModel.playSongFromSearch(song, songs)
+                                navController.navigate(Screen.Player.route)
                             },
-                            onSongClick = onPlaySong,
-                            onPlayAll = { songs -> viewModel.playSongs(songs) },
-                            onShufflePlay = { songs -> viewModel.playShuffled(songs) },
-                            onAddToQueue = { song -> viewModel.addSongToQueue(song) },
-                            onAddToQueueAll = { songs -> viewModel.addSongsToQueue(songs) },
-                            onAddSongToPlaylist = { song ->
-                                selectedSongForPlaylist = song
-                                showAddToPlaylistSheet = true
+                            onLocalAlbumClick = { album ->
+                                navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
                             },
-                            onPlayerClick = { navController.navigate(Screen.Player.route) },
-                            sheetState = albumBottomSheetState,
-                            haptics = LocalHapticFeedback.current,
-                            onPlayNext = { song -> viewModel.playNext(song) },
-                            onToggleFavorite = { song -> viewModel.toggleFavorite(song) },
-                            favoriteSongs = favoriteSongs,
-                            onShowSongInfo = { song ->
-                                selectedSongForInfo = song
-                                showSongInfoSheet = true
+                            onLocalArtistClick = { artist -> navController.navigate(Screen.ArtistDetail.createRoute(artist.name)) },
+                            onLocalPlaylistClick = { playlist -> navController.navigate(Screen.PlaylistDetail.createRoute(playlist.id)) },
+                            onStreamingSongClick = { song ->
+                                streamingViewModel.playSong(song)
+                                navController.navigate(Screen.Player.route)
                             },
-                            onAddToBlacklist = { song -> appSettings.addToBlacklist(song.id) },
-                            currentSong = currentSong,
-                            isPlaying = isPlaying,
-                            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
-                                viewModel.batchEditMetadata(
-                                    songs = activeAlbum.songs,
-                                    artist = artist,
-                                    album = title,
-                                    genre = null,
-                                    year = null,
-                                    artworkUri = artworkUri,
-                                    removeArtwork = removeArtwork,
-                                    onProgress = onProgress,
-                                    onComplete = { successCount, failCount ->
-                                        onComplete(successCount, failCount)
-                                    },
-                                    onPermissionRequired = { pendingRequest ->
-                                        try {
-                                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
-                                                pendingRequest.intentSender
-                                            ).build()
-                                            writePermissionLauncher.launch(intentSenderRequest)
-                                        } catch (e: Exception) {
-                                            android.widget.Toast.makeText(
-                                                context,
-                                                "Failed to request permission: ${e.message}",
-                                                android.widget.Toast.LENGTH_LONG
-                                            ).show()
-                                            viewModel.cancelPendingBatchMetadataWrite()
-                                        }
-                                    }
-                                )
-                            }
-                        )
-                    }
-
-                    // playlist & song info sheets if triggered from the album bottom sheet
-                    if (showAddToPlaylistSheet && selectedSongForPlaylist != null) {
-                        AddToPlaylistBottomSheet(
-                            song = selectedSongForPlaylist!!,
-                            playlists = playlists,
-                            onDismissRequest = {
-                                showAddToPlaylistSheet = false
-                                selectedSongForPlaylist = null
+                            onStreamingAlbumClick = { streamingAlbum ->
+                                appSettings.setInitialStreamingRoute("streaming_search")
                             },
-                             onAddToPlaylist = { playlist ->
-                                 viewModel.addSongToPlaylist(selectedSongForPlaylist!!, playlist.id) { message ->
-                                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                 }
-                                 showAddToPlaylistSheet = false
-                                 selectedSongForPlaylist = null
-                             },
-                            onCreateNewPlaylist = {
-                                songForCreatePlaylistDialog = selectedSongForPlaylist
-                                showCreatePlaylistDialog = true
-                                showAddToPlaylistSheet = false
-                            }
-                        )
-                    }
-
-                    if (showCreatePlaylistDialog) {
-                        CreatePlaylistDialog(
-                            onDismiss = {
-                                showCreatePlaylistDialog = false
-                                songForCreatePlaylistDialog = null
+                            onStreamingArtistClick = { artist ->
+                                appSettings.setInitialStreamingRoute("streaming_artist/${Uri.encode(artist.id)}?artistName=${Uri.encode(artist.name)}")
                             },
-                            onConfirm = { name ->
-                                viewModel.createPlaylist(name)
-                                showCreatePlaylistDialog = false
-                                songForCreatePlaylistDialog = null
+                            onStreamingPlaylistClick = { playlist ->
+                                appSettings.setInitialStreamingRoute("streaming_playlist/${Uri.encode(playlist.id)}")
                             },
-                            song = songForCreatePlaylistDialog,
-                            onConfirmWithSong = { name ->
-                                if (songForCreatePlaylistDialog != null) {
-                                    viewModel.createPlaylist(name, listOf(songForCreatePlaylistDialog!!)) { message ->
-                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                    }
-                                } else {
-                                    viewModel.createPlaylist(name)
-                                }
-                                showCreatePlaylistDialog = false
-                                songForCreatePlaylistDialog = null
-                            }
-                        )
-                    }
-
-                    if (showSongInfoSheet && selectedSongForInfo != null) {
-                        SongInfoBottomSheet(
-                            song = selectedSongForInfo!!,
-                            onDismiss = {
-                                showSongInfoSheet = false
-                                selectedSongForInfo = null
-                            },
-                            appSettings = appSettings,
-                            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
-                                pendingMetadataEditCompleteCallback = onComplete
-                                viewModel.saveMetadataChanges(
-                                    song = selectedSongForInfo!!,
-                                    title = title,
-                                    artist = artist,
-                                    album = album,
-                                    genre = genre,
-                                    year = year,
-                                    trackNumber = trackNumber,
-                                    artworkUri = artworkUri,
-                                    removeArtwork = removeArtwork,
-                                    albumArtist = albumArtist,
-                                    composer = composer,
-                                    discNumber = discNumber,
-                                    onSuccess = { fileWriteSucceeded ->
-                                        if (fileWriteSucceeded) {
-                                            android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, android.widget.Toast.LENGTH_SHORT).show()
-                                        }
-                                        pendingMetadataEditCompleteCallback?.invoke(true)
-                                        pendingMetadataEditCompleteCallback = null
-                                    },
-                                    onError = { errorMessage ->
-                                        android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
-                                        pendingMetadataEditCompleteCallback?.invoke(false)
-                                        pendingMetadataEditCompleteCallback = null
-                                    },
-                                    onPermissionRequired = { pendingRequest ->
-                                        try {
-                                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
-                                                pendingRequest.intentSender
-                                            ).build()
-                                            writePermissionLauncher.launch(intentSenderRequest)
-                                        } catch (e: Exception) {
-                                            android.widget.Toast.makeText(context, R.string.localnavigation_permission_required_to_modify, android.widget.Toast.LENGTH_SHORT).show()
-                                            pendingMetadataEditCompleteCallback?.invoke(false)
-                                            pendingMetadataEditCompleteCallback = null
-                                        }
-                                    }
-                                )
-                            }
+                            onBack = { navigateToLanding() }
                         )
                     }
                 }
@@ -1720,15 +1499,17 @@ private fun LocalNavigationContent(
                                 )
                     }
                 ) {
-                    // Use the settings screen (now the default)
-                    SettingsScreenWrapper(
-                        onBack = {
-                            navigateBackOrToLanding()
-                        },
-                        appSettings = appSettings,
-                        navController = navController,
-                        musicViewModel = viewModel
-                    )
+                    SlideUpCornerWrapper {
+                        // Use the settings screen (now the default)
+                        SettingsScreenWrapper(
+                            onBack = {
+                                navigateBackOrToLanding()
+                            },
+                            appSettings = appSettings,
+                            navController = navController,
+                            musicViewModel = viewModel
+                        )
+                    }
                 }
                 // Tuner Settings Subroutes
                 composable(Screen.TunerNotifications.route) {
@@ -1798,7 +1579,9 @@ private fun LocalNavigationContent(
                                 )
                     }
                 ) {
-                    EqualizerScreen(navController = navController, viewModel = viewModel)
+                    SlideUpCornerWrapper {
+                        EqualizerScreen(navController = navController, viewModel = viewModel)
+                    }
                 }
 
                 composable(Screen.TunerSleepTimer.route) {
@@ -1915,7 +1698,9 @@ private fun LocalNavigationContent(
                                 )
                     }
                 ) {
-                    RhythmStatsScreen(navController = navController, viewModel = viewModel)
+                    SlideUpCornerWrapper {
+                        RhythmStatsScreen(navController = navController, viewModel = viewModel)
+                    }
                 }
 
                 composable(
@@ -1938,7 +1723,9 @@ private fun LocalNavigationContent(
                                 )
                     }
                 ) {
-                    EqualizerScreen(navController = navController, viewModel = viewModel)
+                    SlideUpCornerWrapper {
+                        EqualizerScreen(navController = navController, viewModel = viewModel)
+                    }
                 }
 
                 composable(
@@ -2065,8 +1852,7 @@ private fun LocalNavigationContent(
                             viewModel.playShuffled(songs)
                         },
                         onAlbumBottomSheetClick = { album ->
-                            // This will open the album bottom sheet within LibraryScreen
-                            // The LibraryScreen handles this internally now
+                            navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
                         },
                         onSort = {
                             // Implement sort functionality
@@ -2521,9 +2307,6 @@ private fun LocalNavigationContent(
                     var songForCreatePlaylistDialog by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
                     var showSongInfoSheet by remember { mutableStateOf(false) }
                     var selectedSongForInfo by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
-                    var showAlbumBottomSheet by remember { mutableStateOf(false) }
-                    var selectedAlbum by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Album?>(null) }
-                    val albumBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
                     
                     ArtistDetailScreen(
                         viewModel = viewModel,
@@ -2533,8 +2316,7 @@ private fun LocalNavigationContent(
                         },
                         onSongClick = onPlaySong,
                         onAlbumClick = { album ->
-                            selectedAlbum = album
-                            showAlbumBottomSheet = true
+                            navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
                         },
                         onPlayAll = { songs ->
                             if (songs.isNotEmpty()) {
@@ -2676,43 +2458,113 @@ private fun LocalNavigationContent(
                             }
                         )
                     }
-                    
-                    // Album bottom sheet
-                    val allAlbums by viewModel.albums.collectAsState()
-                    val activeAlbum = remember(allAlbums, selectedAlbum) {
-                        selectedAlbum?.let { sel -> allAlbums.find { it.id == sel.id } } ?: selectedAlbum
+
+                }
+
+                // Album Detail Screen
+                composable(
+                    route = Screen.AlbumDetail.route,
+                    arguments = listOf(
+                        navArgument("albumId") { type = NavType.StringType },
+                        navArgument("albumName") { type = NavType.StringType }
+                    ),
+                    enterTransition = {
+                        fadeIn(animationSpec = tween(300)) +
+                                slideInVertically(
+                                    initialOffsetY = { it / 4 },
+                                    animationSpec = tween(350, easing = EaseInOutQuart)
+                                )
+                    },
+                    exitTransition = {
+                        fadeOut(animationSpec = tween(300))
+                    },
+                    popExitTransition = {
+                        fadeOut(animationSpec = tween(300)) +
+                                slideOutVertically(
+                                    targetOffsetY = { it / 4 },
+                                    animationSpec = tween(350, easing = EaseInOutQuart)
+                                )
+                    }
+                ) { backStackEntry ->
+                    val albumId = backStackEntry.arguments?.getString("albumId")?.let { Uri.decode(it) } ?: ""
+                    val albumName = backStackEntry.arguments?.getString("albumName")?.let { Uri.decode(it) } ?: ""
+                    val favoriteSongs by viewModel.favoriteSongs.collectAsState()
+
+                    // Write permission launcher for Android 11+ metadata editing
+                    val writePermissionLauncher = rememberLauncherForActivityResult(
+                        contract = androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult()
+                    ) { result: androidx.activity.result.ActivityResult ->
+                        if (result.resultCode == android.app.Activity.RESULT_OK) {
+                            if (viewModel.pendingBatchWriteRequest.value != null) {
+                                viewModel.completeBatchMetadataWriteAfterPermission(
+                                    onSuccess = {
+                                        android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, android.widget.Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { errorMessage ->
+                                        android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                            }
+                        } else {
+                            viewModel.cancelPendingBatchMetadataWrite()
+                            android.widget.Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, android.widget.Toast.LENGTH_LONG).show()
+                        }
                     }
 
-                    if (showAlbumBottomSheet && activeAlbum != null) {
-                        AlbumBottomSheet(
-                            album = activeAlbum,
-                            onDismiss = { 
-                                showAlbumBottomSheet = false
-                                selectedAlbum = null
-                            },
-                            onSongClick = onPlaySong,
-                            onPlayAll = { songs -> viewModel.playSongs(songs) },
-                            onShufflePlay = { songs -> viewModel.playShuffled(songs) },
-                            onAddToQueue = { song -> viewModel.addSongToQueue(song) },
-                            onAddToQueueAll = { songs -> viewModel.addSongsToQueue(songs) },
-                            onAddSongToPlaylist = { song ->
-                                selectedSongForPlaylist = song
-                                showAddToPlaylistSheet = true
-                            },
-                            onPlayerClick = { navController.navigate(Screen.Player.route) },
-                            sheetState = albumBottomSheetState,
-                            haptics = LocalHapticFeedback.current,
-                            onPlayNext = { song -> viewModel.playNext(song) },
-                            onToggleFavorite = { song -> viewModel.toggleFavorite(song) },
-                            favoriteSongs = favoriteSongs,
-                            onShowSongInfo = { song ->
-                                selectedSongForInfo = song
-                                showSongInfoSheet = true
-                            },
-                            onAddToBlacklist = { song -> appSettings.addToBlacklist(song.id) },
-                            currentSong = currentSong,
-                            isPlaying = isPlaying,
-                            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
+                    var showAddToPlaylistSheet by remember { mutableStateOf(false) }
+                    var selectedSongForPlaylist by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
+                    var showCreatePlaylistDialog by remember { mutableStateOf(false) }
+                    var songForCreatePlaylistDialog by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
+                    var showSongInfoSheet by remember { mutableStateOf(false) }
+                    var selectedSongForInfo by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Song?>(null) }
+
+                    AlbumDetailScreen(
+                        albumId = albumId,
+                        albumName = albumName,
+                        onBack = {
+                            navigateBackOrToLanding()
+                        },
+                        onSongClick = onPlaySong,
+                        onPlayAll = { songs ->
+                            if (songs.isNotEmpty()) {
+                                viewModel.playSongs(songs)
+                            }
+                        },
+                        onShufflePlay = { songs ->
+                            if (songs.isNotEmpty()) {
+                                viewModel.playShuffled(songs)
+                            }
+                        },
+                        onAddToQueue = { song ->
+                            viewModel.addSongToQueue(song)
+                        },
+                        onAddSongToPlaylist = { song ->
+                            selectedSongForPlaylist = song
+                            showAddToPlaylistSheet = true
+                        },
+                        onPlayerClick = {
+                            navController.navigate(Screen.Player.route)
+                        },
+                        onPlayNext = { song ->
+                            viewModel.playNext(song)
+                        },
+                        onToggleFavorite = { song ->
+                            viewModel.toggleFavorite(song)
+                        },
+                        favoriteSongs = favoriteSongs,
+                        onShowSongInfo = { song ->
+                            selectedSongForInfo = song
+                            showSongInfoSheet = true
+                        },
+                        onAddToBlacklist = { song ->
+                            appSettings.addToBlacklist(song.id)
+                        },
+                        currentSong = currentSong,
+                        isPlaying = isPlaying,
+                        onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
+                            val allAlbumsList = viewModel.albums.value
+                            val activeAlbum = allAlbumsList.find { it.id == albumId }
+                            if (activeAlbum != null) {
                                 viewModel.batchEditMetadata(
                                     songs = activeAlbum.songs,
                                     artist = artist,
@@ -2738,6 +2590,134 @@ private fun LocalNavigationContent(
                                                 android.widget.Toast.LENGTH_LONG
                                             ).show()
                                             viewModel.cancelPendingBatchMetadataWrite()
+                                        }
+                                    }
+                                )
+                            }
+                        },
+                        onGoToArtist = { song ->
+                            val separatorEnabled = appSettings.artistSeparatorEnabled.value
+                            val delimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
+                            val candidates = chromahub.rhythm.app.util.ArtistSeparator.splitArtistNames(
+                                song.artist,
+                                delimiters = delimiters,
+                                enabled = separatorEnabled
+                            )
+                            val artistRouteName = candidates.firstOrNull { candidate ->
+                                artists.any { it.name.equals(candidate, ignoreCase = true) }
+                            } ?: candidates.firstOrNull()?.trim().orEmpty().ifBlank {
+                                song.artist.trim()
+                            }
+                            if (artistRouteName.isNotBlank()) {
+                                navController.navigate(Screen.ArtistDetail.createRoute(artistRouteName))
+                            }
+                        },
+                        onShare = { song ->
+                            try {
+                                val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                    type = "audio/*"
+                                    putExtra(android.content.Intent.EXTRA_STREAM, song.uri)
+                                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                context.startActivity(android.content.Intent.createChooser(shareIntent, "Share ${song.title}"))
+                            } catch (e: Exception) {
+                                android.widget.Toast.makeText(context, R.string.materialplayerscreen_unable_to_share_file, android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        viewModel = viewModel
+                    )
+
+                    // Bottom sheets & Dialogs helpers
+                    if (showAddToPlaylistSheet && selectedSongForPlaylist != null) {
+                        AddToPlaylistBottomSheet(
+                            song = selectedSongForPlaylist!!,
+                            playlists = playlists,
+                            onDismissRequest = { 
+                                showAddToPlaylistSheet = false
+                                selectedSongForPlaylist = null
+                            },
+                            onAddToPlaylist = { playlist ->
+                                viewModel.addSongToPlaylist(selectedSongForPlaylist!!, playlist.id) { message ->
+                                    android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                                showAddToPlaylistSheet = false
+                                selectedSongForPlaylist = null
+                            },
+                            onCreateNewPlaylist = {
+                                songForCreatePlaylistDialog = selectedSongForPlaylist
+                                showCreatePlaylistDialog = true
+                                showAddToPlaylistSheet = false
+                            }
+                        )
+                    }
+
+                    if (showCreatePlaylistDialog) {
+                        CreatePlaylistDialog(
+                            onDismiss = {
+                                showCreatePlaylistDialog = false
+                                songForCreatePlaylistDialog = null
+                            },
+                            onConfirm = { name ->
+                                viewModel.createPlaylist(name)
+                                showCreatePlaylistDialog = false
+                                songForCreatePlaylistDialog = null
+                            },
+                            song = songForCreatePlaylistDialog,
+                            onConfirmWithSong = { name ->
+                                if (songForCreatePlaylistDialog != null) {
+                                    viewModel.createPlaylist(name, listOf(songForCreatePlaylistDialog!!)) { message ->
+                                        android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                } else {
+                                    viewModel.createPlaylist(name)
+                                }
+                                showCreatePlaylistDialog = false
+                                songForCreatePlaylistDialog = null
+                            }
+                        )
+                    }
+
+                    if (showSongInfoSheet && selectedSongForInfo != null) {
+                        SongInfoBottomSheet(
+                            song = selectedSongForInfo!!,
+                            onDismiss = { 
+                                showSongInfoSheet = false
+                                selectedSongForInfo = null
+                            },
+                            appSettings = appSettings,
+                            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
+                                viewModel.saveMetadataChanges(
+                                    song = selectedSongForInfo!!,
+                                    title = title,
+                                    artist = artist,
+                                    album = album,
+                                    genre = genre,
+                                    year = year,
+                                    trackNumber = trackNumber,
+                                    artworkUri = artworkUri,
+                                    removeArtwork = removeArtwork,
+                                    albumArtist = albumArtist,
+                                    composer = composer,
+                                    discNumber = discNumber,
+                                    onSuccess = { fileWriteSucceeded ->
+                                        if (fileWriteSucceeded) {
+                                            android.widget.Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully_to, android.widget.Toast.LENGTH_SHORT).show()
+                                        }
+                                        onComplete(true)
+                                    },
+                                    onError = { errorMessage ->
+                                        android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                                        onComplete(false)
+                                    },
+                                    onPermissionRequired = { pendingRequest ->
+                                        try {
+                                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
+                                                pendingRequest.intentSender
+                                            ).build()
+                                            writePermissionLauncher.launch(intentSenderRequest)
+                                        } catch (e: Exception) {
+                                            android.widget.Toast.makeText(context, R.string.localnavigation_permission_required_to_modify, android.widget.Toast.LENGTH_SHORT).show()
+                                            onComplete(false)
                                         }
                                     }
                                 )
@@ -3252,3 +3232,27 @@ private fun LocalNavigationRailItemWithAnimation(
         }
     }
 }
+
+@OptIn(androidx.compose.animation.ExperimentalAnimationApi::class)
+@Composable
+fun androidx.compose.animation.AnimatedVisibilityScope.SlideUpCornerWrapper(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    val cornerRadius by transition.animateDp(
+        label = "slideUpCornerRadius",
+        transitionSpec = { androidx.compose.animation.core.spring(stiffness = androidx.compose.animation.core.Spring.StiffnessMedium) }
+    ) { state ->
+        if (state == androidx.compose.animation.EnterExitState.Visible) 0.dp else 28.dp
+    }
+    
+    androidx.compose.material3.Surface(
+        modifier = modifier
+            .fillMaxSize()
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius)),
+        color = androidx.compose.ui.graphics.Color.Transparent
+    ) {
+        content()
+    }
+}
+

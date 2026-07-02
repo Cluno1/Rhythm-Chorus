@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.2.421.1101 Beta] - 2026-07-02
+
+### Added
+- Added Canvas support
+
 ## [5.2.419.1099 Beta] - 2026-07-02
 
 ### Added

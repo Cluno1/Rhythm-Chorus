@@ -1,0 +1,5 @@
+Rhythm v5.2 - Beta Update
+
+• Added Canvas support
+
+Thanks for using Rhythm ;)

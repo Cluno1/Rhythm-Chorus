@@ -100,6 +100,7 @@ import chromahub.rhythm.app.features.local.presentation.screens.ArtistDetailScre
 import chromahub.rhythm.app.features.local.presentation.screens.EqualizerScreen
 import chromahub.rhythm.app.shared.presentation.screens.RhythmStatsScreen
 import chromahub.rhythm.app.features.local.presentation.screens.PlaylistDetailScreen
+import chromahub.rhythm.app.features.local.presentation.screens.AlbumDetailScreen
 import chromahub.rhythm.app.shared.presentation.screens.player.PlayerScreen
 import chromahub.rhythm.app.shared.presentation.screens.settings.RhythmGuardSettingsScreen
 import chromahub.rhythm.app.shared.presentation.screens.settings.QueueSettingsScreen
@@ -157,6 +158,10 @@ private sealed class StreamingScreen(val route: String, val titleRes: Int? = nul
     }
     data object PlaylistDetail : StreamingScreen("streaming_playlist/{playlistId}") {
         fun createRoute(playlistId: String): String = "streaming_playlist/${Uri.encode(playlistId)}"
+    }
+    data object AlbumDetail : StreamingScreen("streaming_album/{albumId}?albumName={albumName}") {
+        fun createRoute(albumId: String, albumName: String): String =
+            "streaming_album/${Uri.encode(albumId)}?albumName=${Uri.encode(albumName)}"
     }
     data object ServiceSetup : StreamingScreen("streaming_service_setup/{serviceId}") {
         fun createRoute(serviceId: String): String = "streaming_service_setup/${Uri.encode(serviceId)}"
@@ -1399,6 +1404,151 @@ fun StreamingNavigation(
                     songsOverride = localArtistSongs,
                     albumsOverride = emptyList(),
                     isContentLoadingOverride = isArtistLoading
+                )
+
+                if (showSongInfoSheet && selectedSongForInfo != null) {
+                    SongInfoBottomSheet(
+                        song = selectedSongForInfo,
+                        onDismiss = {
+                            showSongInfoSheet = false
+                            selectedSongForInfo = null
+                        },
+                        appSettings = appSettings,
+                        isStreamingMode = true
+                    )
+                }
+            }
+
+            composable(
+                route = StreamingScreen.AlbumDetail.route,
+                arguments = listOf(
+                    navArgument("albumId") { type = NavType.StringType },
+                    navArgument("albumName") { type = NavType.StringType }
+                ),
+                enterTransition = {
+                    fadeIn(animationSpec = tween(250))
+                },
+                exitTransition = {
+                    fadeOut(animationSpec = tween(200))
+                },
+                popExitTransition = {
+                    fadeOut(animationSpec = tween(200))
+                }
+            ) { backStackEntry ->
+                val albumId = backStackEntry.arguments?.getString("albumId")?.let(Uri::decode).orEmpty()
+                val albumName = backStackEntry.arguments?.getString("albumName")?.let(Uri::decode).orEmpty()
+
+                var isAlbumLoading by remember(albumId) { mutableStateOf(true) }
+                var albumSongs by remember(albumId) { mutableStateOf<List<StreamingSong>>(emptyList()) }
+                var streamingAlbum by remember(albumId) { mutableStateOf<StreamingAlbum?>(null) }
+
+                val searchResults by streamingMusicViewModel.searchResults.collectAsState()
+                val currentService by streamingMusicViewModel.currentService.collectAsState()
+                val haptics = LocalHapticFeedback.current
+
+                // Find the album in search results or create a placeholder
+                val matchedAlbum = remember(albumId, searchResults, currentService) {
+                    searchResults.albums.firstOrNull { it.id == albumId }
+                        ?: StreamingAlbum(
+                            id = albumId,
+                            title = albumName,
+                            artist = "",
+                            artworkUri = null,
+                            songCount = 0,
+                            year = 0,
+                            sourceType = currentService
+                        )
+                }
+
+                LaunchedEffect(albumId) {
+                    if (albumId.isBlank()) {
+                        isAlbumLoading = false
+                        return@LaunchedEffect
+                    }
+                    isAlbumLoading = true
+                    val songs = streamingMusicViewModel.getAlbumSongs(matchedAlbum)
+                    albumSongs = songs
+                    isAlbumLoading = false
+                }
+
+                val localAlbumSongs = remember(albumSongs) {
+                    albumSongs.map { it.toDisplaySong() }
+                }
+
+                val localAlbum = remember(matchedAlbum, streamingAlbum, localAlbumSongs) {
+                    val active = streamingAlbum ?: matchedAlbum
+                    active.toLibraryAlbum(localAlbumSongs)
+                }
+
+                val albumSongsById = remember(albumSongs) { albumSongs.associateBy { it.id } }
+                var showSongInfoSheet by remember { mutableStateOf(false) }
+                var selectedSongForInfo by remember { mutableStateOf<Song?>(null) }
+
+                AlbumDetailScreen(
+                    albumId = albumId,
+                    albumName = localAlbum.title,
+                    onBack = { navController.popBackStack() },
+                    onSongClick = { localSong ->
+                        val queue = if (albumSongs.isNotEmpty()) albumSongs else {
+                            albumSongsById[localSong.id]?.let { listOf(it) }.orEmpty()
+                        }
+                        if (queue.isNotEmpty()) {
+                            val index = queue.indexOfFirst { it.id == localSong.id }.coerceAtLeast(0)
+                            streamingMusicViewModel.playQueue(
+                                queue = queue,
+                                startIndex = index,
+                                shuffle = false
+                            )
+                        }
+                    },
+                    onPlayAll = { songs ->
+                        if (albumSongs.isNotEmpty()) {
+                            streamingMusicViewModel.playQueue(
+                                queue = albumSongs,
+                                startIndex = 0,
+                                shuffle = false
+                            )
+                        }
+                    },
+                    onShufflePlay = {
+                        if (albumSongs.isNotEmpty()) {
+                            streamingMusicViewModel.playQueue(
+                                queue = albumSongs,
+                                startIndex = 0,
+                                shuffle = true
+                            )
+                        }
+                    },
+                    onAddToQueue = { localSong ->
+                        albumSongsById[localSong.id]?.let { streamingSong ->
+                            streamingMusicViewModel.playQueue(
+                                queue = listOf(streamingSong),
+                                startIndex = 0,
+                                shuffle = false
+                            )
+                        }
+                    },
+                    onAddSongToPlaylist = { localSong ->
+                        albumSongsById[localSong.id]?.let { onStreamingAddSongToPlaylist(it) }
+                    },
+                    onPlayerClick = {
+                        navController.navigate(StreamingScreen.Player.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onPlayNext = {},
+                    onToggleFavorite = onStreamingToggleFavorite,
+                    favoriteSongs = streamingLikedSongIds,
+                    onShowSongInfo = { song ->
+                        selectedSongForInfo = song
+                        showSongInfoSheet = true
+                    },
+                    currentSong = currentSong,
+                    isPlaying = isPlaying,
+                    albumOverride = localAlbum,
+                    songsOverride = localAlbumSongs,
+                    isContentLoadingOverride = isAlbumLoading,
+                    viewModel = localMusicViewModel
                 )
 
                 if (showSongInfoSheet && selectedSongForInfo != null) {

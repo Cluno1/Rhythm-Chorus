@@ -140,6 +140,8 @@ import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingM
 import chromahub.rhythm.app.features.streaming.presentation.components.bottomsheets.NearbyServerDiscoverySheet
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
 import chromahub.rhythm.app.shared.presentation.viewmodel.ThemeViewModel
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.LyricallySourcesBottomSheet
+import chromahub.rhythm.app.shared.presentation.screens.settings.CanvasNetworkModeDialog
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -10006,6 +10008,10 @@ fun EnhancedIntegrationsContent(
     val spotifyApiEnabled by appSettings.spotifyApiEnabled.collectAsState()
     val broadcastStatusEnabled by appSettings.broadcastStatusEnabled.collectAsState()
     val bluetoothLyricsEnabled by appSettings.bluetoothLyricsEnabled.collectAsState()
+    val appleCanvasEnabled by appSettings.appleCanvasEnabled.collectAsState()
+
+    var showLyricallySourcesBottomSheet by remember { mutableStateOf(false) }
+    var showCanvasNetworkModeDialog by remember { mutableStateOf(false) }
 
     if (isTablet) {
         Row(
@@ -10069,6 +10075,7 @@ fun EnhancedIntegrationsContent(
                     spotifyApiEnabled = spotifyApiEnabled,
                     broadcastStatusEnabled = broadcastStatusEnabled,
                     bluetoothLyricsEnabled = bluetoothLyricsEnabled,
+                    appleCanvasEnabled = appleCanvasEnabled,
                     onDeezerChange = { appSettings.setDeezerApiEnabled(it) },
                     onLrcLibChange = { appSettings.setLrcLibApiEnabled(it) },
                     onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
@@ -10080,7 +10087,10 @@ fun EnhancedIntegrationsContent(
                         if (it && !broadcastStatusEnabled) {
                             appSettings.setBroadcastStatusEnabled(true)
                         }
-                    }
+                    },
+                    onAppleCanvasChange = { appSettings.setAppleCanvasEnabled(it) },
+                    onAppleCanvasConfigure = { showCanvasNetworkModeDialog = true },
+                    onLyricallyConfigure = { showLyricallySourcesBottomSheet = true }
                 )
             }
         }
@@ -10124,6 +10134,7 @@ fun EnhancedIntegrationsContent(
                 spotifyApiEnabled = spotifyApiEnabled,
                 broadcastStatusEnabled = broadcastStatusEnabled,
                 bluetoothLyricsEnabled = bluetoothLyricsEnabled,
+                appleCanvasEnabled = appleCanvasEnabled,
                 onDeezerChange = { appSettings.setDeezerApiEnabled(it) },
                 onLrcLibChange = { appSettings.setLrcLibApiEnabled(it) },
                 onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
@@ -10135,7 +10146,10 @@ fun EnhancedIntegrationsContent(
                     if (it && !broadcastStatusEnabled) {
                         appSettings.setBroadcastStatusEnabled(true)
                     }
-                }
+                },
+                onAppleCanvasChange = { appSettings.setAppleCanvasEnabled(it) },
+                onAppleCanvasConfigure = { showCanvasNetworkModeDialog = true },
+                onLyricallyConfigure = { showLyricallySourcesBottomSheet = true }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -10144,6 +10158,23 @@ fun EnhancedIntegrationsContent(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    if (showLyricallySourcesBottomSheet) {
+        LyricallySourcesBottomSheet(
+            onDismiss = { showLyricallySourcesBottomSheet = false },
+            appSettings = appSettings,
+            haptics = haptic
+        )
+    }
+
+    if (showCanvasNetworkModeDialog) {
+        CanvasNetworkModeDialog(
+            onDismiss = { showCanvasNetworkModeDialog = false },
+            appSettings = appSettings,
+            context = context,
+            haptic = haptic
+        )
     }
 }
 
@@ -10156,18 +10187,22 @@ private fun IntegrationsSettingsCards(
     spotifyApiEnabled: Boolean,
     broadcastStatusEnabled: Boolean,
     bluetoothLyricsEnabled: Boolean,
+    appleCanvasEnabled: Boolean,
     onDeezerChange: (Boolean) -> Unit,
     onLrcLibChange: (Boolean) -> Unit,
     onLyricallyChange: (Boolean) -> Unit,
     onYtMusicChange: (Boolean) -> Unit,
     onSpotifyChange: (Boolean) -> Unit,
     onBroadcastChange: (Boolean) -> Unit,
-    onBluetoothLyricsChange: (Boolean) -> Unit
+    onBluetoothLyricsChange: (Boolean) -> Unit,
+    onAppleCanvasChange: (Boolean) -> Unit,
+    onAppleCanvasConfigure: () -> Unit,
+    onLyricallyConfigure: () -> Unit
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    val onboardingToggleItem: (MaterialSymbolIcon, String, String, Boolean, (Boolean) -> Unit) -> Material3SettingsItem =
-        { icon, title, description, isEnabled, onToggle ->
+    val onboardingToggleItem: (MaterialSymbolIcon, String, String, Boolean, (Boolean) -> Unit, (() -> Unit)?) -> Material3SettingsItem =
+        { icon, title, description, isEnabled, onToggle, onConfigure ->
             Material3SettingsItem(
                 icon = icon,
                 title = { Text(title) },
@@ -10178,25 +10213,46 @@ private fun IntegrationsSettingsCards(
                         onCheckedChange = {
                             HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onToggle(it)
+                            if (it && onConfigure != null) {
+                                onConfigure()
+                            }
                         }
                     )
                 },
                 onClick = {
                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                    onToggle(!isEnabled)
+                    if (isEnabled && onConfigure != null) {
+                        onConfigure()
+                    } else {
+                        onToggle(!isEnabled)
+                        if (!isEnabled && onConfigure != null) {
+                            onConfigure()
+                        }
+                    }
                 }
             )
         }
 
     val apiItems = buildList {
+        add(
+            onboardingToggleItem(
+                MaterialSymbolIcon("movie"),
+                "Apple Music Motion Canvas",
+                "Bring your screen to life with dynamic, looping album animations",
+                appleCanvasEnabled,
+                onAppleCanvasChange,
+                onAppleCanvasConfigure
+            )
+        )
         if (chromahub.rhythm.app.BuildConfig.ENABLE_DEEZER) {
             add(
                 onboardingToggleItem(
                     RhythmIcons.Public,
-                    context.getString(R.string.onboarding_integration_deezer),
-                    context.getString(R.string.onboarding_integration_deezer_desc),
+                    "Deezer",
+                    "Get high-quality album covers and track details automatically",
                     deezerApiEnabled,
-                    onDeezerChange
+                    onDeezerChange,
+                    null
                 )
             )
         }
@@ -10205,9 +10261,10 @@ private fun IntegrationsSettingsCards(
                 onboardingToggleItem(
                     MaterialSymbolIcon("music_note"),
                     "Lyrically",
-                    "Word-by-word synchronized lyrics (Highest Quality)",
+                    "Enjoy beautiful, word-by-word synchronized lyrics",
                     lyricallyApiEnabled,
-                    onLyricallyChange
+                    onLyricallyChange,
+                    onLyricallyConfigure
                 )
             )
         }
@@ -10215,10 +10272,11 @@ private fun IntegrationsSettingsCards(
             add(
                 onboardingToggleItem(
                     MaterialSymbolIcon("lyrics"),
-                    context.getString(R.string.onboarding_integration_lrclib),
-                    context.getString(R.string.onboarding_integration_lrclib_desc),
+                    "LrcLib",
+                    "Find and download synchronized scrolling lyrics",
                     lrclibApiEnabled,
-                    onLrcLibChange
+                    onLrcLibChange,
+                    null
                 )
             )
         }
@@ -10226,10 +10284,11 @@ private fun IntegrationsSettingsCards(
             add(
                 onboardingToggleItem(
                     MaterialSymbolIcon("music_video"),
-                    context.getString(R.string.onboarding_integration_ytmusic),
-                    context.getString(R.string.onboarding_integration_ytmusic_desc),
+                    "YouTube Music",
+                    "Access matching song details and recommendations",
                     ytMusicApiEnabled,
-                    onYtMusicChange
+                    onYtMusicChange,
+                    null
                 )
             )
         }
@@ -10238,17 +10297,19 @@ private fun IntegrationsSettingsCards(
     val socialItems = listOf(
         onboardingToggleItem(
             RhythmIcons.Share,
-            context.getString(R.string.onboarding_integration_broadcast),
-            context.getString(R.string.onboarding_integration_broadcast_desc),
+            "Broadcast Status",
+            "Allow other music widgets and apps to see what is playing",
             broadcastStatusEnabled,
-            onBroadcastChange
+            onBroadcastChange,
+            null
         ),
         onboardingToggleItem(
             MaterialSymbolIcon("lyrics"),
-            context.getString(R.string.bluetooth_lyrics_enabled),
-            context.getString(R.string.bluetooth_lyrics_desc),
+            "Bluetooth Lyrics",
+            "Show scrolling lyrics on connected car screens and accessories",
             bluetoothLyricsEnabled,
-            onBluetoothLyricsChange
+            onBluetoothLyricsChange,
+            null
         )
     )
 

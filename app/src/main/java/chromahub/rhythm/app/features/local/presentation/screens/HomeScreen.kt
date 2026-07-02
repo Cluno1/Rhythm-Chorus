@@ -257,11 +257,6 @@ fun HomeScreen(
     val showAppIcon by appSettings.homeShowAppIcon.collectAsState()
     val iconVisibilityMode by appSettings.homeAppIconVisibility.collectAsState()
 
-    // State for album bottom sheet
-    var showAlbumBottomSheet by remember { mutableStateOf(false) }
-    var selectedAlbum by remember { mutableStateOf<Album?>(null) }
-    val albumSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-
     // State for AddToPlaylist bottom sheet
     var showAddToPlaylistSheet by remember { mutableStateOf(false) }
     var selectedSongForPlaylist by remember { mutableStateOf<Song?>(null) }
@@ -361,105 +356,7 @@ fun HomeScreen(
         }
     }
 
-    // Album bottom sheet
-    if (showAlbumBottomSheet && selectedAlbum != null) {
-        AlbumBottomSheet(
-            album = selectedAlbum!!,
-            onDismiss = { showAlbumBottomSheet = false },
-            onSongClick = onSongClick,
-            onPlayAll = { songsToPlay ->
-                if (songsToPlay.isNotEmpty()) {
-                    musicViewModel.playSongs(songsToPlay)
-                }
-                coroutineScope.launch {
-                    albumSheetState.hide()
-                }.invokeOnCompletion {
-                    if (!albumSheetState.isVisible) {
-                        showAlbumBottomSheet = false
-                    }
-                }
-            },
-            onShufflePlay = { songsToPlay ->
-                if (songsToPlay.isNotEmpty()) {
-                    musicViewModel.playShuffled(songsToPlay)
-                }
-                coroutineScope.launch {
-                    albumSheetState.hide()
-                }.invokeOnCompletion {
-                    if (!albumSheetState.isVisible) {
-                        showAlbumBottomSheet = false
-                    }
-                }
-            },
-            onAddToQueue = onAddToQueue,
-            onAddToQueueAll = { songs -> musicViewModel.addSongsToQueue(songs) },
-            onAddSongToPlaylist = { song ->
-                selectedSongForPlaylist = song
-                coroutineScope.launch {
-                    albumSheetState.hide()
-                }.invokeOnCompletion {
-                    if (!albumSheetState.isVisible) {
-                        showAlbumBottomSheet = false
-                        showAddToPlaylistSheet = true
-                    }
-                }
-            },
-            onPlayerClick = onPlayerClick,
-            haptics = LocalHapticFeedback.current,
-            sheetState = albumSheetState,
-            onPlayNext = { song -> musicViewModel.playNext(song) },
-            onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
-            favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
-            onShowSongInfo = { song ->
-                selectedSongForPlaylist = song
-                coroutineScope.launch {
-                    albumSheetState.hide()
-                }.invokeOnCompletion {
-                    if (!albumSheetState.isVisible) {
-                        showAlbumBottomSheet = false
-                        showSongInfoSheet = true
-                    }
-                }
-            },
-            onAddToBlacklist = { song ->
-                val appSettings = AppSettings.getInstance(context)
-                appSettings.addToBlacklist(song.id)
-                Toast.makeText(context, context.getString(R.string.song_added_to_blacklist_format, song.title), Toast.LENGTH_SHORT).show()
-            },
-            currentSong = currentSong,
-            isPlaying = isPlaying,
-            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
-                musicViewModel.batchEditMetadata(
-                    songs = selectedAlbum!!.songs,
-                    artist = artist,
-                    album = title,
-                    genre = null,
-                    year = null,
-                    artworkUri = artworkUri,
-                    removeArtwork = removeArtwork,
-                    onProgress = onProgress,
-                    onComplete = { successCount, failCount ->
-                        onComplete(successCount, failCount)
-                    },
-                    onPermissionRequired = { pendingRequest ->
-                        try {
-                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
-                                pendingRequest.intentSender
-                            ).build()
-                            writePermissionLauncher.launch(intentSenderRequest)
-                        } catch (e: Exception) {
-                            Toast.makeText(
-                                context,
-                                "Failed to request permission: ${e.message}",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            musicViewModel.cancelPendingBatchMetadataWrite()
-                        }
-                    }
-                )
-            }
-        )
-    }
+
 
     // Song info bottom sheet
     if (showSongInfoSheet && selectedSongForPlaylist != null) {
@@ -635,10 +532,7 @@ fun HomeScreen(
             recentlyPlayed = recentlyPlayed,
             songs = songs,
             onSongClick = onSongClick,
-            onAlbumClick = { album: Album ->
-                selectedAlbum = album
-                showAlbumBottomSheet = true
-            },
+            onAlbumClick = onAlbumClick,
             onArtistClick = { artist: Artist ->
                 onNavigateToArtist(artist)
             },

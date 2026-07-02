@@ -84,7 +84,8 @@ private data class SemanticVersion(
     val patch: Int,
     val subpatch: Int = 0,
     val buildNumber: Int = 0,
-    val isPreRelease: Boolean = false
+    val isPreRelease: Boolean = false,
+    val isCiBuild: Boolean = false
 ) : Comparable<SemanticVersion> {
     override fun compareTo(other: SemanticVersion): Int {
         // Compare major version
@@ -428,6 +429,13 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
     /**
      * Process a GitHub release into app version information
      */
+    private fun compareBaseVersions(v1: SemanticVersion, v2: SemanticVersion): Int {
+        if (v1.major != v2.major) return v1.major.compareTo(v2.major)
+        if (v1.minor != v2.minor) return v1.minor.compareTo(v2.minor)
+        if (v1.patch != v2.patch) return v1.patch.compareTo(v2.patch)
+        return v1.subpatch.compareTo(v2.subpatch)
+    }
+
     private fun processRelease(release: GitHubRelease) {
         // Convert GitHub release to AppVersion
         val appVersion = convertReleaseToAppVersion(release)
@@ -440,11 +448,18 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         // Add debug logs
         Log.d(TAG, "Version comparison: current=${_currentVersion.value.versionName} (${currentSemVer}) vs latest=${appVersion.versionName} (${newSemVer})")
         
+        val isCurrentCi = currentSemVer.isCiBuild
+
         // Update is available if:
         // 1. New version is semantically greater than current version
         // 2. If versions are equal, new build number is higher
         // 3. If in pre-release, allow updates to other pre-releases
         _updateAvailable.value = when {
+            isCurrentCi -> {
+                // If on a CI build, only update if the new version has a higher base semantic version
+                val baseComparison = compareBaseVersions(newSemVer, currentSemVer)
+                baseComparison > 0
+            }
             newSemVer > currentSemVer -> true
             newSemVer == currentSemVer && appVersion.buildNumber > _currentVersion.value.buildNumber -> true
             _currentVersion.value.isPreRelease && appVersion.isPreRelease && appVersion.buildNumber > _currentVersion.value.buildNumber -> true
@@ -483,13 +498,16 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             val patch = versionParts.getOrNull(2)?.filter { it.isDigit() }?.toIntOrNull() ?: 0
             val subpatch = versionParts.getOrNull(3)?.filter { it.isDigit() }?.toIntOrNull() ?: 0
             
+            val isCiBuild = buildRegex.containsMatchIn(cleaned)
+
             return SemanticVersion(
                 major = major.coerceAtLeast(0),
                 minor = minor.coerceAtLeast(0),
                 patch = patch.coerceAtLeast(0),
                 subpatch = subpatch.coerceAtLeast(0),
                 buildNumber = (buildNumber.takeIf { it > 0 } ?: extractBuildNumber(cleaned, versionParts)).coerceAtLeast(0),
-                isPreRelease = isPreRelease
+                isPreRelease = isPreRelease,
+                isCiBuild = isCiBuild
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing version: $versionString", e)

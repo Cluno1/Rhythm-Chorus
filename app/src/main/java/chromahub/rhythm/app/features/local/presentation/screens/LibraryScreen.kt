@@ -389,7 +389,7 @@ fun LibraryScreen(
     
     var showCreatePlaylistDialog by remember { mutableStateOf(false) }
     var showAddToPlaylistSheet by remember { mutableStateOf(false) }
-    var showAlbumBottomSheet by remember { mutableStateOf(false) }
+
     var showSongInfoSheet by remember { mutableStateOf(false) }
     var showBulkExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
@@ -454,9 +454,7 @@ fun LibraryScreen(
     var explorerFolderSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
     var selectedSong by remember { mutableStateOf<Song?>(null) }
     var songsToAddToPlaylist by remember { mutableStateOf<List<Song>>(emptyList()) }
-    var selectedAlbum by remember { mutableStateOf<Album?>(null) }
     val addToPlaylistSheetState = rememberModalBottomSheetState()
-    val albumBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     
     val multiSelectionState = remember { chromahub.rhythm.app.features.local.presentation.viewmodel.MultiSelectionStateHolder() }
     val selectedSongs by multiSelectionState.selectedSongs.collectAsState()
@@ -699,90 +697,7 @@ fun LibraryScreen(
             sheetState = addToPlaylistSheetState
         )
     }
-    
-    val activeAlbum = remember(albums, selectedAlbum) {
-        selectedAlbum?.let { sel -> albums.find { it.id == sel.id } } ?: selectedAlbum
-    }
 
-    if (showAlbumBottomSheet && activeAlbum != null) {
-        AlbumBottomSheet(
-            album = activeAlbum,
-            onDismiss = { showAlbumBottomSheet = false },
-            onSongClick = onSongClick,
-            onPlayAll = { songs ->
-                if (songs.isNotEmpty()) {
-                    onPlayQueue(songs)
-                } else {
-                    activeAlbum.let { onAlbumClick(it) }
-                }
-            },
-            onShufflePlay = { songs ->
-                if (songs.isNotEmpty()) {
-                    onShuffleQueue(songs)
-                } else {
-                    activeAlbum.let { onAlbumShufflePlay(it) }
-                }
-            },
-            onAddToQueue = onAddToQueue,
-            onAddToQueueAll = { songs -> musicViewModel.addSongsToQueue(songs) },
-            onAddSongToPlaylist = { song ->
-                selectedSong = song
-                scope.launch {
-                    albumBottomSheetState.hide()
-                }.invokeOnCompletion {
-                    if (!albumBottomSheetState.isVisible) {
-                        showAlbumBottomSheet = false
-                        showAddToPlaylistSheet = true
-                    }
-                }
-            },
-            onPlayerClick = onPlayerClick,
-            sheetState = albumBottomSheetState,
-            haptics = haptics,
-            onPlayNext = { song -> musicViewModel.playNext(song) },
-            onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
-            favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
-            onShowSongInfo = { song ->
-                selectedSong = song
-                showSongInfoSheet = true
-            },
-            onAddToBlacklist = { song ->
-                appSettings.addToBlacklist(song.id)
-            },
-            currentSong = currentSong,
-            isPlaying = isPlaying,
-            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
-                musicViewModel.batchEditMetadata(
-                    songs = activeAlbum.songs,
-                    artist = artist,
-                    album = title,
-                    genre = null,
-                    year = null,
-                    artworkUri = artworkUri,
-                    removeArtwork = removeArtwork,
-                    onProgress = onProgress,
-                    onComplete = { successCount, failCount ->
-                        onComplete(successCount, failCount)
-                    },
-                    onPermissionRequired = { pendingRequest ->
-                        try {
-                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
-                                pendingRequest.intentSender
-                            ).build()
-                            writePermissionLauncher.launch(intentSenderRequest)
-                        } catch (e: Exception) {
-                            Toast.makeText(
-                                context,
-                                "Failed to request permission: ${e.message}",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            musicViewModel.cancelPendingBatchMetadataWrite()
-                        }
-                    }
-                )
-            }
-        )
-    }
     
     
     val isLibraryRefreshing by musicViewModel.isLibraryRefreshing.collectAsState()
@@ -1824,10 +1739,7 @@ fun LibraryScreen(
                                             listState = albumsListState,
                                             gridState = albumsGridState,
                                             onSongClick = onSongClick,
-                                            onAlbumBottomSheetClick = { album ->
-                                                selectedAlbum = album
-                                                showAlbumBottomSheet = true
-                                            },
+                                            onAlbumBottomSheetClick = onAlbumBottomSheetClick,
                                             haptics = haptics,
                                             appSettings = appSettings,
                                             onPlayQueue = onPlayQueue,

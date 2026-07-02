@@ -33,7 +33,8 @@ import java.util.Locale
 fun CanvasArtworkPlayer(
     primaryUrl: String?,
     fallbackUrl: String?,
-    isPlaying: Boolean,
+    isPlaying: Boolean = true,
+    alwaysPlay: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -45,8 +46,11 @@ fun CanvasArtworkPlayer(
     var isVideoReady by remember(initial) { mutableStateOf(false) }
     var videoAspectRatio by remember(initial) { mutableStateOf(0f) }
 
-    // Keep isPlaying up to date without rebuilding the player
-    val currentIsPlaying by rememberUpdatedState(isPlaying)
+    // Resolve effective play state — alwaysPlay overrides isPlaying
+    val effectivePlaying = alwaysPlay || isPlaying
+
+    // Keep effective playing state up to date without rebuilding the player
+    val currentIsPlaying by rememberUpdatedState(effectivePlaying)
 
     val exoPlayer = remember(initial) {
         ExoPlayer.Builder(context)
@@ -61,13 +65,13 @@ fun CanvasArtworkPlayer(
                 )
                 volume = 0f
                 repeatMode = Player.REPEAT_MODE_ONE
-                playWhenReady = isPlaying
+                playWhenReady = effectivePlaying
             }
     }
 
-    // Sync play/pause state
-    LaunchedEffect(isPlaying) {
-        exoPlayer.playWhenReady = isPlaying
+    // Sync effective play state
+    LaunchedEffect(effectivePlaying) {
+        exoPlayer.playWhenReady = effectivePlaying
     }
 
     // Error fallback and aspect ratio listener

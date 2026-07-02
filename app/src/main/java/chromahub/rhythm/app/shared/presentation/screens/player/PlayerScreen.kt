@@ -393,9 +393,21 @@ fun PlayerScreen(
             onSongInfoClick = { showSongInfoSheet = true },
             onOpenFullScreenLyrics = { showFullScreenLyrics = true },
             onShowAlbumBottomSheet = {
-                currentSongAlbumForSheet?.let { album ->
-                    selectedAlbum = album
-                    showAlbumSheet = true
+                song?.let { currentSong ->
+                    val album = albums.find { it.title.equals(currentSong.album, ignoreCase = true) && it.artist.equals(currentSong.artist, ignoreCase = true) }
+                    if (album != null) {
+                        if (isStreamingMode) {
+                            navController.navigate("streaming_album/${android.net.Uri.encode(album.id)}?albumName=${android.net.Uri.encode(album.title)}")
+                        } else {
+                            navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
+                        }
+                    } else {
+                        if (isStreamingMode) {
+                            navController.navigate("streaming_album/${android.net.Uri.encode(currentSong.album)}?albumName=${android.net.Uri.encode(currentSong.album)}")
+                        } else {
+                            navController.navigate(Screen.AlbumDetail.createRoute("unknown_" + currentSong.album, currentSong.album))
+                        }
+                    }
                 }
             },
             onShowArtistBottomSheet = {
@@ -689,60 +701,7 @@ fun PlayerScreen(
             )
         }
 
-        if (showAlbumSheet && selectedAlbum != null && song != null) {
-            AlbumBottomSheet(
-                album = selectedAlbum!!,
-                onDismiss = { showAlbumSheet = false },
-                onSongClick = onSongClick,
-                onPlayAll = onPlayAlbumSongs,
-                onShufflePlay = onShuffleAlbumSongs,
-                onAddToQueue = { onAddSongsToQueue() },
-                onAddToQueueAll = { songs -> musicViewModel.addSongsToQueue(songs) },
-                onAddSongToPlaylist = { track ->
-                    selectedSongForPlaylist = track
-                    showAddToPlaylistSheetInternal = true
-                },
-                onPlayerClick = { showAlbumSheet = false },
-                sheetState = albumBottomSheetState,
-                haptics = LocalHapticFeedback.current,
-                onToggleFavorite = { onToggleFavorite() },
-                onShowSongInfo = { showSongInfoSheet = true },
-                currentSong = song,
-                isPlaying = isPlaying,
-                showAddToQueueAction = true,
-                showAddToPlaylistAction = true,
-                onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
-                    musicViewModel.batchEditMetadata(
-                        songs = selectedAlbum!!.songs,
-                        artist = artist,
-                        album = title,
-                        genre = null,
-                        year = null,
-                        artworkUri = artworkUri,
-                        removeArtwork = removeArtwork,
-                        onProgress = onProgress,
-                        onComplete = { successCount, failCount ->
-                            onComplete(successCount, failCount)
-                        },
-                        onPermissionRequired = { pendingRequest ->
-                            try {
-                                val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
-                                    pendingRequest.intentSender
-                                ).build()
-                                writePermissionLauncher.launch(intentSenderRequest)
-                            } catch (e: Exception) {
-                                Toast.makeText(
-                                    context,
-                                    "Failed to request permission: ${e.message}",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                musicViewModel.cancelPendingBatchMetadataWrite()
-                            }
-                        }
-                    )
-                }
-            )
-        }
+
 
         if (showArtistSheet && selectedArtist != null && song != null) {
             ArtistBottomSheet(
@@ -750,8 +709,12 @@ fun PlayerScreen(
                 onDismiss = { showArtistSheet = false },
                 onSongClick = onSongClick,
                 onAlbumClick = { album ->
-                    selectedAlbum = album
-                    showAlbumSheet = true
+                    showArtistSheet = false
+                    if (isStreamingMode) {
+                        navController.navigate("streaming_album/${android.net.Uri.encode(album.id)}?albumName=${android.net.Uri.encode(album.title)}")
+                    } else {
+                        navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
+                    }
                 },
                 onPlayAll = onPlayArtistSongs,
                 onShufflePlay = onShuffleArtistSongs,

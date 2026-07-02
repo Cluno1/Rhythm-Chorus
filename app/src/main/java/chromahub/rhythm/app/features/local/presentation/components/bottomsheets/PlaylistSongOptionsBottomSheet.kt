@@ -72,6 +72,7 @@ fun PlaylistSongOptionsBottomSheet(
     onGoToArtist: () -> Unit,
     onShare: () -> Unit,
     showRemoveFromPlaylist: Boolean = true,
+    showGoToAlbum: Boolean = true,
     haptics: HapticFeedback
 ) {
     val context = LocalContext.current
@@ -180,15 +181,17 @@ fun PlaylistSongOptionsBottomSheet(
                                     onClick = onAddToPlaylist
                                 )
                             )
-                            add(
-                                OptionItem(
-                                    icon = RhythmIcons.Album,
-                                    text = context.getString(R.string.multiselectionbottomsheet_go_to_album),
-                                    containerColor = secondaryContainer,
-                                    iconColor = onSecondaryContainer,
-                                    onClick = onGoToAlbum
+                            if (showGoToAlbum) {
+                                add(
+                                    OptionItem(
+                                        icon = RhythmIcons.Album,
+                                        text = context.getString(R.string.multiselectionbottomsheet_go_to_album),
+                                        containerColor = secondaryContainer,
+                                        iconColor = onSecondaryContainer,
+                                        onClick = onGoToAlbum
+                                    )
                                 )
-                            )
+                            }
                             add(
                                 OptionItem(
                                     icon = RhythmIcons.Artist,
