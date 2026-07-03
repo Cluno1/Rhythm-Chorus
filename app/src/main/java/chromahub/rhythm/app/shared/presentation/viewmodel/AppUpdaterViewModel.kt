@@ -392,7 +392,11 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             _latestVersion.value = null  // Clear any previous version data
             
             try {
-                if (currentChannel == "nightly") {
+                // Only use the nightly workflow run path when the installed build is actually
+                // a nightly build. If the user somehow has the nightly channel stored but is
+                // running a release/beta build, fall through to the regular release check so
+                // we never falsely report a nightly run as an update for a release build.
+                if (currentChannel == "nightly" && BuildConfig.IS_NIGHTLY) {
                     val runsResponse = gitHubApiService.getWorkflowRuns(GITHUB_OWNER, GITHUB_REPO, "nightly.yml")
                     
                     if (runsResponse.isSuccessful) {
