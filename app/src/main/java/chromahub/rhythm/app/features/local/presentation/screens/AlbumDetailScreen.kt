@@ -43,11 +43,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import chromahub.rhythm.app.R
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.launch
 import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.Artist
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
+import chromahub.rhythm.app.shared.presentation.components.AudioQualityIcon
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
 import chromahub.rhythm.app.util.ImageUtils
 import chromahub.rhythm.app.util.HapticUtils
@@ -494,7 +499,26 @@ fun AlbumDetailScreen(
                                 }
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = "${allDisplaySongs.size} tracks • ${formatDuration(allDisplaySongs.sumOf { it.duration }, useHoursFormat)}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${allDisplaySongs.size} tracks • ${formatDuration(allDisplaySongs.sumOf { it.duration }, useHoursFormat)}",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                                allDisplaySongs.firstOrNull()?.let { firstSong ->
+                                    AudioQualityIcon(
+                                        song = firstSong,
+                                        iconSize = 20.dp,
+                                        padding = 0.dp,
+                                        modifier = Modifier.padding(start = 8.dp)
+                                    )
+                                }
+                            }
 
                             Spacer(modifier = Modifier.height(24.dp))
                             Row(
@@ -655,6 +679,8 @@ fun AlbumDetailScreen(
             label = "albumArtworkAlpha"
         )
 
+        val coroutineScope = rememberCoroutineScope()
+
         Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
             Column(modifier = Modifier.fillMaxSize()) {
                 CollapsibleAlbumHeader(
@@ -680,6 +706,15 @@ fun AlbumDetailScreen(
                     onArtistClick = {
                         val song = allDisplaySongs.firstOrNull()
                         if (song != null) handleArtistTap(song)
+                    },
+                    firstSong = allDisplaySongs.firstOrNull(),
+                    modifier = Modifier.pointerInput(songListState) {
+                        detectVerticalDragGestures { change, dragAmount ->
+                            change.consume()
+                            coroutineScope.launch {
+                                songListState.scrollBy(-dragAmount)
+                            }
+                        }
                     }
                 )
 
@@ -880,11 +915,14 @@ private fun CollapsibleAlbumHeader(
     artworkAlpha: Float,
     sortOrder: AlbumSortOrder,
     showSortMenu: Boolean,
+    onShowShowSortMenu: (() -> Unit)? = null, // unused but keep for safety or just keep original callbacks
     onShowSortMenu: () -> Unit,
     onDismissSortMenu: () -> Unit,
     onSortOrderSelected: (AlbumSortOrder) -> Unit,
     onBack: () -> Unit,
-    onArtistClick: () -> Unit
+    onArtistClick: () -> Unit,
+    firstSong: Song? = null,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
@@ -931,7 +969,7 @@ private fun CollapsibleAlbumHeader(
     }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(height)
             .background(MaterialTheme.colorScheme.surface)
@@ -1092,27 +1130,43 @@ private fun CollapsibleAlbumHeader(
                 overflow = TextOverflow.Ellipsis
             )
             if (expandedMetadataAlpha > 0f) {
-                Column(
-                    modifier = Modifier.graphicsLayer { alpha = expandedMetadataAlpha }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .graphicsLayer { alpha = expandedMetadataAlpha },
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = artist,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.clickable(onClick = onArtistClick)
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = metadata,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.72f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Column(
+                        modifier = Modifier.weight(1f, fill = false)
+                    ) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = artist,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.clickable(onClick = onArtistClick)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = metadata,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.72f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    firstSong?.let { song ->
+                        AudioQualityIcon(
+                            song = song,
+                            iconSize = 36.dp, // Takes two lines space, making it bigger
+                            padding = 0.dp,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
                 }
             }
         }
@@ -1431,14 +1485,27 @@ private fun AlbumSongItem(
                     color = if (isCurrentSong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = song.artist,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (isCurrentSong) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = song.artist,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isCurrentSong) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    AudioQualityIcon(
+                        song = song,
+                        iconSize = 16.dp,
+                        padding = 0.dp,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
             }
 
             if (song.duration > 0) {

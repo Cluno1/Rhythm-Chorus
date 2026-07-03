@@ -426,6 +426,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYBACK_PITCH = "playback_pitch"
         private const val KEY_SYNC_SPEED_AND_PITCH = "sync_speed_and_pitch"
         private const val KEY_USE_HOURS_IN_TIME_FORMAT = "use_hours_in_time_format"
+        private const val KEY_USE_EXACT_ARTWORK_COLORS = "use_exact_artwork_colors"
         private const val KEY_STOP_PLAYBACK_ON_APP_CLOSE = "stop_playback_on_app_close"
         private const val KEY_QUEUE_PERSISTENCE_ENABLED = "queue_persistence_enabled" // Enable/disable queue persistence
         private const val KEY_SAVED_QUEUE = "saved_queue" // Queue persistence - list of song IDs
@@ -1047,6 +1048,10 @@ class AppSettings private constructor(context: Context) {
     // Time Format Settings - Show hours:minutes:seconds for longer tracks (>60 min)
     private val _useHoursInTimeFormat = MutableStateFlow(prefs.getBoolean(KEY_USE_HOURS_IN_TIME_FORMAT, true))
     val useHoursInTimeFormat: StateFlow<Boolean> = _useHoursInTimeFormat.asStateFlow()
+    
+    // Exact extracted colors from artwork settings
+    private val _useExactArtworkColors = MutableStateFlow(prefs.getBoolean(KEY_USE_EXACT_ARTWORK_COLORS, false))
+    val useExactArtworkColors: StateFlow<Boolean> = _useExactArtworkColors.asStateFlow()
     
     // Stop Playback on App Close
     private val _stopPlaybackOnAppClose = MutableStateFlow(prefs.getBoolean(KEY_STOP_PLAYBACK_ON_APP_CLOSE, false))
@@ -2669,6 +2674,12 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setUseHoursInTimeFormat(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_USE_HOURS_IN_TIME_FORMAT, enabled).apply()
         _useHoursInTimeFormat.value = enabled
+    }
+    
+    // Exact extracted colors from artwork settings methods
+    fun setUseExactArtworkColors(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_USE_EXACT_ARTWORK_COLORS, enabled).apply()
+        _useExactArtworkColors.value = enabled
     }
     
     // Stop Playback on App Close Methods

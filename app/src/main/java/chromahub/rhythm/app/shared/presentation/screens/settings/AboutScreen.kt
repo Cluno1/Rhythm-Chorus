@@ -318,10 +318,16 @@ fun AboutScreen(
 
             item {
                 val appInfo = context.applicationInfo
+                val buildType = when {
+                    BuildConfig.DEBUG -> "Debug"
+                    BuildConfig.IS_NIGHTLY -> "Nightly"
+                    BuildConfig.VERSION_NAME.contains("Beta", ignoreCase = true) -> "Beta"
+                    else -> "Stable"
+                }
                 val buildVariant = if (BuildConfig.FLAVOR.isNotBlank()) {
-                    "${BuildConfig.BUILD_TYPE} (${BuildConfig.FLAVOR})"
+                    "$buildType (${BuildConfig.FLAVOR})"
                 } else {
-                    BuildConfig.BUILD_TYPE
+                    buildType
                 }
                 val detectedAbis = Build.SUPPORTED_ABIS
                     .take(2)

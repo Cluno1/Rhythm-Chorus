@@ -87,6 +87,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelStoreOwner
 import chromahub.rhythm.app.BuildConfig
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.Playlist
@@ -162,7 +163,9 @@ import chromahub.rhythm.app.shared.presentation.screens.settings.SettingGroup
 fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     val context = LocalContext.current
     val appSettings = AppSettings.getInstance(context)
-    val updaterViewModel: AppUpdaterViewModel = viewModel()
+    val updaterViewModel: AppUpdaterViewModel = viewModel(
+        viewModelStoreOwner = context as ViewModelStoreOwner
+    )
     val scope = rememberCoroutineScope()
     val haptics = LocalHapticFeedback.current
 
@@ -1510,8 +1513,9 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     val channels = listOf(
-                        "stable" to context.getString(R.string.updates_channel_desc),
-                        "beta" to context.getString(R.string.updates_experimental_coming)
+                        "stable" to context.getString(R.string.updates_channel_stable_desc),
+                        "beta" to context.getString(R.string.updates_channel_beta_desc),
+                        "nightly" to context.getString(R.string.updates_channel_nightly_desc)
                     )
 
                     channels.forEach { (channel, description) ->

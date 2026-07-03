@@ -495,6 +495,13 @@
     <string name="updates_smart_polling">Smart Polling Active</string>
     <string name="updates_smart_polling_desc">Using efficient HTTP checks to detect updates while minimizing GitHub API calls. You\'ll get instant notifications when new versions are released.</string>
     <string name="updates_channel_desc">Choose which update channel to follow:</string>
+    <string name="updates_channel_stable_title">Stable</string>
+    <string name="updates_channel_stable_desc">Receive only official stable releases.</string>
+    <string name="updates_channel_beta_title">Beta</string>
+    <string name="updates_channel_beta_desc">Receive pre-releases and release candidates.</string>
+    <string name="updates_channel_nightly_title">Nightly</string>
+    <string name="updates_channel_nightly_desc">Receive bleeding-edge nightly builds compiled from the main branch.</string>
+
     
     <!-- Onboarding -->
     <string name="onboarding_welcome">Welcome</string>

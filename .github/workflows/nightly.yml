@@ -1,4 +1,4 @@
-name: Build Beta Artifacts
+name: Build Nightly Artifacts
 
 on:
   push:
@@ -58,10 +58,10 @@ jobs:
           VERSION_CODE=$(grep -E 'versionCode\s*=' app/build.gradle.kts | grep -oE '[0-9]+' | head -n 1)
           
           if [ -z "$VERSION_CODE" ]; then
-            VERSION_CODE=514121078
+            VERSION_CODE=524211101
           fi
           if [ -z "$VERSION_NAME" ]; then
-            VERSION_NAME="5.1.412.1078 Beta"
+            VERSION_NAME="5.2.421.1101 Beta"
           fi
           
           # Git commit count for increasing version code
@@ -71,8 +71,11 @@ jobs:
           # Extract short commit hash
           SHORT_SHA=$(git rev-parse --short HEAD)
           
-          # Construct version name: e.g., 5.1.412.1078 Beta-build-985-a1b2c3d
-          NEW_VERSION_NAME="${VERSION_NAME}-build-${COMMIT_COUNT}-${SHORT_SHA}"
+          # Clean version name (remove " Beta" if present)
+          VERSION_NAME_CLEANED=$(echo "$VERSION_NAME" | sed 's/ Beta//')
+          
+          # Construct version name: e.g., 5.2.421.1101-nightly-r42-a1b2c3d
+          NEW_VERSION_NAME="${VERSION_NAME_CLEANED}-nightly-r${{ github.run_number }}-${SHORT_SHA}"
           
           echo "code=$NEW_VERSION_CODE" >> $GITHUB_OUTPUT
           echo "name=$NEW_VERSION_NAME" >> $GITHUB_OUTPUT
@@ -80,6 +83,32 @@ jobs:
           echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
           echo "Computed Version Code: $NEW_VERSION_CODE"
           echo "Computed Version Name: $NEW_VERSION_NAME"
+
+      - name: Send start notification to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "⚠️ Telegram secrets not set — skipping."
+            exit 0
+          fi
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          MESSAGE="⚙️ <b>Rhythm Nightly Build Started</b>"
+          MESSAGE+=$'\n\n'
+          MESSAGE+="📦 <b>Version:</b> <code>${{ steps.version_info.outputs.name }}</code>"
+          MESSAGE+=$'\n'
+          MESSAGE+="🔗 <b>Commit:</b> <code>${{ steps.version_info.outputs.short_sha }}</code>"
+          MESSAGE+=$'\n\n'
+          MESSAGE+="⏳ Build in progress... We will upload the APK upon completion."
+          MESSAGE+=$'\n\n'
+          MESSAGE+="<a href=\"${RUN_URL}\">🔍 View Actions Run</a>"
+          
+          curl -s -o /dev/null -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --form-string "chat_id=${TELEGRAM_CHAT_ID}" \
+            --form-string "text=${MESSAGE}" \
+            --form-string "parse_mode=HTML" \
+            --form-string "disable_web_page_preview=true"
 
       - name: Build with Gradle (GitHub and F-Droid release variants)
         env:
@@ -89,12 +118,13 @@ jobs:
             -PversionCodeOverride=${{ steps.version_info.outputs.code }} \
             -PversionNameOverride="${{ steps.version_info.outputs.name }}" \
             -PreleaseDateOverride=$(date +%Y-%m-%d) \
+            -Pnightly=true \
             --stacktrace
 
-      - name: Upload Beta APKs
+      - name: Upload Nightly APKs
         uses: actions/upload-artifact@v4
         with:
-          name: Rhythm-Beta-Artifacts
+          name: Rhythm-Nightly-Artifacts
           path: |
             app/build/outputs/apk/github/release/Rhythm-*-githubRelease*.apk
             app/build/outputs/apk/fdroid/release/Rhythm-*-fdroidRelease*.apk
@@ -102,7 +132,7 @@ jobs:
 
       # ── Notifications ────────────────────────────────────────────────────────
 
-      - name: Locate universal Beta APK
+      - name: Locate universal Nightly APK
         if: success()
         id: find_apk
         run: |
@@ -111,12 +141,12 @@ jobs:
             echo "No APK found — skipping notifications."
             echo "path=" >> $GITHUB_OUTPUT
           else
-            cp "$APK_PATH" /tmp/rhythm-beta.apk
-            echo "path=/tmp/rhythm-beta.apk" >> $GITHUB_OUTPUT
+            cp "$APK_PATH" /tmp/rhythm-nightly.apk
+            echo "path=/tmp/rhythm-nightly.apk" >> $GITHUB_OUTPUT
             echo "Found APK: $APK_PATH"
           fi
 
-      - name: Send Beta APK to Telegram
+      - name: Send Nightly APK to Telegram
         if: >
           success() &&
           steps.find_apk.outputs.path != ''
@@ -129,7 +159,7 @@ jobs:
             exit 0
           fi
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          CAPTION="🎵 <b>Rhythm Beta Build</b>"
+          CAPTION="🎵 <b>Rhythm Nightly Build</b>"
           CAPTION+=$'\n\n'
           CAPTION+="📦 <b>Version:</b> <code>${{ steps.version_info.outputs.name }}</code>"
           CAPTION+=$'\n'
@@ -139,7 +169,7 @@ jobs:
           CAPTION+=$'\n'
           CAPTION+="📅 <b>Date:</b> <code>$(date +%Y-%m-%d)</code>"
           CAPTION+=$'\n\n'
-          CAPTION+="⚠️ <i>This is a beta build. Report issues on GitHub.</i>"
+          CAPTION+="⚠️ <i>This is a nightly build. Report issues on GitHub.</i>"
           CAPTION+=$'\n\n'
           CAPTION+="<a href=\"${RUN_URL}\">🔍 View Actions Run</a>"
           if [ ! -f "${{ steps.find_apk.outputs.path }}" ]; then
@@ -162,7 +192,7 @@ jobs:
             exit 1
           fi
 
-      - name: Send Beta notification to Discord
+      - name: Send Nightly notification to Discord
         if: success()
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -180,8 +210,8 @@ jobs:
             "avatar_url": "https://github.com/cromaguy/Rhythm/raw/main/assets/icon.png",
             "embeds": [
               {
-                "title": "🎵 Rhythm Beta Build Available",
-                "description": "A new beta build has been compiled and is ready for testing.",
+                "title": "🎵 Rhythm Nightly Build Available",
+                "description": "A new nightly build has been compiled and is ready for testing.",
                 "url": "${RUN_URL}",
                 "color": 7340031,
                 "fields": [
@@ -212,12 +242,12 @@ jobs:
                   },
                   {
                     "name": "⚠️ Note",
-                    "value": "This is a **beta build**. Please report any issues on [GitHub Issues](https://github.com/${{ github.repository }}/issues).",
+                    "value": "This is a **nightly build**. Please report any issues on [GitHub Issues](https://github.com/${{ github.repository }}/issues).",
                     "inline": false
                   }
                 ],
                 "footer": {
-                  "text": "Rhythm CI • Beta Channel"
+                  "text": "Rhythm CI • Nightly Channel"
                 },
                 "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
               }
@@ -231,3 +261,30 @@ jobs:
             | tee /tmp/discord_response.json \
             && echo "✅ Discord notification sent." \
             || { echo "❌ Discord notification failed:"; cat /tmp/discord_response.json; exit 1; }
+
+      - name: Send failure notification to Telegram
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "⚠️ Telegram secrets not set — skipping."
+            exit 0
+          fi
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          MESSAGE="❌ <b>Rhythm Nightly Build Failed</b>"
+          MESSAGE+=$'\n\n'
+          MESSAGE+="📦 <b>Version:</b> <code>${{ steps.version_info.outputs.name }}</code>"
+          MESSAGE+=$'\n'
+          MESSAGE+="🔗 <b>Commit:</b> <code>${{ steps.version_info.outputs.short_sha }}</code>"
+          MESSAGE+=$'\n\n'
+          MESSAGE+="🔴 The compilation or packaging step failed. Please check the logs."
+          MESSAGE+=$'\n\n'
+          MESSAGE+="<a href=\"${RUN_URL}\">🔍 View Actions Run</a>"
+          
+          curl -s -o /dev/null -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --form-string "chat_id=${TELEGRAM_CHAT_ID}" \
+            --form-string "text=${MESSAGE}" \
+            --form-string "parse_mode=HTML" \
+            --form-string "disable_web_page_preview=true"

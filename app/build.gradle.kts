@@ -35,6 +35,9 @@ android {
         val overrideReleaseDate = project.findProperty("releaseDateOverride")?.toString()
         buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-07-02"}\"")
 
+        val isNightly = project.findProperty("nightly")?.toString() == "true"
+        buildConfigField("boolean", "IS_NIGHTLY", isNightly.toString())
+
         // Apple Music: fallback token from environment variable (GitHub secrets), local.properties, or fallback
         val appleMusicToken = System.getenv("APPLE_MUSIC_FALLBACK_TOKEN")
             ?: localProperties.getProperty("APPLE_MUSIC_FALLBACK_TOKEN")

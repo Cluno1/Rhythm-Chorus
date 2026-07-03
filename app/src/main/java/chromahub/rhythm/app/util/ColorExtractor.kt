@@ -11,6 +11,7 @@ import com.google.android.material.color.utilities.SchemeExpressive
 import com.google.android.material.color.utilities.SchemeFruitSalad
 import com.google.android.material.color.utilities.SchemeTonalSpot
 import com.google.android.material.color.utilities.SchemeVibrant
+import com.google.android.material.color.utilities.SchemeContent
 import com.google.android.material.color.utilities.MathUtils
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,7 @@ import kotlin.math.roundToInt
  * Stores full Material 3 color scheme for both light and dark themes
  */
 data class ExtractedColors(
+    val seedColor: Int = 0,
     // Light theme colors
     // Primary colors
     val primary: Int,
@@ -74,10 +76,10 @@ data class ExtractedColors(
  * Color scoring configuration for album art extraction
  */
 data class ColorScoringConfig(
-    val targetChroma: Double = 40.0,
-    val weightProportion: Double = 0.5,
-    val weightChromaAbove: Double = 0.5,
-    val weightChromaBelow: Double = 0.15,
+    val targetChroma: Double = 30.0,
+    val weightProportion: Double = 0.7,
+    val weightChromaAbove: Double = 0.3,
+    val weightChromaBelow: Double = 0.1,
     val cutoffChroma: Double = 5.0,
     val cutoffExcitedProportion: Double = 0.01,
     val maxColorCount: Int = 4,
@@ -162,18 +164,13 @@ object ColorExtractor {
 
                 val fallbackArgb = averageColorArgb(pixels)
                 val quantized = QuantizerCelebi.quantize(pixels, config.quantizerMaxColors)
-                val mostlyNeutralArtwork = isMostlyNeutralArtwork(quantized)
 
-                if (mostlyNeutralArtwork && isArgbNearGrayscale(fallbackArgb)) {
-                    Color(fallbackArgb)
-                } else {
-                    val rankedSeeds = scoreQuantizedColors(
-                        colorsToPopulation = quantized,
-                        scoring = config.scoring,
-                        fallbackColorArgb = fallbackArgb
-                    )
-                    Color(rankedSeeds.firstOrNull() ?: fallbackArgb)
-                }
+                val rankedSeeds = scoreQuantizedColors(
+                    colorsToPopulation = quantized,
+                    scoring = config.scoring,
+                    fallbackColorArgb = fallbackArgb
+                )
+                Color(rankedSeeds.firstOrNull() ?: fallbackArgb)
             }.getOrElse {
                 android.util.Log.e(TAG, "Failed to extract seed color", it)
                 Color(0xFF6750A4) // Material default purple
@@ -205,11 +202,10 @@ object ColorExtractor {
             val sourceHct = Hct.fromInt(seedArgb)
             val shouldForceNeutral = shouldUseNeutralArtworkScheme(seedArgb, sourceHct)
 
-            // Choose scheme based on chroma (colorfulness) for more impactful colors
+            // Choose content scheme for colorful artwork to preserve exact hue and chroma, else tonal spot
             val schemeType = when {
-                sourceHct.chroma > 45.0 -> "VIBRANT"      // High chroma = vibrant, impactful colors
-                sourceHct.chroma > 18.0 -> "EXPRESSIVE"   // Medium chroma = expressive, artistic
-                else -> "TONAL_SPOT"                      // Low chroma = balanced, subtle
+                sourceHct.chroma > 12.0 -> "CONTENT"      // Colorful = CONTENT (keeps exact hue/chroma)
+                else -> "TONAL_SPOT"                      // Neutral = TONAL_SPOT
             }
 
             val lightScheme = createDynamicScheme(sourceHct, schemeType, false)
@@ -220,6 +216,7 @@ object ColorExtractor {
                 val grayscaleLight = lightScheme.toGrayscaleScheme()
                 val grayscaleDark = darkScheme.toGrayscaleScheme()
                 ExtractedColors(
+                    seedColor = seedArgb,
                     primary = grayscaleLight.primary.toArgb(),
                     onPrimary = grayscaleLight.onPrimary.toArgb(),
                     primaryContainer = grayscaleLight.primaryContainer.toArgb(),
@@ -251,6 +248,7 @@ object ColorExtractor {
                 )
             } else {
                 ExtractedColors(
+                    seedColor = seedArgb,
                     primary = lightScheme.primary.toArgb(),
                     onPrimary = lightScheme.onPrimary.toArgb(),
                     primaryContainer = lightScheme.primaryContainer.toArgb(),
@@ -382,7 +380,7 @@ object ColorExtractor {
     /**
      * Create dynamic color scheme using Material Design utilities
      */
-    private fun createDynamicScheme(
+    fun createDynamicScheme(
         sourceHct: Hct,
         paletteStyle: String,
         isDark: Boolean
@@ -392,6 +390,7 @@ object ColorExtractor {
             "VIBRANT" -> SchemeVibrant(sourceHct, isDark, 0.0)
             "EXPRESSIVE" -> SchemeExpressive(sourceHct, isDark, 0.0)
             "FRUIT_SALAD" -> SchemeFruitSalad(sourceHct, isDark, 0.0)
+            "CONTENT" -> SchemeContent(sourceHct, isDark, 0.0)
             else -> SchemeTonalSpot(sourceHct, isDark, 0.0)
         }
 

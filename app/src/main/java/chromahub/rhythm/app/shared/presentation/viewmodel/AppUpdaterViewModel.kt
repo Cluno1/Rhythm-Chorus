@@ -15,6 +15,9 @@ import chromahub.rhythm.app.activities.MainActivity
 import chromahub.rhythm.app.network.GitHubRelease
 import chromahub.rhythm.app.network.GitHubAsset
 import chromahub.rhythm.app.network.NetworkManager
+import chromahub.rhythm.app.network.GitHubWorkflowRunsResponse
+import chromahub.rhythm.app.network.GitHubWorkflowRun
+import chromahub.rhythm.app.network.GitHubHeadCommit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -386,6 +389,41 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             _latestVersion.value = null  // Clear any previous version data
             
             try {
+                if (currentChannel == "nightly") {
+                    val runsResponse = gitHubApiService.getWorkflowRuns(GITHUB_OWNER, GITHUB_REPO, "nightly.yml")
+                    
+                    if (runsResponse.isSuccessful) {
+                        val runsData = runsResponse.body()
+                        val latestRun = runsData?.workflow_runs?.firstOrNull { it.status == "completed" && it.conclusion == "success" }
+                        
+                        if (latestRun == null) {
+                            _error.value = "No successful nightly builds found"
+                            _isCheckingForUpdates.value = false
+                            return@launch
+                        }
+                        
+                        val appVersion = convertWorkflowRunToAppVersion(latestRun)
+                        _latestVersion.value = appVersion
+                        
+                        val currentNightlyRun = extractNightlyRunNumber(BuildConfig.VERSION_NAME)
+                        val latestNightlyRun = latestRun.run_number
+                        
+                        Log.d(TAG, "Nightly comparison: current run=$currentNightlyRun vs latest run=$latestNightlyRun")
+                        
+                        _updateAvailable.value = latestNightlyRun > currentNightlyRun
+                        _isCheckingForUpdates.value = false
+                        return@launch
+                    } else {
+                        val rateLimit = runsResponse.headers()["X-RateLimit-Remaining"]
+                        val rateLimitReset = runsResponse.headers()["X-RateLimit-Reset"]
+                        if (rateLimit != null) {
+                            Log.d(TAG, "GitHub API rate limit remaining: $rateLimit, resets at: $rateLimitReset")
+                        }
+                        handleApiError(runsResponse.code(), runsResponse.message())
+                        return@launch
+                    }
+                }
+
                 val releasesResponse = gitHubApiService.getReleases(GITHUB_OWNER, GITHUB_REPO)
                 
                 if (releasesResponse.isSuccessful) {
@@ -630,6 +668,45 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         )
     }
 
+    private fun extractNightlyRunNumber(versionString: String): Int {
+        val regex = Regex("nightly-r(\\d+)", RegexOption.IGNORE_CASE)
+        return regex.find(versionString)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+    }
+
+    private fun convertWorkflowRunToAppVersion(run: GitHubWorkflowRun): AppVersion {
+        val releaseDateString = try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+            val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val date = inputFormat.parse(run.updated_at)
+            outputFormat.format(date!!)
+        } catch (e: Exception) {
+            "Unknown date"
+        }
+        
+        val shortSha = run.head_sha.take(7)
+        val cleanedBaseName = BuildConfig.VERSION_NAME.replace(" Beta", "")
+        val versionName = "$cleanedBaseName-nightly-r${run.run_number}-$shortSha"
+        
+        val downloadUrl = "https://nightly.link/cromaguy/Rhythm/workflows/nightly.yml/main/Rhythm-Nightly-Artifacts.zip"
+        
+        val commitMessage = run.head_commit?.message ?: "New features and performance updates"
+        val changelogItems = commitMessage.lines().filter { it.isNotBlank() }.map { it.trim().removePrefix("-").trim() }
+        
+        return AppVersion(
+            versionName = versionName,
+            versionCode = run.run_number,
+            releaseDate = releaseDateString,
+            whatsNew = changelogItems,
+            knownIssues = emptyList(),
+            downloadUrl = downloadUrl,
+            apkAssetName = "Rhythm-Nightly-Artifacts.zip",
+            apkSize = 0,
+            releaseNotes = commitMessage,
+            isPreRelease = true,
+            buildNumber = run.run_number
+        )
+    }
+
     /**
      * Parses the release body string to extract "What's New" and "Known Issues" sections.
      * Assumes a Markdown-like format with specific headings.
@@ -843,8 +920,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         _error.value = null
         
         val shouldResumeDownload = activeDownload != null && 
-                                   activeDownload?.url == downloadUrl && 
-                                   activeDownload?.retryCount == retryAttempt
+                                   activeDownload?.url == downloadUrl
         
         if (!shouldResumeDownload) {
             // Starting fresh download - clear previous state and delete partial files
@@ -1070,6 +1146,11 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                             outputStream.close()
                             inputStream.close()
                             
+                            if (!_isDownloading.value) {
+                                Log.d(TAG, "Download cancelled/paused by user. Keeping partial file.")
+                                return
+                            }
+
                             // Verify file integrity
                             val fileSize = file.length()
                             // Prefer HTTP headers (Content-Range/Content-Length) which reflect the actual file
@@ -1081,7 +1162,6 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                             if (finalExpectedSize > 0 && fileSize != finalExpectedSize) {
                                 Log.e(TAG, "Download corrupted: file size mismatch (expected: $finalExpectedSize [HTTP: $httpExpectedSize, GitHub: $expectedSize], actual: $fileSize)")
                                 viewModelScope.launch {
-                                    file.delete() // Delete corrupted file
                                     handleDownloadFailure(downloadUrl, fileName, retryAttempt, "File size mismatch: expected $finalExpectedSize bytes, got $fileSize bytes")
                                 }
                                 return
@@ -1110,26 +1190,41 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                             // Download complete and verified
                             viewModelScope.launch {
                                 if (_isDownloading.value) {
+                                    val isZip = fileName.endsWith(".zip", ignoreCase = true)
+                                    val finalFile = if (isZip) {
+                                        val apkFile = File(file.parentFile, fileName.replace(".zip", ".apk", ignoreCase = true))
+                                        if (extractApkFromZip(file, apkFile)) {
+                                            file.delete() // delete the zip file
+                                            apkFile
+                                        } else {
+                                            file.delete()
+                                            handleDownloadFailure(downloadUrl, fileName, retryAttempt, "Failed to extract APK from ZIP")
+                                            return@launch
+                                        }
+                                    } else {
+                                        file
+                                    }
+
                                     _isDownloading.value = false
                                     _downloadProgress.value = 100f
-                                    _downloadedFile.value = file
-                                    showDownloadCompletedNotification(file.name)
+                                    _downloadedFile.value = finalFile
+                                    showDownloadCompletedNotification(finalFile.name)
+                                    
                                     // Calculate and store final checksum
-                                    val finalChecksum = calculateFileChecksum(file)
+                                    val finalChecksum = calculateFileChecksum(finalFile)
                                     activeDownload = activeDownload?.copy(checksum = finalChecksum)
                                     saveDownloadState() // Save final state with checksum
                                     // Clear active download but keep downloaded file info
                                     activeDownload = null
                                     activeCall = null
                                     _downloadState.value = null
-                                    Log.d(TAG, "Download complete: ${file.absolutePath} (${fileSize} bytes, checksum: $finalChecksum)")
+                                    Log.d(TAG, "Download complete: ${finalFile.absolutePath} (${finalFile.length()} bytes, checksum: $finalChecksum)")
                                 }
                             }
                         } catch (e: Exception) {
                             viewModelScope.launch {
                                 if (_isDownloading.value) {
                                     Log.e(TAG, "Download failed during write", e)
-                                    file.delete() // Delete partial/corrupted file
                                     handleDownloadFailure(downloadUrl, fileName, retryAttempt, e.message ?: "Unknown error")
                                 }
                             }
@@ -1157,20 +1252,35 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         
         val nextRetryAttempt = retryAttempt + 1
         
+        // Update activeDownload's resumePosition and retryCount so we can resume during retry
+        val context = getApplication<Application>()
+        val downloadDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        } else {
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        }
+        val file = downloadDir?.let { File(it, fileName) }
+        val currentSize = file?.length() ?: 0L
+        
+        if (activeDownload != null && activeDownload?.url == downloadUrl) {
+            activeDownload = activeDownload?.copy(
+                resumePosition = currentSize,
+                downloadedBytes = currentSize,
+                retryCount = nextRetryAttempt
+            )
+            saveDownloadState()
+        }
+        
         if (forceRetry || nextRetryAttempt < MAX_RETRY_ATTEMPTS) {
-            // Calculate exponential backoff delay: 2^retry * 1000ms (1s, 2s, 4s, etc.)
             val delayMs = if (forceRetry) 1000L else (1L shl retryAttempt) * 1000L
             
             Log.w(TAG, "Download attempt ${retryAttempt + 1} failed: $errorMessage. Retrying in ${delayMs}ms...")
             _error.value = "Download failed: $errorMessage. Retrying (${nextRetryAttempt}/$MAX_RETRY_ATTEMPTS)..."
             
-            // Schedule retry with exponential backoff
             viewModelScope.launch {
                 delay(delayMs)
                 if (!_isDownloading.value) {
                     Log.d(TAG, "Retrying download (attempt ${nextRetryAttempt})")
-                    activeDownload = null // Clear state for fresh retry
-                    // Get expected size from latest version info
                     val expectedSize = _latestVersion.value?.apkSize ?: 0
                     downloadApkInApp(downloadUrl, fileName, expectedSize, if (forceRetry) 0 else nextRetryAttempt)
                 }
@@ -1239,6 +1349,38 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
      * Select the APK asset for the currently installed flavor.
      * Prefers the flavor-specific universal APK, then any flavor-matching APK.
      */
+    private fun extractApkFromZip(zipFile: File, targetApkFile: File): Boolean {
+        return try {
+            val flavor = resolveUpdateSourceFlavor().lowercase(Locale.ROOT)
+            var extracted = false
+            java.util.zip.ZipInputStream(FileInputStream(zipFile)).use { zis ->
+                var entry = zis.nextEntry
+                while (entry != null) {
+                    if (!entry.isDirectory && entry.name.endsWith(".apk", ignoreCase = true)) {
+                        val lowerName = entry.name.lowercase(Locale.ROOT)
+                        val matchFlavor = when (flavor) {
+                            "fdroid" -> lowerName.contains("fdroidrelease") || lowerName.contains("-fdroid-")
+                            "github" -> lowerName.contains("githubrelease") || lowerName.contains("-github-")
+                            else -> true
+                        }
+                        if (matchFlavor && (isUniversalApkName(entry.name) || !hasAbiSuffix(entry.name))) {
+                            FileOutputStream(targetApkFile).use { fos ->
+                                zis.copyTo(fos)
+                            }
+                            extracted = true
+                            break
+                        }
+                    }
+                    entry = zis.nextEntry
+                }
+            }
+            extracted
+        } catch (e: Exception) {
+            Log.e(TAG, "Error extracting ZIP file", e)
+            false
+        }
+    }
+
     private fun selectReleaseApkAsset(release: GitHubRelease): GitHubAsset? {
         val flavor = resolveUpdateSourceFlavor().lowercase(Locale.ROOT)
 

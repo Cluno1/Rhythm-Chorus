@@ -757,7 +757,18 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             keywords = listOf("dark mode", "dark theme", "night mode", "black theme"),
             icon = RhythmIcons.DarkMode,
             route = SettingsRoutes.THEME_CUSTOMIZATION,
-            parentScreen = "Theme"
+            parentScreen = "Theme",
+            settingKey = "darkMode"
+        ))
+        add(SearchableSettingItem(
+            id = "theme_amoled_theme",
+            title = context.getString(R.string.settings_amoled_theme),
+            description = context.getString(R.string.settings_amoled_theme_desc),
+            keywords = listOf("amoled", "pure black", "pitch black", "oled", "battery saver", "dark mode"),
+            icon = RhythmIcons.DarkMode,
+            route = SettingsRoutes.THEME_CUSTOMIZATION,
+            parentScreen = "Theme",
+            settingKey = "amoledTheme"
         ))
         add(SearchableSettingItem(
             id = "theme_color_source",
@@ -769,11 +780,30 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             parentScreen = "Theme"
         ))
         add(SearchableSettingItem(
+            id = "theme_use_exact_artwork_colors",
+            title = "Use Exact Artwork Colors",
+            description = "Use exact background and text colors from artwork",
+            keywords = listOf("exact", "artwork colors", "album art colors", "dynamic theme", "dynamic background"),
+            icon = RhythmIcons.Palette,
+            route = SettingsRoutes.THEME_CUSTOMIZATION,
+            parentScreen = "Theme",
+            settingKey = "useExactArtworkColors"
+        ))
+        add(SearchableSettingItem(
             id = "theme_color_schemes",
             title = context.getString(R.string.settings_theme_color_schemes),
             description = context.getString(R.string.settings_theme_color_schemes_desc),
             keywords = listOf("color scheme", "palette", "preset", "default purple", "warm sunset", "cool ocean", "forest green", "rose pink"),
             icon = MaterialSymbolIcon("color_lens"),
+            route = SettingsRoutes.THEME_CUSTOMIZATION,
+            parentScreen = "Theme"
+        ))
+        add(SearchableSettingItem(
+            id = "theme_custom_colors",
+            title = context.getString(R.string.settings_custom_colors),
+            description = context.getString(R.string.settings_custom_colors_desc),
+            keywords = listOf("custom colors", "palette", "seed", "theme color", "hex code", "customize"),
+            icon = MaterialSymbolIcon("brush"),
             route = SettingsRoutes.THEME_CUSTOMIZATION,
             parentScreen = "Theme"
         ))

@@ -120,4 +120,54 @@ interface GitHubApiService {
         @Header("If-None-Match") ifNoneMatch: String? = null,
         @Header("If-Modified-Since") ifModifiedSince: String? = null
     ): Response<GitHubRelease>
-} 
+
+    /**
+     * Fetch workflow runs for a repository workflow
+     * 
+     * @param owner The GitHub username of the repository owner
+     * @param repo The repository name
+     * @param workflowId The workflow ID (e.g. nightly.yml)
+     * @param status Filter runs by status (e.g. success)
+     * @param perPage Number of results per page (max 100)
+     * @return Workflow runs response wrapper
+     */
+    @GET("repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs")
+    suspend fun getWorkflowRuns(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Path("workflow_id") workflowId: String,
+        @Query("status") status: String = "success",
+        @Query("per_page") perPage: Int = 10
+    ): Response<GitHubWorkflowRunsResponse>
+}
+
+/**
+ * GitHub Workflow Runs Response wrapper
+ */
+data class GitHubWorkflowRunsResponse(
+    val total_count: Int,
+    val workflow_runs: List<GitHubWorkflowRun>
+)
+
+/**
+ * GitHub Workflow Run model
+ */
+data class GitHubWorkflowRun(
+    val id: Long,
+    val run_number: Int,
+    val status: String,
+    val conclusion: String?,
+    val updated_at: String,
+    val head_branch: String,
+    val head_sha: String,
+    val head_commit: GitHubHeadCommit?
+)
+
+/**
+ * GitHub Head Commit model inside workflow run
+ */
+data class GitHubHeadCommit(
+    val id: String,
+    val message: String,
+    val timestamp: String
+) 

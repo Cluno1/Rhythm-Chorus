@@ -289,6 +289,7 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
     val customColorScheme by appSettings.customColorScheme.collectAsState()
     val colorSource by appSettings.colorSource.collectAsState()
     val extractedAlbumColors by appSettings.extractedAlbumColors.collectAsState()
+    val useExactArtworkColors by appSettings.useExactArtworkColors.collectAsState()
 
     // Font states
     val fontSource by appSettings.fontSource.collectAsState()
@@ -637,45 +638,62 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
             ),
             SettingGroup(
                 title = context.getString(R.string.settings_color_customization),
-                items = listOf(
-                    SettingItem(
-                        RhythmIcons.Palette,
-                        context.getString(R.string.settings_color_source),
-                        when (selectedColorSource) {
-                            ColorSource.ALBUM_ART -> context.getString(R.string.settings_color_source_album)
-                            ColorSource.MONET -> context.getString(R.string.settings_color_source_monet)
-                            ColorSource.CUSTOM -> context.getString(R.string.settings_color_source_custom, customColorScheme)
-                        },
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            showColorSourceDialog = true
-                        }
-                    ),
-                    SettingItem(
-                        MaterialSymbolIcon("color_lens"),
-                        context.getString(R.string.settings_color_schemes),
-                        if (selectedColorSource == ColorSource.CUSTOM)
-                            context.getString(R.string.settings_color_schemes_desc)
-                        else
-                            context.getString(R.string.settings_custom_only),
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            showColorSchemesDialog = true
-                        }
-                    ),
-                    SettingItem(
-                        MaterialSymbolIcon("brush"),
-                        context.getString(R.string.settings_custom_colors),
-                        if (selectedColorSource == ColorSource.CUSTOM)
-                            context.getString(R.string.settings_custom_colors_desc)
-                        else
-                            context.getString(R.string.settings_custom_only),
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            showCustomColorsDialog = true
-                        }
+                items = buildList {
+                    add(
+                        SettingItem(
+                            RhythmIcons.Palette,
+                            context.getString(R.string.settings_color_source),
+                            when (selectedColorSource) {
+                                ColorSource.ALBUM_ART -> context.getString(R.string.settings_color_source_album)
+                                ColorSource.MONET -> context.getString(R.string.settings_color_source_monet)
+                                ColorSource.CUSTOM -> context.getString(R.string.settings_color_source_custom, customColorScheme)
+                            },
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                showColorSourceDialog = true
+                            }
+                        )
                     )
-                )
+                    add(
+                        SettingItem(
+                            MaterialSymbolIcon("color_lens"),
+                            context.getString(R.string.settings_color_schemes),
+                            if (selectedColorSource == ColorSource.CUSTOM)
+                                context.getString(R.string.settings_color_schemes_desc)
+                            else
+                                context.getString(R.string.settings_custom_only),
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                showColorSchemesDialog = true
+                            }
+                        )
+                    )
+                    add(
+                        SettingItem(
+                            MaterialSymbolIcon("brush"),
+                            context.getString(R.string.settings_custom_colors),
+                            if (selectedColorSource == ColorSource.CUSTOM)
+                                context.getString(R.string.settings_custom_colors_desc)
+                            else
+                                context.getString(R.string.settings_custom_only),
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                showCustomColorsDialog = true
+                            }
+                        )
+                    )
+                    if (selectedColorSource == ColorSource.ALBUM_ART) {
+                        add(
+                            SettingItem(
+                                RhythmIcons.Palette,
+                                "Use Exact Artwork Colors",
+                                "Use exact background and text colors from artwork",
+                                toggleState = useExactArtworkColors,
+                                onToggleChange = { appSettings.setUseExactArtworkColors(it) }
+                            )
+                        )
+                    }
+                }
             ),
             SettingGroup(
                 title = context.getString(R.string.settings_font_customization),

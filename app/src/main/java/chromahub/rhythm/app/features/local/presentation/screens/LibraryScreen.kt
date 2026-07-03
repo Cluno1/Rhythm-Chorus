@@ -883,7 +883,7 @@ fun LibraryScreen(
                     )
                 },
                 actions = {
-                    val showShuffle = !showLibraryBottomBarAlways && !isSelectionMode && bottomBarSongs.isNotEmpty() && activeTabIdOuter != "ARTISTS"
+                    val showShuffle = !showLibraryBottomBarAlways && !isSelectionMode && bottomBarSongs.isNotEmpty() && activeTabIdOuter != "ARTISTS" && activeTabIdOuter != "ALBUMS"
 
                     AnimatedVisibility(
                         visible = showShuffle,

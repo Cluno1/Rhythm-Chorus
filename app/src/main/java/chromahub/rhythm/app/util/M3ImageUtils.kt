@@ -81,12 +81,13 @@ object M3ImageUtils {
                 exit = fadeOut()
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
+                    val resolvedShape = shape ?: androidx.compose.ui.graphics.RectangleShape
                     when (type) {
-                        M3PlaceholderType.ALBUM -> AlbumPlaceholder(name, Modifier.fillMaxSize(), expressiveShape)
-                        M3PlaceholderType.ARTIST -> ArtistPlaceholder(name, Modifier.fillMaxSize(), expressiveShape)
-                        M3PlaceholderType.TRACK -> TrackPlaceholder(name, Modifier.fillMaxSize(), expressiveShape)
-                        M3PlaceholderType.PLAYLIST -> PlaylistPlaceholder(name, Modifier.fillMaxSize(), expressiveShape)
-                        M3PlaceholderType.GENERAL -> AlbumPlaceholder(name, Modifier.fillMaxSize(), expressiveShape)
+                        M3PlaceholderType.ALBUM -> AlbumPlaceholder(name, Modifier.fillMaxSize(), resolvedShape)
+                        M3PlaceholderType.ARTIST -> ArtistPlaceholder(name, Modifier.fillMaxSize(), resolvedShape)
+                        M3PlaceholderType.TRACK -> TrackPlaceholder(name, Modifier.fillMaxSize(), resolvedShape)
+                        M3PlaceholderType.PLAYLIST -> PlaylistPlaceholder(name, Modifier.fillMaxSize(), resolvedShape)
+                        M3PlaceholderType.GENERAL -> AlbumPlaceholder(name, Modifier.fillMaxSize(), resolvedShape)
                     }
                 }
             }

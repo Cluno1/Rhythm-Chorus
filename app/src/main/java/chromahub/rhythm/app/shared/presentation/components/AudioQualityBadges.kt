@@ -31,6 +31,8 @@ import chromahub.rhythm.app.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 
+import androidx.compose.ui.unit.Dp
+
 /**
  * Quality level for badge styling
  */
@@ -55,7 +57,9 @@ private enum class QualityLevel {
 @Composable
 fun AudioQualityIcon(
     song: StreamingSong,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconSize: Dp = 32.dp,
+    padding: Dp = 8.dp
 ) {
     val context = LocalContext.current
     var audioQuality by remember(song.id) { mutableStateOf<AudioQualityDetector.AudioQuality?>(null) }
@@ -109,8 +113,8 @@ fun AudioQualityIcon(
                     painter = painterResource(id = res),
                     contentDescription = quality.qualityLabel,
                     modifier = modifier
-                        .padding(8.dp)
-                        .size(32.dp),
+                        .padding(padding)
+                        .size(iconSize),
                     tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
             }
@@ -121,7 +125,9 @@ fun AudioQualityIcon(
 @Composable
 fun AudioQualityIcon(
     song: Song,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconSize: Dp = 32.dp,
+    padding: Dp = 8.dp
 ) {
     val context = LocalContext.current
     var audioQuality by remember(song.id) { mutableStateOf<AudioQualityDetector.AudioQuality?>(null) }
@@ -174,8 +180,8 @@ fun AudioQualityIcon(
                     painter = painterResource(id = res),
                     contentDescription = quality.qualityLabel,
                     modifier = modifier
-                        .padding(8.dp)
-                        .size(32.dp),
+                        .padding(padding)
+                        .size(iconSize),
                     tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
             }
