@@ -294,8 +294,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             when (intent?.action) {
                 "chromahub.rhythm.app.action.FAVORITE_CHANGED" -> {
                     Log.d(TAG, "Received favorite change notification from service")
-                    // Refresh favorite songs from settings
+                    // Refresh favorite songs and playlists from settings
                     refreshFavoriteSongs()
+                    loadSavedPlaylists()
                 }
                 "chromahub.rhythm.app.action.WIDGET_TOGGLE_FAVORITE" -> {
                     Log.d(TAG, "Received favorite toggle from widget")
@@ -5552,7 +5553,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     
     private fun notifyMediaServiceFavoriteChange() {
         // Send broadcast to notify MediaPlaybackService about favorite state change
-        val intent = Intent("chromahub.rhythm.app.action.FAVORITE_CHANGED")
+        val intent = Intent("chromahub.rhythm.app.action.FAVORITE_CHANGED").apply {
+            setPackage(getApplication<Application>().packageName)
+        }
         getApplication<Application>().sendBroadcast(intent)
     }
 

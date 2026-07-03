@@ -1334,11 +1334,7 @@ fun StreamingNavigation(
                     },
                     onAddToQueue = { localSong ->
                         artistSongsById[localSong.id]?.let { streamingSong ->
-                            streamingMusicViewModel.playQueue(
-                                queue = listOf(streamingSong),
-                                startIndex = 0,
-                                shuffle = false
-                            )
+                            streamingMusicViewModel.addSongToQueue(streamingSong, localMusicViewModel)
                         }
                     },
                     onAddSongToPlaylist = { localSong ->
@@ -1349,7 +1345,11 @@ fun StreamingNavigation(
                             launchSingleTop = true
                         }
                     },
-                    onPlayNext = {},
+                    onPlayNext = { localSong ->
+                        artistSongsById[localSong.id]?.let { streamingSong ->
+                            streamingMusicViewModel.playNext(streamingSong, localMusicViewModel)
+                        }
+                    },
                     onToggleFavorite = onStreamingToggleFavorite,
                     favoriteSongs = streamingLikedSongIds,
                     onShowSongInfo = { song ->
@@ -1480,11 +1480,7 @@ fun StreamingNavigation(
                     },
                     onAddToQueue = { localSong ->
                         albumSongsById[localSong.id]?.let { streamingSong ->
-                            streamingMusicViewModel.playQueue(
-                                queue = listOf(streamingSong),
-                                startIndex = 0,
-                                shuffle = false
-                            )
+                            streamingMusicViewModel.addSongToQueue(streamingSong, localMusicViewModel)
                         }
                     },
                     onAddSongToPlaylist = { localSong ->
@@ -1495,7 +1491,11 @@ fun StreamingNavigation(
                             launchSingleTop = true
                         }
                     },
-                    onPlayNext = {},
+                    onPlayNext = { localSong ->
+                        albumSongsById[localSong.id]?.let { streamingSong ->
+                            streamingMusicViewModel.playNext(streamingSong, localMusicViewModel)
+                        }
+                    },
                     onToggleFavorite = onStreamingToggleFavorite,
                     favoriteSongs = streamingLikedSongIds,
                     onShowSongInfo = { song ->
@@ -1676,14 +1676,14 @@ fun StreamingNavigation(
                     onSkipNext = { streamingMusicViewModel.skipToNext() },
                     onSearchClick = { navigateToTopLevel(StreamingScreen.Search.route) },
                     isStreamingPlaylist = false,
-                    onPlayNext = {},
+                    onPlayNext = { localSong ->
+                        playlistTracksById[localSong.id]?.let { streamingSong ->
+                            streamingMusicViewModel.playNext(streamingSong, localMusicViewModel)
+                        }
+                    },
                     onAddToQueue = { localSong ->
                         playlistTracksById[localSong.id]?.let { streamingSong ->
-                            streamingMusicViewModel.playQueue(
-                                queue = listOf(streamingSong),
-                                startIndex = 0,
-                                shuffle = false
-                            )
+                            streamingMusicViewModel.addSongToQueue(streamingSong, localMusicViewModel)
                         }
                     },
                     onToggleFavorite = { localSong ->

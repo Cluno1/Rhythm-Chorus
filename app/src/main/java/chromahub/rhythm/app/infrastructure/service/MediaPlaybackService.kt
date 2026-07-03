@@ -1420,7 +1420,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     
     private fun toggleCurrentSongFavorite() {
         val currentMediaItem = player.currentMediaItem
-        val songId = currentMediaItem?.mediaId ?: run {
+        val songId = currentMediaItem?.mediaId?.takeIf { it.isNotEmpty() } ?: run {
             // FALLBACK: Read song_id from widget preferences if player has no active song
             val prefs = getSharedPreferences("widget_prefs", Context.MODE_PRIVATE)
             val id = prefs.getString("song_id", null)
@@ -1477,7 +1477,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 }
                 updateFavoritesPlaylist(songId = songId, song = song, isAdding = isAdding)
 
-                val notifyIntent = Intent("chromahub.rhythm.app.action.FAVORITE_CHANGED")
+                val notifyIntent = Intent("chromahub.rhythm.app.action.FAVORITE_CHANGED").apply {
+                    setPackage(packageName)
+                }
                 sendBroadcast(notifyIntent)
                 Log.d(TAG, "Sent FAVORITE_CHANGED broadcast to notify ViewModel")
 
