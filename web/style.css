@@ -1883,6 +1883,40 @@ footer {
     font-weight: 700;
 }
 
+/* Live Weblate status banner */
+.weblate-status-banner {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto 30px;
+    max-width: 900px;
+}
+
+.weblate-badge-link {
+    display: inline-block;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.weblate-multi-badge {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    /* Weblate's multi-auto SVG is dark-background-compatible */
+    border-radius: var(--radius-md);
+}
+
+.translation-description {
+    font-size: 18px;
+    color: var(--text-dark);
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto 30px;
+    text-align: center;
+    opacity: 0.9;
+}
+
+
+
 .translation-buttons {
     display: flex;
     justify-content: center;

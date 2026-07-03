@@ -1,0 +1,18 @@
+[weblate]
+# Weblate project URL — used by 'wlc' CLI and contributor tooling
+url = https://hosted.weblate.org/
+
+[repository]
+# Weblate pushes translations back via a PR from this branch
+push_branch = weblate
+
+[component:strings]
+# Main app UI strings (Android monolingual format)
+# file_format: Android String Resource
+# filemask: path to all translated files (use * as language placeholder)
+# template: the source-language (English) file — must NOT include a language code
+file_format = aresource
+filemask = app/src/main/res/values-*/strings.xml
+template = app/src/main/res/values/strings.xml
+# new_base is intentionally omitted for Android monolingual format —
+# Weblate creates new language files automatically from the template.

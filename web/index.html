@@ -11,6 +11,7 @@
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://github.com">
+    <link rel="dns-prefetch" href="https://hosted.weblate.org">
 
     <!-- Preload critical above-the-fold image -->
     <link rel="preload" href="assets/hero.png" as="image" type="image/png">
@@ -276,77 +277,33 @@
             </div>
         </div>
     </section>
-    
     <section class="translation-section" id="translationSection">
-
         <div class="container">
             <div class="section-header">
                 <h2>Help Translate Rhythm</h2>
-                <p>Make Rhythm accessible to users worldwide by contributing translations</p>
+                <p>Make Rhythm accessible to users worldwide — no coding skills needed!</p>
             </div>
-            <div class="translation-content">
-                <div class="translation-warning">
-                    <i class="fas fa-robot"></i>
-                    <div>
-                        <strong>AI-Generated Translations:</strong> Current translations are AI-generated and may contain inaccuracies. We're migrating to <strong>Weblate</strong> soon for community-driven, high-quality translations. Native speaker contributions are highly encouraged!
-                    </div>
-                </div>
-
-                <div class="translation-stats">
-                    <div class="translation-stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-globe-americas"></i>
-                        </div>
-                        <h4>24</h4>
-                        <p>Languages (AI Generated)</p>
-                    </div>
-                    <div class="translation-stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-file-lines"></i>
-                        </div>
-                        <h4>2547</h4>
-                        <p>Strings Needing Review</p>
-                    </div>
-                    <div class="translation-stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-language"></i>
-                        </div>
-                        <h4>You</h4>
-                        <p>Native Speaker Help Needed</p>
-                    </div>
+            <div class="translation-content simplified-translation">
+                <!-- Live Weblate status widget -->
+                <div class="weblate-status-banner">
+                    <a href="https://hosted.weblate.org/engage/rhythm/" target="_blank" rel="noopener" class="weblate-badge-link">
+                        <img src="https://hosted.weblate.org/widget/rhythm/strings/multi-auto.svg"
+                             alt="Translation status across all languages"
+                             class="weblate-multi-badge"
+                             loading="lazy">
+                    </a>
                 </div>
 
                 <div class="translation-cta">
-                    <h3>How to Contribute</h3>
-                    <div class="translation-steps">
-                        <div class="translation-step">
-                            <div class="step-number">1</div>
-                            <h4>Pick an Area</h4>
-                            <p>Code, translate, design, or test — there's a place for everyone</p>
-                        </div>
-                        <div class="translation-step">
-                            <div class="step-number">2</div>
-                            <h4>Read the Guide</h4>
-                            <p>Check our contributing guide and code of conduct to get started</p>
-                        </div>
-                        <div class="translation-step">
-                            <div class="step-number">3</div>
-                            <h4>Submit Your Work</h4>
-                            <p>Open a pull request, report an issue, or join the discussion</p>
-                        </div>
-                    </div>
+                    <p class="translation-description">
+                        Rhythm uses <strong>Weblate</strong> for crowd-sourced translations, syncing contributor edits automatically back to the application. Select your language, pick strings, and start translating today!
+                    </p>
                     <div class="translation-buttons">
-                        <a href="https://github.com/cromaguy/Rhythm/blob/main/docs/CONTRIBUTING.md" class="btn btn-primary">
+                        <a href="https://hosted.weblate.org/engage/rhythm/" target="_blank" rel="noopener" class="btn btn-primary">
+                            <i class="fas fa-language"></i> Translate on Weblate
+                        </a>
+                        <a href="https://github.com/cromaguy/Rhythm/blob/main/docs/CONTRIBUTING.md" class="btn btn-outline">
                             <i class="fas fa-book"></i> Contributing Guide
-                        </a>
-                        <a href="https://github.com/cromaguy/Rhythm/issues" class="btn btn-outline">
-                            <i class="fas fa-bug"></i> Report an Issue
-                        </a>
-                        <a href="https://t.me/RhythmSupport" class="btn btn-outline">
-                            <i class="fab fa-telegram"></i> Telegram
-                        </a>
-                        <a href="https://discord.gg/XjPyUYPQYc" class="btn btn-outline">
-                            <i class="fab fa-discord"></i> Discord
                         </a>
                     </div>
                 </div>
@@ -441,6 +398,7 @@
                     <h3>Contribute</h3>
                     <ul class="footer-links">
                         <li><a href="https://github.com/cromaguy/Rhythm/blob/main/docs/CONTRIBUTING.md"><i class="fas fa-file-pen"></i> Contributing Guide</a></li>
+                        <li><a href="https://hosted.weblate.org/engage/rhythm/" target="_blank" rel="noopener"><i class="fas fa-language"></i> Translate on Weblate</a></li>
                         <li><a href="https://github.com/cromaguy/Rhythm/pulls"><i class="fas fa-laptop-code"></i> Submit Pull Request</a></li>
                         <li><a href="https://github.com/cromaguy/Rhythm/issues"><i class="fas fa-bug"></i> Report Issues</a></li>
                         <li><a href="https://github.com/cromaguy/Rhythm/discussions"><i class="fas fa-lightbulb"></i> Discussions</a></li>

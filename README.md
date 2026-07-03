@@ -21,6 +21,7 @@
 [![Downloads](https://img.shields.io/github/downloads/cromaguy/Rhythm/total?style=flat-square&logo=download&color=00bcd4&logoColor=white)](https://github.com/cromaguy/Rhythm/releases)
 [![Stars](https://img.shields.io/github/stars/cromaguy/Rhythm?style=flat-square&logo=star&color=ffc107&logoColor=white)](https://github.com/cromaguy/Rhythm/stargazers)
 [<img src="https://shields.rbtlog.dev/simple/chromahub.rhythm.app?style=flat-square" alt="RB shield">](https://shields.rbtlog.dev/chromahub.rhythm.app)
+[![Translation status](https://hosted.weblate.org/widget/rhythm/strings/svg-badge.svg)](https://hosted.weblate.org/engage/rhythm/)
 
 ### [🌐 Website](https://rhythmweb.vercel.app/) • [📥 Download](https://github.com/cromaguy/Rhythm/releases/latest) • [🎧 Discord](https://discord.gg/XjPyUYPQYc) • [💬 Telegram](https://t.me/RhythmSupport) • [📖 Wiki](https://github.com/cromaguy/Rhythm/wiki)
 
@@ -189,6 +190,30 @@ Built with modern tools and clean architecture:
 
 ---
 
+## 🌍 Translations
+
+Rhythm is translated into **26+ languages** by the community via **Weblate**. You don't need to write code to contribute — just visit the link below and start translating!
+
+<div align="center">
+
+[![Translation status](https://hosted.weblate.org/widget/rhythm/strings/multi-auto.svg)](https://hosted.weblate.org/engage/rhythm/)
+
+</div>
+
+| Language | Status |
+| :--- | :--- |
+| 🇬🇧 English | Source (always 100%) |
+| 🌐 26+ others | [View all on Weblate](https://hosted.weblate.org/projects/rhythm/#languages) |
+
+**How to help translate:**
+1. Go to [hosted.weblate.org/engage/rhythm/](https://hosted.weblate.org/engage/rhythm/)
+2. Register a free account
+3. Pick your language and start translating
+
+> ⚠️ Please do **not** submit PRs that edit `values-*/strings.xml` files directly — translations are managed exclusively through Weblate, which syncs back automatically.
+
+---
+
 ## 🤝 Contributing & Community
 
 We welcome contributions! See our [CONTRIBUTING.md](https://github.com/cromaguy/Rhythm/blob/main/docs/CONTRIBUTING.md) for guidelines.
@@ -197,6 +222,7 @@ We welcome contributions! See our [CONTRIBUTING.md](https://github.com/cromaguy/
 * 💡 **Have an idea?** [Request a feature](https://github.com/cromaguy/Rhythm/issues)
 * 💬 **Want to chat?** [Join Discord](https://discord.gg/XjPyUYPQYc), [Telegram](https://t.me/RhythmSupport) or [GitHub Discussions](https://github.com/cromaguy/Rhythm/discussions)
 * 📖 **Need help?** [Read the Wiki](https://github.com/cromaguy/Rhythm/wiki)
+* 🌍 **Want to translate?** [Translate on Weblate](https://hosted.weblate.org/engage/rhythm/)
 
 ---
 

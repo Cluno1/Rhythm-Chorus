@@ -13,6 +13,19 @@ Thank you for your interest in contributing to Rhythm! We welcome contributions 
 7. **Push to your fork**
 8. **Create a Pull Request** with a clear description
 
+## 🌍 Translations
+
+Rhythm uses **[Weblate](https://hosted.weblate.org/engage/rhythm/)** for crowd-sourced translations. This is the **only** supported way to contribute translations.
+
+**How to translate:**
+1. Visit [hosted.weblate.org/engage/rhythm/](https://hosted.weblate.org/engage/rhythm/)
+2. Create a free Weblate account
+3. Select your language and start translating the **Strings** component
+
+> ⚠️ **Do not** open pull requests that modify `app/src/main/res/values-*/strings.xml` files directly. Weblate manages these files and syncs them back to the repository automatically via its own PRs. Manual edits will conflict with and be overwritten by Weblate.
+
+[![Translation status](https://hosted.weblate.org/widget/rhythm/strings/svg-badge.svg)](https://hosted.weblate.org/engage/rhythm/)
+
 ## Code of Conduct
 
 This project follows a code of conduct to ensure a welcoming environment for all contributors. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for details.
@@ -26,3 +39,4 @@ By contributing to this project, you agree that your contributions will be licen
 - Open a [discussion](https://github.com/cromaguy/Rhythm/discussions)
 - Join our [Telegram group](https://t.me/RhythmSupport)
 - Read the full [Contributing Guide](https://github.com/cromaguy/Rhythm/wiki/Contributing)
+

@@ -1,0 +1,142 @@
+name: Sync Weblate Translations
+
+on:
+  # Trigger when source English strings or en-US metadata change on main
+  push:
+    branches: [ "main" ]
+    paths:
+      - "app/src/main/res/values/strings.xml"
+      - "fastlane/metadata/android/en-US/**"
+
+  # Allow maintainers to manually trigger a source-string sync to Weblate
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # ── 1. Auto-merge any open Weblate translation PR ────────────────────────────
+  #       Runs on push only (not manual dispatch, since manual means we want
+  #       to push source strings, not necessarily merge incoming translations).
+  merge-weblate-pr:
+    name: Auto-merge Weblate PR
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Find and merge open Weblate PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Weblate opens PRs under the "weblate" login (OAuth app) or
+          # "weblate[bot]" (GitHub App). We check both.
+          for AUTHOR in "weblate" "weblate[bot]"; do
+            PR_NUMBER=$(gh pr list \
+              --repo "${{ github.repository }}" \
+              --author "$AUTHOR" \
+              --state open \
+              --json number \
+              --jq '.[0].number' 2>/dev/null || true)
+
+            if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+              echo "Found Weblate PR #$PR_NUMBER (author: $AUTHOR) — merging"
+              # Use --squash (not --auto) so it merges immediately without
+              # waiting for branch-protection status checks that may not exist.
+              gh pr merge "$PR_NUMBER" \
+                --repo "${{ github.repository }}" \
+                --squash \
+                --subject "chore(i18n): sync translations from Weblate" \
+                --body "Auto-merged by weblate-sync.yml workflow." || {
+                  echo "Merge failed (may already be merged or CI checks pending). Skipping."
+                }
+              break
+            fi
+          done
+          echo "No open Weblate PR found."
+
+  # ── 2. Lock Weblate → push source strings → Unlock ───────────────────────────
+  #       Prevents translators from working on stale strings during a push.
+  #       Requires WEBLATE_TOKEN secret (Weblate: Profile → API Keys → Add key).
+  lock-and-push:
+    name: Notify Weblate of Source String Changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lock Weblate — Strings component
+        env:
+          WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
+        run: |
+          if [ -z "$WEBLATE_TOKEN" ]; then
+            echo "::warning::WEBLATE_TOKEN not set — skipping lock. Add it in repo Settings → Secrets → Actions."
+            exit 0
+          fi
+          RESULT=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Authorization: Token $WEBLATE_TOKEN" \
+            "https://hosted.weblate.org/api/components/rhythm/strings/lock/" \
+            --data "lock=true")
+          echo "Lock strings HTTP status: $RESULT"
+          if [ "$RESULT" != "200" ]; then
+            echo "::warning::Failed to lock Strings component (HTTP $RESULT). Proceeding anyway."
+          fi
+
+      - name: Lock Weblate — Metadata component
+        env:
+          WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
+        run: |
+          if [ -z "$WEBLATE_TOKEN" ]; then
+            exit 0
+          fi
+          RESULT=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Authorization: Token $WEBLATE_TOKEN" \
+            "https://hosted.weblate.org/api/components/rhythm/metadata/lock/" \
+            --data "lock=true")
+          echo "Lock metadata HTTP status: $RESULT"
+
+      - name: Trigger Weblate pull (import new source strings)
+        env:
+          WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
+        run: |
+          if [ -z "$WEBLATE_TOKEN" ]; then
+            exit 0
+          fi
+
+          pull_component() {
+            local COMPONENT="$1"
+            local HTTP_CODE
+            local BODY
+            BODY=$(curl -s -w "\n%{http_code}" -X POST \
+              -H "Authorization: Token $WEBLATE_TOKEN" \
+              "https://hosted.weblate.org/api/components/rhythm/${COMPONENT}/repository/" \
+              --data "operation=pull")
+            HTTP_CODE=$(echo "$BODY" | tail -n1)
+            RESPONSE=$(echo "$BODY" | head -n -1)
+            echo "Pull ${COMPONENT}: HTTP $HTTP_CODE — $RESPONSE"
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "::warning::Pull for ${COMPONENT} returned HTTP $HTTP_CODE"
+            fi
+          }
+
+          pull_component "strings"
+          pull_component "metadata"
+
+      - name: Unlock Weblate components (always runs)
+        if: always()
+        env:
+          WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
+        run: |
+          if [ -z "$WEBLATE_TOKEN" ]; then
+            exit 0
+          fi
+
+          unlock_component() {
+            local COMPONENT="$1"
+            RESULT=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+              -H "Authorization: Token $WEBLATE_TOKEN" \
+              "https://hosted.weblate.org/api/components/rhythm/${COMPONENT}/lock/" \
+              --data "lock=false")
+            echo "Unlock ${COMPONENT}: HTTP $RESULT"
+          }
+
+          unlock_component "strings"
+          unlock_component "metadata"
