@@ -132,7 +132,7 @@ import chromahub.rhythm.app.features.local.presentation.screens.SingleCardArtist
 import chromahub.rhythm.app.features.local.presentation.screens.PlaylistFabMenu
 import chromahub.rhythm.app.features.local.presentation.screens.SingleCardPlaylistsContent
 import chromahub.rhythm.app.features.local.presentation.screens.SingleCardSongsContent
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AlbumBottomSheet
+
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -234,6 +234,7 @@ fun StreamingLibraryScreen(
     onConfigureService: (String) -> Unit,
     onNavigateToArtist: (StreamingArtist) -> Unit,
     onNavigateToPlaylist: (StreamingPlaylist) -> Unit,
+    onNavigateToAlbum: (StreamingAlbum) -> Unit,
     onAddSongToPlaylist: (StreamingSong) -> Unit = {},
     activeSongId: String? = null,
     isPlayerPlaying: Boolean = false,
@@ -349,13 +350,8 @@ fun StreamingLibraryScreen(
 
     var showCreatePlaylistDialog by remember { mutableStateOf(false) }
     var showPlaylistFabMenu by remember { mutableStateOf(false) }
-    
-    // Album bottom sheet state - shared across recompositions
-    var showAlbumBottomSheet by remember { mutableStateOf(false) }
-    var selectedAlbumForSheet by remember { mutableStateOf<StreamingAlbum?>(null) }
     var showSongInfoSheet by remember { mutableStateOf(false) }
     var selectedSongForInfo by remember { mutableStateOf<Song?>(null) }
-    val albumSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
     val songsListState = rememberLazyListState()
     val playlistsListState = rememberLazyListState()
@@ -514,18 +510,7 @@ fun StreamingLibraryScreen(
     val adjustedSongsBottomPadding = baseLibraryBottomPadding
 
     val openAlbumBottomSheet: (StreamingAlbum) -> Unit = { album ->
-        if (album.tracks.isEmpty()) {
-            selectedAlbumForSheet = album
-            scope.launch {
-                val tracks = viewModel.getAlbumSongs(album)
-                if (tracks.isNotEmpty()) {
-                    selectedAlbumForSheet = album.copy(tracks = tracks)
-                }
-            }
-        } else {
-            selectedAlbumForSheet = album
-        }
-        showAlbumBottomSheet = true
+        onNavigateToAlbum(album)
     }
     val openAlbumForSong: (Song) -> Unit = { localSong ->
         val resolvedStreamingSong = sortedSongsById[localSong.id]
@@ -1272,18 +1257,7 @@ fun StreamingLibraryScreen(
                                         onAlbumBottomSheetClick = { album ->
                                             val streamingAlbum = sortedAlbums.firstOrNull { it.id == album.id }
                                             streamingAlbum?.let {
-                                                if (it.tracks.isEmpty()) {
-                                                    selectedAlbumForSheet = it
-                                                    scope.launch {
-                                                        val tracks = viewModel.getAlbumSongs(it)
-                                                        if (tracks.isNotEmpty()) {
-                                                            selectedAlbumForSheet = it.copy(tracks = tracks)
-                                                        }
-                                                    }
-                                                } else {
-                                                    selectedAlbumForSheet = it
-                                                }
-                                                showAlbumBottomSheet = true
+                                                onNavigateToAlbum(it)
                                             }
                                         },
                                         onSongClick = { song ->
@@ -1679,62 +1653,7 @@ fun StreamingLibraryScreen(
             }
         }
 
-        // Album BottomSheet - rendered outside tabs so it's available from any tab
-        if (showAlbumBottomSheet && selectedAlbumForSheet != null) {
-            val albumForSheet = selectedAlbumForSheet!!
-            val streamingTracks = albumForSheet.tracks
-            val libraryAlbum = albumForSheet.toLibraryAlbum(localSongs)
 
-            AlbumBottomSheet(
-                album = libraryAlbum,
-                onDismiss = {
-                    showAlbumBottomSheet = false
-                    selectedAlbumForSheet = null
-                },
-                onSongClick = { song ->
-                    val streamingSong = streamingTracks.firstOrNull { it.id == song.id }
-                    streamingSong?.let { ss ->
-                        viewModel.playQueue(queue = listOf(ss), startIndex = 0, shuffle = false)
-                    }
-                },
-                onPlayAll = { songs ->
-                    if (streamingTracks.isNotEmpty()) {
-                        viewModel.playQueue(queue = streamingTracks, startIndex = 0, shuffle = false)
-                    }
-                },
-                onShufflePlay = { songs ->
-                    if (streamingTracks.isNotEmpty()) {
-                        val startIndex = random.nextInt(streamingTracks.size)
-                        viewModel.playQueue(queue = streamingTracks, startIndex = startIndex, shuffle = true)
-                    }
-                },
-                onAddToQueue = { },
-                onAddSongToPlaylist = { },
-                onPlayerClick = { },
-                sheetState = albumSheetState,
-                haptics = haptics,
-                onToggleFavorite = { localSong ->
-                    sortedSongsById[localSong.id]?.let { streamingSong ->
-                        if (streamingFavoriteSongIds.contains(streamingSong.id)) {
-                            viewModel.unlikeSong(streamingSong)
-                        } else {
-                            viewModel.likeSong(streamingSong)
-                        }
-                    }
-                },
-                favoriteSongs = streamingFavoriteSongIds,
-                onShowSongInfo = { song ->
-                    selectedSongForInfo = song
-                    showSongInfoSheet = true
-                },
-                showPlayNextAction = false,
-                showAddToQueueAction = false,
-                showAddToPlaylistAction = false,
-                showAddToBlacklistAction = false,
-                currentSong = currentLocalSong,
-                isPlaying = isPlayerPlaying
-            )
-        }
 
         if (showSongInfoSheet && selectedSongForInfo != null) {
             SongInfoBottomSheet(

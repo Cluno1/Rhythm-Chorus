@@ -202,7 +202,7 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AddToPla
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.PlaybackBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistBottomSheet
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AlbumBottomSheet
+
 import chromahub.rhythm.app.shared.presentation.components.player.PlayerChipOrderBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.lyrics.LyricsEditorBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.AudioQualityBadges
@@ -727,17 +727,22 @@ fun MaterialPlayerScreen(
     val queueSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val addToPlaylistSheetState = rememberModalBottomSheetState()
     val deviceOutputSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val albumBottomSheetState = rememberModalBottomSheetState()
     val artistBottomSheetState = rememberModalBottomSheetState()
     var showQueueSheet by remember { mutableStateOf(false) }
     var showDeviceOutputSheet by remember { mutableStateOf(false) }
     var showSongInfoSheet by remember { mutableStateOf(false) }
-    var showAlbumSheet by remember { mutableStateOf(false) }
     var showArtistSheet by remember { mutableStateOf(false) }
-    var selectedAlbum by remember { mutableStateOf<Album?>(null) }
     var selectedArtist by remember { mutableStateOf<Artist?>(null) }
     var candidateArtists by remember { mutableStateOf<List<Artist>>(emptyList()) }
     var showArtistChooserSheet by remember { mutableStateOf(false) }
+    
+    val navigateToAlbum: (String, String) -> Unit = { id, title ->
+        if (isStreamingMode) {
+            navController.navigate("streaming_album/${android.net.Uri.encode(id)}?albumName=${android.net.Uri.encode(title)}")
+        } else {
+            navController.navigate(Screen.AlbumDetail.createRoute(id, title))
+        }
+    }
     var showCompactChipsSheet by remember { mutableStateOf(false) }
     var selectedSongForPlaylist by remember { mutableStateOf<Song?>(null) }
     var showAddToPlaylistSheetInternal by remember { mutableStateOf(false) }
@@ -1141,68 +1146,7 @@ fun MaterialPlayerScreen(
         )
     }
 
-    // Album Bottom Sheet
-    if (showAlbumSheet && selectedAlbum != null) {
-        AlbumBottomSheet(
-            album = selectedAlbum!!,
-            onDismiss = { 
-                showAlbumSheet = false
-                selectedAlbum = null
-            },
-            onSongClick = onSongClick,
-            onPlayAll = { songs -> onPlayAlbumSongs(songs) },
-            onShufflePlay = { songs -> onShuffleAlbumSongs(songs) },
-            onAddToQueue = { song -> musicViewModel.addSongToQueue(song) },
-            onAddToQueueAll = { songs -> musicViewModel.addSongsToQueue(songs) },
-            onAddSongToPlaylist = { song -> onAddSongToPlaylist(song, "") },
-            onPlayerClick = onBack,
-            sheetState = albumBottomSheetState,
-            haptics = haptic,
-            onPlayNext = { song -> musicViewModel.playNext(song) },
-            onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
-            favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
-            onShowSongInfo = { song ->
-                // Song info can be shown via a toast or separate sheet if needed
-                Toast.makeText(context, context.getString(R.string.song_metadata_details, song.title, song.artist, song.album), Toast.LENGTH_SHORT).show()
-            },
-            onAddToBlacklist = { song ->
-                appSettings.addToBlacklist(song.id)
-                Toast.makeText(context, context.getString(R.string.song_added_to_blacklist_format, song.title), Toast.LENGTH_SHORT).show()
-            },
-            currentSong = song,
-            isPlaying = isPlaying,
-            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
-                musicViewModel.batchEditMetadata(
-                    songs = selectedAlbum!!.songs,
-                    artist = artist,
-                    album = title,
-                    genre = null,
-                    year = null,
-                    artworkUri = artworkUri,
-                    removeArtwork = removeArtwork,
-                    onProgress = onProgress,
-                    onComplete = { successCount, failCount ->
-                        onComplete(successCount, failCount)
-                    },
-                    onPermissionRequired = { pendingRequest ->
-                        try {
-                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
-                                pendingRequest.intentSender
-                            ).build()
-                            writePermissionLauncher.launch(intentSenderRequest)
-                        } catch (e: Exception) {
-                            Toast.makeText(
-                                context,
-                                "Failed to request permission: ${e.message}",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            musicViewModel.cancelPendingBatchMetadataWrite()
-                        }
-                    }
-                )
-            }
-        )
-    }
+
 
     // Artist Bottom Sheet
     if (showArtistSheet && selectedArtist != null) {
@@ -1214,11 +1158,9 @@ fun MaterialPlayerScreen(
             },
             onSongClick = onSongClick,
             onAlbumClick = { album -> 
-                val anchorSong = album.songs.firstOrNull() ?: song
-                selectedAlbum = anchorSong?.let(resolveAlbumForSong) ?: album
                 showArtistSheet = false
                 selectedArtist = null
-                showAlbumSheet = true
+                navigateToAlbum(album.id, album.title)
             },
             onPlayAll = { artistSongs -> 
                 if (artistSongs.isNotEmpty()) {
@@ -1293,8 +1235,11 @@ fun MaterialPlayerScreen(
             onAlbum = {
                 song?.let { currentSong ->
                     val albumForSong = resolveAlbumForSong(currentSong)
-                    selectedAlbum = albumForSong
-                    showAlbumSheet = true
+                    if (albumForSong != null) {
+                        navigateToAlbum(albumForSong.id, albumForSong.title)
+                    } else {
+                        navigateToAlbum("unknown_" + currentSong.album, currentSong.album)
+                    }
                 }
             },
             onArtist = {
@@ -3515,8 +3460,11 @@ fun MaterialPlayerScreen(
                                                         // Find the album for the current song and show bottom sheet
                                                         song?.let { currentSong ->
                                                             val albumForSong = resolveAlbumForSong(currentSong)
-                                                            selectedAlbum = albumForSong
-                                                            showAlbumSheet = true
+                                                            if (albumForSong != null) {
+                                                                navigateToAlbum(albumForSong.id, albumForSong.title)
+                                                            } else {
+                                                                navigateToAlbum("unknown_" + currentSong.album, currentSong.album)
+                                                            }
                                                         }
                                                     },
                                                     label = {

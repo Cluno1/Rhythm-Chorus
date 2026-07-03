@@ -49,6 +49,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.*
+
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -184,6 +185,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     val isDownloading by updaterViewModel.isDownloading.collectAsState()
     val downloadProgress by updaterViewModel.downloadProgress.collectAsState()
     val downloadedFile by updaterViewModel.downloadedFile.collectAsState()
+    val isExtracting by updaterViewModel.isExtracting.collectAsState()
 
     // Simulation state variables
     var simulateEnabled by remember { mutableStateOf(false) }
@@ -223,6 +225,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     val activeIsDownloading = if (simulateEnabled) simIsDownloading else isDownloading
     val activeDownloadProgress = if (simulateEnabled) simDownloadProgress else downloadProgress
     val activeDownloadedFile = if (simulateEnabled) simDownloadedFile else downloadedFile
+    val activeIsExtracting = if (simulateEnabled) false else isExtracting
     val activeLatestVersion = if (simulateEnabled) {
         if (simUpdateAvailable) simLatestVersion else null
     } else {
@@ -306,6 +309,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
         activeError != null -> context.getString(R.string.updates_check_failed)
         !updatesEnabled -> context.getString(R.string.updates_disabled)
         activeIsCheckingForUpdates -> context.getString(R.string.updates_checking)
+        activeIsExtracting -> "Extracting Update"
         activeIsDownloading -> context.getString(R.string.updates_downloading)
         activeDownloadedFile != null -> context.getString(R.string.updates_download_complete)
         activeUpdateAvailable -> context.getString(R.string.updates_available)
@@ -317,6 +321,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
         activeError != null -> activeError ?: context.getString(R.string.updates_unknown_error)
         !updatesEnabled -> context.getString(R.string.updates_disabled_message)
         activeIsCheckingForUpdates -> context.getString(R.string.fetching_latest_version)
+        activeIsExtracting -> "Unzipping update file, please wait..."
         activeIsDownloading -> "${((activeLatestVersion?.apkSize ?: 0) * activeDownloadProgress / 100).toLong().let { updaterViewModel.getReadableFileSize(it) }} / ${activeLatestVersion?.let { updaterViewModel.getReadableFileSize(it.apkSize) } ?: ""}"
         activeDownloadedFile != null -> "Version ${activeLatestVersion?.versionName ?: "?"} is ready to install"
         activeUpdateAvailable -> "Version ${activeLatestVersion?.versionName ?: "?"} • ${activeLatestVersion?.let { updaterViewModel.getReadableFileSize(it.apkSize) } ?: ""}"
@@ -419,20 +424,19 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                             .padding(top = 0.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = statusIcon,
-                            contentDescription = null,
-                            tint = statusColor,
-                            modifier = Modifier
-                                .size(72.dp)
-                                .then(
-                                    if (activeIsDownloading) {
-                                        Modifier.graphicsLayer(rotationZ = rotationAngle)
-                                    } else {
-                                        Modifier
-                                    }
-                                )
-                        )
+                        if (activeIsDownloading || activeIsExtracting) {
+                            CircularWavyProgressIndicator(
+                                modifier = Modifier.size(72.dp),
+                                color = statusColor
+                            )
+                        } else {
+                            Icon(
+                                imageVector = statusIcon,
+                                contentDescription = null,
+                                tint = statusColor,
+                                modifier = Modifier.size(72.dp)
+                            )
+                        }
                     }
 
                     // Status Title
@@ -459,7 +463,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                         )
                     }
 
-                    if (activeIsDownloading) {
+                    if (activeIsDownloading || activeIsExtracting) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -468,40 +472,48 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
+                                horizontalArrangement = Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
-                                    CircularWavyProgressIndicator(
-                                        modifier = Modifier.size(20.dp),
-                                        color = MaterialTheme.colorScheme.secondary
-                                    )
+                                    if (activeIsDownloading) {
+                                        Text(
+                                            text = "${activeDownloadProgress.toInt()}%",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.secondary
+                                        )
+                                    }
                                     Text(
-                                        text = context.getString(R.string.onboarding_in_progress),
+                                        text = if (activeIsExtracting) "Unzipping..." else context.getString(R.string.onboarding_in_progress),
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.secondary
                                     )
                                 }
-                                Text(
-                                    text = "${activeDownloadProgress.toInt()}%",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
                             }
 
-                            LinearWavyProgressIndicator(
-                                progress = { activeDownloadProgress / 100f },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp),
-                                color = MaterialTheme.colorScheme.secondary,
-                                trackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
-                            )
+                            if (activeIsDownloading) {
+                                LinearWavyProgressIndicator(
+                                    progress = { activeDownloadProgress / 100f },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    trackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+                                )
+                            } else {
+                                LinearWavyProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    trackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+                                )
+                            }
                         }
                     }
 
@@ -873,10 +885,15 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = if (isUpdateAvail) "Available Version: V $displayVersionName" else context.getString(R.string.updates_version_prefix, displayVersionName),
+                        text = if (displayVersionName.length > 20) {
+                            if (isUpdateAvail) "Available Version:\n$displayVersionName" else "Version:\n$displayVersionName"
+                        } else {
+                            if (isUpdateAvail) "Available Version: V $displayVersionName" else context.getString(R.string.updates_version_prefix, displayVersionName)
+                        },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = if (isUpdateAvail) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        color = if (isUpdateAvail) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(

@@ -211,6 +211,9 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
     private val _isDownloading = MutableStateFlow(false)
     val isDownloading: StateFlow<Boolean> = _isDownloading.asStateFlow()
     
+    private val _isExtracting = MutableStateFlow(false)
+    val isExtracting: StateFlow<Boolean> = _isExtracting.asStateFlow()
+    
     // Download progress (0-100)
     private val _downloadProgress = MutableStateFlow(0f)
     val downloadProgress: StateFlow<Float> = _downloadProgress.asStateFlow()
@@ -402,7 +405,22 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                             return@launch
                         }
                         
-                        val appVersion = convertWorkflowRunToAppVersion(latestRun)
+                        var apkSize: Long = 0
+                        try {
+                            val artifactsResponse = gitHubApiService.getRunArtifacts(GITHUB_OWNER, GITHUB_REPO, latestRun.id)
+                            if (artifactsResponse.isSuccessful) {
+                                val artifact = artifactsResponse.body()?.artifacts?.firstOrNull {
+                                    it.name == "Rhythm-Nightly-Artifacts"
+                                }
+                                if (artifact != null) {
+                                    apkSize = artifact.size_in_bytes
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error fetching nightly artifact size", e)
+                        }
+                        
+                        val appVersion = convertWorkflowRunToAppVersion(latestRun, apkSize)
                         _latestVersion.value = appVersion
                         
                         val currentNightlyRun = extractNightlyRunNumber(BuildConfig.VERSION_NAME)
@@ -673,7 +691,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         return regex.find(versionString)?.groupValues?.get(1)?.toIntOrNull() ?: 0
     }
 
-    private fun convertWorkflowRunToAppVersion(run: GitHubWorkflowRun): AppVersion {
+    private fun convertWorkflowRunToAppVersion(run: GitHubWorkflowRun, apkSize: Long = 0): AppVersion {
         val releaseDateString = try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
             val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
@@ -700,7 +718,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             knownIssues = emptyList(),
             downloadUrl = downloadUrl,
             apkAssetName = "Rhythm-Nightly-Artifacts.zip",
-            apkSize = 0,
+            apkSize = apkSize,
             releaseNotes = commitMessage,
             isPreRelease = true,
             buildNumber = run.run_number
@@ -1188,17 +1206,24 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                             }
                             
                             // Download complete and verified
-                            viewModelScope.launch {
+                            viewModelScope.launch(Dispatchers.IO) {
                                 if (_isDownloading.value) {
                                     val isZip = fileName.endsWith(".zip", ignoreCase = true)
+                                    if (isZip) {
+                                        _isExtracting.value = true
+                                    }
                                     val finalFile = if (isZip) {
                                         val apkFile = File(file.parentFile, fileName.replace(".zip", ".apk", ignoreCase = true))
                                         if (extractApkFromZip(file, apkFile)) {
                                             file.delete() // delete the zip file
+                                            _isExtracting.value = false
                                             apkFile
                                         } else {
                                             file.delete()
-                                            handleDownloadFailure(downloadUrl, fileName, retryAttempt, "Failed to extract APK from ZIP")
+                                            _isExtracting.value = false
+                                            withContext(Dispatchers.Main) {
+                                                handleDownloadFailure(downloadUrl, fileName, retryAttempt, "Failed to extract APK from ZIP")
+                                            }
                                             return@launch
                                         }
                                     } else {

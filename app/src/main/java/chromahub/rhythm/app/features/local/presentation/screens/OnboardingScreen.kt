@@ -194,6 +194,8 @@ fun OnboardingScreen(
 
     // Bottom sheet states
     var showLibraryTabOrderBottomSheet by remember { mutableStateOf(false) }
+    var showLyricallySourcesBottomSheet by remember { mutableStateOf(false) }
+    var showCanvasNetworkModeDialog by remember { mutableStateOf(false) }
 
     // Responsive sizing
     val isTablet = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Medium || windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
@@ -1306,6 +1308,8 @@ fun OnboardingScreen(
                                     onNextStep = onNextStep,
                                     appSettings = appSettings,
                                     isTablet = isTablet,
+                                    onLyricallyConfigure = { showLyricallySourcesBottomSheet = true },
+                                    onAppleCanvasConfigure = { showCanvasNetworkModeDialog = true },
                                     backButton = if (stepIndex > 0) {
                                         {
                                             val buttonScale = remember { Animatable(1f) }
@@ -1912,6 +1916,23 @@ fun OnboardingScreen(
             onDismiss = { showLibraryTabOrderBottomSheet = false },
             appSettings = appSettings,
             haptics = haptic
+        )
+    }
+
+    if (showLyricallySourcesBottomSheet) {
+        LyricallySourcesBottomSheet(
+            onDismiss = { showLyricallySourcesBottomSheet = false },
+            appSettings = appSettings,
+            haptics = haptic
+        )
+    }
+
+    if (showCanvasNetworkModeDialog) {
+        CanvasNetworkModeDialog(
+            onDismiss = { showCanvasNetworkModeDialog = false },
+            appSettings = appSettings,
+            context = context,
+            haptic = haptic
         )
     }
 }
@@ -9993,6 +10014,8 @@ fun EnhancedIntegrationsContent(
     onNextStep: () -> Unit,
     appSettings: AppSettings,
     isTablet: Boolean = false,
+    onLyricallyConfigure: () -> Unit = {},
+    onAppleCanvasConfigure: () -> Unit = {},
     backButton: @Composable (() -> Unit)? = null,
     nextButton: @Composable () -> Unit
 ) {
@@ -10009,9 +10032,7 @@ fun EnhancedIntegrationsContent(
     val broadcastStatusEnabled by appSettings.broadcastStatusEnabled.collectAsState()
     val bluetoothLyricsEnabled by appSettings.bluetoothLyricsEnabled.collectAsState()
     val appleCanvasEnabled by appSettings.appleCanvasEnabled.collectAsState()
-
-    var showLyricallySourcesBottomSheet by remember { mutableStateOf(false) }
-    var showCanvasNetworkModeDialog by remember { mutableStateOf(false) }
+    val appleCanvasNetworkMode by appSettings.appleCanvasNetworkMode.collectAsState()
 
     if (isTablet) {
         Row(
@@ -10076,6 +10097,7 @@ fun EnhancedIntegrationsContent(
                     broadcastStatusEnabled = broadcastStatusEnabled,
                     bluetoothLyricsEnabled = bluetoothLyricsEnabled,
                     appleCanvasEnabled = appleCanvasEnabled,
+                    appleCanvasNetworkMode = appleCanvasNetworkMode,
                     onDeezerChange = { appSettings.setDeezerApiEnabled(it) },
                     onLrcLibChange = { appSettings.setLrcLibApiEnabled(it) },
                     onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
@@ -10089,8 +10111,8 @@ fun EnhancedIntegrationsContent(
                         }
                     },
                     onAppleCanvasChange = { appSettings.setAppleCanvasEnabled(it) },
-                    onAppleCanvasConfigure = { showCanvasNetworkModeDialog = true },
-                    onLyricallyConfigure = { showLyricallySourcesBottomSheet = true }
+                    onAppleCanvasConfigure = onAppleCanvasConfigure,
+                    onLyricallyConfigure = onLyricallyConfigure
                 )
             }
         }
@@ -10135,6 +10157,7 @@ fun EnhancedIntegrationsContent(
                 broadcastStatusEnabled = broadcastStatusEnabled,
                 bluetoothLyricsEnabled = bluetoothLyricsEnabled,
                 appleCanvasEnabled = appleCanvasEnabled,
+                appleCanvasNetworkMode = appleCanvasNetworkMode,
                 onDeezerChange = { appSettings.setDeezerApiEnabled(it) },
                 onLrcLibChange = { appSettings.setLrcLibApiEnabled(it) },
                 onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
@@ -10148,8 +10171,8 @@ fun EnhancedIntegrationsContent(
                     }
                 },
                 onAppleCanvasChange = { appSettings.setAppleCanvasEnabled(it) },
-                onAppleCanvasConfigure = { showCanvasNetworkModeDialog = true },
-                onLyricallyConfigure = { showLyricallySourcesBottomSheet = true }
+                onAppleCanvasConfigure = onAppleCanvasConfigure,
+                onLyricallyConfigure = onLyricallyConfigure
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -10158,23 +10181,6 @@ fun EnhancedIntegrationsContent(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
-    }
-
-    if (showLyricallySourcesBottomSheet) {
-        LyricallySourcesBottomSheet(
-            onDismiss = { showLyricallySourcesBottomSheet = false },
-            appSettings = appSettings,
-            haptics = haptic
-        )
-    }
-
-    if (showCanvasNetworkModeDialog) {
-        CanvasNetworkModeDialog(
-            onDismiss = { showCanvasNetworkModeDialog = false },
-            appSettings = appSettings,
-            context = context,
-            haptic = haptic
-        )
     }
 }
 
@@ -10188,6 +10194,7 @@ private fun IntegrationsSettingsCards(
     broadcastStatusEnabled: Boolean,
     bluetoothLyricsEnabled: Boolean,
     appleCanvasEnabled: Boolean,
+    appleCanvasNetworkMode: chromahub.rhythm.app.shared.data.model.CanvasNetworkMode,
     onDeezerChange: (Boolean) -> Unit,
     onLrcLibChange: (Boolean) -> Unit,
     onLyricallyChange: (Boolean) -> Unit,
@@ -10208,16 +10215,34 @@ private fun IntegrationsSettingsCards(
                 title = { Text(title) },
                 description = { Text(description) },
                 trailingContent = {
-                    OnboardingAnimatedSwitch(
-                        checked = isEnabled,
-                        onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            onToggle(it)
-                            if (it && onConfigure != null) {
-                                onConfigure()
-                            }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (onConfigure != null) {
+                            Icon(
+                                imageVector = MaterialSymbolIcon("arrow_forward_ios", filled = true),
+                                contentDescription = context.getString(R.string.cd_navigate),
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Box(
+                                modifier = Modifier
+                                    .width(1.dp)
+                                    .height(20.dp)
+                                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
                         }
-                    )
+                        OnboardingAnimatedSwitch(
+                            checked = isEnabled,
+                            onCheckedChange = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                onToggle(it)
+                                if (it && onConfigure != null) {
+                                    onConfigure()
+                                }
+                            }
+                        )
+                    }
                 },
                 onClick = {
                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
@@ -10234,11 +10259,15 @@ private fun IntegrationsSettingsCards(
         }
 
     val apiItems = buildList {
+        val appleCanvasDesc = "Dynamic animated album artwork - " + when (appleCanvasNetworkMode) {
+            chromahub.rhythm.app.shared.data.model.CanvasNetworkMode.WIFI_ONLY -> "Only on Wi-Fi"
+            chromahub.rhythm.app.shared.data.model.CanvasNetworkMode.BOTH -> "Wi-Fi & Cellular"
+        }
         add(
             onboardingToggleItem(
                 MaterialSymbolIcon("movie"),
                 "Apple Music Motion Canvas",
-                "Bring your screen to life with dynamic, looping album animations",
+                appleCanvasDesc,
                 appleCanvasEnabled,
                 onAppleCanvasChange,
                 onAppleCanvasConfigure

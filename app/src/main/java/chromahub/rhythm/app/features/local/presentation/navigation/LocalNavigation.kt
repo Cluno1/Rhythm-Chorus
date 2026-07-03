@@ -105,7 +105,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AlbumBottomSheet
+
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.UpdateBottomSheet
@@ -2041,8 +2041,6 @@ private fun LocalNavigationContent(
 
                     // Album/Artist data for bottom sheets
                     val allAlbums by viewModel.albums.collectAsState()
-                    var selectedAlbumForSheet by remember { mutableStateOf<chromahub.rhythm.app.shared.data.model.Album?>(null) }
-                    var showAlbumSheet by remember { mutableStateOf(false) }
                     val playlistHaptics = LocalHapticFeedback.current
 
                     // Write permission launcher for Android 11+ metadata editing
@@ -2135,8 +2133,7 @@ private fun LocalNavigationContent(
                             onGoToAlbum = { song ->
                                 val album = allAlbums.find { it.title == song.album }
                                 if (album != null) {
-                                    selectedAlbumForSheet = album
-                                    showAlbumSheet = true
+                                    navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
                                 }
                             },
                             onGoToArtist = { song ->
@@ -2168,63 +2165,6 @@ private fun LocalNavigationContent(
                                 } catch (e: Exception) {
                                     android.widget.Toast.makeText(context, R.string.materialplayerscreen_unable_to_share_file, android.widget.Toast.LENGTH_SHORT).show()
                                 }
-                            }
-                        )
-                    }
-
-                    // Album Bottom Sheet
-                    val activeAlbum = remember(allAlbums, selectedAlbumForSheet) {
-                        selectedAlbumForSheet?.let { sel -> allAlbums.find { it.id == sel.id } } ?: selectedAlbumForSheet
-                    }
-
-                    if (showAlbumSheet && activeAlbum != null) {
-                        val albumSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-                        AlbumBottomSheet(
-                            album = activeAlbum,
-                            onDismiss = { showAlbumSheet = false; selectedAlbumForSheet = null },
-                            onSongClick = onPlaySong,
-                            onPlayAll = { songs -> viewModel.playSongs(songs) },
-                            onShufflePlay = { songs -> viewModel.playShuffled(songs) },
-                            onAddToQueue = { song -> viewModel.addSongToQueue(song) },
-                            onAddToQueueAll = { songs -> viewModel.addSongsToQueue(songs) },
-                            onAddSongToPlaylist = { },
-                            onPlayerClick = { navController.navigate(Screen.Player.route) },
-                            sheetState = albumSheetState,
-                            haptics = playlistHaptics,
-                            onPlayNext = { song -> viewModel.playNext(song) },
-                            onToggleFavorite = { song -> viewModel.toggleFavorite(song) },
-                            favoriteSongs = favoriteSongs,
-                            currentSong = currentSong,
-                            isPlaying = isPlaying,
-                            onEditAlbum = { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
-                                viewModel.batchEditMetadata(
-                                    songs = activeAlbum.songs,
-                                    artist = artist,
-                                    album = title,
-                                    genre = null,
-                                    year = null,
-                                    artworkUri = artworkUri,
-                                    removeArtwork = removeArtwork,
-                                    onProgress = onProgress,
-                                    onComplete = { successCount, failCount ->
-                                        onComplete(successCount, failCount)
-                                    },
-                                    onPermissionRequired = { pendingRequest ->
-                                        try {
-                                            val intentSenderRequest = androidx.activity.result.IntentSenderRequest.Builder(
-                                                pendingRequest.intentSender
-                                            ).build()
-                                            writePermissionLauncher.launch(intentSenderRequest)
-                                        } catch (e: Exception) {
-                                            android.widget.Toast.makeText(
-                                                context,
-                                                "Failed to request permission: ${e.message}",
-                                                android.widget.Toast.LENGTH_LONG
-                                            ).show()
-                                            viewModel.cancelPendingBatchMetadataWrite()
-                                        }
-                                    }
-                                )
                             }
                         )
                     }

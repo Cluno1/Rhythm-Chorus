@@ -89,7 +89,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AlbumBottomSheet
+
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.dialogs.CreatePlaylistDialog
 import chromahub.rhythm.app.shared.presentation.components.player.MiniPlayer
@@ -860,6 +860,13 @@ fun StreamingNavigation(
                             launchSingleTop = true
                         }
                     },
+                    onNavigateToAlbum = { album ->
+                        navController.navigate(
+                            StreamingScreen.AlbumDetail.createRoute(album.id, album.title)
+                        ) {
+                            launchSingleTop = true
+                        }
+                    },
                     onNavigateToPlaylist = { playlist ->
                         navController.navigate(
                             StreamingScreen.PlaylistDetail.createRoute(playlist.id)
@@ -938,6 +945,13 @@ fun StreamingNavigation(
                             launchSingleTop = true
                         }
                     },
+                    onNavigateToAlbum = { album ->
+                        navController.navigate(
+                            StreamingScreen.AlbumDetail.createRoute(album.id, album.title)
+                        ) {
+                            launchSingleTop = true
+                        }
+                    },
                     onNavigateToPlaylist = { playlist ->
                         navController.navigate(
                             StreamingScreen.PlaylistDetail.createRoute(playlist.id)
@@ -971,11 +985,6 @@ fun StreamingNavigation(
                         )
                 }
             ) {
-                var showAlbumBottomSheet by remember { mutableStateOf(false) }
-                var selectedAlbumForSheet by remember { mutableStateOf<chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum?>(null) }
-                val albumSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-                val scope = rememberCoroutineScope()
-
                 chromahub.rhythm.app.shared.presentation.screens.UniversalSearchScreen(
                     localViewModel = localMusicViewModel,
                     streamingViewModel = streamingMusicViewModel,
@@ -997,18 +1006,11 @@ fun StreamingNavigation(
                         navController.navigate(StreamingScreen.Player.route)
                     },
                     onStreamingAlbumClick = { streamingAlbum ->
-                        if (streamingAlbum.tracks.isEmpty()) {
-                            selectedAlbumForSheet = streamingAlbum
-                            scope.launch {
-                                val tracks = streamingMusicViewModel.getAlbumSongs(streamingAlbum)
-                                if (tracks.isNotEmpty()) {
-                                    selectedAlbumForSheet = streamingAlbum.copy(tracks = tracks)
-                                }
-                            }
-                        } else {
-                            selectedAlbumForSheet = streamingAlbum
+                        navController.navigate(
+                            StreamingScreen.AlbumDetail.createRoute(streamingAlbum.id, streamingAlbum.title)
+                        ) {
+                            launchSingleTop = true
                         }
-                        showAlbumBottomSheet = true
                     },
                     onStreamingArtistClick = { artist ->
                         navController.navigate(
@@ -1026,50 +1028,6 @@ fun StreamingNavigation(
                     },
                     onBack = { navController.popBackStack() }
                 )
-
-                if (showAlbumBottomSheet && selectedAlbumForSheet != null) {
-                    val albumForSheet = selectedAlbumForSheet!!
-                    val streamingTracks = albumForSheet.tracks
-                    val libraryAlbum = albumForSheet.toLibraryAlbum(emptyList())
-
-                    AlbumBottomSheet(
-                        album = libraryAlbum,
-                        onDismiss = {
-                            showAlbumBottomSheet = false
-                            selectedAlbumForSheet = null
-                        },
-                        onSongClick = { song ->
-                            val streamingSong = streamingTracks.firstOrNull { it.id == song.id }
-                            streamingSong?.let { ss ->
-                                streamingMusicViewModel.playQueue(queue = listOf(ss), startIndex = 0, shuffle = false)
-                            }
-                        },
-                        onPlayAll = { songs ->
-                            if (streamingTracks.isNotEmpty()) {
-                                streamingMusicViewModel.playQueue(queue = streamingTracks, startIndex = 0, shuffle = false)
-                            }
-                        },
-                        onShufflePlay = { songs ->
-                            if (streamingTracks.isNotEmpty()) {
-                                val startIndex = (0 until streamingTracks.size).random()
-                                streamingMusicViewModel.playQueue(queue = streamingTracks, startIndex = startIndex, shuffle = true)
-                            }
-                        },
-                        onAddToQueue = { },
-                        onAddSongToPlaylist = { },
-                        onPlayerClick = { },
-                        sheetState = albumSheetState,
-                        haptics = haptic,
-                        showPlayNextAction = false,
-                        showAddToQueueAction = false,
-                        showToggleFavoriteAction = false,
-                        showAddToPlaylistAction = false,
-                        showSongInfoAction = false,
-                        showAddToBlacklistAction = false,
-                        currentSong = null,
-                        isPlaying = false
-                    )
-                }
             }
 
             composable(
@@ -1634,9 +1592,6 @@ fun StreamingNavigation(
                         )
                 }
                 val scope = rememberCoroutineScope()
-                var showAlbumBottomSheet by remember { mutableStateOf(false) }
-                var selectedAlbumForSheet by remember { mutableStateOf<Album?>(null) }
-                val albumSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
                 PlaylistDetailScreen(
                     musicViewModel = localMusicViewModel,
@@ -1751,32 +1706,14 @@ fun StreamingNavigation(
                             albumMatchesById || albumMatchesByMetadata
                         }
 
-                        val fallbackAlbum = Album(
-                            id = baseAlbumId ?: "streaming-playlist:${song.id}:${song.album.lowercase()}",
-                            title = song.album,
-                            artist = albumArtist,
-                            artworkUri = song.artworkUri,
-                            year = 0,
-                            songs = playlistDisplaySongs.filter {
-                                if (baseAlbumId != null) {
-                                    it.albumId == baseAlbumId
-                                } else {
-                                    it.album.equals(song.album, ignoreCase = true) &&
-                                        (it.albumArtist?.takeIf { it.isNotBlank() } ?: it.artist).equals(albumArtist, ignoreCase = true)
-                                }
-                            }.ifEmpty { listOf(song) },
-                            numberOfSongs = playlistDisplaySongs.count {
-                                if (baseAlbumId != null) {
-                                    it.albumId == baseAlbumId
-                                } else {
-                                    it.album.equals(song.album, ignoreCase = true) &&
-                                        (it.albumArtist?.takeIf { it.isNotBlank() } ?: it.artist).equals(albumArtist, ignoreCase = true)
-                                }
-                            }.coerceAtLeast(1)
-                        )
+                        val resolvedAlbumId = matchingAlbum?.id ?: baseAlbumId ?: "streaming-playlist:${song.id}:${song.album.lowercase()}"
+                        val resolvedAlbumTitle = matchingAlbum?.title ?: song.album
 
-                        selectedAlbumForSheet = matchingAlbum?.toLibraryAlbum(playlistDisplaySongs) ?: fallbackAlbum
-                        showAlbumBottomSheet = true
+                        navController.navigate(
+                            StreamingScreen.AlbumDetail.createRoute(resolvedAlbumId, resolvedAlbumTitle)
+                        ) {
+                            launchSingleTop = true
+                        }
                     },
                     onGoToArtist = {},
                     onShare = { song ->
@@ -1792,59 +1729,6 @@ fun StreamingNavigation(
                         }
                     }
                 )
-
-                if (showAlbumBottomSheet && selectedAlbumForSheet != null) {
-                    val albumForSheet = selectedAlbumForSheet!!
-                    val playlistTracksForAlbum = playlistTracks
-
-                    AlbumBottomSheet(
-                        album = albumForSheet,
-                        onDismiss = {
-                            showAlbumBottomSheet = false
-                            selectedAlbumForSheet = null
-                        },
-                        onSongClick = { song ->
-                            val streamingSong = playlistTracksForAlbum.firstOrNull { it.id == song.id }
-                            streamingSong?.let { ss ->
-                                streamingMusicViewModel.playQueue(queue = listOf(ss), startIndex = 0, shuffle = false)
-                            }
-                        },
-                        onPlayAll = { _ ->
-                            if (playlistTracksForAlbum.isNotEmpty()) {
-                                streamingMusicViewModel.playQueue(queue = playlistTracksForAlbum, startIndex = 0, shuffle = false)
-                            }
-                        },
-                        onShufflePlay = { _ ->
-                            if (playlistTracksForAlbum.isNotEmpty()) {
-                                streamingMusicViewModel.playQueue(
-                                    queue = playlistTracksForAlbum,
-                                    startIndex = (0 until playlistTracksForAlbum.size).random(),
-                                    shuffle = true
-                                )
-                            }
-                        },
-                        onAddToQueue = { },
-                        onAddSongToPlaylist = { },
-                        onPlayerClick = { },
-                        sheetState = albumSheetState,
-                        haptics = haptic,
-                        onToggleFavorite = { localSong ->
-                            playlistTracksForAlbum.firstOrNull { it.id == localSong.id }?.let { streamingSong ->
-                                val isLiked = streamingLikedSongs.any { it.id == streamingSong.id }
-                                if (isLiked) streamingMusicViewModel.unlikeSong(streamingSong)
-                                else streamingMusicViewModel.likeSong(streamingSong)
-                            }
-                        },
-                        favoriteSongs = streamingLikedSongs.map { it.id }.toSet(),
-                        showPlayNextAction = false,
-                        showAddToQueueAction = false,
-                        showAddToPlaylistAction = false,
-                        showSongInfoAction = false,
-                        showAddToBlacklistAction = false,
-                        currentSong = currentSong,
-                        isPlaying = isPlaying
-                    )
-                }
             }
 
             composable(

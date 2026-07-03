@@ -440,11 +440,17 @@ fun toMaterial3SettingsItem(
                     Icon(
                         imageVector = MaterialSymbolIcon("arrow_forward_ios", filled = true),
                         contentDescription = context.getString(R.string.cd_navigate),
-                        modifier = Modifier
-                            .size(16.dp)
-                            .padding(end = 8.dp),
+                        modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(20.dp)
+                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
                     TunerAnimatedSwitch(
                         checked = item.toggleState,
                         onCheckedChange = {

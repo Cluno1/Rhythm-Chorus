@@ -107,7 +107,7 @@ import chromahub.rhythm.app.shared.data.repository.StatsTimeRange
 import androidx.compose.runtime.mutableIntStateOf
 import chromahub.rhythm.app.shared.presentation.components.AudioQualityIcon
 import chromahub.rhythm.app.features.streaming.presentation.components.settings.StreamingHomeSectionOrderBottomSheet
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AlbumBottomSheet
+
 import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.Song
@@ -159,6 +159,7 @@ fun StreamingContentHomeScreen(
     onNavigateToRhythmStats: () -> Unit,
     onNavigateToArtist: (StreamingArtist) -> Unit,
     onNavigateToPlaylist: (chromahub.rhythm.app.features.streaming.domain.model.StreamingPlaylist) -> Unit,
+    onNavigateToAlbum: (StreamingAlbum) -> Unit,
     onConfigureService: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -198,27 +199,11 @@ fun StreamingContentHomeScreen(
     val loadingSectionHeight = LocalConfiguration.current.screenHeightDp.dp
 
     var showSectionOrderBottomSheet by remember { mutableStateOf(false) }
-
-    var showAlbumBottomSheet by remember { mutableStateOf(false) }
-    var selectedAlbumForSheet by remember { mutableStateOf<StreamingAlbum?>(null) }
-    val albumSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
     val pullToRefreshState = rememberPullToRefreshState()
     val isRefreshing = isLoading
 
     val handleAlbumClick: (StreamingAlbum) -> Unit = { album ->
-        if (album.tracks.isEmpty()) {
-            selectedAlbumForSheet = album
-            scope.launch {
-                val tracks = viewModel.getAlbumSongs(album)
-                if (tracks.isNotEmpty()) {
-                    selectedAlbumForSheet = album.copy(tracks = tracks)
-                }
-            }
-        } else {
-            selectedAlbumForSheet = album
-        }
-        showAlbumBottomSheet = true
+        onNavigateToAlbum(album)
     }
 
     val selectedOption = remember(selectedService) {
@@ -788,49 +773,7 @@ fun StreamingContentHomeScreen(
             }
         }
 
-        if (showAlbumBottomSheet && selectedAlbumForSheet != null) {
-            val albumForSheet = selectedAlbumForSheet!!
-            val streamingTracks = albumForSheet.tracks
-            val libraryAlbum = albumForSheet.toLibraryAlbum(recentlyPlayedSongs)
-            
-            AlbumBottomSheet(
-                album = libraryAlbum,
-                onDismiss = {
-                    showAlbumBottomSheet = false
-                    selectedAlbumForSheet = null
-                },
-                onSongClick = { song ->
-                    val streamingSong = streamingTracks.firstOrNull { it.id == song.id }
-                    streamingSong?.let { ss ->
-                        viewModel.playQueue(queue = listOf(ss), startIndex = 0, shuffle = false)
-                    }
-                },
-                onPlayAll = { _ ->
-                    if (streamingTracks.isNotEmpty()) {
-                        viewModel.playQueue(queue = streamingTracks, startIndex = 0, shuffle = false)
-                    }
-                },
-                onShufflePlay = { _ ->
-                    if (streamingTracks.isNotEmpty()) {
-                        val startIndex = (0 until streamingTracks.size).random()
-                        viewModel.playQueue(queue = streamingTracks, startIndex = startIndex, shuffle = true)
-                    }
-                },
-                onAddToQueue = { },
-                onAddSongToPlaylist = { },
-                onPlayerClick = { },
-                sheetState = albumSheetState,
-                haptics = haptics,
-                showPlayNextAction = false,
-                showAddToQueueAction = false,
-                showToggleFavoriteAction = false,
-                showAddToPlaylistAction = false,
-                showSongInfoAction = false,
-                showAddToBlacklistAction = false,
-                currentSong = null,
-                isPlaying = false
-            )
-        }
+
     }
 }
 

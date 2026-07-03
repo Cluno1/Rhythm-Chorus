@@ -139,7 +139,32 @@ interface GitHubApiService {
         @Query("status") status: String = "success",
         @Query("per_page") perPage: Int = 10
     ): Response<GitHubWorkflowRunsResponse>
+
+    @GET("repos/{owner}/{repo}/actions/runs/{run_id}/artifacts")
+    suspend fun getRunArtifacts(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Path("run_id") runId: Long
+    ): Response<GitHubArtifactsResponse>
 }
+
+/**
+ * GitHub Artifacts Response wrapper
+ */
+data class GitHubArtifactsResponse(
+    val total_count: Int,
+    val artifacts: List<GitHubArtifact>
+)
+
+/**
+ * GitHub Artifact model
+ */
+data class GitHubArtifact(
+    val id: Long,
+    val name: String,
+    val size_in_bytes: Long,
+    val expired: Boolean
+)
 
 /**
  * GitHub Workflow Runs Response wrapper
