@@ -392,11 +392,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             _latestVersion.value = null  // Clear any previous version data
             
             try {
-                // Only use the nightly workflow run path when the installed build is actually
-                // a nightly build. If the user somehow has the nightly channel stored but is
-                // running a release/beta build, fall through to the regular release check so
-                // we never falsely report a nightly run as an update for a release build.
-                if (currentChannel == "nightly" && BuildConfig.IS_NIGHTLY) {
+                if (currentChannel == "nightly") {
                     val runsResponse = gitHubApiService.getWorkflowRuns(GITHUB_OWNER, GITHUB_REPO, "nightly.yml")
                     
                     if (runsResponse.isSuccessful) {
@@ -426,13 +422,34 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                         
                         val appVersion = convertWorkflowRunToAppVersion(latestRun, apkSize)
                         _latestVersion.value = appVersion
-                        
-                        val currentNightlyRun = extractNightlyRunNumber(BuildConfig.VERSION_NAME)
-                        val latestNightlyRun = latestRun.run_number
-                        
-                        Log.d(TAG, "Nightly comparison: current run=$currentNightlyRun vs latest run=$latestNightlyRun")
-                        
-                        _updateAvailable.value = latestNightlyRun > currentNightlyRun
+
+                        val updateAvailable = if (BuildConfig.IS_NIGHTLY) {
+                            // Currently on a nightly build: compare run numbers directly.
+                            val currentNightlyRun = extractNightlyRunNumber(BuildConfig.VERSION_NAME)
+                            val latestNightlyRun = latestRun.run_number
+                            Log.d(TAG, "Nightly→Nightly comparison: current run=$currentNightlyRun vs latest run=$latestNightlyRun")
+                            latestNightlyRun > currentNightlyRun
+                        } else {
+                            // Currently on a release/beta build but user has opted into the
+                            // nightly channel. Show the nightly as an update ONLY if it was
+                            // published AFTER the current build's release date. This prevents
+                            // a pre-release-era nightly (with an older codebase) from showing
+                            // up as a false update while still letting future nightlies through.
+                            val isNightlyNewer = try {
+                                val isoFmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+                                val dateFmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                                val nightlyDate = isoFmt.parse(latestRun.updated_at)
+                                val buildDate = dateFmt.parse(BuildConfig.RELEASE_DATE)
+                                nightlyDate != null && buildDate != null && nightlyDate.after(buildDate)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Error comparing nightly date vs release date", e)
+                                false
+                            }
+                            Log.d(TAG, "Beta/Stable→Nightly comparison: nightly updated_at=${latestRun.updated_at}, build release date=${BuildConfig.RELEASE_DATE}, isNewer=$isNightlyNewer")
+                            isNightlyNewer
+                        }
+
+                        _updateAvailable.value = updateAvailable
                         _isCheckingForUpdates.value = false
                         return@launch
                     } else {

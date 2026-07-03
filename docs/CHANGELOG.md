@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.2.422.1104 Beta] - 2026-07-04
+
+### Added
+- Restrict nightly update check to nightly builds
+- Implement play next and improve broadcast safety
+- Fix player action wiring and song selection
+- Added exact artwork color setting
+- Bump Compose and UI dependency versions
+- Added Canvas support
+
 ## [5.2.422.1103 Beta] - 2026-07-03
 
 ### Added

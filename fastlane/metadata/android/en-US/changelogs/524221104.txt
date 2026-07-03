@@ -1,0 +1,10 @@
+Rhythm v5.2 - Beta Update
+
+• Restrict nightly update check to nightly builds
+• Implement play next and improve broadcast safety
+• Fix player action wiring and song selection
+• Added exact artwork color setting
+• Bump Compose and UI dependency versions
+• Added Canvas support
+
+Thanks for using Rhythm ;)
