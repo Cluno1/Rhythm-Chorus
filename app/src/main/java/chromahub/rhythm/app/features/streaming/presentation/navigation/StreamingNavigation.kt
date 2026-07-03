@@ -674,8 +674,9 @@ fun StreamingNavigation(
                         onAddToPlaylist = { showAddToPlaylistSheet.value = true },
                         onAddToPlaylistSheetDismiss = { showAddToPlaylistSheet.value = false },
                         onAddSongToPlaylist = { song, playlistId ->
-                            val streamingSong = streamingMusicViewModel.currentSong.value
-                            if (streamingSong != null && streamingSong.id == song.id) {
+                            val streamingSong = streamingMusicViewModel.currentSong.value?.takeIf { it.id == song.id }
+                                ?: streamingAddSongsCandidatesById[song.id]
+                            if (streamingSong != null) {
                                 streamingMusicViewModel.addSongToPlaylist(playlistId, streamingSong)
                             }
                             showAddToPlaylistSheet.value = false
@@ -2021,8 +2022,9 @@ fun StreamingNavigation(
             },
             song = songForDialog,
             onConfirmWithSong = { name ->
-                val streamingSong = streamingMusicViewModel.currentSong.value
-                if (streamingSong != null && songForDialog != null && streamingSong.id == songForDialog.id) {
+                val streamingSong = streamingMusicViewModel.currentSong.value?.takeIf { it.id == songForDialog?.id }
+                    ?: songForDialog?.let { streamingAddSongsCandidatesById[it.id] }
+                if (streamingSong != null) {
                     streamingMusicViewModel.createPlaylist(name, listOf(streamingSong))
                 } else {
                     streamingMusicViewModel.createPlaylist(name)
