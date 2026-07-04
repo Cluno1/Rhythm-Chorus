@@ -1699,12 +1699,14 @@ fun StreamingNavigation(
                     onGoToAlbum = { song ->
                         val baseAlbumId = song.albumId.takeIf { it.isNotBlank() }
                         val albumArtist = song.albumArtist?.takeIf { it.isNotBlank() } ?: song.artist
-                        val playlistDisplaySongs = localPlaylistSongs
                         val matchingAlbum = streamingAlbumCatalog.firstOrNull { album ->
+                            val albumMatchesByTrack = album.tracks.any { it.id == song.id }
                             val albumMatchesById = baseAlbumId?.let { album.id == it } == true
                             val albumMatchesByMetadata = album.title.equals(song.album, ignoreCase = true) &&
                                 album.artist.equals(albumArtist, ignoreCase = true)
-                            albumMatchesById || albumMatchesByMetadata
+                            albumMatchesByTrack || albumMatchesById || albumMatchesByMetadata
+                        } ?: streamingAlbumCatalog.firstOrNull { album ->
+                            album.title.equals(song.album, ignoreCase = true)
                         }
 
                         val resolvedAlbumId = matchingAlbum?.id ?: baseAlbumId ?: "streaming-playlist:${song.id}:${song.album.lowercase()}"

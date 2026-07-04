@@ -516,10 +516,13 @@ fun StreamingLibraryScreen(
         val resolvedStreamingSong = sortedSongsById[localSong.id]
         val albumArtist = localSong.albumArtist?.takeIf { it.isNotBlank() } ?: localSong.artist
         val resolvedAlbum = sortedAlbums.firstOrNull { album ->
+            val albumMatchesByTrack = album.tracks.any { it.id == localSong.id }
             val albumMatchesById = resolvedStreamingSong?.albumId?.let { album.id == it } == true
             val albumMatchesByMetadata = album.title.equals(localSong.album, ignoreCase = true) &&
                 album.artist.equals(albumArtist, ignoreCase = true)
-            albumMatchesById || albumMatchesByMetadata
+            albumMatchesByTrack || albumMatchesById || albumMatchesByMetadata
+        } ?: sortedAlbums.firstOrNull { album ->
+            album.title.equals(localSong.album, ignoreCase = true)
         }
 
         resolvedAlbum?.let(openAlbumBottomSheet)
@@ -1390,14 +1393,15 @@ fun StreamingLibraryScreen(
                                         val resolvedArtist = sortedArtists.firstOrNull {
                                             it.name.equals(localSong.artist, ignoreCase = true)
                                         }
-                                        val resolvedAlbum = sortedSongsById[localSong.id]?.let { streamingSong ->
+                                        val resolvedAlbum = sortedAlbums.firstOrNull { album ->
+                                            val albumMatchesByTrack = album.tracks.any { it.id == localSong.id }
+                                            val albumMatchesById = sortedSongsById[localSong.id]?.albumId?.let { album.id == it } == true
                                             val albumArtist = localSong.albumArtist?.takeIf { it.isNotBlank() } ?: localSong.artist
-                                            sortedAlbums.firstOrNull { album ->
-                                                val albumMatchesById = streamingSong.albumId?.let { album.id == it } == true
-                                                val albumMatchesByMetadata = album.title.equals(localSong.album, ignoreCase = true) &&
-                                                    album.artist.equals(albumArtist, ignoreCase = true)
-                                                albumMatchesById || albumMatchesByMetadata
-                                            }
+                                            val albumMatchesByMetadata = album.title.equals(localSong.album, ignoreCase = true) &&
+                                                album.artist.equals(albumArtist, ignoreCase = true)
+                                            albumMatchesByTrack || albumMatchesById || albumMatchesByMetadata
+                                        } ?: sortedAlbums.firstOrNull { album ->
+                                            album.title.equals(localSong.album, ignoreCase = true)
                                         }
 
                                         val streamingSong = sortedSongsById[localSong.id]
