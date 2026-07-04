@@ -1211,15 +1211,18 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                             val httpExpectedSize = if (totalLength > 0) totalLength else contentLength
                             val finalExpectedSize = if (httpExpectedSize > 0) httpExpectedSize else expectedSize
 
-                            if (finalExpectedSize > 0 && fileSize != finalExpectedSize) {
+                            if (finalExpectedSize == 0L) {
+                                Log.w(TAG, "No reference size available (HTTP Content-Length unavailable and GitHub API returned 0) — skipping size verification for $fileName ($fileSize bytes)")
+                            } else if (fileSize != finalExpectedSize) {
                                 Log.e(TAG, "Download corrupted: file size mismatch (expected: $finalExpectedSize [HTTP: $httpExpectedSize, GitHub: $expectedSize], actual: $fileSize)")
+                                val isHttpSizeAbsent = httpExpectedSize <= 0
                                 viewModelScope.launch {
-                                    handleSizeMismatch(downloadUrl, fileName, retryAttempt, file, finalExpectedSize, fileSize)
+                                    handleSizeMismatch(downloadUrl, fileName, retryAttempt, file, finalExpectedSize, fileSize, isHttpSizeAbsent)
                                 }
                                 return
+                            } else {
+                                Log.d(TAG, "File size verification passed: $fileSize bytes (expected: $finalExpectedSize)")
                             }
-                            
-                            Log.d(TAG, "File size verification passed: $fileSize bytes (expected: $finalExpectedSize)")
                             
                             // Verify checksum if available
                             val checksumValid = activeDownload?.checksum?.let { expectedChecksum ->
@@ -1253,10 +1256,15 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                                             _isExtracting.value = false
                                             apkFile
                                         } else {
-                                            file.delete()
                                             _isExtracting.value = false
+                                            _isDownloading.value = false
+                                            _downloadProgress.value = 0f
+                                            activeDownload = null
+                                            _downloadState.value = null
+                                            clearDownloadState()
+                                            cancelDownloadNotification()
                                             withContext(Dispatchers.Main) {
-                                                handleDownloadFailure(downloadUrl, fileName, retryAttempt, "Failed to extract APK from ZIP")
+                                                _error.value = "Failed to extract APK from ZIP. The ZIP file is still saved — you can extract it manually or try downloading again."
                                             }
                                             return@launch
                                         }
@@ -1311,13 +1319,21 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         retryAttempt: Int,
         file: File,
         expectedSize: Long,
-        actualSize: Long
+        actualSize: Long,
+        isHttpSizeAbsent: Boolean = false
     ) {
         val errorMessage = "File size mismatch: expected $expectedSize bytes, got $actualSize bytes"
         val nextRetryAttempt = retryAttempt + 1
-        if (nextRetryAttempt < MAX_RETRY_ATTEMPTS) {
+
+        // When no HTTP Content-Length was available (isHttpSizeAbsent), the expectedSize came
+        // from the GitHub API which may be stale. Retrying will just re-download the exact same
+        // bytes and fail the same way. Skip straight to proceed/reset.
+        if (!isHttpSizeAbsent && nextRetryAttempt < MAX_RETRY_ATTEMPTS) {
             handleDownloadFailure(downloadUrl, fileName, retryAttempt, errorMessage)
             return
+        }
+        if (isHttpSizeAbsent) {
+            Log.w(TAG, "Size mismatch is permanent (no HTTP Content-Length) — skipping retries, offering proceed/reset (attempt $nextRetryAttempt)")
         }
 
         _isDownloading.value = false
@@ -1417,6 +1433,10 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         _downloadProgress.value = 100f
         _canProceedWithMismatchedDownload.value = false
 
+        // Track proceed attempts to avoid infinite loops on persistent extraction failures
+        val MAX_PROCEED_ATTEMPTS = 3
+        val proceedAttempt = activeDownload?.retryCount?.coerceAtMost(MAX_PROCEED_ATTEMPTS) ?: 0
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val finalFile = if (pending.fileName.endsWith(".zip", ignoreCase = true)) {
@@ -1428,7 +1448,17 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                         apkFile
                     } else {
                         _isExtracting.value = false
-                        cleanupUpdaterDownloadAfterFailure("Could not extract an APK from the downloaded update.", file)
+                        _isDownloading.value = false
+                        if (proceedAttempt >= MAX_PROCEED_ATTEMPTS) {
+                            _error.value = "Could not extract an APK from the downloaded ZIP after $MAX_PROCEED_ATTEMPTS attempts. The ZIP file has been kept at: ${file.absolutePath}. Reset to download again."
+                            pendingMismatchedDownload = null
+                            clearDownloadState()
+                            cancelDownloadNotification()
+                        } else {
+                            activeDownload = activeDownload?.copy(retryCount = proceedAttempt + 1)
+                            _canProceedWithMismatchedDownload.value = true
+                            _error.value = "Could not extract an APK from the downloaded ZIP. The ZIP file is still saved — you can try again or reset."
+                        }
                         return@launch
                     }
                 } else {
@@ -1448,7 +1478,17 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                 Log.w(TAG, "Proceeding with size-mismatched download: ${finalFile.absolutePath} (${finalFile.length()} bytes)")
             } catch (e: Exception) {
                 Log.e(TAG, "Proceeding with mismatched download failed", e)
-                cleanupUpdaterDownloadAfterFailure("Could not use the downloaded update: ${e.message ?: "Unknown error"}.", file)
+                _isDownloading.value = false
+                if (proceedAttempt >= MAX_PROCEED_ATTEMPTS) {
+                    _error.value = "Could not use the downloaded update after $MAX_PROCEED_ATTEMPTS attempts. The file has been kept at: ${file.absolutePath}. Reset to download again."
+                    pendingMismatchedDownload = null
+                    clearDownloadState()
+                    cancelDownloadNotification()
+                } else {
+                    activeDownload = activeDownload?.copy(retryCount = proceedAttempt + 1)
+                    _canProceedWithMismatchedDownload.value = true
+                    _error.value = "Could not use the downloaded update: ${e.message ?: "Unknown error"}. The file is still saved — you can try again or reset."
+                }
             }
         }
     }
@@ -1628,7 +1668,9 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             
             // Check if the file is valid
             if (file.length() == 0L) {
-                cleanupUpdaterDownloadAfterFailure("Downloaded file is corrupted.", file)
+                _downloadedFile.value = null
+                _error.value = "Downloaded file is corrupted. Please try downloading again."
+                clearDownloadState()
                 return
             }
             
@@ -1672,11 +1714,15 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                 _downloadState.value = null
                 clearDownloadState() // Clear persisted state as well
             } else {
-                cleanupUpdaterDownloadAfterFailure("No app available to install APK files.", file)
+                // Keep _downloadedFile so user can retry from Settings
+                _error.value = "No app available to install APK files. The APK file is still saved — go to your file manager to install it manually."
+                clearDownloadState()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error installing APK", e)
-            cleanupUpdaterDownloadAfterFailure("Could not install APK: ${e.message ?: "Unknown error"}.", file)
+            // Keep _downloadedFile so user can retry install
+            _error.value = "Could not install APK: ${e.message ?: "Unknown error"}. Tap Install to try again."
+            clearDownloadState()
         }
     }
     
