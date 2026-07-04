@@ -43,10 +43,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import chromahub.rhythm.app.R
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.ui.input.pointer.pointerInput
-import kotlinx.coroutines.launch
+
 import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.Artist
 import chromahub.rhythm.app.shared.data.model.Song
@@ -630,7 +627,7 @@ fun AlbumDetailScreen(
                                 contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
                                 verticalArrangement = Arrangement.spacedBy(2.dp)
                             ) {
-                            itemsIndexed(displaySongs) { index, song ->
+                            itemsIndexed(displaySongs, key = { _, song -> song.id }) { index, song ->
                                 AnimateIn {
                                     AlbumSongItem(
                                         song = song,
@@ -659,6 +656,10 @@ fun AlbumDetailScreen(
         val expandedHeaderHeight = 450.dp
         val collapsedHeaderHeight = 56.dp + statusBarHeight
         val collapseDistancePx = with(density) { (expandedHeaderHeight - collapsedHeaderHeight).toPx() }
+
+        LaunchedEffect(selectedDisc) {
+            songListState.scrollToItem(0)
+        }
         val collapseFraction by remember(songListState, collapseDistancePx) {
             derivedStateOf {
                 if (songListState.firstVisibleItemIndex > 0) {
@@ -678,8 +679,6 @@ fun AlbumDetailScreen(
             animationSpec = tween(180),
             label = "albumArtworkAlpha"
         )
-
-        val coroutineScope = rememberCoroutineScope()
 
         Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
             Column(modifier = Modifier.fillMaxSize()) {
@@ -707,15 +706,7 @@ fun AlbumDetailScreen(
                         val song = allDisplaySongs.firstOrNull()
                         if (song != null) handleArtistTap(song)
                     },
-                    firstSong = allDisplaySongs.firstOrNull(),
-                    modifier = Modifier.pointerInput(songListState) {
-                        detectVerticalDragGestures { change, dragAmount ->
-                            change.consume()
-                            coroutineScope.launch {
-                                songListState.scrollBy(-dragAmount)
-                            }
-                        }
-                    }
+                    firstSong = allDisplaySongs.firstOrNull()
                 )
 
                 AnimatedVisibility(
@@ -823,7 +814,7 @@ fun AlbumDetailScreen(
                     contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    itemsIndexed(displaySongs) { index, song ->
+                    itemsIndexed(displaySongs, key = { _, song -> song.id }) { index, song ->
                         AnimateIn {
                             AlbumSongItem(
                                 song = song,
