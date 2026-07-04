@@ -124,6 +124,13 @@ data class DownloadState(
     val retryCount: Int = 0 // Track retry attempts
 )
 
+private data class PendingMismatchedDownload(
+    val filePath: String,
+    val downloadUrl: String,
+    val fileName: String,
+    val retryAttempt: Int
+)
+
 /**
  * ViewModel for handling app updates
  */
@@ -206,6 +213,9 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
     // Error state
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
+
+    private val _canProceedWithMismatchedDownload = MutableStateFlow(false)
+    val canProceedWithMismatchedDownload: StateFlow<Boolean> = _canProceedWithMismatchedDownload.asStateFlow()
     
     // Download state - true when actively downloading
     private val _isDownloading = MutableStateFlow(false)
@@ -225,6 +235,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
     // Download state for tracking download progress and resumption
     private val _downloadState = MutableStateFlow<DownloadState?>(null)
     val downloadState: StateFlow<DownloadState?> = _downloadState.asStateFlow()
+    private var pendingMismatchedDownload: PendingMismatchedDownload? = null
 
     init {
         ensureDownloadNotificationChannel()
@@ -355,6 +366,8 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
     private fun clearDownloadState() {
         downloadPrefs.edit().clear().apply()
         activeDownload = null
+        pendingMismatchedDownload = null
+        _canProceedWithMismatchedDownload.value = false
         _downloadState.value = null
     }
     
@@ -1201,7 +1214,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                             if (finalExpectedSize > 0 && fileSize != finalExpectedSize) {
                                 Log.e(TAG, "Download corrupted: file size mismatch (expected: $finalExpectedSize [HTTP: $httpExpectedSize, GitHub: $expectedSize], actual: $fileSize)")
                                 viewModelScope.launch {
-                                    handleDownloadFailure(downloadUrl, fileName, retryAttempt, "File size mismatch: expected $finalExpectedSize bytes, got $fileSize bytes")
+                                    handleSizeMismatch(downloadUrl, fileName, retryAttempt, file, finalExpectedSize, fileSize)
                                 }
                                 return
                             }
@@ -1292,6 +1305,51 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
     /**
      * Handle download failures with retry logic
      */
+    private fun handleSizeMismatch(
+        downloadUrl: String,
+        fileName: String,
+        retryAttempt: Int,
+        file: File,
+        expectedSize: Long,
+        actualSize: Long
+    ) {
+        val errorMessage = "File size mismatch: expected $expectedSize bytes, got $actualSize bytes"
+        val nextRetryAttempt = retryAttempt + 1
+        if (nextRetryAttempt < MAX_RETRY_ATTEMPTS) {
+            handleDownloadFailure(downloadUrl, fileName, retryAttempt, errorMessage)
+            return
+        }
+
+        _isDownloading.value = false
+        activeCall = null
+        pendingMismatchedDownload = PendingMismatchedDownload(
+            filePath = file.absolutePath,
+            downloadUrl = downloadUrl,
+            fileName = fileName,
+            retryAttempt = retryAttempt
+        )
+        activeDownload = activeDownload?.copy(
+            downloadedBytes = actualSize,
+            resumePosition = actualSize,
+            retryCount = nextRetryAttempt
+        ) ?: DownloadState(
+            fileName = fileName,
+            url = downloadUrl,
+            totalBytes = expectedSize,
+            downloadedBytes = actualSize,
+            etag = null,
+            lastModified = null,
+            resumePosition = actualSize,
+            retryCount = nextRetryAttempt
+        )
+        _downloadState.value = activeDownload
+        _downloadProgress.value = 100f
+        _canProceedWithMismatchedDownload.value = true
+        _error.value = "Downloaded file size does not match the expected size. You can proceed anyway, or reset and download again."
+        saveDownloadState()
+        cancelDownloadNotification()
+    }
+
     private fun handleDownloadFailure(downloadUrl: String, fileName: String, retryAttempt: Int, errorMessage: String, forceRetry: Boolean = false) {
         _isDownloading.value = false
         activeCall = null
@@ -1339,6 +1397,90 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             clearDownloadState()
             cancelDownloadNotification()
         }
+    }
+
+    fun proceedWithMismatchedDownload() {
+        val pending = pendingMismatchedDownload
+        if (pending == null) {
+            _error.value = "No mismatched download is available to proceed with."
+            return
+        }
+
+        val file = File(pending.filePath)
+        if (!file.exists() || file.length() == 0L) {
+            cleanupUpdaterDownloadAfterFailure("Downloaded update file is missing or empty.", file)
+            return
+        }
+
+        _error.value = null
+        _isDownloading.value = true
+        _downloadProgress.value = 100f
+        _canProceedWithMismatchedDownload.value = false
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val finalFile = if (pending.fileName.endsWith(".zip", ignoreCase = true)) {
+                    _isExtracting.value = true
+                    val apkFile = File(file.parentFile, pending.fileName.replace(".zip", ".apk", ignoreCase = true))
+                    if (extractApkFromZip(file, apkFile)) {
+                        file.delete()
+                        _isExtracting.value = false
+                        apkFile
+                    } else {
+                        _isExtracting.value = false
+                        cleanupUpdaterDownloadAfterFailure("Could not extract an APK from the downloaded update.", file)
+                        return@launch
+                    }
+                } else {
+                    file
+                }
+
+                _isDownloading.value = false
+                _downloadProgress.value = 100f
+                _downloadedFile.value = finalFile
+                pendingMismatchedDownload = null
+                activeDownload = null
+                activeCall = null
+                _downloadState.value = null
+                _canProceedWithMismatchedDownload.value = false
+                saveDownloadState()
+                showDownloadCompletedNotification(finalFile.name)
+                Log.w(TAG, "Proceeding with size-mismatched download: ${finalFile.absolutePath} (${finalFile.length()} bytes)")
+            } catch (e: Exception) {
+                Log.e(TAG, "Proceeding with mismatched download failed", e)
+                cleanupUpdaterDownloadAfterFailure("Could not use the downloaded update: ${e.message ?: "Unknown error"}.", file)
+            }
+        }
+    }
+
+    private fun cleanupUpdaterDownloadAfterFailure(message: String, fileToDelete: File? = null) {
+        val context = getApplication<Application>()
+        val downloadDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        } else {
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        }
+        val activeFile = activeDownload?.fileName?.let { fileName ->
+            downloadDir?.let { File(it, fileName) }
+        }
+        val pendingFile = pendingMismatchedDownload?.filePath?.let { File(it) }
+        val downloadedFile = _downloadedFile.value
+
+        listOfNotNull(fileToDelete, activeFile, pendingFile, downloadedFile)
+            .distinctBy { it.absolutePath }
+            .forEach { file ->
+                runCatching {
+                    if (file.exists()) {
+                        val deleted = file.delete()
+                        Log.d(TAG, "Deleted updater file after failure: ${file.absolutePath}, success: $deleted")
+                    }
+                }.onFailure { e ->
+                    Log.e(TAG, "Failed to delete updater file: ${file.absolutePath}", e)
+                }
+            }
+
+        resetDownloadState()
+        _error.value = "$message Download state was reset. Please try again."
     }
     
     /**
@@ -1486,7 +1628,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             
             // Check if the file is valid
             if (file.length() == 0L) {
-                _error.value = "Downloaded file is corrupted"
+                cleanupUpdaterDownloadAfterFailure("Downloaded file is corrupted.", file)
                 return
             }
             
@@ -1530,11 +1672,11 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                 _downloadState.value = null
                 clearDownloadState() // Clear persisted state as well
             } else {
-                _error.value = "No app available to install APK files"
+                cleanupUpdaterDownloadAfterFailure("No app available to install APK files.", file)
             }
         } catch (e: Exception) {
-            _error.value = "Could not install APK: ${e.message ?: "Unknown error"}"
             Log.e(TAG, "Error installing APK", e)
+            cleanupUpdaterDownloadAfterFailure("Could not install APK: ${e.message ?: "Unknown error"}.", file)
         }
     }
     

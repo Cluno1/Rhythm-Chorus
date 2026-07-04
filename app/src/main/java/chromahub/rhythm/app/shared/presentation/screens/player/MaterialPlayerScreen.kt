@@ -182,7 +182,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
 import kotlin.math.abs
 import chromahub.rhythm.app.shared.presentation.components.common.NetworkOperationLoader
 import android.view.animation.OvershootInterpolator
@@ -209,6 +208,7 @@ import chromahub.rhythm.app.shared.presentation.components.AudioQualityBadges
 import chromahub.rhythm.app.util.MediaUtils
 import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.Artist
+import chromahub.rhythm.app.shared.data.model.findAlbumForSong
 import chromahub.rhythm.app.features.local.presentation.navigation.Screen
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.shared.presentation.components.player.formatDuration
@@ -373,74 +373,9 @@ fun MaterialPlayerScreen(
         }
     }
 
-    val resolveAlbumForSong: (Song) -> Album = remember(albums, songs) {
+    val resolveAlbumForSong: (Song) -> Album? = remember(albums) {
         { targetSong ->
-            val baseAlbumId = targetSong.albumId.takeIf { it.isNotBlank() }
-            val baseAlbumArtist = targetSong.albumArtist
-                ?.trim()
-                ?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
-                ?: targetSong.artist
-
-            val matchedSongs = songs
-                .filter { candidate ->
-                    val candidateAlbumId = candidate.albumId.takeIf { it.isNotBlank() }
-                    if (baseAlbumId != null) {
-                        candidateAlbumId == baseAlbumId
-                    } else {
-                        val candidateAlbumArtist = candidate.albumArtist
-                            ?.trim()
-                            ?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
-                            ?: candidate.artist
-                        candidate.album.equals(targetSong.album, ignoreCase = true) &&
-                            candidateAlbumArtist.equals(baseAlbumArtist, ignoreCase = true)
-                    }
-                }
-                .ifEmpty { listOf(targetSong) }
-                .distinctBy { it.id }
-                .sortedWith(
-                    compareBy<Song> { it.discNumber.coerceAtLeast(1) }
-                        .thenBy { it.trackNumber.takeIf { value -> value > 0 } ?: Int.MAX_VALUE }
-                        .thenBy { it.title.lowercase(Locale.getDefault()) }
-                )
-
-            val matchedAlbum = (if (baseAlbumId != null) {
-                albums.firstOrNull { album -> album.id == baseAlbumId }
-            } else null) ?: albums.firstOrNull { album ->
-                album.title.equals(targetSong.album, ignoreCase = true) &&
-                    album.artist.equals(baseAlbumArtist, ignoreCase = true)
-            } ?: albums.firstOrNull { album ->
-                album.title.equals(targetSong.album, ignoreCase = true)
-            }
-
-            val mergedSongs = ((matchedAlbum?.songs ?: emptyList()) + matchedSongs)
-                .distinctBy { it.id }
-                .sortedWith(
-                    compareBy<Song> { it.discNumber.coerceAtLeast(1) }
-                        .thenBy { it.trackNumber.takeIf { value -> value > 0 } ?: Int.MAX_VALUE }
-                        .thenBy { it.title.lowercase(Locale.getDefault()) }
-                )
-
-            if (matchedAlbum != null) {
-                matchedAlbum.copy(
-                    songs = mergedSongs,
-                    numberOfSongs = maxOf(
-                        matchedAlbum.numberOfSongs,
-                        mergedSongs.size,
-                        matchedAlbum.songs.size
-                    )
-                )
-            } else {
-                Album(
-                    id = baseAlbumId
-                        ?: "player:album:${baseAlbumArtist.lowercase(Locale.getDefault())}:${targetSong.album.lowercase(Locale.getDefault())}",
-                    title = targetSong.album,
-                    artist = baseAlbumArtist,
-                    artworkUri = targetSong.artworkUri,
-                    year = targetSong.year,
-                    songs = mergedSongs,
-                    numberOfSongs = mergedSongs.size
-                )
-            }
+            albums.findAlbumForSong(targetSong)
         }
     }
 
@@ -1235,7 +1170,8 @@ fun MaterialPlayerScreen(
                     if (albumForSong != null) {
                         navigateToAlbum(albumForSong.id, albumForSong.title)
                     } else {
-                        navigateToAlbum("unknown_" + currentSong.album, currentSong.album)
+                        val fallbackAlbumId = currentSong.albumId.takeIf { it.isNotBlank() } ?: "unknown_" + currentSong.album
+                        navigateToAlbum(fallbackAlbumId, currentSong.album)
                     }
                 }
             },
@@ -3460,7 +3396,8 @@ fun MaterialPlayerScreen(
                                                             if (albumForSong != null) {
                                                                 navigateToAlbum(albumForSong.id, albumForSong.title)
                                                             } else {
-                                                                navigateToAlbum("unknown_" + currentSong.album, currentSong.album)
+                                                                val fallbackAlbumId = currentSong.albumId.takeIf { it.isNotBlank() } ?: "unknown_" + currentSong.album
+                                                                navigateToAlbum(fallbackAlbumId, currentSong.album)
                                                             }
                                                         }
                                                     },

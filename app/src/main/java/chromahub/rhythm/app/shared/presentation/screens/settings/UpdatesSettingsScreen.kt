@@ -186,6 +186,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     val downloadProgress by updaterViewModel.downloadProgress.collectAsState()
     val downloadedFile by updaterViewModel.downloadedFile.collectAsState()
     val isExtracting by updaterViewModel.isExtracting.collectAsState()
+    val canProceedWithMismatchedDownload by updaterViewModel.canProceedWithMismatchedDownload.collectAsState()
 
     // Simulation state variables
     var simulateEnabled by remember { mutableStateOf(false) }
@@ -226,6 +227,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     val activeDownloadProgress = if (simulateEnabled) simDownloadProgress else downloadProgress
     val activeDownloadedFile = if (simulateEnabled) simDownloadedFile else downloadedFile
     val activeIsExtracting = if (simulateEnabled) false else isExtracting
+    val activeCanProceedWithMismatchedDownload = !simulateEnabled && canProceedWithMismatchedDownload
     val activeLatestVersion = if (simulateEnabled) {
         if (simUpdateAvailable) simLatestVersion else null
     } else {
@@ -544,7 +546,9 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                                 ) {
                                     OutlinedButton(
                                         onClick = {
-                                            if (simulateEnabled) {
+                                            if (activeCanProceedWithMismatchedDownload) {
+                                                updaterViewModel.resetDownloadState()
+                                            } else if (simulateEnabled) {
                                                 simError = null
                                             } else {
                                                 updaterViewModel.clearError()
@@ -562,14 +566,19 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            text = context.getString(R.string.ui_dismiss),
+                                            text = if (activeCanProceedWithMismatchedDownload)
+                                                context.getString(R.string.ui_reset)
+                                            else
+                                                context.getString(R.string.ui_dismiss),
                                             fontWeight = FontWeight.Bold,
                                             style = MaterialTheme.typography.titleSmall
                                         )
                                     }
                                     Button(
                                         onClick = {
-                                            if (simulateEnabled) {
+                                            if (activeCanProceedWithMismatchedDownload) {
+                                                updaterViewModel.proceedWithMismatchedDownload()
+                                            } else if (simulateEnabled) {
                                                 simError = null
                                                 scope.launch {
                                                     simIsChecking = true
@@ -596,14 +605,21 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                                         },
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(20.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = if (activeCanProceedWithMismatchedDownload)
+                                                MaterialTheme.colorScheme.tertiary
+                                            else
+                                                MaterialTheme.colorScheme.error
+                                        ),
                                         elevation = ButtonDefaults.buttonElevation(
                                             defaultElevation = 4.dp,
                                             pressedElevation = 8.dp
                                         )
                                     ) {
                                         Icon(
-                                            imageVector = if (!simulateEnabled && (error?.contains("unknown sources", ignoreCase = true) == true ||
+                                            imageVector = if (activeCanProceedWithMismatchedDownload)
+                                                RhythmIcons.CheckCircle
+                                            else if (!simulateEnabled && (error?.contains("unknown sources", ignoreCase = true) == true ||
                                                               error?.contains("install from unknown", ignoreCase = true) == true))
                                                 RhythmIcons.SettingsFilled else RhythmIcons.Refresh,
                                             contentDescription = null,
@@ -611,7 +627,9 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            text = if (!simulateEnabled && (error?.contains("unknown sources", ignoreCase = true) == true ||
+                                            text = if (activeCanProceedWithMismatchedDownload)
+                                                context.getString(R.string.bottomsheet_proceed)
+                                            else if (!simulateEnabled && (error?.contains("unknown sources", ignoreCase = true) == true ||
                                                      error?.contains("install from unknown", ignoreCase = true) == true))
                                                 context.getString(R.string.updates_open_settings)
                                             else

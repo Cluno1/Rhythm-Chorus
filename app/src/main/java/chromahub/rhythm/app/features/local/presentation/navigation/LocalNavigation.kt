@@ -128,6 +128,7 @@ import chromahub.rhythm.app.features.local.presentation.screens.AlbumDetailScree
 import chromahub.rhythm.app.shared.presentation.screens.settings.SettingsScreenWrapper
 import chromahub.rhythm.app.shared.presentation.screens.settings.*
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
+import chromahub.rhythm.app.shared.data.model.findAlbumForSong
 import chromahub.rhythm.app.shared.presentation.components.MediaScanLoader // Add MediaScanLoader import
 import chromahub.rhythm.app.util.ArtistSeparator
 import chromahub.rhythm.app.util.HapticUtils
@@ -2133,7 +2134,7 @@ private fun LocalNavigationContent(
                                 viewModel.addSongToQueue(song)
                             },
                             onGoToAlbum = { song ->
-                                val album = allAlbums.find { it.title == song.album }
+                                val album = allAlbums.findAlbumForSong(song)
                                 if (album != null) {
                                     navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
                                 }

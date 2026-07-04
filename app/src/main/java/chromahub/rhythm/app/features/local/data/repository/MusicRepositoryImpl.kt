@@ -6586,7 +6586,6 @@ class MusicRepository(context: Context) {
      */
     suspend fun getSongsForAlbum(albumId: String): List<PlayableItem> = withContext(Dispatchers.IO) {
         return@withContext try {
-            val allSongs = loadSongs()
             val allAlbums = loadAlbums()
 
             Log.d(TAG, "Getting songs for album ID: $albumId")
@@ -6600,13 +6599,7 @@ class MusicRepository(context: Context) {
 
             Log.d(TAG, "Found album: ${album.title} (ID: $albumId)")
 
-            // Filter songs that match the album's title and ID
-            val albumSongs = allSongs.filter { song ->
-                val albumTitleMatch = song.album.trim().equals(album.title.trim(), ignoreCase = true)
-                val albumArtist = song.albumArtist?.trim() ?: song.artist.trim()
-                val albumArtistMatch = albumArtist.equals(album.artist.trim(), ignoreCase = true)
-                albumTitleMatch && albumArtistMatch
-            }
+            val albumSongs = album.songs
 
             Log.d(TAG, "Found ${albumSongs.size} songs for album: ${album.title}")
 
@@ -6636,7 +6629,6 @@ class MusicRepository(context: Context) {
      */
     suspend fun getSongsForAlbumLocal(albumId: String): List<Song> = withContext(Dispatchers.IO) {
         return@withContext try {
-            val allSongs = loadSongs()
             val allAlbums = loadAlbums()
 
             Log.d(TAG, "Getting songs for album ID (local): $albumId")
@@ -6650,13 +6642,7 @@ class MusicRepository(context: Context) {
 
             Log.d(TAG, "Found album: ${album.title} (ID: $albumId)")
 
-            // Filter songs that match the album's title and ID
-            val albumSongs = allSongs.filter { song ->
-                val albumTitleMatch = song.album.trim().equals(album.title.trim(), ignoreCase = true)
-                val albumArtist = song.albumArtist?.trim() ?: song.artist.trim()
-                val albumArtistMatch = albumArtist.equals(album.artist.trim(), ignoreCase = true)
-                albumTitleMatch && albumArtistMatch
-            }
+            val albumSongs = album.songs
 
             Log.d(TAG, "Found ${albumSongs.size} songs for album: ${album.title}")
 

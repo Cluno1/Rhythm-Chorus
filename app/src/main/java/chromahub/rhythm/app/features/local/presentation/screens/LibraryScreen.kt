@@ -196,6 +196,7 @@ import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.Artist
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
+import chromahub.rhythm.app.shared.data.model.findAlbumForSong
 import chromahub.rhythm.app.shared.data.model.AlbumViewType
 import chromahub.rhythm.app.shared.data.model.ArtistViewType
 import chromahub.rhythm.app.shared.data.model.PlaylistViewType
@@ -1766,6 +1767,7 @@ fun LibraryScreen(
                                     )
                                     "DATES" -> YearGroupedSongsContent(
                                         songs = filteredSongs,
+                                        albums = albums,
                                         listState = datesListState,
                                         onSongClick = onSongClick,
                                         onAddToPlaylist = { song ->
@@ -2393,10 +2395,7 @@ fun SingleCardSongsContent(
                                 artist?.let { onGoToArtist(it) }
                             },
                             onGoToAlbum = { 
-                                val album = albums.find { 
-                                    it.title.equals(song.album, ignoreCase = true) && 
-                                    it.artist.equals(song.artist, ignoreCase = true)
-                                }
+                                val album = albums.findAlbumForSong(song)
                                 album?.let { onGoToAlbum(it) }
                             },
                             onShowSongInfo = { onShowSongInfo(song) },
@@ -6240,6 +6239,7 @@ fun filterSongsByCategory(
 @Composable
 fun YearGroupedSongsContent(
     songs: List<Song>,
+    albums: List<Album> = emptyList(),
     listState: LazyListState = rememberLazyListState(),
     onSongClick: (Song) -> Unit,
     onAddToPlaylist: (Song) -> Unit,
@@ -6362,7 +6362,9 @@ fun YearGroupedSongsContent(
                             onToggleFavorite = { onToggleFavorite(song) },
                             isFavorite = favoriteSongs.contains(song.id),
                             onGoToArtist = { onGoToArtist(Artist(id = "", name = song.artist)) },
-                            onGoToAlbum = { onGoToAlbum(Album(id = "", title = song.album, artist = song.artist)) },
+                            onGoToAlbum = {
+                                albums.findAlbumForSong(song)?.let { onGoToAlbum(it) }
+                            },
                             onShowSongInfo = { onShowSongInfo(song) },
                             onAddToBlacklist = { onAddToBlacklist(song) },
                             currentSong = currentSong,

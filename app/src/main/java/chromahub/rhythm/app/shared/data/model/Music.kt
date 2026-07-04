@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
 import kotlinx.parcelize.Parcelize
+import java.util.Locale
 import java.util.Objects
 
 @Immutable
@@ -99,6 +100,62 @@ data class Album(
     val numberOfSongs: Int = 0,
     val dateModified: Long = System.currentTimeMillis()
 ) : Parcelable
+
+private fun String.normalizedAlbumMatchKey(): String =
+    trim().lowercase(Locale.ROOT)
+
+private fun String.isUsableAlbumArtist(): Boolean =
+    isNotBlank() && !equals("<unknown>", ignoreCase = true)
+
+private fun Song.albumGroupMatchKey(): String =
+    (albumArtist?.trim()?.takeIf { it.isUsableAlbumArtist() }
+        ?: artist.trim().takeIf { it.isNotBlank() }
+        ?: "Unknown Artist").normalizedAlbumMatchKey()
+
+private fun Album.hasTitle(title: String): Boolean =
+    this.title.trim().equals(title.trim(), ignoreCase = true)
+
+fun List<Album>.findAlbumForSong(song: Song): Album? {
+    val songAlbumId = song.albumId.trim()
+    val songAlbumTitle = song.album.trim()
+    val songGroupKey = song.albumGroupMatchKey()
+
+    return firstOrNull { album ->
+        album.songs.any { it.id == song.id }
+    } ?: firstOrNull { album ->
+        songAlbumId.isNotBlank() &&
+            album.hasTitle(songAlbumTitle) &&
+            album.songs.any { it.albumId.trim() == songAlbumId }
+    } ?: firstOrNull { album ->
+        album.hasTitle(songAlbumTitle) &&
+            album.songs.any { it.albumGroupMatchKey() == songGroupKey }
+    } ?: firstOrNull { album ->
+        album.hasTitle(songAlbumTitle) &&
+            album.artist.trim().equals(song.albumArtist?.trim().takeIf { !it.isNullOrBlank() } ?: song.artist.trim(), ignoreCase = true)
+    } ?: firstOrNull { album ->
+        album.hasTitle(songAlbumTitle)
+    }
+}
+
+fun List<Album>.findAlbumForRoute(albumId: String, albumName: String): Album? {
+    val routeAlbumId = albumId.trim()
+    val routeAlbumName = albumName.trim()
+    val legacyUnknownName = routeAlbumId
+        .takeIf { it.startsWith("unknown_") }
+        ?.removePrefix("unknown_")
+        ?.trim()
+        .orEmpty()
+    val fallbackAlbumName = routeAlbumName.ifBlank { legacyUnknownName }
+
+    return firstOrNull { it.id == routeAlbumId }
+        ?: firstOrNull { album ->
+            routeAlbumId.isNotBlank() &&
+                album.songs.any { it.albumId.trim() == routeAlbumId }
+        }
+        ?: fallbackAlbumName.takeIf { it.isNotBlank() }?.let { name ->
+            firstOrNull { it.hasTitle(name) }
+        }
+}
 
 @Immutable
 @Parcelize

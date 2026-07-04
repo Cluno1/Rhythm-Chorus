@@ -9,6 +9,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -28,6 +30,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -48,6 +51,7 @@ import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.Artist
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.data.model.AppSettings
+import chromahub.rhythm.app.shared.data.model.findAlbumForRoute
 import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
 import chromahub.rhythm.app.shared.presentation.components.AudioQualityIcon
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
@@ -72,6 +76,7 @@ import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortOpti
 import chromahub.rhythm.app.util.ArtistSeparator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private enum class AlbumSortOrder {
@@ -206,8 +211,8 @@ fun AlbumDetailScreen(
 
     val allAlbums by viewModel.albums.collectAsState()
     val allArtists by viewModel.artists.collectAsState()
-    val album = remember(allAlbums, albumId, albumOverride) {
-        albumOverride ?: allAlbums.find { it.id == albumId }
+    val album = remember(allAlbums, albumId, albumName, albumOverride) {
+        albumOverride ?: allAlbums.findAlbumForRoute(albumId, albumName)
     }
 
     val allDisplaySongs = remember(album, songsOverride) {
@@ -652,12 +657,13 @@ fun AlbumDetailScreen(
         }
     } else {
         val songListState = rememberLazyListState()
+        val coroutineScope = rememberCoroutineScope()
         val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val expandedHeaderHeight = 450.dp
         val collapsedHeaderHeight = 56.dp + statusBarHeight
         val collapseDistancePx = with(density) { (expandedHeaderHeight - collapsedHeaderHeight).toPx() }
 
-        LaunchedEffect(selectedDisc) {
+        LaunchedEffect(album?.id, selectedDisc) {
             songListState.scrollToItem(0)
         }
         val collapseFraction by remember(songListState, collapseDistancePx) {
@@ -706,7 +712,15 @@ fun AlbumDetailScreen(
                         val song = allDisplaySongs.firstOrNull()
                         if (song != null) handleArtistTap(song)
                     },
-                    firstSong = allDisplaySongs.firstOrNull()
+                    firstSong = allDisplaySongs.firstOrNull(),
+                    modifier = Modifier.pointerInput(songListState) {
+                        detectVerticalDragGestures { change, dragAmount ->
+                            change.consume()
+                            coroutineScope.launch {
+                                songListState.scrollBy(-dragAmount)
+                            }
+                        }
+                    }
                 )
 
                 AnimatedVisibility(

@@ -78,6 +78,7 @@ import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.Artist
+import chromahub.rhythm.app.shared.data.model.findAlbumForSong
 import chromahub.rhythm.app.shared.data.model.LyricsData
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
 import chromahub.rhythm.app.shared.data.model.Playlist
@@ -275,19 +276,7 @@ fun PlayerScreen(
         }
 
         fun resolveAlbumForSong(currentSong: Song): Album? {
-            val albumArtist = currentSong.albumArtist?.trim().orEmpty()
-            val baseAlbumArtist = if (albumArtist.isNotBlank() && !albumArtist.equals("<unknown>", ignoreCase = true)) {
-                albumArtist
-            } else {
-                currentSong.artist
-            }
-            return albums.firstOrNull { album ->
-                (currentSong.albumId.isNotBlank() && album.id == currentSong.albumId) ||
-                        (album.title.equals(currentSong.album, ignoreCase = true) &&
-                                album.artist.equals(baseAlbumArtist, ignoreCase = true))
-            } ?: albums.firstOrNull { album ->
-                album.title.equals(currentSong.album, ignoreCase = true)
-            }
+            return albums.findAlbumForSong(currentSong)
         }
 
         fun resolveArtistForSong(currentSong: Song): Artist? {
@@ -394,7 +383,7 @@ fun PlayerScreen(
             onOpenFullScreenLyrics = { showFullScreenLyrics = true },
             onShowAlbumBottomSheet = {
                 song?.let { currentSong ->
-                    val album = albums.find { it.title.equals(currentSong.album, ignoreCase = true) && it.artist.equals(currentSong.artist, ignoreCase = true) }
+                    val album = resolveAlbumForSong(currentSong)
                     if (album != null) {
                         if (isStreamingMode) {
                             navController.navigate("streaming_album/${android.net.Uri.encode(album.id)}?albumName=${android.net.Uri.encode(album.title)}")
@@ -405,7 +394,8 @@ fun PlayerScreen(
                         if (isStreamingMode) {
                             navController.navigate("streaming_album/${android.net.Uri.encode(currentSong.album)}?albumName=${android.net.Uri.encode(currentSong.album)}")
                         } else {
-                            navController.navigate(Screen.AlbumDetail.createRoute("unknown_" + currentSong.album, currentSong.album))
+                            val fallbackAlbumId = currentSong.albumId.takeIf { it.isNotBlank() } ?: "unknown_" + currentSong.album
+                            navController.navigate(Screen.AlbumDetail.createRoute(fallbackAlbumId, currentSong.album))
                         }
                     }
                 }
