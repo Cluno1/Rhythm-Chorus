@@ -11,9 +11,6 @@
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://github.com">
 
-    <!-- Preload critical above-the-fold image -->
-    <link rel="preload" href="assets/updates.png" as="image" type="image/png">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="shortcut icon" href="assets/icon.png">
     <link rel="canonical" href="https://cromaguy.github.io/Rhythm/updates.html">
@@ -42,7 +39,7 @@
             <a href="index.html" class="logo">
                 <img src="assets/icon.png" alt="Rhythm Logo" class="header-logo" loading="eager">
                 <h1>Rhythm</h1>
-                <span class="beta-tag">PRE</span>
+                
             </a>
                 <nav>
                     <ul>
@@ -71,7 +68,7 @@
             <a href="index.html" class="logo">
                 <img src="assets/icon.png" alt="Rhythm Logo" class="header-logo">
                 <h1>Rhythm</h1>
-                <span class="beta-tag">PRE</span>
+                
             </a>
             <button class="close-menu-button" aria-label="Close navigation menu">
                 <i class="fas fa-times"></i>
@@ -94,31 +91,13 @@
     </div>
 
     <main id="main-content" role="main">
-    <section class="hero">
-        <div class="rotating-shapes">
-            <div class="rotating-shape shape-1">
-                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="61.9,82.1 43.3,100 24.9,82.1 0,75 6.3,50.1 0,25 24.7,17.9 43.3,0 61.8,17.9 86.6,25 80.5,49.9 86.6,75" stroke-linejoin="round" stroke-width="36"/>
-                </svg>
-            </div>
-            <div class="rotating-shape shape-2">
-                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="50,0 60.4,11.4 75,6.7 78.3,21.7 93.3,25 88.7,39.7 100,50 88.7,60.4 93.3,75 78.3,78.3 75,93.3 60.4,88.7 50,100 39.7,88.7 25,93.3 21.7,78.3 6.7,75 11.4,60.4 0,50 11.4,39.7 6.7,25 21.7,21.7 25,6.7 39.7,11.4" stroke-linejoin="round" stroke-width="28"/>
-                </svg>
-            </div>
-        </div>
+    <section class="page-header">
         <div class="container">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h1>Stay Ahead with Rhythm Updates</h1>
-                    <p>Discover the latest features, performance improvements, and innovative additions to your favorite Material You music player. From advanced audio processing to intelligent library management.</p>
-                    <div class="view-controls">
-                        <button id="listViewBtn" class="btn btn-primary active"><i class="fas fa-list"></i> List View</button>
-                        <button id="gridViewBtn" class="btn btn-outline"><i class="fas fa-th-large"></i> Grid View</button>
-                    </div>
-                </div>
-                <div class="hero-image">
-                    <img src="assets/updates.png" alt="Rhythm Home Screen" loading="eager">
+            <div class="page-header-content">
+                <h1>Updates</h1>
+                <div class="view-controls">
+                    <button id="listViewBtn" class="btn btn-primary active"><i class="fas fa-list"></i> List View</button>
+                    <button id="gridViewBtn" class="btn btn-outline"><i class="fas fa-th-large"></i> Grid View</button>
                 </div>
             </div>
         </div>
@@ -127,6 +106,15 @@
     <section class="updates-list-section" id="updates">
         <div class="container">
                 <div class="updates-list list-view"> <!-- Default to list-view -->
+                    <div class="update-item" data-update-id="update52">
+                        <img src="assets/Posts/Rhythm_5.2_Release.png" alt="Rhythm 5.2 Release">
+                        <div class="update-content">
+                            <h3>Rhythm 5.2: The Global Connection Update 🌍</h3>
+                            <p class="update-summary">Rhythm 5.2 Stable is here with Weblate integration, improved updater with nightly channel, Motion Canvas support, Play Next, multi-source lyrics, and numerous bug fixes.</p>
+                            <span class="update-meta">July 04, 2026 | By Anjishnu Nandi</span>
+                            <button class="btn btn-primary read-more-btn">Read More</button>
+                        </div>
+                    </div>
                     <div class="update-item" data-update-id="update51">
                         <img src="assets/Posts/Rhythm_5.1_Release.png" alt="Rhythm 5.1 Release">
                         <div class="update-content">
@@ -193,16 +181,6 @@
         </div>
     </div>
 
-    <section class="cta">
-        <div class="container">
-            <h2>Join the Rhythm Revolution!</h2>
-            <p>Get Rhythm now and immerse yourself in a world of personalized music with stunning Material You design.</p>
-            <div class="cta-buttons">
-            <a href="index.html#downloadOptionsSection" class="btn btn-outline">Download Now</a>
-                <a href="https://github.com/cromaguy/Rhythm" class="btn btn-primary">Star on GitHub</a>
-            </div>
-        </div>
-    </section>
     </main>
 
     <footer id="contact" role="contentinfo">
@@ -219,6 +197,9 @@
                         <a href="https://t.me/rhythmsupport"><i class="fab fa-telegram-plane"></i></a>
                         <a href="https://discord.gg/XjPyUYPQYc"><i class="fab fa-discord"></i></a>
                     </div>
+                    <a href="https://trendshift.io/repositories/15217" target="_blank" rel="noopener" class="trend-badge">
+                        <img src="https://trendshift.io/api/badge/repositories/15217" alt="Trendshift badge">
+                    </a>
                     <div class="donation-links">
                         <h4>Support Us</h4>
                         <a href="https://github.com/sponsors/cromaguy"><i class="fab fa-github"></i> GitHub Sponsors</a>
@@ -226,16 +207,6 @@
                         <a href="https://ko-fi.com/anjishnunandi"><i class="fas fa-coffee"></i> Ko-fi</a>
                         <a href="https://paypal.me/AnjishnuNandi"><i class="fab fa-paypal"></i> PayPal</a>
                     </div>
-                </div>
-                <div class="footer-section">
-                    <h3>Features</h3>
-                    <ul class="footer-links">
-                        <li><a href="https://github.com/cromaguy/Rhythm#material-you-design">Material You Design</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm#professional-audio-engine">Professional Audio</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm#intelligent-library-management">Intelligent Library</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm#synchronized-lyrics">Synced Lyrics</a></li>
-                        <li><a href="https://github.com/cromaguy/Rhythm#smart-playback">Smart Playback</a></li>
-                    </ul>
                 </div>
                 <div class="footer-section">
                     <h3>Documentation</h3>
@@ -258,6 +229,7 @@
                     <h3>Contribute</h3>
                     <ul class="footer-links">
                         <li><a href="https://github.com/cromaguy/Rhythm/blob/main/docs/CONTRIBUTING.md"><i class="fas fa-file-pen"></i> Contributing Guide</a></li>
+                        <li><a href="https://hosted.weblate.org/engage/rhythm/" target="_blank" rel="noopener"><i class="fas fa-language"></i> Translate on Weblate</a></li>
                         <li><a href="https://github.com/cromaguy/Rhythm/pulls"><i class="fas fa-laptop-code"></i> Submit Pull Request</a></li>
                         <li><a href="https://github.com/cromaguy/Rhythm/issues"><i class="fas fa-bug"></i> Report Issues</a></li>
                         <li><a href="https://github.com/cromaguy/Rhythm/discussions"><i class="fas fa-lightbulb"></i> Discussions</a></li>

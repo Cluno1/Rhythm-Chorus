@@ -139,6 +139,45 @@ const updateData = {
             <p>We're excited to announce the launch of our new website, designed to provide a better user experience and easier access to all things related to Rhythm.</p>
         `
     },
+    update52: {
+        image: "assets/Posts/Rhythm_5.2_Release.png",
+        headline: "Rhythm 5.2: The Global Connection Update 🌍",
+        date: "July 04, 2026",
+        writer: "Anjishnu Nandi",
+        details: `
+            <p>Rhythm 5.2 Stable is here, marking a major step forward in community, customization, and polish. This release brings Weblate-powered translations, a revamped updater with nightly channel support, and a host of performance improvements.</p>
+
+            <h3>🌍 Weblate Integration & Translation Updates</h3>
+            <p>Rhythm now integrates with <strong>Weblate</strong>, making it easier than ever for the community to contribute translations. All 24+ languages have been refreshed, and new contributions are rolling in.</p>
+
+            <h3>🆕 What's New</h3>
+            <ul>
+                <li>🔄 <strong>Improved Updater & Nightly Channel</strong> - Get the latest builds faster with a dedicated nightly update channel alongside stable and beta.</li>
+                <li>🎨 <strong>Motion Canvas Support</strong> - Rich animated canvas for an even more immersive visual experience.</li>
+                <li>🎚️ <strong>Exact Artwork Color Setting</strong> - Fine-tune how album art colors are extracted for the player theme.</li>
+                <li>⏭️ <strong>Play Next</strong> - Queue a track to play immediately after the current one.</li>
+                <li>🖼️ <strong>Refresh Artwork on Settings Change</strong> - Album art updates instantly when you tweak artwork preferences.</li>
+                <li>📱 <strong>Improved Mini Player & Player Transitions</strong> - Smoother, more polished animations throughout the playback experience.</li>
+                <li>🔤 <strong>Multi-Source Lyrics Fetching</strong> - Refactored lyrics engine pulls from multiple sources for better coverage.</li>
+                <li>📂 <strong>Missing Picker Handling</strong> - Gracefully handles missing file pickers and suggests folders (#455).</li>
+            </ul>
+
+            <h3>🐛 Bug Fixes</h3>
+            <ul>
+                <li>📋 Fixed: cannot import playlists from JSON backup (#449)</li>
+                <li>🔐 Fixed: SSL certificate validation error (CertPathValidatorException) (#451)</li>
+                <li>⏱️ Fixed: Sleep timer remaining time not counted down (#450)</li>
+                <li>🎤 Fixed: Lyrics embedding issues</li>
+                <li>🔧 Fixed: Player action wiring and song selection</li>
+                <li>🛡️ Improved broadcast safety across the app</li>
+            </ul>
+
+            <h3>🌍 Translations</h3>
+            <p>With Weblate now live, translations are being actively maintained by the community. All existing languages have been updated, and new languages are being added. <a href="https://hosted.weblate.org/engage/rhythm/">Contribute your language on Weblate!</a></p>
+
+            <p><strong>Download Rhythm 5.2 now from GitHub, F-Droid, or IzzyOnDroid! Coming soon to Google Play Store.</strong></p>
+        `
+    },
     update9: {
         image: "assets/Banner.png",
         headline: "Rhythm is Coming to Google Play Store! 📱🎉",
@@ -185,6 +224,32 @@ const updateData = {
 };
 
 
+
+// Fetch live GitHub stats for badges
+async function fetchGitHubStats() {
+    try {
+        const res = await fetch('https://api.github.com/repos/cromaguy/Rhythm');
+        const data = await res.json();
+        const starEl = document.getElementById('star-count');
+        const downloadEl = document.getElementById('download-count');
+        if (starEl) starEl.textContent = data.stargazers_count?.toLocaleString() || '--';
+        if (downloadEl) downloadEl.textContent = data.subscribers_count?.toLocaleString() || '--';
+    } catch (e) {}
+}
+
+// Fetch download count from GitHub releases
+async function fetchDownloadCount() {
+    try {
+        const res = await fetch('https://api.github.com/repos/cromaguy/Rhythm/releases');
+        const releases = await res.json();
+        const total = releases.reduce((sum, r) => sum + (r.assets || []).reduce((a, asset) => a + asset.download_count, 0), 0);
+        const el = document.getElementById('download-count');
+        if (el) el.textContent = total.toLocaleString() || '--';
+    } catch (e) {}
+}
+
+fetchGitHubStats();
+fetchDownloadCount();
 
 // Function to check if an image exists
 function imageExists(url, callback) {

@@ -225,9 +225,8 @@ header.scrolled {
 
 .header-logo,
 .footer-logo-img {
-  height: 40px; /* Adjust as needed */
+  height: 40px;
   width: auto;
-  margin-right: 5px;
   transition: transform 0.5s cubic-bezier(0.68, -0.6, 0.32, 1.6);
 }
 
@@ -236,22 +235,10 @@ header.scrolled {
 } */
 
 .logo h1 {
-  color: var(--primary);
+  color: var(--on-background);
   font-size: 24px;
   font-weight: 700;
   transition: var(--transition);
-}
-
-.beta-tag {
-  background-color: var(--secondary);
-  color: var(--text-light);
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-left: 8px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
 }
 
 @keyframes pulse {
@@ -464,6 +451,31 @@ nav ul li a:hover::after {
   .mobile-auth-buttons .btn {
     width: 100%;
   }
+
+.page-header {
+  margin-top: 140px;
+  padding: 24px 0 0;
+}
+
+.page-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.page-header-content h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--on-surface);
+}
+
+.page-header-content .view-controls {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+}
 
 .hero {
   margin-top: 140px; /* Increased from 100px to prevent overlap with navbar */
@@ -1045,6 +1057,54 @@ nav ul li a:hover::after {
   transform: perspective(1000px) rotateY(0deg) translateY(-15px);
 } */
 
+.hero-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.hero-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.hero-stat i {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.hero-stat:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.trend-badge {
+  display: block;
+  margin: 24px 0 20px;
+  line-height: 0;
+  transition: opacity 0.2s ease;
+}
+
+.trend-badge:hover {
+  opacity: 0.85;
+}
+
+.trend-badge img {
+  height: 40px;
+  width: auto;
+  border-radius: 8px;
+}
+
 .features {
   padding: 100px 0;
   position: relative;
@@ -1420,13 +1480,12 @@ nav ul li a:hover::after {
 
 /* Footer */
 footer {
-  border-top-right-radius: var(--radius-lg);
-  border-top-left-radius: var(--radius-lg);
-  background-color: var(--on-secondary); /* Use a dark surface tone for the footer */
-  color: var(--on-background); /* Ensure text is visible on dark background */
-  padding-top: 80px;
+  border-radius: var(--radius-lg);
+  background-color: var(--surface-variant);
+  color: var(--on-surface-variant);
+  padding: 60px 60px 0;
+  margin: 0 5% 30px;
   position: relative;
-  overflow: hidden; /* Ensure animations don't overflow */
 }
 
 .footer-content {
@@ -1439,18 +1498,17 @@ footer {
 .footer-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 3px;
   margin-bottom: 24px;
 }
 
-.footer-logo i {
-  color: var(--primary);
-  font-size: 28px;
-  animation: pulse 3s infinite;
+.footer-logo img {
+  height: 40px;
+  width: auto;
 }
 
 .footer-logo h2 {
-  color: var(--on-background); /* Ensure text is visible on dark background */
+  color: var(--on-background);
   font-size: 24px;
   font-weight: 700;
 }
@@ -1496,7 +1554,7 @@ footer {
 }
 
 .footer-links a {
-  color: var(--on-background); /* Ensure text is visible on dark background */
+  color: inherit;
   opacity: 0.8;
   transition: var(--transition);
   display: flex;
@@ -1515,56 +1573,35 @@ footer {
 
 .social-links {
   display: flex;
-  gap: 15px;
+  gap: 12px;
   margin-top: 25px;
 }
 
 .social-links a {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--on-primary-container); /* Use a surface tone for social links */
-  color: var(--on-primary); /* Ensure text is visible */
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Spring animation */
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.social-links a::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--primary);
-  /* background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); */
-  opacity: 0;
-  z-index: -1;
+  color: var(--on-surface-variant);
+  font-size: 22px;
   transition: var(--transition);
-}
-
-.social-links a:hover::before {
-  opacity: 1;
+  text-decoration: none;
 }
 
 .social-links a:hover {
-  transform: translateY(-8px) scale(1.1);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  color: var(--primary);
+  background: var(--surface);
 }
 
 
 .footer-bottom {
-  border-top: 1px solid var(--outline); /* Use outline color for border */
-  padding: 25px 0;
+  padding: 30px 0 20px;
   text-align: center;
   font-size: 16px;
   opacity: 0.7;
-  color: var(--on-background); /* Ensure text is visible */
+  color: inherit;
 }
 
 /* Animations */
@@ -2295,7 +2332,7 @@ footer {
 /* News List and Carousel Styles */
 /* Updates List Section Styles */
 .updates-list-section {
-    padding: 100px 0;
+    padding: 40px 0 100px;
     background-color: var(--surface-container-low);
 }
 
@@ -3431,7 +3468,11 @@ footer {
   }
 
   .hero-text .view-controls {
-    justify-content: center; /* Center buttons on smaller screens within hero-text */
+    justify-content: center;
+  }
+
+  .hero-stats {
+    justify-content: center;
   }
 
   .hero-image {
@@ -3469,6 +3510,16 @@ footer {
     padding: 15px 0;
   }
 
+  .page-header {
+    margin-top: 110px;
+    padding: 20px 0 0;
+  }
+
+  .page-header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
   .hero {
     padding: 50px 30px;
     margin-top: 80px;
@@ -3478,27 +3529,32 @@ footer {
     font-size: 36px;
   }
 
+  footer {
+    margin: 0 3% 24px;
+    padding: 40px 30px 0;
+  }
+
   .footer-content {
-    grid-template-columns: 1fr; /* Stack footer sections on small screens */
-    gap: 30px; /* Adjusted gap for stacked sections */
-    text-align: center; /* Center align text in footer sections */
+    grid-template-columns: 1fr;
+    gap: 30px;
+    text-align: center;
   }
 
   .footer-section {
-    padding-bottom: 20px; /* Add padding between stacked sections */
+    padding-bottom: 20px;
   }
 
   .footer-section:last-child {
-    border-bottom: none; /* No border for the last section */
+    border-bottom: none;
   }
 
   .footer-section h3::after {
-    left: 50%; /* Center the underline */
+    left: 50%;
     transform: translateX(-50%);
   }
 
   .footer-logo {
-    justify-content: center; /* Center logo in footer */
+    justify-content: center;
   }
 
   .social-links {
@@ -3532,6 +3588,25 @@ footer {
     padding: 0 16px;
   }
 
+  .trend-badge img {
+    height: 34px;
+  }
+
+  .page-header {
+    margin-top: 110px;
+    padding: 16px 0 0;
+  }
+
+  .page-header-content h1 {
+    font-size: 1.4rem;
+  }
+
+  .page-header-content .view-controls .btn {
+    min-width: auto;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
   .hero {
     border-radius: var(--radius-md);
     margin: 92px 16px 0 16px;
@@ -3550,6 +3625,16 @@ footer {
 
   .hero-image img {
     max-width: 100%;
+  }
+
+  .hero-stats {
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .hero-stat {
+    padding: 6px 12px;
+    font-size: 13px;
   }
 
   .btn {
@@ -3620,6 +3705,11 @@ footer {
 
   .footer-logo h2 {
     font-size: 20px;
+  }
+
+  footer {
+    margin: 0 16px 20px;
+    padding: 30px 20px 0;
   }
 
   .footer-section h3 {
@@ -4024,8 +4114,8 @@ footer {
   display: inline-block;
   margin: 4px 8px 4px 0;
   padding: 8px 12px;
-  background: var(--surface-variant);
-  color: var(--on-surface-variant);
+  background: var(--surface);
+  color: var(--on-surface);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -4072,6 +4162,11 @@ footer {
 .loaded .hero {
   animation: enterScaleIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
   animation-delay: 0.15s;
+}
+
+.loaded .page-header {
+  animation: enterFadeUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  animation-delay: 0.1s;
 }
 
 .loaded section {
