@@ -1,16 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Rhythm</string>
-    
     <!-- Common Labels -->
     <string name="home">Inicio</string>
     <string name="library">Biblioteca</string>
     <string name="search">Buscar</string>
     <string name="settings">Configuración</string>
-    
     <!-- Media3 notification configuration -->
     <string name="media3_notification_channel_name">Rhythm Música</string>
     <string name="media3_notification_channel_description">Controles de reproducción multimedia</string>
-    
     <!-- Widget strings -->
     <string name="widget_description">Rhythm Widget de música: controle la reproducción con diseños responsivos que admiten tamaños de cuadrícula de 2x1 a 5x5</string>
     <string name="widget_description_glance">Rhythm Música: controla la reproducción con 9 diseños responsivos, Material 3 diseños y actualizaciones de estado en tiempo real</string>
@@ -22,7 +20,6 @@
     <string name="play_pause">Reproducir/Pausar</string>
     <string name="skip_next">Saltar a continuación</string>
     <string name="skip_previous">Saltar anterior</string>
-    
     <!-- Widget Settings -->
     <string name="settings_widget">Reproductor</string>
     <string name="settings_widget_desc">Widgets de la pantalla de inicio</string>
@@ -36,10 +33,8 @@
     <string name="widget_corner_radius">Radio de esquina</string>
     <string name="widget_auto_update">Actualización automática</string>
     <string name="widget_tip_controls">Toque el widget para abrir la aplicación, los botones controlan la reproducción</string>
-    
     <!-- Content Descriptions -->
     <string name="cd_navigate">Navegar</string>
-    
     <!-- Settings - Notifications -->
     <string name="settings_notifications">Notificaciones</string>
     <string name="settings_notifications_updates_group">Actualizaciones de aplicaciones</string>
@@ -54,20 +49,18 @@
     <string name="settings_rhythm_pulse_notifications_desc">Reciba recordatorios amigables y consejos para escuchar.</string>
     <string name="settings_rhythm_pulse_interval">Intervalo de consejos</string>
     <string name="settings_rhythm_pulse_interval_dialog_title">Rhythm Intervalo de propinas</string>
-    
     <!-- Settings - Queue & Playback -->
     <!-- Settings - Queue -->
     <string name="settings_queue">Cola</string>
     <string name="settings_queue_desc">Reglas de cola, generación automática, comportamiento.</string>
     <string name="settings_queue_title">Configuración de cola</string>
-
     <!-- Settings - Playback -->
     <string name="settings_playback">Reproducción</string>
     <string name="settings_playback_desc">Estados de reproducción, fundido cruzado, formato de tiempo</string>
     <string name="settings_playback_title">Configuración de reproducción</string>
     <string name="settings_queue_behavior">Reglas de cola y reproducción aleatoria</string>
     <string name="settings_use_exoplayer_shuffle">Motor aleatorio</string>
-    <string name="settings_use_exoplayer_shuffle_desc">Utilice la línea de tiempo del jugador para el orden aleatorio.</string>
+    <string name="settings_use_exoplayer_shuffle_desc">Usar la línea de tiempo del reproductor para el orden aleatorio.</string>
     <string name="settings_auto_queue">Cola de contexto</string>
     <string name="settings_auto_queue_desc">Cree una cola relacionada cuando comience la reproducción.</string>
     <string name="settings_context_queue_preference">Preferencia de cola de contexto</string>
@@ -104,7 +97,6 @@
     <string name="settings_use_hours">Usar formato de hora</string>
     <string name="settings_use_hours_enabled">Muestra 1:32:26 para pistas largas</string>
     <string name="settings_use_hours_disabled">Muestra 92:26 para pistas largas</string>
-    
     <!-- Settings - Playlists -->
     <string name="settings_playlists">Listas de reproducción</string>
     <string name="settings_playlists_overview">Descripción general</string>
@@ -128,7 +120,6 @@
     <string name="settings_default">Predeterminado</string>
     <string name="settings_enable_default_playlists">Habilitar listas de reproducción predeterminadas</string>
     <string name="settings_enable_default_playlists_desc">Cree automáticamente listas de reproducción agregadas recientemente y más reproducidas</string>
-    
     <!-- Operation Progress -->
     <string name="operation_exporting_playlists">Copia de seguridad de tus listas de reproducción personalizadas...</string>
     <string name="operation_exporting_playlists_location">Copia de seguridad de listas de reproducción en el almacenamiento...</string>
@@ -166,53 +157,44 @@
     <string name="notification_sleep_timer_title">Rhythm Temporizador de apagado</string>
     <string name="notification_sleep_timer_pause_in">⏸ Pausa en %1$s</string>
     <string name="notification_sleep_timer_stop_in">⏹ Parando en %1$s</string>
-    
     <!-- Streaming Notifications -->
     <string name="notification_streaming_channel_name">Rhythm Go</string>
     <string name="notification_streaming_channel_desc">Estado del servicio de streaming y actualizaciones de sincronización</string>
-    
     <!-- Streaming Authentication -->
     <string name="notification_streaming_auth_title">Transmisión conectada</string>
     <string name="notification_streaming_auth_connected">🎵 ¡%1$s está listo para jugar! Tu biblioteca se está sincronizando en segundo plano.</string>
     <string name="notification_streaming_auth_failed">La conexión falló para %1$s. Toque para volver a intentar la configuración.</string>
     <string name="notification_streaming_auth_expired">La sesión expiró para %1$s. Toque para volver a conectarse.</string>
-    
     <!-- Streaming Library Sync -->
     <string name="notification_streaming_sync_title">Sincronizando su biblioteca</string>
     <string name="notification_streaming_sync_started">Sincronizando con %1$s…</string>
     <string name="notification_streaming_sync_progress">Sincronización: %1$d canciones • %2$d álbumes • %3$d artistas</string>
     <string name="notification_streaming_sync_complete">✓ ¡Sincronizamos %1$d canciones de %2$s!</string>
     <string name="notification_streaming_sync_failed">Error de sincronización. Comprueba tu conexión y vuelve a intentarlo.</string>
-    
     <!-- Streaming Liked Songs -->
     <string name="notification_streaming_liked_title">Canciones que me gustan actualizadas</string>
     <string name="notification_streaming_liked_added">♥ Agregado a las canciones que me gustan en %1$s</string>
     <string name="notification_streaming_liked_removed">Eliminado de las canciones que me gustan en %1$s</string>
-    
     <!-- Streaming Playlist Operations -->
     <string name="notification_streaming_playlist_title">Lista de reproducción actualizada</string>
     <string name="notification_streaming_playlist_created">Nueva lista de reproducción \"%1$s\" creada el %2$s</string>
     <string name="notification_streaming_playlist_updated">Lista de reproducción \"%1$s\" actualizada el %2$s</string>
     <string name="notification_streaming_playlist_deleted">Lista de reproducción \"%1$s\" eliminada de %2$s</string>
-    
     <!-- Streaming Network/Quality -->
     <string name="notification_streaming_quality_title">Calidad de transmisión</string>
     <string name="notification_streaming_quality_switched">La calidad cambió a %1$s debido a cambios en la red</string>
     <string name="notification_streaming_buffering">Almacenamiento en búfer... Reproducción desde %1$s</string>
     <string name="notification_streaming_buffering_complete">¡Listo para jugar!</string>
-    
     <!-- Streaming Offline -->
     <string name="notification_streaming_offline_title">Modo sin conexión</string>
     <string name="notification_streaming_offline_sync">Sincronizando caché sin conexión con %1$s…</string>
     <string name="notification_streaming_offline_sync_complete">✓ Caché sin conexión listo con %1$d canciones</string>
     <string name="notification_streaming_offline_cache_cleared">Caché borrado. Ahorrado %1$s de espacio.</string>
-    
     <!-- Streaming Errors -->
     <string name="notification_streaming_error_title">Problema de transmisión</string>
     <string name="notification_streaming_error_generic">Error de transmisión en %1$s. Toque para obtener más detalles.</string>
     <string name="notification_streaming_error_no_internet">Sin Internet. Cambie al modo sin conexión para seguir escuchando.</string>
     <string name="notification_streaming_error_account_issue">Problema de cuenta con %1$s. Por favor vuelva a conectarse.</string>
-    
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">¿Limpiar listas de reproducción vacías?</string>
     <string name="dialog_cleanup_empty_playlists_message">Esto eliminará permanentemente %1$d lista de reproducción vacía%2$s. Esta acción no se puede deshacer.</string>
@@ -223,7 +205,6 @@
     <string name="streaming_settings_switch_provider_confirm_title">¿Cambiar de proveedor de streaming?</string>
     <string name="streaming_settings_switch_provider_confirm_desc">Proveedor actual: %1$s\n¿Cambiar a: %2$s? Esto desconectará el proveedor actualmente activo.</string>
     <string name="action_switch">Cambiar</string>
-    
     <!-- Playlist Detail Screen -->
     <string name="playlist_rename_title">Cambiar nombre de lista de reproducción</string>
     <string name="playlist_name_label">Nombre de la lista de reproducción</string>
@@ -238,11 +219,9 @@
     <string name="playlist_remove_song_confirm">¿Eliminar \'%1$s\' de esta lista de reproducción?</string>
     <string name="playlist_remove_songs_count">Eliminar %1$d canciones</string>
     <string name="playlist_removed_from_playlist">Se eliminó %1$s de la lista de reproducción</string>
-    
     <!-- Restart Dialog -->
     <string name="restart_now">Reiniciar ahora</string>
     <string name="continue_without_restart">Reiniciar más tarde</string>
-    
     <!-- Settings - Media Scan -->
     <string name="settings_media_scan">Escaneo de medios</string>
     <string name="settings_mode_selection">Selección de modo</string>
@@ -282,7 +261,6 @@
     <string name="settings_scan_behavior">Comportamiento de escaneo</string>
     <string name="settings_include_hidden_whitelisted_media">Incluir archivos ocultos y .nomedia</string>
     <string name="settings_include_hidden_whitelisted_media_desc">Habilite el escaneo de rutas de audio ocultas y .nomedia durante los escaneos de medios completos (efecto más fuerte en las carpetas de la lista blanca).</string>
-    
     <!-- Settings - Spotify -->
     
     <!-- Settings - About -->
@@ -307,12 +285,10 @@
     <string name="settings_about_visit_website">Visitar sitio web</string>
     <string name="settings_about_view_github">Ver en GitHub</string>
     <string name="settings_about_report_bug">Informar error o sugerir función</string>
-    
     <!-- Settings - Updates -->
     
     <!-- Status Labels -->
     <string name="status_disabled">Deshabilitado</string>
-    
     <!-- HomeScreen -->
     <string name="home_title">Rhythm</string>
     <string name="home_settings_cd">Configuración</string>
@@ -331,37 +307,31 @@
     <string name="home_latest_additions">Tus últimas incorporaciones</string>
     <string name="home_no_recently_added">No hay álbumes agregados recientemente</string>
     <string name="home_no_recently_added_desc">Los álbumes que agregues a tu biblioteca aparecerán aquí</string>
-    
     <!-- Time-based quotes (0:00-4:59 - Late night) -->
     <string name="home_quote_late_night_1">Vibraciones nocturnas para los soñadores 🌙</string>
     <string name="home_quote_late_night_2">El momento perfecto para tu lista de reproducción nocturna 🎧</string>
     <string name="home_quote_late_night_3">La música suena mejor a medianoche ✨</string>
     <string name="home_quote_late_night_4">Que suene la música de la noche 🌟</string>
-    
     <!-- Time-based quotes (5:00-11:59 - Morning) -->
     <string name="home_quote_morning_1">Comienza tu día con la banda sonora perfecta ✨</string>
     <string name="home_quote_morning_2">Deja que la música energice tu rutina matutina 🎵</string>
     <string name="home_quote_morning_3">Cada mañana hay una nueva sinfonía esperando comenzar 🌅</string>
     <string name="home_quote_morning_4">Café y música: la combinación perfecta para la mañana ☕</string>
-    
     <!-- Time-based quotes (12:00-16:59 - Afternoon) -->
     <string name="home_quote_afternoon_1">Avanza con tus ritmos favoritos 🚀</string>
     <string name="home_quote_afternoon_2">La música hace que todo sea mejor 💪</string>
     <string name="home_quote_afternoon_3">Deja que el ritmo guíe tu día 🎯</string>
     <string name="home_quote_afternoon_4">Sube el foco con excelentes melodías 🔥</string>
-    
     <!-- Time-based quotes (17:00-20:59 - Evening) -->
     <string name="home_quote_evening_1">Es hora de relajarse con melodías relajantes 🌅</string>
     <string name="home_quote_evening_2">Que comience la banda sonora de la noche 🎶</string>
     <string name="home_quote_evening_3">El momento perfecto para tu lista de reproducción relajante 😌</string>
     <string name="home_quote_evening_4">Relájate con tus canciones favoritas 🌇</string>
-    
     <!-- Time-based quotes (21:00-23:59 - Night) -->
     <string name="home_quote_night_1">La noche es hora de música 🌙</string>
     <string name="home_quote_night_2">Deja que la noche te dé una serenata 🎵</string>
     <string name="home_quote_night_3">Vibraciones perfectas para una noche tranquila 🌟</string>
     <string name="home_quote_night_4">Abraza la calma de la noche 😴</string>
-    
     <!-- Personalized messages -->
     
     <!-- Recommended Section -->
@@ -369,10 +339,8 @@
     <string name="home_recommended_subtitle">Según tu historial de escucha</string>
     <string name="home_no_recommendations">Sin recomendaciones</string>
     <string name="home_no_recommendations_desc">Escuche música para obtener recomendaciones personalizadas.</string>
-    
     <!-- Listening Stats -->
     <string name="home_listening_stats">Tus estadísticas de Rhythm</string>
-    
     <!-- Mood & Moments -->
     
     <!-- Recently Played -->
@@ -380,17 +348,14 @@
     <string name="home_recently_played_subtitle">Continúa tu viaje musical</string>
     <string name="home_no_recent_activity">Sin actividad reciente</string>
     <string name="home_no_recent_activity_desc">Comienza a escuchar para ver tus canciones reproducidas recientemente aquí</string>
-    
     <!-- UI Actions -->
     <string name="ui_view_all">Ver todo</string>
     <string name="ui_songs_count">%1$d canciones</string>
-    
     <!-- Updates -->
     <string name="update_available_title">Actualización disponible</string>
     <string name="update_version">Versión %1$s</string>
     <string name="update_whats_new">Novedades:</string>
     <string name="update_now">Actualizar ahora</string>
-    
     <!-- LibraryScreen -->
     <string name="library_title">Biblioteca</string>
     <string name="library_your_music">Tu música</string>
@@ -401,14 +366,12 @@
     <string name="library_loading_playlists">Cargando listas de reproducción...</string>
     <string name="library_loading_albums">Cargando álbumes…</string>
     <string name="library_loading_artists">Cargando artistas…</string>
-    
     <!-- Background Processing States -->
     <string name="scanning_media">Indexación de archivos de audio...</string>
     <string name="detecting_genres">Analizando géneros de pistas...</string>
     <string name="fetching_artwork">Resolviendo la carátula del álbum...</string>
     <string name="extracting_metadata">Extrayendo detalles de la pista...</string>
     <string name="processing_library">Optimización de la biblioteca…</string>
-    
     <string name="library_no_songs">Aún no hay canciones</string>
     <string name="library_no_artists">No se encontraron artistas</string>
     <string name="library_unknown_year">Año desconocido</string>
@@ -427,19 +390,16 @@
     <string name="library_no_albums">Aún no hay álbumes</string>
     <string name="library_playlists_count">%1$d listas de reproducción</string>
     <string name="library_albums_count">%1$d álbumes</string>
-    
     <!-- Sort Options -->
     <string name="sort_name">Nombre</string>
     <string name="sort_date_created">Fecha de creación</string>
     <string name="sort_song_count">Número de canciones</string>
     <string name="sort_title">Título</string>
     <string name="sort_artist">Artista</string>
-    
     <!-- Storage Permission -->
     <string name="storage_permission_required">Se requiere permiso de almacenamiento</string>
     <string name="storage_permission_desc">Para explorar sus archivos de música y explorar el almacenamiento de su dispositivo, Rhythm necesita permiso para acceder a sus archivos y medios.</string>
     <string name="storage_permission_audio_only">Esto permite el acceso sólo a archivos de audio y carpetas que contienen música.</string>
-    
     <!-- PlayerScreen -->
     <string name="player_loading_lyrics">Cargando letras…</string>
     <string name="player_queue">Cola</string>
@@ -448,32 +408,26 @@
     <string name="playback_speed">Velocidad de reproducción</string>
     <string name="sync_with_pitch">Sincronizar con tono</string>
     <string name="sync_with_speed">Sincronizar con velocidad</string>
-    
     <!-- SearchScreen -->
     <string name="search_view_all_songs">Ver todas las canciones</string>
     <string name="search_recent_searches">Búsquedas recientes</string>
     <string name="search_browse_by_genre">Buscar por género</string>
-    
     <!-- Common UI -->
     <string name="ui_dismiss">Descartar</string>
-    
     <!-- Common Terms -->
     <string name="common_rhythm">Rhythm</string>
     <string name="common_home">Inicio</string>
     <string name="common_library">Biblioteca</string>
-    
     <!-- Splash/Loading -->
     <string name="splash_tagline">Tu música, tu Rhythm</string>
     <string name="splash_loading">Preparando tu biblioteca de música...</string>
     <string name="splash_loading_streaming">Preparando la configuración de transmisión...</string>
     <string name="splash_ready">¡Listo para bailar!</string>
-    
     <!-- Audio Quality -->
     
     <!-- Navigation -->
     <string name="nav_no_matching_songs">No se encontraron canciones coincidentes</string>
     <string name="nav_try_different">Pruebe con una consulta de búsqueda diferente</string>
-    
     <!-- Updates Section -->
     <string name="updates_checking">Buscando actualizaciones...</string>
     <string name="updates_available">Actualización disponible</string>
@@ -495,7 +449,6 @@
     <string name="updates_smart_polling">Sondeo inteligente activo</string>
     <string name="updates_smart_polling_desc">Uso de comprobaciones HTTP eficientes para detectar actualizaciones y al mismo tiempo minimizar las llamadas a GitHub API. Recibirás notificaciones instantáneas cuando se lancen nuevas versiones.</string>
     <string name="updates_channel_desc">Elija qué canal de actualización seguir:</string>
-    
     <!-- Onboarding -->
     <string name="onboarding_welcome">Bienvenido</string>
     <string name="onboarding_welcome_to">Bienvenido a</string>
@@ -555,14 +508,12 @@
     <string name="onboarding_continue_full_tour">Continuar recorrido completo</string>
     <string name="onboarding_finish_now">Finalizar la configuración ahora</string>
     <string name="onboarding_step_progress">%1$d de %2$d</string>
-    
     <string name="onboarding_media_scan_title">Filtra tu biblioteca de música</string>
     <string name="onboarding_media_scan_desc">Controla qué archivos de audio aparecen en tu biblioteca. Utilice el modo Lista negra para ocultar archivos no deseados (tonos de llamada, notificaciones) o el modo Lista blanca para mostrar solo carpetas de música específicas.</string>
     <string name="onboarding_media_scan_current_mode">Elija el modo Lista negra o Lista blanca</string>
     <string name="onboarding_media_scan_blacklist">Modo de lista negra: oculta canciones y carpetas específicas (tonos de llamada, notificaciones)</string>
     <string name="onboarding_media_scan_whitelist">Modo de lista blanca: muestra solo canciones de carpetas seleccionadas</string>
     <string name="onboarding_media_scan_configure_in_tuner">Configure el escaneo en Configuración &gt; Escaneo de medios</string>
-    
     <string name="onboarding_complete_title">¡Ya está todo listo!</string>
     <string name="onboarding_complete_desc">¡Rhythm está listo para jugar! Tu biblioteca de música se está escaneando en segundo plano. Esto es lo que está configurado:</string>
     <string name="onboarding_whats_next">¿Qué sigue?</string>
@@ -571,7 +522,6 @@
     <string name="onboarding_next_finetune">Afina el audio con el ecualizador</string>
     <string name="onboarding_next_explore">Explora más configuraciones en cualquier momento</string>
     <string name="onboarding_settings_change">Todas las configuraciones se pueden cambiar en cualquier momento en Configuración</string>
-    
     <!-- Onboarding Navigation -->
     <string name="onboarding_back">Volver</string>
     <string name="onboarding_next">Siguiente</string>
@@ -581,7 +531,6 @@
     <string name="onboarding_continue">Continuar</string>
     <string name="onboarding_open_settings">Abrir configuración</string>
     <string name="onboarding_grant_access">Conceder acceso</string>
-    
     <!-- Onboarding Permission Screen -->
     <string name="onboarding_permissions_granted_title">¡Permisos concedidos!</string>
     <string name="onboarding_action_required_settings">Acción requerida: abrir configuración</string>
@@ -597,13 +546,11 @@
     <string name="onboarding_permission_bluetooth_desc">Conéctese a parlantes, auriculares y dispositivos de audio Bluetooth</string>
     <string name="onboarding_permission_notifications_title">Notificaciones</string>
     <string name="onboarding_permission_notifications_desc">Mostrar controles de reproducción e información de música en notificaciones</string>
-    
     <!-- Permission Tips -->
     <string name="onboarding_permission_tips">Consejos sobre permisos</string>
     <string name="onboarding_permission_tip_1">Otorgue todos los permisos para disfrutar de la mejor experiencia</string>
     <string name="onboarding_permission_tip_2">Puedes cambiar los permisos más adelante en Configuración</string>
     <string name="onboarding_permission_tip_3">Rhythm respeta tu privacidad y tus datos</string>
-    
     <!-- Onboarding Audio &amp; Playback -->
     <string name="onboarding_default_screen_title">Pantalla de inicio predeterminada</string>
     <string name="onboarding_default_screen_desc">Elige qué pantalla se abre cuando inicias Rhythm</string>
@@ -615,7 +562,6 @@
     <string name="onboarding_show_lyrics_desc">Muestra letras sincronizadas cuando estén disponibles para tus canciones favoritas.</string>
     <string name="onboarding_lyrics_source_title">Prioridad de fuente de letras</string>
     <string name="onboarding_lyrics_source_desc">Elija qué fuente de letras probar primero (con respaldo automático a otras)</string>
-    
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
@@ -623,7 +569,6 @@
     <string name="onboarding_dynamic_colors_desc">Aplique colores extraídos del fondo de pantalla de su dispositivo para una apariencia coherente.</string>
     <string name="onboarding_player_theme_title">Temas de reproducción y minirreproductor</string>
     <string name="onboarding_player_theme_desc">Personaliza tus interfaces de reproducción. Alterna entre el diseño limpio y moderno Rhythm o el diseño vibrante y fluido Expressive.</string>
-    
     <!-- Onboarding Updater -->
     <string name="onboarding_update_check_failed">Error en la verificación de actualización</string>
     <string name="onboarding_ready_to_install">Listo para instalar</string>
@@ -644,16 +589,13 @@
     <string name="onboarding_update_channel_title">Canal de actualización</string>
     <string name="onboarding_update_channel_desc">Versiones estables o beta.</string>
     <string name="fetching_latest_version">Obteniendo la última versión de GitHub...</string>
-    
     <!-- Onboarding Update Options -->
     <string name="option_stable">Estable</string>
     <string name="option_beta">Beta</string>
     <string name="option_home">Inicio</string>
     <string name="option_library">Biblioteca</string>
-    
     <!-- Onboarding Media Scan -->
     <string name="onboarding_how_it_works">Cómo funciona</string>
-    
     <!-- Onboarding Setup Complete -->
     <string name="onboarding_library_configured">Biblioteca configurada</string>
     <string name="onboarding_library_configured_desc">Se establecen las preferencias de organización de su biblioteca musical</string>
@@ -661,12 +603,10 @@
     <string name="onboarding_theme_applied_desc">Su tema personalizado y su configuración de apariencia están listos</string>
     <string name="onboarding_backup_options">Opciones de copia de seguridad</string>
     <string name="onboarding_backup_options_desc">Configuraciones de restauración y copia de seguridad automática configuradas</string>
-    
     <!-- Onboarding Update Status UI -->
     <string name="onboarding_in_progress">En progreso</string>
     <string name="onboarding_dismiss">Descartar</string>
     <string name="onboarding_retry">Reintentar</string>
-    
     <!-- Onboarding: Notifications Step -->
     <string name="onboarding_notifications_title">Notificaciones de reproducción</string>
     <string name="onboarding_notifications_desc">Controla cómo Rhythm muestra la reproducción de música en tu tono de notificación. Elija entre notificaciones con estilos personalizados o los controles multimedia estándar del sistema.</string>
@@ -674,7 +614,6 @@
     <string name="onboarding_notification_tip_1">Ver información de la pista actual de un vistazo</string>
     <string name="onboarding_notification_tip_2">Controla la reproducción con acciones rápidas</string>
     <string name="onboarding_notification_tip_3">El estilo personalizado coincide con tu tema</string>
-    
     <!-- Onboarding: Gestures Step -->
     <string name="onboarding_gestures_title">Gestos táctiles</string>
     <string name="onboarding_gestures_desc">Navega por tu biblioteca de música más rápido con gestos intuitivos de deslizar y tocar. Personaliza gestos para las pantallas del minirreproductor y del reproductor completo.</string>
@@ -691,7 +630,6 @@
     <string name="onboarding_gestures_tips_title">Consejos de gestos</string>
     <string name="onboarding_gesture_tip_1">Los gestos de deslizar funcionan en ambas direcciones</string>
     <string name="onboarding_gesture_tip_2">Los deslizamientos rápidos responden más rápido que los lentos</string>
-    
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">Widgets del iniciador</string>
     <string name="onboarding_widgets_desc">Agregue Rhythm widgets a su iniciador para un control rápido de la música. Personalice qué información se muestra y cómo se ve el widget.</string>
@@ -705,7 +643,6 @@
     <string name="onboarding_widget_tip_1">Toca el widget para abrir la aplicación.</string>
     <string name="onboarding_widget_tip_2">Cambiar el tamaño de los widgets para diferentes diseños (2x1 a 5x5)</string>
     <string name="onboarding_widget_tip_3">Los widgets se actualizan en tiempo real durante la reproducción.</string>
-    
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">Conecte sus servicios</string>
     <string name="onboarding_integrations_desc">Mejore su experiencia auditiva conectándose a servicios externos. Obtén carátulas de álbumes, letras, explora tus obras y comparte lo que estás escuchando.</string>
@@ -720,7 +657,6 @@
     <string name="onboarding_integration_broadcast_desc">Compartir el estado de reproducción con otras aplicaciones</string>
     <string name="onboarding_integrations_info_title">Nota de privacidad</string>
     <string name="onboarding_integrations_info_desc">Estas funciones envían datos limitados (títulos de canciones, artistas) a servicios externos. Sus datos personales y archivos de música permanecen en su dispositivo. Puede habilitarlos o deshabilitarlos en cualquier momento en Configuración.</string>
-    
     <!-- Onboarding: Rhythm Stats Step -->
     <string name="onboarding_stats_title">Rhythm Estadísticas</string>
     <string name="onboarding_stats_desc">Descubra información sobre sus hábitos musicales. Realice un seguimiento de su tiempo de escucha, las canciones más reproducidas, sus artistas favoritos y más con hermosas visualizaciones.</string>
@@ -735,7 +671,6 @@
     <string name="onboarding_stats_feature_4">Explora los patrones de escucha de álbumes</string>
     <string name="onboarding_stats_info_title">Cómo funciona</string>
     <string name="onboarding_stats_info_desc">Las estadísticas se calculan localmente en su dispositivo en función de su historial de reproducción. No se envían datos a servidores externos. Acceda a estadísticas detalladas en cualquier momento desde la pantalla de inicio o la configuración.</string>
-    
     <!-- MiniPlayer Swipe Hints -->
     <string name="miniplayer_swipe_up_hint">↑ Reproductor completo</string>
     <string name="miniplayer_swipe_down_hint">↓ Descartar</string>
@@ -743,13 +678,11 @@
     <string name="miniplayer_swipe_right_hint">← Anterior</string>
     <string name="miniplayer_no_song">No se reproduce ninguna canción</string>
     <string name="badge_live">EN VIVO</string>
-    
     <!-- Festive Greetings -->
     <string name="festive_greeting_christmas">🎄 ¡Feliz Navidad! 🎅</string>
     <string name="festive_greeting_new_year">🎆 ¡Feliz año nuevo! 🎉</string>
     <string name="festive_greeting_halloween">🎃 ¡Feliz Halloween! 👻</string>
     <string name="festive_greeting_valentines">💝 ¡Feliz día de San Valentín! 💕</string>
-    
     <!-- Settings -->
     <string name="settings_tip_theme">Personaliza tu tema con colores, fuentes y efectos festivos</string>
     <string name="settings_tip_gestures">Controle la reproducción más rápido con toques y deslizamientos intuitivos, sin necesidad de menús adicionales.</string>
@@ -763,7 +696,6 @@
     <string name="settings_default_screen_desc">Elige tu pantalla de inicio</string>
     <string name="settings_home_desc">Descubre nueva música y recomendaciones.</string>
     <string name="settings_library_desc">Acceso rápido a tu colección de música</string>
-    
     <!-- Cache Management -->
     <string name="cache_current_status">Estado actual de la caché</string>
     <string name="cache_total_size">Tamaño total de caché:</string>
@@ -773,7 +705,6 @@
     <string name="cache_size_limit">Límite de tamaño de caché</string>
     <string name="cache_auto_trim">Recorte automático al 90%</string>
     <string name="cache_auto_trim_desc">La caché se recorta automáticamente cuando el uso alcanza el 90 % del límite.</string>
-    
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Prioridad de fuente de letras</string>
     <string name="lyrics_choose_source">Elige dónde buscar letras</string>
@@ -786,7 +717,6 @@
     <string name="settings_keep_screen_on_lyrics_desc">Evitar que la pantalla se apague mientras las letras están visibles</string>
     <string name="settings_show_lyrics_background_artwork">Mostrar ilustraciones de fondo</string>
     <string name="settings_show_lyrics_background_artwork_desc">Muestra la carátula del álbum borrosa detrás de las letras en pantalla completa</string>
-    
     <!-- Theme Customization -->
     <string name="theme_good_to_know">Es bueno saberlo</string>
     <string name="theme_tip_album_art">Los colores de la carátula del álbum se adaptan dinámicamente a tu música</string>
@@ -802,13 +732,10 @@
     <string name="theme_custom_picker_desc">Crea tu propia combinación de colores</string>
     <string name="theme_font_selection">Selección de fuente</string>
     <string name="theme_font_selection_desc">Elija entre las fuentes del sistema disponibles</string>
-    
     <!-- Playlist Detail -->
     <string name="playlist_no_songs_yet">Aún no hay canciones</string>
-    
     <!-- Components: Backup & Restore -->
     <string name="backup_restore">RESTAURAR COPIA DE SEGURIDAD</string>
-    
     <!-- Components: Blacklist Management -->
     
     <!-- Components: Queue -->
@@ -816,49 +743,39 @@
     <string name="queue_add_songs">Agrega canciones de tu biblioteca para comenzar a escuchar</string>
     <string name="queue_no_more">No más canciones en cola</string>
     <string name="queue_add_more">Añade más canciones para que la música siga sonando</string>
-    
     <!-- Components: Create Playlist -->
     <string name="playlist_create">Crear lista de reproducción</string>
     <string name="playlist_name_empty">El nombre de la lista de reproducción no puede estar vacío</string>
     <string name="playlist_queue_not_empty">Cola no vacía</string>
-    
     <!-- Components: Licenses -->
     <string name="licenses_title">Licencias de código abierto</string>
     <string name="licenses_desc">Construido con increíbles proyectos de código abierto</string>
     <string name="licenses_apache">Licencias de código abierto</string>
     <string name="licenses_attribution">Esta aplicación tiene licencia GPL-3.0. Las bibliotecas tienen licencia Apache 2.0 o licencias compatibles.</string>
-    
     <!-- Components: Player Chip Order -->
-    <string name="player_chip_order_title">Orden de fichas de jugador</string>
-    <string name="player_chip_order_desc">Personalizar fichas de jugador</string>
-    <string name="player_chip_order_saved">Orden de fichas de jugador y visibilidad guardada</string>
-    
+    <string name="player_chip_order_title">Orden de fichas del reproductor</string>
+    <string name="player_chip_order_desc">Personalizar fichas del reproductor</string>
+    <string name="player_chip_order_saved">Se guardó el orden y visibilidad de las fichas del reproductor</string>
     <!-- Components: Library Tab Order -->
     <string name="library_tab_order_title">Orden de pestañas de la biblioteca</string>
     <string name="library_tab_order_desc">Reordenar y alternar visibilidad</string>
-    
     <!-- Components: Playback Bottom Sheet -->
     <string name="playback_lyrics_priority_desc">Configurar fuentes, comportamientos, diseño, tamaño y estilo de letras</string>
     <string name="playback_settings">Configuración de reproducción</string>
-    
     <!-- Components: Lyrics Editor -->
     <string name="lyrics_sync_note">El ajuste de sincronización solo funciona con letras sincronizadas en el tiempo (formato LRC). Utilice Restablecer para recuperar letras sincronizadas si están disponibles.</string>
     <string name="lyrics_placeholder">Ingresa la letra aquí…\n\nPuedes usar el formato LRC:\n[00:12.00] Línea uno\n[00:17.00] Línea dos</string>
     <string name="lyrics_editor_title">Editor de letras</string>
-    
     <!-- Components: Song Info -->
     <string name="song_info_title">Información de la canción</string>
     <string name="rhythm_stats">Rhythm Estadísticas</string>
     <string name="file_info">Información del archivo</string>
-    
     <!-- Components: Add to Playlist -->
     <string name="add_to_playlists">Agregar a listas de reproducción</string>
     <string name="playlist_create_new">Crear nueva lista de reproducción</string>
     <string name="playlist_create_first">Crea tu primera lista de reproducción para agregar canciones</string>
-    
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">Caché</string>
-    
     <!-- Components: Beta Program -->
     
     <!-- Components: Equalizer -->
@@ -870,7 +787,6 @@
     <string name="theme_custom_colors_switch">Cambie a Personalizado en la configuración Fuente de color para crear sus propios colores.</string>
     <string name="theme_system_fonts_unavailable">Las fuentes del sistema solo están disponibles cuando se utiliza la fuente de fuente del sistema.</string>
     <string name="theme_system_fonts_switch">Cambie a Sistema en la configuración de Fuente de fuente para elegir entre las fuentes disponibles.</string>
-    
     <!-- PlaceholderScreens Additional -->
     <string name="backup_whats_included_placeholder">¿Qué se incluye en la copia de seguridad?</string>
     <string name="backup_all_settings_placeholder">Todas las configuraciones, listas de reproducción, temas y personalización de la biblioteca</string>
@@ -891,7 +807,6 @@
     <string name="queue_action_ask_desc">Mostrar un selector de acción cada vez</string>
     <string name="queue_action_always_add_title">Agregar siempre a la cola</string>
     <string name="queue_action_always_add_desc">Agregar siempre la pista seleccionada a la cola</string>
-    
     <!-- Additional UI Elements -->
     <string name="now_playing">AHORA JUGANDO</string>
     <string name="install_update_now">Instalar la actualización ahora</string>
@@ -900,7 +815,6 @@
     <string name="browse_library">Explorar biblioteca</string>
     <string name="add_more_songs">Agregar más canciones</string>
     <string name="edit_metadata">Editar pista</string>
-    
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Las actualizaciones de la aplicación se han deshabilitado en la configuración.</string>
     <string name="updates_auto_disabled">La verificación automática de actualizaciones está deshabilitada. Aún puedes comprobarlo manualmente.</string>
@@ -909,7 +823,6 @@
     <string name="updates_experimental_coming">Más funciones experimentales próximamente en futuras actualizaciones</string>
     <string name="settings_interval_every_48_hours">Cada 48 horas</string>
     <string name="settings_interval_every_72_hours">Cada 72 horas</string>
-    
     <!-- Cache -->
     
     <!-- Theme -->
@@ -917,11 +830,9 @@
     <string name="theme_more_schemes">MÁS ESQUEMAS</string>
     <string name="theme_quick_presets">Preajustes rápidos</string>
     <string name="theme_advanced_rgb">Controles RGB avanzados</string>
-    
     <!-- Services -->
     <string name="external_services">Servicios externos</string>
     <string name="api_services">API integradas</string>
-    
     <!-- Scrobbling -->
     
     <!-- Discord Rich Presence -->
@@ -931,7 +842,6 @@
     <string name="broadcast_status_desc">Enviar información de reproducción a Tasker, KWGT y aplicaciones de automatización</string>
     <string name="bluetooth_lyrics_enabled">Modo de letras de Bluetooth</string>
     <string name="bluetooth_lyrics_desc">Envíe una línea de letra sincronizada como título de pista Bluetooth y mueva Canción - Artista a los metadatos del artista</string>
-    
     <!-- Equalizer -->
     <string name="equalizer">Ecualizador</string>
     <string name="frequency_bands">Bandas de frecuencia</string>
@@ -955,20 +865,16 @@
     <string name="sleep_timer_action">Acción del temporizador</string>
     <string name="sleep_timer_action_desc">¿Qué sucede cuando termina el cronómetro?</string>
     <string name="sleep_timer_select_duration">Seleccionar duración del temporizador</string>
-    
     <!-- Crash Reports -->
     <string name="crash_reports">Informes de fallos</string>
-    
     <!-- Lyrics -->
     <string name="sync_adjustment">Ajuste de sincronización</string>
     <string name="synced_lyrics_unavailable">Letras sincronizadas no disponibles para este formato.</string>
     <string name="word_by_word_unavailable">Letras palabra por palabra no disponibles.</string>
-    
     <!-- Library Operations -->
     <string name="exporting_playlists">Exportando listas de reproducción…</string>
     <string name="exporting_to_location">Exportando listas de reproducción a la ubicación seleccionada...</string>
     <string name="importing_playlist">Importando lista de reproducción…</string>
-    
     <!-- Playlist Import/Export -->
     <string name="restart_app">¿Reiniciar la aplicación?</string>
     <string name="export_playlist">Exportar lista de reproducción</string>
@@ -978,12 +884,10 @@
     <string name="select_playlist_file">Seleccione un archivo de lista de reproducción para importar:</string>
     <string name="supported_formats">Formatos admitidos:</string>
     <string name="may_take_moments">Esto puede tardar unos momentos...</string>
-    
     <!-- Canvas Video Player -->
     
     <!-- Beta Program -->
     <string name="beta_program">PROGRAMA BETA</string>
-    
     <!-- Special Thanks -->
     
     <!-- Plural Support -->
@@ -998,7 +902,6 @@
     <string name="action_play">Jugar</string>
     <string name="action_shuffle">Mezclar</string>
     <string name="action_share">Compartir</string>
-    
     <!-- Settings Screen -->
     <string name="settings_title">Configuración</string>
     <string name="settings_section_appearance">Aspecto y sensación</string>
@@ -1052,12 +955,10 @@
     <string name="settings_experimental_features_desc">Funciones de vanguardia</string>
     <string name="settings_select_option">Rhythm Configuración</string>
     <string name="settings_select_option_desc">Elija una opción de la lista para configurar</string>
-    
     <!-- Playlist Actions -->
     <string name="playlist_no_songs_available">No hay canciones disponibles</string>
     <string name="playlist_all_in_playlist">Todas las canciones ya están en esta lista de reproducción.</string>
     <string name="playlist_name_field">Nombre de la lista de reproducción</string>
-    
     <!-- Player Actions -->
     
     <!-- Search -->
@@ -1068,7 +969,6 @@
     <string name="metadata_year">Año</string>
     <string name="metadata_track">Pista</string>
     <string name="metadata_saving">Guardando...</string>
-    
     <!-- Updates Actions -->
     <string name="updates_check_now_action">Comprobar ahora</string>
     <string name="updates_check_again">Verificar de nuevo</string>
@@ -1083,14 +983,12 @@
     <string name="updates_source_github_desc">Descargue siempre los recursos de la versión de GitHub.</string>
     <string name="updates_source_fdroid_desc">Descargue siempre los recursos de la versión de F-Droid.</string>
     <string name="updates_check_interval_title">Intervalo de verificación de actualización</string>
-    
     <!-- Cache Actions -->
     
     <!-- Backup Actions -->
     
     <!-- Import/Export -->
     <string name="import_complete_title">Importación completa</string>
-    
     <!-- Sleep Timer -->
     
     <!-- Crash Logs -->
@@ -1137,7 +1035,6 @@
     <string name="cd_add_selected_songs">Agregar canciones seleccionadas</string>
     <string name="cd_toggle_multi_select">Alternar selección múltiple</string>
     <string name="cd_add_song">Agregar canción</string>
-    
     <!-- Bottom Sheet Titles -->
     <string name="bottomsheet_add_to_playlist">Agregar a la lista de reproducción</string>
     <string name="bottomsheet_no_playlists">Aún no hay listas de reproducción</string>
@@ -1145,12 +1042,10 @@
     <string name="bottomsheet_up_next">ARRIBA SIGUIENTE</string>
     <string name="bottomsheet_albums">Álbumes</string>
     <string name="bottomsheet_songs">Canciones</string>
-    
     <!-- Bottom Sheet: Common -->
     <string name="bottomsheet_reset">Restablecer</string>
     <string name="bottomsheet_save">Guardar</string>
     <string name="bottomsheet_cancel">Cancelar</string>
-    
     <!-- Bottom Sheet: Lyrics Editor -->
     <string name="bottomsheet_lyrics_earlier">Antes</string>
     <string name="bottomsheet_lyrics_later">Más tarde</string>
@@ -1159,7 +1054,6 @@
     <string name="bottomsheet_lyrics_embed">Insertar en archivo</string>
     <string name="lyrics_embed_success">Letras incrustadas en el archivo correctamente</string>
     <string name="lyrics_embed_failed">No se pudo incrustar la letra en el archivo</string>
-    
     <!-- Bottom Sheet: Sleep Timer -->
     <string name="bottomsheet_timer_remaining">restante</string>
     <string name="bottomsheet_timer_custom_desc">Establecer una duración de tiempo específica</string>
@@ -1167,12 +1061,10 @@
     <string name="bottomsheet_timer_set">Establecer temporizador</string>
     <string name="bottomsheet_timer_edit">Editar</string>
     <string name="bottomsheet_timer_hours_minutes">Establecer horas y minutos para el temporizador de apagado</string>
-    
     <!-- Bottom Sheet: Playback -->
     <string name="bottomsheet_playback">Reproducción</string>
     <string name="bottomsheet_no_device">Ningún dispositivo conectado</string>
     <string name="bottomsheet_max">Máx.</string>
-    
     <!-- Bottom Sheet: Album -->
     <string name="bottomsheet_play_all">Reproducir todo</string>
     <string name="bottomsheet_tracks">Pistas</string>
@@ -1181,14 +1073,11 @@
     <string name="bottomsheet_disc_option">Disco %1$d</string>
     <string name="bottomsheet_disc_filter">Filtrar por disco</string>
     <string name="bottomsheet_no_songs_album">No hay canciones en este álbum.</string>
-    
     <!-- Bottom Sheet: Home Section Order -->
     <string name="bottomsheet_home_section_order">Orden de la sección de inicio</string>
     <string name="bottomsheet_reorder_toggle_visibility">Reordenar y alternar visibilidad</string>
-    
     <!-- Bottom Sheet: Cast -->
     <string name="bottomsheet_active_device">Activo</string>
-    
     <!-- Bottom Sheet: Backup/Restore -->
     
     <!-- Bottom Sheet: Cache Management -->
@@ -1201,7 +1090,6 @@
     <string name="bottomsheet_export_eq">Comparta su configuración de EQ con otras personas o guárdela como copia de seguridad.</string>
     <string name="bottomsheet_no_eq_export">No hay configuraciones de EQ activas para exportar. Habilite el ecualizador y configúrelo primero.</string>
     <string name="bottomsheet_device_type">Tipo de dispositivo</string>
-    
     <!-- Bottom Sheet: Song Info / Metadata Editor -->
     <string name="bottomsheet_title">Título</string>
     <string name="bottomsheet_genre">Género</string>
@@ -1209,7 +1097,6 @@
     <string name="bottomsheet_track">Pista</string>
     <string name="bottomsheet_irreversible">Cambios irreversibles</string>
     <string name="bottomsheet_proceed">Continuar</string>
-    
     <!-- Bottom Sheet: Player Chip Order -->
     
     <!-- Audio Quality Labels -->
@@ -1238,11 +1125,9 @@
     <string name="service_initializing_controller">Rhythm está conectando el controlador de medios.</string>
     <string name="service_ready">Rhythm está listo.</string>
     <string name="service_init_failed">Rhythm no pudo iniciar. Vuelva a abrir la aplicación.</string>
-    
     <!-- Crash Activity -->
     <string name="crash_bug_report">Informe de error</string>
     <string name="crash_restart_app">Reiniciar aplicación</string>
-    
     <!-- Genre Detection -->
     
     <!-- Cache Details -->
@@ -1251,11 +1136,10 @@
     
     <!-- Misc UI -->
     <string name="ui_clear_all">Borrar todo</string>
-    
     <!-- Settings Screen - Complete -->
     <string name="settings_home_customization">Inicio</string>
     <string name="settings_home_customization_desc">Acciones rápidas, música reciente.</string>
-    <string name="settings_player_customization">Jugador</string>
+    <string name="settings_player_customization">Reproductor</string>
     <string name="settings_player_customization_desc">Botones de salto, barra de progreso</string>
     <string name="settings_miniplayer_customization">Mini reproductor</string>
     <string name="settings_miniplayer_customization_desc">Antecedentes, controles</string>
@@ -1375,7 +1259,6 @@
     <string name="settings_rhythm_guard_notification_timer_scheduled_title">Rhythm Descanso de guardia programado</string>
     <string name="settings_rhythm_guard_notification_timer_scheduled_text">Una pausa para escuchar comienza en %1$s.</string>
     <string name="settings_rhythm_guard_notification_tap_open">Toque para ver los detalles del tiempo de espera.</string>
-    
     <!-- Rhythm Stats Screen -->
     <string name="stats_title">Rhythm Estadísticas</string>
     <string name="stats_today">Hoy</string>
@@ -1383,20 +1266,17 @@
     <string name="stats_this_month">Este mes</string>
     <string name="stats_all_time">Todos los tiempos</string>
     <string name="stats_total_listening_time">Tiempo total de escucha</string>
-    
     <!-- Cache Management Complete -->
     
     <!-- Queue Playback Settings -->
     <string name="queue_auto_add">Agregar automáticamente a la cola</string>
     <string name="queue_clear_on_new">Reemplazar cola en una nueva canción</string>
     <string name="queue_playback_speed_desc">Ajustar la velocidad de reproducción</string>
-
     <!-- Gestures Settings -->
     
     <!-- Playlist Settings Toggle -->
     <string name="playlist_ask_each_time">Pregunta cada vez</string>
     <string name="playlist_ask_each_time_desc">Mostrar diálogo con opciones</string>
-    
     <!-- About Multi-Artist Parsing -->
     
     <!-- Home Screen Greetings -->
@@ -1404,17 +1284,14 @@
     <!-- Home Screen Section Titles -->
     <string name="home_top_artists">Artistas</string>
     <string name="home_top_artists_subtitle">Tus músicos favoritos</string>
-    
     <!-- Content Descriptions (additional) -->
     <string name="cd_reorder_home_sections">Reordenar las secciones de inicio</string>
     <string name="cd_remove">Eliminar</string>
     <string name="cd_rhythm_logo">Rhythm Logotipo</string>
     <string name="cd_telegram_support">Soporte de Telegramas</string>
-    
     <!-- Queue &amp; Playlist Dialogs -->
     <string name="queue_action_dialog">Diálogo de acción de cola</string>
     <string name="playlist_action_dialog">Diálogo de acción de lista de reproducción</string>
-    
     <!-- Artist Settings -->
     <string name="artists_title">Artistas</string>
     <string name="artist_multi_parsing">Análisis de varios artistas</string>
@@ -1425,7 +1302,6 @@
     <string name="artist_library_organization">Organización de la biblioteca</string>
     <string name="artist_group_by_album_artist">Grupo por artista del álbum</string>
     <string name="artist_group_by_album_artist_desc">Mostrar álbumes de colaboración bajo el artista principal</string>
-    
     <!-- About Screen -->
     
     <!-- Equalizer -->
@@ -1448,13 +1324,11 @@
     <string name="content_desc_clear_queue">Limpiar cola</string>
     <string name="content_desc_play_album">Reproducir álbum</string>
     <string name="content_desc_album_artwork">Carátula del álbum</string>
-    
     <!-- Additional UI strings -->
     
     <!-- Sort Orders -->
     <string name="sort_duration_short_first">Duración (primero breve)</string>
     <string name="sort_duration_long_first">Duración (primero largo)</string>
-    
     <!-- Context Menu Actions -->
     <string name="action_play_next">Reproducir a continuación</string>
     <string name="action_add_to_queue">Agregar a la cola</string>
@@ -1463,31 +1337,26 @@
     <string name="action_song_info">Información de la canción</string>
     <string name="action_add_to_blacklist">Agregar a la lista negra</string>
     <string name="action_play_all">Reproducir todo</string>
-    
     <!-- Blacklist/Whitelist -->
     
     <!-- Device & Audio -->
     <string name="playback_use_system_volume">Usar volumen del sistema</string>
     <string name="playback_use_system_volume_desc">Controlar el volumen del sistema en lugar del volumen de la aplicación</string>
-    
     <!-- Multi-Artist Parsing -->
     <string name="delimiter_slash">Barra</string>
     <string name="delimiter_semicolon">Punto y coma</string>
     <string name="delimiter_comma">Coma</string>
     <string name="delimiter_plus">Más</string>
     <string name="delimiter_ampersand">Comercial</string>
-    
     <!-- About Screen (additional strings) -->
     
     <!-- Sleep Timer -->
     <string name="sleep_timer_set_control">Establecer el control de reproducción automática</string>
-    
     <!-- Home Sections -->
     <string name="home_section_recently_played">Reproducido recientemente</string>
     <string name="home_section_discover">Descubre el carrusel</string>
     <string name="home_section_new_releases">Nuevos lanzamientos</string>
     <string name="home_section_one_visible">Al menos una sección debe ser visible</string>
-    
     <!-- Library Tabs -->
     <string name="library_tab_songs">Canciones</string>
     <string name="library_tab_playlists">Listas de reproducción</string>
@@ -1496,7 +1365,6 @@
     <string name="library_tab_one_visible">Al menos una pestaña debe estar visible</string>
     <string name="library_tab_order_reset">Orden de pestañas y visibilidad restablecidas a los valores predeterminados</string>
     <string name="library_tab_order_saved">Orden de tabulación y visibilidad guardados</string>
-    
     <!-- Player Chips -->
     <string name="player_chip_favorite">Favorito</string>
     <string name="player_chip_speed">Velocidad de reproducción</string>
@@ -1506,7 +1374,6 @@
     <string name="player_chip_artist">Artista</string>
     <string name="player_chip_one_visible">Al menos un chip debe ser visible</string>
     <string name="player_chip_order_reset">Restablecer el orden y la visibilidad predeterminados</string>
-    
     <!-- AutoEQ & Device Configuration -->
     <string name="autoeq_manage">Administrar AutoEQ</string>
     <string name="autoeq_configure_desc">Configure sus dispositivos de audio con perfiles AutoEQ optimizados para obtener la mejor experiencia auditiva.</string>
@@ -1517,18 +1384,14 @@
     <string name="autoeq_import_paste_hint">Pegue la configuración de EQ de autoeq.app u otras fuentes.</string>
     <string name="autoeq_eq_settings_label">Configuración del ecualizador</string>
     <string name="autoeq_failed_read_file">No se pudo leer el archivo</string>
-    
     <!-- Backup/Restore -->
     <string name="backup_invalid_format">Formato de copia de seguridad no válido o datos corruptos</string>
     <string name="backup_unable_to_read">No se puede leer el archivo de copia de seguridad</string>
-    
     <!-- Licenses -->
     <string name="license_autoeq_name">Ecualizador automático</string>
-    
     <!-- Lyrics Editor -->
     <string name="lyrics_loaded_success">Letras cargadas exitosamente</string>
     <string name="lyrics_saved_success">Letras guardadas exitosamente</string>
-    
     <!-- Media Scan -->
     
     <!-- Song Info -->
@@ -1540,14 +1403,12 @@
     <string name="button_export">Exportar</string>
     <string name="text_file">Archivo</string>
     <string name="text_paste">Pegar</string>
-    
     <!-- PlaceholderScreens - Settings Labels -->
     
     <!-- Cache & Storage -->
     
     <!-- Version Info -->
     <string name="download_progress">%1$d%%</string>
-    
     <!-- GitHub & Links -->
     
     <!-- Contributors -->
@@ -1564,7 +1425,7 @@
     <string name="settings_lightness">Ligereza</string>
     <string name="settings_miniplayer">Minireproductor</string>
     <string name="settings_no_crash_logs">No se encontraron registros de fallos. ¡Buen trabajo!</string>
-    <string name="settings_player_controls">Controles del jugador</string>
+    <string name="settings_player_controls">Controles del reproductor</string>
     <string name="settings_player_screen">Pantalla del reproductor</string>
     <string name="settings_presets">Preajustes</string>
     <string name="settings_progress_display">Visualización de progreso</string>
@@ -1581,7 +1442,6 @@
     <string name="settings_toggle_widgets">Alternar widgets para personalizar su pantalla de inicio</string>
     <string name="settings_visibility">Visibilidad</string>
     <string name="settings_widget_item_counts">Recuento de elementos del widget</string>
-    
     <!-- Playlist Management -->
     
     <!-- Media Scan -->
@@ -1619,11 +1479,9 @@
     <string name="settings_snowflake_size">Tamaño del copo de nieve</string>
     <string name="settings_toggle_decoration_elements">Alternar elementos decorativos individuales por posición</string>
     <string name="settings_multi_artist_parsing_info">Cuando esté habilitado, Rhythm dividirá automáticamente las etiquetas de artista que contengan varios artistas. Esto es útil para canciones descargadas con yt-dlp u otras herramientas que usan delimitadores como \'/\' para separar artistas.\n\nLa barra invertida (\\) se puede utilizar para escapar de los delimitadores.</string>
-    
     <!-- Format Strings with Placeholders -->
     <string name="settings_cache_size_2gb">2GB</string>
     <string name="settings_cache_size_64mb">64MB</string>
-    
     <!-- Common UI strings -->
     <string name="ui_close">Cerrar</string>
     <string name="ui_save">Guardar</string>
@@ -1634,7 +1492,6 @@
     <string name="ui_clear">Borrar</string>
     <string name="ui_selected">Seleccionado</string>
     <string name="ui_done">Hecho</string>
-
     <!-- Queue &amp; Playback -->
     <string name="settings_queue_action_dialog">Acción de cola de pista única</string>
     <string name="settings_queue_action_dialog_desc_ask">Pregunte antes de reemplazar o ampliar la cola para reproducción de una sola pista.</string>
@@ -1653,7 +1510,6 @@
     <string name="settings_remember_queue_desc">Restaurar cola y posición después del reinicio.</string>
     <string name="settings_crossfade_min">0,5s</string>
     <string name="settings_crossfade_max">12s</string>
-
     <string name="list_queue_behavior_title">Reproducir toda la regla de la cola</string>
     <string name="list_queue_behavior_desc">Elija cómo las acciones de lista modifican una cola activa</string>
     <string name="list_queue_behavior_replace_title">Reemplazar cola</string>
@@ -1664,7 +1520,6 @@
     <string name="list_queue_behavior_play_next_desc">Inserte la lista después de la canción actual y comience desde la pista seleccionada.</string>
     <string name="list_queue_behavior_add_end_title">Añadir al final</string>
     <string name="list_queue_behavior_add_end_desc">Añade la lista al final de la cola y comienza desde la pista seleccionada.</string>
-
     <string name="list_queue_action_dialog_title">Cola ya activa</string>
     <string name="list_queue_action_dialog_body">La cola actual tiene %1$d pistas. La lista entrante tiene %2$d pistas.</string>
     <string name="list_queue_action_source">Fuente: %1$s</string>
@@ -1674,7 +1529,6 @@
     <string name="list_queue_action_play_next_desc">Coloque esta lista después de la canción actual y comience la reproducción desde ella.</string>
     <string name="list_queue_action_add_end_title">Añadir al final</string>
     <string name="list_queue_action_add_end_desc">Agregue esta lista al final de la cola e inicie la reproducción desde ella.</string>
-
     <!-- Audio Routing -->
     <string name="settings_audio_routing">Enrutamiento de audio</string>
     <string name="settings_dac_usb_audio">Audio DAC/USB</string>
@@ -1685,7 +1539,6 @@
     <string name="settings_audio_routing_app_desc">Rhythm maneja el audio directamente con el modo de alta resolución y solicita un enrutamiento perfecto de bits USB exclusivo en los dispositivos compatibles. Se requiere reinicio.</string>
     <string name="settings_audio_routing_system_desc">Utiliza el enrutamiento de audio del sistema Android. El mezclador del sistema operativo puede volver a muestrear el audio a 48 kHz.</string>
     <string name="settings_audio_routing_default_desc">Android decide cómo enrutar el audio. El remuestreo depende de la configuración del sistema.</string>
-
     <!-- Library Storage -->
     <string name="settings_cache_backend">Servidor de caché</string>
     <string name="settings_storage_rebuild_room">Reconstruir la base de datos de la sala</string>
@@ -1695,7 +1548,6 @@
     <string name="settings_storage_not_available">No disponible en el modo actual</string>
     <string name="settings_storage_rebuild_success">La base de datos de la sala se reconstruyó correctamente</string>
     <string name="settings_storage_rebuild_failed">No se pudo reconstruir la base de datos de Room</string>
-
     <!-- Cache Management -->
     <string name="settings_cache">Caché</string>
     <string name="settings_cache_settings">Configuración de caché</string>
@@ -1714,7 +1566,6 @@
     <string name="settings_cache_info_2">Borrar el caché puede ralentizar temporalmente la aplicación</string>
     <string name="settings_cache_info_3">Los datos almacenados en caché se reconstruirán automáticamente según sea necesario</string>
     <string name="settings_cache_info_4">La limpieza automática ayuda a mantener un rendimiento óptimo</string>
-
     <!-- Updates Settings -->
     <string name="updates_status_error">Error</string>
     <string name="updates_rhythm_logo_cd">Rhythm Logotipo</string>
@@ -1731,7 +1582,6 @@
     <string name="settings_interval_every_12_hours">Cada 12 horas</string>
     <string name="settings_interval_once_a_day">Una vez al día</string>
     <string name="settings_interval_once_a_week">Una vez a la semana</string>
-
     <!-- Experimental Features -->
     <string name="streaming_integration_title">Rhythm Go</string>
     <string name="streaming_integration_services">Servicios de integración</string>
@@ -1803,7 +1653,6 @@
     <string name="streaming_service_subsonic_desc">Conecte Navidrome y servidores Subsonic compatibles</string>
     <string name="streaming_service_jellyfin">Jellyfin</string>
     <string name="streaming_service_jellyfin_desc">Transmite desde tu biblioteca personal Jellyfin</string>
-
     <!-- Backup &amp; Restore -->
     <string name="settings_backup_restore">Copia de seguridad y restauración</string>
     <string name="settings_auto_backup">Copia de seguridad automática</string>
@@ -1813,7 +1662,6 @@
     <string name="settings_restore_file">Restaurar desde archivo</string>
     <string name="settings_restore_file_desc">Importar copia de seguridad desde un archivo JSON</string>
     <string name="settings_restart_now">Reiniciar ahora</string>
-
     <!-- Library Tab Order -->
     <string name="settings_tab_songs">Canciones</string>
     <string name="settings_tab_playlists">Listas de reproducción</string>
@@ -1825,7 +1673,6 @@
     <string name="settings_tab_order_saved">Orden de tabulación guardado</string>
     <string name="settings_move_up">Subir</string>
     <string name="settings_move_down">Mover hacia abajo</string>
-
     <!-- Gestures Settings -->
     <string name="settings_swipe_gestures">Gestos de deslizar</string>
     <string name="settings_swipe_gestures_desc">Desliza hacia arriba/abajo para abrir/cerrar, izquierda/derecha para saltar pistas</string>
@@ -1835,7 +1682,6 @@
     <string name="settings_swipe_artwork_tracks_desc">Desliza el dedo hacia la izquierda o hacia la derecha en la carátula del álbum para omitir pistas</string>
     <string name="settings_double_tap_artwork">Ilustraciones de doble toque</string>
     <string name="settings_double_tap_artwork_desc">Toca dos veces la carátula del álbum para reproducir/pausar</string>
-
     <!-- MiniPlayer Customization -->
     <string name="settings_miniplayer_header">Minireproductor</string>
     <string name="settings_show_progress">Mostrar progreso</string>
@@ -1847,10 +1693,9 @@
     <string name="settings_show_time_desc">Mostrar el tiempo de reproducción</string>
     <string name="settings_tablet_layout">Diseño de tableta en el teléfono</string>
     <string name="settings_tablet_layout_desc">Utilice un minirreproductor estilo tableta en teléfonos</string>
-
     <!-- Player Customization -->
     <string name="settings_chip_order">Orden y visibilidad de los chips</string>
-    <string name="settings_chip_order_desc">Personaliza y reordena las fichas de acción del jugador.</string>
+    <string name="settings_chip_order_desc">Personaliza y reordena las fichas de acción del reproductor.</string>
     <string name="settings_artwork_overlay">Superposición de ilustraciones</string>
     <string name="settings_artwork_overlay_desc">Mostrar superposición en la carátula del álbum</string>
     <string name="settings_song_info_artwork">Información de la canción en la obra de arte</string>
@@ -1870,7 +1715,6 @@
     <string name="settings_seek_buttons">Botones de búsqueda</string>
     <string name="settings_seek_buttons_desc">Mostrar botones de avance/retroceso de 10 segundos</string>
     <string name="settings_thumb_style">Estilo del pulgar</string>
-
     <!-- Theme Customization -->
     <string name="settings_display_mode">Modo de visualización</string>
     <string name="settings_theme_mode">Modo Tema</string>
@@ -1918,13 +1762,11 @@
     <string name="settings_side_garland_desc">Adornos en los laterales</string>
     <string name="settings_snow_pile">Pila de nieve</string>
     <string name="settings_snow_pile_desc">Nieve en el fondo</string>
-
     <!-- Crash Log History -->
     <string name="settings_crash_log_details">Detalles del registro de fallos</string>
     <string name="settings_log_copied">Registro copiado al portapapeles</string>
     <string name="settings_copy_log">Copiar registro</string>
     <string name="settings_clear_all_logs">Borrar todos los registros</string>
-
     <!-- Home Screen Customization -->
     <string name="settings_visibility_desc">Cuándo mostrar %1$s en el encabezado</string>
     <string name="settings_top_artists">Mejores artistas</string>
@@ -1933,12 +1775,10 @@
     <string name="settings_recommended">Recomendado</string>
     <string name="settings_carousel_style_desc">Elija cómo se muestran los álbumes</string>
     <string name="settings_carousel_default">Predeterminado</string>
-
     <!-- Expressive Shapes -->
     <string name="settings_shapes_album_art">Carátula del álbum</string>
-    <string name="settings_shapes_player_controls">Controles del jugador</string>
+    <string name="settings_shapes_player_controls">Controles del reproductor</string>
     <string name="settings_shapes_mini_player">Mini reproductor</string>
-
     <!-- Lyrics Source -->
 
     <!-- API Management / Integrations -->
@@ -1959,7 +1799,6 @@
     <string name="settings_gesture_artwork_swipe_desc">Desliza la ilustración para saltar</string>
     <string name="settings_gesture_double_tap">Ilustraciones de doble toque</string>
     <string name="settings_gesture_double_tap_desc">Toca dos veces reproducir/pausar</string>
-
     <!-- Queue & Playback Search Strings -->
     <string name="settings_queue_auto_add">Cola de contexto</string>
     <string name="settings_queue_auto_add_desc">Crear cola relacionada en juego</string>
@@ -1967,7 +1806,6 @@
     <string name="settings_queue_clear_on_new_desc">Reemplazar cola para juego directo</string>
     <string name="settings_show_played_queue_songs">Mostrar pistas reproducidas</string>
     <string name="settings_show_played_queue_songs_desc">Mantener las pistas reproducidas visibles en la cola</string>
-
     <string name="settings_queue_action_dialog_desc">Política de conflictos de cola de vía única</string>
     <string name="settings_queue_repeat_persistence">Modo de repetición persistente</string>
     <string name="settings_queue_repeat_persistence_desc">Guardar modo de repetición</string>
@@ -1983,8 +1821,6 @@
     <string name="settings_queue_persistence_desc">Restaurar cola al inicio</string>
     <string name="settings_playlist_action_dialog_desc">Comportamiento al tocar una pista dentro de una lista de reproducción</string>
     <string name="settings_list_queue_action_dialog_desc">Comportamiento de las acciones de reproducción de lista cuando la cola está activa</string>
-
-
     <!-- Experimental Features Search Strings -->
     <string name="settings_exp_festive_theme">Tema festivo</string>
     <string name="settings_exp_festive_theme_desc">Decoraciones festivas</string>
@@ -2006,7 +1842,6 @@
     <string name="settings_bluetooth_lyrics_enabled_desc">Transmitir la línea de letra actual a través de metadatos de Bluetooth</string>
     <string name="exp_go_mode">Go Mode</string>
     <string name="exp_go_mode_desc">Cambiar a Rhythm Go streaming mode</string>
-
     <!-- Home Screen Search Strings -->
     <string name="settings_home_section_order">Orden de sección</string>
     <string name="settings_home_section_order_desc">Reordenar las secciones de inicio</string>
@@ -2018,7 +1853,6 @@
     <string name="settings_home_discover_carousel_desc">Mostrar carrusel de descubrimiento</string>
     <string name="settings_home_carousel_auto_scroll">Desplazamiento automático por carrusel</string>
     <string name="settings_home_carousel_auto_scroll_desc">Carrusel de desplazamiento automático</string>
-
     <!-- Notifications Search Strings -->
     <string name="settings_notifications_rhythm_guard_alerts">Rhythm Alertas de seguridad de guardia</string>
     <string name="settings_notifications_rhythm_guard_alerts_desc">Notificar cuando se activen advertencias de riesgo de escucha</string>
@@ -2028,7 +1862,6 @@
     <string name="settings_notifications_rhythm_pulse_desc">Recordatorios amistosos y consejos para escuchar.</string>
     <string name="settings_notifications_rhythm_pulse_interval">Rhythm Intervalo de consejos</string>
     <string name="settings_notifications_rhythm_pulse_interval_desc">Con qué frecuencia se envían las notificaciones de propinas</string>
-
     <!-- Expressive Shapes Search Strings -->
     <string name="settings_expressive_shapes_enabled">Formas expresivas</string>
     <string name="settings_expressive_shapes_enabled_search_desc">Formas de interfaz de usuario personalizadas</string>
@@ -2036,19 +1869,18 @@
     <string name="settings_shape_preset_desc">Colecciones de formas predefinidas</string>
     <string name="settings_shape_album_art">Forma de la carátula del álbum</string>
     <string name="settings_shape_album_art_desc">Forma de la carátula del álbum</string>
-    <string name="settings_shape_player_art">Forma de la obra de arte del jugador</string>
-    <string name="settings_shape_player_art_desc">Forma de la obra de arte del jugador</string>
+    <string name="settings_shape_player_art">Forma de la carátula del reproductor</string>
+    <string name="settings_shape_player_art_desc">Forma de la carátula del reproductor</string>
     <string name="settings_shape_song_art">Forma de la obra de arte de la canción</string>
     <string name="settings_shape_song_art_desc">Forma de la obra de arte de la canción</string>
     <string name="settings_shape_playlist_art">Forma de la obra de arte de la lista de reproducción</string>
     <string name="settings_shape_playlist_art_desc">Forma de portada de lista de reproducción</string>
     <string name="settings_shape_artist_art">Forma de la obra de arte del artista</string>
     <string name="settings_shape_artist_art_desc">Forma de la imagen del artista</string>
-    <string name="settings_shape_player_controls">Forma de los controles del jugador</string>
-    <string name="settings_shape_player_controls_desc">Forma de los controles del jugador</string>
+    <string name="settings_shape_player_controls">Forma de los controles del reproductor</string>
+    <string name="settings_shape_player_controls_desc">Forma de los controles del reproductor</string>
     <string name="settings_shape_mini_player">Forma del minirreproductor</string>
     <string name="settings_shape_mini_player_desc">Forma del minirreproductor</string>
-
     <string name="settings_library_settings">Experiencia en la biblioteca</string>
     <string name="settings_library_settings_desc">Calificaciones, organización y comportamiento artístico.</string>
     <string name="settings_library_group_organization">Organización y calificaciones</string>
@@ -2059,7 +1891,6 @@
     <string name="settings_show_keyboard_on_search_open">Búsqueda de enfoque automático</string>
     <string name="settings_show_keyboard_on_search_open_desc">Mostrar el teclado cuando se abre la búsqueda</string>
     <string name="settings_library_group_artwork">Representación de ilustraciones</string>
-
     <!-- Theme Customization Search Strings -->
     <string name="settings_theme_follow_system">Seguir el tema del sistema</string>
     <string name="settings_theme_follow_system_desc">Modo claro/oscuro automático</string>
@@ -2073,19 +1904,16 @@
     <string name="settings_theme_font_source_desc">Sistema o fuentes personalizadas</string>
     <string name="settings_theme_import_font">Importar fuente personalizada</string>
     <string name="settings_theme_import_font_desc">Importe su propio archivo de fuente (.ttf, .otf)</string>
-
     <!-- Player Customization Search Strings -->
     <string name="settings_player_chip_order">Orden y visibilidad de los chips</string>
-    <string name="settings_player_chip_order_desc">Personaliza y reordena las fichas de acción del jugador.</string>
+    <string name="settings_player_chip_order_desc">Personaliza y reordena las fichas de acción del reproductor.</string>
     <string name="settings_lyrics_show_translation">Mostrar traducción</string>
     <string name="settings_lyrics_show_translation_desc">Mostrar letras traducidas cuando estén disponibles</string>
     <string name="settings_lyrics_show_romanization">Mostrar romanización</string>
     <string name="settings_lyrics_show_romanization_desc">Mostrar letras romanizadas cuando estén disponibles</string>
-
     <string name="settings_embed_lyrics_in_file">Incrustar letras en un archivo</string>
     <string name="settings_embed_lyrics_in_file_desc">Escriba letras directamente en los metadatos del archivo de audio</string>
     <string name="settings_playback_pitch">Tono de reproducción</string>
-
     <string name="settings_player_gradient">Superposición de degradado</string>
     <string name="settings_player_gradient_desc">Mostrar superposición de degradado en la carátula del álbum</string>
     <string name="settings_player_seek_buttons">Botones de búsqueda</string>
@@ -2098,7 +1926,6 @@
     <string name="settings_player_artwork_radius_desc">Ajustar la redondez de las esquinas de la carátula del álbum</string>
     <string name="settings_player_quality_badges">Insignias de calidad de audio</string>
     <string name="settings_player_quality_badges_desc">Mostrar información de códec y velocidad de bits</string>
-
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Mostrar progreso</string>
     <string name="settings_miniplayer_show_progress_desc">Mostrar indicador de progreso en el mini reproductor</string>
@@ -2116,18 +1943,13 @@
     <string name="settings_miniplayer_show_time_desc">Mostrar el tiempo de reproducción en el mini reproductor</string>
     <string name="settings_miniplayer_tablet_layout">Diseño de tableta en el teléfono</string>
     <string name="settings_miniplayer_tablet_layout_desc">Utilice un minirreproductor estilo tableta en teléfonos</string>
-
-
     <!-- Library Screen scanning overlay -->
     <string name="settings_scanning">Escaneo</string>
-
     <!-- Settings Search -->
     <string name="search_settings_hint">Buscar Rhythm Configuración...</string>
     <string name="clear_search">Borrar búsqueda</string>
     <string name="no_results_found">No se encontraron resultados</string>
     <string name="try_different_search">Pruebe con un término de búsqueda diferente</string>
-    
-
     <!-- Additional Settings Strings -->
     <string name="exp_audio_device_logging">Registro de dispositivo de audio</string>
     <string name="exp_audio_device_logging_desc">Registrar cambios en el dispositivo de audio (Bluetooth, auriculares, etc.)</string>
@@ -2156,7 +1978,6 @@
     <string name="settings_restore_completed">Restauración completada con éxito</string>
     <string name="settings_right_aligned">Alineado a la derecha</string>
     <string name="settings_tab_order">Orden de pestañas de la biblioteca</string>
-
     <!-- Theme, CrashLog, Home, Lyrics, Shapes, API Strings -->
     <string name="settings_crash_log">Historial de registro de fallos</string>
     <string name="settings_expressive_shapes">Formas expresivas</string>
@@ -2172,7 +1993,6 @@
     <string name="theme_font_invalid">Formato de archivo de fuente no válido</string>
     <string name="theme_import_font">Importar fuente personalizada</string>
     <string name="ui_apply">Aplicar</string>
-
     <string name="crashactivity_uh_oh_looks_like">¡Oh, oh! ¡Parece que Rhythm se puso amargo!</string>
     <string name="crashactivity_dont_fret_our_app">¡No te preocupes! Nuestra aplicación acaba de tener un pequeño \"oopsie\". Comparta los detalles del fallo a continuación: ¡es como un mensaje secreto para que nuestros desarrolladores arreglen las cosas! Entonces, intentémoslo de nuevo, ¿de acuerdo?</string>
     <string name="crashactivity_secret_crash_scrolls">Pergaminos secretos de choque</string>
@@ -2478,7 +2298,6 @@
     <string name="festivethemeexamples_using_app_settings">Uso de la configuración de la aplicación</string>
     <string name="playback_paused_zero_volume">La reproducción se pausó porque el volumen llegó a cero. Suba el volumen para continuar escuchando.</string>
     <string name="zero_volume_raise_volume">Subir volumen</string>
-
     <!-- New UI strings for translation -->
     <string name="deviceconfiguration_delete_confirm">¿Está seguro de que desea eliminar \'%1$s\'? Esta acción no se puede deshacer.</string>
     <string name="deviceconfiguration_profile_imported">Perfil importado: %1$s</string>
@@ -2525,7 +2344,6 @@
     <string name="rating_desc_loved">Amado - Uno de mis favoritos</string>
     <string name="rating_desc_absolute_favorite">Favorito absoluto: pista de primer nivel</string>
     <string name="rating_desc_unknown">Calificación desconocida</string>
-
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">Mostrar alternancia de favoritos en widgets grandes</string>
     <string name="settings_clear_all_logs_desc">Eliminar todos los informes de fallos almacenados</string>
@@ -2541,7 +2359,6 @@
     <string name="widget_theme_solid_purple_desc">Fondo violeta intenso característico con matices y reflejos característicos</string>
     <string name="widget_theme_glance_suffix">%1$s (solo widgets Glance)</string>
     <string name="unit_dp">%1$ddp</string>
-
     <!-- Settings Suggestions and Tips -->
     <string name="settings_suggestions">Sugerencias de configuración</string>
     <string name="settings_suggestions_desc">Mostrar sugerencias contextuales en la parte superior</string>
@@ -2554,7 +2371,6 @@
     <string name="pulse_steady">Ranura constante</string>
     <string name="pulse_heavy">Escucha intensa</string>
     <string name="pulse_marathon">Modo maratón</string>
-    
     <!-- Settings Tips Details -->
     <string name="settings_tip_theme_desc_1">Actualiza tu reproductor de música con un animado negro AMOLED y hermosos colores pastel.</string>
     <string name="settings_tip_theme_desc_2">Haz que Rhythm sea realmente tuyo haciendo coincidir el acento de la aplicación con tu sistema.</string>
@@ -2588,7 +2404,6 @@
     <string name="settings_tip_library_active_desc_2">Su biblioteca admite clasificaciones. Ajuste el escaneo y la agrupación para una navegación más limpia.</string>
     <string name="settings_tip_library_inactive_desc_1">Las clasificaciones están deshabilitadas. La configuración de la biblioteca aún puede mejorar la estructura y la velocidad.</string>
     <string name="settings_tip_library_inactive_desc_2">Se detectó el modo de biblioteca simplificada. Ajuste la agrupación para una navegación más rápida.</string>
-
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">Integrado primero</string>
     <string name="lyrics_source_embedded_first_desc">Pruebe metadatos de archivos de audio → API en línea → archivos .lrc</string>
@@ -2596,7 +2411,6 @@
     <string name="lyrics_source_api_first_desc">Pruebe servicios en línea → Metadatos de audio → Archivos .lrc</string>
     <string name="lyrics_source_local_first">.lrc local primero</string>
     <string name="lyrics_source_local_first_desc">Pruebe archivos .lrc → Metadatos de audio → API en línea</string>
-
     <!-- Font / Color Customization Dialogs -->
     <string name="theme_font_source_changed_restart">La fuente de fuente cambió. Reinicie la aplicación para aplicar la nueva fuente.</string>
     <string name="color_source_album_art">Carátula del álbum</string>
@@ -2616,7 +2430,6 @@
     <string name="font_inter_desc">Fuente sans-serif limpia y moderna, muy legible</string>
     <string name="font_jetbrains_desc">Fuente monoespaciada perfecta para contenido técnico</string>
     <string name="font_quicksand_desc">Fuente redondeada con una apariencia más suave y amigable</string>
-
     <!-- Predefined Color Schemes -->
     <string name="color_scheme_default_title">Rhythm Predeterminado</string>
     <string name="color_scheme_default_desc">Material 3 violeta básico con detalles en rosa rosado</string>
@@ -2644,12 +2457,10 @@
     <string name="color_scheme_emerald_desc">Verdes esmeralda frescos con tonos de bosque naturales</string>
     <string name="color_scheme_mint_title">Menta</string>
     <string name="color_scheme_mint_desc">Tonos cian y verde menta frescos y limpios</string>
-
     <!-- Color Preview Chips -->
     <string name="theme_color_primary">Primaria</string>
     <string name="theme_color_secondary">Secundario</string>
     <string name="theme_color_tertiary">Terciario</string>
-
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Letras</string>
     <string name="lyrics_settings_general">Configuración general</string>
@@ -2686,13 +2497,11 @@
     <string name="lyrics_settings_word_by_word_translation">Sincronización automática de palabras</string>
     <string name="lyrics_settings_word_by_word_translation_desc">Genere automáticamente tiempos a nivel de palabra para letras sincronizadas con líneas distribuyendo la duración proporcionalmente</string>
     <string name="lyrics_settings_info_bullets">Detalles de sincronización adicionales:\n• Las API en línea proporcionan letras sincronizadas de alta calidad\n• Rhythm ofrece sincronización palabra por palabra\n• LRCLib proporciona sincronización gratuita línea por línea</string>
-
     <!-- AutoEQ Preset Picker additions -->
     <string name="autoeqpresetpickerbottomsheet_search_presets">Buscar ajustes preestablecidos...</string>
     <string name="autoeqpresetpickerbottomsheet_disable">Ninguno / Desactivar AutoEQ</string>
     <string name="autoeqpresetpickerbottomsheet_disable_desc">Borrar perfil de auriculares, usar ajustes preestablecidos de ecualizador estándar</string>
     <string name="autoeqpresetpickerbottomsheet_unknown_brand">Marca desconocida</string>
-
     <!-- Device Configuration additions -->
     <string name="device_configuration_devices_configured">%1$d dispositivos configurados</string>
     <string name="device_configuration_device_recognized">Dispositivo reconocido</string>
@@ -2716,7 +2525,6 @@
     <string name="device_configuration_for_device">Para %1$s</string>
     <string name="device_configuration_profiles_available">%1$d perfiles disponibles</string>
     <string name="device_configuration_disable_compensation">Desactivar la compensación de auriculares</string>
-
     <!-- Common UI element strings -->
     <string name="common_none">Ninguno</string>
     <string name="common_back">Volver</string>
@@ -2724,7 +2532,6 @@
     <string name="common_disabled">Deshabilitado</string>
     <string name="common_unavailable">No disponible</string>
     <string name="common_unknown">Desconocido</string>
-
     <!-- Blacklist UI additions -->
     <string name="blacklist_remove_song_title">¿Eliminar de la lista negra?</string>
     <string name="blacklist_add_song_title">¿Agregar a la lista negra?</string>
@@ -2743,7 +2550,6 @@
     <string name="blacklist_folder_added_msg">Carpeta agregada a la lista negra</string>
     <string name="blacklist_disc_label">Disco %1$d</string>
     <string name="blacklist_track_label">Pista %1$d</string>
-
     <!-- Library & Playlist Dialog additions -->
     <string name="dialog_add_song_to_playlist">Añade \"%1$s\" a esta lista de reproducción</string>
     <string name="dialog_songs_in_queue">Tienes %1$d canciones en la cola actual.</string>
@@ -2755,13 +2561,11 @@
     <string name="dialog_restart_warning_message">Para garantizar que todas las listas de reproducción importadas funcionen correctamente, recomendamos reiniciar la aplicación. Puede continuar usando la aplicación normalmente, pero es posible que algunas funciones no funcionen como se esperaba hasta que la reinicie.</string>
     <string name="dialog_export_playlist_to">Exportar \"%1$s\" a:</string>
     <string name="dialog_export_playlists_to">Exportar %1$d listas de reproducción a:</string>
-
     <!-- Mode dialog strings -->
     <string name="dialog_switch_to_go">Switch to Rhythm Go?</string>
     <string name="dialog_switch_to_local">¿Cambiar a local?</string>
     <string name="dialog_switch_to_go_desc">This item belongs to Rhythm Go. ¿Cambiar al modo de transmisión ahora para transmitirlo y reproducirlo?</string>
     <string name="dialog_switch_to_local_desc">Este artículo pertenece a su biblioteca local. ¿Cambiar al modo local ahora para reproducir tus pistas sin conexión?</string>
-
     <!-- Section order content descriptions -->
 
     <!-- Add To Playlist additions -->
@@ -2787,7 +2591,6 @@
     <string name="eq_enhance_lows">Mejorar los mínimos</string>
     <string name="eq_widen_sound">Ampliar sonido</string>
     <string name="eq_mono_only">Sólo mono</string>
-
     <!-- Library updates, sorting & categories -->
     <string name="library_sort_title">Título</string>
     <string name="library_sort_artist">Artista</string>
@@ -2820,7 +2623,6 @@
     <string name="library_action_rate_song">Calificar canción</string>
     <string name="library_selected_count_format">%1$d Seleccionado</string>
     <string name="library_from_tracks_format">de %1$d pistas</string>
-
     <!-- Onboarding, Backup & Settings additions -->
     
     <string name="backup_restored_success">Copia de seguridad restaurada exitosamente. Reinicie la aplicación para aplicar todos los cambios.</string>
@@ -2829,12 +2631,10 @@
     <string name="backup_failed_to_restore_file">No se pudo restaurar desde el archivo: %1$s</string>
     <string name="backup_no_backup_clipboard">No se encontró ninguna copia de seguridad en el portapapeles</string>
     <string name="backup_failed_to_restore_clipboard">No se pudo restaurar desde el portapapeles: %1$s</string>
-    
     <string name="updater_ready_to_install">La versión %1$s está lista para instalar</string>
     <string name="updater_download_progress">%1$d%% • %2$s / %3$s</string>
     <string name="updater_version_info">Versión %1$s • %2$s</string>
     <string name="updater_error_occurred">Ocurrió un error</string>
-
     <!-- Expressive shape preset & group names -->
     <string name="shape_preset_default">Predeterminado</string>
     <string name="shape_preset_default_desc">Formas suaves y expresivas para todas las edades.</string>
@@ -2931,7 +2731,6 @@
     <string name="shape_group_whimsical">Caprichoso</string>
     <string name="shape_group_special">Especial</string>
     <string name="shape_group_pixel">Píxel</string>
-
     <!-- Customization Choices -->
     <string name="option_always">Siempre</string>
     <string name="option_expanded">Ampliado</string>
@@ -2941,18 +2740,15 @@
     <string name="option_both">Ambos</string>
     <string name="option_icon">Icono</string>
     <string name="option_name">Nombre</string>
-
     <!-- Theme settings additions -->
     <string name="theme_color_red">Rojo</string>
     <string name="theme_color_green">Verde</string>
     <string name="theme_color_blue">Azul</string>
-
     <!-- Color Scheme names -->
 
     <!-- Shape Utils category and descriptions -->
     <string name="shape_utils_player_controls">Controles del jugador</string>
     <string name="shape_utils_mini_player">Mini reproductor</string>
-
     <!-- Metadata properties and labels -->
     <string name="metadata_duration">Duración</string>
     <string name="metadata_disc">Disco</string>
@@ -2974,7 +2770,6 @@
     <string name="metadata_date_added">Fecha agregada</string>
     <string name="metadata_modified">Modificado</string>
     <string name="metadata_lyrics_available">Disponible</string>
-
     <!-- Discover settings specific -->
     <string name="settings_discover_album_name">Nombre del álbum</string>
     <string name="settings_discover_album_name_desc">Mostrar título del álbum en la tarjeta</string>
@@ -2986,18 +2781,15 @@
     <string name="settings_discover_play_button_desc">Mostrar botón de reproducción rápida</string>
     <string name="settings_discover_gradient_overlay">Superposición de degradado</string>
     <string name="settings_discover_gradient_overlay_desc">Mostrar degradado detrás del texto</string>
-
     <!-- Carousel Style selector strings -->
     <string name="carousel_style_default">Predeterminado</string>
     <string name="carousel_style_default_desc">2 álbumes de vista lateral</string>
     <string name="carousel_style_hero">Héroe</string>
     <string name="carousel_style_hero_desc">1 álbum de vista lateral</string>
-
     <!-- Theme names -->
     <string name="theme_rhythm">Rhythm</string>
     <string name="theme_expressive">Expresivo</string>
     <string name="settings_managed_by_expressive_shapes">Gestionado por formas expresivas</string>
-
     <!-- Shape targets -->
     <string name="shape_target_album_art">Carátula del álbum</string>
     <string name="shape_target_player_art">Ilustraciones del jugador</string>
@@ -3018,11 +2810,9 @@
     <string name="settings_metadata_editing">Edición de metadatos</string>
     <string name="settings_enable_album_editing">Habilitar edición de álbum</string>
     <string name="settings_enable_album_editing_desc">Permitir la edición por lotes de metadatos e ilustraciones de álbumes completos.</string>
-
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">Advertencia de seguridad</string>
     <string name="fdroid_update_warning_message">Habilitar actualizaciones dentro de la aplicación en una compilación de F-Droid omite los controles de seguridad de F-Droid. Las actualizaciones se descargarán directamente del editor. ¿Quieres continuar?</string>
-
     <!-- Replay Gain Settings Screen -->
     <string name="replay_gain_status_active">Activo</string>
     <string name="replay_gain_status_disabled">Deshabilitado</string>
@@ -3037,10 +2827,8 @@
     <string name="replay_gain_preamp_untagged">Preamplificador (sin etiquetar)</string>
     <string name="replay_gain_preamp_untagged_desc">Ajuste de volumen para pistas sin etiquetas ReplayGain.</string>
     <string name="replay_gain_configuration">Configuración</string>
-
     <!-- Playback Settings Screen Extra -->
     <string name="settingsscreen_audio_offload_desc">Decodificación de audio acelerada por hardware para ahorrar energía del dispositivo</string>
-
     <!-- Backup & Restore Sections picker extra strings -->
     <string name="backup_restore_section_core">Núcleo</string>
     <string name="backup_restore_section_core_desc">Preferencias de tema, reproductor, interfaz de usuario, API y aplicación.</string>
@@ -3051,24 +2839,20 @@
     <string name="backup_restore_status_included">Incluido</string>
     <string name="backup_restore_status_excluded">Excluido</string>
     <string name="backup_restore_sections_enabled">%1$d de %2$d habilitado</string>
-
     <!-- Settings status cards -->
     <string name="status_active">Activo</string>
-
     <!-- Sort menu options -->
     <string name="sort_order_title">Orden</string>
     <string name="sort_order_ascending">Ascendente</string>
     <string name="sort_order_descending">Descendente</string>
     <string name="sort_track_number">Número de pista</string>
     <string name="sort_duration">Duración</string>
-
     <!-- Library Bottom Bar -->
     <string name="library_bottom_bar_cancel_selection">Cancelar selección</string>
     <string name="library_bottom_bar_back">Volver</string>
     <string name="library_bottom_bar_select_songs">Seleccionar canciones</string>
     <string name="library_bottom_bar_more_actions">Más acciones</string>
     <string name="library_play_selected">Reproducir (%1$d)</string>
-
     <!-- Rhythm Guard Comic Status Subtitles -->
     <string name="rhythm_guard_health_desc_good">Tus oídos están organizando una fiesta con el volumen perfecto. ¡Sigue vibrando responsablemente! 🎉</string>
     <string name="rhythm_guard_health_desc_fair">Poniéndose un poco picante allí. ¿Quizás bajarlo un poco antes de que intervenga el guardia? 🌶️</string>
@@ -3076,7 +2860,6 @@
     <string name="rhythm_guard_health_desc_cooldown">¡Zona segura activa! Rhythm El guardia está fuera de servicio durante la pausa para el café, ¡así que improvisa libremente sin tiempos de espera! 🎫☕</string>
     <string name="rhythm_guard_health_desc_timeout">Timeout acústico activo. ¡Se está realizando una siesta obligatoria para proteger su audición! 😴🛑</string>
     <string name="rhythm_guard_health_desc_off">Rhythm El guardia está fuera de servicio. Estás volando completamente solo con seguridad de volumen. ¡Buena suerte! 🏍️💨</string>
-
     <!-- Player, Bottomsheet, and Popup translations -->
     <string name="unknown_track">Pista desconocida</string>
     <string name="unknown_song">Canción desconocida</string>
@@ -3096,6 +2879,13 @@
     <string name="playlist_count_format">%1$d listas de reproducción</string>
     <string name="ui_song_count">1 canción</string>
     <string name="duration_minutes_format">%1$dm</string>
+    <string name="updates_channel_stable_title">Estable</string>
+    <string name="updates_channel_stable_desc">Recibir solo actualizaciones oficiales estables.</string>
+    <string name="updates_channel_beta_title">Beta</string>
+    <string name="updates_channel_beta_desc">Recibir pre-lanzamientos y candidatas a lanzamiento.</string>
+    <string name="updates_channel_nightly_title">Nightly</string>
+    <string name="updates_channel_nightly_desc">Reciba las versiones experimentales más recientes compiladas desde la rama principal.</string>
+    <string name="lyrically_sources_title">Fuentes de Lyrically</string>
+    <string name="lyrically_sources_desc">Configura y prioriza las fuentes de letras en Lyrically. Se intentará primero con las fuentes palabra por palabra, y si no se encuentra una fuente, se recurrirá a las sincronizadas o sin formato.</string>
+    <string name="error_no_document_app">No se encontró ningún selector de documentos del sistema para seleccionar una carpeta.</string>
 </resources>
-
-
