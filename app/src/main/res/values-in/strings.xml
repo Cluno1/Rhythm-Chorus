@@ -2885,4 +2885,7 @@
     <string name="updates_channel_beta_desc">Menerima pra-rilis dan kandidat rilis.</string>
     <string name="updates_channel_nightly_title">Nightly</string>
     <string name="updates_channel_nightly_desc">Menerima build Nightly paling mutakhir yang dikompilasi dari branch utama.</string>
+    <string name="lyrically_sources_title">Sumber Lyrically</string>
+    <string name="lyrically_sources_desc">Atur dan prioritaskan sumber lirik di Lyrically. Sumber lirik kata per kata akan dicoba terlebih dahulu, lalu beralih ke lirik tersinkronisasi/lirik biasa jika tidak tersedia.</string>
+    <string name="error_no_document_app">Tidak ditemukan pemilih dokumen bawaan sistem untuk memilih folder.</string>
 </resources>
