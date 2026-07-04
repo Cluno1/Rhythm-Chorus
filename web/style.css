@@ -435,6 +435,16 @@ nav ul li a:hover::after {
     /* border-top: 1px solid var(--outline); */
   }
 
+  .mobile-nav-toggle {
+    padding: 16px 0;
+    border-top: 1px solid var(--outline);
+    margin: auto 0 0;
+  }
+
+  .mobile-nav-toggle .dark-mode-toggle {
+    margin-top: 0;
+  }
+
   .mobile-nav-menu.active .mobile-nav-links {
     display: flex; /* Ensure the nav links container is displayed when menu is active */
   }
@@ -679,13 +689,13 @@ nav ul li a:hover::after {
 
 /* Search and Navigation Section */
 .search-nav-section {
-  padding: 60px 0;
+  padding: 32px 0 24px;
   background: var(--surface);
 }
 
 .page-search-wrapper {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 0;
   position: relative;
 }
 
@@ -733,73 +743,6 @@ nav ul li a:hover::after {
 }
 
 /* Quick Navigation - Single Line */
-.quick-nav {
-  text-align: center;
-}
-
-.quick-nav-links {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  max-width: 100%;
-}
-
-.quick-nav-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: var(--background);
-  border: 1px solid var(--surface-variant);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  color: var(--on-background);
-  transition: var(--transition);
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.quick-nav-link:hover {
-  background: var(--primary);
-  color: var(--on-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.quick-nav-link i {
-  font-size: 14px;
-  color: var(--secondary);
-  transition: var(--transition);
-}
-
-.quick-nav-link:hover i {
-  color: var(--on-primary);
-}
-
-/* Responsive Quick Navigation */
-@media (max-width: 768px) {
-  .quick-nav-links {
-    gap: 8px;
-  }
-
-  .quick-nav-link {
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-
-  .quick-nav-link span {
-    display: none; /* Hide text on mobile, show only icons */
-  }
-
-  .quick-nav-link {
-    padding: 10px;
-    min-width: 44px;
-    justify-content: center;
-  }
-}
-
 @media (max-width: 480px) {
   .search-nav-section {
     padding: 40px 0;
@@ -809,15 +752,6 @@ nav ul li a:hover::after {
     max-width: 100%;
     padding: 14px 45px 14px 18px;
     font-size: 14px;
-  }
-
-  .quick-nav-links {
-    gap: 6px;
-  }
-
-  .quick-nav-link {
-    padding: 8px;
-    min-width: 40px;
   }
 }
 
@@ -1482,7 +1416,7 @@ nav ul li a:hover::after {
 footer {
   border-radius: var(--radius-lg);
   background-color: var(--surface-variant);
-  color: var(--on-surface-variant);
+  color: var(--on-background);
   padding: 60px 60px 0;
   margin: 0 5% 30px;
   position: relative;
@@ -1536,7 +1470,6 @@ footer {
 .footer-section p {
   margin-bottom: 20px;
   font-size: 16px;
-  opacity: 0.8;
   line-height: 1.7;
 }
 
@@ -1555,7 +1488,7 @@ footer {
 
 .footer-links a {
   color: inherit;
-  opacity: 0.8;
+  opacity: 0.9;
   transition: var(--transition);
   display: flex;
   align-items: center;
@@ -1584,7 +1517,7 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--on-surface-variant);
+  color: var(--on-background);
   font-size: 22px;
   transition: var(--transition);
   text-decoration: none;
@@ -1600,7 +1533,7 @@ footer {
   padding: 30px 0 20px;
   text-align: center;
   font-size: 16px;
-  opacity: 0.7;
+  opacity: 0.85;
   color: inherit;
 }
 
@@ -2621,19 +2554,9 @@ footer {
         display: none; /* Hide skip link on mobile */
     }
 
-    .hero-text .view-controls {
+    .hero-text .view-controls,
+    .page-header .view-controls {
         display: none; /* Hide view controls on mobile */
-    }
-
-    .view-controls {
-        gap: 10px;
-    }
-
-    .view-controls .btn {
-        min-width: unset;
-        width: 48%;
-        font-size: 14px;
-        padding: 10px 15px;
     }
 
     .updates-list.list-view .update-item {
@@ -3573,6 +3496,10 @@ footer {
     justify-content: center; /* Center align footer links */
   }
 
+  footer .dark-mode-toggle {
+    justify-content: center;
+  }
+
   .section-header h2 {
     font-size: 36px;
   }
@@ -3779,41 +3706,43 @@ footer {
   gap: 32px;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 24px 60px;
+  padding: 24px 24px 60px;
   align-items: start;
 }
 
 /* Sidebar */
 .help-sidebar {
   position: sticky;
-  top: 90px;
+  top: 160px;
 }
 
 .help-sidebar nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .help-sidebar-link {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 10px;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
   color: var(--on-surface-variant);
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
-  transition: all 0.15s;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .help-sidebar-link i {
-  width: 18px;
+  width: 20px;
   text-align: center;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--primary);
   opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
 
 .help-sidebar-link:hover {
@@ -3821,10 +3750,15 @@ footer {
   color: var(--on-background);
 }
 
+.help-sidebar-link:hover i {
+  opacity: 0.9;
+}
+
 .help-sidebar-link.active {
   background: var(--primary-container);
   color: var(--on-primary-container);
   font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--primary);
 }
 
 .help-sidebar-link.active i {
@@ -3839,7 +3773,7 @@ footer {
 /* Section blocks */
 .help-section-block {
   margin-bottom: 40px;
-  scroll-margin-top: 90px;
+  scroll-margin-top: 160px;
 }
 
 .help-section-block h2 {
@@ -3977,7 +3911,7 @@ footer {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 14px;
+    padding: 10px 18px;
     border-radius: 20px;
     background: var(--surface-variant);
     color: var(--on-surface-variant);
@@ -3985,18 +3919,21 @@ footer {
     font-weight: 500;
     text-decoration: none;
     white-space: nowrap;
-    transition: all 0.15s;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
   }
 
   .mobile-sidebar-link i {
     font-size: 13px;
     color: var(--primary);
     opacity: 0.7;
+    transition: opacity 0.2s ease;
   }
 
   .mobile-sidebar-link.active {
     background: var(--primary-container);
     color: var(--on-primary-container);
+    border: 1px solid var(--primary);
   }
 
   .mobile-sidebar-link.active i {

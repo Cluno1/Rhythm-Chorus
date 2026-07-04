@@ -233,16 +233,21 @@ async function fetchGitHubStats() {
         const starEl = document.getElementById('star-count');
         const downloadEl = document.getElementById('download-count');
         if (starEl) starEl.textContent = data.stargazers_count?.toLocaleString() || '--';
-        if (downloadEl) downloadEl.textContent = data.subscribers_count?.toLocaleString() || '--';
     } catch (e) {}
 }
 
-// Fetch download count from GitHub releases
+// Fetch download count from all GitHub releases (with pagination)
 async function fetchDownloadCount() {
     try {
-        const res = await fetch('https://api.github.com/repos/cromaguy/Rhythm/releases');
-        const releases = await res.json();
-        const total = releases.reduce((sum, r) => sum + (r.assets || []).reduce((a, asset) => a + asset.download_count, 0), 0);
+        let total = 0;
+        let page = 1;
+        while (true) {
+            const res = await fetch(`https://api.github.com/repos/cromaguy/Rhythm/releases?per_page=100&page=${page}`);
+            const releases = await res.json();
+            if (!releases.length) break;
+            total += releases.reduce((sum, r) => sum + (r.assets || []).reduce((a, asset) => a + asset.download_count, 0), 0);
+            page++;
+        }
         const el = document.getElementById('download-count');
         if (el) el.textContent = total.toLocaleString() || '--';
     } catch (e) {}
@@ -903,75 +908,117 @@ function setupScrollAnimations() {
     });
 }
 
-// Dark mode toggle
+// Dark mode toggle — Material 3 Expressive
 function setupDarkModeToggle() {
     const footerSection = document.querySelector('.footer-section:first-child');
-    const darkModeToggle = document.createElement('div');
-    darkModeToggle.className = 'dark-mode-toggle';
-    darkModeToggle.innerHTML = `
-        <label class="switch">
-            <input type="checkbox" id="darkModeSwitch">
-            <span class="slider"></span>
+    const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+
+    const toggleHTML = `
+        <label class="m3-switch">
+            <input type="checkbox" id="SWITCH_ID">
+            <span class="m3-track">
+                <span class="m3-knob">
+                    <i class="fas fa-xmark"></i>
+                    <i class="fas fa-check"></i>
+                </span>
+            </span>
         </label>
-        <span>Dark Mode</span>
+        <span class="m3-label">Theme</span>
     `;
 
-    // Insert styles for the toggle
-    const styleEl = document.createElement('style');
-    styleEl.textContent = `
+    const footerEl = document.createElement('div');
+    footerEl.className = 'dark-mode-toggle';
+    footerEl.innerHTML = toggleHTML.replace('SWITCH_ID', 'darkModeSwitch');
+    footerSection.appendChild(footerEl);
+
+    if (mobileNavToggle) {
+        const mobileEl = document.createElement('div');
+        mobileEl.className = 'dark-mode-toggle';
+        mobileEl.innerHTML = toggleHTML.replace('SWITCH_ID', 'darkModeSwitchMobile');
+        mobileNavToggle.appendChild(mobileEl);
+    }
+
+    // Insert M3 toggle styles
+    const style = document.createElement('style');
+    style.textContent = `
         .dark-mode-toggle {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 24px;
         }
-        .switch {
+        .m3-switch {
             position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
         }
-        .switch input {
+        .m3-switch input {
+            position: absolute;
             opacity: 0;
             width: 0;
             height: 0;
         }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
+        .m3-track {
+            position: relative;
+            width: 56px;
+            height: 32px;
+            border-radius: 16px;
+            background: var(--surface-container-highest, var(--surface-variant));
+            border: 3px solid var(--outline);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 7px;
+            transition: background 0.3s ease, border-color 0.3s ease;
+            box-sizing: border-box;
         }
-        .slider:before {
+        .m3-knob {
             position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
+            background: var(--on-surface-variant);
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+            box-shadow: 0 1.5px 3px rgba(0,0,0,0.15);
         }
-        input:checked + .slider {
-            background-color: var(--primary); /* Ensure dark mode toggle uses primary color */
+        .m3-knob i {
+            position: absolute;
+            font-size: 13px;
+            transition: opacity 0.25s ease, color 0.3s ease;
+            line-height: 1;
         }
-        input:checked + .slider:before {
-            transform: translateX(30px);
+        .m3-knob .fa-xmark { opacity: 1; color: var(--on-primary); }
+        .m3-knob .fa-check { opacity: 0; color: var(--primary); }
+        .m3-switch input:checked ~ .m3-track {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        .m3-switch input:checked ~ .m3-track .m3-knob {
+            transform: translateX(24px);
+            background: var(--on-primary);
+        }
+        .m3-switch input:checked ~ .m3-track .m3-knob .fa-xmark { opacity: 0; }
+        .m3-switch input:checked ~ .m3-track .m3-knob .fa-check { opacity: 1; }
+        .m3-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--on-background);
+            user-select: none;
         }
     `;
-    document.head.appendChild(styleEl);
-
-    footerSection.appendChild(darkModeToggle);
+    document.head.appendChild(style);
 
     const darkModeSwitch = document.getElementById('darkModeSwitch');
+    const darkModeSwitchMobile = document.getElementById('darkModeSwitchMobile');
+    const switches = [darkModeSwitch, darkModeSwitchMobile].filter(Boolean);
 
-    // Function to apply theme
     function applyTheme(isDark) {
         if (isDark) {
             document.body.classList.add('dark-mode');
@@ -980,39 +1027,45 @@ function setupDarkModeToggle() {
         }
     }
 
-    // Check for saved preference first
+    function setAllSwitches(checked) {
+        switches.forEach(sw => { sw.checked = checked; });
+    }
+
+    // Load saved preference
     const savedTheme = localStorage.getItem('darkMode');
     if (savedTheme === 'enabled') {
         applyTheme(true);
-        darkModeSwitch.checked = true;
+        setAllSwitches(true);
     } else if (savedTheme === 'disabled') {
         applyTheme(false);
-        darkModeSwitch.checked = false;
+        setAllSwitches(false);
     } else {
-        // If no saved preference, check system preference
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         applyTheme(prefersDark);
-        darkModeSwitch.checked = prefersDark;
+        setAllSwitches(prefersDark);
     }
 
-    // Listen for changes in system theme
+    // Listen for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        // Only apply system theme if no explicit user preference is set
         if (localStorage.getItem('darkMode') === null) {
             applyTheme(e.matches);
-            darkModeSwitch.checked = e.matches;
+            setAllSwitches(e.matches);
         }
     });
 
-    // Dark mode toggle event listener
-    darkModeSwitch.addEventListener('change', () => {
-        if (darkModeSwitch.checked) {
-            applyTheme(true);
-            localStorage.setItem('darkMode', 'enabled');
-        } else {
-            applyTheme(false);
-            localStorage.setItem('darkMode', 'disabled'); // Save 'disabled' to explicitly turn off dark mode
-        }
+    // Sync both toggles
+    switches.forEach(sw => {
+        sw.addEventListener('change', () => {
+            const isDark = sw.checked;
+            applyTheme(isDark);
+            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+            switches.forEach(other => {
+                if (other !== sw) other.checked = isDark;
+            });
+            if (sw !== darkModeSwitch && darkModeSwitch) {
+                darkModeSwitch.dispatchEvent(new Event('change'));
+            }
+        });
     });
 }
 
