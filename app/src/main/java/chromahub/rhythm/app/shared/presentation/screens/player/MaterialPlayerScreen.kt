@@ -1031,15 +1031,12 @@ fun MaterialPlayerScreen(
             locations = locations,
             currentLocation = location,
             volume = volume,
-            isMuted = isMuted,
             musicViewModel = musicViewModel,
             onLocationSelect = {
                 onLocationSelect(it)
                 showDeviceOutputSheet = false
             },
             onVolumeChange = onVolumeChange,
-            onToggleMute = onToggleMute,
-            onMaxVolume = onMaxVolume,
             onRefreshDevices = onRefreshDevices,
             onDismiss = {
                 showDeviceOutputSheet = false

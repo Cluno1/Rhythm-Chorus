@@ -807,6 +807,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _showZeroVolumePauseDialog = MutableStateFlow(false)
     val showZeroVolumePauseDialog = _showZeroVolumePauseDialog.asStateFlow()
+    private var pausedByZeroVolume: Boolean = false
 
     fun triggerZeroVolumePauseDialog() {
         _showZeroVolumePauseDialog.value = true
@@ -814,6 +815,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     fun dismissZeroVolumePauseDialog() {
         _showZeroVolumePauseDialog.value = false
+        pausedByZeroVolume = false
     }
 
     // New player state for additional functionality
@@ -4820,6 +4822,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 _isPlaying.value = false
                 progressUpdateJob?.cancel()
             } else {
+                pausedByZeroVolume = false
+                _showZeroVolumePauseDialog.value = false
                 if (!canStartPlayback("togglePlayPause")) return
                 controller.play()
                 _isPlaying.value = true
@@ -6891,8 +6895,28 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 && !appSettings.useSystemVolume.value
             ) {
                 pauseMusic()
+                pausedByZeroVolume = true
                 _showZeroVolumePauseDialog.value = true
             }
+        }
+        // Auto-resume when volume increases after a zero-volume pause
+        if (clampedVolume > 0f && pausedByZeroVolume && !_isPlaying.value) {
+            pausedByZeroVolume = false
+            _showZeroVolumePauseDialog.value = false
+            resumeMusic()
+        }
+        // Extend sleep timer when user changes volume during fade-out
+        if (_sleepTimerActive.value && clampedVolume > 0f) {
+            val context = getApplication<Application>()
+            val intent = Intent(context, MediaPlaybackService::class.java).apply {
+                this.action = MediaPlaybackService.ACTION_EXTEND_SLEEP_TIMER
+            }
+            ServiceStartUtils.startServiceSafely(
+                context = context,
+                intent = intent,
+                logTag = TAG,
+                reason = "extend_sleep_timer_on_volume_change"
+            )
         }
     }
 

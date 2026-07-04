@@ -455,17 +455,14 @@ fun PlayerScreen(
             PlaybackBottomSheet(
                 locations = locations,
                 currentLocation = location,
-                volume = volume,
-                isMuted = isMuted,
-                musicViewModel = musicViewModel,
-                onLocationSelect = {
-                    onLocationSelect(it)
-                    showDeviceOutputSheet = false
-                },
-                onVolumeChange = onVolumeChange,
-                onToggleMute = onToggleMute,
-                onMaxVolume = onMaxVolume,
-                onRefreshDevices = onRefreshDevices,
+            volume = volume,
+            musicViewModel = musicViewModel,
+            onLocationSelect = {
+                onLocationSelect(it)
+                showDeviceOutputSheet = false
+            },
+            onVolumeChange = onVolumeChange,
+            onRefreshDevices = onRefreshDevices,
                 onDismiss = {
                     showDeviceOutputSheet = false
                     onStopDeviceMonitoring()

@@ -109,12 +109,9 @@ fun PlaybackBottomSheet(
     locations: List<PlaybackLocation>,
     currentLocation: PlaybackLocation?,
     volume: Float,
-    isMuted: Boolean,
     musicViewModel: MusicViewModel,
     onLocationSelect: (PlaybackLocation) -> Unit,
     onVolumeChange: (Float) -> Unit,
-    onToggleMute: () -> Unit,
-    onMaxVolume: () -> Unit,
     onRefreshDevices: () -> Unit,
     onDismiss: () -> Unit,
     appSettings: AppSettings,
@@ -255,39 +252,24 @@ fun PlaybackBottomSheet(
                 contentPadding = PaddingValues(vertical = 0.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Active Device Card
+                // Volume + Active Device (merged)
                 item {
                     AnimateIn {
-                        ActiveDeviceCard(
-                            location = currentLocation,
-                            onSwitchDevice = {
-                                // Use native Android output switcher
-                                musicViewModel.showOutputSwitcherDialog()
-                            },
-                            onRefreshDevices = onRefreshDevices,
-                            haptics = haptics
-                        )
-                    }
-                }
-
-                // Streaming quality (moved below volume control for streaming/go mode)
-                
-                // Volume Control Section
-                item {
-                    AnimateIn {
-                        VolumeControlCard(
+                        VolumeAndDeviceCard(
                             volume = volume,
-                            isMuted = isMuted,
                             systemVolume = systemVolume,
                             systemMaxVolume = systemMaxVolume,
                             appSettings = appSettings,
                             context = context,
                             onVolumeChange = onVolumeChange,
-                            onToggleMute = onToggleMute,
-                            onMaxVolume = onMaxVolume,
                             onSystemVolumeChange = { newVolume ->
                                 systemVolume = newVolume
                             },
+                            location = currentLocation,
+                            onSwitchDevice = {
+                                musicViewModel.showOutputSwitcherDialog()
+                            },
+                            onRefreshDevices = onRefreshDevices,
                             haptics = haptics
                         )
                     }
@@ -483,16 +465,36 @@ private fun PlaybackHeader(
 }
 
 @Composable
-private fun ActiveDeviceCard(
+private fun VolumeAndDeviceCard(
+    volume: Float,
+    systemVolume: Float,
+    systemMaxVolume: Int,
+    appSettings: AppSettings,
+    context: Context,
+    onVolumeChange: (Float) -> Unit,
+    onSystemVolumeChange: (Float) -> Unit,
     location: PlaybackLocation?,
     onSwitchDevice: () -> Unit,
     onRefreshDevices: () -> Unit,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
+    val useSystemVolume by appSettings.useSystemVolume.collectAsState()
+    val currentVolume = if (useSystemVolume) systemVolume else volume
 
-    // Subtle pulse animation for connected device icon
+    var localVolume by remember { mutableFloatStateOf(currentVolume) }
+    var isDragging by remember { mutableStateOf(false) }
+
+    LaunchedEffect(currentVolume) {
+        if (!isDragging) localVolume = currentVolume
+    }
+
+    val setSystemVolume = { newVolume: Float ->
+        val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val targetStep = (newVolume * systemMaxVolume).toInt().coerceIn(0, systemMaxVolume)
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, targetStep, 0)
+    }
+
     val infiniteTransition = rememberInfiniteTransition(label = "devicePulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -505,41 +507,29 @@ private fun ActiveDeviceCard(
     )
 
     val cardShape = RoundedCornerShape(
-        topStart = 26.dp,
-        topEnd = 20.dp,
-        bottomStart = 20.dp,
-        bottomEnd = 30.dp
+        topStart = 26.dp, topEnd = 20.dp,
+        bottomStart = 20.dp, bottomEnd = 30.dp
     )
     val expressiveIconShape = rememberExpressiveShape("COOKIE_7", CircleShape)
-    val refreshShape = RoundedCornerShape(
-        topStart = 14.dp,
-        topEnd = 10.dp,
-        bottomStart = 10.dp,
-        bottomEnd = 16.dp
-    )
 
     var isRefreshing by remember { mutableStateOf(false) }
     val refreshRotation by animateFloatAsState(
         targetValue = if (isRefreshing) 360f else 0f,
-        animationSpec = tween(
-            durationMillis = 520,
-            easing = FastOutSlowInEasing
-        ),
-        finishedListener = {
-            isRefreshing = false
-        },
+        animationSpec = tween(520, easing = FastOutSlowInEasing),
+        finishedListener = { isRefreshing = false },
         label = "refreshRotation"
     )
 
     val typeDescription = when {
         location?.id?.startsWith("bt_") == true -> "Bluetooth device"
         location?.id == "wired_headset" -> "Wired headphones"
-        location?.id == "speaker" -> "Phone speaker"
+        location?.id == "speaker" -> "Built-in speaker"
         else -> "Audio device"
     }
 
+    val primaryVariant = MaterialTheme.colorScheme.onPrimaryContainer
+
     Card(
-        onClick = onSwitchDevice,
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
@@ -547,10 +537,7 @@ private fun ActiveDeviceCard(
             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)
         ),
         shape = cardShape,
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 0.dp
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -560,36 +547,84 @@ private fun ActiveDeviceCard(
                 )
                 .padding(18.dp)
         ) {
+            // Device section
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onSwitchDevice() },
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                if (location != null) {
+                    Surface(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .graphicsLayer {
+                                scaleX = pulseScale
+                                scaleY = pulseScale
+                            },
+                        shape = expressiveIconShape,
+                        color = MaterialTheme.colorScheme.primary
                     ) {
-                        Icon(
-                            imageVector = RhythmIcons.Speaker,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(14.dp)
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = getDeviceIcon(location),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = context.getString(R.string.active_device),
-                            style = MaterialTheme.typography.labelLarge,
+                            text = location.name,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            maxLines = 1
+                            color = primaryVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = typeDescription,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = primaryVariant.copy(alpha = 0.82f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                } else {
+                    Surface(
+                        modifier = Modifier.size(44.dp),
+                        shape = expressiveIconShape,
+                        color = MaterialTheme.colorScheme.primary
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = RhythmIcons.Speaker,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = context.getString(R.string.bottomsheet_no_device),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = primaryVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
 
                 FilledTonalIconButton(
                     onClick = {
@@ -598,7 +633,7 @@ private fun ActiveDeviceCard(
                         onRefreshDevices()
                     },
                     modifier = Modifier.size(34.dp),
-                    shape = refreshShape,
+                    shape = RoundedCornerShape(topStart = 14.dp, topEnd = 10.dp, bottomStart = 10.dp, bottomEnd = 16.dp),
                     colors = IconButtonDefaults.filledTonalIconButtonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
@@ -608,16 +643,15 @@ private fun ActiveDeviceCard(
                         imageVector = RhythmIcons.Refresh,
                         contentDescription = stringResource(R.string.content_desc_refresh_devices),
                         modifier = Modifier
-                            .size(18.dp)
-                            .graphicsLayer {
-                                rotationZ = refreshRotation
-                            }
+                            .size(16.dp)
+                            .graphicsLayer { rotationZ = refreshRotation }
                     )
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Surface(
+                    onClick = onSwitchDevice,
                     shape = RoundedCornerShape(12.dp),
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(34.dp)
@@ -633,347 +667,52 @@ private fun ActiveDeviceCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Device info
-            if (location != null) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    // Expressive icon container with asymmetrical corners
-                    Surface(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .graphicsLayer {
-                                scaleX = pulseScale
-                                scaleY = pulseScale
-                            },
-                        shape = expressiveIconShape,
-                        color = MaterialTheme.colorScheme.primary
-                    ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Icon(
-                                imageVector = getDeviceIcon(location),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(26.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    // Device details
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = location.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-
-                        Spacer(modifier = Modifier.height(3.dp))
-
-                        Text(
-                            text = typeDescription,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.82f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-            } else {
-                // No device state
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Surface(
-                        modifier = Modifier.size(56.dp),
-                        shape = expressiveIconShape,
-                        color = MaterialTheme.colorScheme.primary
-                    ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Icon(
-                                imageVector = RhythmIcons.Speaker,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = context.getString(R.string.bottomsheet_no_device),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun VolumeControlCard(
-    volume: Float,
-    isMuted: Boolean,
-    systemVolume: Float,
-    systemMaxVolume: Int,
-    appSettings: AppSettings,
-    context: Context,
-    onVolumeChange: (Float) -> Unit,
-    onToggleMute: () -> Unit,
-    onMaxVolume: () -> Unit,
-    onSystemVolumeChange: (Float) -> Unit,
-    haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
-    modifier: Modifier = Modifier
-) {
-    val useSystemVolume by appSettings.useSystemVolume.collectAsState()
-    
-    // Remember previous volume before muting for system volume
-    var previousSystemVolume by remember { mutableFloatStateOf(0.5f) }
-    
-    // Current volume values based on setting
-    val currentVolume = if (useSystemVolume) systemVolume else volume
-    val currentIsMuted = if (useSystemVolume) (systemVolume == 0f) else isMuted
-    
-    // Animated volume for smooth transitions
-    val animatedVolume by animateFloatAsState(
-        targetValue = if (currentIsMuted) 0f else currentVolume,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "animatedVolume"
-    )
-    
-    // System volume control functions
-    val setSystemVolume = { newVolume: Float ->
-        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val targetVolume = (newVolume * systemMaxVolume).toInt().coerceIn(0, systemMaxVolume)
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, 0)
-        onSystemVolumeChange(newVolume)
-    }
-    
-    val toggleSystemMute = {
-        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        if (systemVolume > 0f) {
-            // Mute - save current volume
-            previousSystemVolume = systemVolume
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0)
-            onSystemVolumeChange(0f)
-        } else {
-            // Unmute - restore previous volume
-            val volumeToRestore = if (previousSystemVolume > 0f) previousSystemVolume else 0.5f
-            val targetVolume = (volumeToRestore * systemMaxVolume).toInt().coerceIn(1, systemMaxVolume)
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, 0)
-            onSystemVolumeChange(volumeToRestore)
-        }
-    }
-    
-    val setSystemMaxVolume = {
-        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, systemMaxVolume, 0)
-        onSystemVolumeChange(1f)
-    }
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
-        ) {
-            // Volume header with toggle
+            // Volume section
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Animated icon based on volume level
-                val iconAlpha by animateFloatAsState(
-                    targetValue = if (currentIsMuted) 0.5f else 1f,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    ),
-                    label = "iconAlpha"
-                )
-                
-                Icon(
-                    imageVector = if (currentIsMuted) RhythmIcons.VolumeOff else 
-                                if (animatedVolume < 0.3f) RhythmIcons.VolumeMute else 
-                                if (animatedVolume < 0.7f) RhythmIcons.VolumeDown else 
-                                RhythmIcons.VolumeUp,
-                    contentDescription = stringResource(R.string.content_desc_volume),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = iconAlpha),
-                    modifier = Modifier.size(24.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(12.dp))
-                
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = if (useSystemVolume) "System Volume" else "App Volume",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = primaryVariant
                     )
-                    // Text(
-                    //     text = "Tap to switch between app and system volume",
-                    //     style = MaterialTheme.typography.bodySmall,
-                    //     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    // )
                 }
-                
-                // Volume percentage
+
                 Text(
-                    text = "${(animatedVolume * 100).toInt()}%",
+                    text = "${(currentVolume * 100).toInt()}%",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = primaryVariant
                 )
             }
-            
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            // Volume controls
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             VolumeSlider(
-                value = currentVolume,
+                value = localVolume,
                 onValueChange = { newVolume ->
+                    localVolume = newVolume
+                    isDragging = true
                     HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                    if (useSystemVolume) {
-                        setSystemVolume(newVolume)
-                    } else {
-                        onVolumeChange(newVolume)
-                    }
+                    if (useSystemVolume) setSystemVolume(newVolume) else onVolumeChange(newVolume)
                 },
+                onValueChangeFinished = if (useSystemVolume) {
+                    {
+                        val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        val cv = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+                        val mv = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                        onSystemVolumeChange(cv.toFloat() / mv.toFloat())
+                        isDragging = false
+                    }
+                } else null,
                 modifier = Modifier.fillMaxWidth(),
                 accentColor = MaterialTheme.colorScheme.primary
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Mute and Max Volume buttons row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Mute button
-                val muteButtonColor by animateColorAsState(
-                    targetValue = if (currentIsMuted) {
-                        MaterialTheme.colorScheme.errorContainer
-                    } else {
-                        MaterialTheme.colorScheme.surfaceContainerHigh
-                    },
-                    label = "muteButtonColor"
-                )
-                val muteContentColor by animateColorAsState(
-                    targetValue = if (currentIsMuted) {
-                        MaterialTheme.colorScheme.onErrorContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    label = "muteContentColor"
-                )
-                
-                Surface(
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        if (useSystemVolume) {
-                            toggleSystemMute()
-                        } else {
-                            onToggleMute()
-                        }
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    color = muteButtonColor,
-                    tonalElevation = 0.dp
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = if (currentIsMuted) RhythmIcons.VolumeOff else RhythmIcons.VolumeMute,
-                            contentDescription = if (currentIsMuted) "Unmute" else "Mute",
-                            tint = muteContentColor,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = if (currentIsMuted) "Unmute" else "Mute",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = muteContentColor
-                        )
-                    }
-                }
-                
-                // Max volume button
-                Surface(
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        if (useSystemVolume) {
-                            setSystemMaxVolume()
-                        } else {
-                            onMaxVolume()
-                        }
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    tonalElevation = 0.dp
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = RhythmIcons.VolumeUp,
-                            contentDescription = context.getString(R.string.bottomsheet_max),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = context.getString(R.string.bottomsheet_max),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-            }
         }
     }
 }

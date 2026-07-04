@@ -94,6 +94,8 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     private var sleepTimerStartTime: Long = 0L
     private var fadeOutEnabled: Boolean = true
     private var pauseOnlyEnabled: Boolean = false
+    private var lastVolumeExtendTimeMs: Long = 0L
+    private var pausedByZeroVolume: Boolean = false
     
     // Audio effects (for equalizer integration)
     private var equalizer: android.media.audiofx.Equalizer? = null
@@ -140,6 +142,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 if (streamType == AudioManager.STREAM_MUSIC) {
                     checkAndClampVolumeForRhythmGuard()
                     checkAndPauseOnZeroSystemVolume()
+                    extendSleepTimer()
                 }
             }
         }
@@ -230,14 +233,26 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             if (!::appSettings.isInitialized) return
             if (!appSettings.useSystemVolume.value) return
             if (!appSettings.stopPlaybackOnZeroVolume.value) return
-            if (!player.isPlaying) return
 
             val audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return
             val current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-            if (current == 0) {
+
+            // Auto-resume when system volume rises above 0 after a zero-volume pause
+            if (current > 0 && pausedByZeroVolume && !player.isPlaying) {
+                Log.d(TAG, "System volume rose above 0 — resuming from zero-volume pause")
+                pausedByZeroVolume = false
+                player.play()
+                val broadcastIntent = Intent(ACTION_ZERO_VOLUME_RESUME).apply {
+                    `package` = packageName
+                }
+                sendBroadcast(broadcastIntent)
+                return
+            }
+
+            if (current == 0 && player.isPlaying) {
                 Log.d(TAG, "System volume hit 0 while playing — pausing (pause-on-zero active)")
+                pausedByZeroVolume = true
                 player.pause()
-                // Broadcast so RhythmNavigation / UI can show the zero-volume dialog
                 val broadcastIntent = Intent(ACTION_ZERO_VOLUME_PAUSE).apply {
                     `package` = packageName
                 }
@@ -476,6 +491,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         // Intent actions for sleep timer
         const val ACTION_START_SLEEP_TIMER = "chromahub.rhythm.app.action.START_SLEEP_TIMER"
         const val ACTION_STOP_SLEEP_TIMER = "chromahub.rhythm.app.action.STOP_SLEEP_TIMER"
+        const val ACTION_EXTEND_SLEEP_TIMER = "chromahub.rhythm.app.action.EXTEND_SLEEP_TIMER"
         
         // Intent actions for equalizer
         const val ACTION_SET_EQUALIZER_ENABLED = "chromahub.rhythm.app.action.SET_EQUALIZER_ENABLED"
@@ -511,8 +527,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         const val ACTION_UNMUTE = "chromahub.rhythm.app.action.UNMUTE"
         const val ACTION_TOGGLE_MUTE = "chromahub.rhythm.app.action.TOGGLE_MUTE"
 
-        // Zero-volume pause broadcast — sent by service, received by UI to show dialog
+        // Zero-volume pause/resume broadcasts — sent by service, received by UI to show/dismiss dialog
         const val ACTION_ZERO_VOLUME_PAUSE = "chromahub.rhythm.app.action.ZERO_VOLUME_PAUSE"
+        const val ACTION_ZERO_VOLUME_RESUME = "chromahub.rhythm.app.action.ZERO_VOLUME_RESUME"
 
         // Playback custom commands
         const val REPEAT_MODE_ALL = "repeat_all"
@@ -1736,6 +1753,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             ACTION_STOP_SLEEP_TIMER -> {
                 stopSleepTimer()
             }
+            ACTION_EXTEND_SLEEP_TIMER -> {
+                extendSleepTimer()
+            }
             ACTION_SET_EQUALIZER_ENABLED -> {
                 val enabled = intent.getBooleanExtra("enabled", false)
                 Log.d(TAG, "Received intent to set equalizer enabled: $enabled")
@@ -2629,70 +2649,44 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     }
 
     // Sleep Timer functionality
-    fun startSleepTimer(durationMs: Long, fadeOut: Boolean = true, pauseOnly: Boolean = false) {
-        Log.d(TAG, "Starting sleep timer: ${durationMs}ms, fadeOut: $fadeOut, pauseOnly: $pauseOnly")
-        stopSleepTimer() // Stop any existing timer
-        
-        if (durationMs <= 0) {
-            Log.e(TAG, "Invalid sleep timer duration: $durationMs")
-            return
-        }
-        
-        sleepTimerDurationMs = durationMs
-        sleepTimerStartTime = System.currentTimeMillis()
-        fadeOutEnabled = fadeOut
-        pauseOnlyEnabled = pauseOnly
-        
-        // Broadcast initial status immediately
-        broadcastSleepTimerStatus()
-        
-        sleepTimerJob = serviceScope.launch {
-            // Capture start time locally so the previous coroutine's
-            // CancellationException handler (which may call resetSleepTimer()
-            // up to ~1s later) cannot corrupt the new timer's computation.
-            val localStartTime = sleepTimerStartTime
+    private fun launchTimerCoroutine(startTime: Long, durationMs: Long, fadeOut: Boolean, pauseOnly: Boolean): Job {
+        return serviceScope.launch {
+            val localStartTime = startTime
             val localFadeOut = fadeOut
             val localPauseOnly = pauseOnly
 
             try {
-                if (localFadeOut && durationMs > 10000) { // Only fade if duration > 10 seconds
-                    // Regular updates until fade start time (last 10 seconds)
-                    val fadeStartTime = durationMs - 10000
+                if (localFadeOut && durationMs > 10000) {
                     var remainingTime = durationMs
-                    
                     while (remainingTime > 10000) {
-                        delay(1000) // Update every second
+                        delay(1000)
                         remainingTime = durationMs - (System.currentTimeMillis() - localStartTime)
                         if (remainingTime <= 0) break
                         broadcastSleepTimerStatus()
                     }
-                    
-                    // Fade out over 10 seconds
+
                     val originalVolume = player.volume
                     val fadeSteps = 100
                     val fadeInterval = 10000L / fadeSteps
-                    
+
                     for (i in fadeSteps downTo 0) {
                         val volume = originalVolume * (i.toFloat() / fadeSteps)
                         player.volume = volume
                         delay(fadeInterval)
-                        // Broadcast status every few steps during fade
                         if (i % 10 == 0) {
                             broadcastSleepTimerStatus()
                         }
                     }
                 } else {
-                    // No fade out, broadcast updates every second until completion
                     var remainingTime = durationMs
                     while (remainingTime > 0) {
-                        delay(1000) // Update every second
+                        delay(1000)
                         remainingTime = durationMs - (System.currentTimeMillis() - localStartTime)
                         if (remainingTime <= 0) break
                         broadcastSleepTimerStatus()
                     }
                 }
-                
-                // Timer finished - pause or stop playback
+
                 if (localPauseOnly) {
                     player.pause()
                     Log.d(TAG, "Sleep timer paused playback")
@@ -2700,20 +2694,15 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     player.stop()
                     Log.d(TAG, "Sleep timer stopped playback")
                 }
-                
-                // Reset volume if it was changed during fade
+
                 if (localFadeOut) {
                     player.volume = 1.0f
                 }
-                
+
                 resetSleepTimer()
-                
+
             } catch (e: CancellationException) {
                 Log.d(TAG, "Sleep timer was cancelled")
-                // Do NOT call resetSleepTimer() here — it would zero the shared
-                // sleepTimerDurationMs / sleepTimerStartTime fields that a newly
-                // started timer coroutine depends on for its broadcastSleepTimerStatus()
-                // calls.  stopSleepTimer() already handles cleanup synchronously.
             } catch (e: Exception) {
                 Log.e(TAG, "Error in sleep timer", e)
                 resetSleepTimer()
@@ -2721,24 +2710,63 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 broadcastSleepTimerStatus()
             }
         }
-        
+    }
+
+    fun startSleepTimer(durationMs: Long, fadeOut: Boolean = true, pauseOnly: Boolean = false) {
+        Log.d(TAG, "Starting sleep timer: ${durationMs}ms, fadeOut: $fadeOut, pauseOnly: $pauseOnly")
+        stopSleepTimer()
+
+        if (durationMs <= 0) {
+            Log.e(TAG, "Invalid sleep timer duration: $durationMs")
+            return
+        }
+
+        sleepTimerDurationMs = durationMs
+        sleepTimerStartTime = System.currentTimeMillis()
+        fadeOutEnabled = fadeOut
+        pauseOnlyEnabled = pauseOnly
+
+        broadcastSleepTimerStatus()
+
+        sleepTimerJob = launchTimerCoroutine(sleepTimerStartTime, durationMs, fadeOut, pauseOnly)
         Log.d(TAG, "Sleep timer job started for ${durationMs}ms")
     }
-    
+
+    fun extendSleepTimer() {
+        if (sleepTimerDurationMs <= 0L || sleepTimerStartTime <= 0L) return
+
+        val now = System.currentTimeMillis()
+        if (now - lastVolumeExtendTimeMs < 3000) return
+        lastVolumeExtendTimeMs = now
+
+        Log.d(TAG, "Extending sleep timer due to volume change")
+
+        val duration = sleepTimerDurationMs
+        val fadeOut = fadeOutEnabled
+        val pauseOnly = pauseOnlyEnabled
+
+        sleepTimerJob?.cancel()
+        sleepTimerJob = null
+
+        sleepTimerStartTime = now
+        sleepTimerJob = launchTimerCoroutine(now, duration, fadeOut, pauseOnly)
+        broadcastSleepTimerStatus()
+        Log.d(TAG, "Sleep timer extended for ${duration}ms")
+    }
+
     fun stopSleepTimer() {
         sleepTimerJob?.cancel()
         sleepTimerJob = null
-        
-        // Reset volume if it was changed during fade
+
         if (fadeOutEnabled) {
             player.volume = 1.0f
         }
-        
+
         resetSleepTimer()
         broadcastSleepTimerStatus()
         Log.d(TAG, "Sleep timer stopped")
     }
-    
+
     fun getRemainingTimeMs(): Long {
         if (sleepTimerDurationMs <= 0L || sleepTimerStartTime <= 0L) {
             return 0L
@@ -2747,7 +2775,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         val elapsed = System.currentTimeMillis() - sleepTimerStartTime
         return maxOf(0L, sleepTimerDurationMs - elapsed)
     }
-    
+
     private fun resetSleepTimer() {
         sleepTimerDurationMs = 0L
         sleepTimerStartTime = 0L

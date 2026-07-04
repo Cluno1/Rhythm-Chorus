@@ -324,18 +324,26 @@ private fun RhythmGuardWarningHost(
         }
     }
 
-    // Register a BroadcastReceiver to detect zero system-volume pauses triggered by the service.
+    // Register a BroadcastReceiver to detect zero system-volume pauses/resumes triggered by the service.
     // This works from any screen (not just the player screen) because the receiver lives at the
     // root composition level for the lifetime of RhythmGuardWarningHost.
     DisposableEffect(Unit) {
         val zeroVolumeReceiver = object : BroadcastReceiver() {
             override fun onReceive(ctx: Context?, intent: Intent?) {
-                if (intent?.action == chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_ZERO_VOLUME_PAUSE) {
-                    musicViewModel.triggerZeroVolumePauseDialog()
+                when (intent?.action) {
+                    chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_ZERO_VOLUME_PAUSE -> {
+                        musicViewModel.triggerZeroVolumePauseDialog()
+                    }
+                    chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_ZERO_VOLUME_RESUME -> {
+                        musicViewModel.dismissZeroVolumePauseDialog()
+                    }
                 }
             }
         }
-        val zeroVolumeFilter = IntentFilter(chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_ZERO_VOLUME_PAUSE)
+        val zeroVolumeFilter = IntentFilter().apply {
+            addAction(chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_ZERO_VOLUME_PAUSE)
+            addAction(chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_ZERO_VOLUME_RESUME)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             context.registerReceiver(zeroVolumeReceiver, zeroVolumeFilter, Context.RECEIVER_NOT_EXPORTED)
         } else {
