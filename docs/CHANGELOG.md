@@ -10,6 +10,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.2.422.1105] - 2026-07-04
+
+### Added
+- Add Weblate integration and translation updates
+- Implement play next and improve broadcast safety
+- Fix player action wiring and song selection
+- Improved Updater & New Nightly channel
+- Added exact artwork color setting
+- Bump Compose and UI dependency versions
+- Added Motion Canvas support
+- Refresh artwork on settings changes
+- Improved Mini Player and Player transitions
+- Refactor lyrics fetching with multi-source support
+- Handle missing picker and suggest folders #455
+- Fixed: cannot import playlists from json backup #449
+- Fixed Lyrics Embedding & Sleep Timer
+- Fixed: Sleep timer remaining time not counted down #450
+- Fixed: cannot import playlists from json backup #449
+- Fixed: Connection failed: java.security.cert.CertPathValidatorException: Trust anchor for certification path not found.  #451
+
 ## [5.2.422.1104 Beta] - 2026-07-04
 
 ### Added
