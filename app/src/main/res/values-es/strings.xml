@@ -617,7 +617,7 @@
     <!-- Onboarding: Gestures Step -->
     <string name="onboarding_gestures_title">Gestos táctiles</string>
     <string name="onboarding_gestures_desc">Navega por tu biblioteca de música más rápido con gestos intuitivos de deslizar y tocar. Personaliza gestos para las pantallas del minirreproductor y del reproductor completo.</string>
-    <string name="onboarding_gestures_miniplayer">Mini reproductor</string>
+    <string name="onboarding_gestures_miniplayer">Minirreproductor</string>
     <string name="onboarding_gestures_player">Reproductor completo</string>
     <string name="onboarding_gesture_swipe">Deslizar el minirreproductor</string>
     <string name="onboarding_gesture_swipe_desc">Desliza el dedo hacia la izquierda o hacia la derecha en el minirreproductor para saltar pistas</string>
@@ -1141,7 +1141,7 @@
     <string name="settings_home_customization_desc">Acciones rápidas, música reciente</string>
     <string name="settings_player_customization">Reproductor</string>
     <string name="settings_player_customization_desc">Botones de salto, barra de progreso</string>
-    <string name="settings_miniplayer_customization">Mini reproductor</string>
+    <string name="settings_miniplayer_customization">Minirreproductor</string>
     <string name="settings_miniplayer_customization_desc">Antecedentes, controles</string>
     <string name="settings_album_bottom_sheet_gradient_blur">Álbum Degradado/Desenfocado</string>
     <string name="settings_album_bottom_sheet_gradient_blur_desc">Controlar el degradado y el desenfoque detrás de las hojas del álbum</string>
@@ -1436,7 +1436,7 @@
     <string name="settings_start_collapsed">Iniciar todas las pantallas con el encabezado contraído</string>
     <string name="settings_statistics_update">Actualización de estadísticas según hábitos de escucha</string>
     <string name="settings_swipe_down_dismiss_tip">Desliza hacia abajo en el minirreproductor o en el reproductor completo para cerrar</string>
-    <string name="settings_swipe_up_open">Desliza hacia arriba en el mini reproductor para abrir el reproductor completo</string>
+    <string name="settings_swipe_up_open">Desliza hacia arriba en el minirreproductor para abrir el reproductor completo</string>
     <string name="settings_text_alignment">Alineación de texto</string>
     <string name="settings_quick_brown_fox">El veloz zorro marrón salta sobre el perro perezoso</string>
     <string name="settings_toggle_widgets">Alternar widgets para personalizar su pantalla de inicio</string>
@@ -1778,7 +1778,7 @@
     <!-- Expressive Shapes -->
     <string name="settings_shapes_album_art">Carátula del álbum</string>
     <string name="settings_shapes_player_controls">Controles del reproductor</string>
-    <string name="settings_shapes_mini_player">Mini reproductor</string>
+    <string name="settings_shapes_mini_player">Minirreproductor</string>
     <!-- Lyrics Source -->
 
     <!-- API Management / Integrations -->
@@ -1928,7 +1928,7 @@
     <string name="settings_player_quality_badges_desc">Mostrar información de códec y velocidad de bits</string>
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Mostrar progreso</string>
-    <string name="settings_miniplayer_show_progress_desc">Mostrar indicador de progreso en el mini reproductor</string>
+    <string name="settings_miniplayer_show_progress_desc">Mostrar indicador de progreso en el minirreproductor</string>
     <string name="settings_miniplayer_circular_progress">Progreso circular</string>
     <string name="settings_miniplayer_circular_progress_desc">Utilice el progreso circular en el botón de reproducción/pausa</string>
     <string name="settings_miniplayer_progress_style">Estilo de progreso</string>
@@ -1974,7 +1974,7 @@
     <string name="settings_restore_action_short">Restaurar</string>
     <string name="settings_experimental">Funciones experimentales</string>
     <string name="settings_left_aligned">Alineado a la izquierda</string>
-    <string name="settings_player">Jugador</string>
+    <string name="settings_player">Reproductor</string>
     <string name="settings_restore_completed">Restauración completada con éxito</string>
     <string name="settings_right_aligned">Alineado a la derecha</string>
     <string name="settings_tab_order">Orden de pestañas de la biblioteca</string>
@@ -2091,8 +2091,8 @@
     <string name="onboardingscreen_connecting">Conectando...</string>
     <string name="onboardingscreen_connect_verify">Conectar y verificar</string>
     <string name="splashscreen_go">Go</string>
-    <string name="musicviewmodel_failed_to_add_to">No se pudo agregar a la cola: el jugador no se inicializó</string>
-    <string name="musicviewmodel_failed_to_play_next">No se pudo jugar a continuación: el jugador no se inicializó</string>
+    <string name="musicviewmodel_failed_to_add_to">No se pudo agregar a la cola: el reproductor no se inicializó</string>
+    <string name="musicviewmodel_failed_to_play_next">No se pudo reproducir la siguiente pista: el reproductor no se inicializó</string>
     <string name="streaminghomesectionorderbottomsheet_streaming_section_order_and">El orden de la sección de transmisión y la visibilidad se restablecen a los valores predeterminados</string>
     <string name="streaminghomesectionorderbottomsheet_streaming_section_order_and_1">Orden de la sección de streaming y visibilidad guardada</string>
     <string name="gosettingsscreen_configure_current_provider">Configurar proveedor actual</string>
@@ -2248,7 +2248,7 @@
     <string name="performancesettingsscreen_disable_auto_fetch_artwork">Desactivar la búsqueda automática de ilustraciones</string>
     <string name="placeholdersettingsscreen_choose_a_setting_from">Elija una configuración en el panel izquierdo</string>
     <string name="placeholdersettingsscreen_tap_on_any_setting">Toque cualquier opción de configuración para ver y modificar sus preferencias aquí</string>
-    <string name="playercustomizationsettingsscreen_player_theme">Tema del jugador</string>
+    <string name="playercustomizationsettingsscreen_player_theme">Tema del reproductor</string>
     <string name="playercustomizationsettingsscreen_playback_theme">Tema de reproducción</string>
     <string name="playercustomizationsettingsscreen_tap_lyrics_for_immersive">Toque la letra para una vista inmersiva</string>
     <string name="rhythmguardsettingsscreen_choose_sections">Elige secciones</string>
@@ -2384,7 +2384,7 @@
     <string name="settings_tip_updates_active_desc_2">Estás configurado para recibir actualizaciones. Verifique las preferencias del canal para determinar la estabilidad frente a la frescura.</string>
     <string name="settings_tip_updates_inactive_desc_1">Las actualizaciones están deshabilitadas. Vuelva a habilitarlos para que permanezcan protegidos y actualizados.</string>
     <string name="settings_tip_updates_inactive_desc_2">Estás anclado a la compilación actual. Vuelva a activar las actualizaciones cuando esté listo.</string>
-    <string name="settings_tip_queue_active_desc_1">El desplazamiento para saltar del jugador está activo. Ajuste las reglas de la cola para transiciones más fluidas.</string>
+    <string name="settings_tip_queue_active_desc_1">El gesto de deslizar para omitir pistas está activado. Ajuste las reglas de la cola para lograr transiciones más fluidas.</string>
     <string name="settings_tip_queue_active_desc_2">El salto de gestos está activado. Haga coincidir el comportamiento de la cola con su flujo de escucha.</string>
     <string name="settings_tip_queue_inactive_desc_1">Deslizar para omitir está desactivado. Los controles de cola pueden ayudar a mantener la reproducción eficiente.</string>
     <string name="settings_tip_queue_inactive_desc_2">¿Prefiere controles explícitos? Ajuste el comportamiento de la cola para una reproducción predecible.</string>
@@ -2394,7 +2394,7 @@
     <string name="settings_tip_controls_inactive_desc_2">Diseño limpio activo. Vuelva a habilitar los controles de búsqueda para un mejor manejo de la reproducción.</string>
     <string name="settings_tip_miniplayer_active_desc_1">El progreso del minirreproductor es visible. Elija un estilo que coincida con su tema.</string>
     <string name="settings_tip_miniplayer_active_desc_2">La barra de progreso está activa en el minirreproductor. A continuación, prueba los ajustes de forma y esquinas.</string>
-    <string name="settings_tip_miniplayer_inactive_desc_1">El progreso del minijugador está oculto. Habilítelo para un conocimiento rápido de la pista.</string>
+    <string name="settings_tip_miniplayer_inactive_desc_1">El progreso del minirreproductor está oculto. Actívelo para ver rápidamente el progreso de la pista.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">El modo compacto es mínimo ahora. Active el progreso para mejorar la visibilidad.</string>
     <string name="settings_tip_library_active_desc_1">Las clasificaciones están habilitadas. Utilice la configuración de la biblioteca para mejorar el descubrimiento y la clasificación.</string>
     <string name="settings_tip_library_active_desc_2">Su biblioteca admite clasificaciones. Ajuste el escaneo y la agrupación para una navegación más limpia.</string>
@@ -2743,7 +2743,7 @@
     <!-- Color Scheme names -->
 
     <!-- Shape Utils category and descriptions -->
-    <string name="shape_utils_player_controls">Controles del jugador</string>
+    <string name="shape_utils_player_controls">Controles del reproductor</string>
     <string name="shape_utils_mini_player">Mini reproductor</string>
     <!-- Metadata properties and labels -->
     <string name="metadata_duration">Duración</string>
@@ -2788,7 +2788,7 @@
     <string name="settings_managed_by_expressive_shapes">Gestionado por formas expresivas</string>
     <!-- Shape targets -->
     <string name="shape_target_album_art">Carátula del álbum</string>
-    <string name="shape_target_player_art">Ilustraciones del jugador</string>
+    <string name="shape_target_player_art">Carátula del reproductor</string>
     <string name="shape_target_song_art">Ilustraciones de la canción</string>
     <string name="shape_target_playlist_art">Ilustraciones de la lista de reproducción</string>
     <string name="shape_target_artist_art">Obra del artista</string>
