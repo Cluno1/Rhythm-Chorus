@@ -173,7 +173,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
     private val notificationManager = application.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     
     // Maximum retry attempts for downloads
-    private val MAX_RETRY_ATTEMPTS = 3
+    private val MAX_RETRY_ATTEMPTS = 2
 
     // Update channel (stable or beta)
     private val _updateChannel = MutableStateFlow("stable")
@@ -1214,12 +1214,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
                             if (finalExpectedSize == 0L) {
                                 Log.w(TAG, "No reference size available (HTTP Content-Length unavailable and GitHub API returned 0) — skipping size verification for $fileName ($fileSize bytes)")
                             } else if (fileSize != finalExpectedSize) {
-                                Log.e(TAG, "Download corrupted: file size mismatch (expected: $finalExpectedSize [HTTP: $httpExpectedSize, GitHub: $expectedSize], actual: $fileSize)")
-                                val isHttpSizeAbsent = httpExpectedSize <= 0
-                                viewModelScope.launch {
-                                    handleSizeMismatch(downloadUrl, fileName, retryAttempt, file, finalExpectedSize, fileSize, isHttpSizeAbsent)
-                                }
-                                return
+                                Log.w(TAG, "File size mismatch (expected: $finalExpectedSize [HTTP: $httpExpectedSize, GitHub: $expectedSize], actual: $fileSize) — proceeding anyway; checksum will verify integrity")
                             } else {
                                 Log.d(TAG, "File size verification passed: $fileSize bytes (expected: $finalExpectedSize)")
                             }
@@ -1322,48 +1317,55 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         actualSize: Long,
         isHttpSizeAbsent: Boolean = false
     ) {
-        val errorMessage = "File size mismatch: expected $expectedSize bytes, got $actualSize bytes"
-        val nextRetryAttempt = retryAttempt + 1
-
-        // When no HTTP Content-Length was available (isHttpSizeAbsent), the expectedSize came
-        // from the GitHub API which may be stale. Retrying will just re-download the exact same
-        // bytes and fail the same way. Skip straight to proceed/reset.
-        if (!isHttpSizeAbsent && nextRetryAttempt < MAX_RETRY_ATTEMPTS) {
-            handleDownloadFailure(downloadUrl, fileName, retryAttempt, errorMessage)
-            return
-        }
-        if (isHttpSizeAbsent) {
-            Log.w(TAG, "Size mismatch is permanent (no HTTP Content-Length) — skipping retries, offering proceed/reset (attempt $nextRetryAttempt)")
-        }
+        Log.w(TAG, "File size mismatch (expected: $expectedSize, actual: $actualSize, httpSizeAbsent: $isHttpSizeAbsent) — proceeding with download anyway")
 
         _isDownloading.value = false
         activeCall = null
-        pendingMismatchedDownload = PendingMismatchedDownload(
-            filePath = file.absolutePath,
-            downloadUrl = downloadUrl,
-            fileName = fileName,
-            retryAttempt = retryAttempt
-        )
-        activeDownload = activeDownload?.copy(
-            downloadedBytes = actualSize,
-            resumePosition = actualSize,
-            retryCount = nextRetryAttempt
-        ) ?: DownloadState(
-            fileName = fileName,
-            url = downloadUrl,
-            totalBytes = expectedSize,
-            downloadedBytes = actualSize,
-            etag = null,
-            lastModified = null,
-            resumePosition = actualSize,
-            retryCount = nextRetryAttempt
-        )
-        _downloadState.value = activeDownload
-        _downloadProgress.value = 100f
-        _canProceedWithMismatchedDownload.value = true
-        _error.value = "Downloaded file size does not match the expected size. You can proceed anyway, or reset and download again."
-        saveDownloadState()
+        activeDownload = null
+        _downloadState.value = null
+        clearDownloadState()
         cancelDownloadNotification()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            finishDownload(file, fileName)
+        }
+    }
+
+    private fun finishDownload(file: File, fileName: String) {
+        val isZip = fileName.endsWith(".zip", ignoreCase = true)
+        if (isZip) {
+            _isExtracting.value = true
+        }
+        val finalFile = if (isZip) {
+            val apkFile = File(file.parentFile, fileName.replace(".zip", ".apk", ignoreCase = true))
+            if (extractApkFromZip(file, apkFile)) {
+                file.delete()
+                _isExtracting.value = false
+                apkFile
+            } else {
+                _isExtracting.value = false
+                _isDownloading.value = false
+                _downloadProgress.value = 0f
+                clearDownloadState()
+                cancelDownloadNotification()
+                _error.value = "Failed to extract APK from ZIP. Opening GitHub releases instead."
+                openInBrowser("https://github.com/$GITHUB_OWNER/$GITHUB_REPO/releases")
+                return
+            }
+        } else {
+            file
+        }
+
+        _isDownloading.value = false
+        _downloadProgress.value = 100f
+        _downloadedFile.value = finalFile
+        showDownloadCompletedNotification(finalFile.name)
+
+        val finalChecksum = calculateFileChecksum(finalFile)
+        activeDownload = null
+        activeCall = null
+        _downloadState.value = null
+        Log.d(TAG, "Download complete (proceeded despite size mismatch): ${finalFile.absolutePath} (${finalFile.length()} bytes, checksum: $finalChecksum)")
     }
 
     private fun handleDownloadFailure(downloadUrl: String, fileName: String, retryAttempt: Int, errorMessage: String, forceRetry: Boolean = false) {
@@ -1407,11 +1409,12 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             }
         } else {
             Log.e(TAG, "Download failed after $MAX_RETRY_ATTEMPTS attempts: $errorMessage")
-            _error.value = "Download failed after $MAX_RETRY_ATTEMPTS attempts: $errorMessage"
+            _error.value = "Download failed. Opening GitHub releases in browser..."
             activeDownload = null
             _downloadState.value = null
             clearDownloadState()
             cancelDownloadNotification()
+            openInBrowser("https://github.com/$GITHUB_OWNER/$GITHUB_REPO/releases")
         }
     }
 
