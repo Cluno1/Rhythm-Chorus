@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.2.423.1109] - 2026-07-05
+
+### Added
+- Harden playlist serialization #462
+- Improve album grouping, matching, and navigation
+- Improve updater mismatch handling
+- Handle zero-volume resume and extend sleep timer
+- Stabilize album song list scrolling
+- chore(l10n): update Spanish translation
+- chore(l10n): update Indonesian translation
+- chore(l10n): update Estonian translation
+- chore(l10n): update French translation
+- chore(l10n): update Chinese (Simplified Han script) translation
+
 ## [5.2.422.1105] - 2026-07-04
 
 ### Added

@@ -1,0 +1,7 @@
+Rhythm v5.2 - Stable Update
+
+• Harden playlist serialization #462
+• Improve album grouping, matching, and navigation
+• Improve updater mismatch handling
+
+Thanks for using Rhythm ;)
