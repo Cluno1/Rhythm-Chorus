@@ -16,7 +16,8 @@ object GsonUtils {
         }
 
         override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Uri? {
-            return json?.asString?.let { Uri.parse(it) }
+            if (json == null || json is JsonNull) return null
+            return json.asString?.let { Uri.parse(it) }
         }
     }
 

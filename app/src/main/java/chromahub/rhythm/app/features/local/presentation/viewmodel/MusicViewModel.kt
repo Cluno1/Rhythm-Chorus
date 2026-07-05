@@ -2699,18 +2699,23 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             Log.d(TAG, "Loaded ${_songRatings.value.size} song ratings")
         } catch (e: Exception) {
             Log.e(TAG, "Error loading saved playlists", e)
-            // Initialize with default playlists on error based on setting
-            val defaultPlaylistsEnabled = appSettings.defaultPlaylistsEnabled.value
-            _playlists.value = if (defaultPlaylistsEnabled) {
-                listOf(
-                    Playlist("1", "Liked"),
-                    Playlist("2", "Recently Added"),
-                    Playlist("3", "Most Played")
-                )
-            } else {
-                listOf(
-                    Playlist("1", "Liked")
-                )
+            // Only fall back to defaults if we have no playlists loaded yet
+            // This prevents catastrophic data loss when a transient deserialization
+            // error occurs — we keep the existing in-memory state rather than
+            // overwriting the persisted data with defaults.
+            if (_playlists.value.isEmpty()) {
+                val defaultPlaylistsEnabled = appSettings.defaultPlaylistsEnabled.value
+                _playlists.value = if (defaultPlaylistsEnabled) {
+                    listOf(
+                        Playlist("1", "Liked"),
+                        Playlist("2", "Recently Added"),
+                        Playlist("3", "Most Played")
+                    )
+                } else {
+                    listOf(
+                        Playlist("1", "Liked")
+                    )
+                }
             }
             _favoriteSongs.value = emptySet()
         }

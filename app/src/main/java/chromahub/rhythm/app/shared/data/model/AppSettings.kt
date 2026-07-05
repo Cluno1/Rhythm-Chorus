@@ -2769,9 +2769,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     // Playlists
     fun setPlaylists(playlistsJson: String?) {
         if (playlistsJson == null) {
-            prefs.edit().remove(KEY_PLAYLISTS).apply() // Use apply() to prevent ANR
+            prefs.edit().remove(KEY_PLAYLISTS).commit()
         } else {
-            prefs.edit().putString(KEY_PLAYLISTS, playlistsJson).apply() // Use apply() to prevent ANR
+            prefs.edit().putString(KEY_PLAYLISTS, playlistsJson).commit()
         }
         _playlists.value = playlistsJson
     }

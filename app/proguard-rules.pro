@@ -12,6 +12,10 @@
 # Keep model classes used for Gson serialization in shared settings, playlists, etc.
 -keep class chromahub.rhythm.app.shared.data.model.** { *; }
 
+# Keep PlaylistImportExportUtils inner data classes (PlaylistExportData, PlaylistSongEntry)
+# used for JSON playlist export/import via Gson reflection
+-keep class chromahub.rhythm.app.util.PlaylistImportExportUtils$* { *; }
+
 # Keep GitHub API, Rhythm lyrics API, and other network response models
 -keep class chromahub.rhythm.app.network.** { *; }
 

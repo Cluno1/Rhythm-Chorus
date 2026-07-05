@@ -8,6 +8,7 @@ import androidx.documentfile.provider.DocumentFile
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import java.io.*
 import java.util.zip.ZipEntry
@@ -112,24 +113,24 @@ object PlaylistImportExportUtils {
     }
     
     data class PlaylistExportData(
-        val name: String,
-        val id: String,
-        val dateCreated: Long,
-        val dateModified: Long,
-        val songs: List<PlaylistSongEntry>,
-        val exportedAt: Long = System.currentTimeMillis(),
-        val exportedBy: String = "Rhythm Music Player"
+        @SerializedName("name") val name: String,
+        @SerializedName("id") val id: String,
+        @SerializedName("dateCreated") val dateCreated: Long,
+        @SerializedName("dateModified") val dateModified: Long,
+        @SerializedName("songs") val songs: List<PlaylistSongEntry>,
+        @SerializedName("exportedAt") val exportedAt: Long = System.currentTimeMillis(),
+        @SerializedName("exportedBy") val exportedBy: String = "Rhythm Music Player"
     )
     
     data class PlaylistSongEntry(
-        val title: String,
-        val artist: String,
-        val album: String,
-        val duration: Long,
-        val filePath: String?, // Original file path if available
-        val uri: String, // Content URI
-        val trackNumber: Int = 0,
-        val year: Int = 0
+        @SerializedName("title") val title: String,
+        @SerializedName("artist") val artist: String,
+        @SerializedName("album") val album: String,
+        @SerializedName("duration") val duration: Long,
+        @SerializedName("filePath") val filePath: String?, // Original file path if available
+        @SerializedName("uri") val uri: String, // Content URI
+        @SerializedName("trackNumber") val trackNumber: Int = 0,
+        @SerializedName("year") val year: Int = 0
     )
     
     /**
@@ -394,8 +395,18 @@ object PlaylistImportExportUtils {
         val songMap = availableSongs.associateBy { it.uri.toString() }
         val addedSongUris = mutableSetOf<String>()
         val addedSongKeys = mutableSetOf<String>()
+        var skippedInvalid = false
         
         val matchedSongs = songsList.mapNotNull { entry ->
+            // Gson may inject LinkedTreeMap at runtime despite compile-time type
+            @Suppress("USELESS_IS_CHECK")
+            if (entry !is PlaylistSongEntry) {
+                if (!skippedInvalid) {
+                    Log.w(TAG, "Skipping invalid song entry (wrong type: ${entry?.javaClass?.simpleName}) — likely a ProGuard/Gson deserialization mismatch")
+                    skippedInvalid = true
+                }
+                return@mapNotNull null
+            }
             val title = entry.title?.trim() ?: return@mapNotNull null
             val artist = entry.artist?.trim() ?: "Unknown Artist"
             val uriStr = entry.uri ?: return@mapNotNull null

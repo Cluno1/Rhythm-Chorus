@@ -148,9 +148,12 @@ class StartupBenchmarks {
         device.waitForIdle(3_000)
 
         // Navigate to Library and back to exercise warm recomposition paths
-        val libraryBtn = device.findObject(By.desc("Library"))
-            ?: device.findObject(By.text("Library"))
-        libraryBtn?.click()
+        repeat(3) {
+            val btn = device.findObject(By.desc("Library"))
+                ?: device.findObject(By.text("Library"))
+                ?: return@repeat
+            try { btn.click(); return@repeat } catch (_: Exception) { device.waitForIdle(500) }
+        }
         device.waitForIdle(2_000)
     }
 
