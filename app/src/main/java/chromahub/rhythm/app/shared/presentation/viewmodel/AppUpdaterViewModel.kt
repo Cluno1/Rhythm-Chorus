@@ -968,6 +968,9 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             return // Already downloading
         }
         
+        // Cancel any stale notification from a previous session
+        cancelDownloadNotification()
+        
         _downloadProgress.value = 0f
         _error.value = null
         
@@ -1374,7 +1377,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         
         val nextRetryAttempt = retryAttempt + 1
         
-        // Update activeDownload's resumePosition and retryCount so we can resume during retry
+        // Delete partial file and cancel old notification before retry
         val context = getApplication<Application>()
         val downloadDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
@@ -1382,16 +1385,16 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         }
         val file = downloadDir?.let { File(it, fileName) }
-        val currentSize = file?.length() ?: 0L
-        
-        if (activeDownload != null && activeDownload?.url == downloadUrl) {
-            activeDownload = activeDownload?.copy(
-                resumePosition = currentSize,
-                downloadedBytes = currentSize,
-                retryCount = nextRetryAttempt
-            )
-            saveDownloadState()
+        file?.let {
+            if (it.exists()) {
+                Log.d(TAG, "Deleting partial file before retry: ${it.absolutePath}")
+                it.delete()
+            }
         }
+        
+        activeDownload = null
+        _downloadState.value = null
+        clearDownloadState()
         
         if (forceRetry || nextRetryAttempt < MAX_RETRY_ATTEMPTS) {
             val delayMs = if (forceRetry) 1000L else (1L shl retryAttempt) * 1000L
@@ -1399,12 +1402,15 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             Log.w(TAG, "Download attempt ${retryAttempt + 1} failed: $errorMessage. Retrying in ${delayMs}ms...")
             _error.value = "Download failed: $errorMessage. Retrying (${nextRetryAttempt}/$MAX_RETRY_ATTEMPTS)..."
             
+            // Cancel old notification to avoid duplicate download notifications
+            cancelDownloadNotification()
+            
             viewModelScope.launch {
                 delay(delayMs)
                 if (!_isDownloading.value) {
                     Log.d(TAG, "Retrying download (attempt ${nextRetryAttempt})")
                     val expectedSize = _latestVersion.value?.apkSize ?: 0
-                    downloadApkInApp(downloadUrl, fileName, expectedSize, if (forceRetry) 0 else nextRetryAttempt)
+                    downloadApkInApp(downloadUrl, fileName, expectedSize, 0)
                 }
             }
         } else {

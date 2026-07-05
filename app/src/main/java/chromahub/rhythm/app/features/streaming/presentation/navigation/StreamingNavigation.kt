@@ -612,7 +612,10 @@ fun StreamingNavigation(
                             }
                         },
                         onCollapse = {
-                            navController.popBackStack()
+                            val popped = navController.popBackStack()
+                            if (!popped) {
+                                // Entry already popped (e.g., by predictive back gesture)
+                            }
                         },
                         onMiniPlayerDismiss = {
                             isMiniPlayerDismissed = true
@@ -1027,7 +1030,12 @@ fun StreamingNavigation(
                             launchSingleTop = true
                         }
                     },
-                    onBack = { navController.popBackStack() }
+                    onBack = {
+                        val popped = navController.popBackStack()
+                        if (!popped) {
+                            // Entry already popped
+                        }
+                    }
                 )
             }
 
@@ -1125,7 +1133,12 @@ fun StreamingNavigation(
                 }
             ) {
                 GoSettingsScreen(
-                    onBackClick = { navController.popBackStack() },
+                    onBackClick = {
+                        val popped = navController.popBackStack()
+                        if (!popped) {
+                            // Entry already popped
+                        }
+                    },
                     onConfigureCurrentProvider = { serviceId ->
                         navController.navigate(StreamingScreen.ServiceSetup.createRoute(serviceId)) {
                             launchSingleTop = true
@@ -1183,7 +1196,10 @@ fun StreamingNavigation(
             ) {
                 RhythmGuardSettingsScreen(
                     onBackClick = {
-                        navController.popBackStack()
+                        val popped = navController.popBackStack()
+                        if (!popped) {
+                            // Entry already popped
+                        }
                     }
                 )
             }
@@ -1290,7 +1306,12 @@ fun StreamingNavigation(
                 ArtistDetailScreen(
                     viewModel = localMusicViewModel,
                     artistName = localArtist.name,
-                    onBack = { navController.popBackStack() },
+                    onBack = {
+                        val popped = navController.popBackStack()
+                        if (!popped) {
+                            // Entry already popped
+                        }
+                    },
                     onSongClick = { localSong ->
                         val queue = if (artistSongs.isNotEmpty()) artistSongs else {
                             artistSongsById[localSong.id]?.let { listOf(it) }.orEmpty()
@@ -1446,7 +1467,12 @@ fun StreamingNavigation(
                 AlbumDetailScreen(
                     albumId = albumId,
                     albumName = localAlbum.title,
-                    onBack = { navController.popBackStack() },
+                    onBack = {
+                        val popped = navController.popBackStack()
+                        if (!popped) {
+                            // Entry already popped
+                        }
+                    },
                     onSongClick = { localSong ->
                         val queue = if (albumSongs.isNotEmpty()) albumSongs else {
                             albumSongsById[localSong.id]?.let { listOf(it) }.orEmpty()
@@ -1646,7 +1672,12 @@ fun StreamingNavigation(
                             )
                         }
                     },
-                    onBack = { navController.popBackStack() },
+                    onBack = {
+                        val popped = navController.popBackStack()
+                        if (!popped) {
+                            // Entry already popped
+                        }
+                    },
                     onRemoveSong = { localSong, _ ->
                         playlistTracksById[localSong.id]?.let { streamingSong ->
                             streamingMusicViewModel.removeSongFromPlaylist(playlistId, streamingSong.id)
@@ -1661,7 +1692,10 @@ fun StreamingNavigation(
                         selectedPlaylist?.let { playlist ->
                             streamingMusicViewModel.deletePlaylist(playlist) { success ->
                                 if (success) {
-                                    navController.popBackStack()
+                                    val popped = navController.popBackStack()
+                                    if (!popped) {
+                                        // Entry already popped
+                                    }
                                 }
                             }
                         }
@@ -1779,7 +1813,12 @@ fun StreamingNavigation(
                         availableSongs = availableSongs,
                         searchQuery = addSongsSearchQuery,
                         onSearchQueryChange = { addSongsSearchQuery = it },
-                        onBackClick = { navController.popBackStack() },
+                        onBackClick = {
+                            val popped = navController.popBackStack()
+                            if (!popped) {
+                                // Entry already popped
+                            }
+                        },
                         onAddSongsToPlaylist = { songs ->
                             val songsToAdd = songs.mapNotNull { song ->
                                 streamingAddSongsCandidatesById[song.id]
@@ -1790,7 +1829,10 @@ fun StreamingNavigation(
                                     songs = songsToAdd
                                 )
                             }
-                            navController.popBackStack()
+                            val popped = navController.popBackStack()
+                            if (!popped) {
+                                // Entry already popped
+                            }
                         }
                     )
                 }
@@ -1822,7 +1864,12 @@ fun StreamingNavigation(
                         )
                 }
             ) {
-                QueueSettingsScreen(onBackClick = { navController.popBackStack() })
+                QueueSettingsScreen(onBackClick = {
+                    val popped = navController.popBackStack()
+                    if (!popped) {
+                        // Entry already popped
+                    }
+                })
             }
 
             composable(
@@ -1845,7 +1892,12 @@ fun StreamingNavigation(
                         )
                 }
             ) {
-                PlaybackSettingsScreen(onBackClick = { navController.popBackStack() })
+                PlaybackSettingsScreen(onBackClick = {
+                    val popped = navController.popBackStack()
+                    if (!popped) {
+                        // Entry already popped
+                    }
+                })
             }
 
             composable(
@@ -1900,7 +1952,12 @@ fun StreamingNavigation(
                     StreamingServiceSetupScreen(
                         serviceId = serviceId,
                         viewModel = streamingMusicViewModel,
-                        onBackClick = { navController.popBackStack() }
+                        onBackClick = {
+                            val popped = navController.popBackStack()
+                            if (!popped) {
+                                // Entry already popped
+                            }
+                        }
                     )
                 }
             }
