@@ -115,6 +115,12 @@ private fun Song.albumGroupMatchKey(): String =
 private fun Album.hasTitle(title: String): Boolean =
     this.title.trim().equals(title.trim(), ignoreCase = true)
 
+private fun Album.isCompilation(): Boolean =
+    artist.trim().equals("Various Artists", ignoreCase = true) ||
+    artist.trim().equals("VA", ignoreCase = true) ||
+    artist.trim().equals("Compilation", ignoreCase = true) ||
+    artist.trim().equals("Soundtrack", ignoreCase = true)
+
 fun List<Album>.findAlbumForSong(song: Song): Album? {
     val songAlbumId = song.albumId.trim()
     val songAlbumTitle = song.album.trim()
@@ -131,6 +137,7 @@ fun List<Album>.findAlbumForSong(song: Song): Album? {
             album.songs.any { it.albumGroupMatchKey() == songGroupKey }
     } ?: firstOrNull { album ->
         album.hasTitle(songAlbumTitle) &&
+            !album.isCompilation() &&
             album.artist.trim().equals(song.albumArtist?.trim().takeIf { !it.isNullOrBlank() } ?: song.artist.trim(), ignoreCase = true)
     } ?: firstOrNull { album ->
         album.hasTitle(songAlbumTitle)

@@ -185,7 +185,7 @@ fun UniversalSearchScreen(
     }
 
     val localSongs by localViewModel.filteredSongs.collectAsState()
-    val localAlbums by localViewModel.filteredAlbums.collectAsState()
+    val fullLocalAlbums by localViewModel.albums.collectAsState()
     val localArtists by localViewModel.filteredArtists.collectAsState()
     val localPlaylists by localViewModel.playlists.collectAsState()
     val searchHistory by localViewModel.searchHistory.collectAsState()
@@ -229,9 +229,16 @@ fun UniversalSearchScreen(
             }
         }
     }
-    val matchedLocalAlbums = remember(query, localAlbums, filterAlbums) {
+    val matchedLocalAlbums = remember(query, fullLocalAlbums, filterAlbums) {
         if (!filterAlbums || query.isBlank()) emptyList()
-        else localAlbums.filter { it.title.contains(query, true) || it.artist.contains(query, true) }
+        else {
+            val lowerQuery = query.lowercase()
+            fullLocalAlbums.filter { album ->
+                album.title.contains(query, true) ||
+                album.artist.contains(query, true) ||
+                album.songs.any { it.title.lowercase().contains(lowerQuery) }
+            }
+        }
     }
     val matchedLocalArtists = remember(query, localArtists, filterArtists) {
         if (!filterArtists || query.isBlank()) emptyList()
@@ -1411,7 +1418,7 @@ fun UniversalSearchScreen(
                 onGoToAlbum = {
                     showSongOptionsSheet = false
                     if (isLocal) {
-                        val album = localAlbums.findAlbumForSong(songObj as Song)
+                        val album = localViewModel.albums.value.findAlbumForSong(songObj as Song)
                         if (album != null) {
                             handleAction("LOCAL") { onLocalAlbumClick(album) }
                         } else Toast.makeText(context, R.string.universalsearchscreen_album_not_found, Toast.LENGTH_SHORT).show()

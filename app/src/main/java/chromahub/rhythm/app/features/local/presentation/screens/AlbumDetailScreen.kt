@@ -323,7 +323,16 @@ fun AlbumDetailScreen(
     LaunchedEffect(shufflePressed) { if (shufflePressed) { delay(150); shufflePressed = false } }
 
     val totalDuration = songDisplayState.totalDuration
-    val displayArtist = album?.artist ?: "Unknown Artist"
+    val aggregatedArtists = remember(album?.songs, effectiveDelimiters, artistSeparatorEnabled) {
+        (album?.songs ?: emptyList()).flatMap { song ->
+            ArtistSeparator.splitArtistNames(
+                song.artist,
+                delimiters = effectiveDelimiters,
+                enabled = artistSeparatorEnabled
+            )
+        }.distinct().sorted()
+    }
+    val displayArtist = aggregatedArtists.joinToString(", ").ifEmpty { album?.artist ?: "Unknown Artist" }
     val displayArtworkUri = album?.artworkUri
     val hasCanvas = appleCanvasEnabled && canvasArtwork != null
     val backgroundColor = MaterialTheme.colorScheme.background

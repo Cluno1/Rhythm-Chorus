@@ -583,9 +583,22 @@ fun PlayerScreen(
                 onSleepTimer = { showSleepTimerBottomSheet = true },
                 onLyricsEditor = { showLyricsEditorDialog = true },
                 onAlbum = {
-                    currentSongAlbumForSheet?.let { album ->
-                        selectedAlbum = album
-                        showAlbumSheet = true
+                    song?.let { currentSong ->
+                        val album = resolveAlbumForSong(currentSong)
+                        if (album != null) {
+                            if (isStreamingMode) {
+                                navController.navigate("streaming_album/${android.net.Uri.encode(album.id)}?albumName=${android.net.Uri.encode(album.title)}")
+                            } else {
+                                navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
+                            }
+                        } else {
+                            if (isStreamingMode) {
+                                navController.navigate("streaming_album/${android.net.Uri.encode(currentSong.album)}?albumName=${android.net.Uri.encode(currentSong.album)}")
+                            } else {
+                                val fallbackAlbumId = currentSong.albumId.takeIf { it.isNotBlank() } ?: "unknown_" + currentSong.album
+                                navController.navigate(Screen.AlbumDetail.createRoute(fallbackAlbumId, currentSong.album))
+                            }
+                        }
                     }
                 },
                 onArtist = {

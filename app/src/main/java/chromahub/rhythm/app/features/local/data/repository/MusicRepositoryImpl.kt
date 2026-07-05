@@ -65,6 +65,7 @@ import chromahub.rhythm.app.shared.data.model.ScanPhase
 import chromahub.rhythm.app.shared.data.model.UserAudioDevice
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
 import chromahub.rhythm.app.shared.data.model.LyricsApiPriority
+import chromahub.rhythm.app.shared.data.model.findAlbumForSong
 import chromahub.rhythm.app.core.domain.model.PlayableItem
 import chromahub.rhythm.app.core.domain.model.SourceType
 import java.lang.ref.WeakReference
@@ -2223,53 +2224,88 @@ class MusicRepository(context: Context) {
         return bestMatch.key
     }
 
+    private fun rawGroupKeyForSong(song: Song): String =
+        (song.albumArtist?.trim()?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
+            ?: song.artist.trim().takeIf { it.isNotBlank() }
+            ?: "Unknown Artist").lowercase(Locale.ROOT)
+
+    private fun isCompilationAlbum(songs: List<Song>): Boolean {
+        val groups = songs.groupBy { rawGroupKeyForSong(it) }
+        if (groups.size <= 1) return false
+        val maxCount = groups.maxOf { it.value.size }
+        val ratio = maxCount.toFloat() / songs.size
+        return ratio < 0.6f
+    }
+
     suspend fun loadAlbums(): List<Album> = withContext(Dispatchers.IO) {
         val allSongs = loadSongs()
-        
-        // Group by (normalized album name, raw album artist) to keep distinct albums separate.
-        // Within each group, derive a smart best album artist for display.
-        val groupedSongs = allSongs.groupBy { song ->
-            val albumName = song.album.trim().lowercase(Locale.ROOT)
-            val rawGroupKey = (song.albumArtist?.trim()?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
-                ?: song.artist.trim().takeIf { it.isNotBlank() }
-                ?: "Unknown Artist").lowercase(Locale.ROOT)
-            albumName to rawGroupKey
-        }
 
-        val albums = groupedSongs.map { (key, albumSongs) ->
-            val albumName = albumSongs.first().album.trim().ifBlank { "Unknown Album" }
-            
-            val smartArtist = findBestAlbumArtist(albumSongs)
-                ?: albumSongs.first().albumArtist?.trim()?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
-                ?: albumSongs.first().artist.trim().takeIf { it.isNotBlank() }
-                ?: "Unknown Artist"
+        val albums = buildList {
+            val byAlbumName = allSongs.groupBy { song ->
+                song.album.trim().lowercase(Locale.ROOT)
+            }
 
-            // Generate a stable unique album ID by hashing the album name and artist combination.
-            val albumId = "hash_${key.first}|${smartArtist.lowercase(Locale.ROOT)}"
-            
-            // Find the maximum year among the songs
-            val year = albumSongs.maxOfOrNull { it.year } ?: 0
-            
-            // Get dateModified from the songs
-            val dateModified = albumSongs.maxOfOrNull { it.dateModified } ?: System.currentTimeMillis()
+            for ((normalizedAlbumName, songsWithName) in byAlbumName) {
+                val byArtist = songsWithName.groupBy { rawGroupKeyForSong(it) }
 
-            // Sort songs in the album by track number, then by disc number, then by title
-            val sortedSongs = albumSongs.sortedWith(
-                compareBy<Song> { it.discNumber }
-                    .thenBy { it.trackNumber }
-                    .thenBy { it.title.lowercase(Locale.ROOT) }
-            )
+                if (byArtist.size <= 1 || !isCompilationAlbum(songsWithName)) {
+                    for ((artistKey, albumSongs) in byArtist) {
+                        val albumName = albumSongs.first().album.trim().ifBlank { "Unknown Album" }
 
-            Album(
-                id = albumId,
-                title = albumName,
-                artist = smartArtist,
-                artworkUri = albumSongs.first().artworkUri,
-                year = year,
-                songs = sortedSongs,
-                numberOfSongs = sortedSongs.size,
-                dateModified = dateModified
-            )
+                        val smartArtist = findBestAlbumArtist(albumSongs)
+                            ?: albumSongs.first().albumArtist?.trim()?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
+                            ?: albumSongs.first().artist.trim().takeIf { it.isNotBlank() }
+                            ?: "Unknown Artist"
+
+                        val albumId = "hash_${normalizedAlbumName}|${smartArtist.lowercase(Locale.ROOT)}"
+
+                        val year = albumSongs.maxOfOrNull { it.year } ?: 0
+                        val dateModified = albumSongs.maxOfOrNull { it.dateModified } ?: System.currentTimeMillis()
+
+                        val sortedSongs = albumSongs.sortedWith(
+                            compareBy<Song> { it.discNumber }
+                                .thenBy { it.trackNumber }
+                                .thenBy { it.title.lowercase(Locale.ROOT) }
+                        )
+
+                        add(Album(
+                            id = albumId,
+                            title = albumName,
+                            artist = smartArtist,
+                            artworkUri = albumSongs.first().artworkUri,
+                            year = year,
+                            songs = sortedSongs,
+                            numberOfSongs = sortedSongs.size,
+                            dateModified = dateModified
+                        ))
+                    }
+                } else {
+                    val albumName = songsWithName.first().album.trim().ifBlank { "Unknown Album" }
+                    val albumArtist = "Various Artists"
+
+                    val year = songsWithName.maxOfOrNull { it.year } ?: 0
+                    val dateModified = songsWithName.maxOfOrNull { it.dateModified } ?: System.currentTimeMillis()
+
+                    val sortedSongs = songsWithName.sortedWith(
+                        compareBy<Song> { it.discNumber }
+                            .thenBy { it.trackNumber }
+                            .thenBy { it.title.lowercase(Locale.ROOT) }
+                    )
+
+                    val albumId = "hash_${normalizedAlbumName}|variousartists"
+
+                    add(Album(
+                        id = albumId,
+                        title = albumName,
+                        artist = albumArtist,
+                        artworkUri = songsWithName.first().artworkUri,
+                        year = year,
+                        songs = sortedSongs,
+                        numberOfSongs = sortedSongs.size,
+                        dateModified = dateModified
+                    ))
+                }
+            }
         }.sortedBy { it.title.lowercase(Locale.ROOT) }
 
         Log.d(TAG, "Loaded ${albums.size} albums from songs directly")
@@ -5742,11 +5778,7 @@ class MusicRepository(context: Context) {
             }
 
             // Check if album has artwork - if yes, we don't need track-specific artwork
-            val albums = loadAlbums()
-            val album = albums.find { 
-                it.title.trim().equals(song.album.trim(), ignoreCase = true) &&
-                it.artist.trim().equals(song.albumArtist?.trim() ?: song.artist.trim(), ignoreCase = true)
-            }
+            val album = loadAlbums().findAlbumForSong(song)
             if (album?.artworkUri != null) {
                 // Album has artwork, no need for track-specific image
                 updatedSongs.add(song)
