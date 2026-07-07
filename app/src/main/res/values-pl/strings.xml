@@ -1232,8 +1232,8 @@
     <string name="settings_rhythm_guard_protection_preset_strict">Ścisłe</string>
     <string name="settings_rhythm_guard_protection_preset_custom">Niestandardowe</string>
     <string name="settings_rhythm_guard_timeout_activity_title">Aktywny limit czasu słuchania</string>
-    <string name="settings_rhythm_guard_timeout_activity_default_reason">Zwrot akcji: twoje uszy rozpoczęły połączenie i wezwały do ​​przerwy na przekąskę. Rhythm Strażnik wstrzymał odtwarzanie, aby wszyscy mogli się uspokoić.</string>
-    <string name="settings_rhythm_guard_timeout_activity_comic_desc">Zwrot akcji: twoje uszy rozpoczęły połączenie i wezwały do ​​​​przerwy na przekąskę. Rhythm Strażnik wstrzymał odtwarzanie, aby wszyscy mogli się uspokoić.</string>
+    <string name="settings_rhythm_guard_timeout_activity_default_reason">Nieoczekiwany zwrot akcji: wasze uszy założyły związek zawodowy i zażądały przerwy na przekąskę. Rhythm Guard wstrzymał odtwarzanie, żeby wszyscy mogli trochę ochłonąć.</string>
+    <string name="settings_rhythm_guard_timeout_activity_comic_desc">Zwrot akcji: twoje uszy rozpoczęły połączenie i wezwały do przerwy na przekąskę. Rhythm Strażnik wstrzymał odtwarzanie, aby wszyscy mogli się uspokoić.</string>
     <string name="settings_rhythm_guard_timeout_activity_extend">Przedłużenie przerwy (+%1$d min)</string>
     <string name="settings_rhythm_guard_timeout_activity_exit">Zamknij ekran limitu czasu</string>
     <string name="settings_rhythm_guard_timeout_activity_close_app">Zamknij aplikację</string>
@@ -1347,7 +1347,7 @@
     <string name="delimiter_semicolon">Średnik</string>
     <string name="delimiter_comma">Przecinek</string>
     <string name="delimiter_plus">Dodatkowo</string>
-    <string name="delimiter_ampersand">Ampersand</string>
+    <string name="delimiter_ampersand">Znak rozdzielający</string>
     <!-- About Screen (additional strings) -->
     
     <!-- Sleep Timer -->
@@ -1707,7 +1707,7 @@
     <string name="settings_show_lyrics_player_desc">Wyświetl zsynchronizowane teksty w odtwarzaczu</string>
     <string name="settings_lyrics_transition">Przejście tekstu</string>
     <string name="settings_lyrics_transition_desc">Animacja przełączania grafiki ↔ tekstu</string>
-    <string name="settings_lyrics_text_size">Rozmiar tekstu tekstu</string>
+    <string name="settings_lyrics_text_size">Rozmiar tekstu piosenek</string>
     <string name="settings_lyrics_alignment">Wyrównanie tekstów</string>
     <string name="settings_lyrics_alignment_desc">Poziome wyrównanie tekstu</string>
     <string name="settings_show_art_below_lyrics">Pokaż grafikę pod tekstem</string>
@@ -1869,8 +1869,8 @@
     <string name="settings_shape_preset_desc">Predefiniowane kolekcje kształtów</string>
     <string name="settings_shape_album_art">Kształt okładki albumu</string>
     <string name="settings_shape_album_art_desc">Kształt okładki albumu</string>
-    <string name="settings_shape_player_art">Kształt grafiki gracza</string>
-    <string name="settings_shape_player_art_desc">Kształt grafiki gracza</string>
+    <string name="settings_shape_player_art">Kształt grafiki odtwarzacza</string>
+    <string name="settings_shape_player_art_desc">Kształt grafiki odtwarzacza</string>
     <string name="settings_shape_song_art">Kształt grafiki utworu</string>
     <string name="settings_shape_song_art_desc">Kształt grafiki utworu</string>
     <string name="settings_shape_playlist_art">Kształt grafiki listy odtwarzania</string>
@@ -2017,10 +2017,7 @@
     <string name="batchedittagssheet_enable_fields_you_want">Włącz pola, które chcesz zaktualizować. Wyłączone pola pozostają niezmienione.</string>
     <string name="batchedittagssheet_tags">Tagi</string>
     <string name="batchedittagssheet_batch_artwork_preview">Podgląd grafiki zbiorczej</string>
-    <string name="deviceconfigurationbottomsheet_supported_formats_fixedbandeq_text">Supported formats:
-• FixedBandEQ text (AutoEQ)
-• JSON format
-• CSV (10 band values)</string>
+    <string name="deviceconfigurationbottomsheet_supported_formats_fixedbandeq_text">Obsługiwane formaty: • Tekst FixedBandEQ (AutoEQ) • Format JSON • CSV (wartości dla 10 pasm)</string>
     <string name="deviceconfigurationbottomsheet_paste_eq_data_here">Wklej tutaj dane EQ...</string>
     <string name="deviceconfigurationbottomsheet_open_autoeqapp">Otwórz autoeq.app</string>
     <string name="deviceconfigurationbottomsheet_export_eq_profile">Eksportuj profil EQ</string>
@@ -2105,7 +2102,7 @@
     <string name="streamingcontenthomescreen_your_connected_streaming_service">Twoje playlisty z podłączonymi usługami przesyłania strumieniowego</string>
     <string name="streamingcontenthomescreen_no_playlists_found">Nie znaleziono list odtwarzania</string>
     <string name="streamingcontenthomescreen_create_playlists_on_your">Utwórz playlisty na swoim serwerze, aby zobaczyć je tutaj.</string>
-    <string name="streaminghomescreen_leave_go_mode">Leave Go Mode</string>
+    <string name="streaminghomescreen_leave_go_mode">Wyjdź z trybu Go</string>
     <string name="streaminglibraryscreen_no_albums">Brak albumów</string>
     <string name="streamingsettingsscreen_streaming_restricted">Przesyłanie strumieniowe ograniczone</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">Nie udało się odtworzyć następnego: Nie można znaleźć adresu URL</string>
@@ -2207,7 +2204,7 @@
     <string name="playerscreen_open_artist">Artysta otwarty</string>
     <string name="aboutscreen_support_development">Wspieranie rozwoju</string>
     <string name="aboutscreen_discord_community">Społeczność Discord</string>
-    <string name="apimanagementsettingsscreen_lyrically">Lyrically</string>
+    <string name="apimanagementsettingsscreen_lyrically">Pod względem tekstowym</string>
     <string name="apimanagementsettingsscreen_github">GitHub</string>
     <string name="apimanagementsettingsscreen_app_updates_and_release">Aktualizacje aplikacji i informacje o wydaniach</string>
     <string name="backuprestoresettingsscreen_choose_backup_sections">Wybierz Sekcje kopii zapasowych</string>
@@ -2239,8 +2236,7 @@
     <string name="lyricssourcesettingsscreen_lyrics_api_priority">Teksty piosenek API Priorytet</string>
     <string name="lyricssourcesettingsscreen_choose_which_online_lyrics">Wybierz, który tekst online API chcesz przeszukać jako pierwszy</string>
     <string name="lyricssourcesettingsscreen_retry_using_fallbacks">Spróbuj ponownie, korzystając z rozwiązań awaryjnych</string>
-    <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• Embedded lyrics are stored in your audio files
-</string>
+    <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• Teksty piosenek są zapisane w plikach audio</string>
     <string name="miniplayercustomizationsettingsscreen_miniplayer_theme">Motyw miniodtwarzacza</string>
     <string name="miniplayercustomizationsettingsscreen_choose_between_rhythm_default">Wybierz pomiędzy motywem domyślnym lub ekspresyjnym Rhythm</string>
     <string name="miniplayercustomizationsettingsscreen_integrated_directly_into_the">Zintegrowany bezpośrednio z tłem MiniPlayera</string>
@@ -2473,7 +2469,7 @@
     <string name="lyrics_settings_online_first_desc">Preferuj interfejsy API online (Rhythm słowo po słowie, LRCLib), powrót do osadzonych</string>
     <string name="lyrics_settings_local_first">Najpierw lokalnie</string>
     <string name="lyrics_settings_local_first_desc">Preferuj lokalne pliki .lrc, następnie osadzone teksty, a na końcu interfejsy API online</string>
-    <string name="lyrics_settings_lyrically_first">Lyrically First</string>
+    <string name="lyrics_settings_lyrically_first">Najpierw tekst piosenki</string>
     <string name="lyrics_settings_lrclib_first">Najpierw LRCLib</string>
     <string name="lyrics_settings_fallback_apis_desc">Spróbuj skorzystać z zastępczych interfejsów API, jeśli preferowany API nie zwróci tekstu</string>
     <string name="lyrics_settings_display_styling">Wyświetlacz i stylizacja</string>
@@ -2562,7 +2558,7 @@
     <string name="dialog_export_playlist_to">Eksportuj „%1$s” do:</string>
     <string name="dialog_export_playlists_to">Eksportuj playlisty %1$d do:</string>
     <!-- Mode dialog strings -->
-    <string name="dialog_switch_to_go">Switch to Rhythm Go?</string>
+    <string name="dialog_switch_to_go">Przejść na Rhythm Go?</string>
     <string name="dialog_switch_to_local">Przełączyć na tryb lokalny?</string>
     <string name="dialog_switch_to_go_desc">This item belongs to Rhythm Go. Przełączyć się teraz do trybu przesyłania strumieniowego, aby przesyłać strumieniowo i odtwarzać?</string>
     <string name="dialog_switch_to_local_desc">Ta pozycja należy do Twojej Biblioteki Lokalnej. Przełączyć się teraz do trybu lokalnego, aby odtwarzać utwory offline?</string>
