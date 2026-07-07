@@ -1,16 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Rhythm</string>
-    
     <!-- Common Labels -->
     <string name="home">Hem</string>
     <string name="library">Bibliotek</string>
     <string name="search">Sök</string>
     <string name="settings">Inställningar</string>
-    
     <!-- Media3 notification configuration -->
     <string name="media3_notification_channel_name">Rhythm Musik</string>
     <string name="media3_notification_channel_description">Medieuppspelningskontroller</string>
-    
     <!-- Widget strings -->
     <string name="widget_description">Rhythm musikwidget – styr uppspelningen med responsiva layouter som stöder rutnätsstorlekarna 2x1 till 5x5</string>
     <string name="widget_description_glance">Rhythm Musik - Styr uppspelningen med 9 responsiva layouter, Material 3 design och realtidsuppdateringar</string>
@@ -22,7 +20,6 @@
     <string name="play_pause">Spela/pausa</string>
     <string name="skip_next">Hoppa över nästa</string>
     <string name="skip_previous">Hoppa över föregående</string>
-    
     <!-- Widget Settings -->
     <string name="settings_widget">Widget</string>
     <string name="settings_widget_desc">Widgetar på startskärmen</string>
@@ -36,10 +33,8 @@
     <string name="widget_corner_radius">Hörnradie</string>
     <string name="widget_auto_update">Automatisk uppdatering</string>
     <string name="widget_tip_controls">Tryck på widgeten för att öppna appen, knappar styr uppspelningen</string>
-    
     <!-- Content Descriptions -->
     <string name="cd_navigate">Navigera</string>
-    
     <!-- Settings - Notifications -->
     <string name="settings_notifications">Meddelanden</string>
     <string name="settings_notifications_updates_group">Appuppdateringar</string>
@@ -54,13 +49,11 @@
     <string name="settings_rhythm_pulse_notifications_desc">Ta emot vänliga påminnelser och lyssnande tips.</string>
     <string name="settings_rhythm_pulse_interval">Tipsintervall</string>
     <string name="settings_rhythm_pulse_interval_dialog_title">Rhythm Tipsintervall</string>
-    
     <!-- Settings - Queue & Playback -->
     <!-- Settings - Queue -->
     <string name="settings_queue">Kö</string>
     <string name="settings_queue_desc">Köregler, automatisk generering, beteende</string>
     <string name="settings_queue_title">Köinställningar</string>
-
     <!-- Settings - Playback -->
     <string name="settings_playback">Uppspelning</string>
     <string name="settings_playback_desc">Uppspelningslägen, övertoning, tidsformatering</string>
@@ -104,7 +97,6 @@
     <string name="settings_use_hours">Använd timformat</string>
     <string name="settings_use_hours_enabled">Visar 1:32:26 för långa spår</string>
     <string name="settings_use_hours_disabled">Visar 92:26 för långa spår</string>
-    
     <!-- Settings - Playlists -->
     <string name="settings_playlists">Spellistor</string>
     <string name="settings_playlists_overview">Översikt</string>
@@ -128,7 +120,6 @@
     <string name="settings_default">Standard</string>
     <string name="settings_enable_default_playlists">Aktivera standardspellistor</string>
     <string name="settings_enable_default_playlists_desc">Skapa automatiskt nyligen tillagda och mest spelade spellistor</string>
-    
     <!-- Operation Progress -->
     <string name="operation_exporting_playlists">Säkerhetskopierar dina anpassade spellistor...</string>
     <string name="operation_exporting_playlists_location">Säkerhetskopierar spellistor till lagring...</string>
@@ -166,53 +157,44 @@
     <string name="notification_sleep_timer_title">Rhythm Insomningstimer</string>
     <string name="notification_sleep_timer_pause_in">⏸ Pausar om %1$s</string>
     <string name="notification_sleep_timer_stop_in">⏹ Slutar om %1$s</string>
-    
     <!-- Streaming Notifications -->
     <string name="notification_streaming_channel_name">Rhythm Go</string>
     <string name="notification_streaming_channel_desc">Streamingtjänstens status och synkroniseringsuppdateringar</string>
-    
     <!-- Streaming Authentication -->
     <string name="notification_streaming_auth_title">Streaming ansluten</string>
     <string name="notification_streaming_auth_connected">🎵 %1$s är redo att spela! Ditt bibliotek synkroniseras i bakgrunden.</string>
     <string name="notification_streaming_auth_failed">Anslutning misslyckades för %1$s. Tryck för att försöka konfigurera igen.</string>
     <string name="notification_streaming_auth_expired">Sessionen löpte ut för %1$s. Tryck för att återansluta.</string>
-    
     <!-- Streaming Library Sync -->
     <string name="notification_streaming_sync_title">Synkronisera ditt bibliotek</string>
     <string name="notification_streaming_sync_started">Synkroniseras med %1$s...</string>
     <string name="notification_streaming_sync_progress">Synkronisera: %1$d låtar • %2$d album • %3$d artister</string>
     <string name="notification_streaming_sync_complete">✓ Synkroniserade %1$d låtar från %2$s!</string>
     <string name="notification_streaming_sync_failed">Synkronisering misslyckades. Kontrollera din anslutning och försök igen.</string>
-    
     <!-- Streaming Liked Songs -->
     <string name="notification_streaming_liked_title">Gillade låtar uppdaterade</string>
     <string name="notification_streaming_liked_added">♥ Lades till i gillade låtar på %1$s</string>
     <string name="notification_streaming_liked_removed">Borttagen från gillade låtar på %1$s</string>
-    
     <!-- Streaming Playlist Operations -->
     <string name="notification_streaming_playlist_title">Spellista uppdaterad</string>
     <string name="notification_streaming_playlist_created">Ny spellista \"%1$s\" skapad på %2$s</string>
     <string name="notification_streaming_playlist_updated">Spellistan \"%1$s\" uppdaterades den %2$s</string>
     <string name="notification_streaming_playlist_deleted">Spellistan \"%1$s\" raderad från %2$s</string>
-    
     <!-- Streaming Network/Quality -->
     <string name="notification_streaming_quality_title">Strömningskvalitet</string>
     <string name="notification_streaming_quality_switched">Kvalitet bytte till %1$s på grund av nätverksändringar</string>
     <string name="notification_streaming_buffering">Buffer... Spelar upp från %1$s</string>
     <string name="notification_streaming_buffering_complete">Redo att spela!</string>
-    
     <!-- Streaming Offline -->
     <string name="notification_streaming_offline_title">Offlineläge</string>
     <string name="notification_streaming_offline_sync">Synkroniserar offlinecache med %1$s...</string>
     <string name="notification_streaming_offline_sync_complete">✓ Offlinecache redo med %1$d låtar</string>
     <string name="notification_streaming_offline_cache_cleared">Cache rensad. Sparat %1$s utrymme.</string>
-    
     <!-- Streaming Errors -->
     <string name="notification_streaming_error_title">Streamingnummer</string>
     <string name="notification_streaming_error_generic">Strömningsfel på %1$s. Tryck för mer information.</string>
     <string name="notification_streaming_error_no_internet">Inget internet. Växla till offlineläge för att fortsätta lyssna.</string>
     <string name="notification_streaming_error_account_issue">Kontoproblem med %1$s. Vänligen återanslut.</string>
-    
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Rensa tomma spellistor?</string>
     <string name="dialog_cleanup_empty_playlists_message">Detta tar permanent bort %1$d tom spellista%2$s. Denna åtgärd kan inte ångras.</string>
@@ -223,7 +205,6 @@
     <string name="streaming_settings_switch_provider_confirm_title">Byt streamingleverantör?</string>
     <string name="streaming_settings_switch_provider_confirm_desc">Nuvarande leverantör: %1$s\nByt till: %2$s? Detta kommer att koppla bort den för närvarande aktiva leverantören.</string>
     <string name="action_switch">Växla</string>
-    
     <!-- Playlist Detail Screen -->
     <string name="playlist_rename_title">Byt namn på spellista</string>
     <string name="playlist_name_label">Spellistans namn</string>
@@ -238,11 +219,9 @@
     <string name="playlist_remove_song_confirm">Vill du ta bort \'%1$s\' från den här spellistan?</string>
     <string name="playlist_remove_songs_count">Ta bort %1$d låtar</string>
     <string name="playlist_removed_from_playlist">Tog bort %1$s från spellistan</string>
-    
     <!-- Restart Dialog -->
     <string name="restart_now">Starta om nu</string>
     <string name="continue_without_restart">Starta om senare</string>
-    
     <!-- Settings - Media Scan -->
     <string name="settings_media_scan">Media Scan</string>
     <string name="settings_mode_selection">Lägesval</string>
@@ -282,7 +261,6 @@
     <string name="settings_scan_behavior">Skanningsbeteende</string>
     <string name="settings_include_hidden_whitelisted_media">Inkludera dolda &amp; .nomedia-filer</string>
     <string name="settings_include_hidden_whitelisted_media_desc">Aktivera genomsökning av dolda och .nomedia-ljudvägar under fullständiga mediesökningar (starkaste effekten i vitlistasmappar).</string>
-    
     <!-- Settings - Spotify -->
     
     <!-- Settings - About -->
@@ -307,12 +285,10 @@
     <string name="settings_about_visit_website">Besök webbplatsen</string>
     <string name="settings_about_view_github">Visa på GitHub</string>
     <string name="settings_about_report_bug">Rapportera bugg eller förslag på funktion</string>
-    
     <!-- Settings - Updates -->
     
     <!-- Status Labels -->
     <string name="status_disabled">Inaktiverad</string>
-    
     <!-- HomeScreen -->
     <string name="home_title">Rhythm</string>
     <string name="home_settings_cd">Inställningar</string>
@@ -331,37 +307,31 @@
     <string name="home_latest_additions">Dina senaste tillägg</string>
     <string name="home_no_recently_added">Inga nyligen tillagda album</string>
     <string name="home_no_recently_added_desc">Album som du lägger till i ditt bibliotek visas här</string>
-    
     <!-- Time-based quotes (0:00-4:59 - Late night) -->
     <string name="home_quote_late_night_1">Sena nattvibbar för drömmare 🌙</string>
     <string name="home_quote_late_night_2">Perfekt tid för din sena spellista 🎧</string>
     <string name="home_quote_late_night_3">Musik låter bättre vid midnatt ✨</string>
     <string name="home_quote_late_night_4">Låt nattmusiken spela vidare 🌟</string>
-    
     <!-- Time-based quotes (5:00-11:59 - Morning) -->
     <string name="home_quote_morning_1">Börja dagen med det perfekta soundtracket ✨</string>
     <string name="home_quote_morning_2">Låt musik ge energi till din morgonrutin 🎵</string>
     <string name="home_quote_morning_3">Varje morgon väntar en ny symfoni på att börja 🌅</string>
     <string name="home_quote_morning_4">Kaffe och musik - den perfekta morgonblandningen ☕</string>
-    
     <!-- Time-based quotes (12:00-16:59 - Afternoon) -->
     <string name="home_quote_afternoon_1">Slå igenom med dina favoritbeats 🚀</string>
     <string name="home_quote_afternoon_2">Musik gör allt bättre 💪</string>
     <string name="home_quote_afternoon_3">Låt rytmen styra din dag 🎯</string>
     <string name="home_quote_afternoon_4">Öka fokus med fantastiska låtar 🔥</string>
-    
     <!-- Time-based quotes (17:00-20:59 - Evening) -->
     <string name="home_quote_evening_1">Dags att varva ner med lugnande melodier 🌅</string>
     <string name="home_quote_evening_2">Låt kvällens soundtrack börja 🎶</string>
     <string name="home_quote_evening_3">Perfekt tid för din chill-spellista 😌</string>
     <string name="home_quote_evening_4">Varva ner med dina favoritlåtar 🌇</string>
-    
     <!-- Time-based quotes (21:00-23:59 - Night) -->
     <string name="home_quote_night_1">Nattetid är musiktid 🌙</string>
     <string name="home_quote_night_2">Låt natten serenade dig 🎵</string>
     <string name="home_quote_night_3">Perfekta vibbar för en lugn natt 🌟</string>
     <string name="home_quote_night_4">Omfamna nattens lugn 😴</string>
-    
     <!-- Personalized messages -->
     
     <!-- Recommended Section -->
@@ -369,10 +339,8 @@
     <string name="home_recommended_subtitle">Baserat på din lyssningshistorik</string>
     <string name="home_no_recommendations">Inga rekommendationer</string>
     <string name="home_no_recommendations_desc">Lyssna på lite musik för att få personliga rekommendationer</string>
-    
     <!-- Listening Stats -->
     <string name="home_listening_stats">Din Rhythm-statistik</string>
-    
     <!-- Mood & Moments -->
     
     <!-- Recently Played -->
@@ -380,17 +348,14 @@
     <string name="home_recently_played_subtitle">Fortsätt din musikaliska resa</string>
     <string name="home_no_recent_activity">Ingen senaste aktivitet</string>
     <string name="home_no_recent_activity_desc">Börja lyssna för att se dina nyligen spelade låtar här</string>
-    
     <!-- UI Actions -->
     <string name="ui_view_all">Visa alla</string>
     <string name="ui_songs_count">%1$d låtar</string>
-    
     <!-- Updates -->
     <string name="update_available_title">Uppdatering tillgänglig</string>
     <string name="update_version">Version %1$s</string>
     <string name="update_whats_new">Vad är nytt:</string>
     <string name="update_now">Uppdatera nu</string>
-    
     <!-- LibraryScreen -->
     <string name="library_title">Bibliotek</string>
     <string name="library_your_music">Din musik</string>
@@ -401,14 +366,12 @@
     <string name="library_loading_playlists">Laddar spellistor...</string>
     <string name="library_loading_albums">Laddar album...</string>
     <string name="library_loading_artists">Laddar artister...</string>
-    
     <!-- Background Processing States -->
     <string name="scanning_media">Indexerar ljudfiler...</string>
     <string name="detecting_genres">Analyserar spårgenrer...</string>
     <string name="fetching_artwork">Löser albumomslag...</string>
     <string name="extracting_metadata">Extraherar spårdetaljer...</string>
     <string name="processing_library">Optimerar bibliotek...</string>
-    
     <string name="library_no_songs">Inga låtar än</string>
     <string name="library_no_artists">Inga artister hittades</string>
     <string name="library_unknown_year">Okänt år</string>
@@ -427,19 +390,16 @@
     <string name="library_no_albums">Inga album ännu</string>
     <string name="library_playlists_count">%1$d spellistor</string>
     <string name="library_albums_count">%1$d album</string>
-    
     <!-- Sort Options -->
     <string name="sort_name">Namn</string>
     <string name="sort_date_created">Skapat datum</string>
     <string name="sort_song_count">Sångräkning</string>
     <string name="sort_title">Titel</string>
     <string name="sort_artist">Konstnär</string>
-    
     <!-- Storage Permission -->
     <string name="storage_permission_required">Lagringstillstånd krävs</string>
     <string name="storage_permission_desc">För att bläddra bland dina musikfiler och utforska din enhets lagring behöver Rhythm behörighet att komma åt dina filer och media.</string>
     <string name="storage_permission_audio_only">Detta tillåter endast åtkomst till ljudfiler och mappar som innehåller musik.</string>
-    
     <!-- PlayerScreen -->
     <string name="player_loading_lyrics">Laddar sångtexter...</string>
     <string name="player_queue">Kö</string>
@@ -448,32 +408,26 @@
     <string name="playback_speed">Uppspelningshastighet</string>
     <string name="sync_with_pitch">Synkronisera med Pitch</string>
     <string name="sync_with_speed">Synkronisera med hastighet</string>
-    
     <!-- SearchScreen -->
     <string name="search_view_all_songs">Visa alla låtar</string>
     <string name="search_recent_searches">Senaste sökningar</string>
     <string name="search_browse_by_genre">Bläddra efter genre</string>
-    
     <!-- Common UI -->
     <string name="ui_dismiss">Avvisa</string>
-    
     <!-- Common Terms -->
     <string name="common_rhythm">Rhythm</string>
     <string name="common_home">Hem</string>
     <string name="common_library">Bibliotek</string>
-    
     <!-- Splash/Loading -->
     <string name="splash_tagline">Din musik, din Rhythm</string>
     <string name="splash_loading">Förbereder ditt musikbibliotek...</string>
     <string name="splash_loading_streaming">Förbereder din streamingkonfiguration...</string>
     <string name="splash_ready">Redo att groove!</string>
-    
     <!-- Audio Quality -->
     
     <!-- Navigation -->
     <string name="nav_no_matching_songs">Inga matchande låtar hittades</string>
     <string name="nav_try_different">Försök med en annan sökfråga</string>
-    
     <!-- Updates Section -->
     <string name="updates_checking">Söker efter uppdateringar...</string>
     <string name="updates_available">Uppdatering tillgänglig</string>
@@ -495,7 +449,6 @@
     <string name="updates_smart_polling">Smart polling aktiv</string>
     <string name="updates_smart_polling_desc">Använda effektiva HTTP-kontroller för att upptäcka uppdateringar samtidigt som GitHub API-anrop minimeras. Du får omedelbara aviseringar när nya versioner släpps.</string>
     <string name="updates_channel_desc">Välj vilken uppdateringskanal du vill följa:</string>
-    
     <!-- Onboarding -->
     <string name="onboarding_welcome">Välkommen</string>
     <string name="onboarding_welcome_to">Välkommen till</string>
@@ -555,14 +508,12 @@
     <string name="onboarding_continue_full_tour">Fortsätt hela rundturen</string>
     <string name="onboarding_finish_now">Slutför installationen nu</string>
     <string name="onboarding_step_progress">%1$d av %2$d</string>
-    
     <string name="onboarding_media_scan_title">Filtrera ditt musikbibliotek</string>
     <string name="onboarding_media_scan_desc">Styr vilka ljudfiler som visas i ditt bibliotek. Använd svartlistaläge för att dölja oönskade filer (ringsignaler, meddelanden) eller vitlistaläge för att bara visa specifika musikmappar.</string>
     <string name="onboarding_media_scan_current_mode">Välj svartlista eller vitlista läge</string>
     <string name="onboarding_media_scan_blacklist">Svartlistläge: Dölj specifika låtar och mappar (ringsignaler, aviseringar)</string>
     <string name="onboarding_media_scan_whitelist">Vitlistläge: Visa endast låtar från valda mappar</string>
     <string name="onboarding_media_scan_configure_in_tuner">Konfigurera skanning i Inställningar &gt; Mediaskanning</string>
-    
     <string name="onboarding_complete_title">Du är redo!</string>
     <string name="onboarding_complete_desc">Rhythm är redo att spela! Ditt musikbibliotek skannas i bakgrunden. Här är vad som är konfigurerat:</string>
     <string name="onboarding_whats_next">Vad är nästa?</string>
@@ -571,7 +522,6 @@
     <string name="onboarding_next_finetune">Finjustera ljudet med Equalizer</string>
     <string name="onboarding_next_explore">Utforska fler inställningar när som helst</string>
     <string name="onboarding_settings_change">Alla inställningar kan ändras när som helst i Inställningar</string>
-    
     <!-- Onboarding Navigation -->
     <string name="onboarding_back">Tillbaka</string>
     <string name="onboarding_next">Nästa</string>
@@ -581,7 +531,6 @@
     <string name="onboarding_continue">Fortsätt</string>
     <string name="onboarding_open_settings">Öppna Inställningar</string>
     <string name="onboarding_grant_access">Bevilja tillträde</string>
-    
     <!-- Onboarding Permission Screen -->
     <string name="onboarding_permissions_granted_title">Tillstånd beviljade!</string>
     <string name="onboarding_action_required_settings">Åtgärd krävs: Öppna Inställningar</string>
@@ -597,13 +546,11 @@
     <string name="onboarding_permission_bluetooth_desc">Anslut till Bluetooth-högtalare, hörlurar och ljudenheter</string>
     <string name="onboarding_permission_notifications_title">Meddelanden</string>
     <string name="onboarding_permission_notifications_desc">Visa uppspelningskontroller och musikinformation i aviseringar</string>
-    
     <!-- Permission Tips -->
     <string name="onboarding_permission_tips">Tillståndstips</string>
     <string name="onboarding_permission_tip_1">Ge alla behörigheter för den bästa upplevelsen</string>
     <string name="onboarding_permission_tip_2">Du kan ändra behörigheter senare i Inställningar</string>
     <string name="onboarding_permission_tip_3">Rhythm respekterar din integritet och data</string>
-    
     <!-- Onboarding Audio &amp; Playback -->
     <string name="onboarding_default_screen_title">Standard landningsskärm</string>
     <string name="onboarding_default_screen_desc">Välj vilken skärm som öppnas när du startar Rhythm</string>
@@ -615,7 +562,6 @@
     <string name="onboarding_show_lyrics_desc">Visa synkroniserade texter när de är tillgängliga för dina favoritlåtar.</string>
     <string name="onboarding_lyrics_source_title">Lyrics Källprioritet</string>
     <string name="onboarding_lyrics_source_desc">Välj vilken textkälla du vill prova först (med automatisk reserv till andra)</string>
-    
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
@@ -623,7 +569,6 @@
     <string name="onboarding_dynamic_colors_desc">Använd färger som extraherats från enhetens tapeter för ett sammanhängande utseende.</string>
     <string name="onboarding_player_theme_title">Uppspelning och minispelare teman</string>
     <string name="onboarding_player_theme_desc">Anpassa dina uppspelningsgränssnitt. Växla mellan den rena, moderna Rhythm-designen eller den livfulla, flytande uttrycksfulla designen.</string>
-    
     <!-- Onboarding Updater -->
     <string name="onboarding_update_check_failed">Uppdateringskontrollen misslyckades</string>
     <string name="onboarding_ready_to_install">Klar att installera</string>
@@ -644,16 +589,13 @@
     <string name="onboarding_update_channel_title">Uppdatera kanal</string>
     <string name="onboarding_update_channel_desc">Stabila eller betaversioner.</string>
     <string name="fetching_latest_version">Hämtar senaste versionen från GitHub...</string>
-    
     <!-- Onboarding Update Options -->
     <string name="option_stable">Stabil</string>
     <string name="option_beta">Beta</string>
     <string name="option_home">Hem</string>
     <string name="option_library">Bibliotek</string>
-    
     <!-- Onboarding Media Scan -->
     <string name="onboarding_how_it_works">Hur det fungerar</string>
-    
     <!-- Onboarding Setup Complete -->
     <string name="onboarding_library_configured">Bibliotek konfigurerat</string>
     <string name="onboarding_library_configured_desc">Dina musikbiblioteksorganisationsinställningar är inställda</string>
@@ -661,12 +603,10 @@
     <string name="onboarding_theme_applied_desc">Dina anpassade tema- och utseendeinställningar är klara</string>
     <string name="onboarding_backup_options">Säkerhetskopieringsalternativ</string>
     <string name="onboarding_backup_options_desc">Inställningar för automatisk säkerhetskopiering och återställning konfigurerade</string>
-    
     <!-- Onboarding Update Status UI -->
     <string name="onboarding_in_progress">Pågår</string>
     <string name="onboarding_dismiss">Avvisa</string>
     <string name="onboarding_retry">Försök igen</string>
-    
     <!-- Onboarding: Notifications Step -->
     <string name="onboarding_notifications_title">Uppspelningsmeddelanden</string>
     <string name="onboarding_notifications_desc">Styr hur Rhythm visar musikuppspelning i din aviseringspanel. Välj mellan anpassade aviseringar eller de vanliga systemmediakontrollerna.</string>
@@ -674,7 +614,6 @@
     <string name="onboarding_notification_tip_1">Se aktuell spårinformation med en överblick</string>
     <string name="onboarding_notification_tip_2">Styr uppspelningen med snabba åtgärder</string>
     <string name="onboarding_notification_tip_3">Anpassad stil matchar ditt tema</string>
-    
     <!-- Onboarding: Gestures Step -->
     <string name="onboarding_gestures_title">Tryck på Gester</string>
     <string name="onboarding_gestures_desc">Navigera i ditt musikbibliotek snabbare med intuitiva svep- och tryckgester. Anpassa gester för minispelaren och hela spelarens skärmar.</string>
@@ -691,7 +630,6 @@
     <string name="onboarding_gestures_tips_title">Gesttips</string>
     <string name="onboarding_gesture_tip_1">Svepgester fungerar i båda riktningarna</string>
     <string name="onboarding_gesture_tip_2">Snabba svep svarar snabbare än långsamma</string>
-    
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">Launcher-widgets</string>
     <string name="onboarding_widgets_desc">Lägg till Rhythm-widgets i startprogrammet för snabb musikkontroll. Anpassa vilken information som visas och hur widgeten ser ut.</string>
@@ -705,7 +643,6 @@
     <string name="onboarding_widget_tip_1">Tryck på widgeten för att öppna appen</string>
     <string name="onboarding_widget_tip_2">Ändra storlek på widgets för olika layouter (2x1 till 5x5)</string>
     <string name="onboarding_widget_tip_3">Widgetar uppdateras i realtid under uppspelning</string>
-    
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">Anslut dina tjänster</string>
     <string name="onboarding_integrations_desc">Förbättra din lyssningsupplevelse genom att ansluta till externa tjänster. Få skivomslag, texter, scrobbla dina pjäser och dela det du lyssnar på.</string>
@@ -720,7 +657,6 @@
     <string name="onboarding_integration_broadcast_desc">Dela uppspelningsstatus med andra appar</string>
     <string name="onboarding_integrations_info_title">Sekretessmeddelande</string>
     <string name="onboarding_integrations_info_desc">Dessa funktioner skickar begränsad data (låttitlar, artister) till externa tjänster. Dina personliga data och musikfiler finns kvar på din enhet. Du kan aktivera eller inaktivera dessa när som helst i Inställningar.</string>
-    
     <!-- Onboarding: Rhythm Stats Step -->
     <string name="onboarding_stats_title">Rhythm Statistik</string>
     <string name="onboarding_stats_desc">Upptäck insikter om dina musikvanor. Spåra din lyssningstid, mest spelade låtar, favoritartister och mer med vackra visualiseringar.</string>
@@ -735,7 +671,6 @@
     <string name="onboarding_stats_feature_4">Utforska albumlyssningsmönster</string>
     <string name="onboarding_stats_info_title">Hur det fungerar</string>
     <string name="onboarding_stats_info_desc">Statistik beräknas lokalt på din enhet baserat på din uppspelningshistorik. Ingen data skickas till externa servrar. Få tillgång till detaljerad statistik när som helst från hemskärmen eller inställningarna.</string>
-    
     <!-- MiniPlayer Swipe Hints -->
     <string name="miniplayer_swipe_up_hint">↑ Fullständig spelare</string>
     <string name="miniplayer_swipe_down_hint">↓ Avvisa</string>
@@ -743,13 +678,11 @@
     <string name="miniplayer_swipe_right_hint">← Föregående</string>
     <string name="miniplayer_no_song">Ingen låt spelas</string>
     <string name="badge_live">LIVE</string>
-    
     <!-- Festive Greetings -->
     <string name="festive_greeting_christmas">🎄 God Jul! 🎅</string>
     <string name="festive_greeting_new_year">🎆 Gott nytt år! 🎉</string>
     <string name="festive_greeting_halloween">🎃 Glad Halloween! 👻</string>
     <string name="festive_greeting_valentines">💝 Glad Alla hjärtans dag! 💕</string>
-    
     <!-- Settings -->
     <string name="settings_tip_theme">Anpassa ditt tema med färger, typsnitt och festliga effekter</string>
     <string name="settings_tip_gestures">Styr uppspelningen snabbare med intuitiva svep och tryck, inga extra menyer behövs.</string>
@@ -763,7 +696,6 @@
     <string name="settings_default_screen_desc">Välj din startskärm</string>
     <string name="settings_home_desc">Upptäck ny musik och rekommendationer</string>
     <string name="settings_library_desc">Snabb åtkomst till din musiksamling</string>
-    
     <!-- Cache Management -->
     <string name="cache_current_status">Aktuell cachestatus</string>
     <string name="cache_total_size">Total cachestorlek:</string>
@@ -773,7 +705,6 @@
     <string name="cache_size_limit">Gräns för cachestorlek</string>
     <string name="cache_auto_trim">Autotrim vid 90 %</string>
     <string name="cache_auto_trim_desc">Cache trimmas automatiskt när användningen når 90 % av gränsen</string>
-    
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Lyrics Källprioritet</string>
     <string name="lyrics_choose_source">Välj var du vill leta efter sångtexter</string>
@@ -786,7 +717,6 @@
     <string name="settings_keep_screen_on_lyrics_desc">Förhindra att skärmen stängs av medan sångtexter är synliga</string>
     <string name="settings_show_lyrics_background_artwork">Visa bakgrundskonstverk</string>
     <string name="settings_show_lyrics_background_artwork_desc">Visa suddig albumomslag bakom helskärmstexter</string>
-    
     <!-- Theme Customization -->
     <string name="theme_good_to_know">Bra att veta</string>
     <string name="theme_tip_album_art">Albumkonstfärger anpassar sig dynamiskt till din musik</string>
@@ -802,13 +732,10 @@
     <string name="theme_custom_picker_desc">Skapa ditt eget färgschema</string>
     <string name="theme_font_selection">Val av teckensnitt</string>
     <string name="theme_font_selection_desc">Välj bland tillgängliga systemteckensnitt</string>
-    
     <!-- Playlist Detail -->
     <string name="playlist_no_songs_yet">Inga låtar än</string>
-    
     <!-- Components: Backup & Restore -->
     <string name="backup_restore">ÅTERSTÄLL SÄKERHETSKUPP</string>
-    
     <!-- Components: Blacklist Management -->
     
     <!-- Components: Queue -->
@@ -816,49 +743,39 @@
     <string name="queue_add_songs">Lägg till låtar från ditt bibliotek för att börja lyssna</string>
     <string name="queue_no_more">Inga fler låtar i kö</string>
     <string name="queue_add_more">Lägg till fler låtar för att fortsätta spela upp musiken</string>
-    
     <!-- Components: Create Playlist -->
     <string name="playlist_create">Skapa spellista</string>
     <string name="playlist_name_empty">Spellistans namn får inte vara tomt</string>
     <string name="playlist_queue_not_empty">Kön är inte tom</string>
-    
     <!-- Components: Licenses -->
     <string name="licenses_title">Licenser för öppen källkod</string>
     <string name="licenses_desc">Byggd med fantastiska projekt med öppen källkod</string>
     <string name="licenses_apache">Licenser för öppen källkod</string>
     <string name="licenses_attribution">Denna app är licensierad under GPL-3.0. Bibliotek är licensierade under Apache 2.0 eller kompatibla licenser</string>
-    
     <!-- Components: Player Chip Order -->
     <string name="player_chip_order_title">Spelarchipsordning</string>
     <string name="player_chip_order_desc">Anpassa spelarmarker</string>
     <string name="player_chip_order_saved">Spelarmarkernas ordning och synlighet sparad</string>
-    
     <!-- Components: Library Tab Order -->
     <string name="library_tab_order_title">Bibliotekets flikordning</string>
     <string name="library_tab_order_desc">Ändra ordning och växla synlighet</string>
-    
     <!-- Components: Playback Bottom Sheet -->
     <string name="playback_lyrics_priority_desc">Konfigurera källor, beteenden, layout, storlek och stil för sångtexter</string>
     <string name="playback_settings">Uppspelningsinställningar</string>
-    
     <!-- Components: Lyrics Editor -->
     <string name="lyrics_sync_note">Synkroniseringsjustering fungerar endast med tidssynkroniserade texter (LRC-format). Använd Återställ för att hämta synkroniserade sångtexter om tillgängligt.</string>
     <string name="lyrics_placeholder">Skriv in texten här...\n\nDu kan använda LRC-formatet:\n[00:12.00] Rad ett\n[00:17.00] Rad två</string>
     <string name="lyrics_editor_title">Textredigerare</string>
-    
     <!-- Components: Song Info -->
     <string name="song_info_title">Låtinformation</string>
     <string name="rhythm_stats">Rhythm Statistik</string>
     <string name="file_info">Filinformation</string>
-    
     <!-- Components: Add to Playlist -->
     <string name="add_to_playlists">Lägg till i spellistor</string>
     <string name="playlist_create_new">Skapa ny spellista</string>
     <string name="playlist_create_first">Skapa din första spellista för att lägga till låtar</string>
-    
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">Cache</string>
-    
     <!-- Components: Beta Program -->
     
     <!-- Components: Equalizer -->
@@ -870,7 +787,6 @@
     <string name="theme_custom_colors_switch">Växla till Custom i Color Source-inställningen för att skapa dina egna färger.</string>
     <string name="theme_system_fonts_unavailable">Systemteckensnitt är endast tillgängliga när du använder Systemfontkälla.</string>
     <string name="theme_system_fonts_switch">Växla till System i inställningen Font Source för att välja bland tillgängliga typsnitt.</string>
-    
     <!-- PlaceholderScreens Additional -->
     <string name="backup_whats_included_placeholder">Vad ingår i säkerhetskopieringen?</string>
     <string name="backup_all_settings_placeholder">Alla inställningar, spellistor, teman och biblioteksanpassning</string>
@@ -891,7 +807,6 @@
     <string name="queue_action_ask_desc">Visa en åtgärdsväljare varje gång</string>
     <string name="queue_action_always_add_title">Lägg alltid till i kön</string>
     <string name="queue_action_always_add_desc">Lägg alltid till valt spår i kön</string>
-    
     <!-- Additional UI Elements -->
     <string name="now_playing">SPELAR NU</string>
     <string name="install_update_now">Installera uppdatering nu</string>
@@ -900,7 +815,6 @@
     <string name="browse_library">Bläddra i biblioteket</string>
     <string name="add_more_songs">Lägg till fler låtar</string>
     <string name="edit_metadata">Redigera spår</string>
-    
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Appuppdateringar har inaktiverats i inställningarna</string>
     <string name="updates_auto_disabled">Automatisk uppdateringskontroll är inaktiverad. Du kan fortfarande kontrollera manuellt.</string>
@@ -909,7 +823,6 @@
     <string name="updates_experimental_coming">Fler experimentella funktioner kommer snart i framtida uppdateringar</string>
     <string name="settings_interval_every_48_hours">Var 48:e timme</string>
     <string name="settings_interval_every_72_hours">Var 72:e timme</string>
-    
     <!-- Cache -->
     
     <!-- Theme -->
@@ -917,11 +830,9 @@
     <string name="theme_more_schemes">FLERA SYSTEM</string>
     <string name="theme_quick_presets">Snabbförinställningar</string>
     <string name="theme_advanced_rgb">Avancerade RGB-kontroller</string>
-    
     <!-- Services -->
     <string name="external_services">Externa tjänster</string>
     <string name="api_services">Integrerade API:er</string>
-    
     <!-- Scrobbling -->
     
     <!-- Discord Rich Presence -->
@@ -931,7 +842,6 @@
     <string name="broadcast_status_desc">Skicka uppspelningsinformation till Tasker-, KWGT- och automationsappar</string>
     <string name="bluetooth_lyrics_enabled">Läge för Bluetooth-texter</string>
     <string name="bluetooth_lyrics_desc">Skicka synkroniserad lyrisk rad som Bluetooth-spårtitel och flytta Song - Artist till artistmetadata</string>
-    
     <!-- Equalizer -->
     <string name="equalizer">Equalizer</string>
     <string name="frequency_bands">Frekvensband</string>
@@ -955,20 +865,16 @@
     <string name="sleep_timer_action">Timeråtgärd</string>
     <string name="sleep_timer_action_desc">Vad händer när timern tar slut</string>
     <string name="sleep_timer_select_duration">Välj Timerlängd</string>
-    
     <!-- Crash Reports -->
     <string name="crash_reports">Kraschrapporter</string>
-    
     <!-- Lyrics -->
     <string name="sync_adjustment">Synkjustering</string>
     <string name="synced_lyrics_unavailable">Synkroniserade sångtexter är inte tillgängliga för detta format.</string>
     <string name="word_by_word_unavailable">Ord-för-ord-texter är inte tillgängliga.</string>
-    
     <!-- Library Operations -->
     <string name="exporting_playlists">Exporterar spellistor...</string>
     <string name="exporting_to_location">Exporterar spellistor till vald plats...</string>
     <string name="importing_playlist">Importerar spellista...</string>
-    
     <!-- Playlist Import/Export -->
     <string name="restart_app">Starta om appen?</string>
     <string name="export_playlist">Exportera spellista</string>
@@ -978,12 +884,10 @@
     <string name="select_playlist_file">Välj en spellistafil att importera:</string>
     <string name="supported_formats">Format som stöds:</string>
     <string name="may_take_moments">Detta kan ta en stund...</string>
-    
     <!-- Canvas Video Player -->
     
     <!-- Beta Program -->
     <string name="beta_program">BETAPROGRAM</string>
-    
     <!-- Special Thanks -->
     
     <!-- Plural Support -->
@@ -998,7 +902,6 @@
     <string name="action_play">Spela</string>
     <string name="action_shuffle">Blanda</string>
     <string name="action_share">Dela</string>
-    
     <!-- Settings Screen -->
     <string name="settings_title">Inställningar</string>
     <string name="settings_section_appearance">Utseende och känsla</string>
@@ -1052,12 +955,10 @@
     <string name="settings_experimental_features_desc">Banbrytande funktioner</string>
     <string name="settings_select_option">Rhythm Inställningar</string>
     <string name="settings_select_option_desc">Välj en inställning från listan att konfigurera</string>
-    
     <!-- Playlist Actions -->
     <string name="playlist_no_songs_available">Inga sånger tillgängliga</string>
     <string name="playlist_all_in_playlist">Alla låtar finns redan i den här spellistan.</string>
     <string name="playlist_name_field">Spellistans namn</string>
-    
     <!-- Player Actions -->
     
     <!-- Search -->
@@ -1068,7 +969,6 @@
     <string name="metadata_year">År</string>
     <string name="metadata_track">Spår</string>
     <string name="metadata_saving">Sparar...</string>
-    
     <!-- Updates Actions -->
     <string name="updates_check_now_action">Kontrollera nu</string>
     <string name="updates_check_again">Kontrollera igen</string>
@@ -1083,14 +983,12 @@
     <string name="updates_source_github_desc">Ladda alltid ned GitHub-releasetillgångarna.</string>
     <string name="updates_source_fdroid_desc">Ladda alltid ned F-Droid-releasetillgångarna.</string>
     <string name="updates_check_interval_title">Uppdateringskontrollintervall</string>
-    
     <!-- Cache Actions -->
     
     <!-- Backup Actions -->
     
     <!-- Import/Export -->
     <string name="import_complete_title">Importen är klar</string>
-    
     <!-- Sleep Timer -->
     
     <!-- Crash Logs -->
@@ -1137,7 +1035,6 @@
     <string name="cd_add_selected_songs">Lägg till valda låtar</string>
     <string name="cd_toggle_multi_select">Växla flerval</string>
     <string name="cd_add_song">Lägg till låt</string>
-    
     <!-- Bottom Sheet Titles -->
     <string name="bottomsheet_add_to_playlist">Lägg till i spellistan</string>
     <string name="bottomsheet_no_playlists">Inga spellistor än</string>
@@ -1145,12 +1042,10 @@
     <string name="bottomsheet_up_next">UPP NÄSTA</string>
     <string name="bottomsheet_albums">Album</string>
     <string name="bottomsheet_songs">Sånger</string>
-    
     <!-- Bottom Sheet: Common -->
     <string name="bottomsheet_reset">Återställ</string>
     <string name="bottomsheet_save">Spara</string>
     <string name="bottomsheet_cancel">Avbryt</string>
-    
     <!-- Bottom Sheet: Lyrics Editor -->
     <string name="bottomsheet_lyrics_earlier">Tidigare</string>
     <string name="bottomsheet_lyrics_later">Senare</string>
@@ -1159,7 +1054,6 @@
     <string name="bottomsheet_lyrics_embed">Bädda in i fil</string>
     <string name="lyrics_embed_success">Sångtexter har bäddats in i filen</string>
     <string name="lyrics_embed_failed">Det gick inte att bädda in texten i filen</string>
-    
     <!-- Bottom Sheet: Sleep Timer -->
     <string name="bottomsheet_timer_remaining">kvar</string>
     <string name="bottomsheet_timer_custom_desc">Ställ in en specifik tidslängd</string>
@@ -1167,12 +1061,10 @@
     <string name="bottomsheet_timer_set">Ställ in timer</string>
     <string name="bottomsheet_timer_edit">Redigera</string>
     <string name="bottomsheet_timer_hours_minutes">Ställ in timmar och minuter för insomningstimern</string>
-    
     <!-- Bottom Sheet: Playback -->
     <string name="bottomsheet_playback">Uppspelning</string>
     <string name="bottomsheet_no_device">Ingen enhet ansluten</string>
     <string name="bottomsheet_max">Max</string>
-    
     <!-- Bottom Sheet: Album -->
     <string name="bottomsheet_play_all">Spela alla</string>
     <string name="bottomsheet_tracks">Spår</string>
@@ -1181,14 +1073,11 @@
     <string name="bottomsheet_disc_option">Skiva %1$d</string>
     <string name="bottomsheet_disc_filter">Filtrera efter skiva</string>
     <string name="bottomsheet_no_songs_album">Inga låtar i detta album</string>
-    
     <!-- Bottom Sheet: Home Section Order -->
     <string name="bottomsheet_home_section_order">Hemsektionsordning</string>
     <string name="bottomsheet_reorder_toggle_visibility">Ändra ordning och växla synlighet</string>
-    
     <!-- Bottom Sheet: Cast -->
     <string name="bottomsheet_active_device">Aktiv</string>
-    
     <!-- Bottom Sheet: Backup/Restore -->
     
     <!-- Bottom Sheet: Cache Management -->
@@ -1201,7 +1090,6 @@
     <string name="bottomsheet_export_eq">Dela dina EQ-inställningar med andra eller spara för säkerhetskopiering.</string>
     <string name="bottomsheet_no_eq_export">Inga aktiva EQ-inställningar att exportera. Aktivera equalizern och konfigurera den först.</string>
     <string name="bottomsheet_device_type">Enhetstyp</string>
-    
     <!-- Bottom Sheet: Song Info / Metadata Editor -->
     <string name="bottomsheet_title">Titel</string>
     <string name="bottomsheet_genre">Genre</string>
@@ -1209,7 +1097,6 @@
     <string name="bottomsheet_track">Spår</string>
     <string name="bottomsheet_irreversible">Oåterkalleliga förändringar</string>
     <string name="bottomsheet_proceed">Fortsätt</string>
-    
     <!-- Bottom Sheet: Player Chip Order -->
     
     <!-- Audio Quality Labels -->
@@ -1238,11 +1125,9 @@
     <string name="service_initializing_controller">Rhythm ansluter mediakontrollern.</string>
     <string name="service_ready">Rhythm är klar.</string>
     <string name="service_init_failed">Rhythm kunde inte starta. Öppna appen igen.</string>
-    
     <!-- Crash Activity -->
     <string name="crash_bug_report">Felrapport</string>
     <string name="crash_restart_app">Starta om appen</string>
-    
     <!-- Genre Detection -->
     
     <!-- Cache Details -->
@@ -1251,7 +1136,6 @@
     
     <!-- Misc UI -->
     <string name="ui_clear_all">Rensa allt</string>
-    
     <!-- Settings Screen - Complete -->
     <string name="settings_home_customization">Hem</string>
     <string name="settings_home_customization_desc">Snabba åtgärder, ny musik</string>
@@ -1375,7 +1259,6 @@
     <string name="settings_rhythm_guard_notification_timer_scheduled_title">Rhythm Guard Break Schemalagd</string>
     <string name="settings_rhythm_guard_notification_timer_scheduled_text">En lyssningspaus börjar om %1$s.</string>
     <string name="settings_rhythm_guard_notification_tap_open">Tryck för att se timeoutdetaljer.</string>
-    
     <!-- Rhythm Stats Screen -->
     <string name="stats_title">Rhythm Statistik</string>
     <string name="stats_today">Idag</string>
@@ -1383,20 +1266,17 @@
     <string name="stats_this_month">Denna månad</string>
     <string name="stats_all_time">Hela tiden</string>
     <string name="stats_total_listening_time">Total lyssningstid</string>
-    
     <!-- Cache Management Complete -->
     
     <!-- Queue Playback Settings -->
     <string name="queue_auto_add">Lägg till automatiskt i kö</string>
     <string name="queue_clear_on_new">Ersätt kö på ny låt</string>
     <string name="queue_playback_speed_desc">Justera uppspelningshastigheten</string>
-
     <!-- Gestures Settings -->
     
     <!-- Playlist Settings Toggle -->
     <string name="playlist_ask_each_time">Fråga varje gång</string>
     <string name="playlist_ask_each_time_desc">Visa dialog med alternativ</string>
-    
     <!-- About Multi-Artist Parsing -->
     
     <!-- Home Screen Greetings -->
@@ -1404,17 +1284,14 @@
     <!-- Home Screen Section Titles -->
     <string name="home_top_artists">Konstnärer</string>
     <string name="home_top_artists_subtitle">Dina favoritmusiker</string>
-    
     <!-- Content Descriptions (additional) -->
     <string name="cd_reorder_home_sections">Ordna om hemsektioner</string>
     <string name="cd_remove">Ta bort</string>
     <string name="cd_rhythm_logo">Logotyp för Rhythm</string>
     <string name="cd_telegram_support">Telegramstöd</string>
-    
     <!-- Queue &amp; Playlist Dialogs -->
     <string name="queue_action_dialog">Dialog för köåtgärd</string>
     <string name="playlist_action_dialog">Dialogrutan Spellista Action</string>
-    
     <!-- Artist Settings -->
     <string name="artists_title">Konstnärer</string>
     <string name="artist_multi_parsing">Analys av flera artister</string>
@@ -1425,7 +1302,6 @@
     <string name="artist_library_organization">Biblioteksorganisation</string>
     <string name="artist_group_by_album_artist">Gruppera efter albumartist</string>
     <string name="artist_group_by_album_artist_desc">Visa samarbetsalbum under huvudartist</string>
-    
     <!-- About Screen -->
     
     <!-- Equalizer -->
@@ -1448,13 +1324,11 @@
     <string name="content_desc_clear_queue">Rensa kö</string>
     <string name="content_desc_play_album">Spela album</string>
     <string name="content_desc_album_artwork">Albumomslag</string>
-    
     <!-- Additional UI strings -->
     
     <!-- Sort Orders -->
     <string name="sort_duration_short_first">Varaktighet (kort först)</string>
     <string name="sort_duration_long_first">Varaktighet (Lång först)</string>
-    
     <!-- Context Menu Actions -->
     <string name="action_play_next">Spela nästa</string>
     <string name="action_add_to_queue">Lägg till i kö</string>
@@ -1463,31 +1337,26 @@
     <string name="action_song_info">Låtinformation</string>
     <string name="action_add_to_blacklist">Lägg till på svartlista</string>
     <string name="action_play_all">Spela alla</string>
-    
     <!-- Blacklist/Whitelist -->
     
     <!-- Device & Audio -->
     <string name="playback_use_system_volume">Använd systemvolym</string>
     <string name="playback_use_system_volume_desc">Styr systemvolym istället för appvolym</string>
-    
     <!-- Multi-Artist Parsing -->
     <string name="delimiter_slash">Snedstreck</string>
     <string name="delimiter_semicolon">Semikolon</string>
     <string name="delimiter_comma">Komma</string>
     <string name="delimiter_plus">Plus</string>
     <string name="delimiter_ampersand">Ampersand</string>
-    
     <!-- About Screen (additional strings) -->
     
     <!-- Sleep Timer -->
     <string name="sleep_timer_set_control">Ställ in automatisk uppspelningskontroll</string>
-    
     <!-- Home Sections -->
     <string name="home_section_recently_played">Nyligen spelad</string>
     <string name="home_section_discover">Upptäck karusellen</string>
     <string name="home_section_new_releases">Nya utgåvor</string>
     <string name="home_section_one_visible">Minst en sektion måste vara synlig</string>
-    
     <!-- Library Tabs -->
     <string name="library_tab_songs">Låtar</string>
     <string name="library_tab_playlists">Spellistor</string>
@@ -1496,7 +1365,6 @@
     <string name="library_tab_one_visible">Minst en flik måste vara synlig</string>
     <string name="library_tab_order_reset">Flikordning och synlighet återställs till standard</string>
     <string name="library_tab_order_saved">Flikordning och synlighet har sparats</string>
-    
     <!-- Player Chips -->
     <string name="player_chip_favorite">Favorit</string>
     <string name="player_chip_speed">Uppspelningshastighet</string>
@@ -1506,7 +1374,6 @@
     <string name="player_chip_artist">Konstnär</string>
     <string name="player_chip_one_visible">Minst ett chip måste vara synligt</string>
     <string name="player_chip_order_reset">Återställ till standardordning och synlighet</string>
-    
     <!-- AutoEQ & Device Configuration -->
     <string name="autoeq_manage">Hantera AutoEQ</string>
     <string name="autoeq_configure_desc">Konfigurera dina ljudenheter med optimerade AutoEQ-profiler för den bästa lyssningsupplevelsen.</string>
@@ -1517,18 +1384,14 @@
     <string name="autoeq_import_paste_hint">Klistra in EQ-inställningar från autoeq.app eller andra källor.</string>
     <string name="autoeq_eq_settings_label">EQ-inställningar</string>
     <string name="autoeq_failed_read_file">Det gick inte att läsa filen</string>
-    
     <!-- Backup/Restore -->
     <string name="backup_invalid_format">Ogiltigt backupformat eller skadade data</string>
     <string name="backup_unable_to_read">Det gick inte att läsa säkerhetskopian</string>
-    
     <!-- Licenses -->
     <string name="license_autoeq_name">AutoEQ</string>
-    
     <!-- Lyrics Editor -->
     <string name="lyrics_loaded_success">Texten har laddats</string>
     <string name="lyrics_saved_success">Texterna har sparats</string>
-    
     <!-- Media Scan -->
     
     <!-- Song Info -->
@@ -1540,14 +1403,12 @@
     <string name="button_export">Export</string>
     <string name="text_file">Fil</string>
     <string name="text_paste">Klistra in</string>
-    
     <!-- PlaceholderScreens - Settings Labels -->
     
     <!-- Cache & Storage -->
     
     <!-- Version Info -->
     <string name="download_progress">%1$d%%</string>
-    
     <!-- GitHub & Links -->
     
     <!-- Contributors -->
@@ -1581,7 +1442,6 @@
     <string name="settings_toggle_widgets">Växla widgets för att anpassa din startskärm</string>
     <string name="settings_visibility">Synlighet</string>
     <string name="settings_widget_item_counts">Widgetobjekt räknas</string>
-    
     <!-- Playlist Management -->
     
     <!-- Media Scan -->
@@ -1619,11 +1479,9 @@
     <string name="settings_snowflake_size">Snöflinga storlek</string>
     <string name="settings_toggle_decoration_elements">Växla individuella dekorationselement efter position</string>
     <string name="settings_multi_artist_parsing_info">När det är aktiverat kommer Rhythm automatiskt att dela upp artisttaggar som innehåller flera artister. Detta är användbart för låtar som laddas ner med yt-dlp eller andra verktyg som använder avgränsare som \'/\' för att separera artister.\n\nOmvänt snedstreck (\\) kan användas för att undvika avgränsare.</string>
-    
     <!-- Format Strings with Placeholders -->
     <string name="settings_cache_size_2gb">2 GB</string>
     <string name="settings_cache_size_64mb">64 MB</string>
-    
     <!-- Common UI strings -->
     <string name="ui_close">Stäng</string>
     <string name="ui_save">Spara</string>
@@ -1634,7 +1492,6 @@
     <string name="ui_clear">Rensa</string>
     <string name="ui_selected">Vald</string>
     <string name="ui_done">Klart</string>
-
     <!-- Queue &amp; Playback -->
     <string name="settings_queue_action_dialog">Enspårig köåtgärd</string>
     <string name="settings_queue_action_dialog_desc_ask">Fråga innan du byter ut eller förlänger kön för enspårsuppspelning.</string>
@@ -1653,7 +1510,6 @@
     <string name="settings_remember_queue_desc">Återställ kö och position efter omstart.</string>
     <string name="settings_crossfade_min">0,5 s</string>
     <string name="settings_crossfade_max">12 s</string>
-
     <string name="list_queue_behavior_title">Spela All Queue Rule</string>
     <string name="list_queue_behavior_desc">Välj hur liståtgärder ändrar en aktiv kö</string>
     <string name="list_queue_behavior_replace_title">Ersätt kö</string>
@@ -1664,7 +1520,6 @@
     <string name="list_queue_behavior_play_next_desc">Infoga listan efter den aktuella låten och börja från ditt valda spår.</string>
     <string name="list_queue_behavior_add_end_title">Lägg till i slutet</string>
     <string name="list_queue_behavior_add_end_desc">Lägg till listan i slutet av kön och börja från ditt valda spår.</string>
-
     <string name="list_queue_action_dialog_title">Kön är redan aktiv</string>
     <string name="list_queue_action_dialog_body">Aktuell kö har %1$d spår. Inkommande lista har %2$d spår.</string>
     <string name="list_queue_action_source">Källa: %1$s</string>
@@ -1674,7 +1529,6 @@
     <string name="list_queue_action_play_next_desc">Placera den här listan efter aktuell låt och börja spela upp från den.</string>
     <string name="list_queue_action_add_end_title">Lägg till i slutet</string>
     <string name="list_queue_action_add_end_desc">Lägg till den här listan för att avsluta kö och starta uppspelningen från den.</string>
-
     <!-- Audio Routing -->
     <string name="settings_audio_routing">Audio Routing</string>
     <string name="settings_dac_usb_audio">DAC/USB-ljud</string>
@@ -1685,7 +1539,6 @@
     <string name="settings_audio_routing_app_desc">Rhythm hanterar ljud direkt med högupplöst läge och begär exklusiv USB-bit-perfekt routing på enheter som stöds. Omstart krävs.</string>
     <string name="settings_audio_routing_system_desc">Använder Android-systemets ljuddirigering. Ljud kan omsamplas till 48 kHz av OS-mixern.</string>
     <string name="settings_audio_routing_default_desc">Android bestämmer hur ljudet ska dirigeras. Omsampling beror på systeminställningar.</string>
-
     <!-- Library Storage -->
     <string name="settings_cache_backend">Cache-backend</string>
     <string name="settings_storage_rebuild_room">Bygg om rumsdatabasen</string>
@@ -1695,7 +1548,6 @@
     <string name="settings_storage_not_available">Ej tillgängligt i aktuellt läge</string>
     <string name="settings_storage_rebuild_success">Rumsdatabasen har återuppbyggts</string>
     <string name="settings_storage_rebuild_failed">Det gick inte att bygga om rumsdatabasen</string>
-
     <!-- Cache Management -->
     <string name="settings_cache">Cache</string>
     <string name="settings_cache_settings">Cacheinställningar</string>
@@ -1714,7 +1566,6 @@
     <string name="settings_cache_info_2">Att rensa cacheminnet kan tillfälligt sakta ner appen</string>
     <string name="settings_cache_info_3">Cachad data kommer att byggas om automatiskt vid behov</string>
     <string name="settings_cache_info_4">Auto-clearing hjälper till att bibehålla optimal prestanda</string>
-
     <!-- Updates Settings -->
     <string name="updates_status_error">Fel</string>
     <string name="updates_rhythm_logo_cd">Rhythm Logotyp</string>
@@ -1731,7 +1582,6 @@
     <string name="settings_interval_every_12_hours">Var 12:e timme</string>
     <string name="settings_interval_once_a_day">En gång om dagen</string>
     <string name="settings_interval_once_a_week">En gång i veckan</string>
-
     <!-- Experimental Features -->
     <string name="streaming_integration_title">Rhythm Go</string>
     <string name="streaming_integration_services">Integrationstjänster</string>
@@ -1803,7 +1653,6 @@
     <string name="streaming_service_subsonic_desc">Anslut Navidrome och kompatibla Subsonic-servrar</string>
     <string name="streaming_service_jellyfin">Jellyfin</string>
     <string name="streaming_service_jellyfin_desc">Streama från ditt personliga Jellyfin-bibliotek</string>
-
     <!-- Backup &amp; Restore -->
     <string name="settings_backup_restore">Säkerhetskopiering och återställning</string>
     <string name="settings_auto_backup">Automatisk säkerhetskopiering</string>
@@ -1813,7 +1662,6 @@
     <string name="settings_restore_file">Återställ från fil</string>
     <string name="settings_restore_file_desc">Importera säkerhetskopia från en JSON-fil</string>
     <string name="settings_restart_now">Starta om nu</string>
-
     <!-- Library Tab Order -->
     <string name="settings_tab_songs">Sånger</string>
     <string name="settings_tab_playlists">Spellistor</string>
@@ -1825,7 +1673,6 @@
     <string name="settings_tab_order_saved">Tabbordning sparad</string>
     <string name="settings_move_up">Flytta uppåt</string>
     <string name="settings_move_down">Flytta nedåt</string>
-
     <!-- Gestures Settings -->
     <string name="settings_swipe_gestures">Svepgester</string>
     <string name="settings_swipe_gestures_desc">Svep upp/ned för att öppna/stänga, vänster/höger för att hoppa över spår</string>
@@ -1835,7 +1682,6 @@
     <string name="settings_swipe_artwork_tracks_desc">Svep åt vänster/höger på albumomslag för att hoppa över spår</string>
     <string name="settings_double_tap_artwork">Dubbeltryck konstverk</string>
     <string name="settings_double_tap_artwork_desc">Dubbelklicka på albumomslaget för att spela upp/pausa</string>
-
     <!-- MiniPlayer Customization -->
     <string name="settings_miniplayer_header">Minispelare</string>
     <string name="settings_show_progress">Visa framsteg</string>
@@ -1847,7 +1693,6 @@
     <string name="settings_show_time_desc">Visa uppspelningstid</string>
     <string name="settings_tablet_layout">Surfplattas layout på telefonen</string>
     <string name="settings_tablet_layout_desc">Använd minispelare i tablettstil på telefoner</string>
-
     <!-- Player Customization -->
     <string name="settings_chip_order">Chipordning och synlighet</string>
     <string name="settings_chip_order_desc">Anpassa och ordna om spelarens actionmarker</string>
@@ -1870,7 +1715,6 @@
     <string name="settings_seek_buttons">Sökknappar</string>
     <string name="settings_seek_buttons_desc">Visa 10-sekunders hoppa framåt/bakåt-knappar</string>
     <string name="settings_thumb_style">Tumstil</string>
-
     <!-- Theme Customization -->
     <string name="settings_display_mode">Visningsläge</string>
     <string name="settings_theme_mode">Temaläge</string>
@@ -1918,13 +1762,11 @@
     <string name="settings_side_garland_desc">Ornament på sidorna</string>
     <string name="settings_snow_pile">Snöhög</string>
     <string name="settings_snow_pile_desc">Snö i botten</string>
-
     <!-- Crash Log History -->
     <string name="settings_crash_log_details">Information om kraschlogg</string>
     <string name="settings_log_copied">Loggen har kopierats till urklipp</string>
     <string name="settings_copy_log">Kopiera logg</string>
     <string name="settings_clear_all_logs">Rensa alla loggar</string>
-
     <!-- Home Screen Customization -->
     <string name="settings_visibility_desc">När ska %1$s visas i rubriken</string>
     <string name="settings_top_artists">Toppkonstnärer</string>
@@ -1933,12 +1775,10 @@
     <string name="settings_recommended">Rekommenderas</string>
     <string name="settings_carousel_style_desc">Välj hur album ska visas</string>
     <string name="settings_carousel_default">Standard</string>
-
     <!-- Expressive Shapes -->
     <string name="settings_shapes_album_art">Albumkonst</string>
     <string name="settings_shapes_player_controls">Spelarkontroller</string>
     <string name="settings_shapes_mini_player">Minispelare</string>
-
     <!-- Lyrics Source -->
 
     <!-- API Management / Integrations -->
@@ -1959,7 +1799,6 @@
     <string name="settings_gesture_artwork_swipe_desc">Svep konstverk för att hoppa över</string>
     <string name="settings_gesture_double_tap">Dubbeltryckkonstverk</string>
     <string name="settings_gesture_double_tap_desc">Dubbeltryck spela/pausa</string>
-
     <!-- Queue & Playback Search Strings -->
     <string name="settings_queue_auto_add">Kontextkö</string>
     <string name="settings_queue_auto_add_desc">Bygg relaterad kö på spel</string>
@@ -1967,7 +1806,6 @@
     <string name="settings_queue_clear_on_new_desc">Ersätt kö för direkt uppspelning</string>
     <string name="settings_show_played_queue_songs">Visa uppspelade spår</string>
     <string name="settings_show_played_queue_songs_desc">Håll uppspelade spår synliga i kön</string>
-
     <string name="settings_queue_action_dialog_desc">Enspårig kökonfliktpolicy</string>
     <string name="settings_queue_repeat_persistence">Fortsatt upprepad läge</string>
     <string name="settings_queue_repeat_persistence_desc">Spara upprepningsläge</string>
@@ -1983,8 +1821,6 @@
     <string name="settings_queue_persistence_desc">Återställ kö vid start</string>
     <string name="settings_playlist_action_dialog_desc">Beteende när du trycker på ett spår i en spellista</string>
     <string name="settings_list_queue_action_dialog_desc">Beteende för lista Spela åtgärder när kön är aktiv</string>
-
-
     <!-- Experimental Features Search Strings -->
     <string name="settings_exp_festive_theme">Festligt tema</string>
     <string name="settings_exp_festive_theme_desc">Festdekorationer</string>
@@ -2006,7 +1842,6 @@
     <string name="settings_bluetooth_lyrics_enabled_desc">Sänd aktuell lyrisk linje via Bluetooth-metadata</string>
     <string name="exp_go_mode">Go Mode</string>
     <string name="exp_go_mode_desc">Byt till Rhythm Go streaming mode</string>
-
     <!-- Home Screen Search Strings -->
     <string name="settings_home_section_order">Sektionsordning</string>
     <string name="settings_home_section_order_desc">Ändra ordning på hemsektioner</string>
@@ -2018,7 +1853,6 @@
     <string name="settings_home_discover_carousel_desc">Visa upptäckskarusell</string>
     <string name="settings_home_carousel_auto_scroll">Carousel Auto Scroll</string>
     <string name="settings_home_carousel_auto_scroll_desc">Karusell för automatisk rullning</string>
-
     <!-- Notifications Search Strings -->
     <string name="settings_notifications_rhythm_guard_alerts">Rhythm Säkerhetslarm</string>
     <string name="settings_notifications_rhythm_guard_alerts_desc">Meddela när lyssningsriskvarningar utlöses</string>
@@ -2028,7 +1862,6 @@
     <string name="settings_notifications_rhythm_pulse_desc">Vänliga påminnelser och lyssningstips.</string>
     <string name="settings_notifications_rhythm_pulse_interval">Rhythm Tipsintervall</string>
     <string name="settings_notifications_rhythm_pulse_interval_desc">Hur ofta tipsaviseringar levereras</string>
-
     <!-- Expressive Shapes Search Strings -->
     <string name="settings_expressive_shapes_enabled">Expressiva former</string>
     <string name="settings_expressive_shapes_enabled_search_desc">Anpassade UI-former</string>
@@ -2048,7 +1881,6 @@
     <string name="settings_shape_player_controls_desc">Spelaren kontrollerar formen</string>
     <string name="settings_shape_mini_player">Minispelares form</string>
     <string name="settings_shape_mini_player_desc">Minispelarens form</string>
-
     <string name="settings_library_settings">Bibliotekserfarenhet</string>
     <string name="settings_library_settings_desc">Betyg, organisation och konstverks beteende</string>
     <string name="settings_library_group_organization">Organisation och betyg</string>
@@ -2059,7 +1891,6 @@
     <string name="settings_show_keyboard_on_search_open">Autofokussökning</string>
     <string name="settings_show_keyboard_on_search_open_desc">Visa tangentbordet när Sök öppnas</string>
     <string name="settings_library_group_artwork">Konstverksrendering</string>
-
     <!-- Theme Customization Search Strings -->
     <string name="settings_theme_follow_system">Följ Systemtema</string>
     <string name="settings_theme_follow_system_desc">Automatiskt ljus/mörkerläge</string>
@@ -2073,7 +1904,6 @@
     <string name="settings_theme_font_source_desc">System eller anpassade typsnitt</string>
     <string name="settings_theme_import_font">Importera anpassat teckensnitt</string>
     <string name="settings_theme_import_font_desc">Importera din egen typsnittsfil (.ttf, .otf)</string>
-
     <!-- Player Customization Search Strings -->
     <string name="settings_player_chip_order">Chipordning och synlighet</string>
     <string name="settings_player_chip_order_desc">Anpassa och ordna om spelarens actionmarker</string>
@@ -2081,11 +1911,9 @@
     <string name="settings_lyrics_show_translation_desc">Visa översatta texter när de är tillgängliga</string>
     <string name="settings_lyrics_show_romanization">Visa romanisering</string>
     <string name="settings_lyrics_show_romanization_desc">Visa romaniserade texter när de är tillgängliga</string>
-
     <string name="settings_embed_lyrics_in_file">Bädda in texter i fil</string>
     <string name="settings_embed_lyrics_in_file_desc">Skriv texter direkt i ljudfilens metadata</string>
     <string name="settings_playback_pitch">Playback Pitch</string>
-
     <string name="settings_player_gradient">Gradient Overlay</string>
     <string name="settings_player_gradient_desc">Visa övertoningsöverlägg på albumomslag</string>
     <string name="settings_player_seek_buttons">Sökknappar</string>
@@ -2098,7 +1926,6 @@
     <string name="settings_player_artwork_radius_desc">Justera skivomslagshörnets rundhet</string>
     <string name="settings_player_quality_badges">Ljudkvalitetsmärken</string>
     <string name="settings_player_quality_badges_desc">Visa information om codec och bithastighet</string>
-
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Visa framsteg</string>
     <string name="settings_miniplayer_show_progress_desc">Visa förloppsindikator i minispelare</string>
@@ -2116,18 +1943,13 @@
     <string name="settings_miniplayer_show_time_desc">Visa uppspelningstid i minispelare</string>
     <string name="settings_miniplayer_tablet_layout">Surfplattas layout på telefonen</string>
     <string name="settings_miniplayer_tablet_layout_desc">Använd minispelare i tablettstil på telefoner</string>
-
-
     <!-- Library Screen scanning overlay -->
     <string name="settings_scanning">Skanning</string>
-
     <!-- Settings Search -->
     <string name="search_settings_hint">Sök i Rhythm-inställningar...</string>
     <string name="clear_search">Rensa sökning</string>
     <string name="no_results_found">Inga resultat hittades</string>
     <string name="try_different_search">Försök med en annan sökterm</string>
-    
-
     <!-- Additional Settings Strings -->
     <string name="exp_audio_device_logging">Ljudenhetsloggning</string>
     <string name="exp_audio_device_logging_desc">Logga ändringar av ljudenheter (Bluetooth, hörlurar, etc.)</string>
@@ -2156,7 +1978,6 @@
     <string name="settings_restore_completed">Återställningen har slutförts</string>
     <string name="settings_right_aligned">Högerjusterad</string>
     <string name="settings_tab_order">Bibliotekets flikordning</string>
-
     <!-- Theme, CrashLog, Home, Lyrics, Shapes, API Strings -->
     <string name="settings_crash_log">Crash Log History</string>
     <string name="settings_expressive_shapes">Expressiva former</string>
@@ -2172,7 +1993,6 @@
     <string name="theme_font_invalid">Ogiltigt teckensnittsfilformat</string>
     <string name="theme_import_font">Importera anpassat teckensnitt</string>
     <string name="ui_apply">Ansök</string>
-
     <string name="crashactivity_uh_oh_looks_like">Åh åh! Det verkar som att Rhythm slog en sur ton!</string>
     <string name="crashactivity_dont_fret_our_app">Oroa dig inte! Vår app hade bara en liten \"oopsie\". Vänligen dela kraschinformationen nedan – det är som ett hemligt meddelande för våra utvecklare att fixa saker! Då ska vi försöka igen, eller hur?</string>
     <string name="crashactivity_secret_crash_scrolls">Secret Crash Scrolls</string>
@@ -2478,7 +2298,6 @@
     <string name="festivethemeexamples_using_app_settings">Använda appinställningar</string>
     <string name="playback_paused_zero_volume">Uppspelningen pausades eftersom volymen nådde noll. Höj volymen för att fortsätta lyssna.</string>
     <string name="zero_volume_raise_volume">Höj volymen</string>
-
     <!-- New UI strings for translation -->
     <string name="deviceconfiguration_delete_confirm">Är du säker på att du vill ta bort \'%1$s\'? Denna åtgärd kan inte ångras.</string>
     <string name="deviceconfiguration_profile_imported">Profil importerad: %1$s</string>
@@ -2525,7 +2344,6 @@
     <string name="rating_desc_loved">Älskad - En av mina favoriter</string>
     <string name="rating_desc_absolute_favorite">Absolute Favorite - Spår på högsta nivå</string>
     <string name="rating_desc_unknown">Okänt betyg</string>
-
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">Visa favoritväxling på stora widgetar</string>
     <string name="settings_clear_all_logs_desc">Ta bort alla lagrade kraschrapporter</string>
@@ -2541,7 +2359,6 @@
     <string name="widget_theme_solid_purple_desc">Signatur djupviolett bakgrund med signaturaccenttoner och högdagrar</string>
     <string name="widget_theme_glance_suffix">%1$s (endast Glance widgets)</string>
     <string name="unit_dp">%1$ddp</string>
-
     <!-- Settings Suggestions and Tips -->
     <string name="settings_suggestions">Inställningsförslag</string>
     <string name="settings_suggestions_desc">Visa kontextuella förslag överst</string>
@@ -2554,7 +2371,6 @@
     <string name="pulse_steady">Stadigt spår</string>
     <string name="pulse_heavy">Tungt lyssnande</string>
     <string name="pulse_marathon">Maratonläge</string>
-    
     <!-- Settings Tips Details -->
     <string name="settings_tip_theme_desc_1">Uppdatera din musikspelare med livlig AMOLED-svart och vackra pastellfärger.</string>
     <string name="settings_tip_theme_desc_2">Gör Rhythm riktigt din genom att matcha appens accent med ditt system.</string>
@@ -2588,7 +2404,6 @@
     <string name="settings_tip_library_active_desc_2">Ditt bibliotek stöder betyg. Justera skanning och gruppering för renare surfning.</string>
     <string name="settings_tip_library_inactive_desc_1">Klassificeringar är inaktiverade. Biblioteksinställningar kan fortfarande förbättra struktur och hastighet.</string>
     <string name="settings_tip_library_inactive_desc_2">Förenklat biblioteksläge upptäckt. Justera gruppering för snabbare navigering.</string>
-
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">Inbäddad först</string>
     <string name="lyrics_source_embedded_first_desc">Testa ljudfilsmetadata → Online-API:er → .lrc-filer</string>
@@ -2596,7 +2411,6 @@
     <string name="lyrics_source_api_first_desc">Prova onlinetjänster → Ljudmetadata → .lrc-filer</string>
     <string name="lyrics_source_local_first">Lokal .lrc först</string>
     <string name="lyrics_source_local_first_desc">Prova .lrc-filer → Ljudmetadata → Online-API:er</string>
-
     <!-- Font / Color Customization Dialogs -->
     <string name="theme_font_source_changed_restart">Teckensnittskälla har ändrats. Starta om appen för att tillämpa det nya teckensnittet.</string>
     <string name="color_source_album_art">Albumkonst</string>
@@ -2616,7 +2430,6 @@
     <string name="font_inter_desc">Rent och modernt sans-serif-teckensnitt, mycket läsbart</string>
     <string name="font_jetbrains_desc">Monospace-teckensnitt perfekt för tekniskt innehåll</string>
     <string name="font_quicksand_desc">Rundat typsnitt med ett mjukare, vänligare utseende</string>
-
     <!-- Predefined Color Schemes -->
     <string name="color_scheme_default_title">Rhythm Standard</string>
     <string name="color_scheme_default_desc">Material 3 baslinje lila med rosa accenter</string>
@@ -2644,12 +2457,10 @@
     <string name="color_scheme_emerald_desc">Färska smaragdgröna med naturliga skogstoner</string>
     <string name="color_scheme_mint_title">Mint</string>
     <string name="color_scheme_mint_desc">Fräscha och rena cyan- och mintgröna toner</string>
-
     <!-- Color Preview Chips -->
     <string name="theme_color_primary">Primär</string>
     <string name="theme_color_secondary">Sekundär</string>
     <string name="theme_color_tertiary">Tertiär</string>
-
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Sångtext</string>
     <string name="lyrics_settings_general">Allmänna inställningar</string>
@@ -2686,13 +2497,11 @@
     <string name="lyrics_settings_word_by_word_translation">Automatisk ordsynkronisering</string>
     <string name="lyrics_settings_word_by_word_translation_desc">Autogenerera timing på ordnivå för radsynkroniserade texter genom att fördela varaktigheten proportionellt</string>
     <string name="lyrics_settings_info_bullets">Ytterligare synkroniseringsdetaljer:\n• Online-API:er tillhandahåller synkroniserade texter av hög kvalitet\n• Rhythm erbjuder ord-för-ord-synkronisering\n• LRCLib ger gratis rad-för-rad-synkronisering</string>
-
     <!-- AutoEQ Preset Picker additions -->
     <string name="autoeqpresetpickerbottomsheet_search_presets">Sök förinställningar...</string>
     <string name="autoeqpresetpickerbottomsheet_disable">Ingen / Avaktivera AutoEQ</string>
     <string name="autoeqpresetpickerbottomsheet_disable_desc">Rensa hörlursprofilen, använd standard EQ-förinställningar</string>
     <string name="autoeqpresetpickerbottomsheet_unknown_brand">Okänt varumärke</string>
-
     <!-- Device Configuration additions -->
     <string name="device_configuration_devices_configured">%1$d enheter konfigurerade</string>
     <string name="device_configuration_device_recognized">Enheten känns igen</string>
@@ -2716,7 +2525,6 @@
     <string name="device_configuration_for_device">För %1$s</string>
     <string name="device_configuration_profiles_available">%1$d profiler tillgängliga</string>
     <string name="device_configuration_disable_compensation">Inaktivera hörlurskompensation</string>
-
     <!-- Common UI element strings -->
     <string name="common_none">Inga</string>
     <string name="common_back">Tillbaka</string>
@@ -2724,7 +2532,6 @@
     <string name="common_disabled">Inaktiverad</string>
     <string name="common_unavailable">Ej tillgänglig</string>
     <string name="common_unknown">Okänd</string>
-
     <!-- Blacklist UI additions -->
     <string name="blacklist_remove_song_title">Ta bort från svartlista?</string>
     <string name="blacklist_add_song_title">Lägg till på svartlista?</string>
@@ -2743,7 +2550,6 @@
     <string name="blacklist_folder_added_msg">Mapp tillagd till svartlista</string>
     <string name="blacklist_disc_label">Skiva %1$d</string>
     <string name="blacklist_track_label">Spår %1$d</string>
-
     <!-- Library & Playlist Dialog additions -->
     <string name="dialog_add_song_to_playlist">Lägg till \"%1$s\" till den här spellistan</string>
     <string name="dialog_songs_in_queue">Du har %1$d låtar i den aktuella kön.</string>
@@ -2755,13 +2561,11 @@
     <string name="dialog_restart_warning_message">För att säkerställa att alla importerade spellistor fungerar korrekt rekommenderar vi att du startar om appen. Du kan fortsätta använda appen normalt, men vissa funktioner kanske inte fungerar som förväntat förrän omstart.</string>
     <string name="dialog_export_playlist_to">Exportera \"%1$s\" till:</string>
     <string name="dialog_export_playlists_to">Exportera %1$d spellistor till:</string>
-
     <!-- Mode dialog strings -->
     <string name="dialog_switch_to_go">Switch to Rhythm Go?</string>
     <string name="dialog_switch_to_local">Byt till lokalt?</string>
     <string name="dialog_switch_to_go_desc">This item belongs to Rhythm Go. Byt till streamingläge nu för att streama och spela upp det?</string>
     <string name="dialog_switch_to_local_desc">Det här objektet tillhör ditt lokala bibliotek. Byt till lokalt läge nu för att spela dina offlinelåtar?</string>
-
     <!-- Section order content descriptions -->
 
     <!-- Add To Playlist additions -->
@@ -2787,7 +2591,6 @@
     <string name="eq_enhance_lows">Förbättra lågnivåer</string>
     <string name="eq_widen_sound">Vidga ljudet</string>
     <string name="eq_mono_only">Endast mono</string>
-
     <!-- Library updates, sorting & categories -->
     <string name="library_sort_title">Titel</string>
     <string name="library_sort_artist">Konstnär</string>
@@ -2820,7 +2623,6 @@
     <string name="library_action_rate_song">Betygsätt sång</string>
     <string name="library_selected_count_format">%1$d Vald</string>
     <string name="library_from_tracks_format">från %1$d spår</string>
-
     <!-- Onboarding, Backup & Settings additions -->
     
     <string name="backup_restored_success">Säkerhetskopieringen har återställts. Starta om appen för att tillämpa alla ändringar.</string>
@@ -2829,12 +2631,10 @@
     <string name="backup_failed_to_restore_file">Det gick inte att återställa från fil: %1$s</string>
     <string name="backup_no_backup_clipboard">Ingen säkerhetskopia hittades i urklipp</string>
     <string name="backup_failed_to_restore_clipboard">Det gick inte att återställa från urklipp: %1$s</string>
-    
     <string name="updater_ready_to_install">Version %1$s är klar att installera</string>
     <string name="updater_download_progress">%1$d %% • %2$s / %3$s</string>
     <string name="updater_version_info">Version %1$s • %2$s</string>
     <string name="updater_error_occurred">Ett fel uppstod</string>
-
     <!-- Expressive shape preset & group names -->
     <string name="shape_preset_default">Standard</string>
     <string name="shape_preset_default_desc">Milda uttrycksfulla former för alla åldrar</string>
@@ -2931,7 +2731,6 @@
     <string name="shape_group_whimsical">Nycker</string>
     <string name="shape_group_special">Special</string>
     <string name="shape_group_pixel">Pixel</string>
-
     <!-- Customization Choices -->
     <string name="option_always">Alltid</string>
     <string name="option_expanded">Utökad</string>
@@ -2941,18 +2740,15 @@
     <string name="option_both">Båda</string>
     <string name="option_icon">Ikon</string>
     <string name="option_name">Namn</string>
-
     <!-- Theme settings additions -->
     <string name="theme_color_red">Röd</string>
     <string name="theme_color_green">Grön</string>
     <string name="theme_color_blue">Blå</string>
-
     <!-- Color Scheme names -->
 
     <!-- Shape Utils category and descriptions -->
     <string name="shape_utils_player_controls">Spelarkontroller</string>
     <string name="shape_utils_mini_player">Minispelare</string>
-
     <!-- Metadata properties and labels -->
     <string name="metadata_duration">Varaktighet</string>
     <string name="metadata_disc">Skiva</string>
@@ -2974,7 +2770,6 @@
     <string name="metadata_date_added">Datum tillagd</string>
     <string name="metadata_modified">Ändrad</string>
     <string name="metadata_lyrics_available">Tillgänglig</string>
-
     <!-- Discover settings specific -->
     <string name="settings_discover_album_name">Albumnamn</string>
     <string name="settings_discover_album_name_desc">Visa albumtitel på kortet</string>
@@ -2986,18 +2781,15 @@
     <string name="settings_discover_play_button_desc">Visa snabbspelningsknapp</string>
     <string name="settings_discover_gradient_overlay">Gradient Overlay</string>
     <string name="settings_discover_gradient_overlay_desc">Visa gradient bakom text</string>
-
     <!-- Carousel Style selector strings -->
     <string name="carousel_style_default">Standard</string>
     <string name="carousel_style_default_desc">2 sidoalbum</string>
     <string name="carousel_style_hero">Hjälte</string>
     <string name="carousel_style_hero_desc">1 sidtittalbum</string>
-
     <!-- Theme names -->
     <string name="theme_rhythm">Rhythm</string>
     <string name="theme_expressive">Uttrycksfull</string>
     <string name="settings_managed_by_expressive_shapes">Hanteras av Expressive Shapes</string>
-
     <!-- Shape targets -->
     <string name="shape_target_album_art">Albumkonstverk</string>
     <string name="shape_target_player_art">Spelarens konstverk</string>
@@ -3018,11 +2810,9 @@
     <string name="settings_metadata_editing">Metadataredigering</string>
     <string name="settings_enable_album_editing">Aktivera albumredigering</string>
     <string name="settings_enable_album_editing_desc">Tillåt batchredigering av metadata och konstverk för hela album.</string>
-
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">Säkerhetsvarning</string>
     <string name="fdroid_update_warning_message">Genom att aktivera uppdateringar i appen på en F-Droid-build går det förbi F-Droids säkerhetskontroller. Uppdateringar kommer att laddas ner direkt från utgivaren. Vill du fortsätta?</string>
-
     <!-- Replay Gain Settings Screen -->
     <string name="replay_gain_status_active">Aktiv</string>
     <string name="replay_gain_status_disabled">Inaktiverad</string>
@@ -3037,10 +2827,8 @@
     <string name="replay_gain_preamp_untagged">Förförstärkare (otaggat)</string>
     <string name="replay_gain_preamp_untagged_desc">Volymjustering för spår utan ReplayGain-taggar.</string>
     <string name="replay_gain_configuration">Konfiguration</string>
-
     <!-- Playback Settings Screen Extra -->
     <string name="settingsscreen_audio_offload_desc">Hårdvaruaccelererad ljudavkodning för att spara enhetens ström</string>
-
     <!-- Backup & Restore Sections picker extra strings -->
     <string name="backup_restore_section_core">Kärna</string>
     <string name="backup_restore_section_core_desc">Tema, spelare, UI, API och appinställningar.</string>
@@ -3051,24 +2839,20 @@
     <string name="backup_restore_status_included">Ingår</string>
     <string name="backup_restore_status_excluded">Utesluten</string>
     <string name="backup_restore_sections_enabled">%1$d av %2$d aktiverat</string>
-
     <!-- Settings status cards -->
     <string name="status_active">Aktiv</string>
-
     <!-- Sort menu options -->
     <string name="sort_order_title">Beställning</string>
     <string name="sort_order_ascending">Stigande</string>
     <string name="sort_order_descending">Fallande</string>
     <string name="sort_track_number">Spårnummer</string>
     <string name="sort_duration">Varaktighet</string>
-
     <!-- Library Bottom Bar -->
     <string name="library_bottom_bar_cancel_selection">Avbryt val</string>
     <string name="library_bottom_bar_back">Tillbaka</string>
     <string name="library_bottom_bar_select_songs">Välj låtar</string>
     <string name="library_bottom_bar_more_actions">Fler åtgärder</string>
     <string name="library_play_selected">Spela (%1$d)</string>
-
     <!-- Rhythm Guard Comic Status Subtitles -->
     <string name="rhythm_guard_health_desc_good">Dina öron bjuder på en perfekt volym fest. Fortsätt vibba ansvarsfullt! 🎉</string>
     <string name="rhythm_guard_health_desc_fair">Blir lite kryddig där inne. Kanske skruva ner ett snäpp innan vakten kliver in? 🌶️</string>
@@ -3076,7 +2860,6 @@
     <string name="rhythm_guard_health_desc_cooldown">Säker zon aktiv! Rhythm Guard är ledig på kafferasten, så jappa fritt utan timeouts! 🎫☕</string>
     <string name="rhythm_guard_health_desc_timeout">Akustisk timeout aktiv. En obligatorisk öronlur pågår för att skydda din hörsel! 😴🛑</string>
     <string name="rhythm_guard_health_desc_off">Rhythm Vakten är ledig. Du flyger helt solo på volymsäkerhet. Herregud! 🏍️💨</string>
-
     <!-- Player, Bottomsheet, and Popup translations -->
     <string name="unknown_track">Okänt spår</string>
     <string name="unknown_song">Okänd låt</string>
@@ -3096,6 +2879,13 @@
     <string name="playlist_count_format">%1$d spellistor</string>
     <string name="ui_song_count">1 låt</string>
     <string name="duration_minutes_format">%1$dm</string>
+    <string name="updates_channel_stable_title">Stabil</string>
+    <string name="updates_channel_stable_desc">Få endast officiella stabila utgåvor.</string>
+    <string name="updates_channel_beta_title">Beta</string>
+    <string name="updates_channel_beta_desc">Ta emot förhandsutgåvor och utgivningskandidater.</string>
+    <string name="updates_channel_nightly_title">Nightly</string>
+    <string name="updates_channel_nightly_desc">Få banbrytande nattliga byggen kompilerade från huvudgrenen.</string>
+    <string name="lyrically_sources_title">Lyrically källor</string>
+    <string name="lyrically_sources_desc">Konfigurera och prioritera textkällor inuti Lyrically. Ord-för-ord-källor kommer att testas först, och återgå till synkroniserade/enkla källor.</string>
+    <string name="error_no_document_app">Ingen systemdokumentväljare hittades för att välja en mapp.</string>
 </resources>
-
-
