@@ -375,6 +375,13 @@ fun EqualizerScreen(
     val isSpatializationAvailable by viewModel.isSpatializationAvailable.collectAsState()
     val isBassBoostAvailableState by viewModel.isBassBoostAvailable.collectAsState()
 
+    val appSettings = remember { AppSettings.getInstance(context) }
+    val isAudioOffloadActive by appSettings.isAudioOffloadActive.collectAsState()
+    val batterySaverEnabled by appSettings.batterySaverEnabled.collectAsState()
+    val batterySaverMode by appSettings.batterySaverMode.collectAsState()
+    val batterySaverEnableOffload by appSettings.batterySaverEnableOffload.collectAsState()
+    val isOffloadEnforced = batterySaverEnabled && (batterySaverMode == "auto" || (batterySaverMode == "manual" && batterySaverEnableOffload))
+
     // Update spatialization and bass boost availability when screen is shown
     LaunchedEffect(Unit) {
         viewModel.updateSpatializationStatus()
@@ -652,7 +659,7 @@ fun EqualizerScreen(
                     Icon(
                         imageVector = RhythmIcons.Equalizer,
                         contentDescription = null,
-                        tint = if (isEqualizerEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = if (isEqualizerEnabled && !isOffloadEnforced) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(35.dp)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
@@ -663,6 +670,7 @@ fun EqualizerScreen(
                         ) {
                             Text(
                                 text = when {
+                                    isOffloadEnforced -> "Disabled (Lite Mode)"
                                     isEqualizerEnabled -> stringResource(R.string.common_active)
                                     else -> stringResource(R.string.common_disabled)
                                 },
@@ -670,14 +678,30 @@ fun EqualizerScreen(
                                 fontWeight = FontWeight.Bold
                             )
                         }
+                        if (isOffloadEnforced) {
+                            Text(
+                                text = "Disabled to conserve battery.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else if (isAudioOffloadActive && !isEqualizerEnabled) {
+                            Text(
+                                text = "Enabling will disable hardware Audio Offload",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                     TunerAnimatedSwitch(
-                        checked = isEqualizerEnabled,
+                        checked = if (isOffloadEnforced) false else isEqualizerEnabled,
                         onCheckedChange = { enabled ->
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            isEqualizerEnabled = enabled
-                            viewModel.setEqualizerEnabled(enabled)
-                        }
+                            if (!isOffloadEnforced) {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                isEqualizerEnabled = enabled
+                                viewModel.setEqualizerEnabled(enabled)
+                            }
+                        },
+                        enabled = !isOffloadEnforced
                     )
                 }
             }
@@ -990,27 +1014,31 @@ fun EqualizerScreen(
                             icon = RhythmIcons.SpeakerFilled,
                             value = bassBoostStrength,
                             valueRange = 0f..1000f,
-                            isEnabled = isBassBoostEnabled && isBassBoostAvailableState,
-                            isAvailable = isBassBoostAvailableState,
+                            isEnabled = if (isOffloadEnforced) false else (isBassBoostEnabled && isBassBoostAvailableState),
+                            isAvailable = if (isOffloadEnforced) false else isBassBoostAvailableState,
                             activeColor = MaterialTheme.colorScheme.secondary,
                             activeContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                             onActiveContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             onValueChange = { strength ->
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                bassBoostStrength = strength
-                                viewModel.setBassBoost(true, strength.toInt().toShort())
+                                if (!isOffloadEnforced) {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                    bassBoostStrength = strength
+                                    viewModel.setBassBoost(true, strength.toInt().toShort())
+                                }
                             },
                             onEnabledChange = { enabled ->
-                                if (isBassBoostAvailableState) {
+                                if (!isOffloadEnforced && isBassBoostAvailableState) {
                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                     isBassBoostEnabled = enabled
                                     viewModel.setBassBoost(enabled, bassBoostStrength.toInt().toShort())
                                 }
                             },
-                            statusText = if (isBassBoostAvailableState) {
-                                if (isBassBoostEnabled) stringResource(R.string.common_active) else stringResource(R.string.eq_enhance_lows)
-                            } else {
-                                stringResource(R.string.common_unavailable)
+                            statusText = when {
+                                isOffloadEnforced -> "Disabled (Lite Mode)"
+                                !isBassBoostAvailableState -> stringResource(R.string.common_unavailable)
+                                isBassBoostEnabled -> stringResource(R.string.common_active)
+                                isAudioOffloadActive -> "Enhance Lows\n(will disable offload)"
+                                else -> stringResource(R.string.eq_enhance_lows)
                             },
                             modifier = Modifier.weight(1f)
                         )
@@ -1020,26 +1048,30 @@ fun EqualizerScreen(
                             icon = RhythmIcons.HeadphonesFilled,
                             value = virtualizerStrength,
                             valueRange = 0f..1000f,
-                            isEnabled = isVirtualizerEnabled && isSpatializationAvailable,
-                            isAvailable = isSpatializationAvailable,
+                            isEnabled = if (isOffloadEnforced) false else (isVirtualizerEnabled && isSpatializationAvailable),
+                            isAvailable = if (isOffloadEnforced) false else isSpatializationAvailable,
                             activeColor = MaterialTheme.colorScheme.tertiary,
                             activeContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
                             onActiveContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
                             onValueChange = { strength ->
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                virtualizerStrength = strength
-                                viewModel.setVirtualizer(true, strength.toInt().toShort())
+                                if (!isOffloadEnforced) {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                    virtualizerStrength = strength
+                                    viewModel.setVirtualizer(true, strength.toInt().toShort())
+                                }
                             },
                             onEnabledChange = { enabled ->
-                                if (isSpatializationAvailable) {
+                                if (!isOffloadEnforced && isSpatializationAvailable) {
                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                     isVirtualizerEnabled = enabled
                                     viewModel.setVirtualizer(enabled, virtualizerStrength.toInt().toShort())
                                 }
                             },
                             statusText = when {
+                                isOffloadEnforced -> "Disabled (Lite Mode)"
                                 !isSpatializationAvailable -> stringResource(R.string.eq_mono_only)
                                 isVirtualizerEnabled -> stringResource(R.string.common_active)
+                                isAudioOffloadActive -> "Widen Sound\n(will disable offload)"
                                 else -> stringResource(R.string.eq_widen_sound)
                             },
                             modifier = Modifier.weight(1f)

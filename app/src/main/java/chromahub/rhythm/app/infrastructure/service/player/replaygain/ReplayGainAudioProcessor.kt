@@ -268,6 +268,12 @@ class ReplayGainAudioProcessor : BaseAudioProcessor() {
         return true
     }
 
+    override fun isActive(): Boolean {
+        synchronized(this) {
+            return super.isActive() && mode != ReplayGainUtil.Mode.None
+        }
+    }
+
     override fun onFlush(streamMetadata: AudioProcessor.StreamMetadata) {
         outputFloat = pendingOutputFloat
         toFloatPcmAudioProcessor.flush(streamMetadata)

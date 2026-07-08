@@ -461,12 +461,20 @@ fun PlayerScreen(
                 appSettings = appSettings,
                 onNavigateToSettings = {
                     showDeviceOutputSheet = false
-                    navController.navigate(Screen.TunerPlayback.route)
+                    navController.navigate(Screen.TunerPlayback.route) {
+                        popUpTo(Screen.Player.route) {
+                            inclusive = true
+                        }
+                    }
                 },
                 onNavigateToGoMode = null,
                 onNavigateToEqualizer = {
                     showDeviceOutputSheet = false
-                    navController.navigate(Screen.Equalizer.route)
+                    navController.navigate(Screen.Equalizer.route) {
+                        popUpTo(Screen.Player.route) {
+                            inclusive = true
+                        }
+                    }
                 },
                 sheetState = deviceOutputSheetState
             )
@@ -580,7 +588,13 @@ fun PlayerScreen(
                 onToggleFavorite = onToggleFavorite,
                 onPlaybackSpeed = { showPlaybackSpeedDialog = true },
                 onPlaybackPitch = { showPlaybackPitchDialog = true },
-                onEqualizer = { navController.navigate(Screen.Equalizer.route) },
+                onEqualizer = {
+                    navController.navigate(Screen.Equalizer.route) {
+                        popUpTo(Screen.Player.route) {
+                            inclusive = true
+                        }
+                    }
+                },
                 onSleepTimer = { showSleepTimerBottomSheet = true },
                 onLyricsEditor = { showLyricsEditorDialog = true },
                 onAlbum = {
@@ -851,7 +865,13 @@ fun PlayerScreen(
             onRetryLyrics = onRetryLyrics,
             onClose = { showFullScreenLyrics = false },
             onShowLyricsEditor = { showLyricsEditorDialog = true },
-            onNavigateToLyricsSettings = { navController.navigate(Screen.TunerLyrics.route) },
+            onNavigateToLyricsSettings = {
+                navController.navigate(Screen.TunerLyrics.route) {
+                    popUpTo(Screen.Player.route) {
+                        inclusive = true
+                    }
+                }
+            },
             canvasArtwork = canvasArtwork,
             canvasLoading = canvasLoading,
             modifier = Modifier.fillMaxSize()

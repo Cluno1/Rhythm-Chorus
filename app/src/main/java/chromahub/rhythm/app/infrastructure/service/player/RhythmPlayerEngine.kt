@@ -199,6 +199,16 @@ class RhythmPlayerEngine(
 
         isReleased = false
         Log.d(TAG, "RhythmPlayerEngine initialized. SessionA=${playerA.audioSessionId}")
+
+        // Reactively update track selection parameters when settings change
+        scope.launch {
+            launch { appSettings.crossfade.collect { updateTrackSelectionParameters() } }
+            launch { appSettings.equalizerEnabled.collect { updateTrackSelectionParameters() } }
+            launch { appSettings.replayGain.collect { updateTrackSelectionParameters() } }
+            launch { appSettings.bassBoostEnabled.collect { updateTrackSelectionParameters() } }
+            launch { appSettings.virtualizerEnabled.collect { updateTrackSelectionParameters() } }
+            launch { appSettings.isAudioOffloadActive.collect { updateTrackSelectionParameters() } }
+        }
     }
 
     private fun requestAudioFocus() {
@@ -309,9 +319,15 @@ class RhythmPlayerEngine(
         val appSettings = AppSettings.getInstance(context)
         val trackSelectionParametersBuilder = TrackSelectionParameters.Builder(context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // Software audio processors (Bass Boost & Spatialization) are incompatible with hardware audio offload.
-            // If they are active/configured in the sink, offload must be disabled to prevent conflicts.
-            val isOffloadSupported = appSettings.isAudioOffloadActive.value && (bassProcessor == null && spatialProcessor == null)
+            // Software audio effects and crossfade are incompatible with hardware audio offload.
+            // If any of them is enabled, offload must be disabled to prevent conflicts.
+            val isCrossfadeEnabled = appSettings.crossfade.value
+            val isEqualizerEnabled = appSettings.equalizerEnabled.value
+            val isReplayGainEnabled = appSettings.replayGain.value
+            val isBassBoostEnabled = appSettings.bassBoostEnabled.value
+            val isVirtualizerEnabled = appSettings.virtualizerEnabled.value
+            val isOffloadSupported = appSettings.isAudioOffloadActive.value &&
+                (!isCrossfadeEnabled && !isEqualizerEnabled && !isReplayGainEnabled && !isBassBoostEnabled && !isVirtualizerEnabled)
             val audioOffloadPreferences = TrackSelectionParameters.AudioOffloadPreferences.Builder()
                 .setAudioOffloadMode(
                     if (isOffloadSupported) {
@@ -657,6 +673,38 @@ class RhythmPlayerEngine(
             applyReplayGainSettingsOnProcessor(playerBReplayGain, enabled)
         }
         Log.d(TAG, "Replay Gain settings applied on both player processors: enabled=$enabled")
+        updateTrackSelectionParameters()
+    }
+
+    fun updateTrackSelectionParameters() {
+        scope.launch(Dispatchers.Main) {
+            if (!::playerA.isInitialized || !::playerB.isInitialized) return@launch
+            val appSettings = AppSettings.getInstance(context)
+            val trackSelectionParametersBuilder = TrackSelectionParameters.Builder(context)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val isCrossfadeEnabled = appSettings.crossfade.value
+                val isEqualizerEnabled = appSettings.equalizerEnabled.value
+                val isReplayGainEnabled = appSettings.replayGain.value
+                val isBassBoostEnabled = appSettings.bassBoostEnabled.value
+                val isVirtualizerEnabled = appSettings.virtualizerEnabled.value
+                val isOffloadSupported = appSettings.isAudioOffloadActive.value &&
+                    (!isCrossfadeEnabled && !isEqualizerEnabled && !isReplayGainEnabled && !isBassBoostEnabled && !isVirtualizerEnabled)
+                val audioOffloadPreferences = TrackSelectionParameters.AudioOffloadPreferences.Builder()
+                    .setAudioOffloadMode(
+                        if (isOffloadSupported) {
+                            TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_ENABLED
+                        } else {
+                            TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED
+                        }
+                    )
+                    .build()
+                trackSelectionParametersBuilder.setAudioOffloadPreferences(audioOffloadPreferences)
+            }
+            val params = trackSelectionParametersBuilder.build()
+            playerA.trackSelectionParameters = params
+            playerB.trackSelectionParameters = params
+            Log.d(TAG, "Updated track selection parameters: offloadActive=${appSettings.isAudioOffloadActive.value}, crossfadeEnabled=${appSettings.crossfade.value}, eqEnabled=${appSettings.equalizerEnabled.value}, bassEnabled=${appSettings.bassBoostEnabled.value}, virtualizerEnabled=${appSettings.virtualizerEnabled.value}")
+        }
     }
 
     fun release() {

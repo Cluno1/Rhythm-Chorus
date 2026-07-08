@@ -3063,6 +3063,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             }
             
             Log.d(TAG, "Loaded saved audio effects - EQ: ${appSettings.equalizerEnabled.value}, Bass: ${appSettings.bassBoostEnabled.value}, Virtualizer: ${appSettings.virtualizerEnabled.value}")
+            if (::rhythmPlayerEngine.isInitialized) {
+                rhythmPlayerEngine.updateTrackSelectionParameters()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error loading saved audio effects", e)
         }
@@ -3285,6 +3288,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         
         rhythmBassBoostProcessor?.setEnabled(enabled)
         Log.d(TAG, "Rhythm bass boost enabled: $enabled (applies to next audio buffer)")
+        if (::rhythmPlayerEngine.isInitialized) {
+            rhythmPlayerEngine.updateTrackSelectionParameters()
+        }
     }
     
     fun setBassBoostStrength(strength: Short) {
@@ -3313,6 +3319,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         rhythmSpatializationProcessor?.setEnabled(enabled)
         virtualizerStrength = if (enabled) virtualizerStrength else 0
         Log.d(TAG, "Rhythm spatialization enabled: $enabled (applies to next audio buffer)")
+        if (::rhythmPlayerEngine.isInitialized) {
+            rhythmPlayerEngine.updateTrackSelectionParameters()
+        }
     }
     
     fun setVirtualizerStrength(strength: Short) {

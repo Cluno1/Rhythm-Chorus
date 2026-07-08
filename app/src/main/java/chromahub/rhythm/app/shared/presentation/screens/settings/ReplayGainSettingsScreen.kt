@@ -53,6 +53,11 @@ fun ReplayGainSettingsScreen(
     val replayGainDrc by appSettings.replayGainDrc.collectAsState()
     val replayGainPreamp by appSettings.replayGainPreamp.collectAsState()
     val replayGainPreampUntagged by appSettings.replayGainPreampUntagged.collectAsState()
+    val isAudioOffloadActive by appSettings.isAudioOffloadActive.collectAsState()
+    val batterySaverEnabled by appSettings.batterySaverEnabled.collectAsState()
+    val batterySaverMode by appSettings.batterySaverMode.collectAsState()
+    val batterySaverEnableOffload by appSettings.batterySaverEnableOffload.collectAsState()
+    val isOffloadEnforced = batterySaverEnabled && (batterySaverMode == "auto" || (batterySaverMode == "manual" && batterySaverEnableOffload))
 
     CollapsibleHeaderScreen(
         title = context.getString(R.string.replay_gain),
@@ -61,7 +66,7 @@ fun ReplayGainSettingsScreen(
         headerContent = {
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = if (replayGain)
+                    containerColor = if (replayGain && !isOffloadEnforced)
                         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                     else
                         MaterialTheme.colorScheme.surfaceContainer
@@ -80,7 +85,7 @@ fun ReplayGainSettingsScreen(
                     Icon(
                         imageVector = MaterialSymbolIcon("volume_up"),
                         contentDescription = null,
-                        tint = if (replayGain) {
+                        tint = if (replayGain && !isOffloadEnforced) {
                             MaterialTheme.colorScheme.primary
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -90,17 +95,37 @@ fun ReplayGainSettingsScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = stringResource(if (replayGain) R.string.status_active else R.string.status_disabled),
+                            text = if (isOffloadEnforced) {
+                                "Disabled (Lite Mode)"
+                            } else {
+                                stringResource(if (replayGain) R.string.status_active else R.string.status_disabled)
+                            },
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
+                        if (isOffloadEnforced) {
+                            Text(
+                                text = "Disabled to conserve battery.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else if (isAudioOffloadActive && !replayGain) {
+                            Text(
+                                text = "Enabling will disable hardware Audio Offload",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                     TunerAnimatedSwitch(
-                        checked = replayGain,
+                        checked = if (isOffloadEnforced) false else replayGain,
                         onCheckedChange = { enabled ->
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                            appSettings.setReplayGain(enabled)
-                        }
+                            if (!isOffloadEnforced) {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                appSettings.setReplayGain(enabled)
+                            }
+                        },
+                        enabled = !isOffloadEnforced
                     )
                 }
             }

@@ -892,6 +892,7 @@ fun ExpressivePlayerScreen(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .height(8.dp),
+                                                color = MaterialTheme.colorScheme.primary,
                                                 trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
                                             )
                                         } else if (playerProgressStyle == "WAVY") {
@@ -914,10 +915,11 @@ fun ExpressivePlayerScreen(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 enabled = canSeek,
                                                 isPlaying = isPlaying,
-                                                activeTrackColor = primaryPillColor,
+                                                activeTrackColor = MaterialTheme.colorScheme.primary,
                                                 inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(
                                                     alpha = 0.2f
-                                                )
+                                                ),
+                                                thumbColor = MaterialTheme.colorScheme.primary
                                             )
                                         } else {
                                             val progressStyle = try {
@@ -941,7 +943,7 @@ fun ExpressivePlayerScreen(
                                                     progress = progressValue,
                                                     style = progressStyle,
                                                     modifier = Modifier.fillMaxWidth(),
-                                                    progressColor = primaryPillColor,
+                                                    progressColor = MaterialTheme.colorScheme.primary,
                                                     trackColor = MaterialTheme.colorScheme.onSurface.copy(
                                                         alpha = 0.2f
                                                     ),

@@ -151,6 +151,11 @@ fun PlaybackBottomSheet(
     val bassBoostStrength by appSettings.bassBoostStrength.collectAsState()
     val virtualizerEnabled by appSettings.virtualizerEnabled.collectAsState()
     val virtualizerStrength by appSettings.virtualizerStrength.collectAsState()
+    val isAudioOffloadActive by appSettings.isAudioOffloadActive.collectAsState()
+    val batterySaverEnabled by appSettings.batterySaverEnabled.collectAsState()
+    val batterySaverMode by appSettings.batterySaverMode.collectAsState()
+    val batterySaverEnableOffload by appSettings.batterySaverEnableOffload.collectAsState()
+    val isOffloadEnforced = batterySaverEnabled && (batterySaverMode == "auto" || (batterySaverMode == "manual" && batterySaverEnableOffload))
     
     val contentAlpha by animateFloatAsState(
         targetValue = if (showContent) 1f else 0f,
@@ -316,7 +321,9 @@ fun PlaybackBottomSheet(
                             onNavigateToSettings = onNavigateToSettings,
                             onNavigateToGoMode = onNavigateToGoMode,
                             haptics = haptics,
-                            context = context
+                            context = context,
+                            isAudioOffloadActive = isAudioOffloadActive,
+                            isOffloadEnforced = isOffloadEnforced
                         )
                     }
                 }
@@ -353,7 +360,9 @@ fun PlaybackBottomSheet(
                             },
                             onNavigateToEqualizer = onNavigateToEqualizer,
                             haptics = haptics,
-                            context = context
+                            context = context,
+                            isAudioOffloadActive = isAudioOffloadActive,
+                            isOffloadEnforced = isOffloadEnforced
                         )
                     }
                 }
@@ -928,7 +937,9 @@ private fun PlaybackQuickSettingsCard(
     onNavigateToGoMode: (() -> Unit)? = null,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
     context: Context,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isAudioOffloadActive: Boolean = false,
+    isOffloadEnforced: Boolean = false
 ) {
     val quickSettingsItems = buildList {
         add(
@@ -1039,25 +1050,39 @@ private fun PlaybackQuickSettingsCard(
             Material3SettingsItem(
                 icon = RhythmIcons.Tune,
                 title = { Text(text = context.getString(R.string.settings_crossfade)) },
-                description = { Text(text = context.getString(R.string.settings_crossfade_desc)) },
+                description = {
+                    val baseDesc = context.getString(R.string.settings_crossfade_desc)
+                    val fullDesc = when {
+                        isOffloadEnforced -> "Disabled under Lite Mode to conserve battery."
+                        isAudioOffloadActive && !crossfadeEnabled -> "$baseDesc\n(Enabling will disable hardware Audio Offload)"
+                        else -> baseDesc
+                    }
+                    Text(text = fullDesc)
+                },
                 trailingContent = {
                     AnimatedAudioSwitch(
-                        checked = crossfadeEnabled,
+                        checked = if (isOffloadEnforced) false else crossfadeEnabled,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            onCrossfadeEnabledChange(it)
-                        }
+                            if (!isOffloadEnforced) {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                onCrossfadeEnabledChange(it)
+                            }
+                        },
+                        enabled = !isOffloadEnforced
                     )
                 },
                 scope = chromahub.rhythm.app.shared.presentation.components.SettingScope.BOTH,
+                enabled = !isOffloadEnforced,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                    onCrossfadeEnabledChange(!crossfadeEnabled)
+                    if (!isOffloadEnforced) {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        onCrossfadeEnabledChange(!crossfadeEnabled)
+                    }
                 }
             )
         )
 
-        if (crossfadeEnabled) {
+        if (crossfadeEnabled && !isOffloadEnforced) {
             add(
                 Material3SettingsItem(
                     icon = RhythmIcons.Tune,
@@ -1381,11 +1406,13 @@ private fun PlaybackPitchCard(
 private fun AnimatedAudioSwitch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch(
         checked = checked,
         onCheckedChange = onCheckedChange,
+        enabled = enabled,
         modifier = modifier
     )
 }
@@ -1465,26 +1492,42 @@ private fun AudioEffectsCard(
     onVirtualizerStrengthChange: (Int) -> Unit,
     onNavigateToEqualizer: (() -> Unit)? = null,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
-    context: Context
+    context: Context,
+    isAudioOffloadActive: Boolean = false,
+    isOffloadEnforced: Boolean = false
 ) {
     val audioEffectItems = buildList {
         add(
             Material3SettingsItem(
                 icon = RhythmIcons.Equalizer,
                 title = { Text(text = context.getString(R.string.equalizer)) },
-                description = { Text(text = context.getString(R.string.settings_equalizer_desc)) },
+                description = {
+                    val baseDesc = context.getString(R.string.settings_equalizer_desc)
+                    val fullDesc = when {
+                        isOffloadEnforced -> "Disabled under Lite Mode to conserve battery."
+                        isAudioOffloadActive && !equalizerEnabled -> "$baseDesc\n(Enabling will disable hardware Audio Offload)"
+                        else -> baseDesc
+                    }
+                    Text(text = fullDesc)
+                },
                 trailingContent = {
                     AnimatedAudioSwitch(
-                        checked = equalizerEnabled,
+                        checked = if (isOffloadEnforced) false else equalizerEnabled,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                            onEqualizerEnabledChange(it)
-                        }
+                            if (!isOffloadEnforced) {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                onEqualizerEnabledChange(it)
+                            }
+                        },
+                        enabled = !isOffloadEnforced
                     )
                 },
+                enabled = !isOffloadEnforced,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                    onEqualizerEnabledChange(!equalizerEnabled)
+                    if (!isOffloadEnforced) {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                        onEqualizerEnabledChange(!equalizerEnabled)
+                    }
                 }
             )
         )
@@ -1494,8 +1537,14 @@ private fun AudioEffectsCard(
                 title = { Text(text = context.getString(R.string.bass_boost)) },
                 description = {
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(text = context.getString(R.string.bass_boost_desc))
-                        if (bassBoostEnabled) {
+                        val baseDesc = context.getString(R.string.bass_boost_desc)
+                        val fullDesc = when {
+                            isOffloadEnforced -> "Disabled under Lite Mode to conserve battery."
+                            isAudioOffloadActive && !bassBoostEnabled -> "$baseDesc\n(Enabling will disable hardware Audio Offload)"
+                            else -> baseDesc
+                        }
+                        Text(text = fullDesc)
+                        if (bassBoostEnabled && !isOffloadEnforced) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "${context.getString(R.string.strength)} ${bassBoostStrength / 10}%",
@@ -1519,16 +1568,22 @@ private fun AudioEffectsCard(
                 },
                 trailingContent = {
                     AnimatedAudioSwitch(
-                        checked = bassBoostEnabled,
+                        checked = if (isOffloadEnforced) false else bassBoostEnabled,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                            onBassBoostEnabledChange(it)
-                        }
+                            if (!isOffloadEnforced) {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                onBassBoostEnabledChange(it)
+                            }
+                        },
+                        enabled = !isOffloadEnforced
                     )
                 },
+                enabled = !isOffloadEnforced,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                    onBassBoostEnabledChange(!bassBoostEnabled)
+                    if (!isOffloadEnforced) {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                        onBassBoostEnabledChange(!bassBoostEnabled)
+                    }
                 }
             )
         )
@@ -1538,8 +1593,14 @@ private fun AudioEffectsCard(
                 title = { Text(text = context.getString(R.string.virtualizer)) },
                 description = {
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(text = context.getString(R.string.virtualizer_desc))
-                        if (virtualizerEnabled) {
+                        val baseDesc = context.getString(R.string.virtualizer_desc)
+                        val fullDesc = when {
+                            isOffloadEnforced -> "Disabled under Lite Mode to conserve battery."
+                            isAudioOffloadActive && !virtualizerEnabled -> "$baseDesc\n(Enabling will disable hardware Audio Offload)"
+                            else -> baseDesc
+                        }
+                        Text(text = fullDesc)
+                        if (virtualizerEnabled && !isOffloadEnforced) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "${context.getString(R.string.strength)} ${virtualizerStrength / 10}%",
@@ -1563,16 +1624,22 @@ private fun AudioEffectsCard(
                 },
                 trailingContent = {
                     AnimatedAudioSwitch(
-                        checked = virtualizerEnabled,
+                        checked = if (isOffloadEnforced) false else virtualizerEnabled,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                            onVirtualizerEnabledChange(it)
-                        }
+                            if (!isOffloadEnforced) {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                onVirtualizerEnabledChange(it)
+                            }
+                        },
+                        enabled = !isOffloadEnforced
                     )
                 },
+                enabled = !isOffloadEnforced,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                    onVirtualizerEnabledChange(!virtualizerEnabled)
+                    if (!isOffloadEnforced) {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                        onVirtualizerEnabledChange(!virtualizerEnabled)
+                    }
                 }
             )
         )
@@ -1606,7 +1673,11 @@ private fun AudioEffectsCard(
             .padding(horizontal = 24.dp)
     ) {
         Material3SettingsGroup(
-            title = context.getString(R.string.audio_effects),
+            title = if (isAudioOffloadActive && !bassBoostEnabled && !virtualizerEnabled && !replayGain && !equalizerEnabled) {
+                "${context.getString(R.string.audio_effects)} (Audio Offload Active)"
+            } else {
+                context.getString(R.string.audio_effects)
+            },
             items = audioEffectItems,
             containerColor = MaterialTheme.colorScheme.surface
         )

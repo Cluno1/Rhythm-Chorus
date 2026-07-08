@@ -64,6 +64,11 @@ fun PlaybackSettingsScreen(
     val useSystemVolume by appSettings.useSystemVolume.collectAsState()
     val resumeOnDeviceReconnect by appSettings.resumeOnDeviceReconnect.collectAsState()
     val audioOffloadEnabled by appSettings.audioOffloadEnabled.collectAsState()
+    val isAudioOffloadActive by appSettings.isAudioOffloadActive.collectAsState()
+    val batterySaverEnabled by appSettings.batterySaverEnabled.collectAsState()
+    val batterySaverMode by appSettings.batterySaverMode.collectAsState()
+    val batterySaverEnableOffload by appSettings.batterySaverEnableOffload.collectAsState()
+    val isOffloadEnforced = batterySaverEnabled && (batterySaverMode == "auto" || (batterySaverMode == "manual" && batterySaverEnableOffload))
 
     CollapsibleHeaderScreen(
         title = context.getString(R.string.settings_playback_title),
@@ -129,26 +134,31 @@ fun PlaybackSettingsScreen(
                     SettingItem(
                         RhythmIcons.Tune,
                         context.getString(R.string.settings_crossfade),
-                        context.getString(R.string.settings_crossfade_desc),
-                        toggleState = crossfadeEnabled,
-                        onToggleChange = { appSettings.setCrossfade(it) },
-                        data = if (crossfadeEnabled) crossfadeDuration else null
+                        when {
+                            isOffloadEnforced -> "Disabled under Lite Mode to conserve battery."
+                            isAudioOffloadActive && !crossfadeEnabled -> "${context.getString(R.string.settings_crossfade_desc)}\n(Enabling will disable hardware Audio Offload)"
+                            else -> context.getString(R.string.settings_crossfade_desc)
+                        },
+                        toggleState = if (isOffloadEnforced) false else crossfadeEnabled,
+                        onToggleChange = { if (!isOffloadEnforced) appSettings.setCrossfade(it) },
+                        enabled = !isOffloadEnforced,
+                        data = if (crossfadeEnabled && !isOffloadEnforced) crossfadeDuration else null
                     ),
                     SettingItem(
                         RhythmIcons.Repeat,
                         context.getString(R.string.settings_crossfade_repeat_one),
                         context.getString(R.string.settings_crossfade_repeat_one_desc),
-                        toggleState = crossfadeRepeatOne,
-                        onToggleChange = { appSettings.setCrossfadeRepeatOne(it) },
-                        enabled = crossfadeEnabled
+                        toggleState = if (isOffloadEnforced) false else crossfadeRepeatOne,
+                        onToggleChange = { if (!isOffloadEnforced) appSettings.setCrossfadeRepeatOne(it) },
+                        enabled = crossfadeEnabled && !isOffloadEnforced
                     ),
                     SettingItem(
                         MaterialSymbolIcon("skip_next"),
                         context.getString(R.string.settings_crossfade_on_skip),
                         context.getString(R.string.settings_crossfade_on_skip_desc),
-                        toggleState = crossfadeOnSkip,
-                        onToggleChange = { appSettings.setCrossfadeOnSkip(it) },
-                        enabled = crossfadeEnabled
+                        toggleState = if (isOffloadEnforced) false else crossfadeOnSkip,
+                        onToggleChange = { if (!isOffloadEnforced) appSettings.setCrossfadeOnSkip(it) },
+                        enabled = crossfadeEnabled && !isOffloadEnforced
                     ),
 
                 )
@@ -159,9 +169,10 @@ fun PlaybackSettingsScreen(
                     SettingItem(
                         MaterialSymbolIcon("bolt"),
                         context.getString(R.string.settingsscreen_audio_offload),
-                        context.getString(R.string.settingsscreen_audio_offload_desc),
-                        toggleState = audioOffloadEnabled,
-                        onToggleChange = { appSettings.setAudioOffloadEnabled(it) }
+                        if (isOffloadEnforced) "Enforced under Lite Mode to conserve battery." else context.getString(R.string.settingsscreen_audio_offload_desc),
+                        toggleState = if (isOffloadEnforced) true else audioOffloadEnabled,
+                        onToggleChange = { if (!isOffloadEnforced) appSettings.setAudioOffloadEnabled(it) },
+                        enabled = !isOffloadEnforced
                     )
                 )
             ),
