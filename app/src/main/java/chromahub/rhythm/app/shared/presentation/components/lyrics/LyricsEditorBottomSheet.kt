@@ -5,12 +5,14 @@ import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolI
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
@@ -96,6 +98,64 @@ enum class LyricFormat {
     SOURCE,
     LINE_BY_LINE,
     WORD_BY_WORD
+}
+
+data class SaveLyricsInput(
+    val fileName: String,
+    val mimeType: String,
+    val initialUri: Uri?
+)
+
+class CreateDocumentWithInitialFolder : ActivityResultContract<SaveLyricsInput, Uri?>() {
+    override fun createIntent(context: Context, input: SaveLyricsInput): Intent {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType(input.mimeType)
+            .putExtra(Intent.EXTRA_TITLE, input.fileName)
+        if (input.initialUri != null) {
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, input.initialUri)
+        }
+        return intent
+    }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): Uri? {
+        return if (intent == null || resultCode != android.app.Activity.RESULT_OK) null else intent.data
+    }
+}
+
+private fun getInitialFolderUri(filePath: String?): Uri? {
+    if (filePath.isNullOrBlank()) return null
+    return try {
+        val file = File(filePath)
+        val parentFile = file.parentFile ?: return null
+        val parentPath = parentFile.absolutePath
+
+        // Check if it's primary external storage
+        val primaryPrefix = "/storage/emulated/0"
+        if (parentPath.startsWith(primaryPrefix, ignoreCase = true)) {
+            val relativePath = parentPath.substring(primaryPrefix.length).trim('/')
+            val docId = if (relativePath.isEmpty()) "primary:" else "primary:$relativePath"
+            DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", docId)
+        } else {
+            // Check if it's secondary external storage (e.g. micro SD card /storage/XXXX-XXXX/...)
+            val storagePrefix = "/storage/"
+            if (parentPath.startsWith(storagePrefix, ignoreCase = true)) {
+                val subPath = parentPath.substring(storagePrefix.length)
+                val parts = subPath.split('/')
+                if (parts.isNotEmpty()) {
+                    val volumeId = parts[0]
+                    if (volumeId != "emulated") {
+                        val relativePath = parts.drop(1).joinToString("/")
+                        val docId = if (relativePath.isEmpty()) "$volumeId:" else "$volumeId:$relativePath"
+                        DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", docId)
+                    } else null
+                } else null
+            } else null
+        }
+    } catch (e: Exception) {
+        Log.w("LyricsEditor", "Failed to resolve initial folder URI for path: $filePath", e)
+        null
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -451,23 +511,28 @@ fun LyricsEditorBottomSheet(
 
     val sanitizedTitle = remember(songTitle) {
         songTitle.trim()
-            .replace(Regex("[^a-zA-Z0-9._-]"), "_")
+            .replace(Regex("""[\\/:*?"<>|]"""), "_")
             .replace(Regex("_+"), "_")  // Collapse multiple underscores
             .trim('_')  // Remove leading/trailing underscores
             .takeIf { it.isNotEmpty() } ?: "lyrics"  // Fallback to "lyrics" if empty
     }
 
-    val defaultLyricsFileName = remember(sanitizedTitle, selectedFormat) {
-        if (selectedFormat == LyricFormat.WORD_BY_WORD) {
-            "$sanitizedTitle.json"
+    val defaultLyricsFileName = remember(song, sanitizedTitle, selectedFormat) {
+        val baseName = if (song != null && !song.path.isNullOrBlank()) {
+            File(song.path).nameWithoutExtension
         } else {
-            "$sanitizedTitle.lrc"
+            sanitizedTitle
+        }
+        if (selectedFormat == LyricFormat.WORD_BY_WORD) {
+            "$baseName.json"
+        } else {
+            "$baseName.lrc"
         }
     }
 
     // File picker launcher for saving .lrc files
     val saveLyricsLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/octet-stream")
+        contract = CreateDocumentWithInitialFolder()
     ) { uri: Uri? ->
         uri?.let {
             try {
@@ -1113,7 +1178,15 @@ fun LyricsEditorBottomSheet(
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                 if (editedLyrics.isNotBlank()) {
-                                    saveLyricsLauncher.launch(defaultLyricsFileName)
+                                    val mimeType = if (selectedFormat == LyricFormat.WORD_BY_WORD) "application/json" else "application/octet-stream"
+                                    val initialUri = getInitialFolderUri(song?.path)
+                                    saveLyricsLauncher.launch(
+                                        SaveLyricsInput(
+                                            fileName = defaultLyricsFileName,
+                                            mimeType = mimeType,
+                                            initialUri = initialUri
+                                        )
+                                    )
                                 }
                             },
                             modifier = Modifier.weight(1f),
