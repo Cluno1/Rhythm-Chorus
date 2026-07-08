@@ -138,6 +138,9 @@ class MusicRepository(context: Context) {
     
     private val repositoryScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     
+    // In-memory buffer for pending date-added writes to avoid SharedPreferences write loops
+    private val pendingDateAddedWrites = java.util.concurrent.ConcurrentHashMap<String, Long>()
+    
     // Genre cache using SharedPreferences
     private val genrePrefs: SharedPreferences by lazy { context.getSharedPreferences("genre_cache", Context.MODE_PRIVATE) }
     private val artworkPrefs: SharedPreferences by lazy { context.getSharedPreferences("artwork_overrides", Context.MODE_PRIVATE) }
@@ -810,7 +813,7 @@ class MusicRepository(context: Context) {
         if (!shouldForceRefresh && cachedSongs == null) {
             val diskCached = loadSongsFromRoom()
             if (diskCached != null && diskCached.isNotEmpty()) {
-                if (isLibraryStale()) {
+                if (isLibraryStale(appSettings.lastScanTimestamp.value, diskCached.size)) {
                     Log.d(TAG, "Newer files found in MediaStore, invalidating Room cache and rescanning")
                     invalidatePersistentLibraryCachesForForcedRescan()
                     shouldForceRefresh = true
@@ -1073,6 +1076,8 @@ class MusicRepository(context: Context) {
             _scanProgress.value = ScanProgress(0, 0, ScanPhase.Error, 0)
             // Return partial results if available
             return@withContext songs
+        } finally {
+            flushPendingDateAddedWrites()
         }
 
         return@withContext songs
@@ -1215,6 +1220,8 @@ class MusicRepository(context: Context) {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error during incremental scan", e)
+        } finally {
+            flushPendingDateAddedWrites()
         }
 
         return@withContext newSongs
@@ -1326,17 +1333,39 @@ class MusicRepository(context: Context) {
             return normalizedObservedDate
         }
 
-        val cachedDate = dateAddedPrefs.getLong(key, -1L)
+        val cachedDate = pendingDateAddedWrites[key] ?: dateAddedPrefs.getLong(key, -1L)
         if (cachedDate > 0L) {
             val stableDate = minOf(cachedDate, normalizedObservedDate)
             if (stableDate != cachedDate) {
-                dateAddedPrefs.edit().putLong(key, stableDate).apply()
+                pendingDateAddedWrites[key] = stableDate
             }
             return stableDate
         }
 
-        dateAddedPrefs.edit().putLong(key, normalizedObservedDate).apply()
+        pendingDateAddedWrites[key] = normalizedObservedDate
         return normalizedObservedDate
+    }
+
+    private fun flushPendingDateAddedWrites() {
+        if (pendingDateAddedWrites.isEmpty()) return
+        
+        val updates = mutableMapOf<String, Long>()
+        synchronized(pendingDateAddedWrites) {
+            updates.putAll(pendingDateAddedWrites)
+            pendingDateAddedWrites.clear()
+        }
+        
+        if (updates.isEmpty()) return
+        Log.d(TAG, "Flushing ${updates.size} stable date-added values to SharedPreferences")
+        try {
+            val editor = dateAddedPrefs.edit()
+            for ((key, value) in updates) {
+                editor.putLong(key, value)
+            }
+            editor.apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to flush stable date-added values to SharedPreferences", e)
+        }
     }
 
     private fun createSongFromFile(file: File, appSettings: AppSettings): Song? {
@@ -5853,6 +5882,9 @@ class MusicRepository(context: Context) {
         val allArtists = loadArtists() // Ensure artists are loaded once
         val appSettings = AppSettings.getInstance(context)
         val groupByAlbumArtist = appSettings.groupByAlbumArtist.value
+        val artistSeparatorEnabled = appSettings.artistSeparatorEnabled.value
+        val delimiters = if (artistSeparatorEnabled) appSettings.artistSeparatorDelimiters.value else ""
+        val preloadedCharDelimiters = delimiters.map { it.toString() }
 
         Log.d("MusicRepository", "Getting songs for artist ID: $artistId")
 
@@ -5871,14 +5903,14 @@ class MusicRepository(context: Context) {
                 // Match against split album artist names, falling back to split track artists.
                 val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
                 val songArtistNames = if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
-                    splitArtistNames(explicitAlbumArtist)
+                    splitArtistNames(explicitAlbumArtist, preloadedCharDelimiters)
                 } else {
-                    splitArtistNames(song.artist)
+                    splitArtistNames(song.artist, preloadedCharDelimiters)
                 }
                 songArtistNames.any { it.equals(artist.name, ignoreCase = true) }
             } else {
                 // When not grouping, check if artist name appears in the track artist field (exact or as part of collaboration)
-                val artistNames = splitArtistNames(song.artist)
+                val artistNames = splitArtistNames(song.artist, preloadedCharDelimiters)
                 artistNames.any { it.equals(artist.name, ignoreCase = true) }
             }
         }
@@ -5893,6 +5925,9 @@ class MusicRepository(context: Context) {
         val allSongs = loadSongs() // Need songs to check album artist
         val appSettings = AppSettings.getInstance(context)
         val groupByAlbumArtist = appSettings.groupByAlbumArtist.value
+        val artistSeparatorEnabled = appSettings.artistSeparatorEnabled.value
+        val delimiters = if (artistSeparatorEnabled) appSettings.artistSeparatorDelimiters.value else ""
+        val preloadedCharDelimiters = delimiters.map { it.toString() }
 
         Log.d("MusicRepository", "Getting albums for artist ID: $artistId")
 
@@ -5912,16 +5947,16 @@ class MusicRepository(context: Context) {
                 album.songs.any { song ->
                     val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
                     val songArtistNames = if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
-                        splitArtistNames(explicitAlbumArtist)
+                        splitArtistNames(explicitAlbumArtist, preloadedCharDelimiters)
                     } else {
-                        splitArtistNames(song.artist)
+                        splitArtistNames(song.artist, preloadedCharDelimiters)
                     }
                     songArtistNames.any { it.equals(artist.name, ignoreCase = true) }
                 }
             } else {
                 // When not grouping, check if artist appears in any song's track artist field for this album
                 album.songs.any { song ->
-                    splitArtistNames(song.artist).any { it.equals(artist.name, ignoreCase = true) }
+                    splitArtistNames(song.artist, preloadedCharDelimiters).any { it.equals(artist.name, ignoreCase = true) }
                 }
             }
         }
@@ -6119,34 +6154,49 @@ class MusicRepository(context: Context) {
         }
     }
 
-    private fun isLibraryStale(): Boolean {
+    fun isLibraryStale(lastScan: Long, cachedCount: Int): Boolean {
         try {
-            val appSettings = AppSettings.getInstance(context)
-            val lastScan = appSettings.lastScanTimestamp.value
-            if (lastScan <= 0L) return false
+            if (lastScan <= 0L) return true
 
             val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
             } else {
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
             }
-            val selection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%') AND ${MediaStore.Audio.Media.DURATION} > 10000 AND ${MediaStore.Audio.Media.DATE_ADDED} > ?"
 
-            val cursor = context.contentResolver.query(
+            // 1. Get the current count of eligible audio files in MediaStore to check for additions/deletions
+            val selection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%') AND ${MediaStore.Audio.Media.DURATION} > 10000"
+            val countCursor = context.contentResolver.query(
                 collection,
                 arrayOf(MediaStore.Audio.Media._ID),
                 selection,
-                arrayOf(lastScan.toString()),
+                null,
                 null
             )
-
-            val hasNewerFiles = cursor?.let { it.count > 0 } ?: false
-            cursor?.close()
-
-            if (hasNewerFiles) {
-                Log.d(TAG, "Staleness check: newer files found after lastScan=$lastScan, Room cache is stale")
+            val mediaStoreCount = countCursor?.use { it.count } ?: 0
+            if (mediaStoreCount != cachedCount) {
+                Log.d(TAG, "Staleness check: MediaStore count ($mediaStoreCount) != cached count ($cachedCount)")
+                return true
             }
-            return hasNewerFiles
+
+            // 2. Check if any file has been added or modified after the last scan
+            // DATE_ADDED and DATE_MODIFIED in MediaStore are in SECONDS, so we divide lastScan by 1000.
+            val lastScanSeconds = lastScan / 1000L
+            val staleSelection = "$selection AND (${MediaStore.Audio.Media.DATE_ADDED} > ? OR ${MediaStore.Audio.Media.DATE_MODIFIED} > ?)"
+            val staleCursor = context.contentResolver.query(
+                collection,
+                arrayOf(MediaStore.Audio.Media._ID),
+                staleSelection,
+                arrayOf(lastScanSeconds.toString(), lastScanSeconds.toString()),
+                null
+            )
+            val hasNewerFiles = staleCursor?.use { it.count > 0 } ?: false
+            if (hasNewerFiles) {
+                Log.d(TAG, "Staleness check: newer files found after lastScan=$lastScan")
+                return true
+            }
+
+            return false
         } catch (e: Exception) {
             Log.w(TAG, "Staleness check failed, assuming cache is valid", e)
             return false

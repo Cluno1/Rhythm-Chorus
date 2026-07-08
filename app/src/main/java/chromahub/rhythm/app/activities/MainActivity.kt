@@ -622,8 +622,9 @@ class MainActivity : AppCompatActivity() {
         }
         lifecycleScopeJobs.clear()
         
-        // Auto-trim cache if usage exceeds 90% of max
-        lifecycleScope.launch {
+        // Auto-trim cache if usage exceeds 90% of max.
+        // Run in a standalone CoroutineScope since lifecycleScope is cancelled when super.onDestroy() runs.
+        kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
             try {
                 val maxSize = appSettings.maxCacheSize.value
                 chromahub.rhythm.app.util.CacheManager.autoTrimCache(applicationContext, maxSize)

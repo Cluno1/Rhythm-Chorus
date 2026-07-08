@@ -1646,22 +1646,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d(TAG, "Ignoring false-positive startup MediaStore observer callback ($timeSinceRegistration ms since registration)")
                 return@registerMediaStoreObserver
             }
-            Log.d(TAG, "MediaStore changed, scheduling full library refresh")
+            Log.d(TAG, "MediaStore changed, scheduling debounce check for refresh")
             mediaStoreRefreshJob?.cancel()
             mediaStoreRefreshJob = viewModelScope.launch {
-                // Reset debounce on each new change notification (rapid changes reset the timer)
-                var lastChangeMs = SystemClock.elapsedRealtime()
-                while (true) {
-                    delay(2000) // Debounce window
-                    val elapsedSinceLastChange = SystemClock.elapsedRealtime() - lastChangeMs
-                    if (elapsedSinceLastChange >= 1900) {
-                        // No new changes in the last ~2s window, proceed with refresh
-                        break
-                    }
-                    lastChangeMs = SystemClock.elapsedRealtime()
-                    Log.d(TAG, "Debounce reset: additional MediaStore changes detected, waiting again")
+                delay(2000) // Debounce window
+                val lastScan = appSettings.lastScanTimestamp.value
+                val cachedCount = _songs.value.size
+                if (repository.isLibraryStale(lastScan, cachedCount)) {
+                    Log.d(TAG, "MediaStore changed and library is stale. Performing full refresh.")
+                    performMediaStoreRefresh()
+                } else {
+                    Log.d(TAG, "MediaStore callback received, but library is up-to-date. Skipping refresh.")
                 }
-                performMediaStoreRefresh()
             }
         }
         
@@ -3317,11 +3313,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         // Reset progress to 0 when starting a new song
         _progress.value = 0f
         
-        // Start a new coroutine to update progress
+        // Start a new coroutine to update progress based on playing state
         progressUpdateJob = viewModelScope.launch {
-            while (isActive) {
-                updateProgress()
-                delay(100) // Update every 100ms for smooth progress
+            isPlaying.collectLatest { playing ->
+                if (playing) {
+                    while (isActive) {
+                        updateProgress()
+                        delay(100) // Update every 100ms for smooth progress
+                    }
+                } else {
+                    // Update one last time when paused/stopped
+                    updateProgress()
+                }
             }
         }
     }
@@ -8861,6 +8864,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         
         // Unregister ContentObserver
         repository.unregisterMediaStoreObserver()
+        
+        // Clean up audio device manager to prevent BroadcastReceiver leaks
+        audioDeviceManager.cleanup()
         
         // Cancel ongoing scan and lyrics fetch
         scanJob?.cancel()
