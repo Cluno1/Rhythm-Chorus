@@ -14,10 +14,13 @@ import android.content.IntentFilter
 import android.os.Build
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseInOutQuart
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -103,6 +106,7 @@ import chromahub.rhythm.app.util.AudioDeviceManager
 import androidx.core.app.NotificationCompat
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.CompositionLocalProvider
@@ -453,9 +457,9 @@ private fun RhythmGuardWarningHost(
     var pendingBreakDurationMinutes by remember {
         mutableIntStateOf(configuredBreakResumeMinutes.coerceIn(1, 180))
     }
-    var isBubbleOnLeft by remember { mutableStateOf(false) }
+    var isBubbleOnLeft by rememberSaveable { mutableStateOf(false) }
+    var isBubbleCollapsed by rememberSaveable { mutableStateOf(false) }
     var rawDragXDp by remember { mutableFloatStateOf(0f) }
-    var bubbleOffsetYDp by remember { mutableFloatStateOf(0f) }
 
     val formattedTodayExposure = remember(todayExposureMinutes) {
         rhythmGuardFormatDurationFromMinutes(todayExposureMinutes)
@@ -1273,6 +1277,27 @@ private fun RhythmGuardWarningHost(
             .padding(horizontal = 16.dp)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
+        val scope = rememberCoroutineScope()
+
+        val maxHeightDp = maxHeight
+        val collapsedYDp = 12.dp
+        val expandedYDp = (maxHeightDp * 0.35f).coerceAtLeast(150.dp)
+
+        val collapsedYPx = with(density) { collapsedYDp.toPx() }
+        val expandedYPx = with(density) { expandedYDp.toPx() }
+
+        val animatableY = remember { Animatable(expandedYPx) }
+
+        LaunchedEffect(isBubbleCollapsed, expandedYPx) {
+            animatableY.animateTo(
+                targetValue = if (isBubbleCollapsed) collapsedYPx else expandedYPx,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
+        }
+
         AnimatedVisibility(
             visible = bubbleVisible,
             enter = fadeIn(animationSpec = tween(220)) + scaleIn(
@@ -1288,24 +1313,29 @@ private fun RhythmGuardWarningHost(
                 progress = bubbleProgress,
                 label = bubbleLabel,
                 countdownValueResId = bubbleValueResId,
+                isCollapsed = isBubbleCollapsed,
                 modifier = Modifier
-                    .align(if (isBubbleOnLeft) Alignment.CenterStart else Alignment.CenterEnd)
-                    .offset(x = rawDragXDp.dp, y = bubbleOffsetYDp.dp)
-                    .pointerInput(timeoutReason, timeoutUntilMs, timeoutStartedAtMs, isTimeoutBubbleActive) {
+                    .align(if (isBubbleOnLeft) Alignment.TopStart else Alignment.TopEnd)
+                    .offset(x = rawDragXDp.dp, y = with(density) { animatableY.value.toDp() })
+                    .pointerInput(timeoutReason, timeoutUntilMs, timeoutStartedAtMs, isTimeoutBubbleActive, isBubbleCollapsed) {
                         detectTapGestures(onTap = {
-                            if (isTimeoutBubbleActive) {
-                                RhythmGuardTimeoutActivity.start(
-                                    context = context,
-                                    reason = timeoutReason.ifBlank {
-                                        context.getString(R.string.settings_rhythm_guard_timeout_activity_default_reason)
-                                    },
-                                    timeoutUntilMs = timeoutUntilMs,
-                                    timeoutStartedAtMs = timeoutStartedAtMs
-                                )
+                            if (isBubbleCollapsed) {
+                                isBubbleCollapsed = false
+                            } else {
+                                if (isTimeoutBubbleActive) {
+                                    RhythmGuardTimeoutActivity.start(
+                                        context = context,
+                                        reason = timeoutReason.ifBlank {
+                                            context.getString(R.string.settings_rhythm_guard_timeout_activity_default_reason)
+                                        },
+                                        timeoutUntilMs = timeoutUntilMs,
+                                        timeoutStartedAtMs = timeoutStartedAtMs
+                                    )
+                                }
                             }
                         })
                     }
-                    .pointerInput(isBubbleOnLeft) {
+                    .pointerInput(isBubbleOnLeft, collapsedYPx, expandedYPx) {
                         detectDragGestures(
                             onDragEnd = {
                                 if (isBubbleOnLeft && rawDragXDp > 80f) {
@@ -1314,13 +1344,31 @@ private fun RhythmGuardWarningHost(
                                     isBubbleOnLeft = true
                                 }
                                 rawDragXDp = 0f
+
+                                val midPoint = (collapsedYPx + expandedYPx) / 2f
+                                isBubbleCollapsed = animatableY.value < midPoint
+                            },
+                            onDragCancel = {
+                                rawDragXDp = 0f
+                                scope.launch {
+                                    animatableY.animateTo(
+                                        targetValue = if (isBubbleCollapsed) collapsedYPx else expandedYPx,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioLowBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        )
+                                    )
+                                }
                             }
                         ) { change, dragAmount ->
                             change.consume()
                             val deltaXDp = dragAmount.x / density.density
-                            val deltaYDp = dragAmount.y / density.density
                             rawDragXDp += deltaXDp
-                            bubbleOffsetYDp = (bubbleOffsetYDp + deltaYDp).coerceIn(-350f, 350f)
+
+                            val newY = (animatableY.value + dragAmount.y).coerceIn(collapsedYPx, expandedYPx)
+                            scope.launch {
+                                animatableY.snapTo(newY)
+                            }
                         }
                     }
             )
@@ -1544,25 +1592,63 @@ private fun RhythmGuardResumeCountdownBubble(
     progress: Float,
     label: String,
     countdownValueResId: Int,
+    isCollapsed: Boolean,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val progressValue = progress.coerceIn(0f, 1f)
 
+    val transition = updateTransition(targetState = isCollapsed, label = "bubbleCollapseTransition")
+
+    val shapeCorner by transition.animateDp(
+        transitionSpec = { spring(stiffness = Spring.StiffnessLow) },
+        label = "shapeCorner"
+    ) { collapsed ->
+        if (collapsed) 16.dp else 22.dp
+    }
+
+    val horizontalPadding by transition.animateDp(
+        transitionSpec = { spring(stiffness = Spring.StiffnessLow) },
+        label = "horizontalPadding"
+    ) { collapsed ->
+        if (collapsed) 10.dp else 14.dp
+    }
+
+    val verticalPadding by transition.animateDp(
+        transitionSpec = { spring(stiffness = Spring.StiffnessLow) },
+        label = "verticalPadding"
+    ) { collapsed ->
+        if (collapsed) 8.dp else 10.dp
+    }
+
+    val iconSize by transition.animateDp(
+        transitionSpec = { spring(stiffness = Spring.StiffnessLow) },
+        label = "iconSize"
+    ) { collapsed ->
+        if (collapsed) 24.dp else 34.dp
+    }
+
+    val innerIconSize by transition.animateDp(
+        transitionSpec = { spring(stiffness = Spring.StiffnessLow) },
+        label = "innerIconSize"
+    ) { collapsed ->
+        if (collapsed) 12.dp else 16.dp
+    }
+
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(shapeCorner),
         color = MaterialTheme.colorScheme.primaryContainer,
         tonalElevation = 4.dp,
         shadowElevation = 8.dp
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = horizontalPadding, vertical = verticalPadding),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Box(
-                modifier = Modifier.size(34.dp),
+                modifier = Modifier.size(iconSize),
                 contentAlignment = Alignment.Center
             ) {
                 RhythmWavyProgressLoader(
@@ -1574,20 +1660,30 @@ private fun RhythmGuardResumeCountdownBubble(
                         imageVector = RhythmIcons.AccessTime,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(innerIconSize)
                     )
                 }
             }
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+
+            if (!isCollapsed) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
+                    )
+                    Text(
+                        text = context.getString(countdownValueResId, countdownText),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            } else {
                 Text(
-                    text = label,
+                    text = countdownText,
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
-                )
-                Text(
-                    text = context.getString(countdownValueResId, countdownText),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
