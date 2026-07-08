@@ -72,8 +72,11 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import kotlinx.coroutines.withTimeoutOrNull
+import chromahub.rhythm.app.features.local.data.database.entity.PlaylistEntity
+import chromahub.rhythm.app.features.local.data.database.entity.PlaylistSongEntity
 import java.time.Duration
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -2654,66 +2657,237 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
     
     private fun loadSavedPlaylists() {
-        try {
-            // Load playlists
-            val playlistsJson = appSettings.playlists.value
-            val playlists = if (playlistsJson != null) {
-                val type = object : TypeToken<List<Playlist>>() {}.type
-                GsonUtils.gson.fromJson<List<Playlist>>(playlistsJson, type)
-            } else {
-                // Initialize with default playlists if none exist and default playlists are enabled
-                val defaultPlaylistsEnabled = appSettings.defaultPlaylistsEnabled.value
-                if (defaultPlaylistsEnabled) {
-                    listOf(
-                        Playlist("1", "Liked"),
-                        Playlist("2", "Recently Added"),
-                        Playlist("3", "Most Played")
-                    )
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val playlistDao = repository.playlistDao
+                var dbPlaylists = playlistDao.getAllPlaylists()
+                
+                val playlists = if (dbPlaylists.isNotEmpty()) {
+                    dbPlaylists.map { entity ->
+                        val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
+                        val songMap = _songs.value.associateBy { it.id }
+                        val playlistSongs = songIds.map { songId ->
+                            songMap[songId] ?: run {
+                                val songEntity = repository.songDao.getSongById(songId)
+                                if (songEntity != null) {
+                                    Song(
+                                        id = songEntity.id,
+                                        title = songEntity.title,
+                                        artist = songEntity.artist,
+                                        album = songEntity.album,
+                                        albumId = songEntity.albumId,
+                                        duration = songEntity.duration,
+                                        uri = Uri.parse(songEntity.uri),
+                                        artworkUri = songEntity.artworkUri?.let { Uri.parse(it) },
+                                        trackNumber = songEntity.trackNumber,
+                                        year = songEntity.year,
+                                        genre = songEntity.genre,
+                                        dateAdded = songEntity.dateAdded,
+                                        dateModified = songEntity.dateModified.takeIf { it > 0L } ?: songEntity.dateAdded,
+                                        albumArtist = songEntity.albumArtist,
+                                        bitrate = songEntity.bitrate,
+                                        sampleRate = songEntity.sampleRate,
+                                        channels = songEntity.channels,
+                                        codec = songEntity.codec,
+                                        discNumber = songEntity.discNumber,
+                                        path = songEntity.path
+                                    )
+                                } else {
+                                    // Stub song to preserve unresolved entries temporarily (e.g. unmounted SD card)
+                                    Song(
+                                        id = songId,
+                                        title = "Unresolved Song",
+                                        artist = "Unknown Artist",
+                                        album = "Unknown Album",
+                                        albumId = "",
+                                        duration = 0L,
+                                        uri = Uri.EMPTY,
+                                        artworkUri = null,
+                                        trackNumber = 0,
+                                        year = 0,
+                                        genre = null,
+                                        dateAdded = System.currentTimeMillis(),
+                                        dateModified = System.currentTimeMillis(),
+                                        albumArtist = null,
+                                        bitrate = null,
+                                        sampleRate = null,
+                                        channels = null,
+                                        codec = null,
+                                        discNumber = 1,
+                                        path = null
+                                    )
+                                }
+                            }
+                        }
+                        Playlist(
+                            id = entity.id,
+                            name = entity.name,
+                            songs = playlistSongs,
+                            dateCreated = entity.dateCreated,
+                            dateModified = entity.dateModified,
+                            artworkUri = entity.artworkUri?.let { Uri.parse(it) }
+                        )
+                    }
                 } else {
-                    // Only Liked playlist when default playlists are disabled
-                    listOf(
-                        Playlist("1", "Liked")
-                    )
+                    val playlistsJson = appSettings.playlists.value
+                    if (!playlistsJson.isNullOrBlank()) {
+                        Log.i(TAG, "Legacy playlists found in SharedPreferences; starting migration to Room")
+                        try {
+                            val type = object : TypeToken<List<Playlist>>() {}.type
+                            val legacyPlaylists: List<Playlist> = GsonUtils.gson.fromJson(playlistsJson, type)
+                            
+                            legacyPlaylists.forEach { playlist ->
+                                val playlistEntity = PlaylistEntity(
+                                    id = playlist.id,
+                                    name = playlist.name,
+                                    dateCreated = playlist.dateCreated,
+                                    dateModified = playlist.dateModified,
+                                    artworkUri = playlist.artworkUri?.toString()
+                                )
+                                playlistDao.insertPlaylist(playlistEntity)
+                                
+                                val songEntities = playlist.songs.mapIndexed { index, song ->
+                                    PlaylistSongEntity(playlist.id, song.id, index)
+                                }
+                                playlistDao.insertPlaylistSongs(songEntities)
+                            }
+                            
+                            appSettings.setPlaylists(null)
+                            Log.i(TAG, "Successfully migrated ${legacyPlaylists.size} legacy playlists to Room database")
+                            
+                            dbPlaylists = playlistDao.getAllPlaylists()
+                            dbPlaylists.map { entity ->
+                                val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
+                                val songMap = _songs.value.associateBy { it.id }
+                                val playlistSongs = songIds.map { songId ->
+                                    songMap[songId] ?: run {
+                                        val songEntity = repository.songDao.getSongById(songId)
+                                        if (songEntity != null) {
+                                            Song(
+                                                id = songEntity.id,
+                                                title = songEntity.title,
+                                                artist = songEntity.artist,
+                                                album = songEntity.album,
+                                                albumId = songEntity.albumId,
+                                                duration = songEntity.duration,
+                                                uri = Uri.parse(songEntity.uri),
+                                                artworkUri = songEntity.artworkUri?.let { Uri.parse(it) },
+                                                trackNumber = songEntity.trackNumber,
+                                                year = songEntity.year,
+                                                genre = songEntity.genre,
+                                                dateAdded = songEntity.dateAdded,
+                                                dateModified = songEntity.dateModified.takeIf { it > 0L } ?: songEntity.dateAdded,
+                                                albumArtist = songEntity.albumArtist,
+                                                bitrate = songEntity.bitrate,
+                                                sampleRate = songEntity.sampleRate,
+                                                channels = songEntity.channels,
+                                                codec = songEntity.codec,
+                                                discNumber = songEntity.discNumber,
+                                                path = songEntity.path
+                                            )
+                                        } else {
+                                            Song(
+                                                id = songId,
+                                                title = "Unresolved Song",
+                                                artist = "Unknown Artist",
+                                                album = "Unknown Album",
+                                                albumId = "",
+                                                duration = 0L,
+                                                uri = Uri.EMPTY,
+                                                artworkUri = null,
+                                                trackNumber = 0,
+                                                year = 0,
+                                                genre = null,
+                                                dateAdded = System.currentTimeMillis(),
+                                                dateModified = System.currentTimeMillis(),
+                                                albumArtist = null,
+                                                bitrate = null,
+                                                sampleRate = null,
+                                                channels = null,
+                                                codec = null,
+                                                discNumber = 1,
+                                                path = null
+                                            )
+                                        }
+                                    }
+                                }
+                                Playlist(
+                                    id = entity.id,
+                                    name = entity.name,
+                                    songs = playlistSongs,
+                                    dateCreated = entity.dateCreated,
+                                    dateModified = entity.dateModified,
+                                    artworkUri = entity.artworkUri?.let { Uri.parse(it) }
+                                )
+                            }
+                        } catch (migrationError: Exception) {
+                            Log.e(TAG, "Error migrating legacy playlists to Room", migrationError)
+                            emptyList()
+                        }
+                    } else {
+                        val defaultPlaylistsEnabled = appSettings.defaultPlaylistsEnabled.value
+                        val initialPlaylists = if (defaultPlaylistsEnabled) {
+                            listOf(
+                                Playlist("1", "Liked"),
+                                Playlist("2", "Recently Added"),
+                                Playlist("3", "Most Played")
+                            )
+                        } else {
+                            listOf(
+                                Playlist("1", "Liked")
+                            )
+                        }
+                        
+                        initialPlaylists.forEach { playlist ->
+                            playlistDao.insertPlaylist(
+                                PlaylistEntity(
+                                    id = playlist.id,
+                                    name = playlist.name,
+                                    dateCreated = playlist.dateCreated,
+                                    dateModified = playlist.dateModified,
+                                    artworkUri = playlist.artworkUri?.toString()
+                                )
+                            )
+                        }
+                        initialPlaylists
+                    }
+                }
+                
+                withContext(Dispatchers.Main) {
+                    _playlists.value = playlists
+                    
+                    val favoriteSongsJson = appSettings.favoriteSongs.value
+                    if (favoriteSongsJson != null) {
+                        val type = object : TypeToken<Set<String>>() {}.type
+                        _favoriteSongs.value = GsonUtils.gson.fromJson(favoriteSongsJson, type)
+                    }
+                    
+                    _songRatings.value = appSettings.getAllRatedSongs()
+                    Log.d(TAG, "Loaded ${_songRatings.value.size} song ratings")
+                }
+                
+                refreshPlaylistSongsMetadata()
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading saved playlists from Room", e)
+                withContext(Dispatchers.Main) {
+                    if (_playlists.value.isEmpty()) {
+                        val defaultPlaylistsEnabled = appSettings.defaultPlaylistsEnabled.value
+                        _playlists.value = if (defaultPlaylistsEnabled) {
+                            listOf(
+                                Playlist("1", "Liked"),
+                                Playlist("2", "Recently Added"),
+                                Playlist("3", "Most Played")
+                            )
+                        } else {
+                            listOf(
+                                Playlist("1", "Liked")
+                            )
+                        }
+                    }
+                    _favoriteSongs.value = emptySet()
                 }
             }
-            _playlists.value = playlists
-            
-            // Refresh playlist songs with current metadata from the songs list
-            // This ensures that if metadata was updated after songs were added to playlists,
-            // the playlists will reflect the updated metadata
-            refreshPlaylistSongsMetadata()
-            
-            // Load favorite songs
-            val favoriteSongsJson = appSettings.favoriteSongs.value
-            if (favoriteSongsJson != null) {
-                val type = object : TypeToken<Set<String>>() {}.type
-                _favoriteSongs.value = GsonUtils.gson.fromJson(favoriteSongsJson, type)
-            }
-            
-            // Load song ratings
-            _songRatings.value = appSettings.getAllRatedSongs()
-            Log.d(TAG, "Loaded ${_songRatings.value.size} song ratings")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error loading saved playlists", e)
-            // Only fall back to defaults if we have no playlists loaded yet
-            // This prevents catastrophic data loss when a transient deserialization
-            // error occurs — we keep the existing in-memory state rather than
-            // overwriting the persisted data with defaults.
-            if (_playlists.value.isEmpty()) {
-                val defaultPlaylistsEnabled = appSettings.defaultPlaylistsEnabled.value
-                _playlists.value = if (defaultPlaylistsEnabled) {
-                    listOf(
-                        Playlist("1", "Liked"),
-                        Playlist("2", "Recently Added"),
-                        Playlist("3", "Most Played")
-                    )
-                } else {
-                    listOf(
-                        Playlist("1", "Liked")
-                    )
-                }
-            }
-            _favoriteSongs.value = emptySet()
         }
     }
     
@@ -2770,12 +2944,45 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun savePlaylists() {
-        try {
-            val playlistsJson = GsonUtils.gson.toJson(_playlists.value)
-            appSettings.setPlaylists(playlistsJson)
-            Log.d(TAG, "Saved ${_playlists.value.size} playlists")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error saving playlists", e)
+        val currentPlaylists = _playlists.value
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val playlistDao = repository.playlistDao
+                
+                val dbPlaylists = playlistDao.getAllPlaylists()
+                val currentPlaylistIds = currentPlaylists.map { it.id }.toSet()
+                
+                dbPlaylists.forEach { dbPlaylist ->
+                    if (!currentPlaylistIds.contains(dbPlaylist.id)) {
+                        playlistDao.deletePlaylistById(dbPlaylist.id)
+                        playlistDao.deleteSongsFromPlaylist(dbPlaylist.id)
+                        Log.d(TAG, "Deleted playlist ID ${dbPlaylist.id} from Room")
+                    }
+                }
+                
+                currentPlaylists.forEach { playlist ->
+                    val entity = PlaylistEntity(
+                        id = playlist.id,
+                        name = playlist.name,
+                        dateCreated = playlist.dateCreated,
+                        dateModified = playlist.dateModified,
+                        artworkUri = playlist.artworkUri?.toString()
+                    )
+                    playlistDao.insertPlaylist(entity)
+                    
+                    val songEntities = playlist.songs.mapIndexed { index, song ->
+                        PlaylistSongEntity(
+                            playlistId = playlist.id,
+                            songId = song.id,
+                            orderIndex = index
+                        )
+                    }
+                    playlistDao.updatePlaylistSongs(playlist.id, songEntities)
+                }
+                Log.d(TAG, "Successfully saved ${currentPlaylists.size} playlists to Room")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error saving playlists to Room", e)
+            }
         }
     }
 

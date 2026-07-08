@@ -161,7 +161,8 @@ class MusicRepository(context: Context) {
     
     // Room database for persistent storage backend
     private val roomDb by lazy { RhythmDatabase.getInstance(context) }
-    private val songDao by lazy { roomDb.songDao() }
+    val songDao by lazy { roomDb.songDao() }
+    val playlistDao by lazy { roomDb.playlistDao() }
     private val appSettings by lazy { AppSettings.getInstance(context) }
     
     /**
