@@ -145,7 +145,8 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.animateFloatingActionButton
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Button
@@ -455,7 +456,7 @@ fun LibraryScreen(
     var explorerFolderSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
     var selectedSong by remember { mutableStateOf<Song?>(null) }
     var songsToAddToPlaylist by remember { mutableStateOf<List<Song>>(emptyList()) }
-    val addToPlaylistSheetState = rememberModalBottomSheetState()
+    val addToPlaylistSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
     
     val multiSelectionState = remember { chromahub.rhythm.app.features.local.presentation.viewmodel.MultiSelectionStateHolder() }
     val selectedSongs by multiSelectionState.selectedSongs.collectAsState()
@@ -4573,7 +4574,7 @@ fun SingleCardArtistsContent(
         ModalBottomSheet(
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
             onDismissRequest = { showSortOptions = false },
-            sheetState = rememberModalBottomSheetState(),
+            sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden),
             dragHandle = { 
                 BottomSheetDefaults.DragHandle(
                     color = MaterialTheme.colorScheme.primary

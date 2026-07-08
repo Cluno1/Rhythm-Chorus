@@ -348,11 +348,12 @@ private fun RhythmGuardWarningHost(
             addAction(chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_ZERO_VOLUME_PAUSE)
             addAction(chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_ZERO_VOLUME_RESUME)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(zeroVolumeReceiver, zeroVolumeFilter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            context.registerReceiver(zeroVolumeReceiver, zeroVolumeFilter)
-        }
+        androidx.core.content.ContextCompat.registerReceiver(
+            context,
+            zeroVolumeReceiver,
+            zeroVolumeFilter,
+            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+        )
         onDispose {
             context.unregisterReceiver(zeroVolumeReceiver)
         }
@@ -478,11 +479,7 @@ private fun RhythmGuardWarningHost(
         lastTimeoutTriggeredExposureMinutes = todayExposureMinutes
         appSettings.setRhythmGuardListeningTimeout(
             untilEpochMs = nextTimeoutUntil,
-            reason = context.getString(
-                R.string.settings_rhythm_guard_timeout_reason_manual,
-                formattedTodayExposure,
-                formattedExposureLimit
-            ),
+            reason = context.getString(R.string.settings_rhythm_guard_timeout_reason_manual),
             startedAtEpochMs = now
         )
         appSettings.setRhythmGuardBreakResumeMinutes(safeBreakMinutes)

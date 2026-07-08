@@ -660,8 +660,8 @@ fun FullScreenLyricsView(
                             val appSettings = remember { AppSettings.getInstance(context) }
                             val translationAutoWord by appSettings.translationAutoWord.collectAsState()
                             val wordByWordLyrics = remember(lyrics, translationAutoWord) {
-                                lyrics?.getWordByWordLyricsOrNull() ?: run {
-                                    if (translationAutoWord && lyrics?.syncedLyrics != null) {
+                                lyrics.getWordByWordLyricsOrNull() ?: run {
+                                    if (translationAutoWord && lyrics.syncedLyrics != null) {
                                         try {
                                             val options = LrcUtils.LrcParserOptions(
                                                 trim = true, multiLine = true, errorText = null, autoWordSync = true
@@ -687,7 +687,7 @@ fun FullScreenLyricsView(
                                     syncOffset = manualSyncOffsetMs,
                                     modifier = Modifier.fillMaxSize(),
                                     onSeek = onLyricsSeek,
-                                    lyricsSource = lyrics?.source,
+                                    lyricsSource = lyrics.source,
                                     textSizeMultiplier = playerLyricsTextSize,
                                     textAlignment = lyricsTextAlign,
                                     showTranslation = showTranslation,
@@ -695,7 +695,7 @@ fun FullScreenLyricsView(
                                 )
                             } else {
                                 val lyricsText = remember(lyrics) {
-                                    lyrics?.getBestLyrics() ?: ""
+                                    lyrics.getBestLyrics() ?: ""
                                 }
                                 SyncedLyricsView(
                                     lyrics = lyricsText,
@@ -705,7 +705,7 @@ fun FullScreenLyricsView(
                                     onSeek = onLyricsSeek,
                                     showTranslation = showTranslation,
                                     showRomanization = showRomanization,
-                                    lyricsSource = lyrics?.source,
+                                    lyricsSource = lyrics.source,
                                     textSizeMultiplier = playerLyricsTextSize,
                                     textAlignment = lyricsTextAlign
                                 )
@@ -947,8 +947,8 @@ fun FullScreenLyricsView(
                             val appSettingsInst = remember { AppSettings.getInstance(context) }
                             val translationAutoWord2 by appSettingsInst.translationAutoWord.collectAsState()
                             val wordByWordLyrics = remember(lyrics, translationAutoWord2) {
-                                lyrics?.getWordByWordLyricsOrNull() ?: run {
-                                    if (translationAutoWord2 && lyrics?.syncedLyrics != null) {
+                                lyrics.getWordByWordLyricsOrNull() ?: run {
+                                    if (translationAutoWord2 && lyrics.syncedLyrics != null) {
                                         try {
                                             val options = LrcUtils.LrcParserOptions(
                                                 trim = true, multiLine = true, errorText = null, autoWordSync = true
@@ -974,7 +974,7 @@ fun FullScreenLyricsView(
                                     syncOffset = manualSyncOffsetMs,
                                     modifier = Modifier.fillMaxSize(),
                                     onSeek = onLyricsSeek,
-                                    lyricsSource = lyrics?.source,
+                                    lyricsSource = lyrics.source,
                                     textSizeMultiplier = playerLyricsTextSize,
                                     textAlignment = lyricsTextAlign,
                                     showTranslation = showTranslation,
@@ -982,7 +982,7 @@ fun FullScreenLyricsView(
                                 )
                             } else {
                                 val lyricsText = remember(lyrics) {
-                                    lyrics?.getBestLyrics() ?: ""
+                                    lyrics.getBestLyrics() ?: ""
                                 }
                                 SyncedLyricsView(
                                     lyrics = lyricsText,
@@ -992,7 +992,7 @@ fun FullScreenLyricsView(
                                     onSeek = onLyricsSeek,
                                     showTranslation = showTranslation,
                                     showRomanization = showRomanization,
-                                    lyricsSource = lyrics?.source,
+                                    lyricsSource = lyrics.source,
                                     textSizeMultiplier = playerLyricsTextSize,
                                     textAlignment = lyricsTextAlign
                                 )

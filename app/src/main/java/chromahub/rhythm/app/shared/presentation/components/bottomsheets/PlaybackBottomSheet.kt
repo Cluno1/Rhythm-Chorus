@@ -65,7 +65,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -118,7 +119,7 @@ fun PlaybackBottomSheet(
     onNavigateToSettings: (() -> Unit)? = null,
     onNavigateToGoMode: (() -> Unit)? = null,
     onNavigateToEqualizer: (() -> Unit)? = null,
-    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    sheetState: SheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
@@ -1691,7 +1692,7 @@ private fun QualitySelectionBottomSheet(
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,

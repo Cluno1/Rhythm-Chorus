@@ -6,7 +6,8 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -334,11 +335,11 @@ fun PlayerScreen(
             }
         }
 
-        val queueSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        val deviceOutputSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        val addToPlaylistSheetState = rememberModalBottomSheetState()
-        val albumBottomSheetState = rememberModalBottomSheetState()
-        val artistBottomSheetState = rememberModalBottomSheetState()
+        val queueSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+        val deviceOutputSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+        val addToPlaylistSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
+        val albumBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
+        val artistBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
         val currentSongAlbumForSheet = remember(song, albums, songs) {
             song?.let { currentSong ->
                 resolveAlbumForSong(currentSong)
@@ -572,7 +573,7 @@ fun PlayerScreen(
         }
 
         if (showMoreSheet) {
-            val moreSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            val moreSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
             val haptic = LocalHapticFeedback.current
 
             ExtraControlBottomSheet(

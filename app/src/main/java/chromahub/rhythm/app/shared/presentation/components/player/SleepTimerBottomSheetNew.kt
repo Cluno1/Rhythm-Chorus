@@ -149,7 +149,7 @@ fun SleepTimerBottomSheetNew(
         }
     }
 
-    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val bottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,

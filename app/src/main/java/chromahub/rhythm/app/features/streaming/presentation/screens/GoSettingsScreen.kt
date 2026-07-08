@@ -35,7 +35,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -456,7 +457,7 @@ private fun ServiceSelectionBottomSheet(
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -567,7 +568,7 @@ private fun QualitySelectionBottomSheet(
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,

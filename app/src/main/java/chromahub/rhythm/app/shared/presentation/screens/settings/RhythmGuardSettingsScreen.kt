@@ -1871,7 +1871,7 @@ fun BackupRestoreSectionPickerBottomSheet(
     onDismiss: () -> Unit,
     onConfirm: (AppSettings.BackupRestoreSections) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val context = LocalContext.current
     var showContent by remember { mutableStateOf(false) }
     val contentAlpha by animateFloatAsState(

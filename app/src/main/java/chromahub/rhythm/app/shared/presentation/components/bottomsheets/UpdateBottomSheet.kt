@@ -37,7 +37,7 @@ fun UpdateBottomSheet(
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     // Collect update data from the view model
     val latestVersion by updaterViewModel.latestVersion.collectAsState()

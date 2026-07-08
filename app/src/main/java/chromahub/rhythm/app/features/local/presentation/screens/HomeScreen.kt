@@ -117,7 +117,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
@@ -260,7 +261,7 @@ fun HomeScreen(
     // State for AddToPlaylist bottom sheet
     var showAddToPlaylistSheet by remember { mutableStateOf(false) }
     var selectedSongForPlaylist by remember { mutableStateOf<Song?>(null) }
-    val addToPlaylistSheetState = rememberModalBottomSheetState()
+    val addToPlaylistSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
     var showCreatePlaylistDialog by remember { mutableStateOf(false) }
 
     // Song info bottom sheet state

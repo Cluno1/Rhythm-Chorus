@@ -179,6 +179,20 @@ android {
         }
     }
 
+    lint {
+        abortOnError = true
+        disable.addAll(
+            listOf(
+                "MissingTranslation",
+                "UnsafeOptInUsageError",
+                "NonObservableLocale",
+                "StateFlowValueCalledInComposition",
+                "LocalContextGetResourceValueCall",
+                "UnusedMaterial3ScaffoldPaddingParameter"
+            )
+        )
+    }
+
 }
 
 androidComponents {

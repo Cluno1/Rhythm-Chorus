@@ -546,7 +546,7 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
 
     // Songs bottom sheet
     if (showSongsBottomSheet) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
         // Animation states
         var showContent by remember { mutableStateOf(false) }
@@ -823,7 +823,7 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
 
     // Folders bottom sheet
     if (showFoldersBottomSheet) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
         // Animation states
         var showContent by remember { mutableStateOf(false) }

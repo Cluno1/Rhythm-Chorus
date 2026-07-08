@@ -697,7 +697,6 @@ private fun CategoryMetricsSection(
                         CategoryDimension.GENRE -> stats.topGenres.map {
                             CategoryMetricEntry(it.genre, 0L, (it.percentage * stats.totalPlayCount).toInt(), "Top Genre")
                         }
-                        else -> emptyList()
                     }.filter { it.plays > 0 || it.durationMs > 0 }
 
                     Column(

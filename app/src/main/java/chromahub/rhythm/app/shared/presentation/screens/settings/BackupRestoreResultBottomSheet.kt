@@ -165,7 +165,7 @@ fun BackupRestoreResultBottomSheet(
     onPrimaryAction: () -> Unit
 ) {
     val context = LocalContext.current
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     var showContent by remember { mutableStateOf(false) }
     val contentAlpha by animateFloatAsState(
         targetValue = if (showContent) 1f else 0f,

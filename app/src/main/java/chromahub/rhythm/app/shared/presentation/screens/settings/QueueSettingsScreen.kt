@@ -317,7 +317,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
     if (showPlaylistBehaviorDialog) {
         val haptic = LocalHapticFeedback.current
         val scope = rememberCoroutineScope()
-        val playlistSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val playlistSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
         var showContent by remember { mutableStateOf(false) }
 
@@ -657,7 +657,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
     if (showListQueueBehaviorDialog) {
         val haptic = LocalHapticFeedback.current
         val scope = rememberCoroutineScope()
-        val listQueueSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val listQueueSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
         var showContent by remember { mutableStateOf(false) }
 
@@ -850,7 +850,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
     if (showQueueDialogSettingDialog) {
         val haptic = LocalHapticFeedback.current
         val scope = rememberCoroutineScope()
-        val queueSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val queueSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
         var showContent by remember { mutableStateOf(false) }
 

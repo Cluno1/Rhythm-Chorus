@@ -60,7 +60,7 @@ object WikipediaProvider {
 
             client.newCall(request).execute().use { response ->
                 if (response.code == 200) {
-                    val body = response.body?.string() ?: return@use null
+                    val body = response.body.string()
                     val obj = JsonParser.parseString(body).asJsonObject
                     return@use obj.get("extract")?.asString
                 }

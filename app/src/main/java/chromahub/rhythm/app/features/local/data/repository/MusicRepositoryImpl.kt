@@ -276,7 +276,7 @@ class MusicRepository(context: Context) {
                         previousSongs.map { it.id }.toSet() == songs.map { it.id }.toSet()
 
             if (canUseIncrementalUpdate) {
-                val previousById = previousSongs!!.associateBy { it.id }
+                val previousById = previousSongs.associateBy { it.id }
                 val changedSongs = songs.filter { previousById[it.id] != it }
 
                 if (changedSongs.isEmpty()) {
@@ -653,7 +653,7 @@ class MusicRepository(context: Context) {
             audioObserver
         )
         context.contentResolver.registerContentObserver(
-            MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
+            Uri.parse("content://media/external/audio/playlists"),
             true,
             playlistObserver
         )

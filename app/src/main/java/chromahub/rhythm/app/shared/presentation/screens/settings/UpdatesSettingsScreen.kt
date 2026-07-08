@@ -319,7 +319,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     }
 
     val statusDescription = when {
-        activeError != null -> activeError ?: context.getString(R.string.updates_unknown_error)
+        activeError != null -> activeError
         !updatesEnabled -> context.getString(R.string.updates_disabled_message)
         activeIsCheckingForUpdates -> context.getString(R.string.fetching_latest_version)
         activeIsExtracting -> "Unzipping update file, please wait..."

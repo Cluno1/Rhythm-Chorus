@@ -217,7 +217,7 @@ object PlaylistImportExportUtils {
      */
     fun isRhythmBackupJson(json: String): Boolean {
         return try {
-            val map = Gson().fromJson(json, Map::class.java) as? Map<*, *> ?: return false
+            val map = Gson().fromJson(json, Map::class.java) ?: return false
             map.containsKey("backup_version") && map.containsKey("playlists_data")
         } catch (_: Exception) {
             false
@@ -237,7 +237,7 @@ object PlaylistImportExportUtils {
         availableSongs: List<Song>
     ): Result<List<Playlist>> {
         return try {
-            val backupMap = Gson().fromJson(backupJson, Map::class.java) as? Map<*, *>
+            val backupMap = Gson().fromJson(backupJson, Map::class.java)
                 ?: return Result.failure(IllegalArgumentException("Invalid Rhythm backup JSON"))
 
             val playlistsData = backupMap["playlists_data"] as? String
@@ -389,7 +389,7 @@ object PlaylistImportExportUtils {
         val exportData = Gson().fromJson(content, PlaylistExportData::class.java)
             ?: throw IllegalArgumentException("Invalid playlist JSON format")
         
-        val songsList = exportData.songs ?: emptyList()
+        val songsList = exportData.songs
         val playlistName = exportData.name.takeIf { !it.isNullOrBlank() } ?: "Imported Playlist"
         
         val songMap = availableSongs.associateBy { it.uri.toString() }
@@ -402,14 +402,14 @@ object PlaylistImportExportUtils {
             @Suppress("USELESS_IS_CHECK")
             if (entry !is PlaylistSongEntry) {
                 if (!skippedInvalid) {
-                    Log.w(TAG, "Skipping invalid song entry (wrong type: ${entry?.javaClass?.simpleName}) — likely a ProGuard/Gson deserialization mismatch")
+                    Log.w(TAG, "Skipping invalid song entry (wrong type: ${entry.javaClass.simpleName}) — likely a ProGuard/Gson deserialization mismatch")
                     skippedInvalid = true
                 }
                 return@mapNotNull null
             }
-            val title = entry.title?.trim() ?: return@mapNotNull null
-            val artist = entry.artist?.trim() ?: "Unknown Artist"
-            val uriStr = entry.uri ?: return@mapNotNull null
+            val title = entry.title.trim()
+            val artist = entry.artist.trim()
+            val uriStr = entry.uri
             
             val songKey = "${title.lowercase()}_${artist.lowercase()}"
             

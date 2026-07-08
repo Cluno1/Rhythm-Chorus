@@ -33,7 +33,7 @@ fun CanvasNetworkModeDialog(
     haptic: HapticFeedback
 ) {
     val canvasNetworkMode by appSettings.appleCanvasNetworkMode.collectAsState()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     ModalBottomSheet(
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),

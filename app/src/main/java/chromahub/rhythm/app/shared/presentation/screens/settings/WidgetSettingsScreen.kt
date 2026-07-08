@@ -272,7 +272,7 @@ fun WidgetSettingsScreen(
         
         // Corner Radius Slider Sheet
         if (showCornerRadiusSheet) {
-            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
             var tempRadius by remember { mutableIntStateOf(cornerRadius) }
             
             ModalBottomSheet(
@@ -379,7 +379,7 @@ fun WidgetSettingsScreen(
         
         // Widget Theme Selection Sheet
         if (showWidgetThemeSheet) {
-            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
             
             // Animation states
             var showContent by remember { mutableStateOf(false) }

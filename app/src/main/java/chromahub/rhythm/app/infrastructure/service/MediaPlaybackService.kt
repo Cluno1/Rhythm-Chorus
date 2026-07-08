@@ -193,14 +193,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     private val btReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "android.bluetooth.a2dp.profile.action.CODEC_CONFIG_CHANGED" &&
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
             ) {
-                val codecStatus = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    intent.getParcelableExtra("android.bluetooth.extra.CODEC_STATUS", android.bluetooth.BluetoothCodecStatus::class.java)
-                } else {
-                    @Suppress("DEPRECATION")
-                    intent.getParcelableExtra("android.bluetooth.extra.CODEC_STATUS") as? android.bluetooth.BluetoothCodecStatus
-                }
+                val codecStatus = intent.getParcelableExtra("android.bluetooth.extra.CODEC_STATUS", android.bluetooth.BluetoothCodecStatus::class.java)
                 val newBtInfo = chromahub.rhythm.app.util.BtCodecInfo.fromCodecConfig(codecStatus?.codecConfig)
                 if (newBtInfo != null && newBtInfo != btInfo) {
                     btInfo = newBtInfo
@@ -284,7 +279,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     
                     val volumeOvershoot = currentVolumeFraction - activeThreshold
                     if (volumeOvershoot > 0.01f) {
-                        val targetVolume = Math.round(activeThreshold * maxVolume).toInt().coerceIn(0, maxVolume)
+                        val targetVolume = Math.round(activeThreshold * maxVolume).coerceIn(0, maxVolume)
                         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, 0)
                         Log.d(TAG, "Rhythm Guard Auto: clamped system volume from $currentVolumeFraction to $activeThreshold")
                     }
@@ -599,27 +594,29 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             getString(chromahub.rhythm.app.R.string.service_rhythm_music),
             getString(chromahub.rhythm.app.R.string.service_setup_components)
         )
-        val filter = IntentFilter("chromahub.rhythm.app.action.FAVORITE_CHANGED")
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(favoriteChangeReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(favoriteChangeReceiver, filter)
-        }
+        androidx.core.content.ContextCompat.registerReceiver(
+            this,
+            favoriteChangeReceiver,
+            IntentFilter("chromahub.rhythm.app.action.FAVORITE_CHANGED"),
+            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+        )
 
         val volumeFilter = IntentFilter("android.media.VOLUME_CHANGED_ACTION")
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(volumeChangeReceiver, volumeFilter, Context.RECEIVER_EXPORTED)
-        } else {
-            registerReceiver(volumeChangeReceiver, volumeFilter)
-        }
+        androidx.core.content.ContextCompat.registerReceiver(
+            this,
+            volumeChangeReceiver,
+            volumeFilter,
+            androidx.core.content.ContextCompat.RECEIVER_EXPORTED
+        )
 
         try {
             val btFilter = IntentFilter("android.bluetooth.a2dp.profile.action.CODEC_CONFIG_CHANGED")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                registerReceiver(btReceiver, btFilter, Context.RECEIVER_EXPORTED)
-            } else {
-                registerReceiver(btReceiver, btFilter)
-            }
+            androidx.core.content.ContextCompat.registerReceiver(
+                this,
+                btReceiver,
+                btFilter,
+                androidx.core.content.ContextCompat.RECEIVER_EXPORTED
+            )
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 btProxy = chromahub.rhythm.app.util.BtCodecInfo.getCodec(this) { info ->

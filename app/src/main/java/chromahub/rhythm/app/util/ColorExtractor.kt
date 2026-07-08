@@ -1,5 +1,7 @@
 package chromahub.rhythm.app.util
 
+import android.annotation.SuppressLint
+
 import android.graphics.Bitmap
 import android.util.LruCache
 import androidx.compose.ui.graphics.Color
@@ -99,6 +101,7 @@ data class ColorExtractionConfig(
 /**
  * Scored HCT color for ranking
  */
+@SuppressLint("RestrictedApi")
 private data class ScoredHct(
     val hct: Hct,
     val score: Double
@@ -123,6 +126,7 @@ private val extractedColorCache = LruCache<Int, Color>(32)
 /**
  * Utility object for extracting color palettes from album artwork using Rhythm's palette algorithm
  */
+@SuppressLint("RestrictedApi")
 object ColorExtractor {
 
     private const val TAG = "ColorExtractor"

@@ -32,7 +32,7 @@ fun ArtistChooserBottomSheet(
     modifier: Modifier = Modifier
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val chooserSheetState = rememberModalBottomSheetState()
+    val chooserSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
     ModalBottomSheet(
         modifier = modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,

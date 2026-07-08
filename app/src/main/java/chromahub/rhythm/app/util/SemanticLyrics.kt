@@ -85,7 +85,7 @@ private sealed class SyntacticLrc {
 
         private fun normalizeDigits(input: String): String {
             return input.map { ch ->
-                val digit = Character.digit(ch.toInt(), 10)
+                val digit = Character.digit(ch.code, 10)
                 if (digit >= 0 && ch.isDigit() && ch !in '0'..'9') {
                     '0' + digit
                 } else {

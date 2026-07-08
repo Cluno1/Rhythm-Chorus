@@ -109,7 +109,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -659,10 +660,10 @@ fun MaterialPlayerScreen(
     }
 
     // Bottom sheet states
-    val queueSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val addToPlaylistSheetState = rememberModalBottomSheetState()
-    val deviceOutputSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val artistBottomSheetState = rememberModalBottomSheetState()
+    val queueSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+    val addToPlaylistSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
+    val deviceOutputSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+    val artistBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
     var showQueueSheet by remember { mutableStateOf(false) }
     var showDeviceOutputSheet by remember { mutableStateOf(false) }
     var showSongInfoSheet by remember { mutableStateOf(false) }
@@ -1146,7 +1147,7 @@ fun MaterialPlayerScreen(
 
     // Compact Mode Filter Chips Bottom Sheet
     if (showCompactChipsSheet) {
-        val compactChipsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val compactChipsSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         
         ExtraControlBottomSheet(
             onDismiss = { showCompactChipsSheet = false },
@@ -2191,8 +2192,8 @@ fun MaterialPlayerScreen(
                                                     // Check for word-by-word lyrics first (highest quality)
                                                     val translationAutoWord by appSettings.translationAutoWord.collectAsState()
                                                     val wordByWordLyrics = remember(lyrics, translationAutoWord) {
-                                                        lyrics?.getWordByWordLyricsOrNull() ?: run {
-                                                            if (translationAutoWord && lyrics?.syncedLyrics != null) {
+                                                        lyrics.getWordByWordLyricsOrNull() ?: run {
+                                                            if (translationAutoWord && lyrics.syncedLyrics != null) {
                                                                 try {
                                                                     val options = LrcUtils.LrcParserOptions(
                                                                         trim = true, multiLine = true, errorText = null, autoWordSync = true
@@ -2219,7 +2220,7 @@ fun MaterialPlayerScreen(
                                                             modifier = Modifier.fillMaxSize(),
                                                             onSeek = onLyricsSeek,
                                                             onTapLyricsView = onTapLyricsView,
-                                                            lyricsSource = lyrics?.source,
+                                                            lyricsSource = lyrics.source,
                                                             textSizeMultiplier = playerLyricsTextSize,
                                                             textAlignment = lyricsTextAlign,
                                                             showTranslation = showLyricsTranslation,
@@ -2228,7 +2229,7 @@ fun MaterialPlayerScreen(
                                                     } else {
                                                         // Fall back to line-by-line synced or plain lyrics
                                                         val lyricsText = remember(lyrics) {
-                                                            lyrics?.getBestLyrics() ?: ""
+                                                            lyrics.getBestLyrics() ?: ""
                                                         }
                                                         val filteredPlainLyricsText = remember(
                                                             lyricsText,
@@ -2286,7 +2287,7 @@ fun MaterialPlayerScreen(
                                                                 onTapLyricsView = onTapLyricsView,
                                                                 showTranslation = showLyricsTranslation,
                                                                 showRomanization = showLyricsRomanization,
-                                                                lyricsSource = lyrics?.source,
+                                                                lyricsSource = lyrics.source,
                                                                 textSizeMultiplier = playerLyricsTextSize,
                                                                 textAlignment = lyricsTextAlign
                                                             )
@@ -2698,7 +2699,7 @@ fun MaterialPlayerScreen(
                                         HapticType.HEAVY
                                     )
                                     onSeek(
-                                        ((progress() * totalTimeMs).toLong() + 10000).coerceAtMost(totalTimeMs.toLong())
+                                        ((progress() * totalTimeMs).toLong() + 10000).coerceAtMost(totalTimeMs)
                                             .toFloat() / totalTimeMs
                                     )
                                 }

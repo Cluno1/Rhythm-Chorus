@@ -26,7 +26,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -77,7 +78,7 @@ fun NearbyServerDiscoverySheet(
 ) {
     val upperServiceId = remember(serviceId) { serviceId.uppercase() }
     val context = LocalContext.current
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     
     val discoveredServers = remember { mutableStateListOf<DiscoveredServer>() }
     var isScanning by remember { mutableStateOf(false) }
@@ -124,7 +125,7 @@ fun NearbyServerDiscoverySheet(
                         broadcastAddresses.forEach { addr ->
                             try {
                                 val sendPacket = DatagramPacket(sendData, sendData.size, addr, 7359)
-                                socket?.send(sendPacket)
+                                socket.send(sendPacket)
                             } catch (e: Exception) {
                                 // Ignore send failures on specific interfaces
                             }
@@ -137,7 +138,7 @@ fun NearbyServerDiscoverySheet(
                                 InetAddress.getByName("255.255.255.255"),
                                 7359
                             )
-                            socket?.send(universalPacket)
+                            socket.send(universalPacket)
                         } catch (e: Exception) {
                             // Ignore
                         }
@@ -204,6 +205,7 @@ fun NearbyServerDiscoverySheet(
         val pendingResolves = mutableListOf<NsdServiceInfo>()
         var isResolving = false
 
+        @Suppress("DEPRECATION")
         fun resolveNext() {
             if (isResolving || pendingResolves.isEmpty()) return
             isResolving = true

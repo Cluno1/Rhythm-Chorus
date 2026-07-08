@@ -39,7 +39,7 @@ fun AutoEQPresetPickerBottomSheet(
     currentProfileName: String? = null,
     onDismissRequest: () -> Unit,
     onProfileSelected: (AutoEQProfile) -> Unit,
-    sheetState: SheetState = rememberModalBottomSheetState()
+    sheetState: SheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -77,16 +77,16 @@ fun AutoEQPresetPickerBottomSheet(
         if (searchQuery.isNotBlank()) {
             result = result.filter { p ->
                 p.name.contains(searchQuery, ignoreCase = true) ||
-                        (p.brand?.contains(searchQuery, ignoreCase = true) ?: false)
+                        p.brand.contains(searchQuery, ignoreCase = true)
             }
         }
 
         if (selectedBrand != null) {
-            result = result.filter { it.brand?.equals(selectedBrand, ignoreCase = true) ?: false }
+            result = result.filter { it.brand.equals(selectedBrand, ignoreCase = true) }
         }
 
         if (selectedType != null) {
-            result = result.filter { it.type?.equals(selectedType, ignoreCase = true) ?: false }
+            result = result.filter { it.type.equals(selectedType, ignoreCase = true) }
         }
 
         result.sortedWith(compareByDescending { it.name == currentProfileName })
@@ -282,16 +282,6 @@ fun AutoEQPresetPickerBottomSheet(
                             tonalElevation = if (isCurrentlyActive) 0.dp else 1.dp
                         ) {
                             ListItem(
-                                headlineContent = {
-                                    Text(
-                                        context.getString(R.string.autoeqpresetpickerbottomsheet_disable),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = if (isCurrentlyActive) FontWeight.SemiBold else FontWeight.Normal,
-                                        color = if (isCurrentlyActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                },
                                 supportingContent = {
                                     Text(
                                         context.getString(R.string.autoeqpresetpickerbottomsheet_disable_desc),
@@ -314,7 +304,16 @@ fun AutoEQPresetPickerBottomSheet(
                                     containerColor = Color.Transparent
                                 ),
                                 modifier = Modifier.fillMaxWidth()
-                            )
+                            ) {
+                                Text(
+                                    context.getString(R.string.autoeqpresetpickerbottomsheet_disable),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = if (isCurrentlyActive) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (isCurrentlyActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
 
@@ -353,19 +352,9 @@ fun AutoEQPresetPickerBottomSheet(
                                 tonalElevation = if (isCurrentlyActive) 0.dp else 1.dp
                             ) {
                                 ListItem(
-                                    headlineContent = {
-                                        Text(
-                                            profile.name,
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            fontWeight = if (isCurrentlyActive) FontWeight.SemiBold else FontWeight.Normal,
-                                            color = if (isCurrentlyActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    },
                                     supportingContent = {
                                         Text(
-                                            profile.brand ?: context.getString(R.string.autoeqpresetpickerbottomsheet_unknown_brand),
+                                            profile.brand,
                                             color = if (isCurrentlyActive) MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
@@ -385,7 +374,16 @@ fun AutoEQPresetPickerBottomSheet(
                                         containerColor = Color.Transparent
                                     ),
                                     modifier = Modifier.fillMaxWidth()
-                                )
+                                ) {
+                                    Text(
+                                        profile.name,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = if (isCurrentlyActive) FontWeight.SemiBold else FontWeight.Normal,
+                                        color = if (isCurrentlyActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                             }
                         }
                     }

@@ -633,7 +633,7 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
     
     // Preset Selection Bottom Sheet
     if (showPresetDialog) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         var showPresetContent by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
@@ -802,7 +802,7 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
 
     // Individual Shape Picker Bottom Sheet
     showShapePickerDialog?.let { targetId ->
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         val targetName = shapeTargets.find { it.first == targetId }?.second?.first ?: targetId
         var showShapeContent by remember { mutableStateOf(false) }
 

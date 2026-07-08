@@ -91,7 +91,7 @@ object AppleMusicCanvasProvider {
                     AppleCanvasLogger.w("Failed to get Apple Music browse page: ${response.code}")
                     return@use null
                 }
-                val html = response.body?.string() ?: return@use null
+                val html = response.body.string()
 
                 val scriptRegex = Pattern.compile("/assets/index(?:-legacy)?[~-][a-zA-Z0-9_-]+\\.js")
                 val matcher = scriptRegex.matcher(html)
@@ -117,7 +117,7 @@ object AppleMusicCanvasProvider {
                     client.newCall(scriptReq).execute().use { scriptRes ->
                         if (!scriptRes.isSuccessful) return@use
 
-                        val scriptText = scriptRes.body?.string() ?: return@use
+                        val scriptText = scriptRes.body.string()
                         val tokenRegex = Pattern.compile("ey[a-zA-Z0-9_-]+\\.ey[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+")
                         val tokenMatcher = tokenRegex.matcher(scriptText)
                         
@@ -237,7 +237,7 @@ object AppleMusicCanvasProvider {
 
             client.newCall(request).execute().use { response ->
                 if (response.code != 200) return@use null
-                val bodyStr = response.body?.string() ?: return@use null
+                val bodyStr = response.body.string()
                 val root = JsonParser.parseString(bodyStr).asJsonObject
                 val resultsObj = root.getAsJsonObject("results") ?: return@use null
                 val typeObj = resultsObj.getAsJsonObject("albums") ?: return@use null
@@ -310,7 +310,7 @@ object AppleMusicCanvasProvider {
                     return@use null
                 }
 
-                val bodyStr = response.body?.string() ?: return@use null
+                val bodyStr = response.body.string()
                 val root = JsonParser.parseString(bodyStr).asJsonObject
                 val resultsObj = root.getAsJsonObject("results") ?: return@use null
                 val typeObj = resultsObj.getAsJsonObject(type) ?: return@use null
@@ -490,7 +490,7 @@ object AppleMusicCanvasProvider {
                     return@use null
                 }
 
-                val bodyStr = response.body?.string() ?: return@use null
+                val bodyStr = response.body.string()
                 val root = JsonParser.parseString(bodyStr).asJsonObject
                 val dataArray = root.getAsJsonArray("data") ?: return@use null
                 if (dataArray.size() == 0) return@use null

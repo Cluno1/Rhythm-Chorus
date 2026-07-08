@@ -75,7 +75,8 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -244,7 +245,7 @@ fun PlaylistDetailScreen(
     val coroutineScope = rememberCoroutineScope()
     val allSongs by musicViewModel.filteredSongs.collectAsState()
     var showSongPicker by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
 
     val haptics = LocalHapticFeedback.current
     val context = LocalContext.current
@@ -1700,7 +1701,7 @@ fun PlaylistDetailScreen(
                         // Song count and total time header
                         if (filteredSongs.isNotEmpty()) {
                             item {
-                                val totalDurationMs = filteredSongs.sumOf { it.duration.toLong() }
+                                val totalDurationMs = filteredSongs.sumOf { it.duration }
                                 val durationSeconds = totalDurationMs / 1000
                                 val hours = durationSeconds / 3600
                                 val minutes = (durationSeconds % 3600) / 60
@@ -2164,7 +2165,7 @@ fun PlaylistDetailScreen(
                 // Song count and total time header
                 if (filteredSongs.isNotEmpty()) {
                     item {
-                        val totalDurationMs = filteredSongs.sumOf { it.duration.toLong() }
+                        val totalDurationMs = filteredSongs.sumOf { it.duration }
                         val durationSeconds = totalDurationMs / 1000
                         val hours = durationSeconds / 3600
                         val minutes = (durationSeconds % 3600) / 60

@@ -533,7 +533,7 @@ fun MiniPlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
 
     // MiniPlayer Artwork Size Bottom Sheet
     if (showMiniPlayerArtworkSizeSheet) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         var tempSize by remember { mutableIntStateOf(miniPlayerArtworkSize) }
 
         ModalBottomSheet(
@@ -605,7 +605,7 @@ fun MiniPlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
 
     // MiniPlayer Corner Radius Bottom Sheet
     if (showMiniPlayerCornerRadiusSheet) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         var tempRadius by remember { mutableIntStateOf(miniPlayerCornerRadius) }
 
         ModalBottomSheet(

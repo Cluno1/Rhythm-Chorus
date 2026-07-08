@@ -188,11 +188,6 @@ fun MediaScanLoader(
                 displayProgress = 0.9f
                 currentStep = "Saving to database..."
             }
-            else -> {
-                // Fallback to old behavior for unknown stages
-                displayProgress = 0.3f
-                currentStep = "Processing media..."
-            }
         }
     }
     

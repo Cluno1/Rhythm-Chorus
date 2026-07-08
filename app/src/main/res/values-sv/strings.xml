@@ -704,7 +704,7 @@
     <string name="cache_about">Om cache</string>
     <string name="cache_size_limit">Gräns för cachestorlek</string>
     <string name="cache_auto_trim">Autotrim vid 90 %</string>
-    <string name="cache_auto_trim_desc">Cache trimmas automatiskt när användningen når 90 % av gränsen</string>
+    <string name="cache_auto_trim_desc" formatted="false">Cache trimmas automatiskt när användningen når 90 % av gränsen</string>
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Lyrics Källprioritet</string>
     <string name="lyrics_choose_source">Välj var du vill leta efter sångtexter</string>

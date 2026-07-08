@@ -351,7 +351,7 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
 
     // Delimiter Configuration Bottom Sheet
     if (showDelimiterBottomSheet) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         val commonDelimiters = listOf(
             '/' to context.getString(R.string.delimiter_slash),
             ';' to context.getString(R.string.delimiter_semicolon),

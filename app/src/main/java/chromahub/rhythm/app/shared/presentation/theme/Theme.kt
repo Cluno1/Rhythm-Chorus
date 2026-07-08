@@ -1,5 +1,7 @@
 package chromahub.rhythm.app.ui.theme
 
+import android.annotation.SuppressLint
+
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -1152,6 +1154,7 @@ fun parseCustomColorScheme(schemeName: String, darkTheme: Boolean): androidx.com
 /**
  * Create a color scheme from extracted album art colors
  */
+@SuppressLint("RestrictedApi")
 fun getAlbumArtColorScheme(
     colorsJson: String,
     darkTheme: Boolean,

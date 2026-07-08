@@ -38,8 +38,8 @@ object RhythmLyricsParser {
                     WordByWordWord(
                         text = word.text.orEmpty(),
                         isPart = word.part ?: false,
-                        timestamp = word.timestamp ?: 0L,
-                        endtime = word.endtime ?: (word.timestamp ?: 0L)
+                        timestamp = word.timestamp,
+                        endtime = word.endtime
                     )
                 } ?: emptyList()
 

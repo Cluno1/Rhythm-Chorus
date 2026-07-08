@@ -122,7 +122,7 @@ fun EditAlbumSheet(
     ) -> Unit
 ) {
     val context = LocalContext.current
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     var albumTitle by remember(album.title) { mutableStateOf(album.title) }
     var albumArtist by remember(album.artist) { mutableStateOf(album.artist) }
@@ -358,19 +358,13 @@ fun EditAlbumSheet(
                                                             val okRequest = okhttp3.Request.Builder().url(imageUrl).build()
                                                                 val okResponse = NetworkClient.genericHttpClient.newCall(okRequest).execute()
                                                                 if (okResponse.isSuccessful) {
-                                                                    val bytes = okResponse.body?.bytes()
-                                                                    if (bytes != null) {
-                                                                        val tempFile = File(context.cacheDir, "temp_artwork_fetched_album_${album.id}.jpg")
-                                                                        tempFile.writeBytes(bytes)
-                                                                        withContext(Dispatchers.Main) {
-                                                                            selectedImageUri = Uri.fromFile(tempFile)
-                                                                            removeArtwork = false
-                                                                            Toast.makeText(context, R.string.songinfobottomsheet_artwork_fetched_successfully_click, Toast.LENGTH_SHORT).show()
-                                                                        }
-                                                                    } else {
-                                                                        withContext(Dispatchers.Main) {
-                                                                            Toast.makeText(context, R.string.songinfobottomsheet_failed_to_download_artwork, Toast.LENGTH_SHORT).show()
-                                                                        }
+                                                                    val bytes = okResponse.body.bytes()
+                                                                    val tempFile = File(context.cacheDir, "temp_artwork_fetched_album_${album.id}.jpg")
+                                                                    tempFile.writeBytes(bytes)
+                                                                    withContext(Dispatchers.Main) {
+                                                                        selectedImageUri = Uri.fromFile(tempFile)
+                                                                        removeArtwork = false
+                                                                        Toast.makeText(context, R.string.songinfobottomsheet_artwork_fetched_successfully_click, Toast.LENGTH_SHORT).show()
                                                                     }
                                                                 } else {
                                                                     withContext(Dispatchers.Main) {
@@ -798,19 +792,13 @@ fun EditAlbumSheet(
                                                             val okRequest = okhttp3.Request.Builder().url(imageUrl).build()
                                                                 val okResponse = NetworkClient.genericHttpClient.newCall(okRequest).execute()
                                                                 if (okResponse.isSuccessful) {
-                                                                    val bytes = okResponse.body?.bytes()
-                                                                    if (bytes != null) {
-                                                                        val tempFile = File(context.cacheDir, "temp_artwork_fetched_album_${album.id}.jpg")
-                                                                        tempFile.writeBytes(bytes)
-                                                                        withContext(Dispatchers.Main) {
-                                                                            selectedImageUri = Uri.fromFile(tempFile)
-                                                                            removeArtwork = false
-                                                                            Toast.makeText(context, R.string.songinfobottomsheet_artwork_fetched_successfully_click, Toast.LENGTH_SHORT).show()
-                                                                        }
-                                                                    } else {
-                                                                        withContext(Dispatchers.Main) {
-                                                                            Toast.makeText(context, R.string.songinfobottomsheet_failed_to_download_artwork, Toast.LENGTH_SHORT).show()
-                                                                        }
+                                                                    val bytes = okResponse.body.bytes()
+                                                                    val tempFile = File(context.cacheDir, "temp_artwork_fetched_album_${album.id}.jpg")
+                                                                    tempFile.writeBytes(bytes)
+                                                                    withContext(Dispatchers.Main) {
+                                                                        selectedImageUri = Uri.fromFile(tempFile)
+                                                                        removeArtwork = false
+                                                                        Toast.makeText(context, R.string.songinfobottomsheet_artwork_fetched_successfully_click, Toast.LENGTH_SHORT).show()
                                                                     }
                                                                 } else {
                                                                     withContext(Dispatchers.Main) {

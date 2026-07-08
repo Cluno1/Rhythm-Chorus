@@ -108,7 +108,7 @@ fun UniversalSearchScreen(
     DisposableEffect(context) {
         val activity = context as? android.app.Activity
         val originalMode = activity?.window?.attributes?.softInputMode
-        activity?.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        activity?.window?.setSoftInputMode(16 /* WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE */)
         onDispose {
             if (originalMode != null) {
                 activity.window?.setSoftInputMode(originalMode)
@@ -1350,7 +1350,7 @@ fun UniversalSearchScreen(
             val songObj = selectedSongForOptions!!
             val isLocal = songObj is Song
             val isFavorite = if (isLocal) {
-                favoriteSongs.contains((songObj as Song).id)
+                favoriteSongs.contains(songObj.id)
             } else {
                 streamingLikedSongs.any { it.id == (songObj as StreamingSong).id }
             }
@@ -1361,7 +1361,7 @@ fun UniversalSearchScreen(
                 onPlayNext = {
                     handleAction(if (isLocal) "LOCAL" else "STREAMING") {
                         if (isLocal) {
-                            localViewModel.playNext(songObj as Song)
+                            localViewModel.playNext(songObj)
                         } else {
                             streamingViewModel.playNext(songObj as StreamingSong, localViewModel)
                         }
@@ -1371,7 +1371,7 @@ fun UniversalSearchScreen(
                 onAddToQueue = {
                     handleAction(if (isLocal) "LOCAL" else "STREAMING") {
                         if (isLocal) {
-                            localViewModel.addSongToQueue(songObj as Song)
+                            localViewModel.addSongToQueue(songObj)
                         } else {
                             streamingViewModel.addSongToQueue(songObj as StreamingSong, localViewModel)
                         }
@@ -1380,7 +1380,7 @@ fun UniversalSearchScreen(
                 },
                 onAddToPlaylist = {
                     if (isLocal) {
-                        selectedSongForPlaylist = songObj as Song
+                        selectedSongForPlaylist = songObj
                     } else {
                         selectedSongForPlaylist = (songObj as StreamingSong).toLocalSong()
                     }
@@ -1389,7 +1389,7 @@ fun UniversalSearchScreen(
                 },
                 onToggleFavorite = {
                     if (isLocal) {
-                        localViewModel.toggleFavorite(songObj as Song)
+                        localViewModel.toggleFavorite(songObj)
                     } else {
                         val streamingSong = songObj as StreamingSong
                         val isCurrentlyLiked = streamingLikedSongs.any { it.id == streamingSong.id }
@@ -1406,7 +1406,7 @@ fun UniversalSearchScreen(
                 isFavorite = isFavorite,
                 onShowSongInfo = {
                     if (isLocal) {
-                        selectedSongForInfo = songObj as Song
+                        selectedSongForInfo = songObj
                         isSongInfoStreaming = false
                     } else {
                         selectedSongForInfo = (songObj as StreamingSong).toLocalSong()
@@ -1418,7 +1418,7 @@ fun UniversalSearchScreen(
                 onGoToAlbum = {
                     showSongOptionsSheet = false
                     if (isLocal) {
-                        val album = localViewModel.albums.value.findAlbumForSong(songObj as Song)
+                        val album = localViewModel.albums.value.findAlbumForSong(songObj)
                         if (album != null) {
                             handleAction("LOCAL") { onLocalAlbumClick(album) }
                         } else Toast.makeText(context, R.string.universalsearchscreen_album_not_found, Toast.LENGTH_SHORT).show()
@@ -1446,7 +1446,7 @@ fun UniversalSearchScreen(
                         val separatorEnabled = appSettings.artistSeparatorEnabled.value
                         val delimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
                         val songArtistNames = chromahub.rhythm.app.util.ArtistSeparator.splitArtistNames(
-                            artistName = (songObj as Song).artist,
+                            artistName = songObj.artist,
                             delimiters = delimiters,
                             enabled = separatorEnabled
                         )
@@ -1472,8 +1472,8 @@ fun UniversalSearchScreen(
                 onAddToBlacklist = {
                     handleAction("LOCAL") {
                         if (isLocal) {
-                            appSettings.addToBlacklist((songObj as Song).id)
-                            Toast.makeText(context, context.getString(R.string.song_added_to_blacklist_format, (songObj as Song).title), Toast.LENGTH_SHORT).show()
+                            appSettings.addToBlacklist(songObj.id)
+                            Toast.makeText(context, context.getString(R.string.song_added_to_blacklist_format, songObj.title), Toast.LENGTH_SHORT).show()
                         }
                     }
                     showSongOptionsSheet = false
@@ -2006,7 +2006,7 @@ fun UniversalSongOptionsBottomSheet(
 ) {
     val context = LocalContext.current
     var showContent by remember { mutableStateOf(true) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     ModalBottomSheet(
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
@@ -2229,10 +2229,10 @@ private fun UniversalSongOptionsHeader(
 ) {
     val context = LocalContext.current
     val isLocal = songObj is Song
-    val title = if (isLocal) (songObj as Song).title else (songObj as StreamingSong).title
-    val artist = if (isLocal) (songObj as Song).artist else (songObj as StreamingSong).artist
-    val album = if (isLocal) (songObj as Song).album else (songObj as StreamingSong).album
-    val artworkUri = if (isLocal) (songObj as Song).artworkUri else (songObj as StreamingSong).artworkUri
+    val title = if (isLocal) songObj.title else (songObj as StreamingSong).title
+    val artist = if (isLocal) songObj.artist else (songObj as StreamingSong).artist
+    val album = if (isLocal) songObj.album else (songObj as StreamingSong).album
+    val artworkUri = if (isLocal) songObj.artworkUri else (songObj as StreamingSong).artworkUri
 
     Column(
         modifier = modifier

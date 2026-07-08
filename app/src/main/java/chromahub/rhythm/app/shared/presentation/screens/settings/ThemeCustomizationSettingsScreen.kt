@@ -1013,7 +1013,7 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
 
     // Festival Selection Dialog with Intensity Controls
     if (showFestivalSelectionDialog) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         
         ModalBottomSheet(
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
@@ -1328,7 +1328,7 @@ fun ColorSchemesDialog(
     haptic: HapticFeedback
 ) {
     if (showDialog) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
         // Animation states
         var showContent by remember { mutableStateOf(false) }

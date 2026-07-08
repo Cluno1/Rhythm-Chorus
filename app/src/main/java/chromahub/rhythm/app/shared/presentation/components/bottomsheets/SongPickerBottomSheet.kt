@@ -53,7 +53,7 @@ fun SongPickerBottomSheet(
     availableSongs: List<Song>,
     onDismissRequest: () -> Unit,
     onAddSongsToPlaylist: (List<Song>) -> Unit,
-    sheetState: androidx.compose.material3.SheetState = rememberModalBottomSheetState()
+    sheetState: androidx.compose.material3.SheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current

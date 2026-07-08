@@ -165,7 +165,7 @@ fun ContextQueuePreferenceBottomSheet(
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val options = listOf(

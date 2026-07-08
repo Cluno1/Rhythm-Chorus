@@ -1718,7 +1718,7 @@
     <!-- Updates Settings -->
     <string name="updates_status_error">त्रुटि</string>
     <string name="updates_rhythm_logo_cd">Rhythm लोगो</string>
-    <string name="updates_version_prefix">वी {एक्स0}</string>
+    <string name="updates_version_prefix">वी %1$s</string>
     <string name="updates_released_prefix">रिलीज़: %1$s</string>
     <string name="updates_unknown_error">अज्ञात त्रुटि उत्पन्न हुई</string>
     <string name="updates_open_settings">सेटिंग्स खोलें</string>

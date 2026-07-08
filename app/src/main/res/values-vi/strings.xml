@@ -772,7 +772,7 @@
     <string name="cache_about">Về bộ nhớ đệm</string>
     <string name="cache_size_limit">Giới hạn kích thước bộ đệm</string>
     <string name="cache_auto_trim">Tự động cắt ở mức 90%</string>
-    <string name="cache_auto_trim_desc">Bộ nhớ đệm sẽ tự động được cắt bớt khi mức sử dụng đạt 90% giới hạn</string>
+    <string name="cache_auto_trim_desc" formatted="false">Bộ nhớ đệm sẽ tự động được cắt bớt khi mức sử dụng đạt 90% giới hạn</string>
     
     <!-- Lyrics -->
     <string name="lyrics_source_priority">Ưu tiên nguồn lời bài hát</string>

@@ -39,7 +39,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -157,7 +158,7 @@ fun BatchEditTagsSheet(
     ) -> Unit
 ) {
     val context = LocalContext.current
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     var editArtist by remember { mutableStateOf(false) }
     var editAlbum by remember { mutableStateOf(false) }
@@ -541,7 +542,7 @@ fun BatchEditTagsSheet(
                                                                 val okRequest = okhttp3.Request.Builder().url(imageUrl).build()
                                                                 val okResponse = NetworkClient.genericHttpClient.newCall(okRequest).execute()
                                                                 if (okResponse.isSuccessful) {
-                                                                    val bytes = okResponse.body?.bytes()
+                                                                    val bytes = okResponse.body.bytes()
                                                                     if (bytes != null) {
                                                                         val tempFile = File(context.cacheDir, "temp_artwork_fetched_batch_${previewSong?.id ?: "temp"}.jpg")
                                                                         tempFile.writeBytes(bytes)

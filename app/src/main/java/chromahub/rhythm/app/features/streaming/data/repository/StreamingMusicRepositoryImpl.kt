@@ -688,7 +688,7 @@ class StreamingMusicRepositoryImpl(
         try {
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@withContext false
-                val body = response.body ?: return@withContext false
+                val body = response.body
                 
                 body.byteStream().use { inputStream ->
                     file.outputStream().use { outputStream ->
@@ -706,7 +706,7 @@ class StreamingMusicRepositoryImpl(
                 try {
                     client.newCall(artRequest).execute().use { response ->
                         if (response.isSuccessful) {
-                            response.body?.byteStream()?.use { artInput ->
+                            response.body.byteStream().use { artInput ->
                                 artworkFile.outputStream().use { artOutput ->
                                     artInput.copyTo(artOutput)
                                 }

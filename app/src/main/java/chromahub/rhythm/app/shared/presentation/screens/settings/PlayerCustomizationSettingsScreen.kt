@@ -525,7 +525,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
     }
 
     if (showTextAlignmentSheet) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
         ModalBottomSheet(
             onDismissRequest = { showTextAlignmentSheet = false },
@@ -650,7 +650,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
 
     // Corner Radius Bottom Sheet
     if (showCornerRadiusSheet) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         var tempRadius by remember { mutableIntStateOf(playerArtworkCornerRadius) }
 
         ModalBottomSheet(
@@ -864,7 +864,7 @@ fun ProgressStyleBottomSheet(
     context: Context,
     haptics: HapticFeedback
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     val progressStyles = listOf(
         ProgressStyleOption("NORMAL", "Normal", MaterialSymbolIcon("linear_scale"), "Standard progress bar"),
@@ -1062,7 +1062,7 @@ fun ThumbStyleBottomSheet(
     context: Context,
     haptics: HapticFeedback
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     val thumbStyles = listOf(
         ThumbStyleOption("NONE", "None", RhythmIcons.VisibilityOff, "No thumb indicator"),

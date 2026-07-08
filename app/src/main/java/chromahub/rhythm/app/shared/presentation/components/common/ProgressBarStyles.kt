@@ -1754,8 +1754,8 @@ private fun DrawScope.createRoundedRectProgressPath(
             val dy = nextPoint.y - point.y
             val len = kotlin.math.sqrt(dx * dx + dy * dy).coerceAtLeast(0.001f)
             point = Offset(
-                point.x + (-dy / len) * wave.toFloat(),
-                point.y + (dx / len) * wave.toFloat()
+                point.x + (-dy / len) * wave,
+                point.y + (dx / len) * wave
             )
         }
         

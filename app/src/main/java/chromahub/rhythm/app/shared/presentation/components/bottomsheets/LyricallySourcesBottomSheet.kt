@@ -33,7 +33,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -88,7 +89,7 @@ fun LyricallySourcesBottomSheet(
 
     var reorderableList by remember { mutableStateOf(sourcesOrder.toList()) }
     var disabledSourcesSet by remember { mutableStateOf(disabledSources) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val scope = rememberCoroutineScope()
 
     fun getSourceInfo(sourceId: String): Pair<String, String> {

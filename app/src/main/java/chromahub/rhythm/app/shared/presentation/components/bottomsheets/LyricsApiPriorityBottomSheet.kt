@@ -32,7 +32,7 @@ import chromahub.rhythm.app.util.HapticType
 fun LyricsApiPriorityBottomSheet(
     onDismiss: () -> Unit,
     appSettings: AppSettings,
-    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    sheetState: SheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current

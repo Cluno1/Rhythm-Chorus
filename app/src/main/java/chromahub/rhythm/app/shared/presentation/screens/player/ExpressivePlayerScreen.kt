@@ -1278,8 +1278,8 @@ private fun RhythmPlayerLyricsPanel(
                 val localAppSettings = remember { chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context) }
                 val translationAutoWord by localAppSettings.translationAutoWord.collectAsState()
                 val wordByWordLyrics = remember(lyrics, translationAutoWord) {
-                    lyrics?.getWordByWordLyricsOrNull() ?: run {
-                        if (translationAutoWord && lyrics?.syncedLyrics != null) {
+                    lyrics.getWordByWordLyricsOrNull() ?: run {
+                        if (translationAutoWord && lyrics.syncedLyrics != null) {
                             try {
                                 val options = LrcUtils.LrcParserOptions(
                                     trim = true, multiLine = true, errorText = null, autoWordSync = true
@@ -1305,7 +1305,7 @@ private fun RhythmPlayerLyricsPanel(
                         modifier = Modifier.fillMaxSize(),
                         onSeek = onLyricsSeek,
                         onTapLyricsView = onTapLyricsView,
-                        lyricsSource = lyrics?.source,
+                        lyricsSource = lyrics.source,
                         textSizeMultiplier = textSizeMultiplier,
                         textAlignment = textAlignment,
                         showTranslation = showTranslation,
@@ -1313,7 +1313,7 @@ private fun RhythmPlayerLyricsPanel(
                     )
                 } else {
                     val lyricsText = remember(lyrics) {
-                        lyrics?.getBestLyrics() ?: ""
+                        lyrics.getBestLyrics() ?: ""
                     }
                     val filteredPlainLyricsText = remember(
                         lyricsText,
@@ -1370,7 +1370,7 @@ private fun RhythmPlayerLyricsPanel(
                             onTapLyricsView = onTapLyricsView,
                             showTranslation = showTranslation,
                             showRomanization = showRomanization,
-                            lyricsSource = lyrics?.source,
+                            lyricsSource = lyrics.source,
                             textSizeMultiplier = textSizeMultiplier,
                             textAlignment = textAlignment
                         )
@@ -1400,7 +1400,7 @@ private fun RhythmPlayerLyricsPanel(
                                 modifier = Modifier.fillMaxWidth()
                             )
 
-                            if (!lyrics?.source.isNullOrBlank()) {
+                            if (!lyrics.source.isNullOrBlank()) {
                                 Spacer(modifier = Modifier.height(24.dp))
                                 Text(
                                     text = stringResource(R.string.lyrics_source_attribution, lyrics.source),

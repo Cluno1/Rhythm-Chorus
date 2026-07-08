@@ -173,7 +173,7 @@ fun LyricsSourceDialog(
     haptic: HapticFeedback
 ) {
     val lyricsSourcePreference by appSettings.lyricsSourcePreference.collectAsState()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     ModalBottomSheet(
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),

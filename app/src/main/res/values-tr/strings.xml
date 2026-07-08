@@ -1301,7 +1301,7 @@
     <string name="settings_rhythm_guard_post_timeout_cooldown_title">Zaman Aşımı Sonrası Bekleme Süresi: %1$s</string>
     <string name="settings_rhythm_guard_break_resume_default_title">Varsayılan Mola Devam Ettirme: %1$s</string>
     <string name="settings_rhythm_guard_warning_title">Dinleme Güvenliği Uyarısı</string>
-    <string name="settings_rhythm_guard_warning_high_volume">Mevcut ses seviyesi uyarı eşiğinizin (%%1$d) üzerinde. Sesi azaltmayı düşünün.</string>
+    <string name="settings_rhythm_guard_warning_high_volume">Mevcut ses seviyesi uyarı eşiğinizin (%1$d%%) üzerinde. Sesi azaltmayı düşünün.</string>
     <string name="settings_rhythm_guard_warning_daily_exposure">Bugün önerilen %2$s seviyesinin üzerinde %1$s noktasına ulaştınız. Bir dinleme molası vermeyi düşünün.</string>
     <string name="settings_rhythm_guard_warning_dialog_title">Rhythm Koruma Koruma Uyarısı</string>
     <string name="settings_rhythm_guard_warning_dialog_volume_message">Sistem medya hacmi gerçek zamanlı olarak %%%1$d olup, geçerli koruma sınırınız olan %%%2$d\'in üzerindedir. İşitme riskini azaltmak için ses seviyesini düşürün.</string>

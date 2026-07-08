@@ -174,7 +174,7 @@ fun FontSelectionDialog(
     haptic: HapticFeedback
 ) {
     if (showDialog) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
         // Animation states
         var showContent by remember { mutableStateOf(false) }
