@@ -767,6 +767,18 @@ private fun LocalNavigationContent(
             restoreState = true
         }
     }
+
+    val isLibraryRoute = remember(currentRoute) {
+        currentRoute.substringBefore("?") == Screen.Library.route.substringBefore("?")
+    }
+    val isLibraryStartDestination = remember(startDestination) {
+        startDestination.substringBefore("?") == Screen.Library.route.substringBefore("?")
+    }
+
+    BackHandler(enabled = isLibraryRoute && !isLibraryStartDestination) {
+        navigateToTopLevel(Screen.Home.route)
+    }
+
     val navigateBackOrToLanding: () -> Unit = {
         val popped = navController.popBackStack()
         if (!popped) {

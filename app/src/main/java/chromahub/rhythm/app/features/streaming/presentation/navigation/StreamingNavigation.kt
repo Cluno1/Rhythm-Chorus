@@ -6,6 +6,7 @@ import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 
 import android.app.Activity
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.EaseInOutQuart
@@ -370,6 +371,10 @@ fun StreamingNavigation(
             launchSingleTop = true
             restoreState = true
         }
+    }
+
+    BackHandler(enabled = isLibraryRoute) {
+        navigateToTopLevel(StreamingScreen.Home.route)
     }
 
     LaunchedEffect(navController) {
