@@ -4193,7 +4193,59 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         // This ensures they are properly backed up and restored
         if (effectiveSections.includeLibraryData) {
             try {
-            val playlistsJson = prefs.getString(KEY_PLAYLISTS, null)
+            val playlistsJson = try {
+                kotlinx.coroutines.runBlocking {
+                    val db = chromahub.rhythm.app.features.local.data.database.RhythmDatabase.getInstance(context)
+                    val playlistDao = db.playlistDao()
+                    val dbPlaylists = playlistDao.getAllPlaylists()
+                    if (dbPlaylists.isNotEmpty()) {
+                        val songDao = db.songDao()
+                        val modelPlaylists = dbPlaylists.map { entity ->
+                            val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
+                            val playlistSongs = songIds.mapNotNull { songId ->
+                                songDao.getSongById(songId)?.let { songEntity ->
+                                    Song(
+                                        id = songEntity.id,
+                                        title = songEntity.title,
+                                        artist = songEntity.artist,
+                                        album = songEntity.album,
+                                        albumId = songEntity.albumId,
+                                        duration = songEntity.duration,
+                                        uri = Uri.parse(songEntity.uri),
+                                        artworkUri = songEntity.artworkUri?.let { Uri.parse(it) },
+                                        trackNumber = songEntity.trackNumber,
+                                        year = songEntity.year,
+                                        genre = songEntity.genre,
+                                        dateAdded = songEntity.dateAdded,
+                                        dateModified = songEntity.dateModified.takeIf { it > 0L } ?: songEntity.dateAdded,
+                                        albumArtist = songEntity.albumArtist,
+                                        bitrate = songEntity.bitrate,
+                                        sampleRate = songEntity.sampleRate,
+                                        channels = songEntity.channels,
+                                        codec = songEntity.codec,
+                                        discNumber = songEntity.discNumber,
+                                        path = songEntity.path
+                                    )
+                                }
+                            }
+                            Playlist(
+                                id = entity.id,
+                                name = entity.name,
+                                songs = playlistSongs,
+                                dateCreated = entity.dateCreated,
+                                dateModified = entity.dateModified,
+                                artworkUri = entity.artworkUri?.let { Uri.parse(it) }
+                            )
+                        }
+                        Gson().toJson(modelPlaylists)
+                    } else {
+                        prefs.getString(KEY_PLAYLISTS, null)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppSettings", "Error reading database playlists for backup", e)
+                prefs.getString(KEY_PLAYLISTS, null)
+            }
             val favoriteSongsJson = prefs.getString(KEY_FAVORITE_SONGS, null)
             
             if (playlistsJson != null) {
@@ -4380,8 +4432,40 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                 // Restore playlists data explicitly
                 val playlistsData = backupData["playlists_data"] as? String
                 if (playlistsData != null) {
-                    editor.putString(KEY_PLAYLISTS, playlistsData)
-                    Log.d("AppSettings", "Restored playlists data: ${playlistsData.length} characters")
+                    try {
+                        kotlinx.coroutines.runBlocking {
+                            val db = chromahub.rhythm.app.features.local.data.database.RhythmDatabase.getInstance(context)
+                            val playlistDao = db.playlistDao()
+                            playlistDao.deleteAllPlaylists()
+                            
+                            val type = object : TypeToken<List<Playlist>>() {}.type
+                            val restoredPlaylists: List<Playlist> = Gson().fromJson(playlistsData, type) ?: emptyList()
+                            
+                            restoredPlaylists.forEach { playlist ->
+                                val playlistEntity = chromahub.rhythm.app.features.local.data.database.entity.PlaylistEntity(
+                                    id = playlist.id,
+                                    name = playlist.name,
+                                    dateCreated = playlist.dateCreated,
+                                    dateModified = playlist.dateModified,
+                                    artworkUri = playlist.artworkUri?.toString()
+                                )
+                                playlistDao.insertPlaylist(playlistEntity)
+                                
+                                val songEntities = playlist.songs.mapIndexed { index, song ->
+                                    chromahub.rhythm.app.features.local.data.database.entity.PlaylistSongEntity(
+                                        playlistId = playlist.id,
+                                        songId = song.id,
+                                        orderIndex = index
+                                    )
+                                }
+                                playlistDao.insertPlaylistSongs(songEntities)
+                            }
+                        }
+                        Log.d("AppSettings", "Restored playlists directly to Room database")
+                    } catch (e: Exception) {
+                        Log.e("AppSettings", "Failed to restore playlists to Room database", e)
+                        editor.putString(KEY_PLAYLISTS, playlistsData)
+                    }
                 }
                 
                 // Restore favorite songs data explicitly
