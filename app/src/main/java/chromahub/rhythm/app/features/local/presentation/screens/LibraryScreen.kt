@@ -602,17 +602,18 @@ fun LibraryScreen(
         )
     }
     
-    if (showSongInfoSheet && selectedSong != null) {
-        val displaySong = songs.find { it.id == selectedSong!!.id } ?: selectedSong
+    val currentSelectedSong = selectedSong
+    if (showSongInfoSheet && currentSelectedSong != null) {
+        val displaySong = songs.find { it.id == currentSelectedSong.id } ?: currentSelectedSong
         
         SongInfoBottomSheet(
-            song = displaySong!!,
+            song = displaySong,
             onDismiss = { showSongInfoSheet = false },
             appSettings = appSettings,
             onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                 pendingMetadataEditCompleteCallback = onComplete
                 musicViewModel.saveMetadataChanges(
-                    song = displaySong!!,
+                    song = displaySong,
                     title = title,
                     artist = artist,
                     album = album,
@@ -719,6 +720,14 @@ fun LibraryScreen(
     val playlistViewType by appSettings.playlistViewType.collectAsState()
     val albumViewType by appSettings.albumViewType.collectAsState()
     val artistViewType by appSettings.artistViewType.collectAsState()
+
+    LaunchedEffect(selectedTabIndex) {
+        val activeTabId = visibleTabIds.getOrNull(selectedTabIndex)
+        if (activeTabId == "PLAYLISTS") {
+            playlistsListState.scrollToItem(0)
+            playlistsGridState.scrollToItem(0)
+        }
+    }
 
     val isListAtTop by remember(
         selectedTabIndex, visibleTabIds, playlistViewType, albumViewType, artistViewType
@@ -1542,7 +1551,7 @@ fun LibraryScreen(
                                             }
                                             
                                             LaunchedEffect(selectedCategory) {
-                                                if (!isSelected && selectedCategory != null) {
+                                                if (!isSelected) {
                                                     val currentIndex = categories.indexOf(category)
                                                     val selectedIndex = categories.indexOf(selectedCategory)
                                                     if (currentIndex >= 0 && selectedIndex >= 0) {
@@ -3093,16 +3102,6 @@ fun LibrarySongItem(
     )
 
     ListItem(
-        headlineContent = {
-            Text(
-                text = song.title,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = titleColor
-            )
-        },
         supportingContent = {
             Text(
                 text = buildString {
@@ -3273,7 +3272,16 @@ fun LibrarySongItem(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 72.dp)
-    )
+    ) {
+        Text(
+            text = song.title,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = titleColor
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

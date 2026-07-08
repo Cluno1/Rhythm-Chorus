@@ -543,18 +543,12 @@ fun BatchEditTagsSheet(
                                                                 val okResponse = NetworkClient.genericHttpClient.newCall(okRequest).execute()
                                                                 if (okResponse.isSuccessful) {
                                                                     val bytes = okResponse.body.bytes()
-                                                                    if (bytes != null) {
-                                                                        val tempFile = File(context.cacheDir, "temp_artwork_fetched_batch_${previewSong?.id ?: "temp"}.jpg")
-                                                                        tempFile.writeBytes(bytes)
-                                                                        withContext(Dispatchers.Main) {
-                                                                            selectedImageUri = Uri.fromFile(tempFile)
-                                                                            removeArtwork = false
-                                                                            Toast.makeText(context, R.string.songinfobottomsheet_artwork_fetched_successfully_click, Toast.LENGTH_SHORT).show()
-                                                                        }
-                                                                    } else {
-                                                                        withContext(Dispatchers.Main) {
-                                                                            Toast.makeText(context, R.string.songinfobottomsheet_failed_to_download_artwork, Toast.LENGTH_SHORT).show()
-                                                                        }
+                                                                    val tempFile = File(context.cacheDir, "temp_artwork_fetched_batch_${previewSong?.id ?: "temp"}.jpg")
+                                                                    tempFile.writeBytes(bytes)
+                                                                    withContext(Dispatchers.Main) {
+                                                                        selectedImageUri = Uri.fromFile(tempFile)
+                                                                        removeArtwork = false
+                                                                        Toast.makeText(context, R.string.songinfobottomsheet_artwork_fetched_successfully_click, Toast.LENGTH_SHORT).show()
                                                                     }
                                                                 } else {
                                                                     withContext(Dispatchers.Main) {

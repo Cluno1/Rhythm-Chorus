@@ -1153,16 +1153,6 @@ private fun ArtistSongItem(
         shape = RoundedCornerShape(16.dp)
     ) {
         ListItem(
-            headlineContent = {
-                Text(
-                    text = song.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = titleColor
-                )
-            },
             supportingContent = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -1329,6 +1319,15 @@ private fun ArtistSongItem(
             colors = ListItemDefaults.colors(
                 containerColor = Color.Transparent
             )
-        )
+        ) {
+            Text(
+                text = song.title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = titleColor
+            )
+        }
     }
 }

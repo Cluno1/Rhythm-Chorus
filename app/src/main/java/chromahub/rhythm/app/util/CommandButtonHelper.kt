@@ -58,13 +58,13 @@ class CommandButtonHelper {
             val builder = if (icon != null) {
                 CommandButton.Builder(icon)
             } else {
-                CommandButton.Builder()
+                CommandButton.Builder(CommandButton.ICON_UNDEFINED)
             }
             
             builder.setDisplayName(displayName)
             
             if (iconResId != null) {
-                builder.setIconResId(iconResId)
+                builder.setCustomIconResId(iconResId)
             }
             
             // Set session command for custom actions

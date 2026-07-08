@@ -647,10 +647,10 @@ class SubsonicApiClient(context: Context) {
             providerId = id,
             title = album.optString("name", album.optString("album", "Unknown album")),
             artist = album.optString("artist", "Unknown artist"),
-            artworkUrl = album.optString("coverArt")?.takeIf { it.isNotBlank() }?.let { buildCoverArtUrl(it, 500) },
+            artworkUrl = album.optString("coverArt").takeIf { it.isNotBlank() }?.let { buildCoverArtUrl(it, 500) },
             songCount = album.optInt("songCount", 0),
             year = album.optInt("year").takeIf { it > 0 },
-            description = album.optString("comment")?.takeIf { it.isNotBlank() }
+            description = album.optString("comment").takeIf { it.isNotBlank() }
         )
     }
 
@@ -665,10 +665,10 @@ class SubsonicApiClient(context: Context) {
                     ProviderArtist(
                         providerId = id,
                         name = artist.optString("name", "Unknown artist"),
-                        artworkUrl = artist.optString("coverArt")?.takeIf { it.isNotBlank() }?.let { buildCoverArtUrl(it, 500) },
+                        artworkUrl = artist.optString("coverArt").takeIf { it.isNotBlank() }?.let { buildCoverArtUrl(it, 500) },
                         songCount = artist.optInt("songCount", 0),
                         albumCount = artist.optInt("albumCount", 0),
-                        description = artist.optString("biography")?.takeIf { it.isNotBlank() }
+                        description = artist.optString("biography").takeIf { it.isNotBlank() }
                     )
                 )
             }
@@ -687,7 +687,7 @@ class SubsonicApiClient(context: Context) {
                     ProviderArtist(
                         providerId = id.ifBlank { name },
                         name = name.ifBlank { id },
-                        artworkUrl = artist.optString("coverArt")?.takeIf { it.isNotBlank() }?.let { buildCoverArtUrl(it, 500) },
+                        artworkUrl = artist.optString("coverArt").takeIf { it.isNotBlank() }?.let { buildCoverArtUrl(it, 500) },
                         songCount = artist.optInt("songCount", 0),
                         albumCount = artist.optInt("albumCount", 0),
                         description = null
@@ -709,10 +709,10 @@ class SubsonicApiClient(context: Context) {
                     ProviderPlaylist(
                         providerId = id,
                         name = playlist.optString("name", "Unknown playlist"),
-                        description = playlist.optString("comment")?.takeIf { it.isNotBlank() },
+                        description = playlist.optString("comment").takeIf { it.isNotBlank() },
                         artworkUrl = coverArtId?.let { buildCoverArtUrl(it, 500) },
                         songCount = playlist.optInt("songCount", 0),
-                        owner = playlist.optString("owner")?.takeIf { it.isNotBlank() },
+                        owner = playlist.optString("owner").takeIf { it.isNotBlank() },
                         isPublic = playlist.optBoolean("public", true)
                     )
                 )

@@ -370,7 +370,7 @@ fun SingleCardExplorerContent(
                 isLoadingDirectory = true
                 try {
                     val items = withContext(Dispatchers.IO) {
-                        getDirectoryContentsOptimized(currentPath!!, songPathMap, context)
+                        getDirectoryContentsOptimized(currentPath, songPathMap, context)
                     }
                     val sortedItems = items.sortedWith(
                         compareBy<ExplorerItem> { it.type != ExplorerItemType.FOLDER }
@@ -423,7 +423,7 @@ fun SingleCardExplorerContent(
                 debounceJob = launch {
                     try {
                         val items = withContext(Dispatchers.IO) {
-                            getDirectoryContentsOptimized(currentPath!!, songPathMap, context)
+                            getDirectoryContentsOptimized(currentPath, songPathMap, context)
                         }
                         
                         val sortedItems = items.sortedWith(
@@ -884,7 +884,7 @@ fun SingleCardExplorerContent(
                                 OutlinedButton(
                                     onClick = {
                                         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                        onPathChanged(getParentPath(currentPath!!))
+                                        onPathChanged(getParentPath(currentPath))
                                     },
                                     shape = RoundedCornerShape(12.dp),
                                     border = BorderStroke(

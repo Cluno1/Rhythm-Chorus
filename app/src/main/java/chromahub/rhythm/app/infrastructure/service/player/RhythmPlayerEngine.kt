@@ -271,7 +271,7 @@ class RhythmPlayerEngine(
                 return if (processors.isNotEmpty()) {
                     androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context)
                         .setEnableFloatOutput(enableFloatOutput)
-                        .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
+                        .setEnableAudioOutputPlaybackParameters(enableAudioTrackPlaybackParams)
                         .setAudioProcessors(processors.toTypedArray())
                         .build()
                 } else {
@@ -317,7 +317,7 @@ class RhythmPlayerEngine(
             .setDataSourceFactory(resolvingDataSourceFactory)
 
         val appSettings = AppSettings.getInstance(context)
-        val trackSelectionParametersBuilder = TrackSelectionParameters.Builder(context)
+        val trackSelectionParametersBuilder = TrackSelectionParameters.Builder()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // Software audio effects and crossfade are incompatible with hardware audio offload.
             // If any of them is enabled, offload must be disabled to prevent conflicts.
@@ -680,7 +680,7 @@ class RhythmPlayerEngine(
         scope.launch(Dispatchers.Main) {
             if (!::playerA.isInitialized || !::playerB.isInitialized) return@launch
             val appSettings = AppSettings.getInstance(context)
-            val trackSelectionParametersBuilder = TrackSelectionParameters.Builder(context)
+            val trackSelectionParametersBuilder = TrackSelectionParameters.Builder()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val isCrossfadeEnabled = appSettings.crossfade.value
                 val isEqualizerEnabled = appSettings.equalizerEnabled.value

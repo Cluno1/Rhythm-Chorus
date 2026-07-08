@@ -824,7 +824,7 @@ class JellyfinApiClient(context: Context) {
                 ?: album.optInt("SongCount").takeIf { it > 0 }
                 ?: album.optInt("ChildCount", 0),
             year = album.optInt("ProductionYear").takeIf { it > 0 },
-            description = album.optString("Overview")?.takeIf { it.isNotBlank() }
+            description = album.optString("Overview").takeIf { it.isNotBlank() }
         )
     }
 
@@ -843,7 +843,7 @@ class JellyfinApiClient(context: Context) {
                         artworkUrl = buildImageUrl(id),
                         songCount = artist.optInt("SongCount", artist.optInt("songCount", 0)),
                         albumCount = artist.optInt("AlbumCount", artist.optInt("albumCount", 0)),
-                        description = artist.optString("Overview")?.takeIf { it.isNotBlank() }
+                        description = artist.optString("Overview").takeIf { it.isNotBlank() }
                     )
                 )
             }
@@ -884,7 +884,7 @@ class JellyfinApiClient(context: Context) {
                 if (id.isBlank()) continue
 
                 val name = playlist.optString("Name", "Unknown playlist")
-                val description = playlist.optString("Overview")?.takeIf { it.isNotBlank() }
+                val description = playlist.optString("Overview").takeIf { it.isNotBlank() }
                 val itemCounts = playlist.optJSONObject("ItemCounts")
                 val songCount = itemCounts?.optInt("MusicCount", 0) ?: 0
 

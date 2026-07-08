@@ -4339,8 +4339,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         sections: BackupRestoreSections = BackupRestoreSections()
     ): Boolean {
         return try {
-            Log.d("AppSettings", "Attempting to restore from backup...")
-            val backupData = Gson().fromJson(backupJson, Map::class.java) as? Map<String, Any?> ?: return false
+            val type = object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+            val backupData = Gson().fromJson<Map<String, Any?>>(backupJson, type) ?: return false
             val preferences = (backupData["preferences"] as? Map<*, *>)
                 ?.mapNotNull { (key, value) ->
                     (key as? String)?.let { safeKey -> safeKey to value }

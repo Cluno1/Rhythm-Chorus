@@ -869,7 +869,7 @@ private fun DrawScope.drawGingerbread(center: Offset, scale: Float = 1f) {
     // Smile
     val smilePath = Path().apply {
         moveTo(center.x - size * 0.12f, center.y - size * 0.25f)
-        quadraticBezierTo(
+        quadraticTo(
             center.x, center.y - size * 0.2f,
             center.x + size * 0.12f, center.y - size * 0.25f
         )

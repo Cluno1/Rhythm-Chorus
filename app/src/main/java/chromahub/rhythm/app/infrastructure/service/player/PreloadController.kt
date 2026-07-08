@@ -62,6 +62,7 @@ class PreloadController(
             val mediaSourceFactory = DefaultMediaSourceFactory(context)
                 .setDataSourceFactory(resolvingDataSourceFactory)
 
+            @Suppress("DEPRECATION")
             val builder = DefaultPreloadManager.Builder(context, targetPreloadStatusControl as TargetPreloadStatusControl<Int, DefaultPreloadManager.PreloadStatus>)
                 .setMediaSourceFactory(mediaSourceFactory)
 

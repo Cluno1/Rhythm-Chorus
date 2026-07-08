@@ -487,23 +487,30 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private val filterCache = mutableMapOf<String, Boolean>()
     private var lastFilterSettings = ""
     
-    // Filtered songs excluding blacklisted ones and including only whitelisted ones (both songs and folders)
-    val filteredSongs: StateFlow<List<Song>> = kotlinx.coroutines.flow.combine(
-        _songs,
+    private data class FilterSettings(
+        val mode: MediaScanMode,
+        val blacklistedIds: List<String>,
+        val blacklistedFolders: List<String>,
+        val whitelistedIds: List<String>,
+        val whitelistedFolders: List<String>
+    )
+
+    private val filterSettingsFlow = kotlinx.coroutines.flow.combine(
         appSettings.mediaScanMode,
         appSettings.blacklistedSongs,
         appSettings.blacklistedFolders,
         appSettings.whitelistedSongs,
         appSettings.whitelistedFolders
-    ) { args ->
-        val songs = args[0] as List<Song>
-        val mode = args[1] as MediaScanMode
-        val blacklistedIds = args[2] as List<String>
-        val blacklistedFolders = args[3] as List<String>
-        val whitelistedIds = args[4] as List<String>
-        val whitelistedFolders = args[5] as List<String>
+    ) { mode, blacklistedIds, blacklistedFolders, whitelistedIds, whitelistedFolders ->
+        FilterSettings(mode, blacklistedIds, blacklistedFolders, whitelistedIds, whitelistedFolders)
+    }
 
-        filterSongsAsync(songs, mode, blacklistedIds, blacklistedFolders, whitelistedIds, whitelistedFolders)
+    // Filtered songs excluding blacklisted ones and including only whitelisted ones (both songs and folders)
+    val filteredSongs: StateFlow<List<Song>> = kotlinx.coroutines.flow.combine(
+        _songs,
+        filterSettingsFlow
+    ) { songs, settings ->
+        filterSongsAsync(songs, settings.mode, settings.blacklistedIds, settings.blacklistedFolders, settings.whitelistedIds, settings.whitelistedFolders)
     }.flowOn(Dispatchers.IO).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
     
     private suspend fun filterSongsAsync(

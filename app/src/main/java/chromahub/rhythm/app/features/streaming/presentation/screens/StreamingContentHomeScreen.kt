@@ -1735,7 +1735,7 @@ private fun Song.toStreamingSongOrNull(defaultServiceId: String): StreamingSong?
         sourceType = resolvedServiceId.toSourceType(),
         streamingUrl = uriValue.takeIf { isNetworkStream },
         previewUrl = null,
-        albumId = albumId?.takeIf { it.isNotBlank() },
+        albumId = albumId.takeIf { it.isNotBlank() },
         albumArtist = albumArtist?.takeIf { it.isNotBlank() },
         externalId = normalizedId.substringAfter("::", missingDelimiterValue = id)
     )

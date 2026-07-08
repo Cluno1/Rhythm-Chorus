@@ -1231,6 +1231,7 @@ class AudioDeviceManager(private val context: Context) {
      * Start Bluetooth SCO audio connection with appropriate handling for deprecation
      * @return true if SCO was started successfully
      */
+    @Suppress("DEPRECATION")
     private fun startBluetoothSco(): Boolean {
         try {
             // First check if Bluetooth is enabled and connected

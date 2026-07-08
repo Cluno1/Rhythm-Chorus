@@ -579,6 +579,10 @@ fun StreamingLibraryScreen(
             pagerState.animateScrollToPage(selectedTabIndex)
         }
         tabRowState.animateScrollToItem(selectedTabIndex.coerceAtLeast(0))
+        if (tabs.getOrNull(selectedTabIndex) == StreamingLibraryTab.PLAYLISTS) {
+            playlistsListState.scrollToItem(0)
+            playlistsGridState.scrollToItem(0)
+        }
     }
 
     val currentSortLabelRes = when (selectedTab) {
@@ -1106,7 +1110,7 @@ fun StreamingLibraryScreen(
                                             }
                                             
                                             LaunchedEffect(selectedCategory) {
-                                                if (!isSelected && selectedCategory != null) {
+                                                if (!isSelected) {
                                                     val currentIndex = categories.indexOf(category)
                                                     val selectedIndex = categories.indexOf(selectedCategory)
                                                     if (currentIndex >= 0 && selectedIndex >= 0) {
@@ -1642,11 +1646,9 @@ fun StreamingLibraryScreen(
                                     showMultiSelectionSheet = true
                                 },
                                 onBack = {},
-                                modifier = with(this@Box) {
-                                    Modifier
-                                        .align(Alignment.BottomCenter)
-                                        .zIndex(10f)
-                                }
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .zIndex(10f)
                             )
                         }
                     }
