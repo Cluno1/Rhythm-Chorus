@@ -15,16 +15,16 @@ permissions:
   contents: write
   pull-requests: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
-  # ── 1. Auto-merge any open Weblate translation PR ────────────────────────────
-  #       Runs on push only (not manual dispatch, since manual means we want
-  #       to push source strings, not necessarily merge incoming translations).
-  merge-weblate-pr:
-    name: Auto-merge Weblate PR
+  sync-weblate:
+    name: Sync Weblate Translations
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
     steps:
       - name: Find and merge open Weblate PR
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -54,13 +54,6 @@ jobs:
           done
           echo "No open Weblate PR found."
 
-  # ── 2. Lock Weblate → push source strings → Unlock ───────────────────────────
-  #       Prevents translators from working on stale strings during a push.
-  #       Requires WEBLATE_TOKEN secret (Weblate: Profile → API Keys → Add key).
-  lock-and-push:
-    name: Notify Weblate of Source String Changes
-    runs-on: ubuntu-latest
-    steps:
       - uses: actions/checkout@v4
 
       - name: Lock Weblate — Strings component

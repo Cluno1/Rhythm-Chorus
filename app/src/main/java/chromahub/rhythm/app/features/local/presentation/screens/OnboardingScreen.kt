@@ -134,6 +134,7 @@ import chromahub.rhythm.app.features.local.presentation.components.settings.Libr
 import chromahub.rhythm.app.features.local.presentation.screens.onboarding.OnboardingStep
 import chromahub.rhythm.app.features.local.presentation.screens.onboarding.PermissionScreenState
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
+import chromahub.rhythm.app.shared.presentation.viewmodel.rememberAppUpdaterViewModel
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppVersion
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
@@ -183,7 +184,7 @@ fun OnboardingScreen(
     themeViewModel: ThemeViewModel,
     appSettings: AppSettings,
     musicViewModel: MusicViewModel,
-    updaterViewModel: AppUpdaterViewModel = viewModel(),
+    updaterViewModel: AppUpdaterViewModel = rememberAppUpdaterViewModel(),
     streamingViewModel: StreamingMusicViewModel = viewModel(),
     onFinish: () -> Unit = {}
 ) {

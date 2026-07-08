@@ -137,6 +137,7 @@ import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel.SortOrder
 import chromahub.rhythm.app.shared.presentation.viewmodel.ThemeViewModel
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
+import chromahub.rhythm.app.shared.presentation.viewmodel.rememberAppUpdaterViewModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -296,7 +297,7 @@ fun LocalNavigation(
 ) {
     val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
     // Update monitoring
-    val updaterViewModel: AppUpdaterViewModel = viewModel()
+    val updaterViewModel: AppUpdaterViewModel = rememberAppUpdaterViewModel()
     val updateAvailable by updaterViewModel.updateAvailable.collectAsState()
     val updatesEnabled by appSettings.updatesEnabled.collectAsState()
     val latestVersion by updaterViewModel.latestVersion.collectAsState()
@@ -676,14 +677,17 @@ fun LocalNavigation(
     }
     
     // Global Update Bottom Sheet - shows automatically when update is available
-    if (showUpdateBottomSheet) {
+    val isOnUpdatesScreen = currentRoute == Screen.TunerUpdates.route
+    if (showUpdateBottomSheet && !isOnUpdatesScreen) {
         UpdateBottomSheet(
             updaterViewModel = updaterViewModel,
             onDismiss = { showUpdateBottomSheet = false },
             onUpdateClick = { immediate ->
                 showUpdateBottomSheet = false
                 // Navigate to update settings
-                navController.navigate(Screen.TunerUpdates.route)
+                navController.navigate(Screen.TunerUpdates.route) {
+                    launchSingleTop = true
+                }
             }
         )
     }
@@ -1538,7 +1542,11 @@ private fun LocalNavigationContent(
                 composable(Screen.TunerAbout.route) {
                     chromahub.rhythm.app.shared.presentation.screens.settings.AboutScreen(
                         onBackClick = navigateBackOrToSettings,
-                        onNavigateToUpdates = { navController.navigate(Screen.TunerUpdates.route) }
+                        onNavigateToUpdates = {
+                            navController.navigate(Screen.TunerUpdates.route) {
+                                launchSingleTop = true
+                            }
+                        }
                     )
                 }
 

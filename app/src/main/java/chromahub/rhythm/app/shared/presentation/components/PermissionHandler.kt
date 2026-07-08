@@ -44,6 +44,7 @@ import kotlinx.coroutines.delay
 import androidx.lifecycle.viewmodel.compose.viewModel
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
+import chromahub.rhythm.app.shared.presentation.viewmodel.rememberAppUpdaterViewModel
 import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
@@ -59,7 +60,7 @@ fun PermissionHandler(
     onSetIsLoading: (Boolean) -> Unit, // Callback to update state
     onSetIsInitializingApp: (Boolean) -> Unit, // Callback to update state
     musicViewModel: MusicViewModel = viewModel(),
-    updaterViewModel: AppUpdaterViewModel = viewModel(),
+    updaterViewModel: AppUpdaterViewModel = rememberAppUpdaterViewModel(),
     streamingViewModel: StreamingMusicViewModel = viewModel()
 ) {
     val context = LocalContext.current

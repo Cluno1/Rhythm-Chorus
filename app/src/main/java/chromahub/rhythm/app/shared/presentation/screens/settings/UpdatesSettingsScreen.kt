@@ -120,6 +120,7 @@ import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShap
 import chromahub.rhythm.app.shared.presentation.components.common.buildSplashBackdropShapes
 import chromahub.rhythm.app.shared.presentation.components.common.SplashBackgroundOrbs
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
+import chromahub.rhythm.app.shared.presentation.viewmodel.rememberAppUpdaterViewModel
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppVersion
 import chromahub.rhythm.app.ui.theme.getFontPreviewStyle
 import kotlinx.coroutines.delay
@@ -164,9 +165,7 @@ import chromahub.rhythm.app.shared.presentation.screens.settings.SettingGroup
 fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     val context = LocalContext.current
     val appSettings = AppSettings.getInstance(context)
-    val updaterViewModel: AppUpdaterViewModel = viewModel(
-        viewModelStoreOwner = context as ViewModelStoreOwner
-    )
+    val updaterViewModel: AppUpdaterViewModel = rememberAppUpdaterViewModel()
     val scope = rememberCoroutineScope()
     val haptics = LocalHapticFeedback.current
 

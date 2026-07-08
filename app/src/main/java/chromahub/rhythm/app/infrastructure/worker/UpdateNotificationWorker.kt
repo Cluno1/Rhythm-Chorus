@@ -18,6 +18,8 @@ import chromahub.rhythm.app.network.NetworkManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 /**
  * Background worker that checks for app updates using smart polling techniques
@@ -191,6 +193,61 @@ class UpdateNotificationWorker(
             Log.d(TAG, "Smart polling - Last ETag: $lastETag, Last Modified: $lastModified")
             Log.d(TAG, "Consecutive 304 responses: $consecutiveNotModified")
             
+            
+            if (channel == "nightly") {
+                val runsResponse = gitHubApiService.getWorkflowRuns("cromaguy", "Rhythm", "nightly.yml")
+                val responseCode = runsResponse.code()
+                Log.d(TAG, "Nightly response code: $responseCode")
+                
+                if (runsResponse.isSuccessful && runsResponse.body() != null) {
+                    val runsData = runsResponse.body()
+                    val latestRun = runsData?.workflow_runs?.firstOrNull { it.status == "completed" && it.conclusion == "success" }
+                    
+                    if (latestRun != null) {
+                        val shortSha = latestRun.head_sha.take(7)
+                        val cleanedBaseName = BuildConfig.VERSION_NAME.replace(" Beta", "")
+                        val newVersionTag = "$cleanedBaseName-nightly-r${latestRun.run_number}-$shortSha"
+                        
+                        val isNewerNightly = if (BuildConfig.IS_NIGHTLY) {
+                            val currentNightlyRun = extractNightlyRunNumber(BuildConfig.VERSION_NAME)
+                            val latestNightlyRun = latestRun.run_number
+                            latestNightlyRun > currentNightlyRun
+                        } else {
+                            try {
+                                val isoFmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+                                val dateFmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                                val nightlyDate = isoFmt.parse(latestRun.updated_at)
+                                val buildDate = dateFmt.parse(BuildConfig.RELEASE_DATE)
+                                nightlyDate != null && buildDate != null && nightlyDate.after(buildDate)
+                            } catch (e: Exception) {
+                                false
+                            }
+                        }
+                        
+                        val hasNewVersion = lastVersionTag != newVersionTag && isNewerNightly
+                        Log.d(TAG, "Latest nightly version: $newVersionTag, Last known: $lastVersionTag")
+                        Log.d(TAG, "Current version: ${BuildConfig.VERSION_NAME}, Is newer: $hasNewVersion")
+                        
+                        prefs.edit()
+                            .putString(KEY_LAST_VERSION_TAG, newVersionTag)
+                            .putLong(KEY_LAST_CHECK_TIME, System.currentTimeMillis())
+                            .putInt(KEY_CONSECUTIVE_NOT_MODIFIED, 0)
+                            .apply()
+                        
+                        return if (hasNewVersion) {
+                            UpdateCheckResult.UPDATE_AVAILABLE
+                        } else {
+                            UpdateCheckResult.UP_TO_DATE
+                        }
+                    }
+                    lastCheckErrorMessage = "GitHub returned empty workflow runs"
+                    return UpdateCheckResult.ERROR
+                } else {
+                    lastCheckErrorMessage = "GitHub returned unsuccessful workflow runs response"
+                    return UpdateCheckResult.ERROR
+                }
+            }
+
             // Fetch latest release based on channel with conditional headers
             val response = if (channel == "beta") {
                 gitHubApiService.getReleasesWithHeaders(
@@ -326,6 +383,11 @@ class UpdateNotificationWorker(
         return now - lastSentAt >= minIntervalMs
     }
     
+    private fun extractNightlyRunNumber(versionString: String): Int {
+        val regex = Regex("nightly-r(\\d+)", RegexOption.IGNORE_CASE)
+        return regex.find(versionString)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+    }
+
     /**
      * Compare version strings to determine if new version is newer
      * Handles semantic versioning with build numbers and pre-release tags
