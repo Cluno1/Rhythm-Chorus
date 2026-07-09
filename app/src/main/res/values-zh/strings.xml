@@ -3,7 +3,7 @@
     <string name="app_name">Rhythm</string>
     <!-- Common Labels -->
     <string name="home">首页</string>
-    <string name="library">图书馆</string>
+    <string name="library">曲库</string>
     <string name="search">搜索</string>
     <string name="settings">设置</string>
     <!-- Media3 notification configuration -->
@@ -43,7 +43,7 @@
     <string name="settings_update_notifications_merged_desc">获取新版本提醒和后台更新检查结果</string>
     <string name="settings_rhythm_guard_alert_notifications">安全警报通知</string>
     <string name="settings_rhythm_guard_alert_notifications_desc">当 Rhythm Guard 检测到有风险的交易量或暴露时显示通知</string>
-    <string name="settings_rhythm_guard_timer_notifications">休息定时器通知</string>
+    <string name="settings_rhythm_guard_timer_notifications">休息提醒通知</string>
     <string name="settings_rhythm_guard_timer_notifications_desc">显示预定休息时间和活动超时倒计时的通知</string>
     <string name="settings_rhythm_pulse_notifications">Rhythm提示通知</string>
     <string name="settings_rhythm_pulse_notifications_desc">接收友好提醒和倾听提示。</string>
@@ -65,7 +65,7 @@
     <string name="settings_auto_queue_desc">播放开始时构建相关队列。</string>
     <string name="settings_context_queue_preference">上下文队列首选项</string>
     <string name="settings_context_queue_preference_desc">选择上下文队列应首先优先考虑哪些元数据。</string>
-    <string name="settings_context_pref_artist_first">艺术家第一</string>
+    <string name="settings_context_pref_artist_first">艺术家优先</string>
     <string name="settings_context_pref_genre_first">类型第一</string>
     <string name="settings_context_queue_persistence">上下文队列持久化</string>
     <string name="settings_context_queue_persistence_desc">选择上下文队列在播放结束后是否保持可用。</string>
