@@ -145,6 +145,7 @@ class MusicRepository(context: Context) {
     private val genrePrefs: SharedPreferences by lazy { context.getSharedPreferences("genre_cache", Context.MODE_PRIVATE) }
     private val artworkPrefs: SharedPreferences by lazy { context.getSharedPreferences("artwork_overrides", Context.MODE_PRIVATE) }
     private val dateAddedPrefs: SharedPreferences by lazy { context.getSharedPreferences("song_date_added_cache", Context.MODE_PRIVATE) }
+    private val libraryScanPrefs: SharedPreferences by lazy { context.getSharedPreferences("library_scan_metadata", Context.MODE_PRIVATE) }
     
     // Scan progress tracking
     private val _scanProgress = MutableStateFlow(ScanProgress(0, 0, ScanPhase.Idle))
@@ -1066,6 +1067,7 @@ class MusicRepository(context: Context) {
                 // Update scan progress to complete
                 _scanProgress.value = ScanProgress(songs.size, count, ScanPhase.Complete, duration)
                 appSettings.setLastScanTimestamp(System.currentTimeMillis())
+                libraryScanPrefs.edit().putInt("last_scan_mediastore_count", count).apply()
                 
                 // Log errors if any
                 if (errors.isNotEmpty()) {
@@ -1218,6 +1220,22 @@ class MusicRepository(context: Context) {
                 Log.d(TAG, "Incremental scan complete: ${newSongs.size} new songs in ${duration}ms")
                 Log.d(TAG, "Filtering stats - Format: $filteredByFormat, Quality: $filteredByQuality")
                 _scanProgress.value = ScanProgress(newSongs.size, count, ScanPhase.Complete, duration)
+                
+                // Update raw MediaStore count cache after incremental scan
+                try {
+                    val countCursor = context.contentResolver.query(
+                        collection,
+                        arrayOf(MediaStore.Audio.Media._ID),
+                        "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%') AND ${MediaStore.Audio.Media.DURATION} > 10000",
+                        null,
+                        null
+                    )
+                    val mediaStoreCount = countCursor?.use { it.count } ?: 0
+                    libraryScanPrefs.edit().putInt("last_scan_mediastore_count", mediaStoreCount).apply()
+                    Log.d(TAG, "Saved incremental MediaStore count: $mediaStoreCount")
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to save incremental MediaStore count", e)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error during incremental scan", e)
@@ -6146,8 +6164,7 @@ class MusicRepository(context: Context) {
                 roomDb.artistDao().deleteAll()
             }
             genrePrefs.edit().clear().apply()
-            artworkPrefs.edit().clear().apply()
-            clearEmbeddedArtworkFileCaches()
+            libraryScanPrefs.edit().clear().apply()
             clearInMemoryCaches()
             Log.i(TAG, "Invalidated Room + metadata caches for forced full media rescan")
         } catch (e: Exception) {
@@ -6175,8 +6192,17 @@ class MusicRepository(context: Context) {
                 null
             )
             val mediaStoreCount = countCursor?.use { it.count } ?: 0
-            if (mediaStoreCount != cachedCount) {
-                Log.d(TAG, "Staleness check: MediaStore count ($mediaStoreCount) != cached count ($cachedCount)")
+            
+            // Compare the current MediaStore count with the MediaStore count at the time of the last scan
+            val lastScanCount = libraryScanPrefs.getInt("last_scan_mediastore_count", -1)
+            if (lastScanCount == -1) {
+                // Fallback: if we do not have the stored count, check against cachedCount as a backup
+                if (mediaStoreCount != cachedCount) {
+                    Log.d(TAG, "Staleness check: MediaStore count ($mediaStoreCount) != cached count ($cachedCount) (no lastScanCount)")
+                    return true
+                }
+            } else if (mediaStoreCount != lastScanCount) {
+                Log.d(TAG, "Staleness check: MediaStore count ($mediaStoreCount) != last scan MediaStore count ($lastScanCount)")
                 return true
             }
 
@@ -6249,6 +6275,7 @@ class MusicRepository(context: Context) {
                     }
                     genrePrefs.edit().clear().apply()
                     artworkPrefs.edit().clear().apply()
+                    libraryScanPrefs.edit().clear().apply()
                     clearEmbeddedArtworkFileCaches()
                     clearInMemoryCaches()
                     Log.d(TAG, "Cleared Room song/artist/link tables and metadata caches")
