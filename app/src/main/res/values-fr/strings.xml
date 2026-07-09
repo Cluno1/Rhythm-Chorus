@@ -2884,4 +2884,9 @@
     <string name="lyrically_sources_title">Sources des paroles</string>
     <string name="lyrically_sources_desc">Configurez et hiérarchisez les sources de paroles dans Lyrically. Les sources « mot à mot » seront essayées en premier, puis on passera aux sources synchronisées ou simples.</string>
     <string name="error_no_document_app">Aucun sélecteur de documents système n\'a été trouvé pour sélectionner un dossier.</string>
+    <string name="settings_rhythm_guard_first_break_dialog_title">À propos des pauses d\'écoute</string>
+    <string name="settings_rhythm_guard_first_break_dialog_message">Rhythm Guard programme des pauses d\'écoute pour protéger votre audition lorsque les limites d\'exposition quotidiennes sont atteintes. Une pause interrompt la lecture et verrouille les commandes afin de garantir à vos oreilles un repos adéquat.\n\nPour cette première pause, vous pouvez choisir de désactiver Rhythm Guard. Cependant, lors des pauses suivantes, vous ne pourrez pas désactiver Rhythm Guard avant la fin de la pause. Vous pouvez à tout moment le désactiver ou modifier ses paramètres en dehors des pauses actives.</string>
+    <string name="settings_rhythm_guard_first_break_dialog_turn_off">Désactiver Rhythm Guard</string>
+    <string name="settings_rhythm_guard_first_break_dialog_start">Début de la pause</string>
+    <string name="settings_rhythm_guard_locked_during_break">Verrouillé pendant la pause d\'écoute</string>
 </resources>
