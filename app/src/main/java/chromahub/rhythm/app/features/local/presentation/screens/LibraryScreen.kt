@@ -883,8 +883,8 @@ fun LibraryScreen(
         topBar = {
             Column(
                 modifier = Modifier.onGloballyPositioned { coordinates ->
-                    if (scrollBehavior.state.heightOffset == 0f) {
-                        expandedHeaderHeight = coordinates.size.height
+                    if (scrollBehavior.state.heightOffset == 0f || expandedHeaderHeight == 0) {
+                        expandedHeaderHeight = coordinates.size.height - scrollBehavior.state.heightOffset.toInt()
                     }
                 }
             ) {
