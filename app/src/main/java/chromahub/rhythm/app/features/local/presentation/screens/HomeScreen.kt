@@ -605,6 +605,7 @@ private fun ModernScrollableContent(
 
     // Rhythm Guard States (pulled up from LazyColumn block)
     val rhythmGuardMode by appSettings.rhythmGuardMode.collectAsState()
+    val showRhythmGuardWidget by appSettings.homeShowRhythmGuard.collectAsState()
     val rhythmGuardAge by appSettings.rhythmGuardAge.collectAsState()
     val rhythmGuardAlertThresholdMinutes by appSettings.rhythmGuardAlertThresholdMinutes.collectAsState()
     val rhythmGuardTimeoutUntilMs by appSettings.rhythmGuardTimeoutUntilMs.collectAsState()
@@ -1044,7 +1045,7 @@ private fun ModernScrollableContent(
                         }
                     }
                     "RHYTHM_GUARD" -> {
-                        if (rhythmGuardMode != AppSettings.RHYTHM_GUARD_MODE_OFF) {
+                        if (showRhythmGuardWidget && rhythmGuardMode != AppSettings.RHYTHM_GUARD_MODE_OFF) {
                             val rhythmGuardTimeoutRemainingMs = (rhythmGuardTimeoutUntilMs - System.currentTimeMillis()).coerceAtLeast(0L)
                             val isRhythmGuardTimeoutActive = rhythmGuardTimeoutRemainingMs > 0L
 

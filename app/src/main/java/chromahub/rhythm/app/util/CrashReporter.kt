@@ -34,7 +34,30 @@ object CrashReporter {
                 return@setDefaultUncaughtExceptionHandler
             }
 
-            val crashLog = Log.getStackTraceString(throwable)
+            var appVersion = "Unknown"
+            try {
+                val packageInfo = application.packageManager.getPackageInfo(application.packageName, 0)
+                appVersion = "${packageInfo.versionName} (${packageInfo.versionCode})"
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to get package info", e)
+            }
+
+            val manufacturer = android.os.Build.MANUFACTURER
+            val model = android.os.Build.MODEL
+            val sdkInt = android.os.Build.VERSION.SDK_INT
+            val release = android.os.Build.VERSION.RELEASE
+
+            val builder = StringBuilder()
+            builder.append("=== Rhythm App Crash Report ===\n")
+            builder.append("Time: ${java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", java.util.Locale.US).format(java.util.Date())}\n")
+            builder.append("App Version: $appVersion\n")
+            builder.append("Device: $manufacturer $model\n")
+            builder.append("Android Version: $release (API $sdkInt)\n")
+            builder.append("Thread: ${thread.name}\n")
+            builder.append("===============================\n\n")
+            builder.append(Log.getStackTraceString(throwable))
+            val crashLog = builder.toString()
+
             Log.e(TAG, "Uncaught exception on thread ${thread.name}: $crashLog")
             appSettings.addCrashLogEntry(crashLog) // Add to crash log history
             CrashActivity.start(application.applicationContext, crashLog) // Start CrashActivity
@@ -43,6 +66,7 @@ object CrashReporter {
             System.exit(1)
         }
     }
+
 
     private fun isRuntimeShutdownThrowable(throwable: Throwable?): Boolean {
         var cause = throwable

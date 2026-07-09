@@ -1332,6 +1332,12 @@
     <string name="settings_rhythm_guard_break_dialog_pick_time">Pick Time</string>
     <string name="settings_rhythm_guard_break_dialog_picker_extend_title">Choose break length</string>
     <string name="settings_rhythm_guard_break_dialog_picker_delay_title">Choose delay length</string>
+    <string name="settings_rhythm_guard_first_break_dialog_title">About Listening Breaks</string>
+    <string name="settings_rhythm_guard_first_break_dialog_message">Rhythm Guard schedules listening breaks to protect your hearing when daily exposure limits are reached. A break pauses playback and locks controls to ensure your ears get proper rest.\n\nFor this first break, you can choose to turn off Rhythm Guard. However, during subsequent breaks, you will not be able to disable Rhythm Guard until the break time ends. You can always turn it off or adjust settings outside of active breaks.</string>
+    <string name="settings_rhythm_guard_first_break_dialog_turn_off">Turn Off Rhythm Guard</string>
+    <string name="settings_rhythm_guard_first_break_dialog_start">Start Break</string>
+    <string name="settings_rhythm_guard_locked_during_break">Locked during listening break</string>
+
     <string name="settings_rhythm_guard_timeout_reason_auto">Listening break triggered: today %1$s exceeds recommended %2$s.</string>
     <string name="settings_rhythm_guard_timeout_reason_manual">Listening break started</string>
     <string name="settings_rhythm_guard_resume_countdown_label">Listening Timeout</string>

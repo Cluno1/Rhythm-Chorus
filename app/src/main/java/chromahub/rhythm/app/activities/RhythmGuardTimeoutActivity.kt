@@ -32,6 +32,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -68,6 +70,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.data.model.AppSettings
+import kotlinx.coroutines.launch
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShape
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.ui.graphics.Color
+
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmWavyProgressLoader
 import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository
 import chromahub.rhythm.app.shared.data.repository.StatsTimeRange
@@ -224,32 +238,35 @@ private fun RhythmGuardTimeoutScreen(
     // Responsive sizing
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
-    val contentMaxWidth = 600.dp
-    val cardPadding = if (isTablet) 32.dp else 28.dp
+    val contentMaxWidth = if (isTablet) 1000.dp else 600.dp
+    val startPadding = if (isTablet) 60.dp else 30.dp
+    val endPadding = if (isTablet) 60.dp else 30.dp
+    val topPadding = if (isTablet) 50.dp else 40.dp
+    val bottomPadding = if (isTablet) 50.dp else 32.dp
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(
-                horizontal = if (isTablet) 24.dp else 0.dp,
-                vertical = if (isTablet) 24.dp else 0.dp
-            ),
-        contentAlignment = if (isTablet) Alignment.Center else Alignment.TopCenter
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center
     ) {
+        RotatingBackgroundCookies(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f))
+
         // Timeout card container
         Surface(
-            color = MaterialTheme.colorScheme.surface,
-            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            shape = if (isTablet) RoundedCornerShape(32.dp) else androidx.compose.ui.graphics.RectangleShape,
+            border = if (isTablet) BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)) else null,
             tonalElevation = 0.dp,
             modifier = if (isTablet) {
                 Modifier
-                    .fillMaxWidth()
                     .widthIn(max = contentMaxWidth)
+                    .fillMaxWidth(0.9f)
+                    .heightIn(max = 750.dp)
+                    .fillMaxHeight(0.9f)
             } else {
                 Modifier.fillMaxSize()
             }
-                .then(if (isTablet) Modifier else Modifier.fillMaxHeight())
                 .animateContentSize(
                     animationSpec = spring(
                         dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -257,90 +274,212 @@ private fun RhythmGuardTimeoutScreen(
                     )
                 )
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(
-                        start = cardPadding,
-                        end = cardPadding,
-                        top = cardPadding * 2,
-                        bottom = cardPadding
-                    ),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Center
-            ) {
-                // Timeout icon centered at top, onboarding style
-                AnimatedVisibility(
-                    visible = true,
-                    enter = scaleIn(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ) + fadeIn()
+
+            if (isTablet) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(
+                            start = startPadding,
+                            end = endPadding,
+                            top = topPadding,
+                            bottom = bottomPadding
+                        ),
+                    horizontalArrangement = Arrangement.spacedBy(32.dp),
+                    verticalAlignment = Alignment.Top
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 32.dp),
-                        contentAlignment = Alignment.Center
+                    // Left column: Icon (centered, 72.dp), Title, Subtitle, description, branding, and action buttons
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Icon(
-                            imageVector = RhythmIcons.Security,
-                            contentDescription = stringResource(R.string.settings_rhythm_guard),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(56.dp)
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = RhythmIcons.Security,
+                                contentDescription = stringResource(R.string.settings_rhythm_guard),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(72.dp)
+                            )
+                        }
+                        
+                        Text(
+                            text = context.getString(R.string.settings_rhythm_guard_timeout_activity_title),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
+                        
+                        val displayReason = if (timeoutReasonState.isNotBlank()) timeoutReasonState else reason
+                        Text(
+                            text = if (displayReason.isNotBlank()) {
+                                displayReason
+                            } else {
+                                context.getString(R.string.settings_rhythm_guard_timeout_activity_default_reason)
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Text(
+                            text = context.getString(R.string.settings_rhythm_guard_timeout_activity_comic_desc),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.rhythm_splash_logo),
+                                    contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.cd_rhythm_splash),
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Action Buttons moved to left column bottom
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            val extendMinutes = 5
+                            OutlinedButton(
+                                onClick = {
+                                    val now = System.currentTimeMillis()
+                                    if (timeoutUntilMs > now) {
+                                        val updatedUntil = (timeoutUntilMs + extendMinutes.toLong() * 60_000L)
+                                            .coerceAtMost(now + 24L * 60L * 60L * 1000L)
+                                        val updatedReason = timeoutReasonState.ifBlank { reason }
+                                        appSettings.setRhythmGuardListeningTimeout(
+                                            untilEpochMs = updatedUntil,
+                                            reason = updatedReason,
+                                            startedAtEpochMs = timeoutStartedAtMs.takeIf { it > 0L } ?: now
+                                        )
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(52.dp),
+                                shape = RoundedCornerShape(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = RhythmIcons.AccessTime,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = context.getString(
+                                        R.string.settings_rhythm_guard_timeout_activity_extend,
+                                        extendMinutes
+                                    ),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val exitButtonScale = remember { Animatable(1f) }
+                                OutlinedButton(
+                                    onClick = {
+                                        scope.launch {
+                                            exitButtonScale.animateTo(0.92f, animationSpec = tween(100))
+                                            exitButtonScale.animateTo(1f, animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessHigh
+                                            ))
+                                        }
+                                        onCloseScreen()
+                                    },
+                                    modifier = Modifier
+                                        .height(56.dp)
+                                        .weight(1f)
+                                        .graphicsLayer {
+                                            scaleX = exitButtonScale.value
+                                            scaleY = exitButtonScale.value
+                                        },
+                                    shape = RoundedCornerShape(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = RhythmIcons.ExitToApp,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        context.getString(R.string.settings_rhythm_guard_timeout_activity_exit),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
+                                }
+                                
+                                val closeButtonScale = remember { Animatable(1f) }
+                                Button(
+                                    onClick = {
+                                        scope.launch {
+                                            closeButtonScale.animateTo(0.92f, animationSpec = tween(100))
+                                            closeButtonScale.animateTo(1f, animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessHigh
+                                            ))
+                                        }
+                                        val activity = context as? AppCompatActivity
+                                        activity?.finishAffinity()
+                                    },
+                                    modifier = Modifier
+                                        .height(56.dp)
+                                        .weight(1f)
+                                        .graphicsLayer {
+                                            scaleX = closeButtonScale.value
+                                            scaleY = closeButtonScale.value
+                                        },
+                                    shape = RoundedCornerShape(32.dp)
+                                ) {
+                                    Text(
+                                        context.getString(R.string.settings_rhythm_guard_timeout_activity_close_app),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Icon(
+                                        imageVector = RhythmIcons.Forward,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
                     }
-                }
-
-                // Left-aligned texts
-                Text(
-                    text = context.getString(R.string.settings_rhythm_guard_timeout_activity_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Start,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                val displayReason = if (timeoutReasonState.isNotBlank()) timeoutReasonState else reason
-                Text(
-                    text = if (displayReason.isNotBlank()) {
-                        displayReason
-                    } else {
-                        context.getString(R.string.settings_rhythm_guard_timeout_activity_default_reason)
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Start,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 32.dp)
-                )
-
-                Text(
-                    text = context.getString(R.string.settings_rhythm_guard_timeout_activity_comic_desc),
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Start,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
-                    modifier = Modifier.padding(bottom = 20.dp)
-                )
-
-                // Circular progress with countdown
-                AnimatedVisibility(
-                    visible = true,
-                    enter = scaleIn(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessMediumLow
-                        )
-                    ) + fadeIn(animationSpec = tween(1000))
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 28.dp),
-                        contentAlignment = Alignment.Center
+                    
+                    // Right column: circular progress countdown loader, centered vertically/horizontally
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Box(
                             modifier = Modifier.size(176.dp),
@@ -373,17 +512,80 @@ private fun RhythmGuardTimeoutScreen(
                             }
                         }
                     }
-                }
 
-                // App logo and name at center
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
+                }
+            } else {
+                // Mobile layout Column
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 28.dp)
+                        .verticalScroll(rememberScrollState())
+                        .padding(
+                            start = startPadding,
+                            end = endPadding,
+                            top = topPadding,
+                            bottom = bottomPadding
+                        ),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    // App logo with glowing effect
+                    // Timeout icon centered at top
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = scaleIn(
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessLow
+                            )
+                        ) + fadeIn()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = RhythmIcons.Security,
+                                contentDescription = stringResource(R.string.settings_rhythm_guard),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(56.dp)
+                            )
+                        }
+                    }
+
+                    // Left-aligned texts
+                    Text(
+                        text = context.getString(R.string.settings_rhythm_guard_timeout_activity_title),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Start,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    val displayReason = if (timeoutReasonState.isNotBlank()) timeoutReasonState else reason
+                    Text(
+                        text = if (displayReason.isNotBlank()) {
+                            displayReason
+                        } else {
+                            context.getString(R.string.settings_rhythm_guard_timeout_activity_default_reason)
+                        },
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Start,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 32.dp)
+                    )
+
+                    Text(
+                        text = context.getString(R.string.settings_rhythm_guard_timeout_activity_comic_desc),
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Start,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    )
+
+                    // Circular progress with countdown
                     AnimatedVisibility(
                         visible = true,
                         enter = scaleIn(
@@ -395,157 +597,212 @@ private fun RhythmGuardTimeoutScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(80.dp)
-                                .clip(CircleShape),
+                                .fillMaxWidth()
+                                .padding(bottom = 28.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.rhythm_splash_logo),
-                                contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
-                                modifier = Modifier.size(80.dp)
-                            )
+                            Box(
+                                modifier = Modifier.size(176.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                RhythmWavyProgressLoader(
+                                    progress = progress,
+                                    modifier = Modifier.fillMaxSize(),
+                                    indicatorColor = MaterialTheme.colorScheme.primary,
+                                    trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.AccessTime,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(28.dp)
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = formatCountdown(remainingSeconds, useHoursFormat),
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(3.dp))
-
-                    // App name
-                    AnimatedVisibility(
-                        visible = true,
-                        enter = scaleIn(
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessMedium
-                            )
-                        ) + fadeIn(animationSpec = tween(800, delayMillis = 200))
-                    ) {
-                        Text(
-                            text = stringResource(R.string.cd_rhythm_splash),
-                            style = MaterialTheme.typography.displaySmall,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                // Action buttons at bottom
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 22.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    val extendMinutes = 5
-                    OutlinedButton(
-                        onClick = {
-                            val now = System.currentTimeMillis()
-                            if (timeoutUntilMs > now) {
-                                val updatedUntil = (timeoutUntilMs + extendMinutes.toLong() * 60_000L)
-                                    .coerceAtMost(now + 24L * 60L * 60L * 1000L)
-                                val updatedReason = timeoutReasonState.ifBlank { reason }
-                                appSettings.setRhythmGuardListeningTimeout(
-                                    untilEpochMs = updatedUntil,
-                                    reason = updatedReason,
-                                    startedAtEpochMs = timeoutStartedAtMs.takeIf { it > 0L } ?: now
-                                )
-                            }
-                        },
+                    // App logo and name at center
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(32.dp)
+                            .padding(bottom = 28.dp)
                     ) {
-                        Icon(
-                            imageVector = RhythmIcons.AccessTime,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = context.getString(
-                                R.string.settings_rhythm_guard_timeout_activity_extend,
-                                extendMinutes
-                            ),
-                            style = MaterialTheme.typography.labelLarge
-                        )
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = scaleIn(
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessMediumLow
+                                )
+                            ) + fadeIn(animationSpec = tween(1000))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(80.dp)
+                                    .clip(CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.rhythm_splash_logo),
+                                    contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
+                                    modifier = Modifier.size(80.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(3.dp))
+
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = scaleIn(
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessMedium
+                                )
+                            ) + fadeIn(animationSpec = tween(800, delayMillis = 200))
+                        ) {
+                            Text(
+                                text = stringResource(R.string.cd_rhythm_splash),
+                                style = MaterialTheme.typography.displaySmall,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    // Action buttons at bottom
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 22.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Exit timeout button
-                        val exitButtonScale = remember { Animatable(1f) }
+                        val extendMinutes = 5
                         OutlinedButton(
                             onClick = {
-                                scope.launch {
-                                    exitButtonScale.animateTo(0.92f, animationSpec = tween(100))
-                                    exitButtonScale.animateTo(1f, animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessHigh
-                                    ))
+                                val now = System.currentTimeMillis()
+                                if (timeoutUntilMs > now) {
+                                    val updatedUntil = (timeoutUntilMs + extendMinutes.toLong() * 60_000L)
+                                        .coerceAtMost(now + 24L * 60L * 60L * 1000L)
+                                    val updatedReason = timeoutReasonState.ifBlank { reason }
+                                    appSettings.setRhythmGuardListeningTimeout(
+                                        untilEpochMs = updatedUntil,
+                                        reason = updatedReason,
+                                        startedAtEpochMs = timeoutStartedAtMs.takeIf { it > 0L } ?: now
+                                    )
                                 }
-                                onCloseScreen()
                             },
                             modifier = Modifier
-                                .height(56.dp)
-                                .weight(1f)
-                                .graphicsLayer {
-                                    scaleX = exitButtonScale.value
-                                    scaleY = exitButtonScale.value
-                                },
+                                .fillMaxWidth()
+                                .height(52.dp),
                             shape = RoundedCornerShape(32.dp)
                         ) {
                             Icon(
-                                imageVector = RhythmIcons.ExitToApp,
+                                imageVector = RhythmIcons.AccessTime,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                context.getString(R.string.settings_rhythm_guard_timeout_activity_exit),
+                                text = context.getString(
+                                    R.string.settings_rhythm_guard_timeout_activity_extend,
+                                    extendMinutes
+                                ),
                                 style = MaterialTheme.typography.labelLarge
                             )
                         }
 
-                        // Close app button
-                        val closeButtonScale = remember { Animatable(1f) }
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    closeButtonScale.animateTo(0.92f, animationSpec = tween(100))
-                                    closeButtonScale.animateTo(1f, animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessHigh
-                                    ))
-                                }
-                                val activity = context as? AppCompatActivity
-                                activity?.finishAffinity()
-                            },
-                            modifier = Modifier
-                                .height(56.dp)
-                                .weight(1f)
-                                .graphicsLayer {
-                                    scaleX = closeButtonScale.value
-                                    scaleY = closeButtonScale.value
-                                },
-                            shape = RoundedCornerShape(32.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                context.getString(R.string.settings_rhythm_guard_timeout_activity_close_app),
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                imageVector = RhythmIcons.Forward,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            val exitButtonScale = remember { Animatable(1f) }
+                            OutlinedButton(
+                                onClick = {
+                                    scope.launch {
+                                        exitButtonScale.animateTo(0.92f, animationSpec = tween(100))
+                                        exitButtonScale.animateTo(1f, animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessHigh
+                                        ))
+                                    }
+                                    onCloseScreen()
+                                },
+                                modifier = Modifier
+                                    .height(56.dp)
+                                    .weight(1f)
+                                    .graphicsLayer {
+                                        scaleX = exitButtonScale.value
+                                        scaleY = exitButtonScale.value
+                                    },
+                                shape = RoundedCornerShape(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = RhythmIcons.ExitToApp,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    context.getString(R.string.settings_rhythm_guard_timeout_activity_exit),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+
+                            val closeButtonScale = remember { Animatable(1f) }
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        closeButtonScale.animateTo(0.92f, animationSpec = tween(100))
+                                        closeButtonScale.animateTo(1f, animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessHigh
+                                        ))
+                                    }
+                                    val activity = context as? AppCompatActivity
+                                    activity?.finishAffinity()
+                                },
+                                modifier = Modifier
+                                    .height(56.dp)
+                                    .weight(1f)
+                                    .graphicsLayer {
+                                        scaleX = closeButtonScale.value
+                                        scaleY = closeButtonScale.value
+                                    },
+                                shape = RoundedCornerShape(32.dp)
+                            ) {
+                                Text(
+                                    context.getString(R.string.settings_rhythm_guard_timeout_activity_close_app),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = RhythmIcons.Forward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }
             }
+
         }
     }
 }
@@ -563,3 +820,104 @@ private fun formatCountdown(seconds: Long, useHoursFormat: Boolean): String {
         String.format("%02d:%02d", totalMinutes, secs)
     }
 }
+
+@Composable
+private fun RotatingBackgroundCookies(color: Color) {
+    val lowerY = remember { Animatable(-600f) }
+    val upperY = remember { Animatable(-1000f) }
+
+    LaunchedEffect(Unit) {
+        this.launch {
+            lowerY.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(durationMillis = 500, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+            )
+        }
+        
+        upperY.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(durationMillis = 600, easing = androidx.compose.animation.core.LinearEasing)
+        )
+        
+        this.launch {
+            lowerY.animateTo(
+                targetValue = 40f,
+                animationSpec = tween(durationMillis = 80, easing = androidx.compose.animation.core.FastOutLinearInEasing)
+            )
+            lowerY.animateTo(
+                targetValue = 0f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        }
+        
+        this.launch {
+            upperY.animateTo(
+                targetValue = -60f,
+                animationSpec = tween(durationMillis = 120, easing = androidx.compose.animation.core.LinearOutSlowInEasing)
+            )
+            upperY.animateTo(
+                targetValue = 0f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
+        }
+    }
+
+
+    val infiniteTransition = rememberInfiniteTransition(label = "cookieRotation")
+    val rotationLower by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 50000, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "lowerRotation"
+    )
+    val rotationUpper by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = -360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 60000, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "upperRotation"
+    )
+
+    val cookie6Shape = rememberExpressiveShape("COOKIE_6")
+    val cookie12Shape = rememberExpressiveShape("COOKIE_12")
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .size(460.dp)
+                .graphicsLayer {
+                    translationX = -120.dp.toPx()
+                    translationY = (140.dp.toPx() + lowerY.value.dp.toPx())
+                    rotationZ = rotationLower + 15f
+                }
+                .clip(cookie6Shape)
+                .background(color)
+        )
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(340.dp)
+                .graphicsLayer {
+                    translationX = 80.dp.toPx()
+                    translationY = (-100.dp.toPx() + upperY.value.dp.toPx())
+                    rotationZ = rotationUpper - 20f
+                }
+                .clip(cookie12Shape)
+                .background(color)
+        )
+    }
+}
+

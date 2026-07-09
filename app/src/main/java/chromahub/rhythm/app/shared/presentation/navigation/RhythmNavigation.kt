@@ -436,6 +436,9 @@ private fun RhythmGuardWarningHost(
             exposureWarningEnabled &&
             todayExposureMinutes > activeLimit
 
+    val firstBreakSeen by appSettings.rhythmGuardFirstBreakSeen.collectAsState()
+    var showFirstBreakDialogState by remember { mutableStateOf<RhythmGuardBreakDialogState?>(null) }
+
     var volumeDialogState by remember { mutableStateOf<RhythmGuardVolumeWarningDialogState?>(null) }
     var breakDialogState by remember { mutableStateOf<RhythmGuardBreakDialogState?>(null) }
     var lastWarningType by remember { mutableStateOf<RhythmGuardWarningType?>(null) }
@@ -740,6 +743,7 @@ private fun RhythmGuardWarningHost(
         if (!rulesEnabled) {
             volumeDialogState = null
             breakDialogState = null
+            showFirstBreakDialogState = null
             cancelRhythmGuardAlertNotification(context)
             if (auraMode == AppSettings.RHYTHM_GUARD_MODE_OFF) {
                 appSettings.clearRhythmGuardListeningTimeout()
@@ -750,6 +754,7 @@ private fun RhythmGuardWarningHost(
         if (isListeningTimeoutActive) {
             volumeDialogState = null
             breakDialogState = null
+            showFirstBreakDialogState = null
             cancelRhythmGuardAlertNotification(context)
             return@LaunchedEffect
         }
@@ -768,6 +773,7 @@ private fun RhythmGuardWarningHost(
         if (warningType == null) {
             volumeDialogState = null
             breakDialogState = null
+            showFirstBreakDialogState = null
             cancelRhythmGuardAlertNotification(context)
             return@LaunchedEffect
         }
@@ -848,75 +854,84 @@ private fun RhythmGuardWarningHost(
                         exposureLimitMinutes = effectiveExposureLimitMinutes
                     )
 
-                    if (auraMode == AppSettings.RHYTHM_GUARD_MODE_AUTO) {
-                        val now = System.currentTimeMillis()
-                        val safeBreakMinutes = configuredBreakResumeMinutes.coerceIn(1, 180)
-                        val timeoutEnd = now + safeBreakMinutes * 60_000L
-                        val reason = context.getString(
-                            R.string.settings_rhythm_guard_timeout_reason_auto,
-                            formattedTodayExposure,
-                            formattedExposureLimit
-                        )
-                        timeoutStartedAtMs = now
-                        lastTimeoutTriggeredExposureMinutes = todayExposureMinutes
-                        appSettings.setRhythmGuardBreakResumeMinutes(safeBreakMinutes)
-                        appSettings.setRhythmGuardListeningTimeout(
-                            untilEpochMs = timeoutEnd,
-                            reason = reason,
-                            startedAtEpochMs = now
-                        )
-                        musicViewModel.pauseForRhythmGuardTimeout(reason = "auto break start")
-                        RhythmGuardTimeoutActivity.start(
-                            context = context,
-                            reason = reason,
-                            timeoutUntilMs = timeoutEnd,
-                            timeoutStartedAtMs = now
-                        )
-
-                        if (alertNotificationsEnabled) {
-                            showRhythmGuardAlertNotification(
-                                context = context,
-                                title = context.getString(R.string.settings_rhythm_guard_notification_alert_title),
-                                text = context.getString(
-                                    R.string.settings_rhythm_guard_break_dialog_message,
-                                    formattedTodayExposure,
-                                    formattedExposureLimit
-                                ),
-                                riskLevel = riskLevel
-                            )
-                        }
-
-                        if (timerNotificationsEnabled) {
-                            showRhythmGuardTimerNotification(
-                                context = context,
-                                title = context.getString(R.string.settings_rhythm_guard_notification_timer_active_title),
-                                text = context.getString(
-                                    R.string.settings_rhythm_guard_notification_timer_active_text,
-                                    rhythmGuardFormatCountdown(safeBreakMinutes.toLong() * 60L)
-                                ),
-                                remainingSeconds = safeBreakMinutes.toLong() * 60L,
-                                totalSeconds = safeBreakMinutes.toLong() * 60L
-                            )
-                        }
-                    } else {
-                        breakDialogState = RhythmGuardBreakDialogState(
+                    if (!firstBreakSeen) {
+                        showFirstBreakDialogState = RhythmGuardBreakDialogState(
                             mode = auraMode,
                             estimatedTodayMinutes = todayExposureMinutes,
                             recommendedDailyMinutes = effectiveExposureLimitMinutes,
                             riskLevel = riskLevel
                         )
-
-                        if (alertNotificationsEnabled) {
-                            showRhythmGuardAlertNotification(
+                    } else {
+                        if (auraMode == AppSettings.RHYTHM_GUARD_MODE_AUTO) {
+                            val now = System.currentTimeMillis()
+                            val safeBreakMinutes = configuredBreakResumeMinutes.coerceIn(1, 180)
+                            val timeoutEnd = now + safeBreakMinutes * 60_000L
+                            val reason = context.getString(
+                                R.string.settings_rhythm_guard_timeout_reason_auto,
+                                formattedTodayExposure,
+                                formattedExposureLimit
+                            )
+                            timeoutStartedAtMs = now
+                            lastTimeoutTriggeredExposureMinutes = todayExposureMinutes
+                            appSettings.setRhythmGuardBreakResumeMinutes(safeBreakMinutes)
+                            appSettings.setRhythmGuardListeningTimeout(
+                                untilEpochMs = timeoutEnd,
+                                reason = reason,
+                                startedAtEpochMs = now
+                            )
+                            musicViewModel.pauseForRhythmGuardTimeout(reason = "auto break start")
+                            RhythmGuardTimeoutActivity.start(
                                 context = context,
-                                title = context.getString(R.string.settings_rhythm_guard_notification_alert_title),
-                                text = context.getString(
-                                    R.string.settings_rhythm_guard_break_dialog_message,
-                                    formattedTodayExposure,
-                                    formattedExposureLimit
-                                ),
+                                reason = reason,
+                                timeoutUntilMs = timeoutEnd,
+                                timeoutStartedAtMs = now
+                            )
+
+                            if (alertNotificationsEnabled) {
+                                showRhythmGuardAlertNotification(
+                                    context = context,
+                                    title = context.getString(R.string.settings_rhythm_guard_notification_alert_title),
+                                    text = context.getString(
+                                        R.string.settings_rhythm_guard_break_dialog_message,
+                                        formattedTodayExposure,
+                                        formattedExposureLimit
+                                    ),
+                                    riskLevel = riskLevel
+                                )
+                            }
+
+                            if (timerNotificationsEnabled) {
+                                showRhythmGuardTimerNotification(
+                                    context = context,
+                                    title = context.getString(R.string.settings_rhythm_guard_notification_timer_active_title),
+                                    text = context.getString(
+                                        R.string.settings_rhythm_guard_notification_timer_active_text,
+                                        rhythmGuardFormatCountdown(safeBreakMinutes.toLong() * 60L)
+                                    ),
+                                    remainingSeconds = safeBreakMinutes.toLong() * 60L,
+                                    totalSeconds = safeBreakMinutes.toLong() * 60L
+                                )
+                            }
+                        } else {
+                            breakDialogState = RhythmGuardBreakDialogState(
+                                mode = auraMode,
+                                estimatedTodayMinutes = todayExposureMinutes,
+                                recommendedDailyMinutes = effectiveExposureLimitMinutes,
                                 riskLevel = riskLevel
                             )
+
+                            if (alertNotificationsEnabled) {
+                                showRhythmGuardAlertNotification(
+                                    context = context,
+                                    title = context.getString(R.string.settings_rhythm_guard_notification_alert_title),
+                                    text = context.getString(
+                                        R.string.settings_rhythm_guard_break_dialog_message,
+                                        formattedTodayExposure,
+                                        formattedExposureLimit
+                                    ),
+                                    riskLevel = riskLevel
+                                )
+                            }
                         }
                     }
                 }
@@ -1070,6 +1085,97 @@ private fun RhythmGuardWarningHost(
                     Text(context.getString(R.string.settings_rhythm_guard_warning_dialog_dismiss))
                 }
             }
+        )
+    }
+
+    val firstBreakState = showFirstBreakDialogState
+    if (firstBreakState != null) {
+        AlertDialog(
+            onDismissRequest = {
+                // Do not dismiss on outside click
+            },
+            icon = {
+                Icon(
+                    imageVector = RhythmIcons.Security,
+                    contentDescription = null,
+                    modifier = Modifier.size(28.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = context.getString(R.string.settings_rhythm_guard_first_break_dialog_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = context.getString(R.string.settings_rhythm_guard_first_break_dialog_message),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            appSettings.setRhythmGuardFirstBreakSeen(true)
+                            showFirstBreakDialogState = null
+                            if (firstBreakState.mode == AppSettings.RHYTHM_GUARD_MODE_AUTO) {
+                                val now = System.currentTimeMillis()
+                                val safeBreakMinutes = configuredBreakResumeMinutes.coerceIn(1, 180)
+                                val timeoutEnd = now + safeBreakMinutes * 60_000L
+                                val reason = context.getString(
+                                    R.string.settings_rhythm_guard_timeout_reason_auto,
+                                    formattedTodayExposure,
+                                    formattedExposureLimit
+                                )
+                                timeoutStartedAtMs = now
+                                lastTimeoutTriggeredExposureMinutes = todayExposureMinutes
+                                appSettings.setRhythmGuardBreakResumeMinutes(safeBreakMinutes)
+                                appSettings.setRhythmGuardListeningTimeout(
+                                    untilEpochMs = timeoutEnd,
+                                    reason = reason,
+                                    startedAtEpochMs = now
+                                )
+                                musicViewModel.pauseForRhythmGuardTimeout(reason = "auto break start")
+                                RhythmGuardTimeoutActivity.start(
+                                    context = context,
+                                    reason = reason,
+                                    timeoutUntilMs = timeoutEnd,
+                                    timeoutStartedAtMs = now
+                                )
+                            } else {
+                                breakDialogState = firstBreakState
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Text(text = context.getString(R.string.settings_rhythm_guard_first_break_dialog_start))
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            appSettings.setRhythmGuardMode(AppSettings.RHYTHM_GUARD_MODE_OFF)
+                            appSettings.setRhythmGuardFirstBreakSeen(true)
+                            showFirstBreakDialogState = null
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Text(text = context.getString(R.string.settings_rhythm_guard_first_break_dialog_turn_off))
+                    }
+                }
+            },
+            dismissButton = {}
         )
     }
 

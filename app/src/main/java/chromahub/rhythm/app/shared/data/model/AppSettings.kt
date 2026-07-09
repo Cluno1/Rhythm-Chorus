@@ -240,6 +240,8 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_RHYTHM_GUARD_TIMEOUT_STARTED_AT_MS = "rhythm_guard_timeout_started_at_ms"
         private const val KEY_RHYTHM_GUARD_TIMEOUT_COOLDOWN_UNTIL_MS = "rhythm_guard_timeout_cooldown_until_ms"
         private const val KEY_RHYTHM_GUARD_NEXT_ALLOWED_LIMIT_MINUTES = "rhythm_guard_next_allowed_limit_minutes"
+        private const val KEY_RHYTHM_GUARD_FIRST_BREAK_SEEN = "rhythm_guard_first_break_seen"
+        private const val KEY_HOME_SHOW_RHYTHM_GUARD = "home_show_rhythm_guard"
 
         // Legacy keys kept for migration compatibility.
         private const val KEY_RHYTHM_AURA_MODE = "rhythm_aura_mode"
@@ -1271,6 +1273,24 @@ class AppSettings private constructor(context: Context) {
     fun setRhythmGuardNextAllowedLimitMinutes(value: Int) {
         _rhythmGuardNextAllowedLimitMinutes.value = value
         prefs.edit().putInt(KEY_RHYTHM_GUARD_NEXT_ALLOWED_LIMIT_MINUTES, value).apply()
+    }
+
+    private val _rhythmGuardFirstBreakSeen = MutableStateFlow(
+        prefs.getBoolean(KEY_RHYTHM_GUARD_FIRST_BREAK_SEEN, false)
+    )
+    val rhythmGuardFirstBreakSeen: StateFlow<Boolean> = _rhythmGuardFirstBreakSeen.asStateFlow()
+    fun setRhythmGuardFirstBreakSeen(seen: Boolean) {
+        _rhythmGuardFirstBreakSeen.value = seen
+        prefs.edit().putBoolean(KEY_RHYTHM_GUARD_FIRST_BREAK_SEEN, seen).apply()
+    }
+
+    private val _homeShowRhythmGuard = MutableStateFlow(
+        prefs.getBoolean(KEY_HOME_SHOW_RHYTHM_GUARD, true)
+    )
+    val homeShowRhythmGuard: StateFlow<Boolean> = _homeShowRhythmGuard.asStateFlow()
+    fun setHomeShowRhythmGuard(value: Boolean) {
+        _homeShowRhythmGuard.value = value
+        prefs.edit().putBoolean(KEY_HOME_SHOW_RHYTHM_GUARD, value).apply()
     }
     
     private val _uniqueArtists = MutableStateFlow(prefs.getInt(KEY_UNIQUE_ARTISTS, 0))
@@ -4781,6 +4801,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _rhythmGuardTimeoutStartedAtMs.value = safeLong(KEY_RHYTHM_GUARD_TIMEOUT_STARTED_AT_MS, 0L).coerceAtLeast(0L)
         _rhythmGuardTimeoutCooldownUntilMs.value = safeLong(KEY_RHYTHM_GUARD_TIMEOUT_COOLDOWN_UNTIL_MS, 0L).coerceAtLeast(0L)
         _rhythmGuardNextAllowedLimitMinutes.value = prefs.getInt(KEY_RHYTHM_GUARD_NEXT_ALLOWED_LIMIT_MINUTES, 0)
+        _rhythmGuardFirstBreakSeen.value = prefs.getBoolean(KEY_RHYTHM_GUARD_FIRST_BREAK_SEEN, false)
+        _homeShowRhythmGuard.value = prefs.getBoolean(KEY_HOME_SHOW_RHYTHM_GUARD, true)
         
         // Enhanced User Preferences
         _favoriteGenres.value = try {

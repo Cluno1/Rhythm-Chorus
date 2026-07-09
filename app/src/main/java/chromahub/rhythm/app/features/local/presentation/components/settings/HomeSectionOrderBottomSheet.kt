@@ -90,7 +90,7 @@ fun HomeSectionOrderBottomSheet(
     val showRecentlyAdded by appSettings.homeShowRecentlyAdded.collectAsState()
     val showRecommended by appSettings.homeShowRecommended.collectAsState()
     val showListeningStats by appSettings.homeShowListeningStats.collectAsState()
-    val rhythmGuardMode by appSettings.rhythmGuardMode.collectAsState()
+    val showRhythmGuard by appSettings.homeShowRhythmGuard.collectAsState()
     
     // Fixed sections: DISCOVER always first (not reorderable)
     val fixedSections = setOf("GREETING", "DISCOVER", "MOOD")
@@ -104,7 +104,7 @@ fun HomeSectionOrderBottomSheet(
                 "NEW_RELEASES" to showNewReleases,
                 "RECENTLY_ADDED" to showRecentlyAdded,
                 "RECOMMENDED" to showRecommended,
-                "RHYTHM_GUARD" to (rhythmGuardMode != AppSettings.RHYTHM_GUARD_MODE_OFF),
+                "RHYTHM_GUARD" to showRhythmGuard,
                 "STATS" to showListeningStats
             )
         )
@@ -369,14 +369,8 @@ fun HomeSectionOrderBottomSheet(
                                         return@IconButton
                                     }
                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                    if (sectionId == "RHYTHM_GUARD") {
-                                        appSettings.setRhythmGuardMode(
-                                            if (isVisible) AppSettings.RHYTHM_GUARD_MODE_OFF else AppSettings.RHYTHM_GUARD_MODE_AUTO
-                                        )
-                                    } else {
-                                        visibilityMap = visibilityMap.toMutableMap().apply {
-                                            this[sectionId] = !isVisible
-                                        }
+                                    visibilityMap = visibilityMap.toMutableMap().apply {
+                                        this[sectionId] = !isVisible
                                     }
                                 },
                                 modifier = Modifier.size(40.dp)
@@ -467,9 +461,7 @@ fun HomeSectionOrderBottomSheet(
                         appSettings.setHomeShowListeningStats(visibilityMap["STATS"] ?: true)
                         
                         val rhythmGuardVisible = visibilityMap["RHYTHM_GUARD"] ?: true
-                        appSettings.setRhythmGuardMode(
-                            if (rhythmGuardVisible) AppSettings.RHYTHM_GUARD_MODE_AUTO else AppSettings.RHYTHM_GUARD_MODE_OFF
-                        )
+                        appSettings.setHomeShowRhythmGuard(rhythmGuardVisible)
 
                         Toast.makeText(context, R.string.homesectionorderbottomsheet_home_section_order_and, Toast.LENGTH_SHORT).show()
                         scope.launch {

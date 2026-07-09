@@ -402,6 +402,14 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                 fontWeight = FontWeight.Bold,
                                 color = if (isRhythmGuardEnabled) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                             )
+                            if (isTimeoutActive) {
+                                Text(
+                                    text = stringResource(id = R.string.settings_rhythm_guard_locked_during_break),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
                         TunerAnimatedSwitch(
                             checked = isRhythmGuardEnabled,
@@ -417,7 +425,8 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                 } else {
                                     appSettings.setRhythmGuardMode(AppSettings.RHYTHM_GUARD_MODE_OFF)
                                 }
-                            }
+                            },
+                            enabled = !isTimeoutActive
                         )
                     }
 

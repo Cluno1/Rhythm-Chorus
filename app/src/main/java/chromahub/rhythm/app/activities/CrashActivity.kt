@@ -18,6 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
+
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -26,6 +28,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import chromahub.rhythm.app.ui.theme.RhythmTheme
 import kotlin.system.exitProcess
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShape
+import androidx.compose.ui.graphics.Color
+
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
@@ -77,32 +84,35 @@ class CrashActivity : AppCompatActivity() {
         // Responsive sizing
         val configuration = LocalConfiguration.current
         val isTablet = configuration.screenWidthDp >= 600
-        val contentMaxWidth = 600.dp
-        val cardPadding = if (isTablet) 32.dp else 28.dp
+        val contentMaxWidth = if (isTablet) 1000.dp else 600.dp
+        val startPadding = if (isTablet) 60.dp else 30.dp
+        val endPadding = if (isTablet) 60.dp else 30.dp
+        val topPadding = if (isTablet) 50.dp else 40.dp
+        val bottomPadding = if (isTablet) 50.dp else 32.dp
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(
-                    horizontal = if (isTablet) 24.dp else 0.dp,
-                    vertical = if (isTablet) 24.dp else 0.dp
-                ),
-            contentAlignment = if (isTablet) Alignment.Center else Alignment.TopCenter
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
         ) {
+            RotatingBackgroundCookies(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f))
+
             // Crash card container
             Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shape = MaterialTheme.shapes.extraLarge,
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = if (isTablet) RoundedCornerShape(32.dp) else androidx.compose.ui.graphics.RectangleShape,
+                border = if (isTablet) BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)) else null,
                 tonalElevation = 0.dp,
                 modifier = if (isTablet) {
                     Modifier
-                        .fillMaxWidth()
                         .widthIn(max = contentMaxWidth)
+                        .fillMaxWidth(0.9f)
+                        .heightIn(max = 750.dp)
+                        .fillMaxHeight(0.9f)
                 } else {
                     Modifier.fillMaxSize()
                 }
-                    .then(if (isTablet) Modifier else Modifier.fillMaxHeight())
                     .animateContentSize(
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -110,223 +120,412 @@ class CrashActivity : AppCompatActivity() {
                         )
                     )
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(
-                            start = cardPadding,
-                            end = cardPadding,
-                            top = cardPadding * 2,
-                            bottom = cardPadding
-                        ),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    // Bug icon centered at top, onboarding style
-                    AnimatedVisibility(
-                        visible = true,
-                        enter = scaleIn(
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessLow
-                            )
-                        ) + fadeIn()
+
+                if (isTablet) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .padding(
+                                start = startPadding,
+                                end = endPadding,
+                                top = topPadding,
+                                bottom = bottomPadding
+                            ),
+                        horizontalArrangement = Arrangement.spacedBy(32.dp),
+                        verticalAlignment = Alignment.Top
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 32.dp),
-                            contentAlignment = Alignment.Center
+                        // Left column: Icon (centered, 72.dp), Title, Subtitle, branding, and action buttons
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Icon(
-                                imageVector = RhythmIcons.BugReport,
-                                contentDescription = stringResource(R.string.crash_bug_report),
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(56.dp)
+                            // Bug icon with animation
+                            val infiniteTransition = rememberInfiniteTransition(label = "bug_shake")
+                            val rotation by infiniteTransition.animateFloat(
+                                initialValue = -5f,
+                                targetValue = 5f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(1200, easing = EaseInOut),
+                                    repeatMode = RepeatMode.Reverse
+                                ),
+                                label = "bug_rotation"
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .graphicsLayer { rotationZ = rotation }
+                                    .padding(bottom = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = RhythmIcons.BugReport,
+                                    contentDescription = stringResource(R.string.crash_bug_report),
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(72.dp)
+                                )
+                            }
+
+                            Text(
+                                text = stringResource(R.string.crashactivity_uh_oh_looks_like),
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Text(
+                                text = stringResource(R.string.crashactivity_dont_fret_our_app),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // App logo and name
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Start
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.rhythm_splash_logo),
+                                        contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.cd_rhythm_splash),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Buttons at bottom of left column
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Share button
+                                val shareButtonScale = remember { Animatable(1f) }
+                                OutlinedButton(
+                                    onClick = {
+                                        scope.launch {
+                                            shareButtonScale.animateTo(0.92f, animationSpec = tween(100))
+                                            shareButtonScale.animateTo(1f, animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessHigh
+                                            ))
+                                        }
+                                        val shareIntent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            putExtra(Intent.EXTRA_TEXT, "Rhythm App Crash Log:\n\n$crashLog")
+                                            type = "text/plain"
+                                        }
+                                        context.startActivity(Intent.createChooser(shareIntent, "Share Crash Log"))
+                                    },
+                                    modifier = Modifier
+                                        .height(56.dp)
+                                        .weight(1f)
+                                        .graphicsLayer {
+                                            scaleX = shareButtonScale.value
+                                            scaleY = shareButtonScale.value
+                                        },
+                                    shape = RoundedCornerShape(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = RhythmIcons.Share,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(stringResource(R.string.crashactivity_share), style = MaterialTheme.typography.labelLarge)
+                                }
+
+                                // Restart button
+                                val restartButtonScale = remember { Animatable(1f) }
+                                Button(
+                                    onClick = {
+                                        scope.launch {
+                                            restartButtonScale.animateTo(0.92f, animationSpec = tween(100))
+                                            restartButtonScale.animateTo(1f, animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessHigh
+                                            ))
+                                        }
+                                        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                                        intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        context.startActivity(intent)
+                                        exitProcess(0)
+                                    },
+                                    modifier = Modifier
+                                        .height(56.dp)
+                                        .weight(1f)
+                                        .graphicsLayer {
+                                            scaleX = restartButtonScale.value
+                                            scaleY = restartButtonScale.value
+                                        },
+                                    shape = RoundedCornerShape(32.dp)
+                                ) {
+                                    Text(stringResource(R.string.crash_restart_app), style = MaterialTheme.typography.labelLarge)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Icon(
+                                        imageVector = RhythmIcons.Forward,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Right column: Crash log text field (centered vertically/horizontally)
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            OutlinedTextField(
+                                value = crashLog ?: "No funny business here, just a crash log!",
+                                onValueChange = { /* Read-only */ },
+                                label = { Text(stringResource(R.string.crashactivity_secret_crash_scrolls)) },
+                                readOnly = true,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(340.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                                )
                             )
                         }
+
                     }
-
-                    // Left-aligned texts
-                    Text(
-                        text = stringResource(R.string.crashactivity_uh_oh_looks_like), // Comic text
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Start,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    Text(
-                        text = stringResource(R.string.crashactivity_dont_fret_our_app), // Comic text
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Start,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 32.dp)
-                    )
-
-                    // Crash log text field
-                    OutlinedTextField(
-                        value = crashLog ?: "No funny business here, just a crash log!", // Comic text
-                        onValueChange = { /* Read-only */ },
-                        label = { Text(stringResource(R.string.crashactivity_secret_crash_scrolls)) }, // Comic label
-                        readOnly = true,
+                } else {
+                    // Mobile layout Column
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 250.dp)
-                            .padding(bottom = 40.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                        )
-                    )
-
-                    // App logo and name at center
-                    val infiniteTransition = rememberInfiniteTransition(label = "crash_animations")
-                    val logoGlow by infiniteTransition.animateFloat(
-                        initialValue = 0.6f,
-                        targetValue = 1f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(2000, easing = EaseInOut),
-                            repeatMode = RepeatMode.Reverse
-                        ),
-                        label = "logoGlow"
-                    )
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 48.dp)
+                            .verticalScroll(rememberScrollState())
+                            .padding(
+                                start = startPadding,
+                                end = endPadding,
+                                top = topPadding,
+                                bottom = bottomPadding
+                            ),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        // App logo with glowing effect
+                        // Bug illustration/icon centered
+                        val infiniteTransition = rememberInfiniteTransition(label = "bug_shake")
+                        val rotation by infiniteTransition.animateFloat(
+                            initialValue = -5f,
+                            targetValue = 5f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(1200, easing = EaseInOut),
+                                repeatMode = RepeatMode.Reverse
+                            ),
+                            label = "bug_rotation"
+                        )
+
                         AnimatedVisibility(
                             visible = true,
                             enter = scaleIn(
                                 animationSpec = spring(
                                     dampingRatio = Spring.DampingRatioMediumBouncy,
-                                    stiffness = Spring.StiffnessMediumLow
+                                    stiffness = Spring.StiffnessLow
                                 )
-                            ) + fadeIn(
-                                animationSpec = tween(1000)
-                            )
+                            ) + fadeIn()
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(80.dp)
-                                    .clip(CircleShape),
+                                    .fillMaxWidth()
+                                    .graphicsLayer { rotationZ = rotation }
+                                    .padding(bottom = 32.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.rhythm_splash_logo),
-                                    contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
-                                    modifier = Modifier.size(80.dp)
+                                Icon(
+                                    imageVector = RhythmIcons.BugReport,
+                                    contentDescription = stringResource(R.string.crash_bug_report),
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(56.dp)
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.width(3.dp))
+                        // Left-aligned texts
+                        Text(
+                            text = stringResource(R.string.crashactivity_uh_oh_looks_like),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Start,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
 
-                        // App name
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = scaleIn(
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                                    stiffness = Spring.StiffnessMedium
+                        Text(
+                            text = stringResource(R.string.crashactivity_dont_fret_our_app),
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Start,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 32.dp)
+                        )
+
+                        // App logo and name at center
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 28.dp)
+                        ) {
+                            AnimatedVisibility(
+                                visible = true,
+                                enter = scaleIn(
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessMediumLow
+                                    )
+                                ) + fadeIn(animationSpec = tween(1000))
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(80.dp)
+                                        .clip(CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.rhythm_splash_logo),
+                                        contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
+                                        modifier = Modifier.size(80.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(3.dp))
+
+                            AnimatedVisibility(
+                                visible = true,
+                                enter = scaleIn(
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessMedium
+                                    )
+                                ) + fadeIn(animationSpec = tween(800, delayMillis = 200))
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.cd_rhythm_splash),
+                                    style = MaterialTheme.typography.displaySmall,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    fontWeight = FontWeight.Bold
                                 )
-                            ) + fadeIn(animationSpec = tween(800, delayMillis = 200))
-                        ) {
-                            Text(
-                                text = stringResource(R.string.cd_rhythm_splash),
-                                style = MaterialTheme.typography.displaySmall,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontWeight = FontWeight.Bold
+                            }
+                        }
+
+                        // Crash scrolls text field
+                        OutlinedTextField(
+                            value = crashLog ?: "No funny business here, just a crash log!",
+                            onValueChange = { /* Read-only */ },
+                            label = { Text(stringResource(R.string.crashactivity_secret_crash_scrolls)) },
+                            readOnly = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 250.dp)
+                                .padding(bottom = 40.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
                             )
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 32.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Share button 
+                            val shareButtonScale = remember { Animatable(1f) }
+                            OutlinedButton(
+                                onClick = {
+                                    scope.launch {
+                                        shareButtonScale.animateTo(0.92f, animationSpec = tween(100))
+                                        shareButtonScale.animateTo(1f, animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessHigh
+                                        ))
+                                    }
+                                    val shareIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_TEXT, "Rhythm App Crash Log:\n\n$crashLog")
+                                        type = "text/plain"
+                                    }
+                                    context.startActivity(Intent.createChooser(shareIntent, "Share Crash Log"))
+                                },
+                                modifier = Modifier
+                                    .height(56.dp)
+                                    .weight(1f)
+                                    .graphicsLayer {
+                                        scaleX = shareButtonScale.value
+                                        scaleY = shareButtonScale.value
+                                    },
+                                shape = RoundedCornerShape(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = RhythmIcons.Share,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(stringResource(R.string.crashactivity_share), style = MaterialTheme.typography.labelLarge)
+                            }
+
+                            // Restart button 
+                            val restartButtonScale = remember { Animatable(1f) }
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        restartButtonScale.animateTo(0.92f, animationSpec = tween(100))
+                                        restartButtonScale.animateTo(1f, animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessHigh
+                                        ))
+                                    }
+                                    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                                    intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    context.startActivity(intent)
+                                    exitProcess(0)
+                                },
+                                modifier = Modifier
+                                    .height(56.dp)
+                                    .weight(1f)
+                                    .graphicsLayer {
+                                        scaleX = restartButtonScale.value
+                                        scaleY = restartButtonScale.value
+                                    },
+                                shape = RoundedCornerShape(32.dp)
+                            ) {
+                                Text(stringResource(R.string.crash_restart_app), style = MaterialTheme.typography.labelLarge)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = RhythmIcons.Forward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
-
-                    // Onboarding-style buttons at bottom
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 32.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Share button (replaces back button)
-                        val shareButtonScale = remember { Animatable(1f) }
-                        OutlinedButton(
-                            onClick = {
-                                scope.launch {
-                                    shareButtonScale.animateTo(0.92f, animationSpec = tween(100))
-                                    shareButtonScale.animateTo(1f, animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessHigh
-                                    ))
-                                }
-                                val shareIntent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    putExtra(Intent.EXTRA_TEXT, "Rhythm App Crash Log:\n\n$crashLog")
-                                    type = "text/plain"
-                                }
-                                context.startActivity(Intent.createChooser(shareIntent, "Share Crash Log"))
-                            },
-                            modifier = Modifier
-                                .height(56.dp)
-                                .weight(1f)
-                                .graphicsLayer {
-                                    scaleX = shareButtonScale.value
-                                    scaleY = shareButtonScale.value
-                                },
-                            shape = RoundedCornerShape(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Share,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(R.string.crashactivity_share), style = MaterialTheme.typography.labelLarge)
-                        }
-
-                        // Restart button (styled like onboarding)
-                        val restartButtonScale = remember { Animatable(1f) }
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    restartButtonScale.animateTo(0.92f, animationSpec = tween(100))
-                                    restartButtonScale.animateTo(1f, animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessHigh
-                                    ))
-                                }
-                                val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-                                intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                context.startActivity(intent)
-                                exitProcess(0)
-                            },
-                            modifier = Modifier
-                                .height(56.dp)
-                                .weight(1f)
-                                .graphicsLayer {
-                                    scaleX = restartButtonScale.value
-                                    scaleY = restartButtonScale.value
-                                },
-                            shape = RoundedCornerShape(32.dp)
-                        ) {
-                            Text(stringResource(R.string.crash_restart_app), style = MaterialTheme.typography.labelLarge)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                imageVector = RhythmIcons.Forward,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-
                 }
             }
         }
@@ -352,3 +551,104 @@ class CrashActivity : AppCompatActivity() {
         }
     }
 }
+
+@Composable
+private fun RotatingBackgroundCookies(color: Color) {
+    val lowerY = remember { Animatable(-600f) }
+    val upperY = remember { Animatable(-1000f) }
+
+    LaunchedEffect(Unit) {
+        this.launch {
+            lowerY.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(durationMillis = 500, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+            )
+        }
+        
+        upperY.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(durationMillis = 600, easing = androidx.compose.animation.core.LinearEasing)
+        )
+        
+        this.launch {
+            lowerY.animateTo(
+                targetValue = 40f,
+                animationSpec = tween(durationMillis = 80, easing = androidx.compose.animation.core.FastOutLinearInEasing)
+            )
+            lowerY.animateTo(
+                targetValue = 0f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        }
+        
+        this.launch {
+            upperY.animateTo(
+                targetValue = -60f,
+                animationSpec = tween(durationMillis = 120, easing = androidx.compose.animation.core.LinearOutSlowInEasing)
+            )
+            upperY.animateTo(
+                targetValue = 0f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
+        }
+    }
+
+
+    val infiniteTransition = rememberInfiniteTransition(label = "cookieRotation")
+    val rotationLower by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 50000, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "lowerRotation"
+    )
+    val rotationUpper by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = -360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 60000, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "upperRotation"
+    )
+
+    val cookie6Shape = rememberExpressiveShape("COOKIE_6")
+    val cookie12Shape = rememberExpressiveShape("COOKIE_12")
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .size(460.dp)
+                .graphicsLayer {
+                    translationX = -120.dp.toPx()
+                    translationY = (140.dp.toPx() + lowerY.value.dp.toPx())
+                    rotationZ = rotationLower + 15f
+                }
+                .clip(cookie6Shape)
+                .background(color)
+        )
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(340.dp)
+                .graphicsLayer {
+                    translationX = 80.dp.toPx()
+                    translationY = (-100.dp.toPx() + upperY.value.dp.toPx())
+                    rotationZ = rotationUpper - 20f
+                }
+                .clip(cookie12Shape)
+                .background(color)
+        )
+    }
+}
+
