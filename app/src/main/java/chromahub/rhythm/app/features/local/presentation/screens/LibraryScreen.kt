@@ -36,6 +36,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -171,7 +172,10 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
@@ -360,6 +364,7 @@ fun LibraryScreen(
     }
     
     var selectedTabIndex by rememberSaveable { mutableStateOf(initialTabIndex) }
+    var expandedHeaderHeight by remember { mutableStateOf(0) }
     val pagerState = rememberPagerState(initialPage = selectedTabIndex) { tabs.size }
     val tabRowState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -381,9 +386,7 @@ fun LibraryScreen(
         }
     }
     
-    LaunchedEffect(pagerState.currentPage) {
-        selectedTabIndex = pagerState.currentPage
-    }
+
     
     LaunchedEffect(selectedTabIndex) {
         tabRowState.animateScrollToItem(selectedTabIndex)
@@ -545,7 +548,16 @@ fun LibraryScreen(
         }
     }
     
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val topAppBarState = rememberTopAppBarState()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
+    val globalCollapseBehavior by appSettings.headerCollapseBehavior.collectAsState()
+    val shouldStartCollapsed = globalCollapseBehavior == 1
+    
+    LaunchedEffect(shouldStartCollapsed) {
+        if (shouldStartCollapsed) {
+            topAppBarState.heightOffset = topAppBarState.heightOffsetLimit
+        }
+    }
     
     var showPlaylistFabMenu by remember { mutableStateOf(false) }
 
@@ -721,13 +733,7 @@ fun LibraryScreen(
     val albumViewType by appSettings.albumViewType.collectAsState()
     val artistViewType by appSettings.artistViewType.collectAsState()
 
-    LaunchedEffect(selectedTabIndex) {
-        val activeTabId = visibleTabIds.getOrNull(selectedTabIndex)
-        if (activeTabId == "PLAYLISTS") {
-            playlistsListState.scrollToItem(0)
-            playlistsGridState.scrollToItem(0)
-        }
-    }
+
 
     val isListAtTop by remember(
         selectedTabIndex, visibleTabIds, playlistViewType, albumViewType, artistViewType
@@ -875,7 +881,13 @@ fun LibraryScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         topBar = {
-            Column {
+            Column(
+                modifier = Modifier.onGloballyPositioned { coordinates ->
+                    if (scrollBehavior.state.heightOffset == 0f) {
+                        expandedHeaderHeight = coordinates.size.height
+                    }
+                }
+            ) {
                 Spacer(modifier = Modifier.height(5.dp))
                 
                 LargeTopAppBar(
@@ -1326,10 +1338,22 @@ fun LibraryScreen(
             }
         }
     ) { paddingValues ->
+        val density = LocalDensity.current
+        val topPadding = remember(expandedHeaderHeight, paddingValues) {
+            if (expandedHeaderHeight > 0) {
+                with(density) { expandedHeaderHeight.toDp() }
+            } else {
+                paddingValues.calculateTopPadding()
+            }
+        }
+        
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(top = topPadding)
+                .offset {
+                    IntOffset(0, scrollBehavior.state.heightOffset.toInt())
+                }
         ) {
             Surface(
                 modifier = Modifier
@@ -1536,71 +1560,11 @@ fun LibraryScreen(
                                             key = { it }
                                         ) { category ->
                                             val isSelected = selectedCategory == category
-                                            val scaleAnimatable = remember { Animatable(1f) }
-                                            val offsetAnimatable = remember { Animatable(0f) }
                                             
-                                            LaunchedEffect(isSelected) {
-                                                if (isSelected) {
-                                                    launch {
-                                                        scaleAnimatable.animateTo(1.05f, animationSpec = tween<Float>(durationMillis = 250, easing = FastOutSlowInEasing))
-                                                        scaleAnimatable.animateTo(1f, animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing))
-                                                    }
-                                                } else {
-                                                    scaleAnimatable.snapTo(1f)
-                                                }
-                                            }
-                                            
-                                            LaunchedEffect(selectedCategory) {
-                                                if (!isSelected) {
-                                                    val currentIndex = categories.indexOf(category)
-                                                    val selectedIndex = categories.indexOf(selectedCategory)
-                                                    if (currentIndex >= 0 && selectedIndex >= 0) {
-                                                        val distance = currentIndex - selectedIndex
-                                                        if (abs(distance) == 1) {
-                                                            val direction = if (distance > 0) 1 else -1
-                                                            val offsetValue = 8f * direction
-                                                            launch {
-                                                                offsetAnimatable.animateTo(offsetValue, animationSpec = tween<Float>(durationMillis = 250, easing = FastOutSlowInEasing))
-                                                                offsetAnimatable.animateTo(0f, animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing))
-                                                            }
-                                                        } else {
-                                                            offsetAnimatable.snapTo(0f)
-                                                        }
-                                                    }
-                                                } else {
-                                                    offsetAnimatable.snapTo(0f)
-                                                }
-                                            }
-
-                                            val containerColor by animateColorAsState(
-                                                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerLow,
-                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                                                label = "chipContainerColor"
-                                            )
-                                            val labelColor by animateColorAsState(
-                                                targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                                                label = "chipLabelColor"
-                                            )
-                                            val borderColor by animateColorAsState(
-                                                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
-                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                                                label = "chipBorderColor"
-                                            )
-                                            val borderWidth by animateDpAsState(
-                                                targetValue = if (isSelected) 2.dp else 1.dp,
-                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                                                label = "chipBorderWidth"
-                                            )
-                                            val cornerRadius by animateDpAsState(
-                                                targetValue = if (isSelected) 24.dp else 12.dp,
-                                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                                                label = "chipCornerRadius"
-                                            )
-
                                             FilterChip(
+                                                selected = isSelected,
                                                 onClick = {
-                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                                                     selectedCategory = category
                                                 },
                                                 label = {
@@ -1629,7 +1593,6 @@ fun LibraryScreen(
                                                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                                                     )
                                                 },
-                                                selected = isSelected,
                                                 leadingIcon = if (isSelected) {
                                                     {
                                                         Icon(
@@ -1639,27 +1602,7 @@ fun LibraryScreen(
                                                         )
                                                     }
                                                 } else null,
-                                                colors = FilterChipDefaults.filterChipColors(
-                                                    selectedContainerColor = containerColor,
-                                                    selectedLabelColor = labelColor,
-                                                    selectedLeadingIconColor = labelColor,
-                                                    containerColor = containerColor,
-                                                    labelColor = labelColor,
-                                                    iconColor = labelColor
-                                                ),
-                                                border = FilterChipDefaults.filterChipBorder(
-                                                    enabled = true,
-                                                    selected = isSelected,
-                                                    borderColor = borderColor,
-                                                    selectedBorderColor = borderColor,
-                                                    borderWidth = borderWidth
-                                                ),
-                                                shape = RoundedCornerShape(cornerRadius),
-                                                modifier = Modifier.graphicsLayer {
-                                                    scaleX = scaleAnimatable.value
-                                                    scaleY = scaleAnimatable.value
-                                                    translationX = offsetAnimatable.value
-                                                }
+                                                shape = RoundedCornerShape(12.dp)
                                             )
                                         }
                                     }
@@ -1680,7 +1623,7 @@ fun LibraryScreen(
                             }
                         }
 
-                        Box(modifier = Modifier.weight(1f)) {
+                        Box(modifier = Modifier.weight(1f).clipToBounds()) {
                             HorizontalPager(
                                 state = pagerState,
                                 contentPadding = PaddingValues(0.dp),
@@ -2471,11 +2414,10 @@ fun SingleCardPlaylistsContent(
         LibraryPlaylistSortOrder.NAME_ASC
     }
     
-    var isLoading by remember { mutableStateOf(true) }
-    var preparedPlaylists by remember { mutableStateOf(playlists) }
+    var isLoading by remember(playlists, playlistSortOrder) { mutableStateOf(true) }
+    var preparedPlaylists by remember(playlists, playlistSortOrder) { mutableStateOf<List<Playlist>>(emptyList()) }
     
     LaunchedEffect(playlists, playlistSortOrder) {
-        isLoading = true
         preparedPlaylists = withContext(Dispatchers.Default) {
             val baseList = playlists.distinctBy { it.id }
             when (playlistSortOrder) {
@@ -3101,8 +3043,101 @@ fun LibrarySongItem(
         label = "containerColorAnimation"
     )
 
-    ListItem(
-        supportingContent = {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 72.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier.padding(end = 16.dp)
+        ) {
+            Surface(
+                shape = rememberExpressiveShapeFor(
+                    ExpressiveShapeTarget.SONG_ART,
+                    fallbackShape = MaterialTheme.shapes.large
+                ),
+                modifier = Modifier.size(60.dp),
+                border = if (isCurrentSong && !isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+            ) {
+                M3ImageUtils.TrackImage(
+                    imageUrl = song.artworkUri,
+                    trackName = song.title,
+                    modifier = Modifier.fillMaxSize(),
+                    applyExpressiveShape = false
+                )
+            }
+            
+            if (isSelected) {
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                            shape = rememberExpressiveShapeFor(
+                                ExpressiveShapeTarget.SONG_ART,
+                                fallbackShape = MaterialTheme.shapes.large
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectionIndex != null && selectionIndex >= 0) {
+                        Text(
+                            text = "${selectionIndex + 1}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        Icon(
+                            imageVector = RhythmIcons.CheckCircle,
+                            contentDescription = stringResource(R.string.streaming_selected),
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+            } else if (isCurrentSong && isPlaying) {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(20.dp)
+                        .offset(x = 4.dp, y = 4.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary,
+                    shadowElevation = 0.dp
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        PlayingEqIcon(
+                            modifier = Modifier.size(width = 12.dp, height = 10.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            isPlaying = isPlaying,
+                            bars = 3
+                        )
+                    }
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 8.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = song.title,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = titleColor
+            )
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = buildString {
                     append(song.artist)
@@ -3114,81 +3149,10 @@ fun LibrarySongItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-        },
-        leadingContent = {
+        }
+
+        if (!isSelectionMode) {
             Box {
-                Surface(
-                    shape = rememberExpressiveShapeFor(
-                        ExpressiveShapeTarget.SONG_ART,
-                        fallbackShape = MaterialTheme.shapes.large
-                    ),
-                    modifier = Modifier.size(60.dp),
-                    border = if (isCurrentSong && !isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
-                ) {
-                    M3ImageUtils.TrackImage(
-                        imageUrl = song.artworkUri,
-                        trackName = song.title,
-                        modifier = Modifier.fillMaxSize(),
-                        applyExpressiveShape = false
-                    )
-                }
-                
-                if (isSelected) {
-                    Box(
-                        modifier = Modifier
-                            .size(60.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                                shape = rememberExpressiveShapeFor(
-                                    ExpressiveShapeTarget.SONG_ART,
-                                    fallbackShape = MaterialTheme.shapes.large
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (selectionIndex != null && selectionIndex >= 0) {
-                            Text(
-                                text = "${selectionIndex + 1}",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        } else {
-                            Icon(
-                                imageVector = RhythmIcons.CheckCircle,
-                                contentDescription = stringResource(R.string.streaming_selected),
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
-                    }
-                } else if (isCurrentSong && isPlaying) {
-                    Surface(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .size(20.dp)
-                            .offset(x = 4.dp, y = 4.dp),
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary,
-                        shadowElevation = 0.dp
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            PlayingEqIcon(
-                                modifier = Modifier.size(width = 12.dp, height = 10.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                isPlaying = isPlaying,
-                                bars = 3
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        trailingContent = {
-            if (!isSelectionMode) {
                 FilledIconButton(
                     onClick = {
                         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
@@ -3209,78 +3173,63 @@ fun LibrarySongItem(
                         modifier = Modifier.size(22.dp)
                     )
                 }
-            }
 
-            DropdownMenu(
-                expanded = showDropdown,
-                onDismissRequest = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                    showDropdown = false
-                },
-                modifier = Modifier
-                    .widthIn(min = 220.dp)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(4.dp),
-                shape = RoundedCornerShape(20.dp)
-            ) {
-                if (customMenuContent != null) {
-                    customMenuContent {
+                DropdownMenu(
+                    expanded = showDropdown,
+                    onDismissRequest = {
                         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                         showDropdown = false
-                    }
-                } else {
-                    RhythmSongMenuContent(
-                        song = song,
-                        onPlayNext = {
+                    },
+                    modifier = Modifier
+                        .widthIn(min = 220.dp)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(4.dp),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    if (customMenuContent != null) {
+                        customMenuContent {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             showDropdown = false
-                            onPlayNext()
-                        },
-                        onAddToQueue = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onAddToQueue()
-                        },
-                        isFavorite = isFavorite,
-                        onToggleFavorite = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onToggleFavorite()
-                        },
-                        onAddToPlaylist = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onMoreClick()
-                        },
-                        onShowSongInfo = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onShowSongInfo()
-                        },
-                        onAddToBlacklist = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            showDropdown = false
-                            onAddToBlacklist()
                         }
-                    )
+                    } else {
+                        RhythmSongMenuContent(
+                            song = song,
+                            onPlayNext = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onPlayNext()
+                            },
+                            onAddToQueue = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onAddToQueue()
+                            },
+                            isFavorite = isFavorite,
+                            onToggleFavorite = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onToggleFavorite()
+                            },
+                            onAddToPlaylist = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onMoreClick()
+                            },
+                            onShowSongInfo = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onShowSongInfo()
+                            },
+                            onAddToBlacklist = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onAddToBlacklist()
+                            }
+                        )
+                    }
                 }
             }
-        },
-        colors = ListItemDefaults.colors(
-            containerColor = Color.Transparent
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 72.dp)
-    ) {
-        Text(
-            text = song.title,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = titleColor
-        )
+        }
     }
 }
 
@@ -3391,7 +3340,7 @@ fun PlaylistItem(
 ) {
     val context = LocalContext.current
     
-    val albumArts = remember(playlist.songs) {
+    val albumArts = remember(playlist.id, playlist.songs.size) {
         playlist.songs
             .distinctBy { it.albumId }
             .take(4)
@@ -3407,17 +3356,17 @@ fun PlaylistItem(
             .padding(horizontal = horizontalPadding, vertical = 2.dp),
         shape = itemShape,
         color = MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = 2.dp,
+        tonalElevation = 0.dp,
         shadowElevation = 0.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp),
+                .padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Surface(
-                modifier = Modifier.size(72.dp),
+                modifier = Modifier.size(68.dp),
                 shape = rememberExpressiveShapeFor(
                     ExpressiveShapeTarget.PLAYLIST_ART,
                     fallbackShape = RoundedCornerShape(16.dp)
@@ -3459,7 +3408,7 @@ fun PlaylistItem(
                 }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(18.dp))
 
             Column(
                 modifier = Modifier.weight(1f)

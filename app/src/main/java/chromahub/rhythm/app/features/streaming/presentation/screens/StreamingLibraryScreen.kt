@@ -568,8 +568,8 @@ fun StreamingLibraryScreen(
         }
     }
 
-    LaunchedEffect(pagerState.currentPage) {
-        if (selectedTabIndex != pagerState.currentPage) {
+    LaunchedEffect(pagerState.currentPage, pagerState.isScrollInProgress) {
+        if (!pagerState.isScrollInProgress && selectedTabIndex != pagerState.currentPage) {
             selectedTabIndex = pagerState.currentPage
         }
     }
@@ -579,10 +579,6 @@ fun StreamingLibraryScreen(
             pagerState.animateScrollToPage(selectedTabIndex)
         }
         tabRowState.animateScrollToItem(selectedTabIndex.coerceAtLeast(0))
-        if (tabs.getOrNull(selectedTabIndex) == StreamingLibraryTab.PLAYLISTS) {
-            playlistsListState.scrollToItem(0)
-            playlistsGridState.scrollToItem(0)
-        }
     }
 
     val currentSortLabelRes = when (selectedTab) {

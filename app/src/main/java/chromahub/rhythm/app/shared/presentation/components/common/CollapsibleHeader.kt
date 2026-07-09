@@ -52,6 +52,9 @@ import chromahub.rhythm.app.ui.theme.RhythmTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
@@ -130,6 +133,7 @@ fun CollapsibleHeaderScreen(
     }
 
     val lazyListState = rememberLazyListState()
+    var expandedHeaderHeight by remember { mutableStateOf(0) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -139,7 +143,13 @@ fun CollapsibleHeaderScreen(
             val collapsedFraction = scrollBehavior.state.collapsedFraction
             val fontSize = (24 + (32 - 24) * (1 - collapsedFraction)).sp // Interpolate between 24sp and 32sp
 
-            Column {
+            Column(
+                modifier = Modifier.onGloballyPositioned { coordinates ->
+                    if (scrollBehavior.state.heightOffset == 0f) {
+                        expandedHeaderHeight = coordinates.size.height
+                    }
+                }
+            ) {
                 Spacer(modifier = Modifier.height(10.dp)) // Add more padding before the header starts
                 LargeTopAppBar(
                     title = {
@@ -276,11 +286,22 @@ fun CollapsibleHeaderScreen(
             }
         }
     ) { paddingValues ->
+        val density = LocalDensity.current
+        val topPadding = remember(expandedHeaderHeight, paddingValues) {
+            if (expandedHeaderHeight > 0) {
+                with(density) { expandedHeaderHeight.toDp() }
+            } else {
+                paddingValues.calculateTopPadding()
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .offset(y = -headerBlendHeight)
+                .padding(top = topPadding - headerBlendHeight)
+                .offset {
+                    IntOffset(0, scrollBehavior.state.heightOffset.toInt())
+                }
                 .graphicsLayer {
                     alpha = contentAlpha
                     translationY = contentOffset
@@ -320,6 +341,8 @@ fun ArtistCollapsibleHeaderScreen(
         topAppBarState,
         canScroll = { true }
     )
+
+    var expandedHeaderHeight by remember { mutableStateOf(0) }
 
     // Apply global collapse behavior or screen-specific override
     val shouldStartCollapsed = alwaysCollapsed || globalCollapseBehavior == 1
@@ -489,7 +512,13 @@ fun ArtistCollapsibleHeaderScreen(
                 val collapsedFraction = scrollBehavior.state.collapsedFraction
                 val fontSize = (24 + (32 - 24) * (1 - collapsedFraction)).sp
 
-                Column {
+                Column(
+                    modifier = Modifier.onGloballyPositioned { coordinates ->
+                        if (scrollBehavior.state.heightOffset == 0f) {
+                            expandedHeaderHeight = coordinates.size.height
+                        }
+                    }
+                ) {
                     Spacer(modifier = Modifier.height(10.dp))
                     LargeTopAppBar(
                         title = {
@@ -557,10 +586,22 @@ fun ArtistCollapsibleHeaderScreen(
                 }
             }
         ) { paddingValues ->
+            val density = LocalDensity.current
+            val topPadding = remember(expandedHeaderHeight, paddingValues) {
+                if (expandedHeaderHeight > 0) {
+                    with(density) { expandedHeaderHeight.toDp() }
+                } else {
+                    paddingValues.calculateTopPadding()
+                }
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .padding(top = topPadding)
+                    .offset {
+                        IntOffset(0, scrollBehavior.state.heightOffset.toInt())
+                    }
                     .graphicsLayer {
                         alpha = contentAlpha
                         translationY = contentOffset

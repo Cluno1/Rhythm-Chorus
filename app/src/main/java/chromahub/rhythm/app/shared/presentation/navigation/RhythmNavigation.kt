@@ -461,7 +461,7 @@ private fun RhythmGuardWarningHost(
     var pendingBreakDurationMinutes by remember {
         mutableIntStateOf(configuredBreakResumeMinutes.coerceIn(1, 180))
     }
-    var isBubbleOnLeft by rememberSaveable { mutableStateOf(false) }
+    var bubbleHorizontalPos by rememberSaveable { mutableStateOf(2) } // 0: Left, 1: Middle, 2: Right (Default: 2)
     var isBubbleCollapsed by rememberSaveable { mutableStateOf(false) }
     var rawDragXDp by remember { mutableFloatStateOf(0f) }
 
@@ -1418,7 +1418,13 @@ private fun RhythmGuardWarningHost(
                 countdownValueResId = bubbleValueResId,
                 isCollapsed = isBubbleCollapsed,
                 modifier = Modifier
-                    .align(if (isBubbleOnLeft) Alignment.TopStart else Alignment.TopEnd)
+                    .align(
+                        when (bubbleHorizontalPos) {
+                            0 -> Alignment.TopStart
+                            1 -> Alignment.TopCenter
+                            else -> Alignment.TopEnd
+                        }
+                    )
                     .offset(x = rawDragXDp.dp, y = with(density) { animatableY.value.toDp() })
                     .pointerInput(timeoutReason, timeoutUntilMs, timeoutStartedAtMs, isTimeoutBubbleActive, isBubbleCollapsed) {
                         detectTapGestures(onTap = {
@@ -1438,13 +1444,25 @@ private fun RhythmGuardWarningHost(
                             }
                         })
                     }
-                    .pointerInput(isBubbleOnLeft, collapsedYPx, expandedYPx) {
+                    .pointerInput(bubbleHorizontalPos, collapsedYPx, expandedYPx) {
                         detectDragGestures(
                             onDragEnd = {
-                                if (isBubbleOnLeft && rawDragXDp > 80f) {
-                                    isBubbleOnLeft = false
-                                } else if (!isBubbleOnLeft && rawDragXDp < -80f) {
-                                    isBubbleOnLeft = true
+                                bubbleHorizontalPos = when (bubbleHorizontalPos) {
+                                    0 -> { // Currently Left
+                                        if (rawDragXDp > 180f) 2
+                                        else if (rawDragXDp > 60f) 1
+                                        else 0
+                                    }
+                                    1 -> { // Currently Middle
+                                        if (rawDragXDp > 60f) 2
+                                        else if (rawDragXDp < -60f) 0
+                                        else 1
+                                    }
+                                    else -> { // Currently Right
+                                        if (rawDragXDp < -180f) 0
+                                        else if (rawDragXDp < -60f) 1
+                                        else 2
+                                    }
                                 }
                                 rawDragXDp = 0f
 
