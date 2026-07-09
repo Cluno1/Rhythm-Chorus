@@ -32,46 +32,46 @@
     <string name="widget_appearance">外觀</string>
     <string name="widget_corner_radius">圓角半徑</string>
     <string name="widget_auto_update">自動更新</string>
-    <string name="widget_tip_controls">點擊小工具以開啟應用程式，用按鈕控制播放</string>
+    <string name="widget_tip_controls">點擊小工具以開啟 App，用按鈕控制播放</string>
     <!-- Content Descriptions -->
     <string name="cd_navigate">導覽</string>
     <!-- Settings - Notifications -->
     <string name="settings_notifications">通知</string>
     <string name="settings_notifications_updates_group">應用程式更新</string>
-    <string name="settings_notifications_rhythm_guard_group">Rhythm 守衛</string>
-    <string name="settings_notifications_rhythm_pulse_group">Rhythm提示</string>
-    <string name="settings_update_notifications_merged_desc">取得新版本提醒和後台更新檢查結果</string>
-    <string name="settings_rhythm_guard_alert_notifications">安全警報通知</string>
-    <string name="settings_rhythm_guard_alert_notifications_desc">當 Rhythm Guard 偵測到有風險的交易量或暴露時顯示通知</string>
-    <string name="settings_rhythm_guard_timer_notifications">休息定時器通知</string>
-    <string name="settings_rhythm_guard_timer_notifications_desc">顯示預定休息時間和活動超時倒數的通知</string>
-    <string name="settings_rhythm_pulse_notifications">Rhythm提示通知</string>
-    <string name="settings_rhythm_pulse_notifications_desc">接收友善提醒和傾聽提示。</string>
+    <string name="settings_notifications_rhythm_guard_group">Rhythm Guard</string>
+    <string name="settings_notifications_rhythm_pulse_group">Rhythm 提示</string>
+    <string name="settings_update_notifications_merged_desc">當有版本更新可以下載或是在背景檢查更新有結果時發送通知</string>
+    <string name="settings_rhythm_guard_alert_notifications">安全性警報通知</string>
+    <string name="settings_rhythm_guard_alert_notifications_desc">當 Rhythm Guard 偵測到風險時發出通知</string>
+    <string name="settings_rhythm_guard_timer_notifications">休息計時器通知</string>
+    <string name="settings_rhythm_guard_timer_notifications_desc">顯示預定休息時間和倒數已超時的通知</string>
+    <string name="settings_rhythm_pulse_notifications">Rhythm 提示通知</string>
+    <string name="settings_rhythm_pulse_notifications_desc">接收小撇步建議和關於音樂聆聽提示的通知。</string>
     <string name="settings_rhythm_pulse_interval">提示間隔</string>
     <string name="settings_rhythm_pulse_interval_dialog_title">Rhythm 提示間隔</string>
     <!-- Settings - Queue & Playback -->
     <!-- Settings - Queue -->
     <string name="settings_queue">佇列</string>
     <string name="settings_queue_desc">佇列規則、自動產生、行為</string>
-    <string name="settings_queue_title">隊列設置</string>
+    <string name="settings_queue_title">佇列設置</string>
     <!-- Settings - Playback -->
-    <string name="settings_playback">回放</string>
+    <string name="settings_playback">播放</string>
     <string name="settings_playback_desc">播放狀態、交叉淡入淡出、時間格式</string>
     <string name="settings_playback_title">播放設定</string>
-    <string name="settings_queue_behavior">隊列規則與隨機播放</string>
+    <string name="settings_queue_behavior">佇列規則與隨機播放</string>
     <string name="settings_use_exoplayer_shuffle">隨機播放引擎</string>
     <string name="settings_use_exoplayer_shuffle_desc">使用播放器時間軸進行隨機播放順序。</string>
-    <string name="settings_auto_queue">上下文佇列</string>
-    <string name="settings_auto_queue_desc">播放開始時建立相關隊列。</string>
-    <string name="settings_context_queue_preference">上下文佇列首選項</string>
-    <string name="settings_context_queue_preference_desc">選擇上下文佇列應先優先考慮哪些元資料。</string>
-    <string name="settings_context_pref_artist_first">藝人第一</string>
-    <string name="settings_context_pref_genre_first">類型第一</string>
-    <string name="settings_context_queue_persistence">上下文佇列持久化</string>
-    <string name="settings_context_queue_persistence_desc">選擇上下文佇列在播放結束後是否保持可用。</string>
-    <string name="settings_context_persistence_persistent">持續</string>
-    <string name="settings_context_persistence_ephemeral">短暫的</string>
-    <string name="settings_clear_queue_on_new_song">播放時替換隊列</string>
+    <string name="settings_auto_queue">關聯佇列</string>
+    <string name="settings_auto_queue_desc">播放開始時建立相關佇列。</string>
+    <string name="settings_context_queue_preference">關聯佇列自訂</string>
+    <string name="settings_context_queue_preference_desc">選擇影響關聯佇列的元資料以何者為優先。</string>
+    <string name="settings_context_pref_artist_first">藝人優先</string>
+    <string name="settings_context_pref_genre_first">曲風優先</string>
+    <string name="settings_context_queue_persistence">關聯佇列持續性</string>
+    <string name="settings_context_queue_persistence_desc">選擇播放結束後關連佇列是否保持可用。</string>
+    <string name="settings_context_persistence_persistent">永久</string>
+    <string name="settings_context_persistence_ephemeral">暫時</string>
+    <string name="settings_clear_queue_on_new_song">播放時替換佇列</string>
     <string name="settings_clear_queue_on_new_song_desc">啟動曲目會取代目前佇列。</string>
     <string name="settings_playback_persistence">播放狀態</string>
     <string name="settings_remember_repeat_mode">持續重複模式</string>
@@ -402,7 +402,7 @@
     <string name="storage_permission_audio_only">這僅允許存取包含音樂的音訊檔案和資料夾。</string>
     <!-- PlayerScreen -->
     <string name="player_loading_lyrics">載入歌詞...</string>
-    <string name="player_queue">隊列</string>
+    <string name="player_queue">佇列</string>
     <string name="player_speed_label">速度</string>
     <string name="player_pitch_label">音高</string>
     <string name="playback_speed">播放速度</string>
@@ -557,7 +557,7 @@
     <string name="onboarding_system_volume_title">系統音量控制</string>
     <string name="onboarding_system_volume_desc">讓裝置的實體音量按鈕控制Rhythm的播放音量。</string>
     <string name="onboarding_auto_queue_title">自動加入到佇列</string>
-    <string name="onboarding_auto_queue_desc">播放歌曲時自動從專輯/藝人創建上下文隊列。</string>
+    <string name="onboarding_auto_queue_desc">播放歌曲時依照專輯/藝人來自動創建佇列。</string>
     <string name="onboarding_show_lyrics_title">顯示歌詞</string>
     <string name="onboarding_show_lyrics_desc">當您喜愛的歌曲可用時顯示同步歌詞。</string>
     <string name="onboarding_lyrics_source_title">歌詞來源優先</string>
@@ -739,9 +739,9 @@
     <!-- Components: Blacklist Management -->
     
     <!-- Components: Queue -->
-    <string name="queue_empty">你的隊列是空的</string>
+    <string name="queue_empty">你的佇列是空的</string>
     <string name="queue_add_songs">從庫中新增歌曲以開始收聽</string>
-    <string name="queue_no_more">隊列中沒有更多歌曲</string>
+    <string name="queue_no_more">佇列中沒有更多歌曲</string>
     <string name="queue_add_more">增加更多歌曲以保持音樂播放</string>
     <!-- Components: Create Playlist -->
     <string name="playlist_create">建立播放列表</string>
@@ -802,7 +802,7 @@
     <string name="playlist_action_single_title">只播放這首歌</string>
     <string name="playlist_action_single_desc">僅播放選定的曲目</string>
     <string name="queue_action_title">佇列衝突操作</string>
-    <string name="queue_action_choose">選擇預設隊列衝突動作</string>
+    <string name="queue_action_choose">選擇預設的佇列衝突處置</string>
     <string name="queue_action_ask_title">每次詢問</string>
     <string name="queue_action_ask_desc">每次顯示一個動作選擇器</string>
     <string name="queue_action_always_add_title">始終加入到佇列中</string>
@@ -915,7 +915,7 @@
     <string name="settings_language_desc">英語、西班牙語</string>
     <string name="settings_haptic_feedback">觸覺回饋</string>
     <string name="settings_haptic_feedback_desc">點擊回饋</string>
-    <string name="settings_section_queue_playback">隊列與播放</string>
+    <string name="settings_section_queue_playback">佇列與播放</string>
     <string name="settings_section_audio_lyrics">音訊與效果</string>
     <string name="settings_section_audio_playback">音訊與播放</string>
     <string name="settings_section_volume_device">音量和設備</string>
@@ -925,7 +925,7 @@
     <string name="settings_stop_playback_on_zero_volume_desc">音量為零時暫停播放</string>
     <string name="settings_show_lyrics">顯示歌詞</string>
     <string name="settings_show_lyrics_desc">歌詞顯示</string>
-    <string name="settings_queue_playback_title">隊列與播放</string>
+    <string name="settings_queue_playback_title">佇列與播放</string>
     <string name="settings_queue_playback_desc">自動新增、重複</string>
     <string name="settings_equalizer_title">均衡器</string>
     <string name="settings_equalizer_desc">低音、高音</string>
@@ -1270,7 +1270,7 @@
     
     <!-- Queue Playback Settings -->
     <string name="queue_auto_add">自動加入到佇列</string>
-    <string name="queue_clear_on_new">取代新歌曲的隊列</string>
+    <string name="queue_clear_on_new">取代新歌曲的佇列</string>
     <string name="queue_playback_speed_desc">調整播放速度</string>
     <!-- Gestures Settings -->
     
@@ -1331,7 +1331,7 @@
     <string name="sort_duration_long_first">持續時間（長優先）</string>
     <!-- Context Menu Actions -->
     <string name="action_play_next">播放下一個</string>
-    <string name="action_add_to_queue">新增到隊列</string>
+    <string name="action_add_to_queue">新增到佇列</string>
     <string name="action_remove_from_favorites">從收藏夾中刪除</string>
     <string name="action_add_to_favorites">加入收藏夾</string>
     <string name="action_song_info">歌曲訊息</string>
@@ -1494,7 +1494,7 @@
     <string name="ui_done">完成</string>
     <!-- Queue &amp; Playback -->
     <string name="settings_queue_action_dialog">單軌佇列動作</string>
-    <string name="settings_queue_action_dialog_desc_ask">在更換或擴展單軌播放隊列之前詢問。</string>
+    <string name="settings_queue_action_dialog_desc_ask">曲目播放時，在替換或延伸播放佇列以前先詢問。</string>
     <string name="settings_queue_action_dialog_desc_always">始終將單軌播放新增至佇列。</string>
     <string name="settings_queue_action_dialog_desc_disabled">當「播放時替換佇列」開啟時停用。</string>
     <string name="settings_playlist_action_dialog">播放清單追蹤點擊操作</string>
@@ -1502,17 +1502,17 @@
     <string name="settings_playlist_action_play_one">僅播放選定的曲目</string>
     <string name="settings_playlist_action_ask">每次詢問</string>
     <string name="settings_list_queue_action_dialog">列出播放佇列操作</string>
-    <string name="settings_list_queue_action_replace">替換隊列並播放</string>
+    <string name="settings_list_queue_action_replace">替換佇列並播放</string>
     <string name="settings_list_queue_action_ask">每次詢問</string>
     <string name="settings_list_queue_action_play_next">插入下一個並播放</string>
     <string name="settings_list_queue_action_add_to_end">加到結尾並播放</string>
-    <string name="settings_remember_queue">持久性隊列</string>
-    <string name="settings_remember_queue_desc">重啟後恢復隊列和位置。</string>
+    <string name="settings_remember_queue">永久佇列</string>
+    <string name="settings_remember_queue_desc">重啟時恢復佇列和播放位置。</string>
     <string name="settings_crossfade_min">0.5秒</string>
     <string name="settings_crossfade_max">12秒</string>
     <string name="list_queue_behavior_title">播放所有佇列規則</string>
     <string name="list_queue_behavior_desc">選擇清單操作如何修改活動佇列</string>
-    <string name="list_queue_behavior_replace_title">替換隊列</string>
+    <string name="list_queue_behavior_replace_title">替換佇列</string>
     <string name="list_queue_behavior_replace_desc">清除目前佇列並立即啟動該清單。</string>
     <string name="list_queue_behavior_ask_title">每次詢問</string>
     <string name="list_queue_behavior_ask_desc">每當清單操作與目前佇列衝突時顯示彈出視窗。</string>
@@ -1520,10 +1520,10 @@
     <string name="list_queue_behavior_play_next_desc">在當前歌曲之後插入清單並從您選擇的曲目開始。</string>
     <string name="list_queue_behavior_add_end_title">加入末尾</string>
     <string name="list_queue_behavior_add_end_desc">將清單附加到佇列末端並從您選擇的曲目開始。</string>
-    <string name="list_queue_action_dialog_title">隊列已激活</string>
-    <string name="list_queue_action_dialog_body">目前隊列有 %1$d 個曲目。傳入清單有 %2$d 個曲目。</string>
+    <string name="list_queue_action_dialog_title">佇列已在啟用狀態</string>
+    <string name="list_queue_action_dialog_body">目前佇列有 %1$d 首曲目。加入的清單有 %2$d 首曲目。</string>
     <string name="list_queue_action_source">資料來源：%1$s</string>
-    <string name="list_queue_action_replace_title">替換隊列</string>
+    <string name="list_queue_action_replace_title">替換佇列</string>
     <string name="list_queue_action_replace_desc">現在啟動此清單作為活動佇列。</string>
     <string name="list_queue_action_play_next_title">插入下一個</string>
     <string name="list_queue_action_play_next_desc">將此清單放在當前歌曲之後並從該歌曲開始播放。</string>
@@ -1800,12 +1800,12 @@
     <string name="settings_gesture_double_tap">雙擊圖稿</string>
     <string name="settings_gesture_double_tap_desc">雙擊播放/暫停</string>
     <!-- Queue & Playback Search Strings -->
-    <string name="settings_queue_auto_add">上下文佇列</string>
-    <string name="settings_queue_auto_add_desc">播放時建立相關隊列</string>
-    <string name="settings_queue_clear_on_new">播放時替換隊列</string>
-    <string name="settings_queue_clear_on_new_desc">替換隊列直接播放</string>
+    <string name="settings_queue_auto_add">關聯佇列</string>
+    <string name="settings_queue_auto_add_desc">播放時建立相關佇列</string>
+    <string name="settings_queue_clear_on_new">播放時替換佇列</string>
+    <string name="settings_queue_clear_on_new_desc">替換佇列以直接播放</string>
     <string name="settings_show_played_queue_songs">顯示已播放曲目</string>
-    <string name="settings_show_played_queue_songs_desc">保持播放曲目在隊列中可見</string>
+    <string name="settings_show_played_queue_songs_desc">在佇列中繼續顯示已播放的曲目</string>
     <string name="settings_queue_action_dialog_desc">單軌佇列衝突策略</string>
     <string name="settings_queue_repeat_persistence">持續重複模式</string>
     <string name="settings_queue_repeat_persistence_desc">儲存重複模式</string>
@@ -1817,7 +1817,7 @@
     <string name="settings_sleep_timer_search_desc">自動停止播放</string>
     <string name="settings_queue_hours_format">使用時間格式的小時</string>
     <string name="settings_queue_hours_format_desc">時間格式的小時</string>
-    <string name="settings_queue_persistence">持久性隊列</string>
+    <string name="settings_queue_persistence">永久佇列</string>
     <string name="settings_queue_persistence_desc">啟動時恢復佇列</string>
     <string name="settings_playlist_action_dialog_desc">點選播放清單中的曲目時的行為</string>
     <string name="settings_list_queue_action_dialog_desc">佇列處於活動狀態時清單播放操作的行為</string>
@@ -2357,7 +2357,7 @@
     <string name="unit_dp">%1$ddp</string>
     <!-- Settings Suggestions and Tips -->
     <string name="settings_suggestions">設定建議</string>
-    <string name="settings_suggestions_desc">在頂部顯示上下文建議</string>
+    <string name="settings_suggestions_desc">在頂部顯示關聯性建議</string>
     <string name="settings_performance_desc_optimized">將振動回饋、解碼、跑馬燈和圖片取得最佳化，以減少延遲</string>
     <string name="moment_morning">今早</string>
     <string name="moment_afternoon">今天下午</string>
@@ -2859,7 +2859,7 @@
     <!-- Player, Bottomsheet, and Popup translations -->
     <string name="unknown_track">未知曲目</string>
     <string name="unknown_song">未知歌曲</string>
-    <string name="player_queue_format">隊列%1$d/%2$d</string>
+    <string name="player_queue_format">佇列%1$d/%2$d</string>
     <string name="player_release_to_close">放開關閉</string>
     <string name="player_swipe_down_to_close">向下滑動關閉</string>
     <string name="lyrics_source_attribution">歌詞：%1$s</string>
