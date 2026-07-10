@@ -12,6 +12,8 @@ import java.security.MessageDigest
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
+class SubsonicErrorException(val code: Int, message: String) : Exception(message)
+
 /**
  * Subsonic-compatible API client used for Navidrome/Subsonic service support.
  */
@@ -27,6 +29,9 @@ class SubsonicApiClient(context: Context) {
 
     @Volatile
     private var credentials: Credentials? = loadCredentials()
+
+    @Volatile
+    private var usePasswordAuth: Boolean = prefs.getBoolean(KEY_USE_PASSWORD_AUTH, false)
 
     private val okHttpClient = UserTrustManager.buildUserTrustingHttpClientBuilder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -70,6 +75,7 @@ class SubsonicApiClient(context: Context) {
                     .putString(KEY_SERVER_URL, normalizedUrl)
                     .putString(KEY_USERNAME, username.trim())
                     .putString(KEY_PASSWORD, password)
+                    .putBoolean(KEY_USE_PASSWORD_AUTH, usePasswordAuth)
                     .apply()
             } else {
                 prefs.edit().clear().apply()
@@ -82,6 +88,7 @@ class SubsonicApiClient(context: Context) {
 
     fun logout() {
         credentials = null
+        usePasswordAuth = false
         prefs.edit().clear().apply()
     }
 
@@ -470,14 +477,21 @@ class SubsonicApiClient(context: Context) {
     fun buildStreamUrl(songId: String, maxBitRateKbps: Int = 0, format: String? = null): String? {
         val cred = credentials ?: return null
         if (songId.isBlank()) return null
-        val (token, salt) = generateAuthParams(cred.password)
 
         val parsedUrl = "${cred.serverUrl}/rest/stream.view".toHttpUrlOrNull() ?: return null
         val urlBuilder = parsedUrl.newBuilder()
             .addQueryParameter("u", cred.username)
-            .addQueryParameter("t", token)
-            .addQueryParameter("s", salt)
-            .addQueryParameter("v", API_VERSION)
+
+        if (usePasswordAuth) {
+            val obfuscated = "enc:" + cred.password.toByteArray(Charsets.UTF_8).joinToString("") { "%02x".format(it) }
+            urlBuilder.addQueryParameter("p", obfuscated)
+        } else {
+            val (token, salt) = generateAuthParams(cred.password)
+            urlBuilder.addQueryParameter("t", token)
+            urlBuilder.addQueryParameter("s", salt)
+        }
+
+        urlBuilder.addQueryParameter("v", API_VERSION)
             .addQueryParameter("c", CLIENT_ID)
             .addQueryParameter("f", "json")
             .addQueryParameter("id", songId)
@@ -495,13 +509,21 @@ class SubsonicApiClient(context: Context) {
     fun buildCoverArtUrl(coverArtId: String, size: Int = 500): String? {
         val cred = credentials ?: return null
         if (coverArtId.isBlank()) return null
-        val (token, salt) = generateAuthParams(cred.password)
 
         val parsedUrl = "${cred.serverUrl}/rest/getCoverArt.view".toHttpUrlOrNull() ?: return null
-        return parsedUrl.newBuilder()
+        val urlBuilder = parsedUrl.newBuilder()
             .addQueryParameter("u", cred.username)
-            .addQueryParameter("t", token)
-            .addQueryParameter("s", salt)
+
+        if (usePasswordAuth) {
+            val obfuscated = "enc:" + cred.password.toByteArray(Charsets.UTF_8).joinToString("") { "%02x".format(it) }
+            urlBuilder.addQueryParameter("p", obfuscated)
+        } else {
+            val (token, salt) = generateAuthParams(cred.password)
+            urlBuilder.addQueryParameter("t", token)
+            urlBuilder.addQueryParameter("s", salt)
+        }
+
+        return urlBuilder
             .addQueryParameter("v", API_VERSION)
             .addQueryParameter("c", CLIENT_ID)
             .addQueryParameter("f", "json")
@@ -547,10 +569,24 @@ class SubsonicApiClient(context: Context) {
         params: Map<String, String> = emptyMap(),
         listParams: Map<String, List<String>> = emptyMap()
     ): Result<JSONObject> {
-        return request(endpoint, params, listParams).fold(
+        val result = request(endpoint, params, listParams).fold(
             onSuccess = { parseSubsonicResponse(it) },
             onFailure = { Result.failure(it) }
         )
+        if (result.isFailure) {
+            val exception = result.exceptionOrNull()
+            if (exception is SubsonicErrorException && exception.code == 41 && !usePasswordAuth) {
+                usePasswordAuth = true
+                if (isConnected()) {
+                    prefs.edit().putBoolean(KEY_USE_PASSWORD_AUTH, true).apply()
+                }
+                return request(endpoint, params, listParams).fold(
+                    onSuccess = { parseSubsonicResponse(it) },
+                    onFailure = { Result.failure(it) }
+                )
+            }
+        }
+        return result
     }
 
     private fun parseSubsonicResponse(raw: String): Result<JSONObject> {
@@ -564,7 +600,7 @@ class SubsonicApiClient(context: Context) {
                 val error = wrapper.optJSONObject("error")
                 val code = error?.optInt("code", -1) ?: -1
                 val message = error?.optString("message", "Unknown error") ?: "Unknown error"
-                return Result.failure(IllegalStateException("Subsonic error $code: $message"))
+                return Result.failure(SubsonicErrorException(code, "Subsonic error $code: $message"))
             }
 
             Result.success(wrapper)
@@ -579,14 +615,21 @@ class SubsonicApiClient(context: Context) {
         params: Map<String, String>,
         listParams: Map<String, List<String>> = emptyMap()
     ): String {
-        val (token, salt) = generateAuthParams(cred.password)
         val parsedUrl = "${cred.serverUrl}/rest/$endpoint.view".toHttpUrlOrNull()
             ?: throw IllegalStateException("Invalid API URL: ${cred.serverUrl}")
         val builder = parsedUrl.newBuilder()
             .addQueryParameter("u", cred.username)
-            .addQueryParameter("t", token)
-            .addQueryParameter("s", salt)
-            .addQueryParameter("v", API_VERSION)
+
+        if (usePasswordAuth) {
+            val obfuscated = "enc:" + cred.password.toByteArray(Charsets.UTF_8).joinToString("") { "%02x".format(it) }
+            builder.addQueryParameter("p", obfuscated)
+        } else {
+            val (token, salt) = generateAuthParams(cred.password)
+            builder.addQueryParameter("t", token)
+            builder.addQueryParameter("s", salt)
+        }
+
+        builder.addQueryParameter("v", API_VERSION)
             .addQueryParameter("c", CLIENT_ID)
             .addQueryParameter("f", "json")
 
@@ -788,6 +831,7 @@ class SubsonicApiClient(context: Context) {
         private const val KEY_SERVER_URL = "server_url"
         private const val KEY_USERNAME = "username"
         private const val KEY_PASSWORD = "password"
+        private const val KEY_USE_PASSWORD_AUTH = "use_password_auth"
 
         private const val API_VERSION = "1.16.1"
         private const val CLIENT_ID = "Rhythm"
