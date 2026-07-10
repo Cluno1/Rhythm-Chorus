@@ -319,6 +319,10 @@ dependencies {
     debugImplementation(libs.com.squareup.leakcanary.leakcanary.android)
 }
 
+composeCompiler {
+    includeComposeMappingFile.set(false)
+}
+
 fun getProperties(fileName: String): Properties? {
     val file = rootProject.file(fileName)
     return if (file.exists()) {
