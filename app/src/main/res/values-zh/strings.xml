@@ -66,7 +66,7 @@
     <string name="settings_context_queue_preference">上下文队列首选项</string>
     <string name="settings_context_queue_preference_desc">选择上下文队列应首先优先考虑哪些元数据。</string>
     <string name="settings_context_pref_artist_first">艺术家优先</string>
-    <string name="settings_context_pref_genre_first">类型第一</string>
+    <string name="settings_context_pref_genre_first">类型优先</string>
     <string name="settings_context_queue_persistence">上下文队列持久化</string>
     <string name="settings_context_queue_persistence_desc">选择上下文队列在播放结束后是否保持可用。</string>
     <string name="settings_context_persistence_persistent">持续</string>
