@@ -1346,22 +1346,10 @@ fun LibraryScreen(
             }
         }
     ) { paddingValues ->
-        val density = LocalDensity.current
-        val topPadding = remember(expandedHeaderHeight, paddingValues) {
-            if (expandedHeaderHeight > 0) {
-                with(density) { expandedHeaderHeight.toDp() }
-            } else {
-                paddingValues.calculateTopPadding()
-            }
-        }
-        
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = topPadding)
-                .offset {
-                    IntOffset(0, scrollBehavior.state.heightOffset.toInt())
-                }
+                .padding(paddingValues)
         ) {
             Surface(
                 modifier = Modifier
@@ -2493,7 +2481,7 @@ fun SingleCardPlaylistsContent(
             if (playlistViewType == PlaylistViewType.GRID) {
                 LazyVerticalGrid(
                     state = gridState,
-                    columns = GridCells.Fixed(2),
+                    columns = GridCells.Adaptive(160.dp),
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         start = 16.dp,
@@ -2652,7 +2640,7 @@ fun SingleCardAlbumsContent(
             if (albumViewType == AlbumViewType.GRID) {
                 LazyVerticalGrid(
                     state = gridState,
-                    columns = GridCells.Fixed(2),
+                    columns = GridCells.Adaptive(160.dp),
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         start = 16.dp,
@@ -4012,7 +4000,7 @@ fun AlbumsGrid(
 ) {
     val uniqueAlbums = remember(albums) { albums.distinctBy { it.id } }
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Adaptive(160.dp),
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
@@ -4439,7 +4427,7 @@ fun SingleCardArtistsContent(
         if (isGridView) {
             LazyVerticalGrid(
                 state = gridState,
-                columns = GridCells.Fixed(2),
+                columns = GridCells.Adaptive(160.dp),
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
