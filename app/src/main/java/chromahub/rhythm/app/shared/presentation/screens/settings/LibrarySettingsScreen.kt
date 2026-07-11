@@ -170,6 +170,7 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
     val preferSongArtwork by appSettings.preferSongArtwork.collectAsState()
     val losslessArtwork by appSettings.losslessArtwork.collectAsState()
     val albumBottomSheetGradientBlur by appSettings.albumBottomSheetGradientBlur.collectAsState()
+    val albumHideAbout by appSettings.albumHideAbout.collectAsState()
     val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
     val autoFetchArtwork by appSettings.autoFetchArtwork.collectAsState()
 
@@ -255,6 +256,13 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
                         context.getString(R.string.settings_album_bottom_sheet_gradient_blur_desc),
                         toggleState = albumBottomSheetGradientBlur,
                         onToggleChange = { appSettings.setAlbumBottomSheetGradientBlur(it) }
+                    ),
+                    SettingItem(
+                        MaterialSymbolIcon("info"),
+                        context.getString(R.string.settings_album_hide_about),
+                        context.getString(R.string.settings_album_hide_about_desc),
+                        toggleState = albumHideAbout,
+                        onToggleChange = { appSettings.setAlbumHideAbout(it) }
                     ),
                     SettingItem(
                         icon = MaterialSymbolIcon("cloud_download"),

@@ -9,8 +9,6 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -78,6 +76,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.sp
 
 private enum class AlbumSortOrder {
     TRACK_NUMBER,
@@ -156,9 +157,6 @@ private fun prepareAlbumSongDisplayState(
     )
 }
 
-private fun lerpDp(start: Dp, stop: Dp, fraction: Float): Dp {
-    return start + (stop - start) * fraction.coerceIn(0f, 1f)
-}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -675,37 +673,156 @@ fun AlbumDetailScreen(
             }
         }
     } else {
-        val songListState = rememberLazyListState()
-        val coroutineScope = rememberCoroutineScope()
-        val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-        val expandedHeaderHeight = 450.dp
-        val collapsedHeaderHeight = 56.dp + statusBarHeight
-        val collapseDistancePx = with(density) { (expandedHeaderHeight - collapsedHeaderHeight).toPx() }
+        val topAppBarState = rememberTopAppBarState()
+        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            topAppBarState,
+            canScroll = { true }
+        )
+        Box(modifier = Modifier.fillMaxSize()) {
+            val collapsedFraction = scrollBehavior.state.collapsedFraction
 
-        LaunchedEffect(album?.id, selectedDisc) {
-            songListState.scrollToItem(0)
-        }
-        val collapseFraction by remember(songListState, collapseDistancePx) {
-            derivedStateOf {
-                if (songListState.firstVisibleItemIndex > 0) {
-                    1f
-                } else {
-                    (songListState.firstVisibleItemScrollOffset / collapseDistancePx).coerceIn(0f, 1f)
+            // Fixed background artwork — smoothly fades out on scroll
+            val expandedAlpha = ((0.65f - collapsedFraction) / 0.4f).coerceIn(0f, 1f)
+            if (expandedAlpha > 0.01f && !isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(450.dp)
+                        .graphicsLayer {
+                            alpha = expandedAlpha
+                            // Zoom in effect: art scales up as user scrolls down
+                            scaleX = 1f + collapsedFraction * 0.15f
+                            scaleY = 1f + collapsedFraction * 0.15f
+                        }
+                ) {
+                    if (displayArtworkUri != null) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .apply(ImageUtils.buildImageRequest(displayArtworkUri, albumName, context.cacheDir, M3PlaceholderType.ALBUM))
+                                .build(),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primaryContainer,
+                                            MaterialTheme.colorScheme.tertiaryContainer
+                                        )
+                                    )
+                                )
+                        )
+                    }
+
+                    if (hasCanvas) {
+                        CanvasArtworkPlayer(
+                            primaryUrl = canvasArtwork?.animated,
+                            fallbackUrl = canvasArtwork?.videoUrl,
+                            alwaysPlay = true,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    // Gradient overlay
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        backgroundColor.copy(alpha = 0.6f),
+                                        backgroundColor
+                                    )
+                                )
+                            )
+                    )
+
+                    // Album info — bottom aligned, slides up with collapse
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .fillMaxWidth()
+                            .padding(24.dp)
+                            .graphicsLayer {
+                                translationY = -collapsedFraction * 120f
+                            }
+                    ) {
+                        // Album name — multiline handled with maxLines=3
+                        Text(
+                            text = albumName,
+                            style = MaterialTheme.typography.displaySmall,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        // Merge artist + tracks together, year+quality BIG on right spanning both lines
+                        val albumYear = album?.year
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Left column: artist on top, tracks below (entire column clickable)
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        val song = allDisplaySongs.firstOrNull()
+                                        if (song != null) handleArtistTap(song)
+                                    }
+                            ) {
+                                // Artist name — accent/primary color
+                                Text(
+                                    text = displayArtist,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                // Track count + duration
+                                Text(
+                                    text = "${allDisplaySongs.size} tracks • ${formatDuration(totalDuration, useHoursFormat)}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.72f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            // Right side: BIG year + quality icon, spanning both lines
+                            if (albumYear != null && albumYear > 0) {
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(verticalArrangement = Arrangement.Center) {
+                                    Text(
+                                        text = albumYear.toString(),
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        fontWeight = FontWeight.Black,
+                                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.32f),
+                                    )
+                                }
+                            }
+                            allDisplaySongs.firstOrNull()?.let { firstSong ->
+                                Spacer(modifier = Modifier.width(6.dp))
+                                AudioQualityIcon(
+                                    song = firstSong,
+                                    iconSize = 32.dp,
+                                    padding = 0.dp
+                                )
+                            }
+                        }
+                    }
                 }
             }
-        }
-        val headerHeight by animateDpAsState(
-            targetValue = lerpDp(expandedHeaderHeight, collapsedHeaderHeight, collapseFraction),
-            animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium),
-            label = "albumHeaderHeight"
-        )
-        val artworkAlpha by animateFloatAsState(
-            targetValue = 1f - collapseFraction,
-            animationSpec = tween(180),
-            label = "albumArtworkAlpha"
-        )
 
-        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            // Loading state
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
@@ -728,166 +845,282 @@ fun AlbumDetailScreen(
                         modifier = Modifier.size(20.dp)
                     )
                 }
-            } else {
-                Column(modifier = Modifier.fillMaxSize()) {
-                CollapsibleAlbumHeader(
-                    albumName = albumName,
-                    artist = displayArtist,
-                    metadata = "${allDisplaySongs.size} tracks • ${formatDuration(totalDuration, useHoursFormat)}",
-                    artworkUri = displayArtworkUri,
-                    hasCanvas = hasCanvas,
-                    canvasArtwork = canvasArtwork,
-                    backgroundColor = backgroundColor,
-                    height = headerHeight,
-                    collapseFraction = collapseFraction,
-                    artworkAlpha = artworkAlpha,
-                    sortOrder = sortOrder,
-                    showSortMenu = showSortMenu,
-                    onShowSortMenu = { showSortMenu = true },
-                    onDismissSortMenu = { showSortMenu = false },
-                    onSortOrderSelected = { newOrder ->
-                        appSettings.setAlbumSortOrder(newOrder.name)
-                        showSortMenu = false
-                    },
-                    onBack = onBack,
-                    onArtistClick = {
-                        val song = allDisplaySongs.firstOrNull()
-                        if (song != null) handleArtistTap(song)
-                    },
-                    firstSong = allDisplaySongs.firstOrNull(),
-                    modifier = Modifier.pointerInput(songListState) {
-                        detectVerticalDragGestures { change, dragAmount ->
-                            change.consume()
-                            coroutineScope.launch {
-                                songListState.scrollBy(-dragAmount)
+            }
+
+            // Sort menu state
+            val currentKey = when (sortOrder) {
+                AlbumSortOrder.TRACK_NUMBER -> "TRACK_NUMBER"
+                AlbumSortOrder.TITLE_ASC, AlbumSortOrder.TITLE_DESC -> "TITLE"
+                AlbumSortOrder.DURATION_ASC, AlbumSortOrder.DURATION_DESC -> "DURATION"
+            }
+            val isAscending = when (sortOrder) {
+                AlbumSortOrder.TITLE_DESC, AlbumSortOrder.DURATION_DESC -> false
+                else -> true
+            }
+            val sortOptions = remember(context) {
+                listOf(
+                    RhythmSortOption("TRACK_NUMBER", context.getString(R.string.sort_track_number), RhythmIcons.FormatListNumbered),
+                    RhythmSortOption("TITLE", context.getString(R.string.library_sort_title), RhythmIcons.SortByAlpha),
+                    RhythmSortOption("DURATION", context.getString(R.string.sort_duration), RhythmIcons.AccessTime)
+                )
+            }
+
+            // Scaffold with transparent topBar
+            Scaffold(
+                modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+                containerColor = Color.Transparent,
+                contentWindowInsets = WindowInsets(0, 0, 0, 0),
+                topBar = {
+                    Column {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        LargeTopAppBar(
+                            title = {
+                                // Smoothly fade in the collapsed title — starts at ~20% collapse, full at ~60%
+                                val titleAlpha = ((collapsedFraction - 0.2f) / 0.4f).coerceIn(0f, 1f)
+                                if (titleAlpha > 0.01f) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        modifier = Modifier
+                                            .padding(start = 14.dp)
+                                            .graphicsLayer { alpha = titleAlpha }
+                                    ) {
+                                        Text(
+                                            text = albumName,
+                                            style = MaterialTheme.typography.headlineLarge.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = (24 + (32 - 24) * (1 - collapsedFraction)).sp
+                                            ),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            },
+                            navigationIcon = {
+                                IconButton(
+                                    onClick = onBack,
+                                    modifier = Modifier.padding(start = 12.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(RoundedCornerShape(50))
+                                            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Back,
+                                            contentDescription = stringResource(R.string.cd_back),
+                                            tint = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.size(25.dp)
+                                        )
+                                    }
+                                }
+                            },
+                            actions = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(end = 12.dp)
+                                ) {
+                                    Box {
+                                        FilledIconButton(
+                                            onClick = { showSortMenu = true },
+                                            modifier = Modifier.size(40.dp),
+                                            colors = IconButtonDefaults.filledIconButtonColors(
+                                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                                contentColor = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        ) {
+                                            Icon(
+                                                imageVector = RhythmIcons.Actions.Sort,
+                                                contentDescription = stringResource(R.string.content_desc_sort_songs),
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+
+                                        DropdownMenu(
+                                            expanded = showSortMenu,
+                                            onDismissRequest = { showSortMenu = false },
+                                            shape = RoundedCornerShape(20.dp),
+                                            modifier = Modifier
+                                                .widthIn(min = 250.dp)
+                                                .background(MaterialTheme.colorScheme.surfaceContainer)
+                                                .padding(8.dp)
+                                        ) {
+                                            RhythmSortMenuContent(
+                                                selectedKey = currentKey,
+                                                isAscending = isAscending,
+                                                options = sortOptions,
+                                                onKeySelected = { key ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    val newOrder = when (key) {
+                                                        "TRACK_NUMBER" -> AlbumSortOrder.TRACK_NUMBER
+                                                        "TITLE" -> if (isAscending) AlbumSortOrder.TITLE_ASC else AlbumSortOrder.TITLE_DESC
+                                                        "DURATION" -> if (isAscending) AlbumSortOrder.DURATION_ASC else AlbumSortOrder.DURATION_DESC
+                                                        else -> AlbumSortOrder.TRACK_NUMBER
+                                                    }
+                                                    appSettings.setAlbumSortOrder(newOrder.name)
+                                                    showSortMenu = false
+                                                },
+                                                onDirectionToggled = { asc ->
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    val newOrder = when (currentKey) {
+                                                        "TRACK_NUMBER" -> AlbumSortOrder.TRACK_NUMBER
+                                                        "TITLE" -> if (asc) AlbumSortOrder.TITLE_ASC else AlbumSortOrder.TITLE_DESC
+                                                        "DURATION" -> if (asc) AlbumSortOrder.DURATION_ASC else AlbumSortOrder.DURATION_DESC
+                                                        else -> AlbumSortOrder.TRACK_NUMBER
+                                                    }
+                                                    appSettings.setAlbumSortOrder(newOrder.name)
+                                                    showSortMenu = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            },
+                            scrollBehavior = scrollBehavior,
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = Color.Transparent,
+                                scrolledContainerColor = Color.Transparent
+                            )
+                        )
+                    }
+                }
+            ) { paddingValues ->
+                val density = LocalDensity.current
+                val collapsedTopPadding = paddingValues.calculateTopPadding()
+                // Interpolate content top padding between artwork height (expanded) and top bar height (collapsed)
+                val dynamicTopPadding = 450.dp + (collapsedTopPadding - 450.dp) * collapsedFraction
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = dynamicTopPadding)
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 450.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        if (!isLoading) {
+                            // Play/Shuffle buttons
+                            item {
+                                AnimatedVisibility(
+                                    visible = allDisplaySongs.isNotEmpty(),
+                                    enter = expandVertically(animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)) + fadeIn(animationSpec = tween(300)),
+                                    exit = shrinkVertically(animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)) + fadeOut(animationSpec = tween(200))
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 24.dp)
+                                            .padding(top = 12.dp, bottom = 8.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    ) {
+                                        Button(
+                                            onClick = {
+                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                playAllPressed = true
+                                                onPlayAll(displaySongs)
+                                            },
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height(52.dp)
+                                                .graphicsLayer {
+                                                    scaleX = playAllScale
+                                                    scaleY = playAllScale
+                                                },
+                                            shape = ButtonGroupDefaults.connectedLeadingButtonShapes().shape,
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = MaterialTheme.colorScheme.primary,
+                                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                            ),
+                                            contentPadding = PaddingValues(horizontal = 16.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = RhythmIcons.Play,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                "Play All",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+
+                                        FilledTonalButton(
+                                            onClick = {
+                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                shufflePressed = true
+                                                onShufflePlay(displaySongs)
+                                            },
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height(52.dp)
+                                                .graphicsLayer {
+                                                    scaleX = shuffleScale
+                                                    scaleY = shuffleScale
+                                                },
+                                            shape = ButtonGroupDefaults.connectedTrailingButtonShapes().shape,
+                                            colors = ButtonDefaults.filledTonalButtonColors(
+                                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                            ),
+                                            contentPadding = PaddingValues(horizontal = 16.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = RhythmIcons.Shuffle,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                stringResource(R.string.action_shuffle),
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Disc filter
+                            if (shouldShowDiscFilter) {
+                                item {
+                                    AlbumDiscFilterChips(
+                                        selectedDisc = selectedDisc,
+                                        availableDiscs = availableDiscs,
+                                        onDiscSelected = { disc ->
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                            appSettings.setAlbumBottomSheetDiscFilter(disc)
+                                        }
+                                    )
+                                }
+                            }
+
+                            // Songs
+                            itemsIndexed(displaySongs, key = { _, song -> song.id }) { index, song ->
+                                AnimateIn {
+                                    AlbumSongItem(
+                                        song = song,
+                                        index = index,
+                                        totalCount = displaySongs.size,
+                                        currentSong = currentSong,
+                                        isPlaying = isPlaying,
+                                        useHoursFormat = useHoursFormat,
+                                        onClick = { onSongClick(song) },
+                                        onMoreClick = {
+                                            selectedSongForOptions = song
+                                            showSongOptionsSheet = true
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
-                )
-
-                AnimatedVisibility(
-                    visible = allDisplaySongs.isNotEmpty(),
-                    enter = expandVertically(animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)) + fadeIn(animationSpec = tween(300)),
-                    exit = shrinkVertically(animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)) + fadeOut(animationSpec = tween(200))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp)
-                            .padding(top = 12.dp, bottom = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Button(
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                playAllPressed = true
-                                onPlayAll(displaySongs)
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(52.dp)
-                                .graphicsLayer {
-                                    scaleX = playAllScale
-                                    scaleY = playAllScale
-                                },
-                            shape = ButtonGroupDefaults.connectedLeadingButtonShapes().shape,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            contentPadding = PaddingValues(horizontal = 16.dp)
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Play,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                "Play All",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        FilledTonalButton(
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                shufflePressed = true
-                                onShufflePlay(displaySongs)
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(52.dp)
-                                .graphicsLayer {
-                                    scaleX = shuffleScale
-                                    scaleY = shuffleScale
-                                },
-                            shape = ButtonGroupDefaults.connectedTrailingButtonShapes().shape,
-                            colors = ButtonDefaults.filledTonalButtonColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            ),
-                            contentPadding = PaddingValues(horizontal = 16.dp)
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Shuffle,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                stringResource(R.string.action_shuffle),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
-                }
-
-                if (description != null) {
-                    AboutAlbumSection(
-                        description = description!!,
-                        modifier = Modifier.padding(horizontal = 24.dp).padding(top = 4.dp, bottom = 8.dp)
-                    )
-                }
-
-                if (shouldShowDiscFilter) {
-                    AlbumDiscFilterChips(
-                        selectedDisc = selectedDisc,
-                        availableDiscs = availableDiscs,
-                        onDiscSelected = { disc ->
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            appSettings.setAlbumBottomSheetDiscFilter(disc)
-                        },
-                        modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
-                    )
-                }
-
-                LazyColumn(
-                    state = songListState,
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(top = 8.dp, bottom = 450.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    itemsIndexed(displaySongs, key = { _, song -> song.id }) { index, song ->
-                        AnimateIn {
-                            AlbumSongItem(
-                                song = song,
-                                index = index,
-                                totalCount = displaySongs.size,
-                                currentSong = currentSong,
-                                isPlaying = isPlaying,
-                                useHoursFormat = useHoursFormat,
-                                onClick = { onSongClick(song) },
-                                onMoreClick = {
-                                    selectedSongForOptions = song
-                                    showSongOptionsSheet = true
-                                }
-                            )
-                        }
-                    }
-                }
                 }
             }
         }
@@ -946,278 +1179,6 @@ fun AlbumDetailScreen(
             showGoToAlbum = false,         // Already on the album screen
             haptics = haptics
         )
-    }
-}
-
-@Composable
-private fun CollapsibleAlbumHeader(
-    albumName: String,
-    artist: String,
-    metadata: String,
-    artworkUri: Uri?,
-    hasCanvas: Boolean,
-    canvasArtwork: CanvasArtwork?,
-    backgroundColor: Color,
-    height: Dp,
-    collapseFraction: Float,
-    artworkAlpha: Float,
-    sortOrder: AlbumSortOrder,
-    showSortMenu: Boolean,
-    onShowShowSortMenu: (() -> Unit)? = null, // unused but keep for safety or just keep original callbacks
-    onShowSortMenu: () -> Unit,
-    onDismissSortMenu: () -> Unit,
-    onSortOrderSelected: (AlbumSortOrder) -> Unit,
-    onBack: () -> Unit,
-    onArtistClick: () -> Unit,
-    firstSong: Song? = null,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val haptics = LocalHapticFeedback.current
-    val collapsedStateAlpha = ((collapseFraction - 0.58f) / 0.42f).coerceIn(0f, 1f)
-    val titleStartPadding = lerpDp(24.dp, 72.dp, collapseFraction)
-    val titleEndPadding = lerpDp(24.dp, 72.dp, collapseFraction)
-    val titleBottomPadding = lerpDp(30.dp, 16.dp, collapseFraction)
-    val expandedMetadataAlpha = ((0.18f - collapseFraction) / 0.18f).coerceIn(0f, 1f)
-    val titleStyle = if (collapseFraction > 0.72f) {
-        MaterialTheme.typography.titleLarge
-    } else {
-        MaterialTheme.typography.headlineLarge
-    }
-    val headerChromeContainer = lerp(
-        MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
-        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.94f),
-        collapsedStateAlpha
-    )
-    val headerChromeContent = lerp(
-        MaterialTheme.colorScheme.onSurface,
-        MaterialTheme.colorScheme.onSecondaryContainer,
-        collapsedStateAlpha
-    )
-    val titleColor = lerp(
-        MaterialTheme.colorScheme.onBackground,
-        MaterialTheme.colorScheme.onSurface,
-        collapsedStateAlpha
-    )
-    val currentKey = when (sortOrder) {
-        AlbumSortOrder.TRACK_NUMBER -> "TRACK_NUMBER"
-        AlbumSortOrder.TITLE_ASC, AlbumSortOrder.TITLE_DESC -> "TITLE"
-        AlbumSortOrder.DURATION_ASC, AlbumSortOrder.DURATION_DESC -> "DURATION"
-    }
-    val isAscending = when (sortOrder) {
-        AlbumSortOrder.TITLE_DESC, AlbumSortOrder.DURATION_DESC -> false
-        else -> true
-    }
-    val sortOptions = remember(context) {
-        listOf(
-            RhythmSortOption("TRACK_NUMBER", context.getString(R.string.sort_track_number), RhythmIcons.FormatListNumbered),
-            RhythmSortOption("TITLE", context.getString(R.string.library_sort_title), RhythmIcons.SortByAlpha),
-            RhythmSortOption("DURATION", context.getString(R.string.sort_duration), RhythmIcons.AccessTime)
-        )
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(height)
-            .background(MaterialTheme.colorScheme.surface)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer { alpha = artworkAlpha }
-        ) {
-            // Static Artwork (always rendered first as a base placeholder)
-            if (artworkUri != null) {
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .apply(ImageUtils.buildImageRequest(artworkUri, albumName, context.cacheDir, M3PlaceholderType.ALBUM))
-                        .build(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    alignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primaryContainer,
-                                    MaterialTheme.colorScheme.tertiaryContainer
-                                )
-                            )
-                        )
-                )
-            }
-
-            // Animated Canvas Player (rendered on top of base artwork, fades in once ready)
-            if (hasCanvas) {
-                CanvasArtworkPlayer(
-                    primaryUrl = canvasArtwork?.animated,
-                    fallbackUrl = canvasArtwork?.videoUrl,
-                    alwaysPlay = true,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            backgroundColor.copy(alpha = 0.6f),
-                            backgroundColor
-                        ),
-                        startY = 300f
-                    )
-                )
-                .graphicsLayer { alpha = 1f - collapseFraction }
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = collapsedStateAlpha * 0.82f))
-        )
-
-        FilledIconButton(
-            onClick = onBack,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .statusBarsPadding()
-                .padding(start = 16.dp, top = 8.dp)
-                .size(40.dp),
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = headerChromeContainer,
-                contentColor = headerChromeContent
-            )
-        ) {
-            Icon(
-                imageVector = RhythmIcons.Back,
-                contentDescription = stringResource(R.string.cd_back),
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding()
-                .padding(end = 16.dp, top = 8.dp)
-        ) {
-            FilledIconButton(
-                onClick = onShowSortMenu,
-                modifier = Modifier.size(40.dp),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = headerChromeContainer,
-                    contentColor = headerChromeContent
-                )
-            ) {
-                Icon(
-                    imageVector = RhythmIcons.Actions.Sort,
-                    contentDescription = stringResource(R.string.content_desc_sort_songs),
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            DropdownMenu(
-                expanded = showSortMenu,
-                onDismissRequest = onDismissSortMenu,
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier
-                    .widthIn(min = 250.dp)
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .padding(8.dp)
-            ) {
-                RhythmSortMenuContent(
-                    selectedKey = currentKey,
-                    isAscending = isAscending,
-                    options = sortOptions,
-                    onKeySelected = { key ->
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        val newOrder = when (key) {
-                            "TRACK_NUMBER" -> AlbumSortOrder.TRACK_NUMBER
-                            "TITLE" -> if (isAscending) AlbumSortOrder.TITLE_ASC else AlbumSortOrder.TITLE_DESC
-                            "DURATION" -> if (isAscending) AlbumSortOrder.DURATION_ASC else AlbumSortOrder.DURATION_DESC
-                            else -> AlbumSortOrder.TRACK_NUMBER
-                        }
-                        onSortOrderSelected(newOrder)
-                    },
-                    onDirectionToggled = { asc ->
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        val newOrder = when (currentKey) {
-                            "TRACK_NUMBER" -> AlbumSortOrder.TRACK_NUMBER
-                            "TITLE" -> if (asc) AlbumSortOrder.TITLE_ASC else AlbumSortOrder.TITLE_DESC
-                            "DURATION" -> if (asc) AlbumSortOrder.DURATION_ASC else AlbumSortOrder.DURATION_DESC
-                            else -> AlbumSortOrder.TRACK_NUMBER
-                        }
-                        onSortOrderSelected(newOrder)
-                    }
-                )
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .fillMaxWidth()
-                .padding(start = titleStartPadding, end = titleEndPadding, bottom = titleBottomPadding)
-        ) {
-            Text(
-                text = albumName,
-                style = titleStyle,
-                fontWeight = if (collapseFraction > 0.72f) FontWeight.Bold else FontWeight.Black,
-                color = titleColor,
-                maxLines = if (collapseFraction > 0.72f) 1 else 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            if (expandedMetadataAlpha > 0f) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .graphicsLayer { alpha = expandedMetadataAlpha },
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f, fill = false)
-                    ) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = artist,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.clickable(onClick = onArtistClick)
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = metadata,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.72f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    firstSong?.let { song ->
-                        AudioQualityIcon(
-                            song = song,
-                            iconSize = 36.dp, // Takes two lines space, making it bigger
-                            padding = 0.dp,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-                    }
-                }
-            }
-        }
     }
 }
 

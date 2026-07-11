@@ -501,6 +501,7 @@ class AppSettings private constructor(context: Context) {
 
         private const val KEY_ALBUM_BOTTOM_SHEET_GRADIENT_BLUR = "album_bottom_sheet_gradient_blur"
         private const val KEY_ALBUM_BOTTOM_SHEET_DISC_FILTER = "album_bottom_sheet_disc_filter"
+        private const val KEY_ALBUM_HIDE_ABOUT = "album_hide_about"
         
         // Artist Separator Settings
         private const val KEY_ARTIST_SEPARATOR_ENABLED = "artist_separator_enabled"
@@ -5800,6 +5801,13 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         val normalizedValue = value.coerceAtLeast(0)
         _albumBottomSheetDiscFilter.value = normalizedValue
         prefs.edit().putInt(KEY_ALBUM_BOTTOM_SHEET_DISC_FILTER, normalizedValue).apply()
+    }
+
+    private val _albumHideAbout = MutableStateFlow(prefs.getBoolean(KEY_ALBUM_HIDE_ABOUT, false))
+    val albumHideAbout: StateFlow<Boolean> = _albumHideAbout.asStateFlow()
+    fun setAlbumHideAbout(value: Boolean) {
+        _albumHideAbout.value = value
+        prefs.edit().putBoolean(KEY_ALBUM_HIDE_ABOUT, value).apply()
     }
     
     // ==================== Expressive MaterialShapes Settings ====================

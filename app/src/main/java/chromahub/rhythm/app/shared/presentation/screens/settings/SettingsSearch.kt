@@ -137,6 +137,17 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             parentScreen = context.getString(R.string.settings_library_settings),
             settingKey = "albumBottomSheetGradientBlur"
         ))
+        add(SearchableSettingItem(
+            id = "album_hide_about",
+            title = context.getString(R.string.settings_album_hide_about),
+            description = context.getString(R.string.settings_album_hide_about_desc),
+            keywords = listOf("album", "about", "description", "album about", "info"),
+            icon = MaterialSymbolIcon("info"),
+            route = SettingsRoutes.LIBRARY_SETTINGS,
+            parentScreen = context.getString(R.string.settings_library_settings),
+            settingKey = "albumHideAbout"
+        ))
+
         
         // Home & Widgets Section
         add(SearchableSettingItem(
@@ -492,6 +503,17 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             parentScreen = context.getString(R.string.settings_library_settings),
             settingKey = "autoFetchArtwork"
         ))
+        add(SearchableSettingItem(
+            id = "prefer_song_artwork",
+            title = context.getString(R.string.settings_ignore_mediastore_covers),
+            description = context.getString(R.string.settings_ignore_mediastore_covers_desc),
+            keywords = listOf("song art", "album art", "artwork", "cover", "mediastore", "embedded", "prefer song"),
+            icon = RhythmIcons.Album,
+            route = SettingsRoutes.LIBRARY_SETTINGS,
+            parentScreen = context.getString(R.string.settings_library_settings),
+            settingKey = "preferSongArtwork"
+        ))
+
         
         // Notifications & Services Section
         add(SearchableSettingItem(
@@ -1166,10 +1188,11 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             id = "queue_exoplayer_shuffle",
             title = context.getString(R.string.settings_use_exoplayer_shuffle),
             description = context.getString(R.string.settings_use_exoplayer_shuffle_desc),
-            keywords = listOf("shuffle", "exoplayer", "random", "playback", "algorithm"),
+            keywords = listOf("shuffle", "exoplayer", "random", "playback", "algorithm", "shuffle engine", "shuffle timeline", "shuffle mode", "shuffle algorithm"),
             icon = RhythmIcons.Shuffle,
             route = SettingsRoutes.QUEUE,
-            parentScreen = "Queue"
+            parentScreen = "Queue",
+            settingKey = "shuffleUsesExoplayer"
         ))
         add(SearchableSettingItem(
             id = "queue_auto_add",
@@ -1190,16 +1213,6 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             route = SettingsRoutes.QUEUE,
             parentScreen = "Queue",
             settingKey = "clearQueueOnNewSong"
-        ))
-        add(SearchableSettingItem(
-            id = "shuffle_engine",
-            title = context.getString(R.string.settings_use_exoplayer_shuffle),
-            description = context.getString(R.string.settings_use_exoplayer_shuffle_desc),
-            keywords = listOf("shuffle engine", "exoplayer shuffle", "shuffle timeline", "shuffle mode", "shuffle algorithm"),
-            icon = RhythmIcons.Shuffle,
-            route = SettingsRoutes.QUEUE,
-            parentScreen = "Queue",
-            settingKey = "shuffleUsesExoplayer"
         ))
         add(SearchableSettingItem(
             id = "queue_hide_played",
