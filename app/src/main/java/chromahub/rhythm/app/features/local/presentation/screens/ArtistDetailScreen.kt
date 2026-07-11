@@ -1022,7 +1022,6 @@ private fun ArtistAlbumCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .clip(albumArtShape)
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(context)
@@ -1037,7 +1036,9 @@ private fun ArtistAlbumCard(
                         .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(albumArtShape)
                 )
                 
                 // Play button overlay

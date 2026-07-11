@@ -1077,8 +1077,16 @@ fun LibraryScreen(
                                 scaleY = sortButtonScale
                             }
                         ) {
+                            val sortIcon = when (sortOrder) {
+                                MusicViewModel.SortOrder.TITLE_ASC, MusicViewModel.SortOrder.TITLE_DESC -> RhythmIcons.SortByAlpha
+                                MusicViewModel.SortOrder.ARTIST_ASC, MusicViewModel.SortOrder.ARTIST_DESC -> RhythmIcons.ArtistFilled
+                                MusicViewModel.SortOrder.ALBUM_ASC, MusicViewModel.SortOrder.ALBUM_DESC -> RhythmIcons.AlbumFilled
+                                MusicViewModel.SortOrder.YEAR_ASC, MusicViewModel.SortOrder.YEAR_DESC -> MaterialSymbolIcon("calendar_month", filled = true)
+                                MusicViewModel.SortOrder.DATE_ADDED_ASC, MusicViewModel.SortOrder.DATE_ADDED_DESC -> RhythmIcons.DateRange
+                                MusicViewModel.SortOrder.DATE_MODIFIED_ASC, MusicViewModel.SortOrder.DATE_MODIFIED_DESC -> MaterialSymbolIcon("edit_calendar", filled = true)
+                            }
                             Icon(
-                                imageVector = RhythmIcons.Sort,
+                                imageVector = sortIcon,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -4670,34 +4678,39 @@ private fun ArtistGridCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f),
-                shape = rememberExpressiveShapeFor(
-                    ExpressiveShapeTarget.ARTIST_ART,
-                    fallbackShape = RoundedCornerShape(16.dp)
-                ),
                 tonalElevation = 0.dp,
-                color = MaterialTheme.colorScheme.secondaryContainer
+                color = Color.Transparent
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            if (artist.artworkUri != null) Color.Transparent
-                            else MaterialTheme.colorScheme.secondaryContainer
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    M3ImageUtils.ArtistImage(
-                        imageUrl = artist.artworkUri,
-                        artistName = artist.name,
-                        modifier = Modifier.fillMaxSize(),
-                        applyExpressiveShape = false
-                    )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // Image area - clipped to the expressive shape
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(
+                                rememberExpressiveShapeFor(
+                                    ExpressiveShapeTarget.ARTIST_ART,
+                                    fallbackShape = RoundedCornerShape(16.dp)
+                                )
+                            )
+                            .background(
+                                if (artist.artworkUri != null) Color.Transparent
+                                else MaterialTheme.colorScheme.secondaryContainer
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        M3ImageUtils.ArtistImage(
+                            imageUrl = artist.artworkUri,
+                            artistName = artist.name,
+                            modifier = Modifier.fillMaxSize(),
+                            applyExpressiveShape = false
+                        )
+                    }
                     
+                    // Play button - NOT clipped and no shadow
                     Surface(
                         onClick = onPlayClick,
                         shape = CircleShape,
                         color = MaterialTheme.colorScheme.primary,
-                        shadowElevation = 6.dp,
                         modifier = Modifier
                             .size(48.dp)
                             .align(Alignment.BottomEnd)
