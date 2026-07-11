@@ -1936,11 +1936,11 @@
     <string name="settings_miniplayer_show_artwork">Mostrar ilustraciones</string>
     <string name="settings_miniplayer_show_artwork_desc">Mostrar la carátula del álbum en el minirreproductor</string>
     <string name="settings_miniplayer_artwork_size">Tamaño de la obra de arte</string>
-    <string name="settings_miniplayer_artwork_size_desc">Ajustar el tamaño de la carátula del álbum en el mini reproductor</string>
+    <string name="settings_miniplayer_artwork_size_desc">Ajustar el tamaño de la carátula del álbum en el minirreproductor</string>
     <string name="settings_miniplayer_corner_radius">Radio de esquina</string>
     <string name="settings_miniplayer_corner_radius_desc">Ajustar la redondez de las esquinas del minirreproductor</string>
     <string name="settings_miniplayer_show_time">Mostrar hora</string>
-    <string name="settings_miniplayer_show_time_desc">Mostrar el tiempo de reproducción en el mini reproductor</string>
+    <string name="settings_miniplayer_show_time_desc">Mostrar el tiempo de reproducción en el minirreproductor</string>
     <string name="settings_miniplayer_tablet_layout">Diseño de tableta en el teléfono</string>
     <string name="settings_miniplayer_tablet_layout_desc">Utilice un minirreproductor estilo tableta en teléfonos</string>
     <!-- Library Screen scanning overlay -->
@@ -2744,7 +2744,7 @@
 
     <!-- Shape Utils category and descriptions -->
     <string name="shape_utils_player_controls">Controles del reproductor</string>
-    <string name="shape_utils_mini_player">Mini reproductor</string>
+    <string name="shape_utils_mini_player">Minirreproductor</string>
     <!-- Metadata properties and labels -->
     <string name="metadata_duration">Duración</string>
     <string name="metadata_disc">Disco</string>
