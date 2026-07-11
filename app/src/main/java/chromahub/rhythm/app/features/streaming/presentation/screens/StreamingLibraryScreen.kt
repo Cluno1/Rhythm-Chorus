@@ -302,17 +302,7 @@ fun StreamingLibraryScreen(
             newReleases
         }
     }
-    val derivedArtists = remember(librarySongs, artistSeparatorEnabled, artistSeparatorDelimiters) {
-        deriveArtistsFromSongs(
-            songs = librarySongs,
-            separatorEnabled = artistSeparatorEnabled,
-            separatorDelimiters = artistSeparatorDelimiters
-        )
-    }
-    val libraryArtists = remember(followedArtists, derivedArtists) {
-        // Prefer provider artists, but fall back to song-derived artists when provider lists are empty.
-        if (followedArtists.isNotEmpty()) followedArtists else derivedArtists
-    }
+    val libraryArtists = followedArtists
     val libraryPlaylists = remember(savedPlaylists, featuredPlaylists) {
         (savedPlaylists + featuredPlaylists).distinctBy { it.id }
     }
@@ -2499,10 +2489,18 @@ fun StreamingSong.toLibrarySong(): Song {
         title = title,
         artist = artist,
         album = album,
-        albumId = "${sourceType.name}:${artist.lowercase()}:${album.lowercase()}",
+        albumId = albumId.orEmpty().takeIf { it.isNotBlank() } ?: "${sourceType.name}:${artist.lowercase()}:${album.lowercase()}",
         duration = duration,
         uri = playbackUri,
-        artworkUri = artworkUri?.takeIf { it.isNotBlank() }?.let(Uri::parse)
+        artworkUri = artworkUri?.takeIf { it.isNotBlank() }?.let(Uri::parse),
+        albumArtist = albumArtist,
+        trackNumber = trackNumber ?: 0,
+        year = year ?: 0,
+        genre = genre,
+        bitrate = bitrate,
+        sampleRate = sampleRate,
+        channels = channels,
+        codec = codec
     )
 }
 
@@ -2601,53 +2599,7 @@ private fun StreamingArtist.toLibraryArtist(
     )
 }
 
-private fun deriveArtistsFromSongs(
-    songs: List<StreamingSong>,
-    separatorEnabled: Boolean,
-    separatorDelimiters: String
-): List<StreamingArtist> {
-    if (songs.isEmpty()) {
-        return emptyList()
-    }
 
-    return songs
-        .filter { it.artist.isNotBlank() }
-        .flatMap { song ->
-            val artistNames = ArtistSeparator.splitArtistNames(
-                song.artist,
-                delimiters = separatorDelimiters,
-                enabled = separatorEnabled
-            )
-
-            if (artistNames.isEmpty()) {
-                listOf(song to song.artist.trim())
-            } else {
-                artistNames.mapNotNull { artistName ->
-                    artistName.trim().takeIf { it.isNotBlank() }?.let { trimmedName ->
-                        song to trimmedName
-                    }
-                }
-            }
-        }
-        .groupBy { (song, artistName) -> "${song.sourceType.name}:${artistName.lowercase()}" }
-        .values
-        .sortedByDescending { artistSongs -> artistSongs.size }
-        .take(40)
-        .map { artistSongs ->
-            val firstSong = artistSongs.first().first
-            val artistName = artistSongs.first().second
-            val artistTracks = artistSongs.map { it.first }
-            StreamingArtist(
-                id = "ui-derived:${firstSong.sourceType.name}:artist:${artistName.lowercase()}",
-                name = artistName,
-                artworkUri = artistTracks.firstNotNullOfOrNull { it.artworkUri },
-                songCount = artistTracks.size,
-                albumCount = artistTracks.map { it.album }.distinct().size,
-                sourceType = firstSong.sourceType,
-                topTracks = artistTracks.take(20)
-            )
-        }
-}
 
 private fun formatCompactDuration(durationMs: Long): String {
     val totalSeconds = (durationMs / 1000L).coerceAtLeast(0L)

@@ -109,7 +109,7 @@ class SubsonicApiClient(context: Context) {
         )
 
         return requestAndParse("search3", params).map { response ->
-            parseSongList(response.optJSONObject("searchResult3")?.optJSONArray("song"))
+            parseSongList(response.optJSONObject("searchResult3")?.opt("song"))
         }
     }
 
@@ -126,7 +126,29 @@ class SubsonicApiClient(context: Context) {
         )
 
         return requestAndParse("search3", params).map { response ->
-            parseAlbumList(response.optJSONObject("searchResult3")?.optJSONArray("album"))
+            parseAlbumListCompat(response.optJSONObject("searchResult3")?.opt("album"))
+        }
+    }
+
+    suspend fun getArtists(): Result<List<ProviderArtist>> {
+        if (!isConnected()) {
+            return Result.failure(IllegalStateException("Subsonic service is not connected"))
+        }
+
+        return requestAndParse("getArtists", emptyMap()).map { response ->
+            val artistsObj = response.optJSONObject("artists")
+            val indexArray = artistsObj?.optJSONArray("index")
+            val result = mutableListOf<ProviderArtist>()
+            if (indexArray != null) {
+                for (i in 0 until indexArray.length()) {
+                    val indexObj = indexArray.optJSONObject(i)
+                    val artistArray = indexObj?.opt("artist")
+                    if (artistArray != null) {
+                        result.addAll(parseArtistListCompat(artistArray))
+                    }
+                }
+            }
+            result
         }
     }
 
@@ -143,7 +165,7 @@ class SubsonicApiClient(context: Context) {
         )
 
         return requestAndParse("search3", params).map { response ->
-            parseArtistList(response.optJSONObject("searchResult3")?.optJSONArray("artist"))
+            parseArtistListCompat(response.optJSONObject("searchResult3")?.opt("artist"))
         }
     }
 
@@ -161,7 +183,7 @@ class SubsonicApiClient(context: Context) {
         )
 
         return requestAndParse("getSimilarSongs2", params).map { response ->
-            parseSongList(response.optJSONObject("similarSongs2")?.optJSONArray("song") ?: response.optJSONObject("similarSongs")?.optJSONArray("song"))
+            parseSongList(response.optJSONObject("similarSongs2")?.opt("song") ?: response.optJSONObject("similarSongs")?.opt("song"))
         }
     }
 
@@ -208,7 +230,7 @@ class SubsonicApiClient(context: Context) {
         )
 
         return requestAndParse("getAlbumList2", params).map { response ->
-            parseAlbumList(response.optJSONObject("albumList2")?.optJSONArray("album"))
+            parseAlbumListCompat(response.optJSONObject("albumList2")?.opt("album"))
         }
     }
 
@@ -245,7 +267,7 @@ class SubsonicApiClient(context: Context) {
                             ?.optJSONObject("album")
                             ?: continue
 
-                        val albumSongs = parseSongList(albumResponse.optJSONArray("song"))
+                        val albumSongs = parseSongList(albumResponse.opt("song"))
                         for (song in albumSongs) {
                             songs.putIfAbsent(song.providerId, song)
                             if (songs.size >= limit) {
@@ -275,13 +297,7 @@ class SubsonicApiClient(context: Context) {
             return Result.failure(IllegalStateException("Subsonic service is not connected"))
         }
 
-        val params = mapOf(
-            "u" to credentials!!.username,
-            "v" to API_VERSION,
-            "c" to CLIENT_ID
-        )
-
-        return requestAndParse("getPlaylists", params).map { response ->
+        return requestAndParse("getPlaylists", emptyMap()).map { response ->
             parsePlaylistList(response.optJSONObject("playlists")?.optJSONArray("playlist"), limit)
         }
     }
@@ -322,7 +338,7 @@ class SubsonicApiClient(context: Context) {
         }
 
         return requestAndParse("getAlbum", mapOf("id" to albumId)).map { response ->
-            parseSongList(response.optJSONObject("album")?.optJSONArray("song")).take(limit)
+            parseSongList(response.optJSONObject("album")?.opt("song")).take(limit)
         }
     }
 
@@ -360,8 +376,8 @@ class SubsonicApiClient(context: Context) {
 
             requestAndParse("getArtist", mapOf("id" to artist.providerId)).getOrNull()
                 ?.optJSONObject("artist")
-                ?.optJSONArray("album")
-                ?.let { parseAlbumList(it).take(limit) }
+                ?.opt("album")
+                ?.let { parseAlbumListCompat(it).take(limit) }
                 .orEmpty()
         }
     }
@@ -398,7 +414,7 @@ class SubsonicApiClient(context: Context) {
         )
 
         return requestAndParse("getSimilarSongs2", params).map { response ->
-            parseSongList(response.optJSONObject("similarSongs2")?.optJSONArray("song") ?: response.optJSONObject("similarSongs")?.optJSONArray("song"))
+            parseSongList(response.optJSONObject("similarSongs2")?.opt("song") ?: response.optJSONObject("similarSongs")?.opt("song"))
         }
     }
 
@@ -646,36 +662,67 @@ class SubsonicApiClient(context: Context) {
         return builder.build().toString()
     }
 
-    private fun parseSongList(songs: org.json.JSONArray?): List<ProviderSong> {
+    private fun parseSongList(songsElement: Any?): List<ProviderSong> {
+        if (songsElement == null) return emptyList()
         return buildList {
-            for (i in 0 until (songs?.length() ?: 0)) {
-                val song = songs?.optJSONObject(i) ?: continue
-                val id = song.optString("id", "")
-                if (id.isBlank()) continue
-
-                val coverArtId = song.optString("coverArt").takeIf { it.isNotBlank() }
-                add(
-                    ProviderSong(
-                        providerId = id,
-                        title = song.optString("title", song.optString("name", "Unknown title")),
-                        artist = song.optString("artist", "Unknown artist"),
-                        album = song.optString("album", "Unknown album"),
-                        durationMs = song.optLong("duration", 0L) * 1000L,
-                        artworkUrl = coverArtId?.let { buildCoverArtUrl(it, 500) },
-                        albumId = song.optString("albumId", "").takeIf { it.isNotBlank() },
-                        albumArtist = song.optString("albumArtist", "").takeIf { it.isNotBlank() },
-                        isFavorite = song.has("starred") && !song.isNull("starred")
-                    )
-                )
+            if (songsElement is org.json.JSONArray) {
+                for (i in 0 until songsElement.length()) {
+                    val song = songsElement.optJSONObject(i) ?: continue
+                    parseSingleSong(song)?.let { add(it) }
+                }
+            } else if (songsElement is JSONObject) {
+                parseSingleSong(songsElement)?.let { add(it) }
             }
         }
     }
 
-    private fun parseAlbumList(albums: org.json.JSONArray?): List<ProviderAlbum> {
+    private fun parseSingleSong(song: JSONObject): ProviderSong? {
+        val id = song.optString("id", "")
+        if (id.isBlank()) return null
+
+        val coverArtId = song.optString("coverArt").takeIf { it.isNotBlank() }
+        
+        val rawTrack = song.optString("track", "")
+        val trackNum = song.optInt("track", 0).takeIf { it > 0 }
+            ?: rawTrack.substringBefore('/').toIntOrNull()
+        
+        val yearVal = song.optInt("year", 0).takeIf { it > 0 }
+        val genreVal = song.optString("genre", "").takeIf { it.isNotBlank() }
+        
+        val bitrateVal = song.optInt("bitRate", 0).takeIf { it > 0 }?.let { it * 1000 }
+        val sampleRateVal = song.optInt("sampleRate", 0).takeIf { it > 0 }
+        val codecVal = song.optString("suffix", "").takeIf { it.isNotBlank() }
+
+        return ProviderSong(
+            providerId = id,
+            title = song.optString("title", song.optString("name", "Unknown title")),
+            artist = song.optString("artist", "Unknown artist"),
+            album = song.optString("album", "Unknown album"),
+            durationMs = song.optLong("duration", 0L) * 1000L,
+            artworkUrl = coverArtId?.let { buildCoverArtUrl(it, 500) },
+            albumId = song.optString("albumId", "").takeIf { it.isNotBlank() },
+            albumArtist = song.optString("albumArtist", "").takeIf { it.isNotBlank() },
+            isFavorite = song.has("starred") && !song.isNull("starred"),
+            trackNumber = trackNum,
+            year = yearVal,
+            genre = genreVal,
+            bitrate = bitrateVal,
+            sampleRate = sampleRateVal,
+            channels = song.optInt("channels", 0).takeIf { it > 0 },
+            codec = codecVal
+        )
+    }
+
+    private fun parseAlbumListCompat(albumElement: Any?): List<ProviderAlbum> {
+        if (albumElement == null) return emptyList()
         return buildList {
-            for (i in 0 until (albums?.length() ?: 0)) {
-                val album = albums?.optJSONObject(i) ?: continue
-                add(parseAlbumItem(album))
+            if (albumElement is org.json.JSONArray) {
+                for (i in 0 until albumElement.length()) {
+                    val album = albumElement.optJSONObject(i) ?: continue
+                    add(parseAlbumItem(album))
+                }
+            } else if (albumElement is JSONObject) {
+                add(parseAlbumItem(albumElement))
             }
         }
     }
@@ -697,23 +744,40 @@ class SubsonicApiClient(context: Context) {
         )
     }
 
-    private fun parseArtistList(artists: org.json.JSONArray?): List<ProviderArtist> {
+    private fun parseArtistListCompat(artistElement: Any?): List<ProviderArtist> {
+        if (artistElement == null) return emptyList()
         return buildList {
-            for (i in 0 until (artists?.length() ?: 0)) {
-                val artist = artists?.optJSONObject(i) ?: continue
-                val id = artist.optString("id", "")
-                if (id.isBlank()) continue
-
-                add(
-                    ProviderArtist(
-                        providerId = id,
-                        name = artist.optString("name", "Unknown artist"),
-                        artworkUrl = artist.optString("coverArt").takeIf { it.isNotBlank() }?.let { buildCoverArtUrl(it, 500) },
-                        songCount = artist.optInt("songCount", 0),
-                        albumCount = artist.optInt("albumCount", 0),
-                        description = artist.optString("biography").takeIf { it.isNotBlank() }
+            if (artistElement is org.json.JSONArray) {
+                for (i in 0 until artistElement.length()) {
+                    val artist = artistElement.optJSONObject(i) ?: continue
+                    val id = artist.optString("id", "")
+                    if (id.isNotBlank()) {
+                        add(
+                            ProviderArtist(
+                                providerId = id,
+                                name = artist.optString("name", "Unknown artist"),
+                                artworkUrl = artist.optString("coverArt").takeIf { it.isNotBlank() }?.let { buildCoverArtUrl(it, 500) },
+                                songCount = artist.optInt("songCount", 0),
+                                albumCount = artist.optInt("albumCount", 0),
+                                description = artist.optString("biography").takeIf { it.isNotBlank() }
+                            )
+                        )
+                    }
+                }
+            } else if (artistElement is JSONObject) {
+                val id = artistElement.optString("id", "")
+                if (id.isNotBlank()) {
+                    add(
+                        ProviderArtist(
+                            providerId = id,
+                            name = artistElement.optString("name", "Unknown artist"),
+                            artworkUrl = artistElement.optString("coverArt").takeIf { it.isNotBlank() }?.let { buildCoverArtUrl(it, 500) },
+                            songCount = artistElement.optInt("songCount", 0),
+                            albumCount = artistElement.optInt("albumCount", 0),
+                            description = artistElement.optString("biography").takeIf { it.isNotBlank() }
+                        )
                     )
-                )
+                }
             }
         }
     }

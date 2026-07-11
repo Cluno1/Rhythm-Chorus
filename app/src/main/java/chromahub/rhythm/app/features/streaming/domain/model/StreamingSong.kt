@@ -24,7 +24,14 @@ data class StreamingSong(
     val albumId: String? = null,
     val albumArtist: String? = null,
     val isrc: String? = null, // International Standard Recording Code
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val trackNumber: Int? = null,
+    val year: Int? = null,
+    val genre: String? = null,
+    val bitrate: Int? = null,
+    val sampleRate: Int? = null,
+    val channels: Int? = null,
+    val codec: String? = null
 ) : PlayableItem {
     
     override fun getPlaybackUri(): String = streamingUrl ?: previewUrl ?: ""

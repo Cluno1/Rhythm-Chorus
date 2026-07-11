@@ -1266,8 +1266,8 @@
     <string name="settings_player_customization_desc">Skip buttons, progress bar</string>
     <string name="settings_miniplayer_customization">Mini Player</string>
     <string name="settings_miniplayer_customization_desc">Background, controls</string>
-    <string name="settings_album_bottom_sheet_gradient_blur">Album Gradient/Blur</string>
-    <string name="settings_album_bottom_sheet_gradient_blur_desc">Control gradient and blur behind album sheets</string>
+    <string name="settings_album_bottom_sheet_gradient_blur">Album Screen Gradient/Blur</string>
+    <string name="settings_album_bottom_sheet_gradient_blur_desc">Control gradient and blur behind the album detail screen</string>
     <string name="settings_gestures">Gestures</string>
     <string name="settings_gestures_desc">Swipe to skip</string>
     <string name="settings_ignore_mediastore_covers">Show Song Art Instead of Album Art</string>

@@ -115,6 +115,11 @@ interface StreamingMusicRepository : MusicRepository {
      * Get followed artists.
      */
     fun getFollowedArtists(): Flow<List<StreamingArtist>>
+
+    /**
+     * Build consistent artist ID.
+     */
+    fun buildArtistId(serviceId: String, artist: String): String
     
     /**
      * Save an album to library.

@@ -15,6 +15,7 @@ import chromahub.rhythm.app.features.streaming.data.provider.ProviderArtist
 import chromahub.rhythm.app.features.streaming.data.provider.ProviderPlaylist
 import chromahub.rhythm.app.features.streaming.data.provider.ProviderSong
 import chromahub.rhythm.app.features.streaming.data.provider.SubsonicApiClient
+import chromahub.rhythm.app.features.streaming.data.provider.UserTrustManager
 import chromahub.rhythm.app.features.streaming.domain.model.BrowseCategory
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingArtist
@@ -33,6 +34,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /**
  * Provider-backed implementation used by Rhythm GO mode.
@@ -81,6 +85,7 @@ class StreamingMusicRepositoryImpl(
 
     private val downloadedSongsMap = LinkedHashMap<String, StreamingSong>()
     private val gson = com.google.gson.Gson()
+    private val repositoryScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
         loadDownloadedSongsIndex()
@@ -185,6 +190,9 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun getRecommendations(limit: Int): List<StreamingSong> {
+        if (appSettings.offlineMode.value) {
+            return downloadedSongsMap.values.shuffled().take(limit.coerceAtLeast(1))
+        }
         val activePrefix = "${activeServiceId()}::"
         return songCache.values
             .asSequence()
@@ -194,6 +202,9 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun getNewReleases(limit: Int): List<StreamingAlbum> {
+        if (appSettings.offlineMode.value) {
+            return deriveAlbumsFromSongs(downloadedSongsMap.values.toList(), limit)
+        }
         if (!isServiceConnected(activeServiceId())) {
             return emptyList()
         }
@@ -253,6 +264,7 @@ class StreamingMusicRepositoryImpl(
     override fun getLikedSongs(): Flow<List<StreamingSong>> = likedSongsFlow.asStateFlow()
 
     override suspend fun likeSong(songId: String): Boolean {
+        if (appSettings.offlineMode.value) return false
         val decoded = decodeSongId(songId)
         if (decoded != null && isServiceConnected(decoded.first)) {
             val (serviceId, providerId) = decoded
@@ -270,6 +282,7 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun unlikeSong(songId: String): Boolean {
+        if (appSettings.offlineMode.value) return false
         val decoded = decodeSongId(songId)
         if (decoded != null && isServiceConnected(decoded.first)) {
             val (serviceId, providerId) = decoded
@@ -315,16 +328,19 @@ class StreamingMusicRepositoryImpl(
     override fun getSavedAlbums(): Flow<List<StreamingAlbum>> = flowOf(savedAlbumsFlow.value)
 
     override suspend fun followPlaylist(playlistId: String): Boolean {
+        if (appSettings.offlineMode.value) return false
         val playlist = getPlaylistById(playlistId) ?: return false
         followedPlaylistIds.add(playlist.id)
         return true
     }
 
     override suspend fun unfollowPlaylist(playlistId: String): Boolean {
+        if (appSettings.offlineMode.value) return false
         return deletePlaylist(playlistId)
     }
 
     override suspend fun renamePlaylist(playlistId: String, newName: String): Boolean {
+        if (appSettings.offlineMode.value) return false
         val decodedPlaylist = decodePlaylistId(playlistId) ?: return false
         val serviceId = decodedPlaylist.first
         val providerPlaylistId = decodedPlaylist.second
@@ -350,6 +366,7 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun deletePlaylist(playlistId: String): Boolean {
+        if (appSettings.offlineMode.value) return false
         val decodedPlaylist = decodePlaylistId(playlistId) ?: return false
         val serviceId = decodedPlaylist.first
         val providerPlaylistId = decodedPlaylist.second
@@ -374,6 +391,7 @@ class StreamingMusicRepositoryImpl(
         description: String?,
         isPublic: Boolean
     ): StreamingPlaylist? {
+        if (appSettings.offlineMode.value) return null
         val serviceId = activeServiceId()
         if (!isServiceConnected(serviceId)) {
             return null
@@ -401,6 +419,7 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun addSongsToPlaylist(playlistId: String, songIds: List<String>): Boolean {
+        if (appSettings.offlineMode.value) return false
         val decodedPlaylist = decodePlaylistId(playlistId) ?: return false
         val serviceId = decodedPlaylist.first
         val providerPlaylistId = decodedPlaylist.second
@@ -424,6 +443,7 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun removeSongsFromPlaylist(playlistId: String, songIds: List<String>): Boolean {
+        if (appSettings.offlineMode.value) return false
         val decodedPlaylist = decodePlaylistId(playlistId) ?: return false
         val serviceId = decodedPlaylist.first
         val providerPlaylistId = decodedPlaylist.second
@@ -541,6 +561,12 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun getRelatedTracks(songId: String, limit: Int): List<StreamingSong> {
+        if (appSettings.offlineMode.value) {
+            val song = downloadedSongsMap[songId] ?: return emptyList()
+            return downloadedSongsMap.values.filter { 
+                it.artist.equals(song.artist, ignoreCase = true) && it.id != song.id 
+            }.take(limit)
+        }
         val decodedSong = decodeSongId(songId) ?: return emptyList()
         val serviceId = decodedSong.first
         val providerTracks = when (serviceId) {
@@ -559,55 +585,140 @@ class StreamingMusicRepositoryImpl(
             return emptyList()
         }
 
-        val serviceId = artistId.substringBefore("::", activeServiceId())
-        val providerTracks = when (serviceId) {
-            StreamingServiceId.SUBSONIC -> subsonicClient.getArtistTopTracks(artistName, limit)
-            StreamingServiceId.JELLYFIN -> jellyfinClient.getArtistTopTracks(artistName, limit)
-            else -> Result.success(emptyList())
-        }.getOrElse { emptyList() }
-
-        if (providerTracks.isNotEmpty()) {
-            return providerTracks.map { mapProviderSong(serviceId, it) }.take(limit.coerceAtLeast(1))
+        if (!appSettings.offlineMode.value) {
+            val serviceId = artistId.substringBefore("::", activeServiceId())
+            if (isServiceConnected(serviceId)) {
+                try {
+                    val providerTracksResult = when (serviceId) {
+                        StreamingServiceId.SUBSONIC -> subsonicClient.getArtistTopTracks(artistName, limit)
+                        StreamingServiceId.JELLYFIN -> jellyfinClient.getArtistTopTracks(artistName, limit)
+                        else -> Result.success(emptyList())
+                    }
+                    val providerTracks = providerTracksResult.getOrNull()
+                    if (providerTracks != null && providerTracks.isNotEmpty()) {
+                        return providerTracks.map { mapProviderSong(serviceId, it) }.take(limit.coerceAtLeast(1))
+                    }
+                } catch (e: Exception) {
+                    Log.w("StreamingMusicRepo", "Network getArtistTopTracks failed, falling back to offline", e)
+                }
+            }
         }
 
-        return cachedSongsForArtist(artistName)
-            .take(limit.coerceAtLeast(1))
+        // Offline / Failure Fallback:
+        return cachedSongsForArtist(artistName).take(limit.coerceAtLeast(1))
     }
 
     override suspend fun getAlbumSongs(albumId: String): List<StreamingSong> {
         val decodedId = decodeAlbumId(albumId) ?: return emptyList()
-        val providerAlbumId = decodedId.providerAlbumId ?: return emptyList()
-        val providerSongs = when (decodedId.serviceId) {
-            StreamingServiceId.SUBSONIC -> subsonicClient.getAlbumSongs(providerAlbumId).getOrNull()
-            StreamingServiceId.JELLYFIN -> jellyfinClient.getAlbumSongs(providerAlbumId).getOrNull()
-            else -> null
-        } ?: return emptyList()
+        val providerAlbumId = decodedId.providerAlbumId
         
-        return providerSongs.mapNotNull { providerSong ->
-            try {
-                mapProviderSong(decodedId.serviceId, providerSong)
-            } catch (e: Exception) {
-                null
+        var resolvedProviderAlbumId = providerAlbumId
+        if (resolvedProviderAlbumId == null && !appSettings.offlineMode.value) {
+            val albumTitle = decodedId.title
+            val albumArtist = decodedId.artist
+            if (albumTitle.isNotBlank()) {
+                val searchResults = when (decodedId.serviceId) {
+                    StreamingServiceId.SUBSONIC -> subsonicClient.searchAlbums(albumTitle).getOrNull()
+                    StreamingServiceId.JELLYFIN -> jellyfinClient.searchAlbums(albumTitle).getOrNull()
+                    else -> null
+                }
+                val matchedAlbum = searchResults?.firstOrNull {
+                    it.title.equals(albumTitle, ignoreCase = true) &&
+                    (albumArtist.isBlank() || it.artist.equals(albumArtist, ignoreCase = true))
+                } ?: searchResults?.firstOrNull()
+                if (matchedAlbum != null) {
+                    resolvedProviderAlbumId = matchedAlbum.providerId
+                }
             }
         }
+
+        if (!appSettings.offlineMode.value && resolvedProviderAlbumId != null) {
+            try {
+                val providerSongs = when (decodedId.serviceId) {
+                    StreamingServiceId.SUBSONIC -> subsonicClient.getAlbumSongs(resolvedProviderAlbumId).getOrNull()
+                    StreamingServiceId.JELLYFIN -> jellyfinClient.getAlbumSongs(resolvedProviderAlbumId).getOrNull()
+                    else -> null
+                }
+                if (!providerSongs.isNullOrEmpty()) {
+                    return providerSongs.mapNotNull { providerSong ->
+                        try {
+                            mapProviderSong(decodedId.serviceId, providerSong)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w("StreamingMusicRepo", "Network getAlbumSongs failed for album $albumId, falling back to offline", e)
+            }
+        }
+
+        // Artist-track fallback: for singles / song-albums the server may not expose an album
+        // object at all; query the artist's tracks and filter by album title instead.
+        val albumTitle = decodedId.title
+        val albumArtist = decodedId.artist
+        if (!appSettings.offlineMode.value && albumTitle.isNotBlank() && albumArtist.isNotBlank()) {
+            try {
+                val artistTracks = when (decodedId.serviceId) {
+                    StreamingServiceId.SUBSONIC -> subsonicClient.getArtistTopTracks(albumArtist, limit = 100).getOrNull()
+                    StreamingServiceId.JELLYFIN -> jellyfinClient.getArtistTopTracks(albumArtist, limit = 100).getOrNull()
+                    else -> null
+                }
+                if (!artistTracks.isNullOrEmpty()) {
+                    val filtered = artistTracks
+                        .filter { it.album.equals(albumTitle, ignoreCase = true) }
+                        .map { mapProviderSong(decodedId.serviceId, it) }
+                    if (filtered.isNotEmpty()) return filtered
+                }
+            } catch (e: Exception) {
+                Log.w("StreamingMusicRepo", "Artist-track fallback failed for album $albumId", e)
+            }
+        }
+
+        // Offline / Failure Fallback:
+        // 1. Try matching exactly by albumId
+        val matchesByAlbumId = downloadedSongsMap.values.filter { it.albumId == albumId }
+        if (matchesByAlbumId.isNotEmpty()) {
+            return matchesByAlbumId
+        }
+        
+        // 2. Try matching by legacy title/artist
+        if (albumTitle.isNotBlank()) {
+            return downloadedSongsMap.values.filter {
+                it.album.equals(albumTitle, ignoreCase = true) &&
+                (it.albumArtist.equals(albumArtist, ignoreCase = true) || it.artist.equals(albumArtist, ignoreCase = true))
+            }
+        }
+        
+        return emptyList()
     }
 
     override suspend fun getArtistAlbums(artistId: String): List<StreamingAlbum> {
-        val serviceId = activeServiceId()
-        if (!isServiceConnected(serviceId)) {
-            return emptyList()
-        }
         val artistName = extractArtistNameFromId(artistId)
         if (artistName.isBlank()) return emptyList()
-
-        val providerResult = when (serviceId) {
-            StreamingServiceId.SUBSONIC -> subsonicClient.getArtistAlbums(artistName)
-            StreamingServiceId.JELLYFIN -> jellyfinClient.getArtistAlbums(artistName)
-            else -> Result.success(emptyList())
+        
+        if (!appSettings.offlineMode.value) {
+            val serviceId = activeServiceId()
+            if (isServiceConnected(serviceId)) {
+                try {
+                    val providerResult = when (serviceId) {
+                        StreamingServiceId.SUBSONIC -> subsonicClient.getArtistAlbums(artistName)
+                        StreamingServiceId.JELLYFIN -> jellyfinClient.getArtistAlbums(artistName)
+                        else -> Result.success(emptyList())
+                    }
+                    val albums = providerResult.getOrNull()?.map { mapProviderAlbum(serviceId, it) }
+                    if (albums != null) {
+                        return enrichAlbumsWithTrackCounts(serviceId, albums)
+                    }
+                } catch (e: Exception) {
+                    Log.w("StreamingMusicRepo", "Network getArtistAlbums failed, falling back to offline", e)
+                }
+            }
         }
-        return providerResult.getOrElse { emptyList() }
-            .map { mapProviderAlbum(serviceId, it) }
-            .let { albums -> enrichAlbumsWithTrackCounts(serviceId, albums) }
+
+        // Offline / Failure Fallback:
+        val artistSongs = cachedSongsForArtist(artistName)
+        return deriveAlbumsFromSongs(artistSongs, 100)
     }
     
     private fun extractArtistNameFromId(artistId: String): String {
@@ -643,6 +754,9 @@ class StreamingMusicRepositoryImpl(
             }
 
     override suspend fun getRelatedArtists(artistId: String, limit: Int): List<StreamingArtist> {
+        if (appSettings.offlineMode.value) {
+            return emptyList()
+        }
         val artistName = extractArtistNameFromId(artistId)
         if (artistName.isBlank()) {
             return emptyList()
@@ -680,8 +794,11 @@ class StreamingMusicRepositoryImpl(
             ?: downloadedSongsMap[songId]
             ?: return@withContext false
 
-        // 3. Download the file using OkHttpClient
-        val client = okhttp3.OkHttpClient()
+        // 3. Download the file using OkHttpClient with support for user-trusted and self-signed CAs
+        val client = UserTrustManager.buildUserTrustingHttpClientBuilder()
+            .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
         val request = okhttp3.Request.Builder().url(streamUrl).build()
         
         val file = getDownloadFile(songId)
@@ -764,6 +881,9 @@ class StreamingMusicRepositoryImpl(
     override fun getDownloadedSongs(): Flow<List<StreamingSong>> = downloadedSongsFlow.asStateFlow()
 
     override suspend fun getRandomSongs(limit: Int): List<StreamingSong> {
+        if (appSettings.offlineMode.value) {
+            return downloadedSongsMap.values.shuffled().take(limit.coerceAtLeast(1))
+        }
         val serviceId = activeServiceId()
         if (!isServiceConnected(serviceId)) {
             return emptyList()
@@ -780,18 +900,27 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun getAlbumList(type: String, limit: Int): List<StreamingAlbum> {
-        val serviceId = activeServiceId()
-        if (!isServiceConnected(serviceId)) {
-            return emptyList()
+        if (!appSettings.offlineMode.value) {
+            val serviceId = activeServiceId()
+            if (isServiceConnected(serviceId)) {
+                try {
+                    val providerResult = when (serviceId) {
+                        StreamingServiceId.SUBSONIC -> subsonicClient.getAlbumList(type, limit)
+                        StreamingServiceId.JELLYFIN -> jellyfinClient.getAlbumList(type, limit)
+                        else -> Result.success(emptyList())
+                    }
+                    val albums = providerResult.getOrNull()?.map { mapProviderAlbum(serviceId, it) }
+                    if (albums != null) {
+                        return enrichAlbumsWithTrackCounts(serviceId, albums)
+                    }
+                } catch (e: Exception) {
+                    Log.w("StreamingMusicRepo", "Network getAlbumList failed, falling back to offline", e)
+                }
+            }
         }
-        val providerResult = when (serviceId) {
-            StreamingServiceId.SUBSONIC -> subsonicClient.getAlbumList(type, limit)
-            StreamingServiceId.JELLYFIN -> jellyfinClient.getAlbumList(type, limit)
-            else -> Result.success(emptyList())
-        }
-        return providerResult.getOrElse { emptyList() }
-            .map { mapProviderAlbum(serviceId, it) }
-            .let { albums -> enrichAlbumsWithTrackCounts(serviceId, albums) }
+
+        // Offline / Failure Fallback:
+        return deriveAlbumsFromSongs(downloadedSongsMap.values.toList(), limit)
     }
 
     private suspend fun enrichAlbumsWithTrackCounts(
@@ -828,6 +957,15 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun searchSongs(query: String): List<PlayableItem> {
+        if (appSettings.offlineMode.value) {
+            val results = downloadedSongsMap.values.filter {
+                it.title.contains(query, ignoreCase = true) ||
+                it.artist.contains(query, ignoreCase = true) ||
+                it.album.contains(query, ignoreCase = true)
+            }
+            mergeCatalog(results)
+            return results
+        }
         val serviceId = activeServiceId()
         if (!isServiceConnected(serviceId)) {
             clearInMemoryCatalog()
@@ -848,6 +986,12 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun searchAlbums(query: String): List<AlbumItem> {
+        if (appSettings.offlineMode.value) {
+            return deriveAlbumsFromSongs(downloadedSongsMap.values.toList(), SEARCH_LIMIT).filter {
+                it.title.contains(query, ignoreCase = true) ||
+                it.artist.contains(query, ignoreCase = true)
+            }
+        }
         val serviceId = activeServiceId()
         if (!isServiceConnected(serviceId)) {
             return emptyList()
@@ -863,6 +1007,10 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun searchArtists(query: String): List<ArtistItem> {
+        if (appSettings.offlineMode.value) {
+            val songs = searchSongs(query).filterIsInstance<StreamingSong>()
+            return buildDerivedArtistItems(activeServiceId(), songs)
+        }
         val serviceId = activeServiceId()
         if (!isServiceConnected(serviceId)) {
             return emptyList()
@@ -883,6 +1031,9 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun searchPlaylists(query: String): List<PlaylistItem> {
+        if (appSettings.offlineMode.value) {
+            return emptyList()
+        }
         val serviceId = activeServiceId()
         if (!isServiceConnected(serviceId)) {
             return emptyList()
@@ -912,11 +1063,19 @@ class StreamingMusicRepositoryImpl(
     override suspend fun getSongById(id: String): PlayableItem? = songCache[id]
 
     override suspend fun syncCatalog(limit: Int): List<StreamingSong> {
+        if (appSettings.offlineMode.value) {
+            val downloadedList = downloadedSongsMap.values.toList()
+            replaceCatalog(downloadedList)
+            return downloadedList
+        }
         val serviceId = activeServiceId()
         if (!isServiceConnected(serviceId)) {
             clearInMemoryCatalog()
             return emptyList()
         }
+
+        // Sync artist images from provider first so that derived catalog artists pick them up
+        syncArtistArtworkCache(serviceId)
 
         val providerSongs = when (serviceId) {
             StreamingServiceId.SUBSONIC -> subsonicClient.fetchLibrarySongs(limit)
@@ -947,6 +1106,10 @@ class StreamingMusicRepositoryImpl(
     }
 
     override suspend fun syncPlaylists(): List<StreamingPlaylist> {
+        if (appSettings.offlineMode.value) {
+            playlistsFlow.value = emptyList()
+            return emptyList()
+        }
         val serviceId = activeServiceId()
         if (!isServiceConnected(serviceId)) {
             playlistsFlow.value = emptyList()
@@ -971,20 +1134,65 @@ class StreamingMusicRepositoryImpl(
 
     override suspend fun getAlbumById(id: String): AlbumItem? {
         val decodedId = decodeAlbumId(id) ?: return null
-        val providerAlbumId = decodedId.providerAlbumId ?: return null
-        val providerResult = when (decodedId.serviceId) {
-            StreamingServiceId.SUBSONIC -> subsonicClient.getAlbumById(providerAlbumId)
-            StreamingServiceId.JELLYFIN -> jellyfinClient.getAlbumById(providerAlbumId)
-            else -> Result.failure(Exception("Unknown service"))
-        }
+        var providerAlbumId = decodedId.providerAlbumId
         
-        return providerResult.getOrNull()?.let {
-            mapProviderAlbum(decodedId.serviceId, it)
+        if (!appSettings.offlineMode.value) {
+            if (providerAlbumId == null) {
+                val albumTitle = decodedId.title
+                val albumArtist = decodedId.artist
+                if (albumTitle.isNotBlank()) {
+                    val searchResults = when (decodedId.serviceId) {
+                        StreamingServiceId.SUBSONIC -> subsonicClient.searchAlbums(albumTitle).getOrNull()
+                        StreamingServiceId.JELLYFIN -> jellyfinClient.searchAlbums(albumTitle).getOrNull()
+                        else -> null
+                    }
+                    val matchedAlbum = searchResults?.firstOrNull {
+                        it.title.equals(albumTitle, ignoreCase = true) &&
+                        (albumArtist.isBlank() || it.artist.equals(albumArtist, ignoreCase = true))
+                    } ?: searchResults?.firstOrNull()
+                    if (matchedAlbum != null) {
+                        providerAlbumId = matchedAlbum.providerId
+                    }
+                }
+            }
+
+            if (providerAlbumId != null) {
+                try {
+                    val providerResult = when (decodedId.serviceId) {
+                        StreamingServiceId.SUBSONIC -> subsonicClient.getAlbumById(providerAlbumId)
+                        StreamingServiceId.JELLYFIN -> jellyfinClient.getAlbumById(providerAlbumId)
+                        else -> Result.failure(Exception("Unknown service"))
+                    }
+                    val mapped = providerResult.getOrNull()?.let {
+                        mapProviderAlbum(decodedId.serviceId, it)
+                    }
+                    if (mapped != null) {
+                        return mapped
+                    }
+                } catch (e: Exception) {
+                    Log.w("StreamingMusicRepo", "Network getAlbumById failed, falling back to offline", e)
+                }
+            }
+        }
+
+        // Offline / Failure Fallback:
+        val derived = deriveAlbumsFromSongs(downloadedSongsMap.values.toList(), 100)
+        derived.firstOrNull { it.id == id }?.let { return it }
+        
+        return derived.firstOrNull { derivedAlbum ->
+            val derivedDecoded = decodeAlbumId(derivedAlbum.id)
+            derivedDecoded != null && 
+            derivedDecoded.title.equals(decodedId.title, ignoreCase = true) &&
+            derivedDecoded.artist.equals(decodedId.artist, ignoreCase = true)
         }
     }
 
     override suspend fun getArtistById(id: String): ArtistItem? {
         artistsFlow.value.firstOrNull { it.id == id }?.let { return it }
+
+        if (appSettings.offlineMode.value) {
+            return null
+        }
 
         val artistName = extractArtistNameFromId(id)
         if (artistName.isBlank()) {
@@ -1026,12 +1234,24 @@ class StreamingMusicRepositoryImpl(
         if (providerAlbumCache.isEmpty()) {
             albumsFlow.value = buildAlbumItems(serviceId, songs)
         }
-        artistsFlow.value = buildDerivedArtistItems(serviceId, songs)
+        val rawArtists = buildArtistItems(serviceId, songs)
+        artistsFlow.value = rawArtists
         playlistsFlow.value = emptyList()
 
         updateLikedSongsFlow()
         updateSavedAlbumsFlow()
         updateFollowedArtistsFlow()
+
+        // Asynchronously enrich with Deezer images in background to avoid blocking
+        repositoryScope.launch {
+            try {
+                val enriched = enrichArtistsWithDeezerImages(rawArtists)
+                artistsFlow.value = enriched
+                updateFollowedArtistsFlow()
+            } catch (e: Exception) {
+                Log.e("StreamingMusicRepo", "Background Deezer artist enrichment failed", e)
+            }
+        }
     }
 
     private suspend fun mergeCatalog(songs: List<StreamingSong>) {
@@ -1053,12 +1273,24 @@ class StreamingMusicRepositoryImpl(
         if (providerAlbumCache.isEmpty()) {
             albumsFlow.value = buildAlbumItems(serviceId, mergedSongs)
         }
-        artistsFlow.value = buildDerivedArtistItems(serviceId, mergedSongs)
+        val rawArtists = buildArtistItems(serviceId, mergedSongs)
+        artistsFlow.value = rawArtists
         playlistsFlow.value = emptyList()
 
         updateLikedSongsFlow()
         updateSavedAlbumsFlow()
         updateFollowedArtistsFlow()
+
+        // Asynchronously enrich with Deezer images in background to avoid blocking
+        repositoryScope.launch {
+            try {
+                val enriched = enrichArtistsWithDeezerImages(rawArtists)
+                artistsFlow.value = enriched
+                updateFollowedArtistsFlow()
+            } catch (e: Exception) {
+                Log.e("StreamingMusicRepo", "Background Deezer artist enrichment failed", e)
+            }
+        }
     }
 
     private fun clearInMemoryCatalog() {
@@ -1110,7 +1342,14 @@ class StreamingMusicRepositoryImpl(
             externalId = providerSong.providerId,
             albumId = encodedAlbumId,
             albumArtist = providerSong.albumArtist,
-            isFavorite = providerSong.isFavorite
+            isFavorite = providerSong.isFavorite,
+            trackNumber = providerSong.trackNumber,
+            year = providerSong.year,
+            genre = providerSong.genre,
+            bitrate = providerSong.bitrate,
+            sampleRate = providerSong.sampleRate,
+            channels = providerSong.channels,
+            codec = providerSong.codec
         )
     }
 
@@ -1296,7 +1535,7 @@ class StreamingMusicRepositoryImpl(
             return emptyList()
         }
 
-        return (songsFlow.value.filterIsInstance<StreamingSong>() + songCache.values)
+        return (songsFlow.value.filterIsInstance<StreamingSong>() + songCache.values + downloadedSongsMap.values)
             .asSequence()
             .filter { song ->
                 if (!song.artist.contains(artistName, ignoreCase = true)) {
@@ -1362,7 +1601,7 @@ class StreamingMusicRepositoryImpl(
         return artistId == generatedId || extractArtistNameFromId(artistId) == extractArtistNameFromId(generatedId)
     }
 
-    private fun buildArtistId(serviceId: String, artist: String): String {
+    override fun buildArtistId(serviceId: String, artist: String): String {
         return "$serviceId::artist::${normalizeKey(artist)}"
     }
 
@@ -1400,9 +1639,10 @@ class StreamingMusicRepositoryImpl(
                 )
             }
         } else {
+            val restoredPayload = payload.replace("_slash_", "/")
             DecodedAlbumId(
                 serviceId = serviceId,
-                providerAlbumId = payload,
+                providerAlbumId = restoredPayload,
                 title = "",
                 artist = "",
                 isLegacy = false
@@ -1411,7 +1651,8 @@ class StreamingMusicRepositoryImpl(
     }
 
     private fun encodeAlbumId(serviceId: String, providerAlbumId: String): String {
-        return "$serviceId::album::$providerAlbumId"
+        val safeProviderId = providerAlbumId.replace("/", "_slash_")
+        return "$serviceId::album::$safeProviderId"
     }
 
     private fun legacyAlbumIdForSong(song: StreamingSong, fallbackServiceId: String?): String {
@@ -1500,8 +1741,8 @@ class StreamingMusicRepositoryImpl(
             "LOW" -> 96
             "NORMAL" -> 160
             "HIGH" -> 320
-            "LOSSLESS" -> 0
-            else -> 320
+            "LOSSLESS" -> 0   // No cap — server streams the original file at native quality
+            else -> 0          // Unknown/future values also default to lossless (highest available)
         }
     }
     
@@ -1636,6 +1877,28 @@ class StreamingMusicRepositoryImpl(
      */
     fun updateArtistsFlow(enrichedArtists: List<StreamingArtist>) {
         artistsFlow.value = enrichedArtists
+    }
+
+    private suspend fun syncArtistArtworkCache(serviceId: String) {
+        try {
+            val providerArtists = when (serviceId) {
+                StreamingServiceId.SUBSONIC -> {
+                    subsonicClient.getArtists().getOrNull()
+                }
+                StreamingServiceId.JELLYFIN -> {
+                    jellyfinClient.searchArtists("", limit = 1000).getOrNull()
+                }
+                else -> null
+            }
+            providerArtists?.forEach { artist ->
+                if (!artist.artworkUrl.isNullOrBlank()) {
+                    artistArtworkCache[normalizeKey(artist.name)] = artist.artworkUrl
+                }
+            }
+            Log.d("StreamingMusicRepo", "Synced ${providerArtists?.size ?: 0} artist images from provider")
+        } catch (e: Exception) {
+            Log.w("StreamingMusicRepo", "Failed to sync artist artwork cache", e)
+        }
     }
 
     private companion object {

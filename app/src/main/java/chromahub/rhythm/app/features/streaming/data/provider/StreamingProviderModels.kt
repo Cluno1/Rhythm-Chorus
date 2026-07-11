@@ -12,7 +12,14 @@ data class ProviderSong(
     val artworkUrl: String? = null,
     val albumId: String? = null,
     val albumArtist: String? = null,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val trackNumber: Int? = null,
+    val year: Int? = null,
+    val genre: String? = null,
+    val bitrate: Int? = null,
+    val sampleRate: Int? = null,
+    val channels: Int? = null,
+    val codec: String? = null
 )
 
 /**

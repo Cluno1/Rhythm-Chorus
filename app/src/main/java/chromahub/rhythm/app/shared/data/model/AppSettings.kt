@@ -928,7 +928,9 @@ class AppSettings private constructor(context: Context) {
     private val _streamingService = MutableStateFlow(prefs.getString(KEY_STREAMING_SERVICE, "SUBSONIC") ?: "SUBSONIC")
     val streamingService: StateFlow<String> = _streamingService.asStateFlow()
     
-    private val _streamingQuality = MutableStateFlow(prefs.getString(KEY_STREAMING_QUALITY, "HIGH") ?: "HIGH")
+    // Default to LOSSLESS so the server streams the original file at full quality.
+    // Users can downgrade in Go Settings if they want to save data.
+    private val _streamingQuality = MutableStateFlow(prefs.getString(KEY_STREAMING_QUALITY, "LOSSLESS") ?: "LOSSLESS")
     val streamingQuality: StateFlow<String> = _streamingQuality.asStateFlow()
     
     private val _allowCellularStreaming = MutableStateFlow(prefs.getBoolean(KEY_ALLOW_CELLULAR_STREAMING, true))

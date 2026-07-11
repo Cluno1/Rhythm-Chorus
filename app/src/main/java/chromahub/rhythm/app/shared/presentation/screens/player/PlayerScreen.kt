@@ -394,7 +394,11 @@ fun PlayerScreen(
                         }
                     } else {
                         if (isStreamingMode) {
-                            navController.navigate("streaming_album/${android.net.Uri.encode(currentSong.album)}?albumName=${android.net.Uri.encode(currentSong.album)}")
+                            // Build a proper legacy encoded ID so the repository can search the server
+                            val serviceId = currentSong.id.substringBefore("::", "JELLYFIN")
+                            val streamingFallbackId = currentSong.albumId.takeIf { it.isNotBlank() }
+                                ?: "$serviceId::album::${currentSong.artist}::${currentSong.album}"
+                            navController.navigate("streaming_album/${android.net.Uri.encode(streamingFallbackId)}?albumName=${android.net.Uri.encode(currentSong.album)}")
                         } else {
                             val fallbackAlbumId = currentSong.albumId.takeIf { it.isNotBlank() } ?: "unknown_" + currentSong.album
                             navController.navigate(Screen.AlbumDetail.createRoute(fallbackAlbumId, currentSong.album))
@@ -609,7 +613,11 @@ fun PlayerScreen(
                             }
                         } else {
                             if (isStreamingMode) {
-                                navController.navigate("streaming_album/${android.net.Uri.encode(currentSong.album)}?albumName=${android.net.Uri.encode(currentSong.album)}")
+                                // Build a proper legacy encoded ID so the repository can search the server
+                                val serviceId = currentSong.id.substringBefore("::", "JELLYFIN")
+                                val streamingFallbackId = currentSong.albumId.takeIf { it.isNotBlank() }
+                                    ?: "$serviceId::album::${currentSong.artist}::${currentSong.album}"
+                                navController.navigate("streaming_album/${android.net.Uri.encode(streamingFallbackId)}?albumName=${android.net.Uri.encode(currentSong.album)}")
                             } else {
                                 val fallbackAlbumId = currentSong.albumId.takeIf { it.isNotBlank() } ?: "unknown_" + currentSong.album
                                 navController.navigate(Screen.AlbumDetail.createRoute(fallbackAlbumId, currentSong.album))

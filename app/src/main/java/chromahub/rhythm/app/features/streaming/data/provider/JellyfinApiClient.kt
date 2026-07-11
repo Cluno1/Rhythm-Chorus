@@ -279,11 +279,55 @@ class JellyfinApiClient(context: Context) {
     }
 
     suspend fun getArtistTopTracks(artistQuery: String, limit: Int = 20): Result<List<ProviderSong>> {
-        return searchSongs(artistQuery, limit)
+        val cred = credentials ?: return Result.failure(IllegalStateException("Jellyfin service is not connected"))
+
+        val artistSearch = searchArtists(artistQuery, limit = 5)
+        val artistId = artistSearch.getOrNull()
+            ?.firstOrNull { it.name.equals(artistQuery, ignoreCase = true) }?.providerId
+            ?: artistSearch.getOrNull()?.firstOrNull()?.providerId
+
+        val params = mutableMapOf<String, String>(
+            "IncludeItemTypes" to "Audio",
+            "Recursive" to "true",
+            "Fields" to "Overview,ArtistItems,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId",
+            "Limit" to limit.toString(),
+            "SortBy" to "PlayCount,Name",
+            "SortOrder" to "Descending"
+        )
+        if (!artistId.isNullOrBlank()) {
+            params["ArtistIds"] = artistId
+        } else {
+            params["SearchTerm"] = artistQuery
+        }
+
+        return requestJson("/Users/${cred.userId}/Items", params).map { response ->
+            parseAudioItems(response)
+        }
     }
 
     suspend fun getArtistAlbums(artistQuery: String, limit: Int = 50): Result<List<ProviderAlbum>> {
-        return searchAlbums(artistQuery, limit)
+        val cred = credentials ?: return Result.failure(IllegalStateException("Jellyfin service is not connected"))
+
+        val artistSearch = searchArtists(artistQuery, limit = 5)
+        val artistId = artistSearch.getOrNull()
+            ?.firstOrNull { it.name.equals(artistQuery, ignoreCase = true) }?.providerId
+            ?: artistSearch.getOrNull()?.firstOrNull()?.providerId
+
+        val params = mutableMapOf<String, String>(
+            "IncludeItemTypes" to "MusicAlbum",
+            "Recursive" to "true",
+            "Fields" to "Overview,ArtistItems,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId",
+            "Limit" to limit.toString()
+        )
+        if (!artistId.isNullOrBlank()) {
+            params["ArtistIds"] = artistId
+        } else {
+            params["SearchTerm"] = artistQuery
+        }
+
+        return requestJson("/Users/${cred.userId}/Items", params).map { response ->
+            parseAlbumItems(response)
+        }
     }
 
     suspend fun getRelatedArtists(artistId: String, limit: Int = 10): Result<List<ProviderArtist>> {
@@ -569,7 +613,7 @@ class JellyfinApiClient(context: Context) {
     fun buildImageUrl(itemId: String, maxWidth: Int = 500): String? {
         val cred = credentials ?: return null
         if (itemId.isBlank()) return null
-        return "${cred.serverUrl}/Items/$itemId/Images/Primary?maxWidth=$maxWidth&quality=90"
+        return "${cred.serverUrl}/Items/$itemId/Images/Primary?maxWidth=$maxWidth&quality=90&api_key=${cred.accessToken}"
     }
 
     private suspend fun authenticateByName(
@@ -707,6 +751,30 @@ class JellyfinApiClient(context: Context) {
                     ?.optBoolean("IsFavorite", false)
                     ?: false
 
+                val trackNum = song.optInt("Index", 0).takeIf { it > 0 }
+                val yearVal = song.optInt("ProductionYear", 0).takeIf { it > 0 }
+                val genres = song.optJSONArray("Genres")
+                val genreVal = if (genres != null && genres.length() > 0) genres.optString(0) else null
+
+                val mediaSources = song.optJSONArray("MediaSources")
+                val firstSource = mediaSources?.optJSONObject(0)
+                val bitrateVal = firstSource?.optInt("Bitrate", 0)?.takeIf { it > 0 }
+                val codecVal = firstSource?.optString("Container")?.takeIf { it.isNotBlank() }
+
+                val mediaStreams = firstSource?.optJSONArray("MediaStreams")
+                var sampleRateVal: Int? = null
+                var channelsVal: Int? = null
+                if (mediaStreams != null) {
+                    for (j in 0 until mediaStreams.length()) {
+                        val stream = mediaStreams.optJSONObject(j)
+                        if (stream?.optString("Type") == "Audio") {
+                            sampleRateVal = stream.optInt("SampleRate", 0).takeIf { it > 0 }
+                            channelsVal = stream.optInt("Channels", 0).takeIf { it > 0 }
+                            break
+                        }
+                    }
+                }
+
                 add(
                     ProviderSong(
                         providerId = id,
@@ -715,9 +783,17 @@ class JellyfinApiClient(context: Context) {
                         album = album,
                         durationMs = durationMs,
                         artworkUrl = buildImageUrl(id),
-                        albumId = song.optString("AlbumId", "").takeIf { it.isNotBlank() },
+                        albumId = song.optString("AlbumId", "").takeIf { it.isNotBlank() }
+                            ?: song.optString("ParentId", "").takeIf { it.isNotBlank() },
                         albumArtist = song.optString("AlbumArtist", "").takeIf { it.isNotBlank() },
-                        isFavorite = isFavorite
+                        isFavorite = isFavorite,
+                        trackNumber = trackNum,
+                        year = yearVal,
+                        genre = genreVal,
+                        bitrate = bitrateVal,
+                        sampleRate = sampleRateVal,
+                        channels = channelsVal,
+                        codec = codecVal
                     )
                 )
             }

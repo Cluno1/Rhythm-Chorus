@@ -674,7 +674,18 @@ fun MaterialPlayerScreen(
     
     val navigateToAlbum: (String, String) -> Unit = { id, title ->
         if (isStreamingMode) {
-            navController.navigate("streaming_album/${android.net.Uri.encode(id)}?albumName=${android.net.Uri.encode(title)}")
+            // Only pop the player if it is actually still in the back stack.
+            // If predictive-back is mid-gesture the entry may already be gone,
+            // and calling popBackStack on a missing entry causes an
+            // "Cannot transition entry that is not in the back stack" crash.
+            val playerInStack = navController.currentBackStack.value
+                .any { it.destination.route == "streaming_player" }
+            if (playerInStack) {
+                navController.popBackStack("streaming_player", inclusive = true)
+            }
+            navController.navigate("streaming_album/${android.net.Uri.encode(id)}?albumName=${android.net.Uri.encode(title)}") {
+                launchSingleTop = true
+            }
         } else {
             navController.navigate(Screen.AlbumDetail.createRoute(id, title))
         }
@@ -1171,7 +1182,9 @@ fun MaterialPlayerScreen(
                     if (albumForSong != null) {
                         navigateToAlbum(albumForSong.id, albumForSong.title)
                     } else {
-                        val fallbackAlbumId = currentSong.albumId.takeIf { it.isNotBlank() } ?: "unknown_" + currentSong.album
+                        val serviceId = currentSong.id.substringBefore("::", "JELLYFIN")
+                        val fallbackAlbumId = currentSong.albumId.takeIf { it.isNotBlank() }
+                            ?: "$serviceId::album::${currentSong.artist}::${currentSong.album}"
                         navigateToAlbum(fallbackAlbumId, currentSong.album)
                     }
                 }
@@ -3397,7 +3410,9 @@ fun MaterialPlayerScreen(
                                                             if (albumForSong != null) {
                                                                 navigateToAlbum(albumForSong.id, albumForSong.title)
                                                             } else {
-                                                                val fallbackAlbumId = currentSong.albumId.takeIf { it.isNotBlank() } ?: "unknown_" + currentSong.album
+                                                                val serviceId = currentSong.id.substringBefore("::", "JELLYFIN")
+                                                                val fallbackAlbumId = currentSong.albumId.takeIf { it.isNotBlank() }
+                                                                    ?: "$serviceId::album::${currentSong.artist}::${currentSong.album}"
                                                                 navigateToAlbum(fallbackAlbumId, currentSong.album)
                                                             }
                                                         }

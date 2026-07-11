@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -53,7 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.IntOffset
+
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.SubcomposeAsyncImage
@@ -287,21 +287,26 @@ fun CollapsibleHeaderScreen(
         }
     ) { paddingValues ->
         val density = LocalDensity.current
-        val topPadding = remember(expandedHeaderHeight, paddingValues) {
+        val baseTopPadding = remember(expandedHeaderHeight, paddingValues) {
             if (expandedHeaderHeight > 0) {
                 with(density) { expandedHeaderHeight.toDp() }
             } else {
                 paddingValues.calculateTopPadding()
             }
         }
+        // Dynamically adjust top padding based on header collapse progress.
+        // heightOffset is 0 when expanded and negative when collapsing, so adding it
+        // shrinks the top padding proportionally — avoiding a visual layout gap at
+        // the screen bottom that the old offset() approach used to cause.
+        val dynamicTopPadding = with(density) {
+            (baseTopPadding.toPx() + scrollBehavior.state.heightOffset).toDp()
+                .coerceAtLeast(headerBlendHeight)
+        }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = topPadding - headerBlendHeight)
-                .offset {
-                    IntOffset(0, scrollBehavior.state.heightOffset.toInt())
-                }
+                .padding(top = (dynamicTopPadding - headerBlendHeight).coerceAtLeast(0.dp))
                 .graphicsLayer {
                     alpha = contentAlpha
                     translationY = contentOffset
@@ -587,21 +592,24 @@ fun ArtistCollapsibleHeaderScreen(
             }
         ) { paddingValues ->
             val density = LocalDensity.current
-            val topPadding = remember(expandedHeaderHeight, paddingValues) {
+            val baseTopPadding = remember(expandedHeaderHeight, paddingValues) {
                 if (expandedHeaderHeight > 0) {
                     with(density) { expandedHeaderHeight.toDp() }
                 } else {
                     paddingValues.calculateTopPadding()
                 }
             }
+            // Dynamically adjust top padding to follow header collapse
+            // without the visual bottom-gap caused by offset().
+            val dynamicTopPadding = with(density) {
+                (baseTopPadding.toPx() + scrollBehavior.state.heightOffset).toDp()
+                    .coerceAtLeast(0.dp)
+            }
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = topPadding)
-                    .offset {
-                        IntOffset(0, scrollBehavior.state.heightOffset.toInt())
-                    }
+                    .padding(top = dynamicTopPadding)
                     .graphicsLayer {
                         alpha = contentAlpha
                         translationY = contentOffset

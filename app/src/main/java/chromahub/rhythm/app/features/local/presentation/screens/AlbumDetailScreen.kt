@@ -208,6 +208,7 @@ fun AlbumDetailScreen(
     val savedSortOrder by appSettings.albumSortOrder.collectAsState()
     val savedDiscFilter by appSettings.albumBottomSheetDiscFilter.collectAsState()
     val libraryCombineDiscs by appSettings.libraryCombineDiscs.collectAsState()
+    val albumScreenGradientBlur by appSettings.albumBottomSheetGradientBlur.collectAsState()
 
     val allAlbums by viewModel.albums.collectAsState()
     val allArtists by viewModel.artists.collectAsState()
@@ -336,6 +337,7 @@ fun AlbumDetailScreen(
     val displayArtworkUri = album?.artworkUri
     val hasCanvas = appleCanvasEnabled && canvasArtwork != null
     val backgroundColor = MaterialTheme.colorScheme.background
+    val isLoading = isContentLoadingOverride ?: (album == null)
 
     if (isTablet) {
         // Animated infinite transition for backdrop orbs (like full-screen lyrics view)
@@ -369,70 +371,72 @@ fun AlbumDetailScreen(
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Box(modifier = Modifier.fillMaxSize()) {
                 // Full-screen blurred backdrop (like FullScreenLyricsView)
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .blur(56.dp)
-                        .alpha(0.68f)
-                ) {
-                    // Blurred base album art
-                    if (displayArtworkUri != null) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context).apply(ImageUtils.buildImageRequest(displayArtworkUri, albumName, context.cacheDir, M3PlaceholderType.ALBUM)).build(),
-                            contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    // Animated canvas blurred along with backdrop
-                    if (hasCanvas) {
-                        CanvasArtworkPlayer(
-                            primaryUrl = canvasArtwork?.animated,
-                            fallbackUrl = canvasArtwork?.videoUrl,
-                            alwaysPlay = true,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    // Moving gradient aura 1
+                if (albumScreenGradientBlur) {
                     Box(
                         modifier = Modifier
-                            .size(340.dp)
-                            .align(Alignment.TopStart)
-                            .graphicsLayer {
-                                translationX = translationX1
-                                translationY = translationY1
-                                scaleX = pulseScale1
-                                scaleY = pulseScale1
-                                rotationZ = rotationAngle
-                            }
-                            .background(
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
-                                        Color.Transparent
+                            .fillMaxSize()
+                            .blur(56.dp)
+                            .alpha(0.68f)
+                    ) {
+                        // Blurred base album art
+                        if (displayArtworkUri != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context).apply(ImageUtils.buildImageRequest(displayArtworkUri, albumName, context.cacheDir, M3PlaceholderType.ALBUM)).build(),
+                                contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        // Animated canvas blurred along with backdrop
+                        if (hasCanvas) {
+                            CanvasArtworkPlayer(
+                                primaryUrl = canvasArtwork?.animated,
+                                fallbackUrl = canvasArtwork?.videoUrl,
+                                alwaysPlay = true,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        // Moving gradient aura 1
+                        Box(
+                            modifier = Modifier
+                                .size(340.dp)
+                                .align(Alignment.TopStart)
+                                .graphicsLayer {
+                                    translationX = translationX1
+                                    translationY = translationY1
+                                    scaleX = pulseScale1
+                                    scaleY = pulseScale1
+                                    rotationZ = rotationAngle
+                                }
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                                            Color.Transparent
+                                        )
                                     )
                                 )
-                            )
-                    )
-                    // Moving gradient aura 2
-                    Box(
-                        modifier = Modifier
-                            .size(420.dp)
-                            .align(Alignment.BottomEnd)
-                            .graphicsLayer {
-                                translationX = -translationX1 * 0.8f
-                                translationY = -translationY1 * 0.9f
-                                scaleX = pulseScale2
-                                scaleY = pulseScale2
-                                rotationZ = -rotationAngle * 1.2f
-                            }
-                            .background(
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f),
-                                        Color.Transparent
+                        )
+                        // Moving gradient aura 2
+                        Box(
+                            modifier = Modifier
+                                .size(420.dp)
+                                .align(Alignment.BottomEnd)
+                                .graphicsLayer {
+                                    translationX = -translationX1 * 0.8f
+                                    translationY = -translationY1 * 0.9f
+                                    scaleX = pulseScale2
+                                    scaleY = pulseScale2
+                                    rotationZ = -rotationAngle * 1.2f
+                                }
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f),
+                                            Color.Transparent
+                                        )
                                     )
                                 )
-                            )
-                    )
+                        )
+                    }
                 }
                 // Dim layer for readability
                 Box(
@@ -608,56 +612,62 @@ fun AlbumDetailScreen(
                     }
 
                     Surface(modifier = Modifier.weight(0.6f).fillMaxHeight(), color = Color.Transparent) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(top = 32.dp, bottom = 32.dp)
-                        ) {
-                            if (description != null) {
-                                AboutAlbumSection(
-                                    description = description!!,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                                )
+                        if (isLoading) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                             }
-                            AlbumListControls(
-                                shouldShowDiscFilter = shouldShowDiscFilter,
-                                selectedDisc = selectedDisc,
-                                availableDiscs = availableDiscs,
-                                onDiscSelected = { disc ->
-                                    appSettings.setAlbumBottomSheetDiscFilter(disc)
-                                },
-                                sortOrder = sortOrder,
-                                showSortMenu = showSortMenu,
-                                onShowSortMenu = { showSortMenu = true },
-                                onDismissSortMenu = { showSortMenu = false },
-                                onSortOrderSelected = { newOrder ->
-                                    appSettings.setAlbumSortOrder(newOrder.name)
-                                    showSortMenu = false
-                                },
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                        } else {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(top = 32.dp, bottom = 32.dp)
                             ) {
-                            itemsIndexed(displaySongs, key = { _, song -> song.id }) { index, song ->
-                                AnimateIn {
-                                    AlbumSongItem(
-                                        song = song,
-                                        index = index,
-                                        totalCount = displaySongs.size,
-                                        currentSong = currentSong,
-                                        isPlaying = isPlaying,
-                                        useHoursFormat = useHoursFormat,
-                                        onClick = { onSongClick(song) },
-                                        onMoreClick = {
-                                            selectedSongForOptions = song
-                                            showSongOptionsSheet = true
-                                        }
+                                if (description != null) {
+                                    AboutAlbumSection(
+                                        description = description!!,
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                                     )
                                 }
-                            }
+                                AlbumListControls(
+                                    shouldShowDiscFilter = shouldShowDiscFilter,
+                                    selectedDisc = selectedDisc,
+                                    availableDiscs = availableDiscs,
+                                    onDiscSelected = { disc ->
+                                        appSettings.setAlbumBottomSheetDiscFilter(disc)
+                                    },
+                                    sortOrder = sortOrder,
+                                    showSortMenu = showSortMenu,
+                                    onShowSortMenu = { showSortMenu = true },
+                                    onDismissSortMenu = { showSortMenu = false },
+                                    onSortOrderSelected = { newOrder ->
+                                        appSettings.setAlbumSortOrder(newOrder.name)
+                                        showSortMenu = false
+                                    },
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                )
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    itemsIndexed(displaySongs, key = { _, song -> song.id }) { index, song ->
+                                        AnimateIn {
+                                            AlbumSongItem(
+                                                song = song,
+                                                index = index,
+                                                totalCount = displaySongs.size,
+                                                currentSong = currentSong,
+                                                isPlaying = isPlaying,
+                                                useHoursFormat = useHoursFormat,
+                                                onClick = { onSongClick(song) },
+                                                onMoreClick = {
+                                                    selectedSongForOptions = song
+                                                    showSongOptionsSheet = true
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -696,7 +706,30 @@ fun AlbumDetailScreen(
         )
 
         Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+                FilledIconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .statusBarsPadding()
+                        .padding(start = 16.dp, top = 8.dp)
+                        .size(40.dp),
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.Back,
+                        contentDescription = stringResource(R.string.cd_back),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            } else {
+                Column(modifier = Modifier.fillMaxSize()) {
                 CollapsibleAlbumHeader(
                     albumName = albumName,
                     artist = displayArtist,
@@ -834,7 +867,7 @@ fun AlbumDetailScreen(
                 LazyColumn(
                     state = songListState,
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp),
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 450.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     itemsIndexed(displaySongs, key = { _, song -> song.id }) { index, song ->
@@ -854,6 +887,7 @@ fun AlbumDetailScreen(
                             )
                         }
                     }
+                }
                 }
             }
         }

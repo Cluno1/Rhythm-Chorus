@@ -32,6 +32,7 @@ import android.net.Uri
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.R
+import android.util.Log
 
 /**
  * ViewModel for managing streaming music playback and library.
@@ -41,7 +42,7 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
     private val appSettings = AppSettings.getInstance(application)
     private val context: Context = application
     private val serviceSessionRepository = StreamingServiceSessionRepository(application)
-    private val repository = StreamingMusicModule.provideStreamingMusicRepository(application)
+    val repository = StreamingMusicModule.provideStreamingMusicRepository(application)
     private val providerRepository = repository as? StreamingMusicRepositoryImpl
     private val notificationManager = StreamingNotificationManager(application)
     private var playbackHandler: ((List<StreamingSong>, Int) -> Unit)? = null
@@ -471,26 +472,44 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
                 }
 
                 // Pull the provider catalog first so artist/album counts come from actual songs.
-                repository.syncCatalog(limit = 5_000)
+                try {
+                    repository.syncCatalog(limit = 5_000)
+                } catch (e: Exception) {
+                    Log.e("StreamingMusicViewModel", "syncCatalog failed", e)
+                }
 
-                val likedSongs = repository.getLikedSongs().first()
-                val followedArtists = repository.getFollowedArtists().first()
-                val downloadedSongs = repository.getDownloadedSongs().first()
-                val syncedPlaylists = repository.syncPlaylists()
-                val savedPlaylists = repository.getPlaylists().first()
-                    .filterIsInstance<StreamingPlaylist>()
+                val likedSongs = try { repository.getLikedSongs().first() } catch (e: Exception) { emptyList() }
+                val followedArtists = try { repository.getFollowedArtists().first() } catch (e: Exception) { emptyList() }
+                val downloadedSongs = try { repository.getDownloadedSongs().first() } catch (e: Exception) { emptyList() }
+                
+                var syncedPlaylists = emptyList<StreamingPlaylist>()
+                try {
+                    syncedPlaylists = repository.syncPlaylists()
+                } catch (e: Exception) {
+                    Log.e("StreamingMusicViewModel", "syncPlaylists failed", e)
+                }
 
-                val savedAlbums = repository.getSavedAlbums().first()
-                val newReleases = repository.getNewReleases(limit = 100)
+                val savedPlaylists = try {
+                    repository.getPlaylists().first().filterIsInstance<StreamingPlaylist>()
+                } catch (e: Exception) {
+                    emptyList()
+                }
+
+                val savedAlbums = try { repository.getSavedAlbums().first() } catch (e: Exception) { emptyList() }
+                val newReleases = try { repository.getNewReleases(limit = 100) } catch (e: Exception) { emptyList() }
 
                 val catalogAlbums = if (savedAlbums.isNotEmpty()) {
                     savedAlbums
                 } else {
                     newReleases
                 }
-                val catalogArtists = repository.getArtists().first()
-                    .filterIsInstance<StreamingArtist>()
-                    .distinctBy { it.id }
+                val catalogArtists = try {
+                    repository.getArtists().first()
+                        .filterIsInstance<StreamingArtist>()
+                        .distinctBy { it.id }
+                } catch (e: Exception) {
+                    emptyList()
+                }
 
                 val hasExplicitLibraryData = likedSongs.isNotEmpty() ||
                     savedAlbums.isNotEmpty() ||
@@ -503,11 +522,32 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
 
                 val resolvedArtists = if (followedArtists.isNotEmpty()) {
                     val catalogArtistsByName = catalogArtists.associateBy { it.name.lowercase() }
+                    val separatorEnabled = appSettings.artistSeparatorEnabled.value
+                    val separatorDelimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
                     followedArtists
-                        .map { followedArtist ->
-                            catalogArtistsByName[followedArtist.name.lowercase()]
-                                ?: catalogArtists.firstOrNull { it.id == followedArtist.id }
-                                ?: followedArtist
+                        .flatMap { followedArtist ->
+                            val splitNames = ArtistSeparator.splitArtistNames(
+                                followedArtist.name,
+                                delimiters = separatorDelimiters,
+                                enabled = separatorEnabled
+                            )
+                            if (splitNames.isEmpty()) {
+                                listOf(
+                                    catalogArtistsByName[followedArtist.name.lowercase()]
+                                        ?: catalogArtists.firstOrNull { it.id == followedArtist.id }
+                                        ?: followedArtist
+                                )
+                            } else {
+                                splitNames.map { name ->
+                                    catalogArtistsByName[name.lowercase()]
+                                        ?: catalogArtists.firstOrNull { it.id == repository.buildArtistId(followedArtist.sourceType.name, name) }
+                                        ?: followedArtist.copy(
+                                            id = repository.buildArtistId(followedArtist.sourceType.name, name),
+                                            name = name,
+                                            artworkUri = followedArtist.artworkUri
+                                        )
+                                }
+                            }
                         }
                         .distinctBy { it.id }
                 } else if (catalogArtists.isNotEmpty()) {
@@ -794,7 +834,47 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
         artistId: String,
         artistNameHint: String? = null
     ): List<StreamingAlbum> {
-        return emptyList()
+        val resolvedArtistId = if (!artistNameHint.isNullOrBlank()) {
+            val serviceName = artistId.substringBefore("::", _currentService.value.name)
+            repository.buildArtistId(serviceName, artistNameHint)
+        } else {
+            artistId
+        }
+        return repository.getArtistAlbums(resolvedArtistId)
+    }
+
+    /**
+     * Fetch full artist info (including artwork) from the repository.
+     * Returns null if the artist cannot be resolved.
+     */
+    suspend fun getArtistInfo(
+        artistId: String,
+        artistNameHint: String? = null
+    ): StreamingArtist? {
+        // Check memory caches first
+        val cached = (_followedArtists.value + _searchResults.value.artists)
+            .distinctBy { it.id }
+            .firstOrNull { it.id == artistId }
+        if (cached?.artworkUri != null) return cached
+
+        return try {
+            val item = repository.getArtistById(artistId)
+            item as? StreamingArtist
+                ?: item?.let { artistItem ->
+                    // Map generic ArtistItem -> StreamingArtist using name hint
+                    val name = artistItem.name.ifBlank { artistNameHint ?: artistId }
+                    StreamingArtist(
+                        id = artistItem.id,
+                        name = name,
+                        artworkUri = artistItem.artworkUri,
+                        songCount = artistItem.songCount,
+                        albumCount = artistItem.albumCount,
+                        sourceType = _currentService.value
+                    )
+                }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     /**
@@ -1253,6 +1333,16 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
                 isAuthenticated = false
             )
             return false
+        }
+
+        // If offline mode is enabled, trust saved credentials without pinging
+        if (appSettings.offlineMode.value) {
+            _isAuthenticated.value = true
+            _streamingConfig.value = _streamingConfig.value.copy(
+                activeService = sourceTypeFromServiceId(normalizedServiceId),
+                isAuthenticated = true
+            )
+            return true
         }
 
         // Actually test the connection with a ping to detect stale connections
