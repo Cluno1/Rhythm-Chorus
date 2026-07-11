@@ -10,6 +10,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.3.429.1123 Beta] - 2026-07-12
+
+### Added
+- Fixed: Too much battery consumption #471
+- Fixed: Lyric exports ignore context #467
+- Fixed: Unintentional draggable element #468
+- Fixed: Cannot "back" from Library to Home #466
+- Fixed: Scrolling error in album list of songs #479
+- Fixed: Play button on wrong layer #483
+- Fixed: Login on nextcloud #485
+- Fixed: Incorrect scrolling and selection in library #477
+- Fixed: Rhythm Guard 'Lock' Ineffective. #474
+- Improved Library Padding and Tablet view
+- Improve streaming metadata and offline fallback
+- Fix playback and UI cleanup
+- Use BottomSheetState; fix nullability & network
+- Scope updater viewmodel and update flows
+- Persist playlists in Room
+- Stabilize library refresh and cache writes
+- chore(l10n): update Chinese (Simplified Han script) translation
+- chore(l10n): update Chinese (Traditional Han script) translation
+- chore(l10n): update Ukrainian translation
+- chore(l10n): update French translation
+- chore(l10n): update Arabic translation
+- chore(l10n): update Swedish translation
+- chore(l10n): update Polish translation
+- chore(l10n): update Spanish translation
+
 ## [5.2.423.1109] - 2026-07-05
 
 ### Added
