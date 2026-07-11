@@ -678,8 +678,12 @@ fun MaterialPlayerScreen(
             // If predictive-back is mid-gesture the entry may already be gone,
             // and calling popBackStack on a missing entry causes an
             // "Cannot transition entry that is not in the back stack" crash.
-            val playerInStack = navController.currentBackStack.value
-                .any { it.destination.route == "streaming_player" }
+            val playerInStack = try {
+                navController.getBackStackEntry("streaming_player")
+                true
+            } catch (_: IllegalArgumentException) {
+                false
+            }
             if (playerInStack) {
                 navController.popBackStack("streaming_player", inclusive = true)
             }

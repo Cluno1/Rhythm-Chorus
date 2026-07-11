@@ -648,8 +648,12 @@ fun StreamingNavigation(
                                 // Only pop if the player route is still in the back stack.
                                 // Predictive back may have already removed it, which would
                                 // cause an IllegalStateException on a double-pop attempt.
-                                val hasPlayerEntry = navController.currentBackStack.value
-                                    .any { it.destination.route == StreamingScreen.Player.route }
+                                val hasPlayerEntry = try {
+                                    navController.getBackStackEntry(StreamingScreen.Player.route)
+                                    true
+} catch (_: IllegalArgumentException) {
+                                    false
+}
                                 if (hasPlayerEntry) {
                                     navController.popBackStack(StreamingScreen.Player.route, inclusive = true)
                                 }
@@ -767,8 +771,12 @@ fun StreamingNavigation(
                                 val artistName = candidates.firstOrNull()?.trim() ?: song.artist.trim()
                                 if (artistName.isNotBlank()) {
                                     try {
-                                        val hasPlayerEntry = navController.currentBackStack.value
-                                            .any { it.destination.route == StreamingScreen.Player.route }
+                                        val hasPlayerEntry = try {
+                                            navController.getBackStackEntry(StreamingScreen.Player.route)
+                                            true
+} catch (_: IllegalArgumentException) {
+                                            false
+}
                                         if (hasPlayerEntry) {
                                             navController.popBackStack(StreamingScreen.Player.route, inclusive = true)
                                         }
@@ -791,8 +799,12 @@ fun StreamingNavigation(
                                     ?: "$serviceId::album::${song.artist}::${song.album}"
                                 val albumTitle = song.album.ifBlank { "Unknown Album" }
                                 try {
-                                    val hasPlayerEntry = navController.currentBackStack.value
-                                        .any { it.destination.route == StreamingScreen.Player.route }
+                                    val hasPlayerEntry = try {
+                                        navController.getBackStackEntry(StreamingScreen.Player.route)
+                                        true
+} catch (_: IllegalArgumentException) {
+                                        false
+}
                                     if (hasPlayerEntry) {
                                         navController.popBackStack(StreamingScreen.Player.route, inclusive = true)
                                     }
