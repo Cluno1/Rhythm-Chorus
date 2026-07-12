@@ -53,7 +53,7 @@
     <!-- Settings - Queue -->
     <string name="settings_queue">佇列</string>
     <string name="settings_queue_desc">佇列規則、自動產生、行為</string>
-    <string name="settings_queue_title">佇列設置</string>
+    <string name="settings_queue_title">佇列設定</string>
     <!-- Settings - Playback -->
     <string name="settings_playback">播放</string>
     <string name="settings_playback_desc">播放狀態、交叉淡入淡出、時間格式</string>
@@ -80,10 +80,10 @@
     <string name="settings_remember_shuffle_mode_desc">重啟後恢復隨機播放模式。</string>
     <string name="settings_audio_effects">轉換與輸出</string>
     <string name="settings_resume_on_device_reconnect">自動恢復</string>
-    <string name="settings_resume_on_device_reconnect_desc">音訊設備重新連線時自動恢復</string>
+    <string name="settings_resume_on_device_reconnect_desc">音訊裝置重新連線時自動恢復</string>
     <string name="settings_gapless_playback">無縫播放</string>
     <string name="settings_gapless_playback_desc">切換曲目時無需靜音。</string>
-    <string name="settings_crossfade">軌道交叉淡入淡出</string>
+    <string name="settings_crossfade">曲目交叉淡入淡出</string>
     <string name="settings_crossfade_desc">混合傳出和傳入曲目。</string>
     <string name="settings_crossfade_duration">淡入淡出持續時間</string>
     <string name="settings_crossfade_duration_desc">%1$.1f 秒</string>
@@ -103,7 +103,7 @@
     <string name="settings_playlists_management">管理</string>
     <string name="settings_create_new_playlist">建立新播放清單</string>
     <string name="settings_create_new_playlist_desc">新增新的自訂播放列表</string>
-    <string name="settings_import_playlists">導入播放列表</string>
+    <string name="settings_import_playlists">匯入播放列表</string>
     <string name="settings_import_playlists_desc">從 JSON、M3U 或 PLS 檔案匯入</string>
     <string name="settings_export_all_playlists">匯出所有播放列表</string>
     <string name="settings_export_all_playlists_desc">將所有播放清單備份到文件</string>
@@ -124,19 +124,19 @@
     <string name="operation_exporting_playlists">正在備份您的自訂播放清單…</string>
     <string name="operation_exporting_playlists_location">正在將播放清單備份到儲存空間…</string>
     <string name="operation_importing_playlist">正在匯入播放清單檔案...</string>
-    <string name="notification_operations_channel_name">Rhythm 庫</string>
-    <string name="notification_operations_channel_desc">庫掃描和播放清單操作的進度和結果</string>
-    <string name="notification_media_scan_title">Rhythm 庫掃描</string>
+    <string name="notification_operations_channel_name">Rhythm 音樂庫</string>
+    <string name="notification_operations_channel_desc">音樂庫掃描和播放清單操作的進度與結果</string>
+    <string name="notification_media_scan_title">Rhythm 音樂庫掃描</string>
     <string name="notification_media_scan_stage_songs">正在掃描裝置儲存空間上的音軌曲目…</string>
-    <string name="notification_media_scan_stage_saving">正在調整與儲存音軌資料庫…</string>
+    <string name="notification_media_scan_stage_saving">正在調整與儲存曲目資料庫…</string>
     <string name="notification_media_scan_stage_finishing">正在完成音訊索引...</string>
     <string name="notification_media_scan_complete_pending_setup">音訊掃描完成，正在初始化後台任務…</string>
-    <string name="notification_media_scan_cancelled">庫掃描已取消。</string>
-    <string name="notification_media_scan_failed">庫掃描失敗。檢查儲存權限並重試。</string>
-    <string name="notification_playlist_export_title">Rhythm 庫導出</string>
-    <string name="notification_playlist_import_title">Rhythm 庫導入</string>
-    <string name="notification_library_setup_title">Rhythm 庫設置</string>
-    <string name="notification_library_setup_complete_summary">庫已優化並準備就緒：%1$d 首曲目、%2$d 張專輯、%3$d 名藝人</string>
+    <string name="notification_media_scan_cancelled">音樂庫掃描已取消。</string>
+    <string name="notification_media_scan_failed">音樂庫掃描失敗。檢查儲存空間權限並重試。</string>
+    <string name="notification_playlist_export_title">Rhythm 音樂庫匯出</string>
+    <string name="notification_playlist_import_title">Rhythm 音樂庫匯入</string>
+    <string name="notification_library_setup_title">Rhythm 音樂庫設定</string>
+    <string name="notification_library_setup_complete_summary">音樂庫已最佳化並準備就緒：%1$d 首曲目、%2$d 張專輯、%3$d 名藝人</string>
     <string name="notification_playlist_not_found">匯出中止：未找到目標播放清單。</string>
     <string name="notification_no_playlists_to_export">匯出中止：找不到要備份的播放清單。</string>
     <string name="notification_operation_timed_out">操作逾時。請再試一次。</string>
@@ -150,27 +150,27 @@
     <string name="notification_updater_title">Rhythm更新程式</string>
     <string name="notification_updater_downloading">⬇ 正在下載：%1$d%%</string>
     <string name="notification_updater_download_complete">✓ 準備安裝。點擊即可更新。</string>
-    <string name="notification_updater_available_title">更新可用！</string>
-    <string name="notification_updater_available_text">🆕 Rhythm 的新版本來了。</string>
+    <string name="notification_updater_available_title">更新可使用！</string>
+    <string name="notification_updater_available_text">🆕 Rhythm 新版本來了。</string>
     <string name="notification_sleep_timer_channel_name">Rhythm 睡眠定時器</string>
     <string name="notification_sleep_timer_channel_desc">睡眠定時器操作的倒數計時與狀態</string>
     <string name="notification_sleep_timer_title">Rhythm 睡眠定時器</string>
-    <string name="notification_sleep_timer_pause_in">⏸ 暫停於 %1$s</string>
-    <string name="notification_sleep_timer_stop_in">⏹ 停在%1$s</string>
+    <string name="notification_sleep_timer_pause_in">⏸ 將於 %1$s 後暫停</string>
+    <string name="notification_sleep_timer_stop_in">⏹ 將在 %1$s 後停止</string>
     <!-- Streaming Notifications -->
     <string name="notification_streaming_channel_name">Rhythm Go</string>
     <string name="notification_streaming_channel_desc">串流服務狀態與同步更新</string>
     <!-- Streaming Authentication -->
-    <string name="notification_streaming_auth_title">串流媒體連接</string>
-    <string name="notification_streaming_auth_connected">🎵 %1$s 已經準備好開始玩了！您的圖書館正在後台同步。</string>
-    <string name="notification_streaming_auth_failed">%1$s 連線失敗。點擊以重試設定。</string>
-    <string name="notification_streaming_auth_expired">會話已過期 %1$s。點擊即可重新連線。</string>
+    <string name="notification_streaming_auth_title">串流媒體已連接</string>
+    <string name="notification_streaming_auth_connected">🎵 %1$s 已準備好開始播放！您的音樂庫正在後台同步中。</string>
+    <string name="notification_streaming_auth_failed">%1$s 連線失敗。點擊以再試一次設定。</string>
+    <string name="notification_streaming_auth_expired">連線狀態已失效 %1$s。點擊即可重新連線。</string>
     <!-- Streaming Library Sync -->
-    <string name="notification_streaming_sync_title">同步您的資料庫</string>
+    <string name="notification_streaming_sync_title">同步您的音樂庫</string>
     <string name="notification_streaming_sync_started">正在與 %1$s 同步...</string>
-    <string name="notification_streaming_sync_progress">同步：%1$d 首歌曲 • %2$d 張專輯 • %3$d 位%3$d 藝人</string>
+    <string name="notification_streaming_sync_progress">正在同步：%1$d 首歌曲 • %2$d 張專輯 • %3$d 位藝人</string>
     <string name="notification_streaming_sync_complete">✓ 已同步 %2$s 的 %1$d 首歌曲！</string>
-    <string name="notification_streaming_sync_failed">同步失敗。檢查您的連線並重試。</string>
+    <string name="notification_streaming_sync_failed">同步失敗。檢查您的連線並再試一次。</string>
     <!-- Streaming Liked Songs -->
     <string name="notification_streaming_liked_title">喜歡的歌曲已更新</string>
     <string name="notification_streaming_liked_added">♥ 加入 %1$s 上喜歡的歌曲</string>
@@ -184,7 +184,7 @@
     <string name="notification_streaming_quality_title">串流品質</string>
     <string name="notification_streaming_quality_switched">由於網路變化，品質切換為 %1$s</string>
     <string name="notification_streaming_buffering">正在緩衝…從%1$s播放</string>
-    <string name="notification_streaming_buffering_complete">準備開始玩吧！</string>
+    <string name="notification_streaming_buffering_complete">播放準備就緒！</string>
     <!-- Streaming Offline -->
     <string name="notification_streaming_offline_title">離線模式</string>
     <string name="notification_streaming_offline_sync">正在與 %1$s 同步離線快取...</string>
@@ -357,7 +357,7 @@
     <string name="update_whats_new">最新動態：</string>
     <string name="update_now">立即更新</string>
     <!-- LibraryScreen -->
-    <string name="library_title">圖書館</string>
+    <string name="library_title">音樂庫</string>
     <string name="library_your_music">你的音樂</string>
     <string name="library_your_playlists">你的播放清單</string>
     <string name="library_your_albums">你的專輯</string>
@@ -417,7 +417,7 @@
     <!-- Common Terms -->
     <string name="common_rhythm">Rhythm</string>
     <string name="common_home">首頁</string>
-    <string name="common_library">圖書館</string>
+    <string name="common_library">音樂庫</string>
     <!-- Splash/Loading -->
     <string name="splash_tagline">你的音樂，你的Rhythm</string>
     <string name="splash_loading">準備你的音樂庫.....</string>
@@ -448,7 +448,7 @@
     <string name="download_update">下載更新</string>
     <string name="updates_smart_polling">智慧輪詢活動</string>
     <string name="updates_smart_polling_desc">使用高效率的 HTTP 檢查來偵測更新，同時最大限度地減少 GitHub API 呼叫。當新版本發佈時，您會收到即時通知。</string>
-    <string name="updates_channel_desc">選擇要遵循的更新管道：</string>
+    <string name="updates_channel_desc">更新管道選項：</string>
     <!-- Onboarding -->
     <string name="onboarding_welcome">歡迎</string>
     <string name="onboarding_welcome_to">歡迎來到</string>
@@ -456,11 +456,11 @@
     <string name="onboarding_get_started">開始使用</string>
     <string name="onboarding_android13_notice">Android 13+通知</string>
     <string name="onboarding_android13_desc">在較新的 Android 版本上，您將看到多個權限請求。請授予音訊檔案和通知的存取權限，以獲得最佳體驗。</string>
-    <string name="onboarding_granted">✓ 已授予</string>
-    <string name="onboarding_backup_title">保護您的數據</string>
-    <string name="onboarding_backup_desc">透過自動備份確保您的播放清單、設定和首選項的安全。切換裝置或重新安裝後恢復所有內容 - 永遠不會遺失您的音樂收藏。</string>
+    <string name="onboarding_granted">✓ 已授權</string>
+    <string name="onboarding_backup_title">保護您的資料</string>
+    <string name="onboarding_backup_desc">透過自動備份妥善保存您的播放清單、設定和偏好選項等。切換裝置時或重新安裝後，都能恢復所有內容 - 再也不搞丟音樂收藏。</string>
     <string name="onboarding_auto_backup">自動備份</string>
-    <string name="onboarding_auto_backup_desc">每周自動備份您的設置</string>
+    <string name="onboarding_auto_backup_desc">每周自動備份您的設定</string>
     <string name="onboarding_backup_center">備份復原中心</string>
     <string name="onboarding_manual_backup_info">您可以隨時在「設定」&gt;「備份與還原」中手動建立備份</string>
     <string name="onboarding_what_backed_up">備份什麼？</string>
@@ -474,15 +474,15 @@
     <string name="onboarding_equalizer_desc">均衡器：在「設定」&gt;「均衡器」中微調音訊頻率</string>
     <string name="onboarding_sleep_timer_desc">睡眠定時器：設定時間後自動停止播放（從「正在播放」畫面存取）</string>
     <string name="onboarding_library_title">整理你的音樂庫</string>
-    <string name="onboarding_library_desc">自訂專輯、藝人和歌曲的顯示方式。選擇您喜歡的佈局、排序順序和選項卡排列。</string>
+    <string name="onboarding_library_desc">自訂專輯、藝人和歌曲的顯示方式。選擇您喜歡的佈局、排序順序和分頁標籤的排列方式。</string>
     <string name="onboarding_library_album_grid">專輯網格視圖</string>
     <string name="onboarding_library_album_grid_desc">以網格佈局顯示相冊，以便更好的視覺瀏覽</string>
     <string name="onboarding_library_artist_grid">藝人網格視圖</string>
     <string name="onboarding_library_artist_grid_desc">以網格佈局顯示藝人和個人資料圖片</string>
     <string name="onboarding_library_show_lyrics">顯示歌詞</string>
     <string name="onboarding_library_show_lyrics_desc">在播放器畫面中顯示同步歌詞</string>
-    <string name="onboarding_library_how_works">圖書館組織如何運作</string>
-    <string name="onboarding_library_1">自訂庫中的 Tab 鍵順序，以便快速存取您的收藏夾</string>
+    <string name="onboarding_library_how_works">音樂庫管理和運作的方式</string>
+    <string name="onboarding_library_1">自訂音樂庫中的分頁順序，以便快速存取您的收藏夾</string>
     <string name="onboarding_library_2">直接從庫畫面建立和管理播放清單</string>
     <string name="onboarding_library_3">設定 &gt; 庫設定中提供進階顯示和排序選項</string>
     <string name="onboarding_library_4">預設播放清單（最近新增、最常播放）可以在「設定」&gt;「播放清單」中切換</string>
@@ -491,7 +491,7 @@
     <string name="onboarding_live_preview">即時預覽</string>
     <string name="onboarding_more_tuner">設定中更多自訂</string>
     <string name="onboarding_tuner_1">自訂配色方案和專輯封面顏色提取</string>
-    <string name="onboarding_tuner_2">字體自訂和排版設置</string>
+    <string name="onboarding_tuner_2">字型自訂和排版設定</string>
     <string name="onboarding_tuner_3">設定 &gt; 主題自訂中提供了進階主題選項</string>
     <string name="onboarding_rhythm_guard_title">保護您的聽力</string>
     <string name="onboarding_rhythm_guard_desc">設定 Rhythm Guard，透過年齡感知預設設定和手動保護控制，讓您的聆聽更加安全。</string>
@@ -506,7 +506,7 @@
     <string name="onboarding_full_tour_prompt_tip_2">您可以隨時從「設定」&gt;「開發者與偵錯」重新開啟 Rhythm Tour。</string>
     <string name="onboarding_full_tour_prompt_tip_3">這裡沒有什麼是永久的。所有選擇都可以稍後變更。</string>
     <string name="onboarding_continue_full_tour">繼續完整遊覽</string>
-    <string name="onboarding_finish_now">立即完成設置</string>
+    <string name="onboarding_finish_now">立刻完成設定</string>
     <string name="onboarding_step_progress">%1$d / %2$d</string>
     <string name="onboarding_media_scan_title">過濾您的音樂庫</string>
     <string name="onboarding_media_scan_desc">控制哪些音訊檔案出現在您的媒體庫中。使用黑名單模式隱藏不需要的檔案（鈴聲、通知），或使用白名單模式僅顯示特定的音樂資料夾。</string>
@@ -520,14 +520,14 @@
     <string name="onboarding_next_browse">瀏覽您的歌曲、專輯和藝人</string>
     <string name="onboarding_next_create">建立您的第一個播放列表</string>
     <string name="onboarding_next_finetune">使用均衡器微調音頻</string>
-    <string name="onboarding_next_explore">隨時探索更多設置</string>
+    <string name="onboarding_next_explore">隨時探索更多設定</string>
     <string name="onboarding_settings_change">所有設定可隨時在「設定」中更改</string>
     <!-- Onboarding Navigation -->
     <string name="onboarding_back">返回</string>
     <string name="onboarding_next">下一步</string>
     <string name="onboarding_checking">檢查…</string>
     <string name="onboarding_lets_go">走吧！</string>
-    <string name="onboarding_finish_setup">完成設置</string>
+    <string name="onboarding_finish_setup">完成設定</string>
     <string name="onboarding_continue">繼續</string>
     <string name="onboarding_open_settings">開啟設定</string>
     <string name="onboarding_grant_access">授予存取權限</string>
@@ -543,7 +543,7 @@
     <string name="onboarding_permission_music_title">音樂庫訪問</string>
     <string name="onboarding_permission_music_desc">讀取本機音樂檔案並在應用程式中顯示</string>
     <string name="onboarding_permission_bluetooth_title">藍牙連接</string>
-    <string name="onboarding_permission_bluetooth_desc">連接藍牙音箱、耳機和音訊設備</string>
+    <string name="onboarding_permission_bluetooth_desc">連接藍牙音箱、耳機和音訊裝置</string>
     <string name="onboarding_permission_notifications_title">通知</string>
     <string name="onboarding_permission_notifications_desc">在通知中顯示播放控制項和音樂訊息</string>
     <!-- Permission Tips -->
@@ -593,12 +593,12 @@
     <string name="option_stable">穩定</string>
     <string name="option_beta">貝塔</string>
     <string name="option_home">首頁</string>
-    <string name="option_library">圖書館</string>
+    <string name="option_library">音樂庫</string>
     <!-- Onboarding Media Scan -->
     <string name="onboarding_how_it_works">它是如何運作的</string>
     <!-- Onboarding Setup Complete -->
     <string name="onboarding_library_configured">庫配置</string>
-    <string name="onboarding_library_configured_desc">您的音樂庫組織首選項已設置</string>
+    <string name="onboarding_library_configured_desc">您的音樂庫管理偏好已設定完畢</string>
     <string name="onboarding_theme_applied">主題應用</string>
     <string name="onboarding_theme_applied_desc">您的自訂主題和外觀設定已準備就緒</string>
     <string name="onboarding_backup_options">備份選項</string>
@@ -626,10 +626,10 @@
     <string name="onboarding_gesture_tracks">滑動查找曲目</string>
     <string name="onboarding_gesture_tracks_desc">在插圖上滑動可跳至下一首/上一首歌曲</string>
     <string name="onboarding_gesture_doubletap">雙擊圖稿</string>
-    <string name="onboarding_gesture_doubletap_desc">雙擊專輯封面即可按讚當前歌曲</string>
+    <string name="onboarding_gesture_doubletap_desc">點兩下專輯封面即可按目前歌曲的一個讚（喜歡）</string>
     <string name="onboarding_gestures_tips_title">手勢提示</string>
-    <string name="onboarding_gesture_tip_1">滑動手勢可雙向使用</string>
-    <string name="onboarding_gesture_tip_2">快速滑動比慢速滑動反應快</string>
+    <string name="onboarding_gesture_tip_1">滑動手勢兩個方向皆可使用</string>
+    <string name="onboarding_gesture_tip_2">快速滑動反應比慢速滑動快</string>
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">啟動器小工具</string>
     <string name="onboarding_widgets_desc">將 Rhythm 小工具新增至您的啟動器以快速控制音樂。自訂顯示的資訊以及小工具的外觀。</string>
@@ -697,10 +697,10 @@
     <string name="settings_home_desc">發現新音樂與推薦</string>
     <string name="settings_library_desc">快速存取您的音樂收藏</string>
     <!-- Cache Management -->
-    <string name="cache_current_status">當前快取狀態</string>
+    <string name="cache_current_status">目前快取狀態</string>
     <string name="cache_total_size">總快取大小：</string>
     <string name="cache_max_size">最大快取大小</string>
-    <string name="cache_max_size_desc">設定快取資料的最大大小</string>
+    <string name="cache_max_size_desc">設定快取資料的最大值</string>
     <string name="cache_about">關於緩存</string>
     <string name="cache_size_limit">快取大小限制</string>
     <string name="cache_auto_trim">90% 自動修剪</string>
@@ -757,7 +757,7 @@
     <string name="player_chip_order_desc">自訂玩家籌碼</string>
     <string name="player_chip_order_saved">保存玩家籌碼順序和可見性</string>
     <!-- Components: Library Tab Order -->
-    <string name="library_tab_order_title">庫選項卡順序</string>
+    <string name="library_tab_order_title">音樂庫分頁標籤順序</string>
     <string name="library_tab_order_desc">重新排序並切換可見性</string>
     <!-- Components: Playback Bottom Sheet -->
     <string name="playback_lyrics_priority_desc">配置歌詞的來源、行為、佈局、大小和樣式</string>
@@ -792,7 +792,7 @@
     <string name="backup_all_settings_placeholder">所有設定、播放清單、主題和庫自訂</string>
     <string name="backup_restore_tap_placeholder">一鍵從檔案或剪貼簿恢復</string>
     <string name="backup_local_storage_placeholder">為了保護隱私，備份本機儲存在您的裝置上</string>
-    <string name="library_reorder_tabs">重新排序選項卡以自訂您的圖書館體驗</string>
+    <string name="library_reorder_tabs">重新排序分頁標籤以自訂您的音樂庫體驗</string>
     <string name="external_services_desc">控制哪些外部 API 服務處於活動狀態以增強您的音樂體驗。開啟/關閉服務以管理資料使用和功能。</string>
     <string name="lyrics_source_priority_title">歌詞來源優先</string>
     <string name="playlist_action_title">播放清單點選操作</string>
@@ -810,9 +810,9 @@
     <!-- Additional UI Elements -->
     <string name="now_playing">正在播放</string>
     <string name="install_update_now">立即安裝更新</string>
-    <string name="audio_settings">音訊設置</string>
+    <string name="audio_settings">音訊設定</string>
     <string name="active_device">主動元件</string>
-    <string name="browse_library">瀏覽圖書館</string>
+    <string name="browse_library">瀏覽音樂庫</string>
     <string name="add_more_songs">增加更多歌曲</string>
     <string name="edit_metadata">編輯曲目</string>
     <!-- Updates Messages -->
@@ -874,13 +874,13 @@
     <!-- Library Operations -->
     <string name="exporting_playlists">匯出播放清單...</string>
     <string name="exporting_to_location">正在將播放清單匯出到選定位置...</string>
-    <string name="importing_playlist">導入播放清單...</string>
+    <string name="importing_playlist">匯入播放清單…</string>
     <!-- Playlist Import/Export -->
     <string name="restart_app">重新啟動應用程式？</string>
     <string name="export_playlist">匯出播放列表</string>
     <string name="export_all_playlists">匯出所有播放列表</string>
     <string name="include_default_playlists">包含預設播放清單（收藏夾、最近新增、最常播放）</string>
-    <string name="import_playlist">導入播放列表</string>
+    <string name="import_playlist">匯入播放清單</string>
     <string name="select_playlist_file">選擇要匯入的播放清單檔案：</string>
     <string name="supported_formats">支援的格式：</string>
     <string name="may_take_moments">這可能需要一些時間...</string>
@@ -896,7 +896,7 @@
     <string name="action_ok">好的</string>
     <string name="action_cancel">取消</string>
     <string name="action_create">創建</string>
-    <string name="action_export_all">全部導出</string>
+    <string name="action_export_all">全部匯出</string>
     <string name="action_browse_files">瀏覽文件</string>
     <string name="action_choose">選擇</string>
     <string name="action_play">播放</string>
@@ -908,8 +908,8 @@
     <string name="settings_theme_customization">主題</string>
     <string name="settings_theme_customization_desc">深色模式、強調色</string>
     <string name="settings_section_home_widgets">主頁與小工具</string>
-    <string name="settings_library_tab_order">庫選項卡順序</string>
-    <string name="settings_library_tab_order_desc">選項卡排列</string>
+    <string name="settings_library_tab_order">音樂庫分頁標籤順序</string>
+    <string name="settings_library_tab_order_desc">分頁標籤排列</string>
     <string name="settings_section_user_interface">導航與控制</string>
     <string name="settings_language">語言</string>
     <string name="settings_language_desc">英語、西班牙語</string>
@@ -918,7 +918,7 @@
     <string name="settings_section_queue_playback">佇列與播放</string>
     <string name="settings_section_audio_lyrics">音訊與效果</string>
     <string name="settings_section_audio_playback">音訊與播放</string>
-    <string name="settings_section_volume_device">音量和設備</string>
+    <string name="settings_section_volume_device">音量和裝置</string>
     <string name="settings_system_volume">系統音量</string>
     <string name="settings_system_volume_desc">系統音訊</string>
     <string name="settings_stop_playback_on_zero_volume">音量為零時暫停</string>
@@ -929,7 +929,7 @@
     <string name="settings_queue_playback_desc">自動新增、重複</string>
     <string name="settings_equalizer_title">均衡器</string>
     <string name="settings_equalizer_desc">低音、高音</string>
-    <string name="settings_section_library_content">圖書館與媒體</string>
+    <string name="settings_section_library_content">音樂庫與媒體</string>
     <string name="settings_media_scan_title">媒體掃描</string>
     <string name="settings_media_scan_desc">掃描資料夾</string>
     <string name="settings_playlists_title">播放清單</string>
@@ -988,7 +988,7 @@
     <!-- Backup Actions -->
     
     <!-- Import/Export -->
-    <string name="import_complete_title">導入完成</string>
+    <string name="import_complete_title">匯入完成</string>
     <!-- Sleep Timer -->
     
     <!-- Crash Logs -->
@@ -1002,7 +1002,7 @@
     <string name="cd_next_track">下一首</string>
     <string name="cd_filters">過濾器</string>
     <string name="cd_refresh">刷新</string>
-    <string name="cd_reorder_tabs">重新排序選項卡</string>
+    <string name="cd_reorder_tabs">重新排序分頁標籤</string>
     <string name="cd_toggle_view_type">切換視圖類型</string>
     <string name="cd_open_playlist">開啟播放列表</string>
     <string name="cd_play_artist">播放%1$s</string>
@@ -1012,7 +1012,7 @@
     <string name="cd_open_folder">開啟資料夾</string>
     <string name="cd_folder_options">資料夾選項</string>
     <string name="cd_export_playlists">匯出播放列表</string>
-    <string name="cd_import_playlist">導入播放列表</string>
+    <string name="cd_import_playlist">匯入播放清單</string>
     <string name="cd_create_playlist">建立播放列表</string>
     <string name="cd_current_location">當前位置</string>
     <string name="cd_song_info">歌曲訊息</string>
@@ -1063,7 +1063,7 @@
     <string name="bottomsheet_timer_hours_minutes">設定睡眠定時器的小時和分鐘</string>
     <!-- Bottom Sheet: Playback -->
     <string name="bottomsheet_playback">回放</string>
-    <string name="bottomsheet_no_device">未連接設備</string>
+    <string name="bottomsheet_no_device">未連接裝置</string>
     <string name="bottomsheet_max">最大</string>
     <!-- Bottom Sheet: Album -->
     <string name="bottomsheet_play_all">全部播放</string>
@@ -1089,12 +1089,12 @@
     <!-- Bottom Sheet: Device Configuration / AutoEQ -->
     <string name="bottomsheet_export_eq">與他人分享您的 EQ 設定或儲存備份。</string>
     <string name="bottomsheet_no_eq_export">沒有可匯出的活動均衡器設定。請先啟用均衡器並進行設定。</string>
-    <string name="bottomsheet_device_type">設備類型</string>
+    <string name="bottomsheet_device_type">裝置類型</string>
     <!-- Bottom Sheet: Song Info / Metadata Editor -->
     <string name="bottomsheet_title">標題</string>
     <string name="bottomsheet_genre">類型</string>
     <string name="bottomsheet_year">年</string>
-    <string name="bottomsheet_track">軌道</string>
+    <string name="bottomsheet_track">曲目</string>
     <string name="bottomsheet_irreversible">不可逆轉的變化</string>
     <string name="bottomsheet_proceed">繼續</string>
     <!-- Bottom Sheet: Player Chip Order -->
@@ -1109,13 +1109,13 @@
     <string name="service_app_updates">Rhythm更新程式</string>
     <string name="service_update_status">Rhythm更新程式狀態</string>
     <string name="service_rhythm_pulse">Rhythm 提示</string>
-    <string name="service_rhythm_guard_alerts">Rhythm 警衛警報</string>
-    <string name="service_rhythm_guard_timers">Rhythm 保護定時器</string>
+    <string name="service_rhythm_guard_alerts">Rhythm Guard 警告</string>
+    <string name="service_rhythm_guard_timers">Rhythm Guard 定時器</string>
     <string name="service_rhythm_music">Rhythm 音樂</string>
     <string name="service_update_status_desc">後台更新檢查的狀態結果</string>
     <string name="service_rhythm_pulse_desc">來自Rhythm的友善聆聽提醒與提示</string>
-    <string name="service_rhythm_guard_alerts_desc">來自Rhythm警衛的安全警報</string>
-    <string name="service_rhythm_guard_timers_desc">Rhythm 防守突破與超時提醒</string>
+    <string name="service_rhythm_guard_alerts_desc">來自 Rhythm Guard 的安全警報</string>
+    <string name="service_rhythm_guard_timers_desc">Rhythm Guard 休息與超時提醒</string>
     <string name="service_starting">Rhythm 正在啟動。</string>
     <string name="service_loading_settings">Rhythm 正在載入您的設定。</string>
     <string name="service_setup_components">Rhythm正在準備核心元件。</string>
@@ -1143,15 +1143,15 @@
     <string name="settings_player_customization_desc">跳過按鈕、進度條</string>
     <string name="settings_miniplayer_customization">迷你播放器</string>
     <string name="settings_miniplayer_customization_desc">背景、控件</string>
-    <string name="settings_album_bottom_sheet_gradient_blur">專輯漸層/模糊</string>
-    <string name="settings_album_bottom_sheet_gradient_blur_desc">控制專輯頁背後的漸層與模糊</string>
+    <string name="settings_album_bottom_sheet_gradient_blur">專輯畫面 漸層/模糊</string>
+    <string name="settings_album_bottom_sheet_gradient_blur_desc">控制專輯詳細資訊頁背景的漸層與模糊</string>
     <string name="settings_gestures">手勢</string>
     <string name="settings_gestures_desc">滑動跳轉</string>
     <string name="settings_ignore_mediastore_covers">顯示歌曲藝術而非專輯藝術</string>
     <string name="settings_ignore_mediastore_covers_desc">偏好每個音訊檔案中的嵌入式藝術作品（以前稱為「忽略 MediaStore 封面」）</string>
     <string name="settings_lossless_artwork">無損藝術作品</string>
     <string name="settings_lossless_artwork_desc">顯示無壓縮的全解析度嵌入歌曲藝術作品</string>
-    <string name="settings_song_artwork_restart_required">藝術作品模式改變。重新啟動應用程式以清除快取並使用更新的圖稿來源執行完整的媒體重新掃描。</string>
+    <string name="settings_song_artwork_restart_required">封面圖模式改變。重新啟動應用程式以清除快取，並使用更新的圖像來源來完全重新掃描媒體。</string>
     <string name="settings_artwork_cache_size">藝術品緩存大小</string>
     <string name="settings_artist_parsing">藝人</string>
     <string name="settings_artist_parsing_desc">分隔符，顯示</string>
@@ -1299,7 +1299,7 @@
     <string name="artist_enable_separation_desc">多藝人標籤拆分（例如“Artist1/Artist2”）</string>
     <string name="artist_configure_delimiters">配置分隔符</string>
     <string name="artist_current_delimiters">目前：%1$s</string>
-    <string name="artist_library_organization">圖書館組織</string>
+    <string name="artist_library_organization">音樂庫整理</string>
     <string name="artist_group_by_album_artist">按專輯藝人分組</string>
     <string name="artist_group_by_album_artist_desc">顯示主要藝人的合作專輯</string>
     <!-- About Screen -->
@@ -1308,8 +1308,8 @@
     
     <!-- Common Actions & Dialogs -->
     <string name="content_desc_remove">刪除</string>
-    <string name="content_desc_refresh_devices">刷新設備</string>
-    <string name="content_desc_switch_device">切換設備</string>
+    <string name="content_desc_refresh_devices">重新整理裝置</string>
+    <string name="content_desc_switch_device">切換裝置</string>
     <string name="content_desc_volume">卷</string>
     <string name="content_desc_decrease_volume">減少音量</string>
     <string name="content_desc_increase_volume">增加音量</string>
@@ -1362,9 +1362,9 @@
     <string name="library_tab_playlists">播放列表</string>
     <string name="library_tab_albums">專輯</string>
     <string name="library_tab_artists">藝人</string>
-    <string name="library_tab_one_visible">至少有一個選項卡必須可見</string>
+    <string name="library_tab_one_visible">至少要顯示一個分頁標籤</string>
     <string name="library_tab_order_reset">Tab 鍵順序和可見性重設為預設值</string>
-    <string name="library_tab_order_saved">已儲存選項卡順序和可見性</string>
+    <string name="library_tab_order_saved">已儲存分頁標籤順序和可見性</string>
     <!-- Player Chips -->
     <string name="player_chip_favorite">最喜歡的</string>
     <string name="player_chip_speed">播放速度</string>
@@ -1376,11 +1376,11 @@
     <string name="player_chip_order_reset">重設為預設順序和可見性</string>
     <!-- AutoEQ & Device Configuration -->
     <string name="autoeq_manage">管理 AutoEQ</string>
-    <string name="autoeq_configure_desc">使用最佳化的 AutoEQ 設定檔設定您的音訊設備，以獲得最佳聆聽體驗。</string>
-    <string name="autoeq_no_devices">未配置設備</string>
-    <string name="autoeq_add_prompt">添加耳機或揚聲器以獲得個性化 EQ 設置</string>
-    <string name="autoeq_delete_device_title">刪除設備</string>
-    <string name="autoeq_import_profile">導入 EQ 設定檔</string>
+    <string name="autoeq_configure_desc">使用最佳化 AutoEQ 設定檔設定您的音訊裝置來提昇聽感體驗。</string>
+    <string name="autoeq_no_devices">未配置裝置</string>
+    <string name="autoeq_add_prompt">新增耳機或揚聲器以設定個人化 EQ</string>
+    <string name="autoeq_delete_device_title">刪除裝置</string>
+    <string name="autoeq_import_profile">匯入 EQ 設定檔</string>
     <string name="autoeq_import_paste_hint">貼上來自 autoeq.app 或其他來源的 EQ 設定。</string>
     <string name="autoeq_eq_settings_label">均衡器設定</string>
     <string name="autoeq_failed_read_file">讀取檔案失敗</string>
@@ -1399,7 +1399,7 @@
     <!-- Common UI Text -->
     <string name="button_add">添加</string>
     <string name="button_delete">刪除</string>
-    <string name="button_import">導入</string>
+    <string name="button_import">匯入</string>
     <string name="button_export">出口</string>
     <string name="text_file">文件</string>
     <string name="text_paste">貼上</string>
@@ -1536,13 +1536,13 @@
     <string name="settings_audio_routing_default">預設</string>
     <string name="settings_audio_routing_app">應用程式</string>
     <string name="settings_audio_routing_system">系統</string>
-    <string name="settings_audio_routing_app_desc">Rhythm 以高解析度模式直接處理音頻，並在支援的設備上請求獨佔 USB 位元完美路由。需要重新啟動。</string>
+    <string name="settings_audio_routing_app_desc">Rhythm 以高解析度模式直接處理音訊，並在支援的裝置上請求獨佔 USB bit-perfect routing。需要重新啟動。</string>
     <string name="settings_audio_routing_system_desc">使用 Android 系統音訊路由。作業系統混音器可以將音訊重新取樣至 48 kHz。</string>
     <string name="settings_audio_routing_default_desc">Android 決定如何路由音訊。重新採樣取決於系統設定。</string>
     <!-- Library Storage -->
     <string name="settings_cache_backend">快取後端</string>
     <string name="settings_storage_rebuild_room">重建房間資料庫</string>
-    <string name="settings_storage_rebuild_room_desc">從目前圖書館資料重新同步 Room 資料庫</string>
+    <string name="settings_storage_rebuild_room_desc">從目前音樂庫資料重新同步 Room 資料庫</string>
     <string name="settings_storage_room_stats">房間資料庫統計</string>
     <string name="settings_storage_song_count">已儲存 %1$d 首歌曲</string>
     <string name="settings_storage_not_available">在目前模式下不可用</string>
@@ -1550,7 +1550,7 @@
     <string name="settings_storage_rebuild_failed">重建房間資料庫失敗</string>
     <!-- Cache Management -->
     <string name="settings_cache">緩存</string>
-    <string name="settings_cache_settings">快取設置</string>
+    <string name="settings_cache_settings">快取設定</string>
     <string name="settings_cache_clear_on_exit_desc">退出應用程式時自動清除快取</string>
     <string name="settings_cache_actions">快取操作</string>
     <string name="settings_clear_lyrics_cache">清除歌詞緩存</string>
@@ -1656,7 +1656,7 @@
     <!-- Backup &amp; Restore -->
     <string name="settings_backup_restore">備份與復原</string>
     <string name="settings_auto_backup">自動備份</string>
-    <string name="settings_auto_backup_desc">每週自動備份設置</string>
+    <string name="settings_auto_backup_desc">每週自動備份設定</string>
     <string name="settings_restore_clipboard">從剪貼簿恢復</string>
     <string name="settings_restore_clipboard_desc">從剪貼簿匯入備份數據</string>
     <string name="settings_restore_file">從檔案恢復</string>
@@ -1739,7 +1739,7 @@
     <string name="settings_font_selection_desc">從內建字型選項中選擇</string>
     <string name="settings_system_font_only">僅適用於系統字體來源</string>
     <string name="settings_import_custom_font">匯入自訂字體</string>
-    <string name="settings_font_imported_name">導入：%1$s</string>
+    <string name="settings_font_imported_name">匯入：%1$s</string>
     <string name="settings_import_font_desc">匯入自己的字型檔（.ttf、.otf）</string>
     <string name="settings_festive_themes">節慶主題</string>
     <string name="settings_enable_festive">啟用節慶主題</string>
@@ -1830,8 +1830,8 @@
     <string name="settings_exp_ignore_mediastore_desc">喜歡每首歌的嵌入式藝術作品</string>
     <string name="settings_exp_codec_monitoring">編解碼器監控</string>
     <string name="settings_exp_codec_monitoring_desc">記錄音訊訊息</string>
-    <string name="settings_exp_audio_device_logging">音訊設備日誌記錄</string>
-    <string name="settings_exp_audio_device_logging_desc">記錄設備更改</string>
+    <string name="settings_exp_audio_device_logging">音訊裝置日誌記錄</string>
+    <string name="settings_exp_audio_device_logging_desc">記錄裝置更動</string>
     <string name="settings_exp_launch_onboarding">啟動Rhythm巡演</string>
     <string name="settings_exp_launch_onboarding_desc">重新啟動Rhythm之旅</string>
     <string name="settings_exp_test_crash">測試崩潰</string>
@@ -1881,13 +1881,13 @@
     <string name="settings_shape_player_controls_desc">玩家控制形狀</string>
     <string name="settings_shape_mini_player">迷你播放器形狀</string>
     <string name="settings_shape_mini_player_desc">迷你播放器造型</string>
-    <string name="settings_library_settings">圖書館經驗</string>
+    <string name="settings_library_settings">音樂庫體驗</string>
     <string name="settings_library_settings_desc">評級、組織與藝術品行為</string>
     <string name="settings_library_group_organization">組織與評級</string>
     <string name="settings_library_combine_discs">組合光碟</string>
     <string name="settings_library_combine_discs_desc">將多光碟專輯合併為一個連續排序</string>
     <string name="settings_show_library_bottom_bar_always">始終顯示庫底部欄</string>
-    <string name="settings_show_library_bottom_bar_always_desc">保持底欄在所有選項卡下可見，或隱藏它並在頂欄操作中顯示關鍵操作</string>
+    <string name="settings_show_library_bottom_bar_always_desc">保持底欄在所有分頁下可見，或隱藏並在頂欄操作區中顯示重要動作</string>
     <string name="settings_show_keyboard_on_search_open">自動對焦搜尋</string>
     <string name="settings_show_keyboard_on_search_open_desc">搜尋開啟時顯示鍵盤</string>
     <string name="settings_library_group_artwork">藝術品渲染</string>
@@ -1951,8 +1951,8 @@
     <string name="no_results_found">未找到結果</string>
     <string name="try_different_search">試試看別的關鍵字</string>
     <!-- Additional Settings Strings -->
-    <string name="exp_audio_device_logging">音訊設備記錄日誌</string>
-    <string name="exp_audio_device_logging_desc">記錄音訊設備變更（藍牙、耳機等）</string>
+    <string name="exp_audio_device_logging">音訊裝置記錄日誌</string>
+    <string name="exp_audio_device_logging_desc">記錄音訊裝置變更（藍牙、耳機等）</string>
     <string name="exp_cellular_streaming">允許Cellular串流</string>
     <string name="exp_codec_monitoring">編解碼器監控</string>
     <string name="exp_codec_monitoring_desc">記錄音訊編解碼器和格式資訊以進行除錯</string>
@@ -1987,7 +1987,7 @@
     <string name="theme_auto_detect">自動偵測節日</string>
     <string name="theme_colors_applied">自訂顏色已套用！</string>
     <string name="theme_enable_festive">啟用節慶主題</string>
-    <string name="theme_festive_settings">節慶主題設置</string>
+    <string name="theme_festive_settings">節慶主題設定</string>
     <string name="theme_font_import_failed">字型檔匯入失敗</string>
     <string name="theme_font_imported">字型匯入成功</string>
     <string name="theme_font_invalid">字型檔格式無效</string>
@@ -2059,7 +2059,7 @@
     <string name="homescreen_view_all_stats">查看所有統計數據</string>
     <string name="homescreen_plays">Plays</string>
     <string name="libraryscreen_more_actions">更多</string>
-    <string name="libraryscreen_shuffle_artists">洗牌藝術家</string>
+    <string name="libraryscreen_shuffle_artists">洗牌藝人</string>
     <string name="libraryscreen_clear_selection">清除選擇</string>
     <string name="onboardingscreen_media_scan_mode">媒體掃描模式</string>
     <string name="onboardingscreen_tap_the_remove_action">點選刪除操作以更新資料夾存取權限</string>
@@ -2260,7 +2260,7 @@
     <string name="settingsscreen_personalization">個人化</string>
     <string name="settingsscreen_library_focus">資料庫焦點</string>
     <string name="settingsscreen_audio_equalizer">音訊均衡器</string>
-    <string name="settingsscreen_library_settings">庫設置</string>
+    <string name="settingsscreen_library_settings">音樂庫設置</string>
     <string name="settingssearch_settings_suggestions">設定建議</string>
     <string name="themecustomizationsettingsscreen_rgb_values">RGB 值</string>
     <string name="updatessettingsscreen_simulating_update_installation_success">模擬更新安裝（成功！）</string>
@@ -2287,7 +2287,7 @@
     <string name="festivethemeexamples_medium">中等</string>
     <string name="festivethemeexamples_heavy">大</string>
     <string name="festivethemeexamples_performance_mode">⚡ 性能模式</string>
-    <string name="festivethemeexamples_optimized_for_lowerend_devices">低階設備最佳化適應</string>
+    <string name="festivethemeexamples_optimized_for_lowerend_devices">低階裝置最佳化</string>
     <string name="festivethemeexamples_select_theme">選擇主題</string>
     <string name="festivethemeexamples_christmas">🎄 聖誕節</string>
     <string name="festivethemeexamples_new_year">🎉 新年</string>
@@ -2391,7 +2391,7 @@
     <string name="settings_tip_controls_active_desc_1">搜尋按鈕已顯示。自訂播放器控制選項，以免畫面雜亂。</string>
     <string name="settings_tip_controls_active_desc_2">已啟用複控型播放器。調整版面到拇指能方便觸及的範圍。</string>
     <string name="settings_tip_controls_inactive_desc_1">已啟用小播放器控制。若傾向精確跳轉，請新增搜尋鈕（seek buttons）。</string>
-    <string name="settings_tip_controls_inactive_desc_2">乾淨的佈局處於活動狀態。重新啟用搜尋控制項以實現更精細的播放處理。</string>
+    <string name="settings_tip_controls_inactive_desc_2">乾淨式排版套用中。重新啟用搜尋控制項以實現更精細的播放處理。</string>
     <string name="settings_tip_miniplayer_active_desc_1">已啟動迷你播放器的播放進度檢視。選擇與您的主題相符的風格。</string>
     <string name="settings_tip_miniplayer_active_desc_2">迷你播放器進度條已啟用。請接著調整形狀和導角。</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">迷你播放器進度已隱藏。啟用它以便快速確認曲目。</string>
@@ -2499,7 +2499,7 @@
     <string name="autoeqpresetpickerbottomsheet_disable_desc">清晰的耳機配置文件，使用標準EQ預設</string>
     <string name="autoeqpresetpickerbottomsheet_unknown_brand">未知品牌</string>
     <!-- Device Configuration additions -->
-    <string name="device_configuration_devices_configured">已設定 %1$d 個設備</string>
+    <string name="device_configuration_devices_configured">已設定 %1$d 個裝置</string>
     <string name="device_configuration_device_recognized">裝置已識別</string>
     <string name="device_configuration_new_device_detected">偵測到新裝置</string>
     <string name="device_configuration_configured_with">%1$s 設為 %2$s</string>
@@ -2805,7 +2805,7 @@
     <string name="nearby_server_discovery_rescan">重新掃描</string>
     <string name="settings_metadata_editing">元資料編輯</string>
     <string name="settings_enable_album_editing">啟用專輯編輯</string>
-    <string name="settings_enable_album_editing_desc">允許大量編輯整張專輯的元資料和插圖。</string>
+    <string name="settings_enable_album_editing_desc">允許批次編輯整張專輯的元資料和插圖。</string>
     <!-- F-Droid Update Warning -->
     <string name="fdroid_update_warning_title">安全性警告</string>
     <string name="fdroid_update_warning_message">在 F-Droid 版本上啟用應用程式內更新會繞過 F-Droid 的安全性檢查。更新將直接從發布者下載。您想繼續嗎？</string>
@@ -2824,7 +2824,7 @@
     <string name="replay_gain_preamp_untagged_desc">沒有 ReplayGain 標籤的曲目的音量調整。</string>
     <string name="replay_gain_configuration">配置</string>
     <!-- Playback Settings Screen Extra -->
-    <string name="settingsscreen_audio_offload_desc">硬體加速音訊解碼以節省設備電量</string>
+    <string name="settingsscreen_audio_offload_desc">硬體加速音訊解碼以節省裝置電量</string>
     <!-- Backup & Restore Sections picker extra strings -->
     <string name="backup_restore_section_core">核心</string>
     <string name="backup_restore_section_core_desc">主題、播放器、UI、API 和應用程式首選項。</string>
@@ -2836,10 +2836,10 @@
     <string name="backup_restore_status_excluded">排除</string>
     <string name="backup_restore_sections_enabled">已啟用 %1$d（共 %2$d）</string>
     <!-- Settings status cards -->
-    <string name="status_active">活躍</string>
+    <string name="status_active">啟動中</string>
     <!-- Sort menu options -->
-    <string name="sort_order_title">訂單</string>
-    <string name="sort_order_ascending">上升</string>
+    <string name="sort_order_title">順序</string>
+    <string name="sort_order_ascending">升序</string>
     <string name="sort_order_descending">降序</string>
     <string name="sort_track_number">曲目編號</string>
     <string name="sort_duration">持續時間</string>
@@ -2847,15 +2847,15 @@
     <string name="library_bottom_bar_cancel_selection">取消選擇</string>
     <string name="library_bottom_bar_back">返回</string>
     <string name="library_bottom_bar_select_songs">選擇歌曲</string>
-    <string name="library_bottom_bar_more_actions">更多選項</string>
+    <string name="library_bottom_bar_more_actions">其他動作</string>
     <string name="library_play_selected">播放 (%1$d)</string>
     <!-- Rhythm Guard Comic Status Subtitles -->
-    <string name="rhythm_guard_health_desc_good">你的耳朵正在舉辦一場音量完美的派對。保持負責任的態度！ 🎉</string>
-    <string name="rhythm_guard_health_desc_fair">裡面有點辣。也許在警衛介入之前把它調低一點？ 🌶️</string>
-    <string name="rhythm_guard_health_desc_risk">哇搖滾明星，你正處於耳膜危險區！在鎖觸發之前撥回！ 🎸🔥</string>
-    <string name="rhythm_guard_health_desc_cooldown">安全區啟動！ Rhythm 警衛下班喝咖啡休息，所以可以自由地堵塞，沒有超時！ 🎫☕</string>
-    <string name="rhythm_guard_health_desc_timeout">聲音逾時已啟動。為了保護您的聽力，正在進行強制耳部小睡！ 😴🛑</string>
-    <string name="rhythm_guard_health_desc_off">Rhythm 警衛下班。在容量安全方面，您完全是單飛。天佑！ 🏍️💨</string>
+    <string name="rhythm_guard_health_desc_good">你的耳內派對目前音量完美。繼續把這樣的氣氛保持住！ 🎉</string>
+    <string name="rhythm_guard_health_desc_fair">耳內辣度有點過高了。趁 Rhythem Guard 介入前調低音量會是個好主意。 🌶️</string>
+    <string name="rhythm_guard_health_desc_risk">嘿，搖滾巨星，把音量退回去一點以免太嗨跌下舞台！播放控制被鎖上就尷尬囉！🎸🔥</string>
+    <string name="rhythm_guard_health_desc_cooldown">安全區啟動！ Rhythm Guard 警衛已下線休息喝咖啡。現在可以自由搖擺不受限！ 🎫☕</string>
+    <string name="rhythm_guard_health_desc_timeout">教練喊出暫停！為了耳膜選手的健康，裁判給出了強制下場休息的指示。😴🛑</string>
+    <string name="rhythm_guard_health_desc_off">Rhythm Guard 關閉，音量約束已解放。小心控制油門，一路平安！ 🏍️💨</string>
     <!-- Player, Bottomsheet, and Popup translations -->
     <string name="unknown_track">未知曲目</string>
     <string name="unknown_song">未知歌曲</string>
@@ -2871,15 +2871,23 @@
     <string name="autoeq_profiles_available">%1$d 個設定檔可用</string>
     <string name="autoeq_no_brand">無品牌</string>
     <string name="autoeq_change_profile">更改個人資料</string>
-    <string name="autoeq_configure_device">配置設備</string>
+    <string name="autoeq_configure_device">設定裝置</string>
     <string name="playlist_count_format">%1$d 個播放列表</string>
     <string name="ui_song_count">1 首</string>
     <string name="duration_minutes_format">%1$d分</string>
     <string name="lyrically_sources_desc">在 Lyrically 內調整設定和排序歌詞來源。Word-by-word 來源優先，其次 synced/plain 的來源。</string>
     <string name="updates_channel_stable_title">穩定版</string>
-    <string name="updates_channel_stable_desc">只取用官方穩定發行版本。</string>
+    <string name="updates_channel_stable_desc">只取官方穩定發行版。</string>
     <string name="updates_channel_beta_title">公開測試版（Beta）</string>
-    <string name="updates_channel_nightly_desc">取用功能最新、主分支編譯來的 Nightly 版本。</string>
+    <string name="updates_channel_nightly_desc">取功能最新、由主分支編譯而來的 Nightly 版本。</string>
     <string name="lyrically_sources_title">Lyrically 來源</string>
     <string name="error_no_document_app">找不到選資料夾用的文件檔選擇器。</string>
+    <string name="settings_album_hide_about">隱藏專輯說明</string>
+    <string name="settings_album_hide_about_desc">在專輯的詳細內容頁面隱藏專輯簡介</string>
+    <string name="settings_rhythm_guard_first_break_dialog_message">Rhythm Guard 會在每日聆聽時間到達上限時安排「聆聽休息」。為了確保耳朵確實得到充足休息，進到聆聽休息時，將暫停正在播放的音樂，並且暫時鎖定控制按鈕。\n\n在第一次聆聽休息時可以選擇是否關閉 Rhythm Guard。但是從隨後的休息時間起到結束以前，是無法關閉 Rhythm Guard 的。想關閉或改動設定的話，請在休息時間之外調整設定。</string>
+    <string name="settings_rhythm_guard_first_break_dialog_turn_off">關掉 Rhythm Guard</string>
+    <string name="settings_rhythm_guard_first_break_dialog_start">開始休息</string>
+    <string name="settings_rhythm_guard_locked_during_break">休息時鎖定</string>
+    <string name="updates_channel_beta_desc">取預發布版本和候選發布版本。</string>
+    <string name="updates_channel_nightly_title">Nightly</string>
 </resources>
