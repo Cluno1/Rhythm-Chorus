@@ -3178,10 +3178,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             val controllerRepeatMode = controller.repeatMode
                             _repeatMode.value = controllerRepeatMode
 
-                            // Restore saved shuffle and repeat states if persistence is enabled
-                            // This runs regardless of controller.isPlaying because the media
-                            // session may report isPlaying=true on restart when the app was
-                            // killed while music was playing, which would skip the restore.
+                            // Restore saved shuffle and repeat states if not currently playing and persistence is enabled
+                            if (!controller.isPlaying) {
                                 if (appSettings.shuffleModePersistence.value) {
                                     val savedShuffle = appSettings.savedShuffleState.value
                                     val useExoPlayerShuffle = appSettings.shuffleUsesExoplayer.value
@@ -5436,6 +5434,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
         }
+    }
 
     /**
      * Preserves the already-played segment and shuffles only upcoming songs.
