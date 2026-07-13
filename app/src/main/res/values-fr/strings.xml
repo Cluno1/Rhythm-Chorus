@@ -1143,8 +1143,8 @@
     <string name="settings_player_customization_desc">Boutons Sauter, barre de progression</string>
     <string name="settings_miniplayer_customization">Mini-lecteur</string>
     <string name="settings_miniplayer_customization_desc">Contexte, contrôles</string>
-    <string name="settings_album_bottom_sheet_gradient_blur">Album Dégradé/Flou</string>
-    <string name="settings_album_bottom_sheet_gradient_blur_desc">Contrôlez le dégradé et le flou derrière les feuilles d\'album</string>
+    <string name="settings_album_bottom_sheet_gradient_blur">Dégradé/Flou de l\'écran de l\'album</string>
+    <string name="settings_album_bottom_sheet_gradient_blur_desc">Contrôle du dégradé et du flou derrière l\'écran de détails de l\'album</string>
     <string name="settings_gestures">Gestes</string>
     <string name="settings_gestures_desc">Faites glisser pour ignorer</string>
     <string name="settings_ignore_mediastore_covers">Afficher la pochette de la chanson au lieu de la pochette de l\'album</string>
@@ -2889,4 +2889,6 @@
     <string name="settings_rhythm_guard_first_break_dialog_turn_off">Désactiver Rhythm Guard</string>
     <string name="settings_rhythm_guard_first_break_dialog_start">Début de la pause</string>
     <string name="settings_rhythm_guard_locked_during_break">Verrouillé pendant la pause d\'écoute</string>
+    <string name="settings_album_hide_about">Masquer la section « À propos » de l\'album</string>
+    <string name="settings_album_hide_about_desc">Masquer la section « Description/À propos » sur la page de détails de l\'album</string>
 </resources>
