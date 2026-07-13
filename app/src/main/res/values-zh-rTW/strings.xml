@@ -26,9 +26,9 @@
     <string name="widget_show_album_art">顯示專輯封面</string>
     <string name="widget_show_album_art_desc">在小工具中顯示專輯封面</string>
     <string name="widget_show_artist">顯示藝人名</string>
-    <string name="widget_show_artist_desc">顯示藝人訊息</string>
+    <string name="widget_show_artist_desc">顯示藝人資訊</string>
     <string name="widget_show_album">顯示專輯名稱</string>
-    <string name="widget_show_album_desc">顯示專輯訊息</string>
+    <string name="widget_show_album_desc">顯示專輯資訊</string>
     <string name="widget_appearance">外觀</string>
     <string name="widget_corner_radius">圓角半徑</string>
     <string name="widget_auto_update">自動更新</string>
@@ -102,23 +102,23 @@
     <string name="settings_playlists_overview">概述</string>
     <string name="settings_playlists_management">管理</string>
     <string name="settings_create_new_playlist">建立新播放清單</string>
-    <string name="settings_create_new_playlist_desc">新增新的自訂播放列表</string>
-    <string name="settings_import_playlists">匯入播放列表</string>
+    <string name="settings_create_new_playlist_desc">新增新的自訂播放清單</string>
+    <string name="settings_import_playlists">匯入播放清單</string>
     <string name="settings_import_playlists_desc">從 JSON、M3U 或 PLS 檔案匯入</string>
-    <string name="settings_export_all_playlists">匯出所有播放列表</string>
+    <string name="settings_export_all_playlists">匯出所有播放清單</string>
     <string name="settings_export_all_playlists_desc">將所有播放清單備份到文件</string>
-    <string name="settings_cleanup_empty_playlists">清理空播放列表</string>
+    <string name="settings_cleanup_empty_playlists">清理空播放清單</string>
     <string name="settings_cleanup_empty_playlists_desc">刪除%1$d空白播放清單%2$s</string>
-    <string name="settings_default_playlists">預設播放列表</string>
-    <string name="settings_no_default_playlists">無預設播放列表</string>
-    <string name="settings_no_default_playlists_desc">自動建立預設播放列表</string>
-    <string name="settings_my_playlists">我的播放列表</string>
-    <string name="settings_no_custom_playlists">無自訂播放列表</string>
+    <string name="settings_default_playlists">預設播放清單</string>
+    <string name="settings_no_default_playlists">無預設播放清單</string>
+    <string name="settings_no_default_playlists_desc">自動建立預設播放清單</string>
+    <string name="settings_my_playlists">我的播放清單</string>
+    <string name="settings_no_custom_playlists">無自訂播放清單</string>
     <string name="settings_no_custom_playlists_desc">建立您的第一個播放清單以開始使用</string>
     <string name="settings_total">總計</string>
     <string name="settings_custom">定制</string>
     <string name="settings_default">預設</string>
-    <string name="settings_enable_default_playlists">啟用預設播放列表</string>
+    <string name="settings_enable_default_playlists">啟用預設播放清單</string>
     <string name="settings_enable_default_playlists_desc">自動建立最近新增和最常播放的播放清單</string>
     <!-- Operation Progress -->
     <string name="operation_exporting_playlists">正在備份您的自訂播放清單…</string>
@@ -206,9 +206,9 @@
     <string name="streaming_settings_switch_provider_confirm_desc">目前提供者：%1$s\n切換到：%2$s？這將斷開目前​​活動的提供者的連線。</string>
     <string name="action_switch">開關</string>
     <!-- Playlist Detail Screen -->
-    <string name="playlist_rename_title">重新命名播放列表</string>
+    <string name="playlist_rename_title">重新命名播放清單</string>
     <string name="playlist_name_label">播放清單名稱</string>
-    <string name="playlist_delete_title">刪除播放列表</string>
+    <string name="playlist_delete_title">刪除播放清單</string>
     <string name="playlist_operation_failed">操作失敗</string>
     <string name="playlist_operation_complete">操作完成</string>
     <string name="playlist_more_options">更多選項</string>
@@ -294,11 +294,11 @@
     <string name="home_settings_cd">設定</string>
     <string name="home_explore_music">探索美妙的音樂</string>
     <string name="home_no_featured_albums">沒有精選專輯</string>
-    <string name="home_no_featured_albums_desc">將一些專輯添加到您的媒體庫中以查看精選內容</string>
+    <string name="home_no_featured_albums_desc">將一些專輯新增到您的媒體庫中以查看精選內容</string>
     <string name="home_artists">藝人</string>
     <string name="home_explore_musicians">探索你最喜歡的音樂家</string>
     <string name="home_no_artists">未找到藝人</string>
-    <string name="home_no_artists_desc">將一些音樂添加到您的音樂庫中以查看您的藝人</string>
+    <string name="home_no_artists_desc">將一些音樂新增到您的音樂庫中以查看您的藝人</string>
     <string name="home_new_releases">新發布</string>
     <string name="home_fresh_music">適合您的新鮮音樂</string>
     <string name="home_no_new_releases">沒有新版本</string>
@@ -368,7 +368,7 @@
     <string name="library_loading_artists">正在載入藝人…</string>
     <!-- Background Processing States -->
     <string name="scanning_media">索引音訊檔案...</string>
-    <string name="detecting_genres">分析曲目類型…</string>
+    <string name="detecting_genres">分析曲目的曲風類型…</string>
     <string name="fetching_artwork">解決專輯封面...</string>
     <string name="extracting_metadata">擷取曲目詳細資料...</string>
     <string name="processing_library">優化庫...</string>
@@ -386,9 +386,9 @@
     <string name="library_check_permissions">如果檔案沒有出現，請檢查儲存權限</string>
     <string name="library_creating_playlist">建立播放清單並新增 %1$d 首歌曲...</string>
     <string name="library_playlist_name_empty">播放清單名稱不能為空</string>
-    <string name="library_no_playlists">還沒有播放列表</string>
+    <string name="library_no_playlists">還沒有播放清單</string>
     <string name="library_no_albums">還沒有專輯</string>
-    <string name="library_playlists_count">%1$d 個播放列表</string>
+    <string name="library_playlists_count">%1$d 個播放清單</string>
     <string name="library_albums_count">%1$d 張專輯</string>
     <!-- Sort Options -->
     <string name="sort_name">姓名</string>
@@ -411,7 +411,7 @@
     <!-- SearchScreen -->
     <string name="search_view_all_songs">看全部歌曲</string>
     <string name="search_recent_searches">最近搜尋</string>
-    <string name="search_browse_by_genre">按類型瀏覽</string>
+    <string name="search_browse_by_genre">按曲風類型瀏覽</string>
     <!-- Common UI -->
     <string name="ui_dismiss">駁回</string>
     <!-- Common Terms -->
@@ -498,7 +498,7 @@
     <string name="onboarding_rhythm_guard_mode_title">Rhythm 防護模式</string>
     <string name="onboarding_rhythm_guard_age_hint">年齡檔案有助於 Rhythm Guard 建議更安全的聽力限制。</string>
     <string name="onboarding_rhythm_guard_tip_1">自動模式透過最少的設定套用更安全的預設值。</string>
-    <string name="onboarding_rhythm_guard_tip_2">您可以稍後在「設定」中調整警報和休息提醒。</string>
+    <string name="onboarding_rhythm_guard_tip_2">您可以稍後在「設定」中調整通知和休息提醒。</string>
     <string name="onboarding_rhythm_guard_tip_3">手動模式可讓您完全控制警告和閾值。</string>
     <string name="onboarding_full_tour_prompt_title">繼續完整設定之旅嗎？</string>
     <string name="onboarding_full_tour_prompt_desc">核心設定已完成。繼續進行高級自訂，或立即完成並稍後從“設定”中探索其餘部分。</string>
@@ -518,7 +518,7 @@
     <string name="onboarding_complete_desc">Rhythm 準備開始玩了！正在後台掃描您的音樂庫。配置如下：</string>
     <string name="onboarding_whats_next">下一步是什麼？</string>
     <string name="onboarding_next_browse">瀏覽您的歌曲、專輯和藝人</string>
-    <string name="onboarding_next_create">建立您的第一個播放列表</string>
+    <string name="onboarding_next_create">建立您的第一個播放清單</string>
     <string name="onboarding_next_finetune">使用均衡器微調音頻</string>
     <string name="onboarding_next_explore">隨時探索更多設定</string>
     <string name="onboarding_settings_change">所有設定可隨時在「設定」中更改</string>
@@ -545,7 +545,7 @@
     <string name="onboarding_permission_bluetooth_title">藍牙連接</string>
     <string name="onboarding_permission_bluetooth_desc">連接藍牙音箱、耳機和音訊裝置</string>
     <string name="onboarding_permission_notifications_title">通知</string>
-    <string name="onboarding_permission_notifications_desc">在通知中顯示播放控制項和音樂訊息</string>
+    <string name="onboarding_permission_notifications_desc">在通知中顯示播放控制和音樂資訊</string>
     <!-- Permission Tips -->
     <string name="onboarding_permission_tips">權限提示</string>
     <string name="onboarding_permission_tip_1">授予所有權限以獲得最佳體驗</string>
@@ -663,7 +663,7 @@
     <string name="onboarding_stats_show_home">顯示主頁統計數據</string>
     <string name="onboarding_stats_show_home_desc">在主畫面上顯示聆聽統計小工具</string>
     <string name="onboarding_stats_rating">啟用歌曲評級</string>
-    <string name="onboarding_stats_rating_desc">對您的歌曲進行評分以追蹤收藏夾並建立智慧播放列表</string>
+    <string name="onboarding_stats_rating_desc">對您的歌曲進行評分以追蹤收藏並建立智慧播放清單</string>
     <string name="onboarding_stats_features_title">統計特徵</string>
     <string name="onboarding_stats_feature_1">按天、週或月追蹤總收聽時間</string>
     <string name="onboarding_stats_feature_2">看看您最常播放的歌曲</string>
@@ -744,7 +744,7 @@
     <string name="queue_no_more">佇列中沒有更多歌曲</string>
     <string name="queue_add_more">增加更多歌曲以保持音樂播放</string>
     <!-- Components: Create Playlist -->
-    <string name="playlist_create">建立播放列表</string>
+    <string name="playlist_create">建立播放清單</string>
     <string name="playlist_name_empty">播放清單名稱不能為空</string>
     <string name="playlist_queue_not_empty">佇列不為空</string>
     <!-- Components: Licenses -->
@@ -767,12 +767,12 @@
     <string name="lyrics_placeholder">在此輸入歌詞...\n\n您可以使用 LRC 格式：\n[00:12.00] 第一行\n[00:17.00] 第二行</string>
     <string name="lyrics_editor_title">歌詞編輯器</string>
     <!-- Components: Song Info -->
-    <string name="song_info_title">歌曲訊息</string>
+    <string name="song_info_title">歌曲資訊</string>
     <string name="rhythm_stats">Rhythm 統計</string>
     <string name="file_info">文件訊息</string>
     <!-- Components: Add to Playlist -->
-    <string name="add_to_playlists">新增到播放列表</string>
-    <string name="playlist_create_new">建立新播放列表</string>
+    <string name="add_to_playlists">新增到播放清單</string>
+    <string name="playlist_create_new">建立新播放清單</string>
     <string name="playlist_create_first">建立您的第一個播放清單以新增歌曲</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">緩存</string>
@@ -797,7 +797,7 @@
     <string name="lyrics_source_priority_title">歌詞來源優先</string>
     <string name="playlist_action_title">播放清單點選操作</string>
     <string name="playlist_action_desc">播放清單點擊的預設行為</string>
-    <string name="playlist_action_load_title">載入整個播放列表</string>
+    <string name="playlist_action_load_title">載入整個播放清單</string>
     <string name="playlist_action_load_desc">載入播放清單並從選定的曲目開始</string>
     <string name="playlist_action_single_title">只播放這首歌</string>
     <string name="playlist_action_single_desc">僅播放選定的曲目</string>
@@ -877,8 +877,8 @@
     <string name="importing_playlist">匯入播放清單…</string>
     <!-- Playlist Import/Export -->
     <string name="restart_app">重新啟動應用程式？</string>
-    <string name="export_playlist">匯出播放列表</string>
-    <string name="export_all_playlists">匯出所有播放列表</string>
+    <string name="export_playlist">匯出播放清單</string>
+    <string name="export_all_playlists">匯出所有播放清單</string>
     <string name="include_default_playlists">包含預設播放清單（收藏夾、最近新增、最常播放）</string>
     <string name="import_playlist">匯入播放清單</string>
     <string name="select_playlist_file">選擇要匯入的播放清單檔案：</string>
@@ -965,7 +965,7 @@
     
     <!-- Song Metadata -->
     <string name="metadata_album">專輯</string>
-    <string name="metadata_genre">型</string>
+    <string name="metadata_genre">曲風類型</string>
     <string name="metadata_year">年份</string>
     <string name="metadata_track">軌道</string>
     <string name="metadata_saving">儲存...</string>
@@ -1004,16 +1004,16 @@
     <string name="cd_refresh">刷新</string>
     <string name="cd_reorder_tabs">重新排序分頁標籤</string>
     <string name="cd_toggle_view_type">切換視圖類型</string>
-    <string name="cd_open_playlist">開啟播放列表</string>
+    <string name="cd_open_playlist">開啟播放清單</string>
     <string name="cd_play_artist">播放%1$s</string>
     <string name="cd_storage">存儲</string>
     <string name="cd_pinned">固定</string>
     <string name="cd_folder">資料夾</string>
     <string name="cd_open_folder">開啟資料夾</string>
     <string name="cd_folder_options">資料夾選項</string>
-    <string name="cd_export_playlists">匯出播放列表</string>
+    <string name="cd_export_playlists">匯出播放清單</string>
     <string name="cd_import_playlist">匯入播放清單</string>
-    <string name="cd_create_playlist">建立播放列表</string>
+    <string name="cd_create_playlist">建立播放清單</string>
     <string name="cd_current_location">當前位置</string>
     <string name="cd_song_info">歌曲訊息</string>
     <string name="cd_no_song_playing">沒有播放歌曲</string>
@@ -1036,8 +1036,8 @@
     <string name="cd_toggle_multi_select">切換多選</string>
     <string name="cd_add_song">新增歌曲</string>
     <!-- Bottom Sheet Titles -->
-    <string name="bottomsheet_add_to_playlist">新增到播放列表</string>
-    <string name="bottomsheet_no_playlists">還沒有播放列表</string>
+    <string name="bottomsheet_add_to_playlist">新增到播放清單</string>
+    <string name="bottomsheet_no_playlists">還沒有播放清單</string>
     <string name="bottomsheet_queue">佇列</string>
     <string name="bottomsheet_up_next">下一個</string>
     <string name="bottomsheet_albums">專輯</string>
@@ -1092,7 +1092,7 @@
     <string name="bottomsheet_device_type">裝置類型</string>
     <!-- Bottom Sheet: Song Info / Metadata Editor -->
     <string name="bottomsheet_title">標題</string>
-    <string name="bottomsheet_genre">類型</string>
+    <string name="bottomsheet_genre">曲風類型</string>
     <string name="bottomsheet_year">年</string>
     <string name="bottomsheet_track">曲目</string>
     <string name="bottomsheet_irreversible">不可逆轉的變化</string>
@@ -1186,31 +1186,31 @@
     <string name="settings_rhythm_guard_break_resume_default_title">預設休息恢復：%1$s</string>
     <string name="settings_rhythm_guard_warning_title">聆聽安全警告</string>
     <string name="settings_rhythm_guard_warning_high_volume">當前音量高於警告閾值 (%1$d%%)。考慮減少音量。</string>
-    <string name="settings_rhythm_guard_warning_daily_exposure">您今天到達了 %1$s，高於建議的 %2$s。考慮休息一下聆聽。</string>
-    <string name="settings_rhythm_guard_warning_dialog_title">Rhythm 警衛保護警報</string>
-    <string name="settings_rhythm_guard_warning_dialog_volume_message">系統媒體音量即時為 %1$d%%，高於您目前的保護限制 %2$d%%。降低音量以降低聽力風險。</string>
-    <string name="settings_rhythm_guard_risk_level_label">風險嚴重程度：%1$s</string>
-    <string name="settings_rhythm_guard_risk_action_label">建議採取的行動：%1$s</string>
+    <string name="settings_rhythm_guard_warning_daily_exposure">您今天到達了 %1$s，高於建議的 %2$s。請考慮休息一下。</string>
+    <string name="settings_rhythm_guard_warning_dialog_title">Rhythm Guard 保護警報</string>
+    <string name="settings_rhythm_guard_warning_dialog_volume_message">系統媒體音量即時為 %1$d%%，高於您目前的保護限制 %2$d%%。調低音量以降低聽力受損風險。</string>
+    <string name="settings_rhythm_guard_risk_level_label">風險嚴重度：%1$s</string>
+    <string name="settings_rhythm_guard_risk_action_label">建議採取的動作：%1$s</string>
     <string name="settings_rhythm_guard_risk_level_low">低</string>
-    <string name="settings_rhythm_guard_risk_level_moderate">中等</string>
+    <string name="settings_rhythm_guard_risk_level_moderate">中</string>
     <string name="settings_rhythm_guard_risk_level_high">高</string>
     <string name="settings_rhythm_guard_risk_level_severe">嚴重</string>
     <string name="settings_rhythm_guard_risk_action_low">繼續在你的閾值或低於閾值的範圍內聆聽。</string>
-    <string name="settings_rhythm_guard_risk_action_moderate">盡快降低交易量並避免長時間交易。</string>
-    <string name="settings_rhythm_guard_risk_action_high">現在減少音量並短暫休息。</string>
-    <string name="settings_rhythm_guard_risk_action_severe">立即暫停播放並以更安全的等級恢復。</string>
-    <string name="settings_rhythm_guard_warning_dialog_apply">降低至安全水平</string>
+    <string name="settings_rhythm_guard_risk_action_moderate">盡快降低音量並避免聆聽時間過長。</string>
+    <string name="settings_rhythm_guard_risk_action_high">馬上減少音量並暫時休息。</string>
+    <string name="settings_rhythm_guard_risk_action_severe">馬上暫停播放並調到安全的水準後再繼續。</string>
+    <string name="settings_rhythm_guard_warning_dialog_apply">降低至安全的等級</string>
     <string name="settings_rhythm_guard_warning_dialog_dismiss">暫時忽略</string>
-    <string name="settings_rhythm_guard_break_dialog_title">聆聽休息時間</string>
-    <string name="settings_rhythm_guard_break_dialog_message">您今天收聽了%1$s（推薦%2$s）。短暫休息以保護您的聽力。</string>
+    <string name="settings_rhythm_guard_break_dialog_title">聆聽休息時間到</string>
+    <string name="settings_rhythm_guard_break_dialog_message">您今天收聽了%1$s（建議 %2$s）。稍作休息以保護您的聽力。</string>
     <string name="settings_rhythm_guard_break_dialog_pause_only">休息一下</string>
-    <string name="settings_rhythm_guard_break_dialog_pause_close">延遲中斷</string>
-    <string name="settings_rhythm_guard_break_dialog_schedule_title">斷裂長度</string>
+    <string name="settings_rhythm_guard_break_dialog_pause_close">延後休息</string>
+    <string name="settings_rhythm_guard_break_dialog_schedule_title">休息長度</string>
     <string name="settings_rhythm_guard_break_dialog_pick_time">挑選時間</string>
-    <string name="settings_rhythm_guard_break_dialog_picker_extend_title">選擇斷裂長度</string>
+    <string name="settings_rhythm_guard_break_dialog_picker_extend_title">選擇休息長度</string>
     <string name="settings_rhythm_guard_break_dialog_picker_delay_title">選擇延遲長度</string>
-    <string name="settings_rhythm_guard_timeout_reason_auto">聽力中斷已觸發：今天%1$s超過建議的%2$s。</string>
-    <string name="settings_rhythm_guard_timeout_reason_manual">聽力休息開始</string>
+    <string name="settings_rhythm_guard_timeout_reason_auto">聆聽休息時間已啟動：今天%1$s超過建議的%2$s。</string>
+    <string name="settings_rhythm_guard_timeout_reason_manual">聆聽休息開始</string>
     <string name="settings_rhythm_guard_resume_countdown_label">監聽超時</string>
     <string name="settings_rhythm_guard_resume_countdown_value">在%1$s繼續</string>
     <string name="settings_rhythm_guard_delay_break_countdown_label">休息即將開始</string>
@@ -1222,7 +1222,7 @@
     <string name="settings_rhythm_guard_state_inactive">Rhythm 防護未激活</string>
     <string name="settings_rhythm_guard_state_timeout_active">監聽超時正在進行中</string>
     <string name="settings_rhythm_guard_state_cooldown_active">寬限期有效</string>
-    <string name="settings_rhythm_guard_state_timeout_remaining">中斷以 %1$s 結束</string>
+    <string name="settings_rhythm_guard_state_timeout_remaining">休息時間將於 %1$s 後結束</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">寬限期於 %1$s 結束</string>
     <string name="settings_rhythm_guard_state_safety_score">安全評分：%1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">保護預設</string>
@@ -1232,8 +1232,8 @@
     <string name="settings_rhythm_guard_protection_preset_strict">嚴格</string>
     <string name="settings_rhythm_guard_protection_preset_custom">自訂</string>
     <string name="settings_rhythm_guard_timeout_activity_title">監聽超時激活</string>
-    <string name="settings_rhythm_guard_timeout_activity_default_reason">情節轉折：你的耳朵開始聯合並要求休息一下。 Rhythm 警衛暫停了播放，以便每個人都可以冷靜下來。</string>
-    <string name="settings_rhythm_guard_timeout_activity_comic_desc">情節轉折：你的耳朵開始聯合並要求休息一下。 Rhythm 警衛暫停了播放，以便每個人都可以冷靜下來。</string>
+    <string name="settings_rhythm_guard_timeout_activity_default_reason">劇情突然遽變：你的耳朵開始抗議要求休息了。 Rhythm Guard 已暫停播放，以讓大家冷靜下來。</string>
+    <string name="settings_rhythm_guard_timeout_activity_comic_desc">劇情突然遽變：你的耳朵開始抗議要求休息了。 Rhythm Guard 已暫停播放，以讓大家冷靜下來。</string>
     <string name="settings_rhythm_guard_timeout_activity_extend">延長休息時間（+%1$d 分鐘）</string>
     <string name="settings_rhythm_guard_timeout_activity_exit">關閉逾時螢幕</string>
     <string name="settings_rhythm_guard_timeout_activity_close_app">關閉應用程式</string>
@@ -1250,14 +1250,14 @@
     <string name="settings_rhythm_guard_protection_presets_search_title">保護預設</string>
     <string name="settings_rhythm_guard_protection_presets_search_desc">一鍵應用溫和、平衡或嚴格的護欄束</string>
     <string name="settings_rhythm_guard_break_resume_search_title">預設休息恢復</string>
-    <string name="settings_rhythm_guard_break_resume_search_desc">設定預設監聽中斷持續多久</string>
+    <string name="settings_rhythm_guard_break_resume_search_desc">設定預設的聆聽休息時長</string>
     <string name="settings_rhythm_guard_enable_search_title">Rhythm 守衛力量</string>
     <string name="settings_rhythm_guard_enable_search_desc">啟用或停用 Rhythm Guard 保護</string>
     <string name="settings_rhythm_guard_notification_alert_title">Rhythm警衛安全警報</string>
     <string name="settings_rhythm_guard_notification_timer_active_title">Rhythm 防護逾時激活</string>
     <string name="settings_rhythm_guard_notification_timer_active_text">在 %1$s 處繼續播放。</string>
-    <string name="settings_rhythm_guard_notification_timer_scheduled_title">Rhythm 已安排守衛突破</string>
-    <string name="settings_rhythm_guard_notification_timer_scheduled_text">聆聽中斷從 %1$s 開始。</string>
+    <string name="settings_rhythm_guard_notification_timer_scheduled_title">Rhythm Guard 休息已排定</string>
+    <string name="settings_rhythm_guard_notification_timer_scheduled_text">聆聽休息將在 %1$s 開始。</string>
     <string name="settings_rhythm_guard_notification_tap_open">點選可查看超時詳細資訊。</string>
     <!-- Rhythm Stats Screen -->
     <string name="stats_title">Rhythm 統計</string>
@@ -1316,7 +1316,7 @@
     <string name="content_desc_shuffle_play">隨機播放</string>
     <string name="content_desc_sort_songs">歌曲排序</string>
     <string name="content_desc_more_options">更多選項</string>
-    <string name="content_desc_add_to_playlist">新增到播放列表</string>
+    <string name="content_desc_add_to_playlist">新增到播放清單</string>
     <string name="content_desc_now_playing">正在播放</string>
     <string name="content_desc_drag_reorder">拖曳重新排序</string>
     <string name="content_desc_remove_from_queue">從佇列中刪除</string>
@@ -1359,7 +1359,7 @@
     <string name="home_section_one_visible">至少有一個部分必須可見</string>
     <!-- Library Tabs -->
     <string name="library_tab_songs">歌曲</string>
-    <string name="library_tab_playlists">播放列表</string>
+    <string name="library_tab_playlists">播放清單</string>
     <string name="library_tab_albums">專輯</string>
     <string name="library_tab_artists">藝人</string>
     <string name="library_tab_one_visible">至少要顯示一個分頁標籤</string>
@@ -1397,7 +1397,7 @@
     <!-- Song Info -->
     
     <!-- Common UI Text -->
-    <string name="button_add">添加</string>
+    <string name="button_add">新增</string>
     <string name="button_delete">刪除</string>
     <string name="button_import">匯入</string>
     <string name="button_export">出口</string>
@@ -1472,7 +1472,7 @@
     <string name="settings_display_options">顯示選項</string>
     <string name="settings_examples">例子</string>
     <string name="settings_intensity">強度</string>
-    <string name="settings_more_festivals">更多節日將在未來的更新中添加</string>
+    <string name="settings_more_festivals">更多節日將在未來更新時新增</string>
     <string name="settings_select_festival">選擇節日</string>
     <string name="settings_select_artist_separators">選擇藝人分隔符號</string>
     <string name="settings_snowflake_display_area">雪花展示區</string>
@@ -1589,7 +1589,7 @@
     <string name="streaming_settings_title">設定</string>
     <string name="streaming_settings_group_services">服務</string>
     <string name="streaming_settings_group_actions">行動</string>
-    <string name="streaming_settings_preferred_service">首選服務</string>
+    <string name="streaming_settings_preferred_service">偏好的服務</string>
     <string name="streaming_settings_quality">串流品質</string>
     <string name="streaming_settings_service_sheet_desc">選擇預設應優先考慮的連線服務 Rhythm Go。</string>
     <string name="streaming_settings_quality_sheet_desc">選擇您喜歡的串流播放音訊品質。</string>
@@ -1646,7 +1646,7 @@
     <string name="streaming_home_no_content_title">還沒有主頁內容</string>
     <string name="streaming_home_no_content_hint">服務完成同步後嘗試刷新。</string>
     <string name="streaming_home_widget_playlist_track_count">%1$d 首曲目</string>
-    <string name="streaming_home_guard_break_active">中斷活動：左 %1$s</string>
+    <string name="streaming_home_guard_break_active">休息啟動中：剩餘 %1$s</string>
     <string name="streaming_home_guard_exposure">今天：%1$d / %2$d 分鐘</string>
     <string name="streaming_not_selected">未選擇</string>
     <string name="streaming_service_subsonic">Subsonic</string>
@@ -1664,7 +1664,7 @@
     <string name="settings_restart_now">立即重新啟動</string>
     <!-- Library Tab Order -->
     <string name="settings_tab_songs">歌曲</string>
-    <string name="settings_tab_playlists">播放列表</string>
+    <string name="settings_tab_playlists">播放清單</string>
     <string name="settings_tab_albums">專輯</string>
     <string name="settings_tab_artists">藝人</string>
     <string name="settings_tab_dates">日期</string>
@@ -1701,7 +1701,7 @@
     <string name="settings_song_info_artwork">藝術作品的歌曲訊息</string>
     <string name="settings_song_info_artwork_desc">在專輯封面上顯示標題和藝人疊加層</string>
     <string name="settings_audio_quality_badges">音訊品質徽章</string>
-    <string name="settings_audio_quality_badges_desc">顯示編解碼器和碼率資訊</string>
+    <string name="settings_audio_quality_badges_desc">顯示編解碼器和位元率資訊</string>
     <string name="settings_lyrics_customization">歌詞定制</string>
     <string name="settings_show_lyrics_player">顯示歌詞</string>
     <string name="settings_show_lyrics_player_desc">在播放器中顯示同步歌詞</string>
@@ -1856,8 +1856,8 @@
     <!-- Notifications Search Strings -->
     <string name="settings_notifications_rhythm_guard_alerts">Rhythm 警衛安全警報</string>
     <string name="settings_notifications_rhythm_guard_alerts_desc">監聽風險預警觸發時發出通知</string>
-    <string name="settings_notifications_rhythm_guard_timers">Rhythm 防護中斷計時器</string>
-    <string name="settings_notifications_rhythm_guard_timers_desc">通知安排的休息時間和超時倒數計時</string>
+    <string name="settings_notifications_rhythm_guard_timers">Rhythm Guard 休息計時器</string>
+    <string name="settings_notifications_rhythm_guard_timers_desc">通知安排的休息時間和超時倒數</string>
     <string name="settings_notifications_rhythm_pulse">Rhythm 提示</string>
     <string name="settings_notifications_rhythm_pulse_desc">友誼提醒與聆聽技巧。</string>
     <string name="settings_notifications_rhythm_pulse_interval">Rhythm 提示間隔</string>
@@ -1925,7 +1925,7 @@
     <string name="settings_player_artwork_radius">圖稿圓角半徑</string>
     <string name="settings_player_artwork_radius_desc">調整專輯封面角圓度</string>
     <string name="settings_player_quality_badges">音訊品質徽章</string>
-    <string name="settings_player_quality_badges_desc">顯示編解碼器和位元速率訊息</string>
+    <string name="settings_player_quality_badges_desc">顯示編解碼器和位元率資訊</string>
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">顯示進度</string>
     <string name="settings_miniplayer_show_progress_desc">在迷你播放器中顯示進度指示器</string>
@@ -2099,8 +2099,8 @@
     <string name="gosettingsscreen_network">網路</string>
     <string name="gosettingsscreen_enable_streaming_over_mobile">啟用行動數據串流</string>
     <string name="gosettingsscreen_connection_is_healthy">連線正常</string>
-    <string name="streamingcontenthomescreen_your_connected_streaming_service">您連接的串流服務播放列表</string>
-    <string name="streamingcontenthomescreen_no_playlists_found">未找到播放列表</string>
+    <string name="streamingcontenthomescreen_your_connected_streaming_service">您連接的串流服務播放清單</string>
+    <string name="streamingcontenthomescreen_no_playlists_found">未找到播放清單</string>
     <string name="streamingcontenthomescreen_create_playlists_on_your">在您的伺服器上建立播放清單以在此查看。</string>
     <string name="streaminghomescreen_leave_go_mode">離開 Go Mode</string>
     <string name="streaminglibraryscreen_no_albums">沒有專輯</string>
@@ -2206,7 +2206,7 @@
     <string name="aboutscreen_discord_community">Discord 社群</string>
     <string name="apimanagementsettingsscreen_lyrically">Lyrically</string>
     <string name="apimanagementsettingsscreen_github">GitHub</string>
-    <string name="apimanagementsettingsscreen_app_updates_and_release">App更新及發行訊息</string>
+    <string name="apimanagementsettingsscreen_app_updates_and_release">App更新及發行資訊</string>
     <string name="backuprestoresettingsscreen_choose_backup_sections">選擇備份區塊</string>
     <string name="backuprestoresettingsscreen_select_what_to_include">選擇要納入此備份檔的內容。</string>
     <string name="backuprestoresettingsscreen_choose_restore_sections">選擇恢復的部份</string>
@@ -2471,7 +2471,7 @@
     <string name="lyrics_settings_local_first_desc">本機 .lrc 檔為優先，嵌入歌詞為次，然後線上 API</string>
     <string name="lyrics_settings_lyrically_first">Lyrically 優先</string>
     <string name="lyrics_settings_lrclib_first">LRCLib 優先</string>
-    <string name="lyrics_settings_fallback_apis_desc">如果首選的 API 無法回傳歌詞，則嘗試候補 API</string>
+    <string name="lyrics_settings_fallback_apis_desc">如果偏好的 API 無法回傳歌詞，則嘗試候補 API</string>
     <string name="lyrics_settings_display_styling">顯示與風格</string>
     <string name="lyrics_settings_size_percentage">大小：%1$d%%</string>
     <string name="alignment_left">左</string>
@@ -2598,7 +2598,7 @@
     <string name="library_scan_songs">掃描歌曲...</string>
     <string name="library_scan_albums">正在處理專輯...</string>
     <string name="library_scan_artists">正在處理藝人...</string>
-    <string name="library_scan_genres">偵測流派...</string>
+    <string name="library_scan_genres">偵測曲風類型...</string>
     <string name="library_scan_media">掃描媒體...</string>
     <string name="library_category_all">全部</string>
     <string name="library_category_favorites">❤️最愛</string>
@@ -2615,7 +2615,7 @@
     <string name="library_no_playlists_yet">還沒有播放清單\n使用 + 按鈕建立您的第一個播放清單</string>
     <string name="library_no_albums_yet">還沒有專輯</string>
     <string name="library_no_artists_yet">還沒有藝人</string>
-    <string name="library_action_add_to_playlist">新增到播放列表</string>
+    <string name="library_action_add_to_playlist">新增到播放清單</string>
     <string name="library_action_rate_song">評價歌曲</string>
     <string name="library_selected_count_format">已選擇 %1$d</string>
     <string name="library_from_tracks_format">來自 %1$d 首曲目</string>
@@ -2827,11 +2827,11 @@
     <string name="settingsscreen_audio_offload_desc">硬體加速音訊解碼以節省裝置電量</string>
     <!-- Backup & Restore Sections picker extra strings -->
     <string name="backup_restore_section_core">核心</string>
-    <string name="backup_restore_section_core_desc">主題、播放器、UI、API 和應用程式首選項。</string>
+    <string name="backup_restore_section_core_desc">主題、播放器、UI、API 和應用程式偏好。</string>
     <string name="backup_restore_section_collection">收藏</string>
-    <string name="backup_restore_section_collection_desc">播放清單、收藏夾、黑名單/白名單、固定資料夾。</string>
+    <string name="backup_restore_section_collection_desc">播放清單、收藏夾、黑名單/白名單、釘選資料夾。</string>
     <string name="backup_restore_section_insight">洞察</string>
-    <string name="backup_restore_section_insight_desc">播放次數、每日統計資料、類型和 Rhythm Guard 配置。</string>
+    <string name="backup_restore_section_insight_desc">播放次數、每日統計資料、曲風類型和 Rhythm Guard 配置。</string>
     <string name="backup_restore_status_included">包括</string>
     <string name="backup_restore_status_excluded">排除</string>
     <string name="backup_restore_sections_enabled">已啟用 %1$d（共 %2$d）</string>
@@ -2853,7 +2853,7 @@
     <string name="rhythm_guard_health_desc_good">你的耳內派對目前音量完美。繼續把這樣的氣氛保持住！ 🎉</string>
     <string name="rhythm_guard_health_desc_fair">耳內辣度有點過高了。趁 Rhythem Guard 介入前調低音量會是個好主意。 🌶️</string>
     <string name="rhythm_guard_health_desc_risk">嘿，搖滾巨星，把音量退回去一點以免太嗨跌下舞台！播放控制被鎖上就尷尬囉！🎸🔥</string>
-    <string name="rhythm_guard_health_desc_cooldown">安全區啟動！ Rhythm Guard 警衛已下線休息喝咖啡。現在可以自由搖擺不受限！ 🎫☕</string>
+    <string name="rhythm_guard_health_desc_cooldown">安全區啟動！ Rhythm Guard 警衛已下線去喝杯咖啡。現在可以不受限地自由搖擺囉！ 🎫☕</string>
     <string name="rhythm_guard_health_desc_timeout">教練喊出暫停！為了耳膜選手的健康，裁判給出了強制下場休息的指示。😴🛑</string>
     <string name="rhythm_guard_health_desc_off">Rhythm Guard 關閉，音量約束已解放。小心控制油門，一路平安！ 🏍️💨</string>
     <!-- Player, Bottomsheet, and Popup translations -->
@@ -2872,7 +2872,7 @@
     <string name="autoeq_no_brand">無品牌</string>
     <string name="autoeq_change_profile">更改個人資料</string>
     <string name="autoeq_configure_device">設定裝置</string>
-    <string name="playlist_count_format">%1$d 個播放列表</string>
+    <string name="playlist_count_format">%1$d 個播放清單</string>
     <string name="ui_song_count">1 首</string>
     <string name="duration_minutes_format">%1$d分</string>
     <string name="lyrically_sources_desc">在 Lyrically 內調整設定和排序歌詞來源。Word-by-word 來源優先，其次 synced/plain 的來源。</string>
@@ -2884,8 +2884,8 @@
     <string name="error_no_document_app">找不到選資料夾用的文件檔選擇器。</string>
     <string name="settings_album_hide_about">隱藏專輯說明</string>
     <string name="settings_album_hide_about_desc">在專輯的詳細內容頁面隱藏專輯簡介</string>
-    <string name="settings_rhythm_guard_first_break_dialog_message">Rhythm Guard 會在每日聆聽時間到達上限時安排「聆聽休息」。為了確保耳朵確實得到充足休息，進到聆聽休息時，將暫停正在播放的音樂，並且暫時鎖定控制按鈕。\n\n在第一次聆聽休息時可以選擇是否關閉 Rhythm Guard。但是從隨後的休息時間起到結束以前，是無法關閉 Rhythm Guard 的。想關閉或改動設定的話，請在休息時間之外調整設定。</string>
-    <string name="settings_rhythm_guard_first_break_dialog_turn_off">關掉 Rhythm Guard</string>
+    <string name="settings_rhythm_guard_first_break_dialog_message">Rhythm Guard 會在每日聆聽時間到達上限時安排「聆聽休息」。為了確保耳朵確實得到充足休息，當進到聆聽休息時，會暫停播放中的音樂，並且暫時鎖定控制按鈕。\n\n在第一次聆聽休息時可以選擇是否關閉 Rhythm Guard。但是從隨後的休息時間起到結束以前，是無法關閉 Rhythm Guard 的。想關閉或改動設定的話，請在休息時間之外調整設定。</string>
+    <string name="settings_rhythm_guard_first_break_dialog_turn_off">關閉 Rhythm Guard</string>
     <string name="settings_rhythm_guard_first_break_dialog_start">開始休息</string>
     <string name="settings_rhythm_guard_locked_during_break">休息時鎖定</string>
     <string name="updates_channel_beta_desc">取預發布版本和候選發布版本。</string>
