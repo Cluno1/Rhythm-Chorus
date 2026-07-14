@@ -1143,8 +1143,8 @@
     <string name="settings_player_customization_desc">Przyciski pomijania, pasek postępu</string>
     <string name="settings_miniplayer_customization">Miniodtwarzacz</string>
     <string name="settings_miniplayer_customization_desc">Tło, sterowanie</string>
-    <string name="settings_album_bottom_sheet_gradient_blur">Gradient/rozmycie albumu</string>
-    <string name="settings_album_bottom_sheet_gradient_blur_desc">Kontroluj gradient i rozmycie za arkuszami albumów</string>
+    <string name="settings_album_bottom_sheet_gradient_blur">Efekt gradientu/rozmycia na ekranie albumu</string>
+    <string name="settings_album_bottom_sheet_gradient_blur_desc">Sterowanie gradientem i rozmyciem w tle ekranu szczegółów albumu</string>
     <string name="settings_gestures">Gesty</string>
     <string name="settings_gestures_desc">Przesuń, aby pominąć</string>
     <string name="settings_ignore_mediastore_covers">Pokaż okładkę utworu zamiast okładki albumu</string>
@@ -2884,4 +2884,11 @@
     <string name="lyrically_sources_title">Źródła Lyrically</string>
     <string name="lyrically_sources_desc">Skonfiguruj i ustal priorytety źródeł tekstów w Lyrically. Najpierw zostaną sprawdzone źródła słowo po słowie, a następnie źródła zsynchronizowane/zwykłe.</string>
     <string name="error_no_document_app">Nie znaleziono selektora dokumentów systemowych umożliwiającego wybranie folderu.</string>
+    <string name="settings_album_hide_about">Ukryj sekcję O albumie</string>
+    <string name="settings_album_hide_about_desc">Ukryj sekcję Opis/O albumie na ekranie szczegółów albumu</string>
+    <string name="settings_rhythm_guard_first_break_dialog_title">O przerwach na słuchanie</string>
+    <string name="settings_rhythm_guard_first_break_dialog_message">Funkcja Rhythm Guard planuje przerwy w odsłuchu, aby chronić słuch użytkownika po osiągnięciu dziennych limitów ekspozycji. Podczas przerwy odtwarzanie zostaje wstrzymane, a elementy sterujące zablokowane, co zapewnia uszom odpowiedni odpoczynek.\n\nPodczas pierwszej przerwy można wyłączyć funkcję Rhythm Guard. Jednak podczas kolejnych przerw nie będzie można wyłączyć tej funkcji, dopóki przerwa się nie zakończy. Poza aktywnymi przerwami zawsze można ją wyłączyć lub dostosować ustawienia.</string>
+    <string name="settings_rhythm_guard_first_break_dialog_turn_off">Wyłącz funkcję Rhythm Guard</string>
+    <string name="settings_rhythm_guard_first_break_dialog_start">Początek przerwy</string>
+    <string name="settings_rhythm_guard_locked_during_break">Zablokowane podczas przerwy na słuchanie</string>
 </resources>
