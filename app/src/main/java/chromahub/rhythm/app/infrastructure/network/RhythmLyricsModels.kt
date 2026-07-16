@@ -40,7 +40,8 @@ data class RhythmLyricsLine(
     @SerializedName("backgroundText") val backgroundText: List<String>?,
     @SerializedName("oppositeTurn") val oppositeTurn: Boolean?,
     @SerializedName("timestamp") val timestamp: Long?, // Line start timestamp in milliseconds
-    @SerializedName("endtime") val endtime: Long? // Line end timestamp in milliseconds
+    @SerializedName("endtime") val endtime: Long?, // Line end timestamp in milliseconds
+    @SerializedName("endIsImplicit") val endIsImplicit: Boolean? = null
 )
 
 /**

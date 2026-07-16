@@ -1,5 +1,6 @@
 package chromahub.rhythm.app.util
 
+import androidx.core.content.pm.PackageInfoCompat
 import android.app.Activity
 import android.app.Application
 import android.content.ClipData
@@ -37,7 +38,8 @@ object CrashReporter {
             var appVersion = "Unknown"
             try {
                 val packageInfo = application.packageManager.getPackageInfo(application.packageName, 0)
-                appVersion = "${packageInfo.versionName} (${packageInfo.versionCode})"
+                val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
+                appVersion = "${packageInfo.versionName} ($versionCode)"
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to get package info", e)
             }

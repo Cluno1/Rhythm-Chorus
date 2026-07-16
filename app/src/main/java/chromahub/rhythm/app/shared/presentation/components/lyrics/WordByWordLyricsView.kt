@@ -139,6 +139,17 @@ fun WordByWordLyricsView(
         val vocalLines = visibleLyricsLines.mapIndexedNotNull { i, line ->
             if (line.words.any { it.text.isNotBlank() }) i to line else null
         }
+
+        val intervals = vocalLines.zipWithNext { (_, a), (_, b) -> (b.lineTimestamp - a.lineTimestamp).coerceAtLeast(0L) }
+            .filter { it > 0L }
+        val medianInterval = if (intervals.isNotEmpty()) {
+            val sorted = intervals.sorted()
+            sorted[sorted.size / 2]
+        } else {
+            2000L
+        }
+        val longGapThreshold = maxOf(5200L, (medianInterval * 2.4f).toLong())
+
         val items = mutableListOf<LyricsItem>()
         vocalLines.forEachIndexed { idx, (origIdx, line) ->
             items.add(LyricsItem.LyricLine(line, origIdx))
@@ -147,7 +158,14 @@ fun WordByWordLyricsView(
             if (idx < vocalLines.size - 1) {
                 val nextLine = vocalLines[idx + 1].second
                 val gapDuration = nextLine.lineTimestamp - line.effectiveLineEndtime()
-                if (gapDuration > 3000) { // 3 seconds threshold
+                val isExplicit = !line.endIsImplicit
+                val shouldAddGap = if (isExplicit) {
+                    gapDuration >= 3000L
+                } else {
+                    val intervalToNext = nextLine.lineTimestamp - line.lineTimestamp
+                    intervalToNext >= longGapThreshold && gapDuration >= 3000L
+                }
+                if (shouldAddGap) {
                     items.add(LyricsItem.Gap(gapDuration, line.effectiveLineEndtime()))
                 }
             }

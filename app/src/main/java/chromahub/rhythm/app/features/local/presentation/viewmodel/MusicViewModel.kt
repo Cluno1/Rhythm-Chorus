@@ -3401,12 +3401,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             Log.d(TAG, "Media item transition: ${mediaItem?.mediaId}, reason: $reason")
 
-            if (
-                reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED &&
-                mediaItem?.mediaId != null &&
-                mediaItem.mediaId == _currentSong.value?.id
-            ) {
-                Log.d(TAG, "Ignoring playlist metadata refresh for current song: ${mediaItem.mediaId}")
+            if (mediaItem?.mediaId != null && mediaItem.mediaId == _currentSong.value?.id) {
+                Log.d(TAG, "Ignoring media item transition for same song: ${mediaItem.mediaId}")
                 return
             }
             
