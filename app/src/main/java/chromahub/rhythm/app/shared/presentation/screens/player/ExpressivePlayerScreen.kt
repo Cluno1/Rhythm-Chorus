@@ -127,6 +127,7 @@ fun ExpressivePlayerScreen(
     progress: () -> Float,
     currentTimeStr: String,
     totalTimeStr: String,
+    onTotalTimeClick: () -> Unit = {},
     queuePosition: Int,
     queueTotal: Int,
     isShuffleEnabled: Boolean,
@@ -988,7 +989,10 @@ fun ExpressivePlayerScreen(
                                             Text(
                                                 text = totalTimeStr,
                                                 style = MaterialTheme.typography.labelMedium,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier
+                                                    .padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
+                                                    .clickable { onTotalTimeClick() }
                                             )
                                         }
                                     }

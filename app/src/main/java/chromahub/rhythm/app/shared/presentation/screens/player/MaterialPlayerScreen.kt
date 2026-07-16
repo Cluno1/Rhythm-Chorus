@@ -10,6 +10,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.Spring
@@ -320,6 +322,7 @@ fun MaterialPlayerScreen(
     val artistSeparatorEnabled by appSettingsInstance.artistSeparatorEnabled.collectAsState()
     val artistSeparatorDelimiters by appSettingsInstance.artistSeparatorDelimiters.collectAsState()
     val useHoursFormat by appSettingsInstance.useHoursInTimeFormat.collectAsState()
+    val showRemainingTime by appSettingsInstance.showRemainingTime.collectAsState()
     val enableRatingSystem by appSettingsInstance.enableRatingSystem.collectAsState()
     
     // Player customization settings
@@ -782,19 +785,26 @@ fun MaterialPlayerScreen(
 
     // Calculate current and total time
     val totalTimeMs = song?.duration?.takeIf { it > 0 } ?: resolvedDurationMs.takeIf { it > 0 } ?: 0L
-    val currentTimeMs by remember(totalTimeMs) {
-        derivedStateOf { (totalTimeMs * progress()).toLong() }
-    }
+    val progressValue = progress().coerceIn(0f, 1f)
+    val currentTimeMs = (totalTimeMs * progressValue).toLong()
     val canSeek = totalTimeMs > 0
     
     // Calculate scrub preview time when enhanced seeking is active
     val scrubTimeMs = (totalTimeMs * scrubProgress).toLong()
 
-    // Format current and total time
-    val currentTimeFormatted by remember(totalTimeMs, useHoursFormat) {
-        derivedStateOf { formatDuration(currentTimeMs, useHoursFormat) }
+    // Format current and total time directly to ensure perfect sync
+    val currentSeconds = currentTimeMs / 1000
+    val totalSeconds = totalTimeMs / 1000
+    val remainingSeconds = (totalSeconds - currentSeconds).coerceAtLeast(0L)
+
+    val currentTimeFormatted = formatDuration(currentSeconds * 1000, useHoursFormat)
+    val totalTimeFormatted = if (showRemainingTime) {
+        "-" + formatDuration(remainingSeconds * 1000, useHoursFormat)
+    } else {
+        remember(totalTimeMs, useHoursFormat) {
+            formatDuration(totalSeconds * 1000, useHoursFormat)
+        }
     }
-    val totalTimeFormatted = formatDuration(totalTimeMs, useHoursFormat)
     val scrubTimeFormatted = formatDuration(scrubTimeMs, useHoursFormat)
 
     // Track previous queue position for slide direction
@@ -2636,6 +2646,7 @@ fun MaterialPlayerScreen(
 
                                 // Total time pill
                                 Surface(
+                                    onClick = { appSettingsInstance.setShowRemainingTime(!showRemainingTime) },
                                     shape = RoundedCornerShape(12.dp),
                                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
                                     modifier = Modifier.padding(horizontal = 2.dp, vertical = 1.dp)

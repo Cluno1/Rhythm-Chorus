@@ -235,9 +235,24 @@ fun PlayerScreen(
         if (playerThemeId == "EXPRESSIVE") {
         val haptic = LocalHapticFeedback.current
         val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
+        val showRemainingTime by appSettings.showRemainingTime.collectAsState()
         val progressValue = progress().coerceIn(0f, 1f)
         val totalTimeMs = song?.duration ?: 0L
         val currentTimeMs = (progressValue * totalTimeMs).toLong()
+        
+        val currentSeconds = currentTimeMs / 1000
+        val totalSeconds = totalTimeMs / 1000
+        val remainingSeconds = (totalSeconds - currentSeconds).coerceAtLeast(0L)
+        
+        val currentTimeStr = formatDuration(currentSeconds * 1000, useHoursFormat)
+        val totalTimeFormatted = remember(totalTimeMs, useHoursFormat) {
+            formatDuration(totalSeconds * 1000, useHoursFormat)
+        }
+        val totalTimeStr = if (showRemainingTime) {
+            "-" + formatDuration(remainingSeconds * 1000, useHoursFormat)
+        } else {
+            totalTimeFormatted
+        }
 
         var showQueueSheet by remember { mutableStateOf(false) }
         var showSongInfoSheet by remember { mutableStateOf(false) }
@@ -356,8 +371,9 @@ fun PlayerScreen(
             isPlaying = isPlaying,
             isFavorite = isFavorite,
             progress = { progressValue },
-            currentTimeStr = formatDuration(currentTimeMs, useHoursFormat),
-            totalTimeStr = formatDuration(totalTimeMs, useHoursFormat),
+            currentTimeStr = currentTimeStr,
+            totalTimeStr = totalTimeStr,
+            onTotalTimeClick = { appSettings.setShowRemainingTime(!showRemainingTime) },
             queuePosition = queuePosition,
             queueTotal = queueTotal,
             isShuffleEnabled = isShuffleEnabled,
