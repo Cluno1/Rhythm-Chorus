@@ -2261,7 +2261,7 @@
     <string name="rhythmguardsettingsscreen_stats_rhythm_guard">统计数据与 Rhythm Guard</string>
     <string name="settingsscreen_audio_offload">音频卸载</string>
     <string name="settingsscreen_personalization">个性化</string>
-    <string name="settingsscreen_library_focus">图书馆焦点</string>
+    <string name="settingsscreen_library_focus">音乐库焦点</string>
     <string name="settingsscreen_audio_equalizer">音频均衡器</string>
     <string name="settingsscreen_library_settings">库设置</string>
     <string name="settingssearch_settings_suggestions">设置建议</string>
