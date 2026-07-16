@@ -1481,6 +1481,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private fun restoreSavedQueue(songIds: List<String>, savedIndex: Int) {
         viewModelScope.launch {
             try {
+                // Wait for the ViewModel to be fully initialized (songs loaded from database)
+                _isInitialized.first { it }
+                
                 // Map saved song IDs to actual song objects
                 val allSongs = _songs.value
                 val restoredSongs = songIds.mapNotNull { songId ->
@@ -1609,15 +1612,34 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             
             val currentQueue = _currentQueue.value
             if (currentQueue.songs.isNotEmpty()) {
-                val songIds = currentQueue.songs.map { it.id }
+                val controller = mediaController
+                val useExoPlayerShuffle = appSettings.shuffleUsesExoplayer.value
+                val isNativeShuffleActive = controller != null && controller.shuffleModeEnabled && useExoPlayerShuffle
+
+                val songIds = if (isNativeShuffleActive) {
+                    // Save original unshuffled timeline order to prevent double-shuffling on restore
+                    (0 until controller.mediaItemCount).mapNotNull { index ->
+                        controller.getMediaItemAt(index).mediaId
+                    }
+                } else {
+                    currentQueue.songs.map { it.id }
+                }
+
+                val savedIndex = if (isNativeShuffleActive) {
+                    // Save index in the unshuffled timeline
+                    controller.currentMediaItemIndex
+                } else {
+                    currentQueue.currentIndex
+                }
+
                 appSettings.setSavedQueue(songIds)
-                appSettings.setSavedQueueIndex(currentQueue.currentIndex)
+                appSettings.setSavedQueueIndex(savedIndex)
                 
                 // Save current playback position
-                val currentPosition = mediaController?.currentPosition ?: 0L
+                val currentPosition = controller?.currentPosition ?: 0L
                 appSettings.setSavedPlaybackPosition(currentPosition)
                 
-                Log.d(TAG, "Saved queue: ${songIds.size} songs, index: ${currentQueue.currentIndex}, position: ${currentPosition}ms")
+                Log.d(TAG, "Saved queue: ${songIds.size} songs, index: $savedIndex (nativeShuffleActive=$isNativeShuffleActive), position: ${currentPosition}ms")
             } else {
                 // Clear saved queue if current queue is empty
                 appSettings.clearSavedQueue()
