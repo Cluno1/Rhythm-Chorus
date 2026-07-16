@@ -196,7 +196,7 @@
     <string name="notification_streaming_error_no_internet">没有互联网。切换到离线模式继续收听。</string>
     <string name="notification_streaming_error_account_issue">%1$s 的帐户问题。请重新连接。</string>
     <!-- Dialogs -->
-    <string name="dialog_cleanup_empty_playlists_title">清理空播放列表？</string>
+    <string name="dialog_cleanup_empty_playlists_title">清空播放列表？</string>
     <string name="dialog_cleanup_empty_playlists_message">这将永久删除%1$d空播放列表%2$s。此操作无法撤消。</string>
     <string name="dialog_delete_playlist_title">删除播放列表？</string>
     <string name="dialog_delete_playlist_message">您确定要删除“%1$s”吗？此操作无法撤消。</string>
@@ -232,7 +232,7 @@
     <string name="settings_song_management">歌曲管理</string>
     <string name="settings_manage_songs">管理歌曲</string>
     <string name="settings_manage_songs_desc">%1$d %2$s 首歌曲</string>
-    <string name="settings_blocked">被封锁</string>
+    <string name="settings_blocked">被阻隔</string>
     <string name="settings_whitelisted">已列入白名单</string>
     <string name="settings_clear_all_songs">清除所有歌曲</string>
     <string name="settings_clear_all_songs_desc">删除所有%1$s首歌曲</string>
@@ -345,7 +345,7 @@
     
     <!-- Recently Played -->
     <string name="home_recently_played">最近玩过的游戏</string>
-    <string name="home_recently_played_subtitle">继续你的音乐之旅</string>
+    <string name="home_recently_played_subtitle">继续您的音乐之旅</string>
     <string name="home_no_recent_activity">最近没有活动</string>
     <string name="home_no_recent_activity_desc">在这里开始聆听并查看您最近播放的歌曲</string>
     <!-- UI Actions -->
@@ -357,7 +357,7 @@
     <string name="update_whats_new">最新动态：</string>
     <string name="update_now">立即更新</string>
     <!-- LibraryScreen -->
-    <string name="library_title">图书馆</string>
+    <string name="library_title">音乐库</string>
     <string name="library_your_music">你的音乐</string>
     <string name="library_your_playlists">你的播放列表</string>
     <string name="library_your_albums">你的专辑</string>
@@ -378,7 +378,7 @@
     <string name="library_start_collection">开始建立你的音乐收藏</string>
     <string name="library_sort_artists">艺术家排序依据</string>
     <string name="library_storage_locations">存储位置</string>
-    <string name="library_pinned_folders">固定文件夹</string>
+    <string name="library_pinned_folders">置顶文件夹</string>
     <string name="library_go_back">返回</string>
     <string name="library_home">首页</string>
     <string name="library_tap_browse">点击浏览文件</string>
@@ -413,11 +413,11 @@
     <string name="search_recent_searches">最近搜索</string>
     <string name="search_browse_by_genre">按类型浏览</string>
     <!-- Common UI -->
-    <string name="ui_dismiss">驳回</string>
+    <string name="ui_dismiss">取消</string>
     <!-- Common Terms -->
     <string name="common_rhythm">Rhythm</string>
     <string name="common_home">首页</string>
-    <string name="common_library">图书馆</string>
+    <string name="common_library">音乐库</string>
     <!-- Splash/Loading -->
     <string name="splash_tagline">你的音乐，你的Rhythm</string>
     <string name="splash_loading">准备你的音乐库......</string>
@@ -446,7 +446,7 @@
     <string name="updates_cancel_download">取消下载</string>
     <string name="cancel_download">取消下载</string>
     <string name="download_update">下载更新</string>
-    <string name="updates_smart_polling">智能轮询活动</string>
+    <string name="updates_smart_polling">智能轮询已启用</string>
     <string name="updates_smart_polling_desc">使用高效的 HTTP 检查来检测更新，同时最大限度地减少 GitHub API 调用。当新版本发布时，您会收到即时通知。</string>
     <string name="updates_channel_desc">选择要遵循的更新渠道：</string>
     <!-- Onboarding -->
@@ -454,7 +454,7 @@
     <string name="onboarding_welcome_to">欢迎来到</string>
     <string name="onboarding_welcome_subtitle">你的音乐，你的Rhythm</string>
     <string name="onboarding_get_started">开始使用</string>
-    <string name="onboarding_android13_notice">Android 13+通知</string>
+    <string name="onboarding_android13_notice">Android 13+ 通知</string>
     <string name="onboarding_android13_desc">在较新的 Android 版本上，您将看到多个权限请求。请授予对音频文件和通知的访问权限，以获得最佳体验。</string>
     <string name="onboarding_granted">✓ 已授予</string>
     <string name="onboarding_backup_title">保护您的数据</string>
@@ -481,12 +481,12 @@
     <string name="onboarding_library_artist_grid_desc">以网格布局显示艺术家和个人资料图片</string>
     <string name="onboarding_library_show_lyrics">显示歌词</string>
     <string name="onboarding_library_show_lyrics_desc">在播放器屏幕中显示同步歌词</string>
-    <string name="onboarding_library_how_works">图书馆组织如何运作</string>
-    <string name="onboarding_library_1">自定义库中的 Tab 键顺序，以便快速访问您的收藏夹</string>
+    <string name="onboarding_library_how_works">组织音乐库的原理</string>
+    <string name="onboarding_library_1">自定义库中的标签页顺序，以便快速访问您的收藏夹</string>
     <string name="onboarding_library_2">直接从库屏幕创建和管理播放列表</string>
     <string name="onboarding_library_3">设置 &gt; 库设置中提供高级显示和排序选项</string>
     <string name="onboarding_library_4">默认播放列表（最近添加、最常播放）可以在“设置”&gt;“播放列表”中切换</string>
-    <string name="onboarding_theme_title">让 Rhythm 成为你的</string>
+    <string name="onboarding_theme_title">让 Rhythm 专属于你</string>
     <string name="onboarding_theme_desc">个性化Rhythm的外观以符合您的风格。选择您的系统主题、字体或 Material You 动态颜色 (Android 12+)。</string>
     <string name="onboarding_live_preview">实时预览</string>
     <string name="onboarding_more_tuner">设置中更多自定义</string>
@@ -502,10 +502,10 @@
     <string name="onboarding_rhythm_guard_tip_3">手动模式使您可以完全控制警告和阈值。</string>
     <string name="onboarding_full_tour_prompt_title">继续完整设置之旅吗？</string>
     <string name="onboarding_full_tour_prompt_desc">核心设置已完成。继续进行高级自定义，或立即完成并稍后从“设置”中探索其余部分。</string>
-    <string name="onboarding_full_tour_prompt_tip_1">完整游览包括播放、主题、手势和媒体扫描选项。</string>
+    <string name="onboarding_full_tour_prompt_tip_1">完整教程包括播放、主题、手势和媒体扫描选项。</string>
     <string name="onboarding_full_tour_prompt_tip_2">您可以随时从“设置”&gt;“开发者和调试”重新打开 Rhythm Tour。</string>
     <string name="onboarding_full_tour_prompt_tip_3">这里没有什么是永久的。所有选择都可以稍后更改。</string>
-    <string name="onboarding_continue_full_tour">继续完整游览</string>
+    <string name="onboarding_continue_full_tour">继续完整教程</string>
     <string name="onboarding_finish_now">立即完成设置</string>
     <string name="onboarding_step_progress">%1$d / %2$d</string>
     <string name="onboarding_media_scan_title">过滤您的音乐库</string>
@@ -515,7 +515,7 @@
     <string name="onboarding_media_scan_whitelist">白名单模式：仅显示选定文件夹中的歌曲</string>
     <string name="onboarding_media_scan_configure_in_tuner">在“设置”&gt;“媒体扫描”中配置扫描</string>
     <string name="onboarding_complete_title">一切就绪！</string>
-    <string name="onboarding_complete_desc">Rhythm 准备开始玩了！正在后台扫描您的音乐库。配置如下：</string>
+    <string name="onboarding_complete_desc">Rhythm 准备好播放了！正在后台扫描您的音乐库。配置如下：</string>
     <string name="onboarding_whats_next">下一步是什么？</string>
     <string name="onboarding_next_browse">浏览您的歌曲、专辑和艺术家</string>
     <string name="onboarding_next_create">创建您的第一个播放列表</string>
@@ -525,8 +525,8 @@
     <!-- Onboarding Navigation -->
     <string name="onboarding_back">返回</string>
     <string name="onboarding_next">下一步</string>
-    <string name="onboarding_checking">检查……</string>
-    <string name="onboarding_lets_go">走吧！</string>
+    <string name="onboarding_checking">检查中……</string>
+    <string name="onboarding_lets_go">开始吧！</string>
     <string name="onboarding_finish_setup">完成设置</string>
     <string name="onboarding_continue">继续</string>
     <string name="onboarding_open_settings">打开设置</string>
@@ -538,11 +538,11 @@
     <string name="onboarding_grant_permissions">授予权限</string>
     <string name="onboarding_permissions_granted_desc">所有必要的权限均已授予。您已准备好继续！</string>
     <string name="onboarding_redirect_settings_desc">要授予所需的权限，请导航至您设备上的应用程序设置。</string>
-    <string name="onboarding_rationale_desc">Rhythm 需要某些权限才能正常运行。请允许他们继续。</string>
+    <string name="onboarding_rationale_desc">Rhythm 需要某些权限才能正常运行。请提供这些权限以继续。</string>
     <string name="onboarding_permissions_required_desc">为了充分利用Rhythm的功能，我们需要您的许可才能访问某些设备功能。</string>
-    <string name="onboarding_permission_music_title">音乐库访问</string>
+    <string name="onboarding_permission_music_title">音乐库访问权限</string>
     <string name="onboarding_permission_music_desc">读取本地音乐文件并在应用中显示</string>
-    <string name="onboarding_permission_bluetooth_title">蓝牙连接</string>
+    <string name="onboarding_permission_bluetooth_title">蓝牙连接权限</string>
     <string name="onboarding_permission_bluetooth_desc">连接蓝牙音箱、耳机和音频设备</string>
     <string name="onboarding_permission_notifications_title">通知</string>
     <string name="onboarding_permission_notifications_desc">在通知中显示播放控件和音乐信息</string>
@@ -560,12 +560,12 @@
     <string name="onboarding_auto_queue_desc">播放歌曲时自动从专辑/艺术家创建上下文队列。</string>
     <string name="onboarding_show_lyrics_title">显示歌词</string>
     <string name="onboarding_show_lyrics_desc">当您喜爱的歌曲可用时显示同步歌词。</string>
-    <string name="onboarding_lyrics_source_title">歌词来源优先</string>
+    <string name="onboarding_lyrics_source_title">歌词来源优先选项</string>
     <string name="onboarding_lyrics_source_desc">选择首先尝试哪个歌词源（自动回退到其他歌词源）</string>
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">动态色彩（Material 你）</string>
+    <string name="onboarding_dynamic_colors_title">动态色彩（Material You）</string>
     <string name="onboarding_dynamic_colors_desc">应用从设备壁纸中提取的颜色，打造统一的外观。</string>
     <string name="onboarding_player_theme_title">播放和迷你播放器主题</string>
     <string name="onboarding_player_theme_desc">个性化您的播放界面。在干净、现代的 Rhythm 设计或充满活力、流畅、富有表现力的设计之间切换。</string>
@@ -575,7 +575,7 @@
     <string name="onboarding_downloading_update">下载更新</string>
     <string name="onboarding_checking_updates">检查更新...</string>
     <string name="onboarding_update_available">可用更新</string>
-    <string name="onboarding_stay_up_to_date">保持最新状态</string>
+    <string name="onboarding_stay_up_to_date">保持最新版本</string>
     <string name="onboarding_update_default_desc">从 GitHub 自动获取最新功能、改进和错误修复。</string>
     <string name="onboarding_enable_updates_title">启用更新</string>
     <string name="onboarding_enable_updates_desc">允许应用检查并下载更新</string>
@@ -583,29 +583,29 @@
     <string name="onboarding_periodic_check_desc">自动检查 Rhythm 的 GitHub 存储库中的更新</string>
     <string name="onboarding_update_notifications_title">更新通知</string>
     <string name="onboarding_update_notifications_desc">当新版本可用时收到通知</string>
-    <string name="onboarding_smart_polling_title">智能投票</string>
+    <string name="onboarding_smart_polling_title">智能轮询</string>
     <string name="onboarding_smart_polling_desc">使用高效的检查来保存 GitHub API 调用</string>
     <string name="onboarding_check_interval_desc">检查更新的频率</string>
     <string name="onboarding_update_channel_title">更新频道</string>
     <string name="onboarding_update_channel_desc">稳定版或测试版。</string>
     <string name="fetching_latest_version">正在从 GitHub 获取最新版本...</string>
     <!-- Onboarding Update Options -->
-    <string name="option_stable">稳定</string>
-    <string name="option_beta">贝塔</string>
+    <string name="option_stable">稳定版</string>
+    <string name="option_beta">测试版</string>
     <string name="option_home">首页</string>
     <string name="option_library">图书馆</string>
     <!-- Onboarding Media Scan -->
     <string name="onboarding_how_it_works">它是如何运作的</string>
     <!-- Onboarding Setup Complete -->
-    <string name="onboarding_library_configured">库配置</string>
+    <string name="onboarding_library_configured">音乐库配置完毕</string>
     <string name="onboarding_library_configured_desc">您的音乐库组织首选项已设置</string>
-    <string name="onboarding_theme_applied">主题应用</string>
+    <string name="onboarding_theme_applied">主题应用完毕</string>
     <string name="onboarding_theme_applied_desc">您的自定义主题和外观设置已准备就绪</string>
     <string name="onboarding_backup_options">备份选项</string>
     <string name="onboarding_backup_options_desc">已配置自动备份和恢复设置</string>
     <!-- Onboarding Update Status UI -->
     <string name="onboarding_in_progress">进行中</string>
-    <string name="onboarding_dismiss">驳回</string>
+    <string name="onboarding_dismiss">放弃</string>
     <string name="onboarding_retry">重试</string>
     <!-- Onboarding: Notifications Step -->
     <string name="onboarding_notifications_title">播放通知</string>
@@ -618,14 +618,14 @@
     <string name="onboarding_gestures_title">触摸手势</string>
     <string name="onboarding_gestures_desc">通过直观的滑动和点击手势更快地浏览您的音乐库。自定义迷你播放器和完整播放器屏幕的手势。</string>
     <string name="onboarding_gestures_miniplayer">迷你播放器</string>
-    <string name="onboarding_gestures_player">完整玩家</string>
+    <string name="onboarding_gestures_player">完整播放器</string>
     <string name="onboarding_gesture_swipe">迷你播放器滑动</string>
     <string name="onboarding_gesture_swipe_desc">左右滑动迷你播放器可跳过曲目</string>
     <string name="onboarding_gesture_dismiss">滑动关闭</string>
     <string name="onboarding_gesture_dismiss_desc">向下滑动完整播放器可返回迷你播放器</string>
     <string name="onboarding_gesture_tracks">滑动查找曲目</string>
     <string name="onboarding_gesture_tracks_desc">在插图上滑动可跳至下一首/上一首歌曲</string>
-    <string name="onboarding_gesture_doubletap">双击图稿</string>
+    <string name="onboarding_gesture_doubletap">双击封面</string>
     <string name="onboarding_gesture_doubletap_desc">双击专辑封面即可点赞当前歌曲</string>
     <string name="onboarding_gestures_tips_title">手势提示</string>
     <string name="onboarding_gesture_tip_1">滑动手势可双向使用</string>
@@ -672,12 +672,12 @@
     <string name="onboarding_stats_info_title">它是如何运作的</string>
     <string name="onboarding_stats_info_desc">统计数据是根据您的播放历史记录在您的设备上本地计算的。没有数据发送到外部服务器。随时从主屏幕或设置访问详细统计数据。</string>
     <!-- MiniPlayer Swipe Hints -->
-    <string name="miniplayer_swipe_up_hint">↑ 完整玩家</string>
-    <string name="miniplayer_swipe_down_hint">↓ 驳回</string>
+    <string name="miniplayer_swipe_up_hint">↑ 完整播放器</string>
+    <string name="miniplayer_swipe_down_hint">↓ 关闭</string>
     <string name="miniplayer_swipe_left_hint">下一页 →</string>
     <string name="miniplayer_swipe_right_hint">← 上一页</string>
     <string name="miniplayer_no_song">没有播放歌曲</string>
-    <string name="badge_live">直播</string>
+    <string name="badge_live">LIVE</string>
     <!-- Festive Greetings -->
     <string name="festive_greeting_christmas">🎄 圣诞快乐！ 🎅</string>
     <string name="festive_greeting_new_year">🎆新年快乐！ 🎉</string>
@@ -703,7 +703,7 @@
     <string name="cache_max_size_desc">设置缓存数据的最大大小</string>
     <string name="cache_about">关于缓存</string>
     <string name="cache_size_limit">缓存大小限制</string>
-    <string name="cache_auto_trim">90% 自动修剪</string>
+    <string name="cache_auto_trim">达到 90% 时自动清理</string>
     <string name="cache_auto_trim_desc">当使用量达到限制的90%时自动修剪缓存</string>
     <!-- Lyrics -->
     <string name="lyrics_source_priority">歌词来源优先</string>
@@ -711,18 +711,18 @@
     <string name="lyrics_embedded_note">嵌入的歌词是从音频文件中的 ID3v2 USLT 标签中提取的。为了获得最佳效果，请使用正确标记的 MP3/FLAC 文件。</string>
     <string name="lyrics_show_translation">显示翻译</string>
     <string name="lyrics_show_translation_desc">显示可用的翻译歌词</string>
-    <string name="lyrics_show_romanization">显示罗马化</string>
-    <string name="lyrics_show_romanization_desc">显示罗马化歌词（如果可用）</string>
-    <string name="settings_keep_screen_on_lyrics">保持屏幕唤醒</string>
+    <string name="lyrics_show_romanization">显示拉丁转写</string>
+    <string name="lyrics_show_romanization_desc">显示拉丁转写歌词（如果可用）</string>
+    <string name="settings_keep_screen_on_lyrics">保持屏幕常亮</string>
     <string name="settings_keep_screen_on_lyrics_desc">阻止屏幕在歌词可见时关闭</string>
-    <string name="settings_show_lyrics_background_artwork">展示背景艺术</string>
+    <string name="settings_show_lyrics_background_artwork">背景显示封面</string>
     <string name="settings_show_lyrics_background_artwork_desc">在全屏歌词后面显示模糊的专辑封面</string>
     <!-- Theme Customization -->
-    <string name="theme_good_to_know">很高兴知道</string>
-    <string name="theme_tip_album_art">专辑艺术颜色动态适应您的音乐</string>
-    <string name="theme_tip_material_you">Material 您使用系统壁纸颜色 (Android 12+)</string>
+    <string name="theme_good_to_know">小知识</string>
+    <string name="theme_tip_album_art">专辑艺术颜色动态根据您的音乐而定</string>
+    <string name="theme_tip_material_you">Material You 使用系统壁纸颜色 (Android 12+)</string>
     <string name="theme_tip_custom_fonts">导入自定义字体以个性化排版</string>
-    <string name="theme_color_source">颜色源</string>
+    <string name="theme_color_source">颜色来源</string>
     <string name="theme_color_source_desc">选择颜色的提取方式</string>
     <string name="theme_font_source">字体来源</string>
     <string name="theme_font_source_desc">选择从何处加载字体</string>
@@ -753,12 +753,12 @@
     <string name="licenses_apache">开源许可证</string>
     <string name="licenses_attribution">此应用程序根据 GPL-3.0 获得许可。库根据 Apache 2.0 或兼容许可证获得许可</string>
     <!-- Components: Player Chip Order -->
-    <string name="player_chip_order_title">玩家筹码顺序</string>
-    <string name="player_chip_order_desc">自定义玩家筹码</string>
-    <string name="player_chip_order_saved">保存玩家筹码顺序和可见性</string>
+    <string name="player_chip_order_title">播放器组件顺序</string>
+    <string name="player_chip_order_desc">自定义播放器组件</string>
+    <string name="player_chip_order_saved">播放器组件顺序 / 可见性已保存</string>
     <!-- Components: Library Tab Order -->
     <string name="library_tab_order_title">库选项卡顺序</string>
-    <string name="library_tab_order_desc">重新排序和切换可见性</string>
+    <string name="library_tab_order_desc">重新排序 &amp; 切换组件可见性</string>
     <!-- Components: Playback Bottom Sheet -->
     <string name="playback_lyrics_priority_desc">配置歌词的来源、行为、布局、大小和样式</string>
     <string name="playback_settings">播放设置</string>
@@ -794,9 +794,9 @@
     <string name="backup_local_storage_placeholder">为了保护隐私，备份本地存储在您的设备上</string>
     <string name="library_reorder_tabs">重新排序选项卡以定制您的图书馆体验</string>
     <string name="external_services_desc">控制哪些外部 API 服务处于活动状态以增强您的音乐体验。打开/关闭服务以管理数据使用和功能。</string>
-    <string name="lyrics_source_priority_title">歌词来源优先</string>
+    <string name="lyrics_source_priority_title">歌词优先来源</string>
     <string name="playlist_action_title">播放列表点击操作</string>
-    <string name="playlist_action_desc">播放列表点击的默认行为</string>
+    <string name="playlist_action_desc">点击播放列表的默认行为</string>
     <string name="playlist_action_load_title">加载整个播放列表</string>
     <string name="playlist_action_load_desc">加载播放列表并从选定的曲目开始</string>
     <string name="playlist_action_single_title">只播放这首歌</string>
@@ -811,14 +811,14 @@
     <string name="now_playing">正在播放</string>
     <string name="install_update_now">立即安装更新</string>
     <string name="audio_settings">音频设置</string>
-    <string name="active_device">有源器件</string>
-    <string name="browse_library">浏览图书馆</string>
+    <string name="active_device">已启用设备</string>
+    <string name="browse_library">浏览音乐库</string>
     <string name="add_more_songs">添加更多歌曲</string>
     <string name="edit_metadata">编辑曲目</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">应用程序更新已在设置中禁用</string>
     <string name="updates_auto_disabled">自动更新检查已禁用。您仍然可以手动检查。</string>
-    <string name="updates_up_to_date_message">你是最新的！</string>
+    <string name="updates_up_to_date_message">你的版本已是最新！</string>
     <string name="updates_check_frequency">Rhythm 应多久检查一次更新？</string>
     <string name="updates_experimental_coming">未来的更新中即将推出更多实验性功能</string>
     <string name="settings_interval_every_48_hours">每 48 小时一次</string>
@@ -853,7 +853,7 @@
     <string name="bass_boost_desc">增强低频音频</string>
     <string name="virtualizer">空间音频</string>
     <string name="virtualizer_desc">拓宽立体声声场</string>
-    <string name="strength">实力</string>
+    <string name="strength">强度</string>
     <string name="open_equalizer_settings">打开均衡器设置</string>
     <string name="system_equalizer">系统均衡器</string>
     <string name="no_equalizer">未找到系统均衡器</string>
@@ -883,7 +883,7 @@
     <string name="import_playlist">导入播放列表</string>
     <string name="select_playlist_file">选择要导入的播放列表文件：</string>
     <string name="supported_formats">支持的格式：</string>
-    <string name="may_take_moments">这可能需要一些时间......</string>
+    <string name="may_take_moments">这可能需要一小会……</string>
     <!-- Canvas Video Player -->
     
     <!-- Beta Program -->
@@ -941,8 +941,8 @@
     <string name="settings_cache_management_desc">图片、歌词</string>
     <string name="settings_backup_restore_title">备份与恢复</string>
     <string name="settings_backup_restore_desc">导出、导入</string>
-    <string name="settings_api_management">集成</string>
-    <string name="settings_api_management_desc">API，乱写乱画</string>
+    <string name="settings_api_management">集成工具</string>
+    <string name="settings_api_management_desc">API、小工具</string>
     <string name="settings_section_updates_info">更新与信息</string>
     <string name="settings_updates_title">更新</string>
     <string name="settings_updates_desc">应用程序更新</string>
@@ -967,7 +967,7 @@
     <string name="metadata_album">专辑</string>
     <string name="metadata_genre">类型</string>
     <string name="metadata_year">年份</string>
-    <string name="metadata_track">轨道</string>
+    <string name="metadata_track">音轨</string>
     <string name="metadata_saving">保存...</string>
     <!-- Updates Actions -->
     <string name="updates_check_now_action">立即查看</string>
@@ -978,10 +978,10 @@
     <string name="updates_source_desc">选择用于 OTA 更新的版本系列 Rhythm。</string>
     <string name="updates_source_installed">匹配安装版本</string>
     <string name="updates_source_installed_label">已安装版本</string>
-    <string name="updates_source_github_label">GitHub 构建</string>
-    <string name="updates_source_fdroid_label">F-Droid 构建</string>
-    <string name="updates_source_github_desc">始终下载 GitHub 发布资产。</string>
-    <string name="updates_source_fdroid_desc">始终下载 F-Droid 发行资产。</string>
+    <string name="updates_source_github_label">GitHub 构建版本</string>
+    <string name="updates_source_fdroid_label">F-Droid 构建版本</string>
+    <string name="updates_source_github_desc">始终下载 GitHub 版本的文件。</string>
+    <string name="updates_source_fdroid_desc">始终下载 F-Droid 版本的文件。</string>
     <string name="updates_check_interval_title">更新检查间隔</string>
     <!-- Cache Actions -->
     
@@ -1007,7 +1007,7 @@
     <string name="cd_open_playlist">打开播放列表</string>
     <string name="cd_play_artist">播放%1$s</string>
     <string name="cd_storage">存储</string>
-    <string name="cd_pinned">固定</string>
+    <string name="cd_pinned">置顶</string>
     <string name="cd_folder">文件夹</string>
     <string name="cd_open_folder">打开文件夹</string>
     <string name="cd_folder_options">文件夹选项</string>
@@ -1016,12 +1016,12 @@
     <string name="cd_create_playlist">创建播放列表</string>
     <string name="cd_current_location">当前位置</string>
     <string name="cd_song_info">歌曲信息</string>
-    <string name="cd_no_song_playing">没有播放歌曲</string>
-    <string name="cd_show_actions">显示动作</string>
+    <string name="cd_no_song_playing">未在播放歌曲</string>
+    <string name="cd_show_actions">显示操作</string>
     <string name="cd_toggle_favorite">切换收藏夹</string>
     <string name="cd_show_album">展示专辑</string>
-    <string name="cd_show_artist">表演艺术家</string>
-    <string name="cd_reorder_chips">重新订购芯片</string>
+    <string name="cd_show_artist">显示艺术家</string>
+    <string name="cd_reorder_chips">重新排列小组件</string>
     <string name="cd_search">搜索</string>
     <string name="cd_view_all">查看全部</string>
     <string name="cd_rhythm_splash">Rhythm</string>
@@ -1047,8 +1047,8 @@
     <string name="bottomsheet_save">保存</string>
     <string name="bottomsheet_cancel">取消</string>
     <!-- Bottom Sheet: Lyrics Editor -->
-    <string name="bottomsheet_lyrics_earlier">早些时候</string>
-    <string name="bottomsheet_lyrics_later">后来</string>
+    <string name="bottomsheet_lyrics_earlier">前一句</string>
+    <string name="bottomsheet_lyrics_later">后一句</string>
     <string name="bottomsheet_lyrics_load">加载歌词</string>
     <string name="bottomsheet_lyrics_save">保存歌词</string>
     <string name="bottomsheet_lyrics_embed">嵌入文件</string>
@@ -1077,7 +1077,7 @@
     <string name="bottomsheet_home_section_order">主页部分订单</string>
     <string name="bottomsheet_reorder_toggle_visibility">重新排序和切换可见性</string>
     <!-- Bottom Sheet: Cast -->
-    <string name="bottomsheet_active_device">活跃</string>
+    <string name="bottomsheet_active_device">活跃设备</string>
     <!-- Bottom Sheet: Backup/Restore -->
     
     <!-- Bottom Sheet: Cache Management -->
@@ -1094,7 +1094,7 @@
     <string name="bottomsheet_title">标题</string>
     <string name="bottomsheet_genre">类型</string>
     <string name="bottomsheet_year">年</string>
-    <string name="bottomsheet_track">轨道</string>
+    <string name="bottomsheet_track">音轨</string>
     <string name="bottomsheet_irreversible">不可逆转的变化</string>
     <string name="bottomsheet_proceed">继续</string>
     <!-- Bottom Sheet: Player Chip Order -->
@@ -1138,8 +1138,8 @@
     <string name="ui_clear_all">全部清除</string>
     <!-- Settings Screen - Complete -->
     <string name="settings_home_customization">主页</string>
-    <string name="settings_home_customization_desc">快速行动，最近的音乐</string>
-    <string name="settings_player_customization">玩家</string>
+    <string name="settings_home_customization_desc">快速操作，最近的音乐</string>
+    <string name="settings_player_customization">播放器</string>
     <string name="settings_player_customization_desc">跳过按钮、进度条</string>
     <string name="settings_miniplayer_customization">迷你播放器</string>
     <string name="settings_miniplayer_customization_desc">背景、控件</string>
@@ -1147,12 +1147,12 @@
     <string name="settings_album_bottom_sheet_gradient_blur_desc">控制专辑页背后的渐变和模糊</string>
     <string name="settings_gestures">手势</string>
     <string name="settings_gestures_desc">滑动跳转</string>
-    <string name="settings_ignore_mediastore_covers">显示歌曲艺术而不是专辑艺术</string>
-    <string name="settings_ignore_mediastore_covers_desc">更喜欢每个音频文件中的嵌入式艺术作品（以前称为“忽略 MediaStore 封面”）</string>
-    <string name="settings_lossless_artwork">无损艺术作品</string>
-    <string name="settings_lossless_artwork_desc">显示无压缩的全分辨率嵌入歌曲艺术作品</string>
-    <string name="settings_song_artwork_restart_required">艺术作品模式改变。重新启动应用程序以清除缓存并使用更新的图稿源运行完整的媒体重新扫描。</string>
-    <string name="settings_artwork_cache_size">艺术品缓存大小</string>
+    <string name="settings_ignore_mediastore_covers">显示歌曲封面而不是专辑封面</string>
+    <string name="settings_ignore_mediastore_covers_desc">优先选择每个音频文件中的嵌入式封面（以前称为“忽略 MediaStore 封面”）</string>
+    <string name="settings_lossless_artwork">无损封面</string>
+    <string name="settings_lossless_artwork_desc">显示无压缩的全分辨率嵌入歌曲的封面</string>
+    <string name="settings_song_artwork_restart_required">封面模式改变。重新启动应用程序以清除缓存并使用更新的图稿源运行完整的媒体重新扫描。</string>
+    <string name="settings_artwork_cache_size">封面缓存大小</string>
     <string name="settings_artist_parsing">艺术家</string>
     <string name="settings_artist_parsing_desc">分隔符，显示</string>
     <string name="settings_rhythm_stats">Rhythm 统计</string>
@@ -1161,7 +1161,7 @@
     <string name="settings_rhythm_guard_list_desc">由 Rhythm 统计数据提供支持的听力健康护栏</string>
     <string name="settings_rhythm_guard_mode_title">保护模式</string>
     <string name="settings_rhythm_guard_mode_desc">选择 Rhythm Guard 如何管理听力健康状况</string>
-    <string name="settings_rhythm_guard_mode_auto">汽车</string>
+    <string name="settings_rhythm_guard_mode_auto">自动</string>
     <string name="settings_rhythm_guard_mode_manual">手册</string>
     <string name="settings_rhythm_guard_age_label">年龄概况：%1$d</string>
     <string name="settings_rhythm_guard_age_desc">建议安全音量高达 %1$d%%，每天约 %2$d 分钟。</string>
@@ -1169,11 +1169,11 @@
     <string name="settings_rhythm_guard_auto_policy_band">年龄%1$d-%2$d</string>
     <string name="settings_rhythm_guard_auto_policy_value">%1$d%% / %2$d 分钟</string>
     <string name="settings_rhythm_guard_snapshot_volume_title">体积压力</string>
-    <string name="settings_rhythm_guard_snapshot_exposure_title">总曝光</string>
+    <string name="settings_rhythm_guard_snapshot_exposure_title">总暴露量</string>
     <string name="settings_rhythm_guard_manual_controls_title">手动护栏</string>
     <string name="settings_rhythm_guard_manual_warning_toggle">显示安全警告</string>
     <string name="settings_rhythm_guard_manual_warning_toggle_desc">当实时音量或手动切换可能存在风险时发出警告</string>
-    <string name="settings_rhythm_guard_manual_threshold_title">高容量警告阈值：%1$d%%</string>
+    <string name="settings_rhythm_guard_manual_threshold_title">高音量警告阈值：%1$d%%</string>
     <string name="settings_rhythm_guard_manual_threshold_desc">设置 Rhythm Guard 应在何时发出潜在有害音量警告。</string>
     <string name="settings_rhythm_guard_device_controls_title">输出控制</string>
     <string name="settings_rhythm_guard_device_controls_speaker_limit_title">对手机扬声器应用音量限制</string>
@@ -1186,7 +1186,7 @@
     <string name="settings_rhythm_guard_break_resume_default_title">默认休息恢复：%1$s</string>
     <string name="settings_rhythm_guard_warning_title">聆听安全警告</string>
     <string name="settings_rhythm_guard_warning_high_volume">当前音量高于警告阈值 (%1$d%%)。考虑减少音量。</string>
-    <string name="settings_rhythm_guard_warning_daily_exposure">您今天到达了 %1$s，高于建议的 %2$s。考虑休息一下聆听。</string>
+    <string name="settings_rhythm_guard_warning_daily_exposure">您今天到达了 %1$s，高于建议的 %2$s。考虑休息一下再聆听。</string>
     <string name="settings_rhythm_guard_warning_dialog_title">Rhythm 警卫保护警报</string>
     <string name="settings_rhythm_guard_warning_dialog_volume_message">系统媒体音量实时为 %1$d%%，高于您当前的保护限制 %2$d%%。降低音量以降低听力风险。</string>
     <string name="settings_rhythm_guard_risk_level_label">风险严重程度：%1$s</string>
@@ -1196,8 +1196,8 @@
     <string name="settings_rhythm_guard_risk_level_high">高</string>
     <string name="settings_rhythm_guard_risk_level_severe">严重</string>
     <string name="settings_rhythm_guard_risk_action_low">继续在你的阈值或低于阈值的范围内聆听。</string>
-    <string name="settings_rhythm_guard_risk_action_moderate">尽快降低交易量并避免长时间交易。</string>
-    <string name="settings_rhythm_guard_risk_action_high">现在减少音量并短暂休息。</string>
+    <string name="settings_rhythm_guard_risk_action_moderate">尽快降低音量并避免长时间听。</string>
+    <string name="settings_rhythm_guard_risk_action_high">现在减小音量并短暂休息。</string>
     <string name="settings_rhythm_guard_risk_action_severe">立即暂停播放并以更安全的级别恢复。</string>
     <string name="settings_rhythm_guard_warning_dialog_apply">降低至安全水平</string>
     <string name="settings_rhythm_guard_warning_dialog_dismiss">暂时忽略</string>
@@ -1205,23 +1205,23 @@
     <string name="settings_rhythm_guard_break_dialog_message">您今天收听了%1$s（推荐%2$s）。短暂休息以保护您的听力。</string>
     <string name="settings_rhythm_guard_break_dialog_pause_only">休息一下</string>
     <string name="settings_rhythm_guard_break_dialog_pause_close">延迟中断</string>
-    <string name="settings_rhythm_guard_break_dialog_schedule_title">断裂长度</string>
+    <string name="settings_rhythm_guard_break_dialog_schedule_title">中断长度</string>
     <string name="settings_rhythm_guard_break_dialog_pick_time">挑选时间</string>
-    <string name="settings_rhythm_guard_break_dialog_picker_extend_title">选择断裂长度</string>
+    <string name="settings_rhythm_guard_break_dialog_picker_extend_title">选择中断长度</string>
     <string name="settings_rhythm_guard_break_dialog_picker_delay_title">选择延迟长度</string>
-    <string name="settings_rhythm_guard_timeout_reason_auto">听力中断已触发：今天%1$s超过建议的%2$s。</string>
-    <string name="settings_rhythm_guard_timeout_reason_manual">听力休息开始</string>
-    <string name="settings_rhythm_guard_resume_countdown_label">监听超时</string>
+    <string name="settings_rhythm_guard_timeout_reason_auto">听歌中断已触发：今天%1$s超过建议的%2$s。</string>
+    <string name="settings_rhythm_guard_timeout_reason_manual">听歌休息开始</string>
+    <string name="settings_rhythm_guard_resume_countdown_label">听歌超时</string>
     <string name="settings_rhythm_guard_resume_countdown_value">在%1$s继续</string>
     <string name="settings_rhythm_guard_delay_break_countdown_label">休息即将开始</string>
     <string name="settings_rhythm_guard_start_countdown_value">从 %1$s 开始</string>
     <string name="settings_rhythm_guard_snapshot_widget_above_limit">超出建议限制</string>
     <string name="settings_rhythm_guard_snapshot_widget_within_limit">在建议限度内</string>
-    <string name="settings_rhythm_guard_snapshot_widget_load_label">电流负载指示器</string>
+    <string name="settings_rhythm_guard_snapshot_widget_load_label">当前负荷指示器</string>
     <string name="settings_rhythm_guard_state_active">Rhythm 防护已激活</string>
     <string name="settings_rhythm_guard_state_inactive">Rhythm 防护未激活</string>
     <string name="settings_rhythm_guard_state_timeout_active">监听超时正在进行中</string>
-    <string name="settings_rhythm_guard_state_cooldown_active">宽限期有效</string>
+    <string name="settings_rhythm_guard_state_cooldown_active">宽限期已激活</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">中断以 %1$s 结束</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">宽限期于 %1$s 结束</string>
     <string name="settings_rhythm_guard_state_safety_score">安全评分：%1$d%%</string>
@@ -1240,7 +1240,7 @@
     <string name="settings_rhythm_guard_age_search_title">年龄概况</string>
     <string name="settings_rhythm_guard_age_search_desc">设置基于年龄的听力安全档案</string>
     <string name="settings_rhythm_guard_manual_threshold_search_title">手动警告阈值</string>
-    <string name="settings_rhythm_guard_manual_threshold_search_desc">选择大容量警告限制</string>
+    <string name="settings_rhythm_guard_manual_threshold_search_desc">选择大音量警告限度</string>
     <string name="settings_rhythm_guard_alert_threshold_search_title">暴露警报阈值</string>
     <string name="settings_rhythm_guard_alert_threshold_search_desc">设置每天收听多少次会触发安全警报</string>
     <string name="settings_rhythm_guard_warning_timeout_search_title">警报冷却时间</string>
@@ -1256,7 +1256,7 @@
     <string name="settings_rhythm_guard_notification_alert_title">Rhythm警卫安全警报</string>
     <string name="settings_rhythm_guard_notification_timer_active_title">Rhythm 防护超时激活</string>
     <string name="settings_rhythm_guard_notification_timer_active_text">在 %1$s 处继续播放。</string>
-    <string name="settings_rhythm_guard_notification_timer_scheduled_title">Rhythm 已安排守卫突破</string>
+    <string name="settings_rhythm_guard_notification_timer_scheduled_title">Rhythm Guard 已安排休息时间</string>
     <string name="settings_rhythm_guard_notification_timer_scheduled_text">聆听中断从 %1$s 开始。</string>
     <string name="settings_rhythm_guard_notification_tap_open">点击可查看超时详细信息。</string>
     <!-- Rhythm Stats Screen -->
@@ -1299,7 +1299,7 @@
     <string name="artist_enable_separation_desc">拆分多艺术家标签（例如“Artist1/Artist2”）</string>
     <string name="artist_configure_delimiters">配置分隔符</string>
     <string name="artist_current_delimiters">当前：%1$s</string>
-    <string name="artist_library_organization">图书馆组织</string>
+    <string name="artist_library_organization">库组织</string>
     <string name="artist_group_by_album_artist">按专辑艺术家分组</string>
     <string name="artist_group_by_album_artist_desc">显示主要艺术家的合作专辑</string>
     <!-- About Screen -->
@@ -1327,8 +1327,8 @@
     <!-- Additional UI strings -->
     
     <!-- Sort Orders -->
-    <string name="sort_duration_short_first">持续时间（先短）</string>
-    <string name="sort_duration_long_first">持续时间（长优先）</string>
+    <string name="sort_duration_short_first">时长（短者优先）</string>
+    <string name="sort_duration_long_first">时长（长者优先）</string>
     <!-- Context Menu Actions -->
     <string name="action_play_next">播放下一个</string>
     <string name="action_add_to_queue">添加到队列</string>
@@ -1353,7 +1353,7 @@
     <!-- Sleep Timer -->
     <string name="sleep_timer_set_control">设置自动播放控制</string>
     <!-- Home Sections -->
-    <string name="home_section_recently_played">最近玩过</string>
+    <string name="home_section_recently_played">最近播放</string>
     <string name="home_section_discover">探索轮播</string>
     <string name="home_section_new_releases">新发布</string>
     <string name="home_section_one_visible">至少有一个部分必须可见</string>
@@ -1363,7 +1363,7 @@
     <string name="library_tab_albums">专辑</string>
     <string name="library_tab_artists">艺术家</string>
     <string name="library_tab_one_visible">至少有一个选项卡必须可见</string>
-    <string name="library_tab_order_reset">Tab 键顺序和可见性重置为默认值</string>
+    <string name="library_tab_order_reset">选项卡顺序和可见性重置为默认值</string>
     <string name="library_tab_order_saved">已保存选项卡顺序和可见性</string>
     <!-- Player Chips -->
     <string name="player_chip_favorite">最喜欢的</string>
@@ -1372,7 +1372,7 @@
     <string name="player_chip_lyrics">歌词</string>
     <string name="player_chip_album">专辑</string>
     <string name="player_chip_artist">艺术家</string>
-    <string name="player_chip_one_visible">至少有一个芯片必须可见</string>
+    <string name="player_chip_one_visible">至少有一个组件必须可见</string>
     <string name="player_chip_order_reset">重置为默认顺序和可见性</string>
     <!-- AutoEQ & Device Configuration -->
     <string name="autoeq_manage">管理 AutoEQ</string>
@@ -1400,7 +1400,7 @@
     <string name="button_add">添加</string>
     <string name="button_delete">删除</string>
     <string name="button_import">导入</string>
-    <string name="button_export">出口</string>
+    <string name="button_export">导出</string>
     <string name="text_file">文件</string>
     <string name="text_paste">粘贴</string>
     <!-- PlaceholderScreens - Settings Labels -->
@@ -1416,31 +1416,31 @@
     <!-- Counts & Numbers -->
     
     <!-- More PlaceholderScreens Strings -->
-    <string name="settings_double_tap_artwork_tip">双击图稿可快速播放/暂停</string>
-    <string name="settings_full_player">完整玩家</string>
+    <string name="settings_double_tap_artwork_tip">双击封面可快速播放/暂停</string>
+    <string name="settings_full_player">完整玩播放器</string>
     <string name="settings_header_customization">标题定制</string>
     <string name="settings_header_display">标题显示</string>
     <string name="settings_hue">色调</string>
     <string name="settings_layout_options">布局选项</string>
-    <string name="settings_lightness">轻盈</string>
+    <string name="settings_lightness">亮度</string>
     <string name="settings_miniplayer">迷你播放器</string>
-    <string name="settings_no_crash_logs">未找到崩溃日志。好工作！</string>
+    <string name="settings_no_crash_logs">未找到崩溃日志，干的漂亮！</string>
     <string name="settings_player_controls">播放器控制</string>
-    <string name="settings_player_screen">玩家画面</string>
+    <string name="settings_player_screen">播放器画面</string>
     <string name="settings_presets">预设</string>
     <string name="settings_progress_display">进度显示</string>
     <string name="settings_progress_hidden">进度隐藏</string>
     <string name="settings_reorder_toggle_sections">重新排序和切换部分</string>
     <string name="settings_saturation">饱和度</string>
     <string name="settings_section_order_visibility">部分顺序和可见性</string>
-    <string name="settings_start_collapsed">启动所有带有折叠标题的屏幕</string>
+    <string name="settings_start_collapsed">启动所有屏幕时折叠标题</string>
     <string name="settings_statistics_update">根据收听习惯进行统计更新</string>
     <string name="settings_swipe_down_dismiss_tip">向下滑动迷你播放器或完整播放器即可关闭</string>
     <string name="settings_swipe_up_open">向上滑动迷你播放器可打开完整播放器</string>
     <string name="settings_text_alignment">文本对齐</string>
     <string name="settings_quick_brown_fox">敏捷的棕色狐狸跳过了懒狗</string>
     <string name="settings_toggle_widgets">切换小部件以自定义您的主屏幕</string>
-    <string name="settings_visibility">能见度</string>
+    <string name="settings_visibility">能见性</string>
     <string name="settings_widget_item_counts">小工具项目计数</string>
     <!-- Playlist Management -->
     
@@ -1454,8 +1454,8 @@
     <string name="settings_adjust_snowflake_size">调整雪花大小（较小的尺寸=更多的雪花）</string>
     <string name="settings_adjust_festive_decorations">调整节日装饰品的显示数量</string>
     <string name="settings_adjust_artwork_corners">调整专辑封面角的圆度</string>
-    <string name="settings_always_start_collapsed">总是开始折叠</string>
-    <string name="settings_artwork">艺术品</string>
+    <string name="settings_always_start_collapsed">开始时总是折叠</string>
+    <string name="settings_artwork">封面</string>
     <string name="settings_bass_boost">低音增强</string>
     <string name="settings_carousel_style">轮播风格</string>
     <string name="settings_choose_festive_theme">选择节日主题</string>
@@ -1464,7 +1464,7 @@
     <string name="settings_customize_home_layout">自定义主屏幕布局</string>
     <string name="settings_customize_miniplayer">自定义出现在屏幕底部的紧凑型播放器。</string>
     <string name="settings_decoration_elements">装饰元素</string>
-    <string name="settings_decoration_intensity">装修强度</string>
+    <string name="settings_decoration_intensity">装饰强度</string>
     <string name="settings_disable_unused_gestures">禁用未使用的手势以获得更快的响应</string>
     <string name="settings_disable_unused_sections">禁用未使用的部分以加快加载速度</string>
     <string name="settings_discover_carousel">探索轮播</string>
@@ -1588,7 +1588,7 @@
     <string name="streaming_integration_services_empty">尚未连接服务</string>
     <string name="streaming_settings_title">设置</string>
     <string name="streaming_settings_group_services">服务</string>
-    <string name="streaming_settings_group_actions">行动</string>
+    <string name="streaming_settings_group_actions">操作</string>
     <string name="streaming_settings_preferred_service">首选服务</string>
     <string name="streaming_settings_quality">流媒体质量</string>
     <string name="streaming_settings_service_sheet_desc">选择默认情况下应优先考虑的连接服务 Rhythm Go。</string>
@@ -1601,7 +1601,7 @@
     <string name="streaming_quality_normal_desc">平衡的质量和数据使用（~160 kbps）。</string>
     <string name="streaming_quality_high_desc">高品质音频（~320 kbps）。</string>
     <string name="streaming_quality_lossless_desc">支持的最佳质量 (FLAC/ALAC)。</string>
-    <string name="streaming_settings_group_wellbeing">Rhythm 见解</string>
+    <string name="streaming_settings_group_wellbeing">Rhythm Insights</string>
     <string name="streaming_open_full_settings">打开完整设置</string>
     <string name="streaming_open_full_settings_desc">打开跨模式共享的应用程序范围设置</string>
     <string name="streaming_switch_to_local_mode">切换到本地模式</string>
@@ -1613,13 +1613,13 @@
     <string name="streaming_status_loading">刷新流媒体源……</string>
     <string name="streaming_status_badge_connected">已连接</string>
     <string name="streaming_status_badge_pending">待定</string>
-    <string name="streaming_status_badge_refreshing">清爽</string>
+    <string name="streaming_status_badge_refreshing">刷新中</string>
     <string name="streaming_status_connect_hint">管理下面选定的服务以连接您的帐户。</string>
     <string name="streaming_selected">已选</string>
     <string name="streaming_connect">连接</string>
     <string name="streaming_manage">管理</string>
     <string name="streaming_manage_service">管理选定的服务</string>
-    <string name="streaming_service_setup_server_url">服务器地址</string>
+    <string name="streaming_service_setup_server_url">服务器地址（URL）</string>
     <string name="streaming_service_setup_server_url_hint">https://your-server.example.com</string>
     <string name="streaming_service_setup_server_url_supporting">对于需要服务器地址的提供商来说是必需的。</string>
     <string name="streaming_service_setup_username">用户名或电子邮件</string>
@@ -1646,7 +1646,7 @@
     <string name="streaming_home_no_content_title">还没有主页内容</string>
     <string name="streaming_home_no_content_hint">服务完成同步后尝试刷新。</string>
     <string name="streaming_home_widget_playlist_track_count">%1$d 首曲目</string>
-    <string name="streaming_home_guard_break_active">中断活动：左 %1$s</string>
+    <string name="streaming_home_guard_break_active">中断已激活：还剩 %1$s</string>
     <string name="streaming_home_guard_exposure">今天：%1$d / %2$d 分钟</string>
     <string name="streaming_not_selected">未选择</string>
     <string name="streaming_service_subsonic">Subsonic</string>
@@ -1668,9 +1668,9 @@
     <string name="settings_tab_albums">专辑</string>
     <string name="settings_tab_artists">艺术家</string>
     <string name="settings_tab_dates">日期</string>
-    <string name="settings_tab_explorer">探索者</string>
-    <string name="settings_tab_order_reset">Tab 键顺序重置为默认值</string>
-    <string name="settings_tab_order_saved">Tab 键顺序已保存</string>
+    <string name="settings_tab_explorer">浏览</string>
+    <string name="settings_tab_order_reset">选项卡顺序重置为默认值</string>
+    <string name="settings_tab_order_saved">选项卡顺序已保存</string>
     <string name="settings_move_up">向上移动</string>
     <string name="settings_move_down">下移</string>
     <!-- Gestures Settings -->
@@ -1680,25 +1680,25 @@
     <string name="settings_swipe_down_dismiss_desc">向下滑动屏幕关闭播放器</string>
     <string name="settings_swipe_artwork_tracks">滑动艺术作品查看曲目</string>
     <string name="settings_swipe_artwork_tracks_desc">在专辑封面上向左/向右滑动可跳过曲目</string>
-    <string name="settings_double_tap_artwork">双击图稿</string>
+    <string name="settings_double_tap_artwork">双击封面</string>
     <string name="settings_double_tap_artwork_desc">双击专辑封面可播放/暂停</string>
     <!-- MiniPlayer Customization -->
     <string name="settings_miniplayer_header">迷你播放器</string>
     <string name="settings_show_progress">显示进度</string>
     <string name="settings_show_progress_desc">显示进度指示器</string>
     <string name="settings_progress_mode">进度模式</string>
-    <string name="settings_show_artwork">展示艺术品</string>
+    <string name="settings_show_artwork">显示封面</string>
     <string name="settings_show_artwork_desc">显示专辑封面</string>
-    <string name="settings_show_time">演出时间</string>
+    <string name="settings_show_time">显示时间</string>
     <string name="settings_show_time_desc">显示播放时间</string>
     <string name="settings_tablet_layout">手机上的平板电脑布局</string>
     <string name="settings_tablet_layout_desc">在手机上使用平板电脑式迷你播放器</string>
     <!-- Player Customization -->
-    <string name="settings_chip_order">筹码顺序和可见性</string>
+    <string name="settings_chip_order">小组件顺序和可见性</string>
     <string name="settings_chip_order_desc">自定义和重新排序玩家动作筹码</string>
-    <string name="settings_artwork_overlay">艺术作品叠加</string>
-    <string name="settings_artwork_overlay_desc">在专辑插图上显示叠加</string>
-    <string name="settings_song_info_artwork">艺术作品的歌曲信息</string>
+    <string name="settings_artwork_overlay">封面叠加层</string>
+    <string name="settings_artwork_overlay_desc">在专辑插图上显示叠加层</string>
+    <string name="settings_song_info_artwork">封面上的歌曲信息</string>
     <string name="settings_song_info_artwork_desc">在专辑封面上显示标题和艺术家叠加层</string>
     <string name="settings_audio_quality_badges">音频质量徽章</string>
     <string name="settings_audio_quality_badges_desc">显示编解码器和码率信息</string>
@@ -1714,7 +1714,7 @@
     <string name="settings_show_art_below_lyrics_desc">在歌词叠加层下方显示艺术</string>
     <string name="settings_seek_buttons">搜索按钮</string>
     <string name="settings_seek_buttons_desc">显示 10 秒快进/快退按钮</string>
-    <string name="settings_thumb_style">拇指风格</string>
+    <string name="settings_thumb_style">进度条滑块样式</string>
     <!-- Theme Customization -->
     <string name="settings_display_mode">显示模式</string>
     <string name="settings_theme_mode">主题模式</string>
@@ -1723,7 +1723,7 @@
     <string name="settings_amoled_theme_desc">OLED显示屏的纯黑色主题</string>
     <string name="settings_color_customization">颜色定制</string>
     <string name="settings_color_source">颜色源</string>
-    <string name="settings_color_source_album">专辑艺术 - 艺术作品摘录</string>
+    <string name="settings_color_source_album">专辑封面——提取自曲目封面</string>
     <string name="settings_color_source_monet">系统颜色 - Material 你</string>
     <string name="settings_color_source_custom">自定义方案 - %1$s</string>
     <string name="settings_color_schemes">配色方案</string>
@@ -1747,12 +1747,12 @@
     <string name="settings_auto_detect_holidays">自动检测假期</string>
     <string name="settings_auto_detect_holidays_desc">自动显示节日装饰</string>
     <string name="settings_theme_system">系统</string>
-    <string name="settings_theme_light">光</string>
-    <string name="settings_theme_dark">黑暗</string>
+    <string name="settings_theme_light">亮色</string>
+    <string name="settings_theme_dark">暗色</string>
     <string name="settings_festival_christmas">圣诞节</string>
     <string name="settings_festival_new_year">新年</string>
     <string name="settings_area_full">完整</string>
-    <string name="settings_area_sides">双方</string>
+    <string name="settings_area_sides">侧面</string>
     <string name="settings_area_top_third">前⅓</string>
     <string name="settings_snowfall">降雪</string>
     <string name="settings_snowfall_desc">动画飘落的雪花</string>
@@ -1786,7 +1786,7 @@
     <!-- Settings Screen -->
     <string name="settings_shapes">形状</string>
     <string name="settings_shapes_desc">富有表现力的形状</string>
-    <string name="settings_skip_silence">跳过沉默</string>
+    <string name="settings_skip_silence">跳过沉默部分</string>
     <string name="settings_skip_silence_desc">自动跳过曲目中的静音间隔。</string>
     <string name="settings_song_ratings">歌曲评级</string>
     <string name="settings_song_ratings_desc">用星星评价歌曲以改进统计数据和排序</string>
@@ -1795,9 +1795,9 @@
     <string name="settings_gesture_miniplayer_swipe_desc">打开、关闭、跳过滑动</string>
     <string name="settings_gesture_player_dismiss">向下滑动关闭</string>
     <string name="settings_gesture_player_dismiss_desc">向下滑动关闭</string>
-    <string name="settings_gesture_artwork_swipe">滑动艺术作品查看曲目</string>
+    <string name="settings_gesture_artwork_swipe">滑动封面查看曲目</string>
     <string name="settings_gesture_artwork_swipe_desc">滑动图片可跳过</string>
-    <string name="settings_gesture_double_tap">双击图稿</string>
+    <string name="settings_gesture_double_tap">双击封面</string>
     <string name="settings_gesture_double_tap_desc">双击播放/暂停</string>
     <!-- Queue & Playback Search Strings -->
     <string name="settings_queue_auto_add">上下文队列</string>
@@ -1826,37 +1826,37 @@
     <string name="settings_exp_festive_theme_desc">节日装饰品</string>
     <string name="settings_exp_auto_detect_holidays">自动检测假期</string>
     <string name="settings_exp_auto_detect_holidays_desc">自动展示节日主题</string>
-    <string name="settings_exp_ignore_mediastore">显示歌曲艺术而不是专辑艺术</string>
-    <string name="settings_exp_ignore_mediastore_desc">更喜欢每首歌的嵌入式艺术作品</string>
+    <string name="settings_exp_ignore_mediastore">显示歌曲封面替代专辑封面</string>
+    <string name="settings_exp_ignore_mediastore_desc">优先选择每首歌的嵌入式封面</string>
     <string name="settings_exp_codec_monitoring">编解码器监控</string>
     <string name="settings_exp_codec_monitoring_desc">记录音频信息</string>
     <string name="settings_exp_audio_device_logging">音频设备日志记录</string>
     <string name="settings_exp_audio_device_logging_desc">记录设备更改</string>
-    <string name="settings_exp_launch_onboarding">启动Rhythm巡演</string>
-    <string name="settings_exp_launch_onboarding_desc">重新启动Rhythm之旅</string>
+    <string name="settings_exp_launch_onboarding">启动 Rhythm 教程</string>
+    <string name="settings_exp_launch_onboarding_desc">重新启动 Rhythm 之旅</string>
     <string name="settings_exp_test_crash">测试崩溃</string>
     <string name="settings_exp_test_crash_desc">强制应用程序崩溃</string>
     <string name="settings_broadcast_status_enabled">启用状态广播</string>
     <string name="settings_broadcast_status_enabled_desc">广播播放状态</string>
     <string name="settings_bluetooth_lyrics_enabled">蓝牙歌词模式</string>
     <string name="settings_bluetooth_lyrics_enabled_desc">通过蓝牙元数据广播当前歌词行</string>
-    <string name="exp_go_mode">Go Mode</string>
-    <string name="exp_go_mode_desc">切换到Rhythm Go streaming mode</string>
+    <string name="exp_go_mode">Go 模式</string>
+    <string name="exp_go_mode_desc">切换到 Rhythm Go 流媒体播放模式</string>
     <!-- Home Screen Search Strings -->
     <string name="settings_home_section_order">章节顺序</string>
     <string name="settings_home_section_order_desc">重新排序主页部分</string>
-    <string name="settings_home_greeting_search">演出问候</string>
+    <string name="settings_home_greeting_search">显示问候</string>
     <string name="settings_home_greeting_search_desc">显示问候语</string>
-    <string name="settings_home_recently_played">最近玩过</string>
+    <string name="settings_home_recently_played">最近播放</string>
     <string name="settings_home_recently_played_desc">最近播放的节目</string>
     <string name="settings_home_discover_carousel">探索轮播</string>
     <string name="settings_home_discover_carousel_desc">显示发现轮播</string>
     <string name="settings_home_carousel_auto_scroll">轮播自动滚动</string>
     <string name="settings_home_carousel_auto_scroll_desc">自动滚动轮播</string>
     <!-- Notifications Search Strings -->
-    <string name="settings_notifications_rhythm_guard_alerts">Rhythm 警卫安全警报</string>
+    <string name="settings_notifications_rhythm_guard_alerts">Rhythm Guard 安全警报</string>
     <string name="settings_notifications_rhythm_guard_alerts_desc">监听风险预警触发时发出通知</string>
-    <string name="settings_notifications_rhythm_guard_timers">Rhythm 防护中断定时器</string>
+    <string name="settings_notifications_rhythm_guard_timers">Rhythm Guard 中断定时器</string>
     <string name="settings_notifications_rhythm_guard_timers_desc">通知安排的休息时间和超时倒计时</string>
     <string name="settings_notifications_rhythm_pulse">Rhythm 提示</string>
     <string name="settings_notifications_rhythm_pulse_desc">友情提醒和聆听技巧。</string>
@@ -1869,19 +1869,19 @@
     <string name="settings_shape_preset_desc">预定义形状集合</string>
     <string name="settings_shape_album_art">专辑封面形状</string>
     <string name="settings_shape_album_art_desc">专辑封面形状</string>
-    <string name="settings_shape_player_art">玩家作品形状</string>
-    <string name="settings_shape_player_art_desc">球员作品形状</string>
-    <string name="settings_shape_song_art">歌曲艺术造型</string>
+    <string name="settings_shape_player_art">播放器封面形状</string>
+    <string name="settings_shape_player_art_desc">播放器显示封面图片的形状</string>
+    <string name="settings_shape_song_art">歌曲封面形状</string>
     <string name="settings_shape_song_art_desc">宋画造型</string>
-    <string name="settings_shape_playlist_art">播放列表艺术作品形状</string>
+    <string name="settings_shape_playlist_art">播放列表封面形状</string>
     <string name="settings_shape_playlist_art_desc">播放列表封面形状</string>
-    <string name="settings_shape_artist_art">艺术家艺术品形状</string>
-    <string name="settings_shape_artist_art_desc">艺术家形象塑造</string>
-    <string name="settings_shape_player_controls">玩家控制形状</string>
+    <string name="settings_shape_artist_art">艺术家封面形状</string>
+    <string name="settings_shape_artist_art_desc">艺术家图片形状</string>
+    <string name="settings_shape_player_controls">播放器控制键形状</string>
     <string name="settings_shape_player_controls_desc">玩家控制形状</string>
     <string name="settings_shape_mini_player">迷你播放器形状</string>
     <string name="settings_shape_mini_player_desc">迷你播放器造型</string>
-    <string name="settings_library_settings">图书馆经验</string>
+    <string name="settings_library_settings">音乐库经验</string>
     <string name="settings_library_settings_desc">评级、组织和艺术品行为</string>
     <string name="settings_library_group_organization">组织与评级</string>
     <string name="settings_library_combine_discs">组合光盘</string>
@@ -1890,7 +1890,7 @@
     <string name="settings_show_library_bottom_bar_always_desc">保持底栏在所有选项卡下可见，或隐藏它并在顶栏操作中显示关键操作</string>
     <string name="settings_show_keyboard_on_search_open">自动对焦搜索</string>
     <string name="settings_show_keyboard_on_search_open_desc">搜索打开时显示键盘</string>
-    <string name="settings_library_group_artwork">艺术品渲染</string>
+    <string name="settings_library_group_artwork">封面渲染</string>
     <!-- Theme Customization Search Strings -->
     <string name="settings_theme_follow_system">遵循系统主题</string>
     <string name="settings_theme_follow_system_desc">自动亮/暗模式</string>
@@ -1905,8 +1905,8 @@
     <string name="settings_theme_import_font">导入自定义字体</string>
     <string name="settings_theme_import_font_desc">导入自己的字体文件（.ttf、.otf）</string>
     <!-- Player Customization Search Strings -->
-    <string name="settings_player_chip_order">芯片顺序和可见性</string>
-    <string name="settings_player_chip_order_desc">自定义和重新排序玩家动作筹码</string>
+    <string name="settings_player_chip_order">小组件顺序和可见性</string>
+    <string name="settings_player_chip_order_desc">自定义和重新排序播放器小组件</string>
     <string name="settings_lyrics_show_translation">显示翻译</string>
     <string name="settings_lyrics_show_translation_desc">显示可用的翻译歌词</string>
     <string name="settings_lyrics_show_romanization">显示罗马化</string>
@@ -1922,24 +1922,24 @@
     <string name="settings_player_text_alignment_desc">选择文本对齐方式（左、中、右）</string>
     <string name="settings_player_progress_style">进度风格</string>
     <string name="settings_player_progress_style_desc">选择进度条样式</string>
-    <string name="settings_player_artwork_radius">图稿圆角半径</string>
+    <string name="settings_player_artwork_radius">封面圆角半径</string>
     <string name="settings_player_artwork_radius_desc">调整专辑封面角圆度</string>
     <string name="settings_player_quality_badges">音频质量徽章</string>
     <string name="settings_player_quality_badges_desc">显示编解码器和比特率信息</string>
     <!-- MiniPlayer Customization Search Strings -->
-    <string name="settings_miniplayer_show_progress">显示进度</string>
+    <string name="settings_miniplayer_show_progress">显示进度条</string>
     <string name="settings_miniplayer_show_progress_desc">在迷你播放器中显示进度指示器</string>
     <string name="settings_miniplayer_circular_progress">循环进展</string>
     <string name="settings_miniplayer_circular_progress_desc">在播放/暂停按钮上使用循环进度</string>
-    <string name="settings_miniplayer_progress_style">进度风格</string>
+    <string name="settings_miniplayer_progress_style">进度条样式</string>
     <string name="settings_miniplayer_progress_style_desc">选择迷你播放器进度条样式</string>
-    <string name="settings_miniplayer_show_artwork">展示艺术品</string>
+    <string name="settings_miniplayer_show_artwork">显示封面</string>
     <string name="settings_miniplayer_show_artwork_desc">在迷你播放器中显示专辑封面</string>
-    <string name="settings_miniplayer_artwork_size">作品尺寸</string>
+    <string name="settings_miniplayer_artwork_size">封面尺寸</string>
     <string name="settings_miniplayer_artwork_size_desc">调整迷你播放器中专辑封面尺寸</string>
     <string name="settings_miniplayer_corner_radius">圆角半径</string>
     <string name="settings_miniplayer_corner_radius_desc">调整迷你播放器边角圆度</string>
-    <string name="settings_miniplayer_show_time">演出时间</string>
+    <string name="settings_miniplayer_show_time">显示时间</string>
     <string name="settings_miniplayer_show_time_desc">在迷你播放器中显示播放时间</string>
     <string name="settings_miniplayer_tablet_layout">手机上的平板电脑布局</string>
     <string name="settings_miniplayer_tablet_layout_desc">在手机上使用平板电脑风格的迷你播放器</string>
@@ -1957,8 +1957,8 @@
     <string name="exp_codec_monitoring">编解码器监控</string>
     <string name="exp_codec_monitoring_desc">记录音频编解码器和格式信息以进行调试</string>
     <string name="exp_developer_debugging">开发与调试</string>
-    <string name="exp_launch_onboarding">启动Rhythm巡演</string>
-    <string name="exp_launch_onboarding_desc">重置并重新启动Rhythm游览体验</string>
+    <string name="exp_launch_onboarding">启动 Rhythm 教程</string>
+    <string name="exp_launch_onboarding_desc">重置并重新启动 Rhythm 之旅</string>
     <string name="exp_test_crash">测试崩溃</string>
     <string name="exp_test_crash_desc">强制崩溃应用程序以测试崩溃处理和报告</string>
     <string name="exp_force_player_compact_mode">强制播放器紧凑模式</string>
@@ -1972,9 +1972,9 @@
     <string name="settings_create_backup_desc">将完整备份导出到 JSON 文件</string>
     <string name="settings_backup_action_short">备份</string>
     <string name="settings_restore_action_short">恢复</string>
-    <string name="settings_experimental">实验特点</string>
+    <string name="settings_experimental">实验性功能</string>
     <string name="settings_left_aligned">左对齐</string>
-    <string name="settings_player">玩家</string>
+    <string name="settings_player">播放器</string>
     <string name="settings_restore_completed">恢复成功完成</string>
     <string name="settings_right_aligned">右对齐</string>
     <string name="settings_tab_order">库选项卡顺序</string>
@@ -1992,7 +1992,7 @@
     <string name="theme_font_imported">字体导入成功</string>
     <string name="theme_font_invalid">无效的字体文件格式</string>
     <string name="theme_import_font">导入自定义字体</string>
-    <string name="ui_apply">申请</string>
+    <string name="ui_apply">应用</string>
     <string name="crashactivity_uh_oh_looks_like">呃哦！看来 Rhythm 唱得很不好！</string>
     <string name="crashactivity_dont_fret_our_app">别担心！我们的应用程序只是有一点“哎呀”。请分享下面的崩溃详细信息 - 这就像我们的开发人员修复问题的秘密消息！那么，让我们再试一次，好吗？</string>
     <string name="crashactivity_secret_crash_scrolls">秘密崩溃卷轴</string>
@@ -2016,7 +2016,7 @@
     <string name="batchedittagssheet_batch_edit_tags">批量编辑标签</string>
     <string name="batchedittagssheet_enable_fields_you_want">启用您要更新的字段。禁用字段保持不变。</string>
     <string name="batchedittagssheet_tags">标签</string>
-    <string name="batchedittagssheet_batch_artwork_preview">批量图稿预览</string>
+    <string name="batchedittagssheet_batch_artwork_preview">批量封面预览</string>
     <string name="deviceconfigurationbottomsheet_supported_formats_fixedbandeq_text">Supported formats:
 • FixedBandEQ text (AutoEQ)
 • JSON format
@@ -2060,9 +2060,9 @@
     <string name="explorertabcontent_play_folder_as_playlist">播放文件夹（作为播放列表）</string>
     <string name="explorertabcontent_add_all_to_queue">将全部添加到队列中</string>
     <string name="homescreen_view_all_stats">查看所有统计数据</string>
-    <string name="homescreen_plays">戏剧</string>
-    <string name="libraryscreen_more_actions">更多行动</string>
-    <string name="libraryscreen_shuffle_artists">洗牌艺术家</string>
+    <string name="homescreen_plays">播放</string>
+    <string name="libraryscreen_more_actions">更多操作</string>
+    <string name="libraryscreen_shuffle_artists">随机艺术家</string>
     <string name="libraryscreen_clear_selection">清除选择</string>
     <string name="onboardingscreen_media_scan_mode">媒体扫描模式</string>
     <string name="onboardingscreen_tap_the_remove_action">点击删除操作以更新文件夹访问权限</string>
@@ -2080,7 +2080,7 @@
     <string name="onboardingscreen_connect_your_streaming_service">连接您的流媒体服务</string>
     <string name="onboardingscreen_connect_your_subsonicnavidrome_or">连接您的 Subsonic/Navidrome 或 Jellyfin 服务器以开始串流。</string>
     <string name="onboardingscreen_streaming_setup_tips">流媒体设置技巧</string>
-    <string name="onboardingscreen_supports_navidrome_gonic_and">支持 Navidrome、gonic 和所有亚音速 API。</string>
+    <string name="onboardingscreen_supports_navidrome_gonic_and">支持 Navidrome、gonic 和 subsonic API。</string>
     <string name="onboardingscreen_enable_caching_in_settings">在“设置”中启用缓存，以便稍后离线播放。</string>
     <string name="onboardingscreen_connection_test_ensures_server">连接测试确保服务器凭据正确。</string>
     <string name="onboardingscreen_subsonic_navidrome">Subsonic / Navidrome</string>
@@ -2105,7 +2105,7 @@
     <string name="streamingcontenthomescreen_your_connected_streaming_service">您连接的流媒体服务播放列表</string>
     <string name="streamingcontenthomescreen_no_playlists_found">未找到播放列表</string>
     <string name="streamingcontenthomescreen_create_playlists_on_your">在您的服务器上创建播放列表以在此处查看它们。</string>
-    <string name="streaminghomescreen_leave_go_mode">Leave Go Mode</string>
+    <string name="streaminghomescreen_leave_go_mode">解除 Go 模式</string>
     <string name="streaminglibraryscreen_no_albums">没有专辑</string>
     <string name="streamingsettingsscreen_streaming_restricted">流媒体限制</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">无法播放下一个：无法解析 URL</string>
@@ -2124,25 +2124,25 @@
     <string name="rhythmwidgetpreview_widget_states">小部件状态</string>
     <string name="rhythmwidgetpreview_playing">演奏</string>
     <string name="rhythmwidgetpreview_paused">暂停</string>
-    <string name="rhythmwidgetpreview_design_features">设计特点</string>
+    <string name="rhythmwidgetpreview_design_features">设计功能</string>
     <string name="licensesbottomsheet_license_notes">许可说明</string>
     <string name="playbackbottomsheet_str_025x">0.25x</string>
-    <string name="playbackbottomsheet_str_30x">3.0倍</string>
+    <string name="playbackbottomsheet_str_30x">3.0x</string>
     <string name="queuebottomsheet_played_songs_are_hidden">已播放的歌曲在队列中隐藏</string>
-    <string name="songinfobottomsheet_song_artwork">歌曲作品</string>
+    <string name="songinfobottomsheet_song_artwork">歌曲封面</string>
     <string name="songinfobottomsheet_details">详情</string>
-    <string name="songinfobottomsheet_change_artwork">改变艺术作品</string>
-    <string name="songinfobottomsheet_remove_artwork">删除艺术品</string>
-    <string name="songinfobottomsheet_artwork_fetched_successfully_click">作品获取成功！单击保存以嵌入。</string>
-    <string name="songinfobottomsheet_failed_to_download_artwork">下载艺术作品字节失败</string>
-    <string name="songinfobottomsheet_failed_to_download_artwork_1">无法从 URL 下载艺术品</string>
-    <string name="songinfobottomsheet_no_artwork_found_for">网上没有找到这首歌的艺术作品</string>
-    <string name="songinfobottomsheet_online_search_failed">网上搜索失败</string>
+    <string name="songinfobottomsheet_change_artwork">更改封面</string>
+    <string name="songinfobottomsheet_remove_artwork">删除封面</string>
+    <string name="songinfobottomsheet_artwork_fetched_successfully_click">封面获取成功！单击保存以嵌入。</string>
+    <string name="songinfobottomsheet_failed_to_download_artwork">下载封面字节失败</string>
+    <string name="songinfobottomsheet_failed_to_download_artwork_1">无法从 URL 下载封面</string>
+    <string name="songinfobottomsheet_no_artwork_found_for">网上没有找到这首歌的封面</string>
+    <string name="songinfobottomsheet_online_search_failed">在线搜索失败</string>
     <string name="songinfobottomsheet_online_api_service_unavailable">在线API服务不可用</string>
     <string name="songinfobottomsheet_fetching">正在获取...</string>
-    <string name="songinfobottomsheet_fetch_online_art">获取在线艺术</string>
-    <string name="songinfobottomsheet_update_artwork_and_tags">更新艺术品和标签</string>
-    <string name="songinfobottomsheet_fetching_artwork">获取艺术品...</string>
+    <string name="songinfobottomsheet_fetch_online_art">获取在线图片</string>
+    <string name="songinfobottomsheet_update_artwork_and_tags">更新封面和标签</string>
+    <string name="songinfobottomsheet_fetching_artwork">正在获取封面…</string>
     <string name="updatebottomsheet_install">安装</string>
     <string name="updatebottomsheet_update">更新</string>
     <string name="collapsibleheader_app_icon">应用程序图标</string>
@@ -2155,8 +2155,8 @@
     <string name="autoeqsuggestiondialog_audio_device_detected">检测到音频设备</string>
     <string name="autoeqsuggestiondialog_saved_configuration">保存的配置</string>
     <string name="autoeqsuggestiondialog_note_equalizer_is_currently">注意：均衡器当前已禁用。应用配置文件将自动启用它。</string>
-    <string name="autoeqsuggestiondialog_apply_profile">申请个人资料</string>
-    <string name="autoeqsuggestiondialog_dont_ask">别问</string>
+    <string name="autoeqsuggestiondialog_apply_profile">应用资料</string>
+    <string name="autoeqsuggestiondialog_dont_ask">莫问</string>
     <string name="autoeqsuggestiondialog_not_now">现在不行</string>
     <string name="betaprogrampopup_early_access">抢先体验</string>
     <string name="betaprogrampopup_shape_the_future">塑造未来</string>
@@ -2175,8 +2175,8 @@
     <string name="fullscreenlyricsview_realtime_sync_adjustment">实时同步调整</string>
     <string name="fullscreenlyricsview_str_05s">-0.5秒</string>
     <string name="fullscreenlyricsview_str_05s_1">+0.5秒</string>
-    <string name="fullscreenlyricsview_reset_offset">复位偏移</string>
-    <string name="lyricseditorbottomsheet_str_500ms">500毫秒</string>
+    <string name="fullscreenlyricsview_reset_offset">还原偏移</string>
+    <string name="lyricseditorbottomsheet_str_500ms">500 毫秒</string>
     <string name="lyricseditorbottomsheet_str_100ms">100 毫秒</string>
     <string name="rhythmnavigation_choose_your_experience">选择您的经历</string>
     <string name="rhythmnavigation_switch_between_local_music">本地音乐与流媒体服务切换</string>
@@ -2196,7 +2196,7 @@
     <string name="universalsearchscreen_search_everywhere">到处搜索……</string>
     <string name="universalsearchscreen_removed_from_streaming_favorites">已从流媒体收藏夹中删除</string>
     <string name="universalsearchscreen_added_to_streaming_favorites">已添加至流媒体收藏夹</string>
-    <string name="universalsearchscreen_album_not_found">找不到相册</string>
+    <string name="universalsearchscreen_album_not_found">未找到专辑</string>
     <string name="universalsearchscreen_artist_not_found">未找到艺术家</string>
     <string name="expressiveplayerscreen_more">更多</string>
     <string name="expressiveplayerscreen_device">设备</string>
@@ -2204,9 +2204,9 @@
     <string name="materialplayerscreen_permission_denied_could_not">许可被拒绝。无法嵌入歌词。</string>
     <string name="materialplayerscreen_unable_to_share_file">无法共享文件</string>
     <string name="playerscreen_select_artist">选择艺术家</string>
-    <string name="playerscreen_open_artist">开放艺术家</string>
+    <string name="playerscreen_open_artist">打开艺术家</string>
     <string name="aboutscreen_support_development">支持发展</string>
-    <string name="aboutscreen_discord_community">不和谐社区</string>
+    <string name="aboutscreen_discord_community">Discord 社区</string>
     <string name="apimanagementsettingsscreen_lyrically">Lyrically</string>
     <string name="apimanagementsettingsscreen_github">GitHub</string>
     <string name="apimanagementsettingsscreen_app_updates_and_release">App更新及发布信息</string>
@@ -2234,32 +2234,31 @@
     <string name="festivesettingsscreen_festive_decorations_add_a">节日装饰为您的音乐体验增添一丝庆祝色彩。启用自动检测后，装饰品会在圣诞节（12 月 15 日至 31 日）等假期期间自动出现。</string>
     <string name="homescreencustomizationsettingsscreen_immersive_mode_is_active">沉浸式模式已激活。仅显示支持的发现控件。</string>
     <string name="homescreencustomizationsettingsscreen_album_count">专辑数量</string>
-    <string name="librarysettingsscreen_autofetch_artwork">自动获取艺术品</string>
+    <string name="librarysettingsscreen_autofetch_artwork">自动获取封面</string>
     <string name="lyricssourcesettingsscreen_online_api_options">在线API选项</string>
-    <string name="lyricssourcesettingsscreen_lyrics_api_priority">歌词API优先</string>
+    <string name="lyricssourcesettingsscreen_lyrics_api_priority">歌词API优先选项</string>
     <string name="lyricssourcesettingsscreen_choose_which_online_lyrics">选择首先搜索哪个在线歌词API</string>
     <string name="lyricssourcesettingsscreen_retry_using_fallbacks">使用后备重试</string>
-    <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• Embedded lyrics are stored in your audio files
-</string>
+    <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• 嵌入式歌词储存在你的音频文件中</string>
     <string name="miniplayercustomizationsettingsscreen_miniplayer_theme">迷你播放器主题</string>
-    <string name="miniplayercustomizationsettingsscreen_choose_between_rhythm_default">选择 Rhythm 默认主题或表现主题</string>
+    <string name="miniplayercustomizationsettingsscreen_choose_between_rhythm_default">选择 Rhythm 默认主题或 Expressive 主题</string>
     <string name="miniplayercustomizationsettingsscreen_integrated_directly_into_the">直接集成到MiniPlayer后台</string>
     <string name="performancesettingsscreen_performance">精简模式</string>
-    <string name="performancesettingsscreen_disable_haptics">禁用触觉</string>
+    <string name="performancesettingsscreen_disable_haptics">禁用触觉反馈</string>
     <string name="performancesettingsscreen_enable_audio_offload">启用音频卸载</string>
     <string name="performancesettingsscreen_disable_text_marquee">禁用文本选取框</string>
-    <string name="performancesettingsscreen_disable_lossless_artwork">禁用无损艺术作品</string>
-    <string name="performancesettingsscreen_disable_auto_fetch_artwork">禁用自动获取图稿</string>
+    <string name="performancesettingsscreen_disable_lossless_artwork">禁用无损封面</string>
+    <string name="performancesettingsscreen_disable_auto_fetch_artwork">禁用自动获取封面</string>
     <string name="placeholdersettingsscreen_choose_a_setting_from">从左侧面板中选择一个设置</string>
     <string name="placeholdersettingsscreen_tap_on_any_setting">点击任何设置选项可在此处查看和修改其首选项</string>
-    <string name="playercustomizationsettingsscreen_player_theme">玩家主题</string>
+    <string name="playercustomizationsettingsscreen_player_theme">播放器主题</string>
     <string name="playercustomizationsettingsscreen_playback_theme">播放主题</string>
     <string name="playercustomizationsettingsscreen_tap_lyrics_for_immersive">点击歌词即可获得沉浸式视图</string>
     <string name="rhythmguardsettingsscreen_choose_sections">选择部分</string>
     <string name="rhythmguardsettingsscreen_none">无</string>
     <string name="rhythmguardsettingsscreen_general_settings">常规设置</string>
-    <string name="rhythmguardsettingsscreen_library_data">图书馆数据</string>
-    <string name="rhythmguardsettingsscreen_stats_rhythm_guard">统计数据和 Rhythm 后卫</string>
+    <string name="rhythmguardsettingsscreen_library_data">音乐库数据</string>
+    <string name="rhythmguardsettingsscreen_stats_rhythm_guard">统计数据与 Rhythm Guard</string>
     <string name="settingsscreen_audio_offload">音频卸载</string>
     <string name="settingsscreen_personalization">个性化</string>
     <string name="settingsscreen_library_focus">图书馆焦点</string>
