@@ -55,6 +55,7 @@ fun PlaybackSettingsScreen(
     val repeatModePersistence by appSettings.repeatModePersistence.collectAsState()
     val shuffleModePersistence by appSettings.shuffleModePersistence.collectAsState()
     val useHoursInTimeFormat by appSettings.useHoursInTimeFormat.collectAsState()
+    val showRemainingTime by appSettings.showRemainingTime.collectAsState()
     val gaplessEnabled by appSettings.gaplessPlayback.collectAsState()
     val crossfadeEnabled by appSettings.crossfade.collectAsState()
     val crossfadeDuration by appSettings.crossfadeDuration.collectAsState()
@@ -185,6 +186,13 @@ fun PlaybackSettingsScreen(
                         if (useHoursInTimeFormat) context.getString(R.string.settings_use_hours_enabled) else context.getString(R.string.settings_use_hours_disabled),
                         toggleState = useHoursInTimeFormat,
                         onToggleChange = { appSettings.setUseHoursInTimeFormat(it) }
+                    ),
+                    SettingItem(
+                        RhythmIcons.AccessTime,
+                        context.getString(R.string.settings_show_remaining_time),
+                        context.getString(R.string.settings_show_remaining_time_desc),
+                        toggleState = showRemainingTime,
+                        onToggleChange = { appSettings.setShowRemainingTime(it) }
                     )
                 )
             )

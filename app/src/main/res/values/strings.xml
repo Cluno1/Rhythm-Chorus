@@ -88,6 +88,8 @@
     <string name="settings_use_hours">Use Hour Format</string>
     <string name="settings_use_hours_enabled">Shows 1:32:26 for long tracks</string>
     <string name="settings_use_hours_disabled">Shows 92:26 for long tracks</string>
+    <string name="settings_show_remaining_time">Show Remaining Time</string>
+    <string name="settings_show_remaining_time_desc">Display remaining playback duration in player screens</string>
 <string name="settings_playlists">Playlists</string>
     <string name="settings_playlists_overview">Overview</string>
     <string name="settings_playlists_management">Management</string>

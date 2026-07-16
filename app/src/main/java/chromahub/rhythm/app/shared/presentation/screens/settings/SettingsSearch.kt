@@ -1284,6 +1284,16 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             settingKey = "useHoursInTimeFormat"
         ))
         add(SearchableSettingItem(
+            id = "show_remaining_time",
+            title = context.getString(R.string.settings_show_remaining_time),
+            description = context.getString(R.string.settings_show_remaining_time_desc),
+            keywords = listOf("remaining", "time", "duration", "display", "countdown", "total"),
+            icon = RhythmIcons.AccessTime,
+            route = SettingsRoutes.PLAYBACK,
+            parentScreen = "Playback",
+            settingKey = "showRemainingTime"
+        ))
+        add(SearchableSettingItem(
             id = "gapless_playback",
             title = context.getString(R.string.settings_gapless_playback),
             description = context.getString(R.string.settings_gapless_playback_desc),
