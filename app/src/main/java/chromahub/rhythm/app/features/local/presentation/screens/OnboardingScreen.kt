@@ -3,6 +3,7 @@ package chromahub.rhythm.app.features.local.presentation.screens
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
+import chromahub.rhythm.app.shared.presentation.components.dialogs.FdroidUpdateWarningDialog
 
 import android.Manifest
 import android.os.Build
@@ -6759,44 +6760,13 @@ fun EnhancedUpdaterContent(
     }
 
     if (showFdroidWarningDialog) {
-        AlertDialog(
-            onDismissRequest = { showFdroidWarningDialog = false },
-            icon = {
-                Icon(
-                    icon = RhythmIcons.Security,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error,
-                    size = 24.dp
-                )
-            },
-            title = { Text(context.getString(R.string.fdroid_update_warning_title)) },
-            text = {
-                Text(
-                    text = context.getString(R.string.fdroid_update_warning_message),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        scope.launch {
-                            appSettings.setUpdatesEnabled(true)
-                        }
-                        showFdroidWarningDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(context.getString(R.string.onboarding_continue))
+        FdroidUpdateWarningDialog(
+            onDismiss = { showFdroidWarningDialog = false },
+            onConfirm = {
+                scope.launch {
+                    appSettings.setUpdatesEnabled(true)
                 }
-            },
-            dismissButton = {
-                OutlinedButton(onClick = { showFdroidWarningDialog = false }) {
-                    Text(context.getString(R.string.ui_cancel))
-                }
-            },
-            shape = RoundedCornerShape(24.dp)
+            }
         )
     }
 }

@@ -28,6 +28,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -104,6 +105,7 @@ import chromahub.rhythm.app.ui.utils.LazyListStateSaver
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.features.local.presentation.components.settings.LanguageSwitcherDialog
+import chromahub.rhythm.app.shared.presentation.components.dialogs.FdroidUpdateWarningDialog
 import android.content.Context
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.spring
@@ -762,42 +764,11 @@ fun SettingsScreen(
         }
         
         if (showFdroidWarningDialog) {
-            AlertDialog(
-                onDismissRequest = { showFdroidWarningDialog = false },
-                icon = {
-                    Icon(
-                        icon = RhythmIcons.Security,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                        size = 24.dp
-                    )
-                },
-                title = { Text(context.getString(R.string.fdroid_update_warning_title)) },
-                text = {
-                    Text(
-                        text = context.getString(R.string.fdroid_update_warning_message),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            appSettings.setUpdatesEnabled(true)
-                            showFdroidWarningDialog = false
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text(context.getString(R.string.onboarding_continue))
-                    }
-                },
-                dismissButton = {
-                    OutlinedButton(onClick = { showFdroidWarningDialog = false }) {
-                        Text(context.getString(R.string.ui_cancel))
-                    }
-                },
-                shape = RoundedCornerShape(24.dp)
+            FdroidUpdateWarningDialog(
+                onDismiss = { showFdroidWarningDialog = false },
+                onConfirm = {
+                    appSettings.setUpdatesEnabled(true)
+                }
             )
         }
         

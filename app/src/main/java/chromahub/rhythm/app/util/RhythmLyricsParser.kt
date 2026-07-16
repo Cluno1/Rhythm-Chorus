@@ -112,7 +112,8 @@ object RhythmLyricsParser {
                         background = line.background ?: false,
                         voiceTag = voiceTag,
                         translation = translation,
-                        romanization = romanization
+                        romanization = romanization,
+                        endIsImplicit = line.endIsImplicit ?: false
                     )
                 } else {
                     null
@@ -490,7 +491,8 @@ object RhythmLyricsParser {
                 backgroundText = backgroundText,
                 oppositeTurn = null,
                 timestamp = line.lineTimestamp,
-                endtime = line.lineEndtime
+                endtime = line.lineEndtime,
+                endIsImplicit = line.endIsImplicit
             )
         }
         return gson.toJson(rhythmLines)
@@ -551,7 +553,8 @@ object RhythmLyricsParser {
                     backgroundText = if (semanticLine.isTranslated) listOf(semanticLine.text) else null,
                     oppositeTurn = semanticLine.speaker?.isVoice2,
                     timestamp = semanticLine.start.toLong(),
-                    endtime = semanticLine.end.toLong()
+                    endtime = semanticLine.end.toLong(),
+                    endIsImplicit = semanticLine.endIsImplicit
                 )
             }
         }
@@ -569,7 +572,8 @@ data class WordByWordLyricLine(
     val background: Boolean = false,
     val voiceTag: String? = null, // Voice tag (v1, v2, v3, etc.) for multi-voice lyrics
     val translation: String? = null,
-    val romanization: String? = null
+    val romanization: String? = null,
+    val endIsImplicit: Boolean = false
 )
 
 /**

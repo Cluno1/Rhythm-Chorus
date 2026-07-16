@@ -239,7 +239,8 @@ object LrcUtils {
                 "text" to wordMaps,
                 "background" to false,
                 "timestamp" to line.start.toLong(),
-                "endtime" to lineEndtime
+                "endtime" to lineEndtime,
+                "endIsImplicit" to line.endIsImplicit
             )
         }
         return if (rhythmWordLines.isNotEmpty()) Gson().toJson(rhythmWordLines) else null

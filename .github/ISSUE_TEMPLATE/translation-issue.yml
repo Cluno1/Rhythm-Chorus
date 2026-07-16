@@ -1,0 +1,50 @@
+name: Translation / Weblate Issue
+description: Report missing, incorrect, or new language translation issues
+title: "[TRANSLATION]: "
+labels: ["translation", "weblate"]
+assignees: ["cromaguy"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thank you for reporting a translation or localization issue!
+        Rhythm uses Weblate to manage translations. If you've found missing or incorrect text, please let us know.
+        
+  - type: input
+    id: language
+    attributes:
+      label: Language(s) Affected
+      placeholder: "e.g., Estonian (et), Uzbek (uz)"
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Type of Translation Issue
+      options:
+        - Incorrect translation / Typo
+        - Missing translations in UI
+        - New language support request
+        - Weblate sync / workflow error
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description of the Issue
+      description: "If reporting a typo or incorrect translation, please specify: 1. Current text, 2. Corrected text, 3. Where in the app it appears."
+      placeholder: |
+        Current text: ...
+        Corrected text: ...
+        Location: Settings -> ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Context
+      description: Attach screenshots showing the translation issue in the app UI.

@@ -38,6 +38,7 @@ object LanguageHelper {
         LanguageOption("bn", "Bengali", "বাংলা"),
         LanguageOption("de", "German", "Deutsch"),
         LanguageOption("es", "Spanish", "Español"),
+        LanguageOption("et", "Estonian", "Eesti"),
         LanguageOption("fr", "French", "Français"),
         LanguageOption("fr-CA", "French (Canada)", "Français (Canada)"),
         LanguageOption("hi", "Hindi", "हिन्दी"),
@@ -55,6 +56,7 @@ object LanguageHelper {
         LanguageOption("th", "Thai", "ไทย"),
         LanguageOption("tr", "Turkish", "Türkçe"),
         LanguageOption("uk", "Ukrainian", "Українська"),
+        LanguageOption("uz", "Uzbek", "Oʻzbekcha"),
         LanguageOption("vi", "Vietnamese", "Tiếng Việt"),
         LanguageOption("zh", "Chinese (Simplified)", "简体中文"),
         LanguageOption("zh-TW", "Chinese (Traditional)", "繁體中文")

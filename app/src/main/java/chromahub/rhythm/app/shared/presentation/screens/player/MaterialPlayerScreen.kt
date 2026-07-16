@@ -3708,12 +3708,18 @@ fun MaterialPlayerScreen(
                                     alpha = line6Alpha
                                 }
                                 .padding(
-                                    horizontal = when {
+                                    start = when {
                                         isExtraSmallWidth -> 4.dp
                                         isCompactWidth -> 8.dp
                                         else -> 12.dp
                                     },
-                                    vertical = if (isTablet) 8.dp else if (isCompactHeight) 2.dp else 0.dp
+                                    end = when {
+                                        isExtraSmallWidth -> 4.dp
+                                        isCompactWidth -> 8.dp
+                                        else -> 12.dp
+                                    },
+                                    top = if (isTablet) 8.dp else if (isCompactHeight) 2.dp else 0.dp,
+                                    bottom = 24.dp
                                 ),
                             horizontalArrangement = Arrangement.spacedBy(
                                 if (isExtraSmallWidth) 4.dp else if (isCompactWidth) 6.dp else 8.dp

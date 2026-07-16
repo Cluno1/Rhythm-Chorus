@@ -139,6 +139,17 @@ fun WordByWordLyricsView(
         val vocalLines = visibleLyricsLines.mapIndexedNotNull { i, line ->
             if (line.words.any { it.text.isNotBlank() }) i to line else null
         }
+
+        val intervals = vocalLines.zipWithNext { (_, a), (_, b) -> (b.lineTimestamp - a.lineTimestamp).coerceAtLeast(0L) }
+            .filter { it > 0L }
+        val medianInterval = if (intervals.isNotEmpty()) {
+            val sorted = intervals.sorted()
+            sorted[sorted.size / 2]
+        } else {
+            2000L
+        }
+        val longGapThreshold = maxOf(5200L, (medianInterval * 2.4f).toLong())
+
         val items = mutableListOf<LyricsItem>()
         vocalLines.forEachIndexed { idx, (origIdx, line) ->
             items.add(LyricsItem.LyricLine(line, origIdx))
@@ -147,7 +158,14 @@ fun WordByWordLyricsView(
             if (idx < vocalLines.size - 1) {
                 val nextLine = vocalLines[idx + 1].second
                 val gapDuration = nextLine.lineTimestamp - line.effectiveLineEndtime()
-                if (gapDuration > 3000) { // 3 seconds threshold
+                val isExplicit = !line.endIsImplicit
+                val shouldAddGap = if (isExplicit) {
+                    gapDuration >= 3000L
+                } else {
+                    val intervalToNext = nextLine.lineTimestamp - line.lineTimestamp
+                    intervalToNext >= longGapThreshold && gapDuration >= 3000L
+                }
+                if (shouldAddGap) {
                     items.add(LyricsItem.Gap(gapDuration, line.effectiveLineEndtime()))
                 }
             }
@@ -417,21 +435,16 @@ private fun WordByWordLyricLineItem(
     val opacity by animateFloatAsState(
         targetValue = when {
             isCurrentLine -> 1f
-            isUpcomingLine && linesAhead <= 4 -> 0.9f - (linesAhead * 0.1f)
-            else -> 0.3f
+            distanceFromCurrent == 1 -> 0.75f
+            distanceFromCurrent == 2 -> 0.55f
+            distanceFromCurrent == 3 -> 0.40f
+            distanceFromCurrent == 4 -> 0.30f
+            else -> 0.22f
         },
-        animationSpec = if (noAnimation) snap() else if (isUpcomingLine) {
-            spring(
-                dampingRatio = Spring.DampingRatioLowBouncy,
-                stiffness = Spring.StiffnessVeryLow,
-                visibilityThreshold = 0.01f
-            )
-        } else {
-            spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            )
-        },
+        animationSpec = if (noAnimation) snap() else spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
         label = "lineOpacity"
     )
 
@@ -508,9 +521,9 @@ private fun WordByWordLyricLineItem(
             }
 
             val inactiveWordColor = when (line.voiceTag) {
-                "v2" -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-                "v3" -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
-                else -> if (isCurrentLine) baseColor.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface.copy(alpha = wordAlpha)
+                "v2" -> if (isCurrentLine) MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.secondary
+                "v3" -> if (isCurrentLine) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.tertiary
+                else -> if (isCurrentLine) baseColor.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface
             }
 
             val isWordPassed = isCurrentLine && wordIndex < activeWordIndex

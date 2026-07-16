@@ -26,6 +26,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -789,6 +790,20 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
+    private val _showCorruptionDialog = MutableStateFlow(false)
+    val showCorruptionDialog: StateFlow<Boolean> = _showCorruptionDialog.asStateFlow()
+
+    private val _corruptedTrackName = MutableStateFlow("")
+    val corruptedTrackName: StateFlow<String> = _corruptedTrackName.asStateFlow()
+
+    private val _corruptedTrackMessage = MutableStateFlow("")
+    val corruptedTrackMessage: StateFlow<String> = _corruptedTrackMessage.asStateFlow()
+
+    fun dismissCorruptionDialog() {
+        _showCorruptionDialog.value = false
+        _corruptedTrackMessage.value = ""
+    }
+
     private val _currentSong = MutableStateFlow<Song?>(null)
     val currentSong: StateFlow<Song?> = _currentSong.asStateFlow()
 
@@ -862,6 +877,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     
     // For tracking progress 
     private var progressUpdateJob: Job? = null
+    private var playbackWatchdogJob: Job? = null
 
     // Selected song for adding to playlist
     private val _selectedSongForPlaylist = MutableStateFlow<Song?>(null)
@@ -3195,6 +3211,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     if (mediaController != null) {
                         mediaController?.addListener(playerListener)
                         _serviceConnected.value = true
+                        
+                        // Check watchdog state initially
+                        checkPlaybackWatchdogState()
 
                         // Update shuffle and repeat mode from controller
                         mediaController?.let { controller ->
@@ -3310,6 +3329,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         mediaController?.let { existingController ->
             try {
                 existingController.removeListener(playerListener)
+                stopPlaybackWatchdog()
             } catch (e: Exception) {
                 Log.w(TAG, "Error removing listener from stale controller", e)
             }
@@ -3332,6 +3352,90 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         controllerFuture = null
         _serviceConnected.value = false
     }
+
+    private fun checkPlaybackWatchdogState() {
+        val controller = mediaController
+        if (controller != null && controller.playWhenReady) {
+            if (playbackWatchdogJob == null || playbackWatchdogJob?.isActive == false) {
+                startPlaybackWatchdog()
+            }
+        } else {
+            stopPlaybackWatchdog()
+        }
+    }
+
+    private fun startPlaybackWatchdog() {
+        playbackWatchdogJob?.cancel()
+        playbackWatchdogJob = viewModelScope.launch {
+            Log.d(TAG, "Playback watchdog started")
+            var lastPosition = -1L
+            var lastProgressTime = System.currentTimeMillis()
+            
+            while (isActive) {
+                delay(1000) // check every second
+                val controller = mediaController ?: continue
+                val state = controller.playbackState
+                
+                // If ended or idle, reset the progress timers and continue
+                if (state == Player.STATE_ENDED || state == Player.STATE_IDLE) {
+                    lastPosition = -1L
+                    lastProgressTime = System.currentTimeMillis()
+                    continue
+                }
+                
+                if (controller.playWhenReady) {
+                    val currentPos = controller.currentPosition
+                    if (lastPosition == -1L) {
+                        lastPosition = currentPos
+                        lastProgressTime = System.currentTimeMillis()
+                    } else {
+                        val progress = currentPos - lastPosition
+                        if (progress >= 500L || progress < 0L) {
+                            lastPosition = currentPos
+                            lastProgressTime = System.currentTimeMillis()
+                        } else {
+                            val noProgressDuration = System.currentTimeMillis() - lastProgressTime
+                            if (noProgressDuration >= 10000L) { // 10 seconds timeout
+                                Log.w(TAG, "Playback watchdog: Stuck/looping at position $currentPos (progress: $progress ms) in state $state for $noProgressDuration ms. Triggering corruption dialog.")
+                                
+                                // Determine the scenario-specific error message
+                                val scenarioMessage = when {
+                                    isSeeking.value -> "The player got stuck loading while seeking. The file may have corrupted indexes or metadata."
+                                    state == Player.STATE_BUFFERING -> "The song is stuck loading/buffering indefinitely. This usually indicates a corrupted or unreadable audio stream."
+                                    else -> "The player is unable to make progress during playback. The file format or encoding might be corrupted."
+                                }
+                                
+                                triggerTrackCorruption(controller, scenarioMessage)
+                                break
+                            }
+                        }
+                    }
+                } else {
+                    lastPosition = -1L
+                    lastProgressTime = System.currentTimeMillis()
+                }
+            }
+        }
+    }
+
+    private fun stopPlaybackWatchdog() {
+        playbackWatchdogJob?.cancel()
+        playbackWatchdogJob = null
+    }
+
+    private fun triggerTrackCorruption(controller: MediaController, message: String) {
+        viewModelScope.launch {
+            try {
+                controller.pause()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to pause controller on corruption detection", e)
+            }
+            _corruptedTrackName.value = _currentSong.value?.title ?: "Unknown Song"
+            _corruptedTrackMessage.value = message
+            _showCorruptionDialog.value = true
+            stopPlaybackWatchdog()
+        }
+    }
     
     // Private initialization method (called from init)
     private fun initializeController() {
@@ -3339,11 +3443,21 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private val playerListener = object : Player.Listener {
+        override fun onPlayerError(error: PlaybackException) {
+            Log.e(TAG, "Player error encountered in ViewModel: ${error.message}", error)
+            _corruptedTrackName.value = _currentSong.value?.title ?: "Unknown Song"
+            _corruptedTrackMessage.value = "The player encountered a playback error: ${error.message ?: "Unknown error"}"
+            _showCorruptionDialog.value = true
+        }
+
         override fun onPlaybackStateChanged(playbackState: Int) {
             Log.d(TAG, "Playback state changed: $playbackState")
             
             // Update buffering state
             _isBuffering.value = playbackState == Player.STATE_BUFFERING
+
+            // Check watchdog state when playback state changes
+            checkPlaybackWatchdogState()
             
             // Update isPlaying based on both playbackState and controller.isPlaying
             mediaController?.let { controller ->
@@ -3401,13 +3515,16 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             Log.d(TAG, "Media item transition: ${mediaItem?.mediaId}, reason: $reason")
 
-            if (
-                reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED &&
-                mediaItem?.mediaId != null &&
-                mediaItem.mediaId == _currentSong.value?.id
-            ) {
-                Log.d(TAG, "Ignoring playlist metadata refresh for current song: ${mediaItem.mediaId}")
+            if (mediaItem?.mediaId != null && mediaItem.mediaId == _currentSong.value?.id) {
+                Log.d(TAG, "Ignoring media item transition for same song: ${mediaItem.mediaId}")
                 return
+            }
+
+            // Restart/reset watchdog for the new song
+            if (mediaController?.playWhenReady == true) {
+                startPlaybackWatchdog()
+            } else {
+                stopPlaybackWatchdog()
             }
             
             // Finalize stats for the previous song before switching
@@ -3500,6 +3617,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d(TAG, "Updating isPlaying state from ${_isPlaying.value} to $isPlaying")
                 _isPlaying.value = isPlaying
             }
+
+            // Check watchdog state when isPlaying changes
+            checkPlaybackWatchdogState()
             
             // Track play/pause for accurate stats
             if (isPlaying) {
@@ -9097,6 +9217,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         
         // Cancel progress updates
         progressUpdateJob?.cancel()
+        stopPlaybackWatchdog()
         
         // Remove player listener before releasing MediaController
         mediaController?.removeListener(playerListener)

@@ -148,6 +148,7 @@ import chromahub.rhythm.app.shared.presentation.components.common.rememberExpres
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOperationProgressDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOperationResultDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.AppRestartDialog
+import chromahub.rhythm.app.shared.presentation.components.dialogs.FdroidUpdateWarningDialog
 import chromahub.rhythm.app.shared.presentation.components.player.PlayerChipOrderBottomSheet
 import chromahub.rhythm.app.features.local.presentation.components.settings.HomeSectionOrderBottomSheet
 import chromahub.rhythm.app.features.local.presentation.components.settings.LibraryTabOrderBottomSheet
@@ -1783,42 +1784,11 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     }
 
     if (showFdroidWarningDialog) {
-        AlertDialog(
-            onDismissRequest = { showFdroidWarningDialog = false },
-            icon = {
-                Icon(
-                    icon = RhythmIcons.Security,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error,
-                    size = 24.dp
-                )
-            },
-            title = { Text(context.getString(R.string.fdroid_update_warning_title)) },
-            text = {
-                Text(
-                    text = context.getString(R.string.fdroid_update_warning_message),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        appSettings.setUpdatesEnabled(true)
-                        showFdroidWarningDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(context.getString(R.string.onboarding_continue))
-                }
-            },
-            dismissButton = {
-                OutlinedButton(onClick = { showFdroidWarningDialog = false }) {
-                    Text(context.getString(R.string.ui_cancel))
-                }
-            },
-            shape = RoundedCornerShape(24.dp)
+        FdroidUpdateWarningDialog(
+            onDismiss = { showFdroidWarningDialog = false },
+            onConfirm = {
+                appSettings.setUpdatesEnabled(true)
+            }
         )
     }
 }
