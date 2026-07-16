@@ -105,6 +105,7 @@ import chromahub.rhythm.app.ui.utils.LazyListStateSaver
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.features.local.presentation.components.settings.LanguageSwitcherDialog
+import chromahub.rhythm.app.shared.presentation.components.dialogs.FdroidUpdateWarningDialog
 import android.content.Context
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.spring
@@ -763,65 +764,11 @@ fun SettingsScreen(
         }
         
         if (showFdroidWarningDialog) {
-            AlertDialog(
-                onDismissRequest = { showFdroidWarningDialog = false },
-                icon = {
-                    Icon(
-                        icon = RhythmIcons.Security,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                        size = 28.dp
-                    )
-                },
-                title = {
-                    Text(
-                        text = context.getString(R.string.fdroid_update_warning_title),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(
-                        text = context.getString(R.string.fdroid_update_warning_message),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                confirmButton = {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Button(
-                            onClick = {
-                                appSettings.setUpdatesEnabled(true)
-                                showFdroidWarningDialog = false
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp)
-                        ) {
-                            Text(context.getString(R.string.onboarding_continue))
-                        }
-
-                        OutlinedButton(
-                            onClick = { showFdroidWarningDialog = false },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp)
-                        ) {
-                            Text(context.getString(R.string.ui_cancel))
-                        }
-                    }
-                },
-                dismissButton = {},
-                shape = RoundedCornerShape(28.dp)
+            FdroidUpdateWarningDialog(
+                onDismiss = { showFdroidWarningDialog = false },
+                onConfirm = {
+                    appSettings.setUpdatesEnabled(true)
+                }
             )
         }
         

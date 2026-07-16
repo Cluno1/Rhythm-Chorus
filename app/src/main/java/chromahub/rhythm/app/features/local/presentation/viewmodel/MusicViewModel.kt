@@ -3385,23 +3385,29 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 
                 if (controller.playWhenReady) {
                     val currentPos = controller.currentPosition
-                    if (currentPos != lastPosition) {
+                    if (lastPosition == -1L) {
                         lastPosition = currentPos
                         lastProgressTime = System.currentTimeMillis()
                     } else {
-                        val noProgressDuration = System.currentTimeMillis() - lastProgressTime
-                        if (noProgressDuration >= 10000L) { // 10 seconds timeout
-                            Log.w(TAG, "Playback watchdog: Stuck at position $currentPos in state $state for $noProgressDuration ms. Triggering corruption dialog.")
-                            
-                            // Determine the scenario-specific error message
-                            val scenarioMessage = when {
-                                isSeeking.value -> "The player got stuck loading while seeking. The file may have corrupted indexes or metadata."
-                                state == Player.STATE_BUFFERING -> "The song is stuck loading/buffering indefinitely. This usually indicates a corrupted or unreadable audio stream."
-                                else -> "The player is unable to make progress during playback. The file format or encoding might be corrupted."
+                        val progress = currentPos - lastPosition
+                        if (progress >= 500L || progress < 0L) {
+                            lastPosition = currentPos
+                            lastProgressTime = System.currentTimeMillis()
+                        } else {
+                            val noProgressDuration = System.currentTimeMillis() - lastProgressTime
+                            if (noProgressDuration >= 10000L) { // 10 seconds timeout
+                                Log.w(TAG, "Playback watchdog: Stuck/looping at position $currentPos (progress: $progress ms) in state $state for $noProgressDuration ms. Triggering corruption dialog.")
+                                
+                                // Determine the scenario-specific error message
+                                val scenarioMessage = when {
+                                    isSeeking.value -> "The player got stuck loading while seeking. The file may have corrupted indexes or metadata."
+                                    state == Player.STATE_BUFFERING -> "The song is stuck loading/buffering indefinitely. This usually indicates a corrupted or unreadable audio stream."
+                                    else -> "The player is unable to make progress during playback. The file format or encoding might be corrupted."
+                                }
+                                
+                                triggerTrackCorruption(controller, scenarioMessage)
+                                break
                             }
-                            
-                            triggerTrackCorruption(controller, scenarioMessage)
-                            break
                         }
                     }
                 } else {

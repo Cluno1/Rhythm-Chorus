@@ -14,11 +14,9 @@ import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 
 @Composable
-fun TrackCorruptionDialog(
+fun FdroidUpdateWarningDialog(
     onDismiss: () -> Unit,
-    onSkip: () -> Unit,
-    trackName: String,
-    errorMessage: String? = null
+    onConfirm: () -> Unit
 ) {
     val context = LocalContext.current
     
@@ -26,7 +24,7 @@ fun TrackCorruptionDialog(
         onDismissRequest = onDismiss,
         icon = {
             Icon(
-                imageVector = MaterialSymbolIcon("music_off", filled = true),
+                imageVector = MaterialSymbolIcon("security", filled = true),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(28.dp)
@@ -34,28 +32,17 @@ fun TrackCorruptionDialog(
         },
         title = {
             Text(
-                text = "Track Playback Error",
+                text = context.getString(R.string.fdroid_update_warning_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "The song \"$trackName\" encountered a playback issue.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = errorMessage ?: "It appears to be corrupted or unplayable. Would you like to skip to the next track?",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = context.getString(R.string.fdroid_update_warning_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         },
         confirmButton = {
             Column(
@@ -67,7 +54,7 @@ fun TrackCorruptionDialog(
             ) {
                 Button(
                     onClick = {
-                        onSkip()
+                        onConfirm()
                         onDismiss()
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -78,12 +65,12 @@ fun TrackCorruptionDialog(
                         .height(52.dp)
                 ) {
                     Icon(
-                        imageVector = MaterialSymbolIcon("skip_next", filled = true),
+                        imageVector = MaterialSymbolIcon("arrow_forward", filled = true),
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Skip Song")
+                    Text(context.getString(R.string.onboarding_continue))
                 }
 
                 OutlinedButton(
@@ -98,7 +85,7 @@ fun TrackCorruptionDialog(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Close")
+                    Text(context.getString(R.string.ui_cancel))
                 }
             }
         },
