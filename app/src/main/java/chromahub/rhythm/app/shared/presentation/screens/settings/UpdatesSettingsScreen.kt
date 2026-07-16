@@ -1790,35 +1790,58 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                     icon = RhythmIcons.Security,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error,
-                    size = 24.dp
+                    size = 28.dp
                 )
             },
-            title = { Text(context.getString(R.string.fdroid_update_warning_title)) },
+            title = {
+                Text(
+                    text = context.getString(R.string.fdroid_update_warning_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            },
             text = {
                 Text(
                     text = context.getString(R.string.fdroid_update_warning_message),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             confirmButton = {
-                Button(
-                    onClick = {
-                        appSettings.setUpdatesEnabled(true)
-                        showFdroidWarningDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text(context.getString(R.string.onboarding_continue))
+                    Button(
+                        onClick = {
+                            appSettings.setUpdatesEnabled(true)
+                            showFdroidWarningDialog = false
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Text(context.getString(R.string.onboarding_continue))
+                    }
+
+                    OutlinedButton(
+                        onClick = { showFdroidWarningDialog = false },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Text(context.getString(R.string.ui_cancel))
+                    }
                 }
             },
-            dismissButton = {
-                OutlinedButton(onClick = { showFdroidWarningDialog = false }) {
-                    Text(context.getString(R.string.ui_cancel))
-                }
-            },
-            shape = RoundedCornerShape(24.dp)
+            dismissButton = {},
+            shape = RoundedCornerShape(28.dp)
         )
     }
 }

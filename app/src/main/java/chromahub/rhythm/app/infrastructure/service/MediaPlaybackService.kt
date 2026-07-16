@@ -1310,18 +1310,11 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }
         Log.e(TAG, "Playback error: $message", error)
         
-        // Gracefully recover from playback errors by skipping to the next track
-        // This prevents codec/format errors from stopping playback entirely
+        // Prevent auto skip and looping loading on corrupted songs by pausing/stopping the player
         try {
-            if (player.hasNextMediaItem()) {
-                Log.w(TAG, "Recovering from playback error - skipping to next track")
-                player.seekToNextMediaItem()
-                player.prepare()
-            } else {
-                Log.w(TAG, "No next track available for error recovery")
-            }
+            player.pause()
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to recover from playback error", e)
+            Log.e(TAG, "Failed to pause player on error", e)
         }
     }
 

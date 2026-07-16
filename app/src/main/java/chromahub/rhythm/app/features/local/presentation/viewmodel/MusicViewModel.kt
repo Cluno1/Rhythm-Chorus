@@ -26,6 +26,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -788,6 +789,16 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     // Player state
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
+
+    private val _showCorruptionDialog = MutableStateFlow(false)
+    val showCorruptionDialog: StateFlow<Boolean> = _showCorruptionDialog.asStateFlow()
+
+    private val _corruptedTrackName = MutableStateFlow("")
+    val corruptedTrackName: StateFlow<String> = _corruptedTrackName.asStateFlow()
+
+    fun dismissCorruptionDialog() {
+        _showCorruptionDialog.value = false
+    }
 
     private val _currentSong = MutableStateFlow<Song?>(null)
     val currentSong: StateFlow<Song?> = _currentSong.asStateFlow()
@@ -3339,6 +3350,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private val playerListener = object : Player.Listener {
+        override fun onPlayerError(error: PlaybackException) {
+            Log.e(TAG, "Player error encountered in ViewModel: ${error.message}", error)
+            _corruptedTrackName.value = _currentSong.value?.title ?: "Unknown Song"
+            _showCorruptionDialog.value = true
+        }
+
         override fun onPlaybackStateChanged(playbackState: Int) {
             Log.d(TAG, "Playback state changed: $playbackState")
             
