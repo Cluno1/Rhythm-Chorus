@@ -294,12 +294,14 @@ class MainActivity : AppCompatActivity() {
                         // Track Corruption Popup
                         val showCorruptionDialog by musicViewModel.showCorruptionDialog.collectAsState()
                         val corruptedTrackName by musicViewModel.corruptedTrackName.collectAsState()
+                        val corruptedTrackMessage by musicViewModel.corruptedTrackMessage.collectAsState()
 
                         if (showCorruptionDialog) {
                             TrackCorruptionDialog(
                                 onDismiss = { musicViewModel.dismissCorruptionDialog() },
                                 onSkip = { musicViewModel.skipToNext() },
-                                trackName = corruptedTrackName
+                                trackName = corruptedTrackName,
+                                errorMessage = corruptedTrackMessage
                             )
                         }
                     }

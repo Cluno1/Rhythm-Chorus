@@ -1013,7 +1013,8 @@ fun ExpressivePlayerScreen(
                             }
                             .padding(
                                 start = if (isCompactWidth) 12.dp else 24.dp,
-                                end = if (isCompactWidth) 12.dp else 24.dp
+                                end = if (isCompactWidth) 12.dp else 24.dp,
+                                bottom = 24.dp
                             ),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {

@@ -17,7 +17,8 @@ import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 fun TrackCorruptionDialog(
     onDismiss: () -> Unit,
     onSkip: () -> Unit,
-    trackName: String
+    trackName: String,
+    errorMessage: String? = null
 ) {
     val context = LocalContext.current
     
@@ -39,11 +40,22 @@ fun TrackCorruptionDialog(
             )
         },
         text = {
-            Text(
-                text = "The song \"$trackName\" appears to be corrupted or unplayable. Would you like to skip to the next track?",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "The song \"$trackName\" encountered a playback issue.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = errorMessage ?: "It appears to be corrupted or unplayable. Would you like to skip to the next track?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         },
         confirmButton = {
             Column(
