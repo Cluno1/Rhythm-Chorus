@@ -928,6 +928,18 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         // The master player is exposed to MediaSession and used everywhere
         player = wrapPlayer(rhythmPlayerEngine.masterPlayer)
         
+        // Restore saved shuffle and repeat states on startup
+        if (appSettings.shuffleModePersistence.value) {
+            val savedShuffle = appSettings.savedShuffleState.value
+            val useExoPlayerShuffle = appSettings.shuffleUsesExoplayer.value
+            player.shuffleModeEnabled = savedShuffle && useExoPlayerShuffle
+            Log.d(TAG, "Restored player shuffle mode: ${player.shuffleModeEnabled} (useExoPlayerShuffle=$useExoPlayerShuffle)")
+        }
+        if (appSettings.repeatModePersistence.value) {
+            player.repeatMode = appSettings.savedRepeatMode.value
+            Log.d(TAG, "Restored player repeat mode: ${player.repeatMode}")
+        }
+        
         // Register player swap listener for crossfade transitions
         rhythmPlayerEngine.addPlayerSwapListener { newPlayer ->
             Log.d(TAG, "Player swapped during crossfade transition")
