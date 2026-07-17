@@ -1,0 +1,15 @@
+Rhythm v5.3 Update
+
+🚀 Features & Improvements
+• Track error dialog & improved tablet UI
+• Better streaming metadata & offline fallback
+• Unified shuffle flow & stable library caching
+• Persisted playlists to local database
+
+🐛 Bug Fixes
+• Fixed high battery drain & Nextcloud login
+• Resolved shuffle mode disabling itself
+• Fixed scrolling, back navigation & Rhythm Guard
+
+🌍 Translations
+• Added Uzbek; updated 8 languages

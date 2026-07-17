@@ -10,6 +10,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.3.432.1135] - 2026-07-17
+
+### Added
+- Add track error dialog and UI refinements
+- Handle implicit lyric end times and gaps #482 #496
+- Unify shuffle flow and restore playback state
+- Improved Library Padding and Tablet view
+- Improve streaming metadata and offline fallback
+- Scope updater viewmodel and update flows
+- Persist playlists in Room
+- Stabilize library refresh and cache writes
+- Fix queue restore with ExoPlayer shuffle
+- Fixed: Permanent shuffle mode disables by itself #488
+- Fixed: Scrolling error in album list of songs #479
+- Fixed: Play button on wrong layer #483
+- Fixed: Login on Nextcloud #485
+- Fixed: Incorrect scrolling and selection in library #477
+- Fixed: Rhythm Guard 'Lock' ineffective #474
+- Fixed: Too much battery consumption #471
+- Fixed: Lyric exports ignore context #467
+- Fixed: Unintentional draggable element #468
+- Fixed: Cannot "back" from Library to Home #466
+- Added new translation: Uzbek
+- Updated translations: Spanish, Swedish, Ukrainian, Arabic, French, Polish, Chinese (Traditional), and Chinese (Simplified)
+
 ## [5.3.429.1123 Beta] - 2026-07-12
 
 ### Added
