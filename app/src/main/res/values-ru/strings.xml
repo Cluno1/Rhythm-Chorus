@@ -10,8 +10,8 @@
     <string name="media3_notification_channel_name">Rhythm Музыка</string>
     <string name="media3_notification_channel_description">Элементы управления воспроизведением мультимедиа</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm Музыкальный виджет: управление воспроизведением с помощью адаптивных макетов, поддерживающих размеры сетки от 2x1 до 5x5.</string>
-    <string name="widget_description_glance">Rhythm Музыка — управляйте воспроизведением с помощью 9 адаптивных макетов, дизайна Material 3 и обновлений состояния в реальном времени.</string>
+    <string name="widget_description">Музыкальный виджет Rhythm - Управление воспроизведением с помощью адаптивных макетов, поддерживающих размеры сетки от 2x1 до 5x5.</string>
+    <string name="widget_description_glance">Музыка Rhythm - Управляйте воспроизведением с помощью 9 адаптивных макетов, дизайна Material 3 и обновлений состояния в реальном времени.</string>
     <string name="widget_name_glance">Rhythm Музыка</string>
     <string name="no_song_playing">Песня не воспроизводится.</string>
     <string name="unknown_artist">Неизвестный исполнитель</string>
@@ -673,7 +673,7 @@
     <string name="onboarding_stats_info_desc">Статистика рассчитывается локально на вашем устройстве на основе вашей истории воспроизведения. Никакие данные не отправляются на внешние серверы. Доступ к подробной статистике в любое время с главного экрана или настроек.</string>
     <!-- MiniPlayer Swipe Hints -->
     <string name="miniplayer_swipe_up_hint">↑ Полный плеер</string>
-    <string name="miniplayer_swipe_down_hint">↓ Уволить</string>
+    <string name="miniplayer_swipe_down_hint">↓ Убрать</string>
     <string name="miniplayer_swipe_left_hint">Далее →</string>
     <string name="miniplayer_swipe_right_hint">← Предыдущий</string>
     <string name="miniplayer_no_song">Песня не воспроизводится.</string>
@@ -1143,8 +1143,8 @@
     <string name="settings_player_customization_desc">Кнопки пропуска, индикатор выполнения</string>
     <string name="settings_miniplayer_customization">Мини-плеер</string>
     <string name="settings_miniplayer_customization_desc">Фон, элементы управления</string>
-    <string name="settings_album_bottom_sheet_gradient_blur">Альбом Градиент/Размытие</string>
-    <string name="settings_album_bottom_sheet_gradient_blur_desc">Управление градиентом и размытием за листами альбома</string>
+    <string name="settings_album_bottom_sheet_gradient_blur">Градиент/Размытие экрана альбомов</string>
+    <string name="settings_album_bottom_sheet_gradient_blur_desc">Управление градиентом и размытием за экраном деталей альбома</string>
     <string name="settings_gestures">Жесты</string>
     <string name="settings_gestures_desc">Проведите пальцем, чтобы пропустить</string>
     <string name="settings_ignore_mediastore_covers">Показывать обложку песни вместо обложки альбома</string>
@@ -1974,7 +1974,7 @@
     <string name="settings_restore_action_short">Восстановить</string>
     <string name="settings_experimental">Экспериментальные возможности</string>
     <string name="settings_left_aligned">С выравниванием по левому краю</string>
-    <string name="settings_player">Игрок</string>
+    <string name="settings_player">Проигрыватель</string>
     <string name="settings_restore_completed">Восстановление успешно завершено.</string>
     <string name="settings_right_aligned">Выравнивание по правому краю</string>
     <string name="settings_tab_order">Порядок вкладок библиотеки</string>
@@ -2892,4 +2892,7 @@
     <string name="lyrically_sources_title">Источники Lyrically</string>
     <string name="lyrically_sources_desc">Настройте и расставьте приоритеты для источников текста песен в Lyrically. Сначала будут опробованы дословные источники, затем перейдут к синхронизированным/простым.</string>
     <string name="error_no_document_app">Отсутствует системное приложение для выбора папки.</string>
+    <string name="updates_channel_stable_title">Стабильный</string>
+    <string name="updates_channel_beta_title">Бета</string>
+    <string name="updates_channel_nightly_title">Ночные</string>
 </resources>
