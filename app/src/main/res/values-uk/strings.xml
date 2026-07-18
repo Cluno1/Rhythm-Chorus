@@ -1143,8 +1143,8 @@
     <string name="settings_player_customization_desc">Кнопки пропуску, панель прогресу</string>
     <string name="settings_miniplayer_customization">Міні-плеєр</string>
     <string name="settings_miniplayer_customization_desc">Фон, елементи керування</string>
-    <string name="settings_album_bottom_sheet_gradient_blur">Градієнт/розмиття альбому</string>
-    <string name="settings_album_bottom_sheet_gradient_blur_desc">Керуйте градієнтом і розмиттям за альбомними аркушами</string>
+    <string name="settings_album_bottom_sheet_gradient_blur">Градієнт/розмиття екрана альбому</string>
+    <string name="settings_album_bottom_sheet_gradient_blur_desc">Керуйте градієнтом і розмиттям за альбомним екраном «Деталі»</string>
     <string name="settings_gestures">Жести</string>
     <string name="settings_gestures_desc">Проведіть пальцем, щоб пропустити</string>
     <string name="settings_ignore_mediastore_covers">Показати зображення пісні замість зображення альбому</string>
@@ -2885,4 +2885,9 @@
     <string name="settings_rhythm_guard_first_break_dialog_turn_off">Вимкнути Rhytm Guard</string>
     <string name="settings_rhythm_guard_locked_during_break">Заблоковано протягом музичної паузи</string>
     <string name="lyrically_sources_title">Ліричні Джерела</string>
+    <string name="updates_channel_stable_title">Стабільна</string>
+    <string name="updates_channel_stable_desc">Отримувати лише стабільні релізи.</string>
+    <string name="updates_channel_beta_desc">Отримувати пререлізи та реліз-кандидати.</string>
+    <string name="updates_channel_nightly_desc">Отримувати найновіші нічні збірки, комільовані з головної гілки.</string>
+    <string name="settings_album_hide_about">Приховати розділ «Про альбом»</string>
 </resources>
