@@ -14,7 +14,7 @@
     <string name="widget_description_glance">Rhythm Музыка — управляйте воспроизведением с помощью 9 адаптивных макетов, дизайна Material 3 и обновлений состояния в реальном времени.</string>
     <string name="widget_name_glance">Rhythm Музыка</string>
     <string name="no_song_playing">Песня не воспроизводится.</string>
-    <string name="unknown_artist">Неизвестный художник</string>
+    <string name="unknown_artist">Неизвестный исполнитель</string>
     <string name="unknown_album">Неизвестный альбом</string>
     <string name="album_art">Обложка альбома</string>
     <string name="play_pause">Воспроизведение/пауза</string>
@@ -59,13 +59,13 @@
     <string name="settings_playback_desc">Состояния воспроизведения, плавное затухание, форматирование времени</string>
     <string name="settings_playback_title">Настройки воспроизведения</string>
     <string name="settings_queue_behavior">Правила очереди и перемешивание</string>
-    <string name="settings_use_exoplayer_shuffle">Перетасованный двигатель</string>
+    <string name="settings_use_exoplayer_shuffle">Движок перемешивания</string>
     <string name="settings_use_exoplayer_shuffle_desc">Используйте временную шкалу проигрывателя для случайного порядка.</string>
     <string name="settings_auto_queue">Контекстная очередь</string>
     <string name="settings_auto_queue_desc">Создайте связанную очередь при запуске воспроизведения.</string>
     <string name="settings_context_queue_preference">Настройки контекстной очереди</string>
     <string name="settings_context_queue_preference_desc">Выберите, какие метаданные контекстная очередь должна отдавать приоритет в первую очередь.</string>
-    <string name="settings_context_pref_artist_first">Сначала художник</string>
+    <string name="settings_context_pref_artist_first">Сначала исполнитель</string>
     <string name="settings_context_pref_genre_first">Сначала жанр</string>
     <string name="settings_context_queue_persistence">Сохранение контекстной очереди</string>
     <string name="settings_context_queue_persistence_desc">Выберите, должна ли контекстная очередь оставаться доступной после завершения воспроизведения.</string>
@@ -267,7 +267,7 @@
     <string name="settings_about_music_player">Музыкальный проигрыватель</string>
     <string name="settings_about_project_details">Подробности проекта</string>
     <string name="settings_about_version_label">Версия</string>
-    <string name="settings_about_build">Построить</string>
+    <string name="settings_about_build">Сборка</string>
     <string name="settings_about_target_sdk">Целевой SDK</string>
     <string name="settings_about_architecture">Архитектура</string>
     <string name="settings_about_architecture_value">ARM64 и ARM32</string>
@@ -295,7 +295,7 @@
     <string name="home_explore_music">Исследуйте потрясающую музыку</string>
     <string name="home_no_featured_albums">Нет избранных альбомов</string>
     <string name="home_no_featured_albums_desc">Добавьте несколько альбомов в свою библиотеку, чтобы увидеть избранный контент.</string>
-    <string name="home_artists">Художники</string>
+    <string name="home_artists">Исполнители</string>
     <string name="home_explore_musicians">Узнайте о своих любимых музыкантах</string>
     <string name="home_no_artists">Исполнители не найдены</string>
     <string name="home_no_artists_desc">Добавьте музыку в свою фонотеку, чтобы увидеть своих исполнителей.</string>
@@ -373,7 +373,7 @@
     <string name="extracting_metadata">Извлечение сведений о треке…</string>
     <string name="processing_library">Оптимизация библиотеки…</string>
     <string name="library_no_songs">Пока нет песен</string>
-    <string name="library_no_artists">Художники не найдены</string>
+    <string name="library_no_artists">Исполнители не найдены</string>
     <string name="library_unknown_year">Неизвестный год</string>
     <string name="library_start_collection">Начните собирать свою музыкальную коллекцию</string>
     <string name="library_sort_artists">Сортировать исполнителей по</string>
@@ -395,7 +395,7 @@
     <string name="sort_date_created">Дата создания</string>
     <string name="sort_song_count">Количество песен</string>
     <string name="sort_title">Название</string>
-    <string name="sort_artist">Художник</string>
+    <string name="sort_artist">Исполнитель</string>
     <!-- Storage Permission -->
     <string name="storage_permission_required">Требуется разрешение на хранение</string>
     <string name="storage_permission_desc">Чтобы просматривать музыкальные файлы и исследовать память вашего устройства, Rhythm необходимо разрешение на доступ к вашим файлам и мультимедиа.</string>
@@ -552,7 +552,7 @@
     <string name="onboarding_permission_tip_2">Вы можете изменить разрешения позже в настройках.</string>
     <string name="onboarding_permission_tip_3">Rhythm уважает вашу конфиденциальность и данные.</string>
     <!-- Onboarding Audio &amp; Playback -->
-    <string name="onboarding_default_screen_title">Целевой экран по умолчанию</string>
+    <string name="onboarding_default_screen_title">Начальный экран по умолчанию</string>
     <string name="onboarding_default_screen_desc">Выберите, какой экран откроется при запуске Rhythm.</string>
     <string name="onboarding_system_volume_title">Регулятор громкости системы</string>
     <string name="onboarding_system_volume_desc">Разрешите физическим кнопкам громкости вашего устройства управлять громкостью воспроизведения Rhythm.</string>
@@ -565,7 +565,7 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">Динамические цвета (Material вы)</string>
+    <string name="onboarding_dynamic_colors_title">Динамические цвета (Material You)</string>
     <string name="onboarding_dynamic_colors_desc">Примените цвета, извлеченные из обоев вашего устройства, для создания целостного образа.</string>
     <string name="onboarding_player_theme_title">Темы воспроизведения и мини-плеера</string>
     <string name="onboarding_player_theme_desc">Персонализируйте интерфейсы воспроизведения. Переключайтесь между чистым современным дизайном Rhythm или ярким, плавным выразительным дизайном.</string>
@@ -618,14 +618,14 @@
     <string name="onboarding_gestures_title">Сенсорные жесты</string>
     <string name="onboarding_gestures_desc">Ускорьте навигацию по своей музыкальной библиотеке с помощью интуитивно понятных жестов смахивания и касания. Настройте жесты для мини-плеера и полноэкранного режима проигрывателя.</string>
     <string name="onboarding_gestures_miniplayer">Мини-плеер</string>
-    <string name="onboarding_gestures_player">Полный игрок</string>
+    <string name="onboarding_gestures_player">Полный плеер</string>
     <string name="onboarding_gesture_swipe">Проведение мини-плеера</string>
     <string name="onboarding_gesture_swipe_desc">Проведите пальцем влево/вправо по мини-плееру, чтобы пропустить треки.</string>
     <string name="onboarding_gesture_dismiss">Проведите пальцем по экрану, чтобы закрыть</string>
     <string name="onboarding_gesture_dismiss_desc">Проведите пальцем вниз по полному плееру, чтобы вернуться к мини-плееру.</string>
     <string name="onboarding_gesture_tracks">Проведите пальцем по экрану, чтобы увидеть треки.</string>
     <string name="onboarding_gesture_tracks_desc">Проведите пальцем по обложке, чтобы перейти к следующей/предыдущей песне.</string>
-    <string name="onboarding_gesture_doubletap">Изображение двойным нажатием</string>
+    <string name="onboarding_gesture_doubletap">Двойное нажатие по обложке</string>
     <string name="onboarding_gesture_doubletap_desc">Дважды коснитесь обложки альбома, чтобы поставить лайк текущей песне.</string>
     <string name="onboarding_gestures_tips_title">Советы по использованию жестов</string>
     <string name="onboarding_gesture_tip_1">Жесты смахивания работают в обоих направлениях.</string>
@@ -645,7 +645,7 @@
     <string name="onboarding_widget_tip_3">Виджеты обновляются в режиме реального времени во время воспроизведения.</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">Подключите свои услуги</string>
-    <string name="onboarding_integrations_desc">Улучшите качество прослушивания, подключившись к внешним сервисам. Получайте обложки альбомов, тексты песен, записывайте свои пьесы и делитесь тем, что слушаете.</string>
+    <string name="onboarding_integrations_desc">Улучшите качество прослушивания, подключившись к внешним сервисам. Получайте обложки альбомов, тексты песен, скроббли свои прослушивания и делитесь тем, что слушаете.</string>
     <string name="onboarding_integrations_apis">API Услуги</string>
     <string name="onboarding_integration_deezer">Deezer</string>
     <string name="onboarding_integration_deezer_desc">Получите высококачественные обложки альбомов и метаданные.</string>
@@ -672,7 +672,7 @@
     <string name="onboarding_stats_info_title">Как это работает</string>
     <string name="onboarding_stats_info_desc">Статистика рассчитывается локально на вашем устройстве на основе вашей истории воспроизведения. Никакие данные не отправляются на внешние серверы. Доступ к подробной статистике в любое время с главного экрана или настроек.</string>
     <!-- MiniPlayer Swipe Hints -->
-    <string name="miniplayer_swipe_up_hint">↑ Полный игрок</string>
+    <string name="miniplayer_swipe_up_hint">↑ Полный плеер</string>
     <string name="miniplayer_swipe_down_hint">↓ Уволить</string>
     <string name="miniplayer_swipe_left_hint">Далее →</string>
     <string name="miniplayer_swipe_right_hint">← Предыдущий</string>
@@ -692,7 +692,7 @@
     <string name="settings_tip_rhythm_guard_off">Защитите свой слух, включив Rhythm Guard.</string>
     <string name="settings_tip_rhythm_guard_auto">Rhythm Guard автоматически управляет безопасными пределами прослушивания.</string>
     <string name="settings_tip_rhythm_guard_manual">Вы вручную управляете пределами защиты Rhythm.</string>
-    <string name="settings_default_screen">Целевой экран по умолчанию</string>
+    <string name="settings_default_screen">Начальный экран по умолчанию</string>
     <string name="settings_default_screen_desc">Выберите стартовый экран</string>
     <string name="settings_home_desc">Откройте для себя новую музыку и рекомендации.</string>
     <string name="settings_library_desc">Быстрый доступ к вашей музыкальной коллекции.</string>
@@ -720,7 +720,7 @@
     <!-- Theme Customization -->
     <string name="theme_good_to_know">Полезно знать</string>
     <string name="theme_tip_album_art">Цвета обложки альбома динамически адаптируются к вашей музыке.</string>
-    <string name="theme_tip_material_you">Material Вы используете системные цвета обоев (Android 12+)</string>
+    <string name="theme_tip_material_you">Material You использует системные цвета обоев (Android 12+)</string>
     <string name="theme_tip_custom_fonts">Импортируйте пользовательские шрифты для персонализации типографики.</string>
     <string name="theme_color_source">Источник цвета</string>
     <string name="theme_color_source_desc">Выберите способ извлечения цветов.</string>
@@ -753,9 +753,9 @@
     <string name="licenses_apache">Лицензии с открытым исходным кодом</string>
     <string name="licenses_attribution">Это приложение доступно под лицензией GPL-3.0. Библиотеки лицензируются по Apache 2.0 или совместимым лицензиям.</string>
     <!-- Components: Player Chip Order -->
-    <string name="player_chip_order_title">Порядок фишек игрока</string>
-    <string name="player_chip_order_desc">Настройка фишек игрока</string>
-    <string name="player_chip_order_saved">Порядок фишек игрока и видимость сохранены.</string>
+    <string name="player_chip_order_title">Порядок чипсов плеера</string>
+    <string name="player_chip_order_desc">Настройка чипсов плеера</string>
+    <string name="player_chip_order_saved">Порядок чипсов плеера и видимость сохранены.</string>
     <!-- Components: Library Tab Order -->
     <string name="library_tab_order_title">Порядок вкладок библиотеки</string>
     <string name="library_tab_order_desc">Изменение порядка и переключение видимости</string>
@@ -808,7 +808,7 @@
     <string name="queue_action_always_add_title">Всегда добавлять в очередь</string>
     <string name="queue_action_always_add_desc">Всегда добавлять выбранный трек в очередь.</string>
     <!-- Additional UI Elements -->
-    <string name="now_playing">ВОСПРОИЗВЕДАЕТСЯ</string>
+    <string name="now_playing">ВОСПРОИЗВОДИТСЯ</string>
     <string name="install_update_now">Установите обновление сейчас</string>
     <string name="audio_settings">Настройки звука</string>
     <string name="active_device">АКТИВНОЕ УСТРОЙСТВО</string>
@@ -914,7 +914,7 @@
     <string name="settings_language">Язык</string>
     <string name="settings_language_desc">английский, испанский</string>
     <string name="settings_haptic_feedback">Тактильная обратная связь</string>
-    <string name="settings_haptic_feedback_desc">Нажмите обратную связь</string>
+    <string name="settings_haptic_feedback_desc">Виброотклик при касании</string>
     <string name="settings_section_queue_playback">Очередь и воспроизведение</string>
     <string name="settings_section_audio_lyrics">Аудио и эффекты</string>
     <string name="settings_section_audio_playback">Аудио и воспроизведение</string>
@@ -975,13 +975,13 @@
     <string name="updates_enable_auto_check">Автопроверка</string>
     <string name="updates_channel_title">Обновление канала</string>
     <string name="updates_source_title">Источник обновления</string>
-    <string name="updates_source_desc">Выберите семейство выпусков Rhythm, которое следует использовать для обновлений OTA.</string>
+    <string name="updates_source_desc">Выберите семейство релизов Rhythm, которое следует использовать для обновлений OTA.</string>
     <string name="updates_source_installed">Сопоставить установленную сборку</string>
     <string name="updates_source_installed_label">Установленная сборка</string>
     <string name="updates_source_github_label">Сборки GitHub</string>
     <string name="updates_source_fdroid_label">Сборки F-Droid</string>
-    <string name="updates_source_github_desc">Всегда загружайте ресурсы выпуска GitHub.</string>
-    <string name="updates_source_fdroid_desc">Всегда загружайте ресурсы версии F-Droid.</string>
+    <string name="updates_source_github_desc">Всегда загружайте ресурсы релиза GitHub.</string>
+    <string name="updates_source_fdroid_desc">Всегда загружайте ресурсы релиза F-Droid.</string>
     <string name="updates_check_interval_title">Интервал проверки обновлений</string>
     <!-- Cache Actions -->
     
@@ -1039,7 +1039,7 @@
     <string name="bottomsheet_add_to_playlist">Добавить в плейлист</string>
     <string name="bottomsheet_no_playlists">Пока нет плейлистов</string>
     <string name="bottomsheet_queue">Очередь</string>
-    <string name="bottomsheet_up_next">СЛЕДУЮЩИЙ</string>
+    <string name="bottomsheet_up_next">ДАЛЕЕ</string>
     <string name="bottomsheet_albums">Альбомы</string>
     <string name="bottomsheet_songs">Песни</string>
     <!-- Bottom Sheet: Common -->
@@ -1139,7 +1139,7 @@
     <!-- Settings Screen - Complete -->
     <string name="settings_home_customization">Главная страница</string>
     <string name="settings_home_customization_desc">Быстрые действия, недавняя музыка</string>
-    <string name="settings_player_customization">Игрок</string>
+    <string name="settings_player_customization">Плеер</string>
     <string name="settings_player_customization_desc">Кнопки пропуска, индикатор выполнения</string>
     <string name="settings_miniplayer_customization">Мини-плеер</string>
     <string name="settings_miniplayer_customization_desc">Фон, элементы управления</string>
@@ -1151,10 +1151,10 @@
     <string name="settings_ignore_mediastore_covers_desc">Предпочитать встроенные изображения из каждого аудиофайла (ранее — «Игнорировать обложки MediaStore»).</string>
     <string name="settings_lossless_artwork">Изображение без потерь</string>
     <string name="settings_lossless_artwork_desc">Показать встроенные обложки песен в полном разрешении без сжатия.</string>
-    <string name="settings_song_artwork_restart_required">Изменён режим работы. Перезапустите приложение, чтобы очистить кеши и запустить полное повторное сканирование носителя с обновленными источниками изображений.</string>
+    <string name="settings_song_artwork_restart_required">Изменён режим обложки. Перезапустите приложение, чтобы очистить кеши и запустить полное повторное сканирование носителя с обновленными источниками изображений.</string>
     <string name="settings_artwork_cache_size">Размер кэша графических изображений</string>
-    <string name="settings_artist_parsing">Художники</string>
-    <string name="settings_artist_parsing_desc">Разделители, дисплей</string>
+    <string name="settings_artist_parsing">Исполнители</string>
+    <string name="settings_artist_parsing_desc">Разделители, отображение</string>
     <string name="settings_rhythm_stats">Статистика Rhythm</string>
     <string name="settings_rhythm_stats_desc">Время прослушивания, популярные треки и тенденции</string>
     <string name="settings_rhythm_guard">Rhythm Охранник</string>
@@ -1282,7 +1282,7 @@
     <!-- Home Screen Greetings -->
     
     <!-- Home Screen Section Titles -->
-    <string name="home_top_artists">Художники</string>
+    <string name="home_top_artists">Исполнители</string>
     <string name="home_top_artists_subtitle">Ваши любимые музыканты</string>
     <!-- Content Descriptions (additional) -->
     <string name="cd_reorder_home_sections">Изменение порядка главных разделов</string>
@@ -1293,7 +1293,7 @@
     <string name="queue_action_dialog">Диалоговое окно действий в очереди</string>
     <string name="playlist_action_dialog">Диалоговое окно действий со списком воспроизведения</string>
     <!-- Artist Settings -->
-    <string name="artists_title">Художники</string>
+    <string name="artists_title">Исполнители</string>
     <string name="artist_multi_parsing">Анализ нескольких исполнителей</string>
     <string name="artist_enable_separation">Включить разделение исполнителей</string>
     <string name="artist_enable_separation_desc">Разделение тегов нескольких исполнителей (например, «Исполнитель1/Исполнитель2»)</string>
@@ -1340,7 +1340,7 @@
     <!-- Blacklist/Whitelist -->
     
     <!-- Device & Audio -->
-    <string name="playback_use_system_volume">Использовать системный том</string>
+    <string name="playback_use_system_volume">Использовать системную громкость</string>
     <string name="playback_use_system_volume_desc">Управление громкостью системы вместо громкости приложения.</string>
     <!-- Multi-Artist Parsing -->
     <string name="delimiter_slash">Слэш</string>
@@ -1361,7 +1361,7 @@
     <string name="library_tab_songs">Песни</string>
     <string name="library_tab_playlists">Плейлисты</string>
     <string name="library_tab_albums">Альбомы</string>
-    <string name="library_tab_artists">Художники</string>
+    <string name="library_tab_artists">Исполнители</string>
     <string name="library_tab_one_visible">Должна быть видна хотя бы одна вкладка.</string>
     <string name="library_tab_order_reset">Порядок вкладок и видимость сброшены до значений по умолчанию.</string>
     <string name="library_tab_order_saved">Порядок вкладок и видимость сохранены.</string>
@@ -1371,7 +1371,7 @@
     <string name="player_chip_equalizer">Эквалайзер</string>
     <string name="player_chip_lyrics">Тексты песен</string>
     <string name="player_chip_album">Альбом</string>
-    <string name="player_chip_artist">Художник</string>
+    <string name="player_chip_artist">Исполнитель</string>
     <string name="player_chip_one_visible">Должен быть виден хотя бы один чип.</string>
     <string name="player_chip_order_reset">Сброс к порядку и видимости по умолчанию.</string>
     <!-- AutoEQ & Device Configuration -->
@@ -1417,7 +1417,7 @@
     
     <!-- More PlaceholderScreens Strings -->
     <string name="settings_double_tap_artwork_tip">Дважды коснитесь изображения для быстрого воспроизведения/паузы.</string>
-    <string name="settings_full_player">Полный игрок</string>
+    <string name="settings_full_player">Полный плеер</string>
     <string name="settings_header_customization">Настройка заголовка</string>
     <string name="settings_header_display">Отображение заголовка</string>
     <string name="settings_hue">Хюэ</string>
@@ -1425,7 +1425,7 @@
     <string name="settings_lightness">Легкость</string>
     <string name="settings_miniplayer">Миниплеер</string>
     <string name="settings_no_crash_logs">Журналы сбоев не найдены. Хорошая работа!</string>
-    <string name="settings_player_controls">Управление игроком</string>
+    <string name="settings_player_controls">Управление плеером</string>
     <string name="settings_player_screen">Экран проигрывателя</string>
     <string name="settings_presets">Предустановки</string>
     <string name="settings_progress_display">Индикация прогресса</string>
@@ -1541,13 +1541,13 @@
     <string name="settings_audio_routing_default_desc">Android решает, как маршрутизировать звук. Повторная выборка зависит от настроек системы.</string>
     <!-- Library Storage -->
     <string name="settings_cache_backend">Серверная часть кэша</string>
-    <string name="settings_storage_rebuild_room">Восстановить базу данных комнат</string>
-    <string name="settings_storage_rebuild_room_desc">Повторная синхронизация базы данных комнаты с текущими данными библиотеки.</string>
-    <string name="settings_storage_room_stats">Статистика базы данных комнат</string>
+    <string name="settings_storage_rebuild_room">Восстановить базу данных Room</string>
+    <string name="settings_storage_rebuild_room_desc">Повторная синхронизация базы данных Room с текущими данными библиотеки.</string>
+    <string name="settings_storage_room_stats">Статистика базы данных Room</string>
     <string name="settings_storage_song_count">Сохранено %1$d песен.</string>
     <string name="settings_storage_not_available">Недоступно в текущем режиме.</string>
     <string name="settings_storage_rebuild_success">База данных номеров успешно восстановлена.</string>
-    <string name="settings_storage_rebuild_failed">Не удалось восстановить базу данных комнат.</string>
+    <string name="settings_storage_rebuild_failed">Не удалось восстановить базу данных Room.</string>
     <!-- Cache Management -->
     <string name="settings_cache">Тайник</string>
     <string name="settings_cache_settings">Настройки кэша</string>
@@ -1666,9 +1666,9 @@
     <string name="settings_tab_songs">Песни</string>
     <string name="settings_tab_playlists">Плейлисты</string>
     <string name="settings_tab_albums">Альбомы</string>
-    <string name="settings_tab_artists">Художники</string>
+    <string name="settings_tab_artists">Исполнители</string>
     <string name="settings_tab_dates">Даты</string>
-    <string name="settings_tab_explorer">Исследователь</string>
+    <string name="settings_tab_explorer">Проводник</string>
     <string name="settings_tab_order_reset">Порядок табуляции восстановлен до значения по умолчанию.</string>
     <string name="settings_tab_order_saved">Порядок табуляции сохранен.</string>
     <string name="settings_move_up">Вверх</string>
@@ -1695,7 +1695,7 @@
     <string name="settings_tablet_layout_desc">Используйте мини-плеер в стиле планшета на телефонах.</string>
     <!-- Player Customization -->
     <string name="settings_chip_order">Порядок и видимость чипов</string>
-    <string name="settings_chip_order_desc">Настройте и измените порядок фишек действий игрока.</string>
+    <string name="settings_chip_order_desc">Настройте и измените порядок чипсов действий плеера.</string>
     <string name="settings_artwork_overlay">Наложение графического изображения</string>
     <string name="settings_artwork_overlay_desc">Показывать наложение на обложку альбома.</string>
     <string name="settings_song_info_artwork">Информация о песне в обложке</string>
@@ -1712,7 +1712,7 @@
     <string name="settings_lyrics_alignment_desc">Горизонтальное выравнивание текста</string>
     <string name="settings_show_art_below_lyrics">Показать искусство ниже текста</string>
     <string name="settings_show_art_below_lyrics_desc">Отображение изображения под наложением текста песни.</string>
-    <string name="settings_seek_buttons">Кнопки поиска</string>
+    <string name="settings_seek_buttons">Кнопки перемотки</string>
     <string name="settings_seek_buttons_desc">Отображение кнопок перехода вперед/назад на 10 секунд.</string>
     <string name="settings_thumb_style">Стиль большого пальца</string>
     <!-- Theme Customization -->
@@ -1724,7 +1724,7 @@
     <string name="settings_color_customization">Настройка цвета</string>
     <string name="settings_color_source">Источник цвета</string>
     <string name="settings_color_source_album">Обложки альбомов — отрывки из иллюстраций</string>
-    <string name="settings_color_source_monet">Системные цвета — Material Вы</string>
+    <string name="settings_color_source_monet">Системные цвета — Material You</string>
     <string name="settings_color_source_custom">Пользовательская схема — %1$s</string>
     <string name="settings_color_schemes">Цветовые схемы</string>
     <string name="settings_color_schemes_desc">Просмотр и выбор предустановленных цветовых палитр.</string>
@@ -1747,8 +1747,8 @@
     <string name="settings_auto_detect_holidays">Автоматическое определение праздников</string>
     <string name="settings_auto_detect_holidays_desc">Автоматически показывать праздничные украшения.</string>
     <string name="settings_theme_system">Система</string>
-    <string name="settings_theme_light">Свет</string>
-    <string name="settings_theme_dark">Темный</string>
+    <string name="settings_theme_light">Светлая</string>
+    <string name="settings_theme_dark">Темная</string>
     <string name="settings_festival_christmas">Рождество</string>
     <string name="settings_festival_new_year">Новый год</string>
     <string name="settings_area_full">Полный</string>
@@ -1777,7 +1777,7 @@
     <string name="settings_carousel_default">По умолчанию</string>
     <!-- Expressive Shapes -->
     <string name="settings_shapes_album_art">Обложка альбома</string>
-    <string name="settings_shapes_player_controls">Управление игроком</string>
+    <string name="settings_shapes_player_controls">Управление плеером</string>
     <string name="settings_shapes_mini_player">Мини-плеер</string>
     <!-- Lyrics Source -->
 
@@ -1869,20 +1869,20 @@
     <string name="settings_shape_preset_desc">Предопределенные коллекции фигур</string>
     <string name="settings_shape_album_art">Форма обложки альбома</string>
     <string name="settings_shape_album_art_desc">Форма обложки альбома</string>
-    <string name="settings_shape_player_art">Форма изображения игрока</string>
-    <string name="settings_shape_player_art_desc">Форма изображения игрока</string>
+    <string name="settings_shape_player_art">Форма изображения плеера</string>
+    <string name="settings_shape_player_art_desc">Форма изображения плеера</string>
     <string name="settings_shape_song_art">Форма обложки песни</string>
     <string name="settings_shape_song_art_desc">Форма обложки песни</string>
     <string name="settings_shape_playlist_art">Форма изображения плейлиста</string>
     <string name="settings_shape_playlist_art_desc">Форма обложки плейлиста</string>
-    <string name="settings_shape_artist_art">Форма произведения искусства художника</string>
+    <string name="settings_shape_artist_art">Форма обложек исполнителя</string>
     <string name="settings_shape_artist_art_desc">Форма изображения исполнителя</string>
-    <string name="settings_shape_player_controls">Форма управления игроком</string>
-    <string name="settings_shape_player_controls_desc">Игрок управляет формой</string>
+    <string name="settings_shape_player_controls">Форма управления плеером</string>
+    <string name="settings_shape_player_controls_desc">Форма кнопок управления плеером</string>
     <string name="settings_shape_mini_player">Форма мини-плеера</string>
     <string name="settings_shape_mini_player_desc">Форма мини-плеера</string>
     <string name="settings_library_settings">Библиотечный опыт</string>
-    <string name="settings_library_settings_desc">Рейтинги, организация и поведение произведений искусства.</string>
+    <string name="settings_library_settings_desc">Рейтинги, организация и поведение обложек.</string>
     <string name="settings_library_group_organization">Организация и рейтинги</string>
     <string name="settings_library_combine_discs">Объединение дисков</string>
     <string name="settings_library_combine_discs_desc">Объединение многодисковых альбомов в одну непрерывную сортировку.</string>
@@ -1906,7 +1906,7 @@
     <string name="settings_theme_import_font_desc">Импортируйте собственный файл шрифта (.ttf, .otf)</string>
     <!-- Player Customization Search Strings -->
     <string name="settings_player_chip_order">Порядок и видимость чипов</string>
-    <string name="settings_player_chip_order_desc">Настройте и измените порядок фишек действий игрока.</string>
+    <string name="settings_player_chip_order_desc">Настройте и измените порядок чипсов действий плеера.</string>
     <string name="settings_lyrics_show_translation">Показать перевод</string>
     <string name="settings_lyrics_show_translation_desc">Отобразить переведенные тексты песен, если они доступны.</string>
     <string name="settings_lyrics_show_romanization">Показать романизацию</string>
@@ -1916,7 +1916,7 @@
     <string name="settings_playback_pitch">Шаг воспроизведения</string>
     <string name="settings_player_gradient">Наложение градиента</string>
     <string name="settings_player_gradient_desc">Отображение наложения градиента на обложке альбома.</string>
-    <string name="settings_player_seek_buttons">Кнопки поиска</string>
+    <string name="settings_player_seek_buttons">Кнопки перемотки</string>
     <string name="settings_player_seek_buttons_desc">Отображать кнопки 10-секундного перехода вперед/назад.</string>
     <string name="settings_player_text_alignment">Выравнивание текста</string>
     <string name="settings_player_text_alignment_desc">Выберите выравнивание текста (слева, по центру, справа).</string>
@@ -2060,7 +2060,7 @@
     <string name="explorertabcontent_play_folder_as_playlist">Папка воспроизведения (как список воспроизведения)</string>
     <string name="explorertabcontent_add_all_to_queue">Добавить все в очередь</string>
     <string name="homescreen_view_all_stats">Посмотреть всю статистику</string>
-    <string name="homescreen_plays">Пьесы</string>
+    <string name="homescreen_plays">Прослушивания</string>
     <string name="libraryscreen_more_actions">Дополнительные действия</string>
     <string name="libraryscreen_shuffle_artists">Перемешать исполнителей</string>
     <string name="libraryscreen_clear_selection">Очистить выбор</string>
@@ -2140,7 +2140,7 @@
     <string name="songinfobottomsheet_online_search_failed">Поиск в Интернете не удался.</string>
     <string name="songinfobottomsheet_online_api_service_unavailable">Онлайн-сервис API недоступен.</string>
     <string name="songinfobottomsheet_fetching">Получение...</string>
-    <string name="songinfobottomsheet_fetch_online_art">Получить онлайн-искусство</string>
+    <string name="songinfobottomsheet_fetch_online_art">Получить обложку онлайн</string>
     <string name="songinfobottomsheet_update_artwork_and_tags">Обновление иллюстраций и тегов.</string>
     <string name="songinfobottomsheet_fetching_artwork">Получение изображения...</string>
     <string name="updatebottomsheet_install">Установить</string>
@@ -2197,14 +2197,14 @@
     <string name="universalsearchscreen_removed_from_streaming_favorites">Удалено из избранного потокового вещания.</string>
     <string name="universalsearchscreen_added_to_streaming_favorites">Добавлено в избранное потокового вещания.</string>
     <string name="universalsearchscreen_album_not_found">Альбом не найден</string>
-    <string name="universalsearchscreen_artist_not_found">Художник не найден</string>
+    <string name="universalsearchscreen_artist_not_found">Исполнитель не найден</string>
     <string name="expressiveplayerscreen_more">Подробнее</string>
     <string name="expressiveplayerscreen_device">Устройство</string>
     <string name="expressiveplayerscreen_load">Нагрузка</string>
     <string name="materialplayerscreen_permission_denied_could_not">Разрешение отклонено. Не удалось вставить текст.</string>
     <string name="materialplayerscreen_unable_to_share_file">Невозможно поделиться файлом</string>
     <string name="playerscreen_select_artist">Выбор исполнителя</string>
-    <string name="playerscreen_open_artist">Открытый художник</string>
+    <string name="playerscreen_open_artist">Открыть исполнителя</string>
     <string name="aboutscreen_support_development">Поддержка развития</string>
     <string name="aboutscreen_discord_community">Сообщество Discord</string>
     <string name="apimanagementsettingsscreen_lyrically">Lyrically</string>
@@ -2252,7 +2252,7 @@
     <string name="performancesettingsscreen_disable_auto_fetch_artwork">Отключить автозагрузку иллюстраций</string>
     <string name="placeholdersettingsscreen_choose_a_setting_from">Выберите настройку на левой панели.</string>
     <string name="placeholdersettingsscreen_tap_on_any_setting">Нажмите на любую опцию настройки, чтобы просмотреть и изменить ее настройки здесь.</string>
-    <string name="playercustomizationsettingsscreen_player_theme">Тема игрока</string>
+    <string name="playercustomizationsettingsscreen_player_theme">Тема плеера</string>
     <string name="playercustomizationsettingsscreen_playback_theme">Тема воспроизведения</string>
     <string name="playercustomizationsettingsscreen_tap_lyrics_for_immersive">Нажмите «Текст» для захватывающего просмотра.</string>
     <string name="rhythmguardsettingsscreen_choose_sections">Выбор разделов</string>
@@ -2302,7 +2302,7 @@
     <string name="deviceconfiguration_delete_confirm">Вы уверены, что хотите удалить \'%1$s\'? Это действие невозможно отменить.</string>
     <string name="deviceconfiguration_profile_imported">Профиль импортирован: %1$s</string>
     <string name="drag_to_reorder">Перетащите, чтобы изменить порядок</string>
-    <string name="artist_artwork_description">Работа художника для %1$s</string>
+    <string name="artist_artwork_description">Обложка исполнителя для %1$s</string>
     <string name="explorer_item_icon_description">Значок %1$s</string>
     <string name="song_added_to_blacklist_format">%1$s добавлен в черный список</string>
     <string name="playlist_import_success">Плейлисты %1$d успешно импортированы.\n%2$s\n\nПерезапустите приложение, чтобы применить изменения.</string>
@@ -2388,13 +2388,13 @@
     <string name="settings_tip_updates_active_desc_2">Вы настроены на получение обновлений. Проверьте настройки канала на предмет стабильности и свежести.</string>
     <string name="settings_tip_updates_inactive_desc_1">Обновления отключены. Снова включите их, чтобы они оставались защищенными и актуальными.</string>
     <string name="settings_tip_updates_inactive_desc_2">Вы привязаны к текущей сборке. Когда будете готовы, снова включите обновления.</string>
-    <string name="settings_tip_queue_active_desc_1">Проведение пальцем по экрану для пропуска игрока активно. Настройте правила очереди для более плавных переходов.</string>
+    <string name="settings_tip_queue_active_desc_1">Проведение пальцем по экрану для пропуска плеера активно. Настройте правила очереди для более плавных переходов.</string>
     <string name="settings_tip_queue_active_desc_2">Пропуск жестов включен. Сопоставьте поведение очереди с потоком прослушивания.</string>
     <string name="settings_tip_queue_inactive_desc_1">Функция пропуска по экрану отключена. Элементы управления очередью могут помочь обеспечить эффективность воспроизведения.</string>
     <string name="settings_tip_queue_inactive_desc_2">Предпочитаете явный контроль? Точная настройка поведения очереди для предсказуемого воспроизведения.</string>
-    <string name="settings_tip_controls_active_desc_1">Кнопки поиска видны. Настройте элементы управления игроком, чтобы уменьшить беспорядок.</string>
+    <string name="settings_tip_controls_active_desc_1">Кнопки перемотки видны. Настройте элементы управления плеера, чтобы уменьшить беспорядок.</string>
     <string name="settings_tip_controls_active_desc_2">Включен проигрыватель с расширенными возможностями управления. Настройте макет так, чтобы вы могли дотянуться до него большим пальцем.</string>
-    <string name="settings_tip_controls_inactive_desc_1">Включено минимальное управление игроком. Добавьте кнопки поиска, если вы пропустите точные прыжки.</string>
+    <string name="settings_tip_controls_inactive_desc_1">Включено минимальное управление плеером. Добавьте кнопки перемотки, если вы пропустите точные прыжки.</string>
     <string name="settings_tip_controls_inactive_desc_2">Чистая планировка активна. Снова включите элементы управления поиском для более точной обработки воспроизведения.</string>
     <string name="settings_tip_miniplayer_active_desc_1">Виден прогресс мини-плеера. Выберите стиль, соответствующий вашей теме.</string>
     <string name="settings_tip_miniplayer_active_desc_2">На мини-плеере активен индикатор выполнения. Затем попробуйте изменить форму и углы.</string>
@@ -2593,7 +2593,7 @@
     <string name="eq_mono_only">Только моно</string>
     <!-- Library updates, sorting & categories -->
     <string name="library_sort_title">Название</string>
-    <string name="library_sort_artist">Художник</string>
+    <string name="library_sort_artist">Исполнитель</string>
     <string name="library_sort_album">Альбом</string>
     <string name="library_sort_date_added">Дата добавления</string>
     <string name="library_sort_date_modified">Дата изменения</string>
@@ -2601,7 +2601,7 @@
     <string name="library_sort_descending">По убыванию</string>
     <string name="library_scan_songs">Сканирование песен...</string>
     <string name="library_scan_albums">Обработка альбомов...</string>
-    <string name="library_scan_artists">Обработка художников...</string>
+    <string name="library_scan_artists">Обработка исполнителей...</string>
     <string name="library_scan_genres">Определение жанров...</string>
     <string name="library_scan_media">Сканирование носителя...</string>
     <string name="library_category_all">Все</string>
@@ -2618,7 +2618,7 @@
     <string name="library_category_stereo">Стерео</string>
     <string name="library_no_playlists_yet">Списков воспроизведения пока нет\nСоздайте свой первый список воспроизведения с помощью кнопки +</string>
     <string name="library_no_albums_yet">Альбомов пока нет</string>
-    <string name="library_no_artists_yet">Художников пока нет</string>
+    <string name="library_no_artists_yet">Исполнителей пока нет</string>
     <string name="library_action_add_to_playlist">Добавить в плейлист</string>
     <string name="library_action_rate_song">Оценить песню</string>
     <string name="library_selected_count_format">%1$d выбрано</string>
@@ -2686,13 +2686,13 @@
     <string name="shape_option_very_sunny_desc">Солнце с большим количеством лучей</string>
     <string name="shape_option_cookie4">Печенье 4</string>
     <string name="shape_option_cookie4_desc">4-стороннее печенье</string>
-    <string name="shape_option_cookie6">Файл cookie 6</string>
+    <string name="shape_option_cookie6">Печенье 6</string>
     <string name="shape_option_cookie6_desc">6-стороннее печенье</string>
-    <string name="shape_option_cookie7">Файл cookie 7</string>
+    <string name="shape_option_cookie7">Печенье 7</string>
     <string name="shape_option_cookie7_desc">7-стороннее печенье</string>
-    <string name="shape_option_cookie9">Файл cookie 9</string>
+    <string name="shape_option_cookie9">Печенье 9</string>
     <string name="shape_option_cookie9_desc">9-стороннее печенье</string>
-    <string name="shape_option_cookie12">Файл cookie 12</string>
+    <string name="shape_option_cookie12">Печенье 12</string>
     <string name="shape_option_cookie12_desc">12-стороннее печенье</string>
     <string name="shape_option_ghostish">Призрачный</string>
     <string name="shape_option_ghostish_desc">Призрачная форма</string>
@@ -2727,7 +2727,7 @@
     <string name="shape_group_basic">Базовый</string>
     <string name="shape_group_organic">Органический</string>
     <string name="shape_group_playful">Игривый</string>
-    <string name="shape_group_cookie">Файл cookie</string>
+    <string name="shape_group_cookie">Печенье</string>
     <string name="shape_group_whimsical">Причудливый</string>
     <string name="shape_group_special">Специальный</string>
     <string name="shape_group_pixel">Пиксель</string>
@@ -2736,7 +2736,7 @@
     <string name="option_expanded">Расширенное</string>
     <string name="option_collapsed">Свернуто</string>
     <string name="option_linear">Линейный</string>
-    <string name="option_circular">Проспект</string>
+    <string name="option_circular">Круговой</string>
     <string name="option_both">Оба</string>
     <string name="option_icon">Значок</string>
     <string name="option_name">Имя</string>
@@ -2747,7 +2747,7 @@
     <!-- Color Scheme names -->
 
     <!-- Shape Utils category and descriptions -->
-    <string name="shape_utils_player_controls">Управление игроком</string>
+    <string name="shape_utils_player_controls">Управление плеером</string>
     <string name="shape_utils_mini_player">Мини-плеер</string>
     <!-- Metadata properties and labels -->
     <string name="metadata_duration">Продолжительность</string>
@@ -2792,10 +2792,10 @@
     <string name="settings_managed_by_expressive_shapes">Управляется выразительными формами</string>
     <!-- Shape targets -->
     <string name="shape_target_album_art">Обложка альбома</string>
-    <string name="shape_target_player_art">Изображение игрока</string>
+    <string name="shape_target_player_art">Обложка плеера</string>
     <string name="shape_target_song_art">Обложка песни</string>
     <string name="shape_target_playlist_art">Изображение плейлиста</string>
-    <string name="shape_target_artist_art">Работы художника</string>
+    <string name="shape_target_artist_art">Обложка исполнителя</string>
     <string name="settings_shape_for">Форма для %1$s</string>
     <string name="lyric_widget_description">Виджет, показывающий тексты воспроизводимых в данный момент медиафайлов.</string>
     <string name="edit_album_title">Редактировать альбом</string>
@@ -2879,4 +2879,17 @@
     <string name="playlist_count_format">%1$d плейлисты</string>
     <string name="ui_song_count">1 песня</string>
     <string name="duration_minutes_format">%1$d м</string>
+    <string name="updates_channel_stable_desc">Получать только официальные стабильные релизы.</string>
+    <string name="updates_channel_beta_desc">Получать пре-релизы и релиз-кандидаты.</string>
+    <string name="updates_channel_nightly_desc">Получать bleeding-edge ночные сборки собранные из основной ветки.</string>
+    <string name="settings_album_hide_about">Скрыть раздел об альбоме</string>
+    <string name="settings_album_hide_about_desc">Скрыть описание/раздел об альбоме на экране сведений об альбоме</string>
+    <string name="settings_rhythm_guard_first_break_dialog_title">О перерывах прослушивания</string>
+    <string name="settings_rhythm_guard_first_break_dialog_message">Rhythm Guard планирует перерывы в прослушивании, чтобы защитить ваш слух, когда достигается допустимая суточная доза воздействия. Перерыв приостанавливает воспроизведение и блокирует элементы управления, чтобы ваши уши могли полноценно отдохнуть.\n\nВо время первого перерыва вы можете отключить Rhythm Guard. Однако во время последующих перерывов вы не сможете отключить Rhythm Guard до окончания времени перерыва. Вы всегда можете отключить его или изменить настройки вне активных перерывов.</string>
+    <string name="settings_rhythm_guard_first_break_dialog_turn_off">Выключить Rhythm Guard</string>
+    <string name="settings_rhythm_guard_first_break_dialog_start">Начать перерыв</string>
+    <string name="settings_rhythm_guard_locked_during_break">Заблокировано во время перерыва</string>
+    <string name="lyrically_sources_title">Источники Lyrically</string>
+    <string name="lyrically_sources_desc">Настройте и расставьте приоритеты для источников текста песен в Lyrically. Сначала будут опробованы дословные источники, затем перейдут к синхронизированным/простым.</string>
+    <string name="error_no_document_app">Отсутствует системное приложение для выбора папки.</string>
 </resources>
