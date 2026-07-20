@@ -674,7 +674,7 @@
     <!-- MiniPlayer Swipe Hints -->
     <string name="miniplayer_swipe_up_hint">↑ Полный плеер</string>
     <string name="miniplayer_swipe_down_hint">↓ Убрать</string>
-    <string name="miniplayer_swipe_left_hint">Далее →</string>
+    <string name="miniplayer_swipe_left_hint">Следующий →</string>
     <string name="miniplayer_swipe_right_hint">← Предыдущий</string>
     <string name="miniplayer_no_song">Песня не воспроизводится</string>
     <string name="badge_live">ПРЯМОЙ ЭФИР</string>
