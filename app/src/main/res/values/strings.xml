@@ -1949,7 +1949,7 @@
     <string name="fullscreenlyricsview_retry_fetching">Retry Fetching</string>
     <string name="fullscreenlyricsview_romanization">Romanization</string>
     <string name="fullscreenlyricsview_translation">Translation</string>
-    <string name="fullscreenlyricsview_realtime_sync_adjustment">Real-time Sync Adjustment</string>
+    <string name="fullscreenlyricsview_realtime_sync_adjustment">Sync</string>
     <string name="fullscreenlyricsview_str_05s">-0.5s</string>
     <string name="fullscreenlyricsview_str_05s_1">+0.5s</string>
     <string name="fullscreenlyricsview_reset_offset">Reset Offset</string>
