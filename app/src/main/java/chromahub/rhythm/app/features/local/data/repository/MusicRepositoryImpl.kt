@@ -1317,7 +1317,7 @@ class MusicRepository(context: Context) {
         }
 
         return extension in setOf(
-            "mp3", "m4a", "flac", "ogg", "opus", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka",
+            "mp3", "m4a", "flac", "ogg", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka",
             "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b"
         )
     }
@@ -1493,7 +1493,7 @@ class MusicRepository(context: Context) {
         if (filePath.isNullOrBlank()) return null
 
         val extension = filePath.substringAfterLast('.', "").lowercase()
-        if (extension !in setOf("opus", "ogg", "oga")) {
+        if (extension !in setOf("opus", "ogg", "oga", "opa")) {
             return null
         }
 
@@ -3165,7 +3165,8 @@ class MusicRepository(context: Context) {
                     // For OGG/Opus files, try direct Vorbis comment parsing
                     if (filePath?.endsWith(".ogg", ignoreCase = true) == true || 
                         filePath?.endsWith(".oga", ignoreCase = true) == true ||
-                        filePath?.endsWith(".opus", ignoreCase = true) == true) {
+                        filePath?.endsWith(".opus", ignoreCase = true) == true ||
+                        filePath?.endsWith(".opa", ignoreCase = true) == true) {
                         Log.d(TAG, "===== Detected OGG/Opus file, trying OGG extraction =====")
                         return@use extractLyricsFromOGG(filePath)
                     }

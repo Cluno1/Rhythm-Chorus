@@ -3390,7 +3390,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         lastProgressTime = System.currentTimeMillis()
                     } else {
                         val progress = currentPos - lastPosition
-                        if (progress >= 500L || progress < 0L) {
+                        if (progress != 0L) {
                             lastPosition = currentPos
                             lastProgressTime = System.currentTimeMillis()
                         } else {
@@ -4039,7 +4039,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private fun Song.toMediaItem(): MediaItem {
         val extension = this.path?.substringAfterLast('.', "")?.lowercase() ?: ""
         val mimeType = when (extension) {
-            "opus" -> "audio/ogg"
+            "opus", "opa" -> "audio/ogg"
             "ogg", "oga" -> "audio/ogg"
             "mkv", "mka" -> "audio/x-matroska"
             "mp3" -> "audio/mpeg"
