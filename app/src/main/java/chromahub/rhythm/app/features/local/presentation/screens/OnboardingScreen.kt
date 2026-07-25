@@ -10000,6 +10000,7 @@ fun EnhancedIntegrationsContent(
     val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
     val ytMusicApiEnabled by appSettings.ytMusicApiEnabled.collectAsState()
     val spotifyApiEnabled by appSettings.spotifyApiEnabled.collectAsState()
+    val wikipediaApiEnabled by appSettings.wikipediaApiEnabled.collectAsState()
     val broadcastStatusEnabled by appSettings.broadcastStatusEnabled.collectAsState()
     val bluetoothLyricsEnabled by appSettings.bluetoothLyricsEnabled.collectAsState()
     val appleCanvasEnabled by appSettings.appleCanvasEnabled.collectAsState()
@@ -10065,6 +10066,7 @@ fun EnhancedIntegrationsContent(
                     lyricallyApiEnabled = lyricallyApiEnabled,
                     ytMusicApiEnabled = ytMusicApiEnabled,
                     spotifyApiEnabled = spotifyApiEnabled,
+                    wikipediaApiEnabled = wikipediaApiEnabled,
                     broadcastStatusEnabled = broadcastStatusEnabled,
                     bluetoothLyricsEnabled = bluetoothLyricsEnabled,
                     appleCanvasEnabled = appleCanvasEnabled,
@@ -10074,6 +10076,7 @@ fun EnhancedIntegrationsContent(
                     onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
                     onYtMusicChange = { appSettings.setYTMusicApiEnabled(it) },
                     onSpotifyChange = { appSettings.setSpotifyApiEnabled(it) },
+                    onWikipediaChange = { appSettings.setWikipediaApiEnabled(it) },
                     onBroadcastChange = { appSettings.setBroadcastStatusEnabled(it) },
                     onBluetoothLyricsChange = {
                         appSettings.setBluetoothLyricsEnabled(it)
@@ -10125,6 +10128,7 @@ fun EnhancedIntegrationsContent(
                 lyricallyApiEnabled = lyricallyApiEnabled,
                 ytMusicApiEnabled = ytMusicApiEnabled,
                 spotifyApiEnabled = spotifyApiEnabled,
+                wikipediaApiEnabled = wikipediaApiEnabled,
                 broadcastStatusEnabled = broadcastStatusEnabled,
                 bluetoothLyricsEnabled = bluetoothLyricsEnabled,
                 appleCanvasEnabled = appleCanvasEnabled,
@@ -10134,6 +10138,7 @@ fun EnhancedIntegrationsContent(
                 onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
                 onYtMusicChange = { appSettings.setYTMusicApiEnabled(it) },
                 onSpotifyChange = { appSettings.setSpotifyApiEnabled(it) },
+                onWikipediaChange = { appSettings.setWikipediaApiEnabled(it) },
                 onBroadcastChange = { appSettings.setBroadcastStatusEnabled(it) },
                 onBluetoothLyricsChange = {
                     appSettings.setBluetoothLyricsEnabled(it)
@@ -10162,6 +10167,7 @@ private fun IntegrationsSettingsCards(
     lyricallyApiEnabled: Boolean,
     ytMusicApiEnabled: Boolean,
     spotifyApiEnabled: Boolean,
+    wikipediaApiEnabled: Boolean,
     broadcastStatusEnabled: Boolean,
     bluetoothLyricsEnabled: Boolean,
     appleCanvasEnabled: Boolean,
@@ -10171,6 +10177,7 @@ private fun IntegrationsSettingsCards(
     onLyricallyChange: (Boolean) -> Unit,
     onYtMusicChange: (Boolean) -> Unit,
     onSpotifyChange: (Boolean) -> Unit,
+    onWikipediaChange: (Boolean) -> Unit,
     onBroadcastChange: (Boolean) -> Unit,
     onBluetoothLyricsChange: (Boolean) -> Unit,
     onAppleCanvasChange: (Boolean) -> Unit,
@@ -10288,6 +10295,18 @@ private fun IntegrationsSettingsCards(
                     "Access matching song details and recommendations",
                     ytMusicApiEnabled,
                     onYtMusicChange,
+                    null
+                )
+            )
+        }
+        if (chromahub.rhythm.app.BuildConfig.ENABLE_WIKIPEDIA) {
+            add(
+                onboardingToggleItem(
+                    MaterialSymbolIcon("article"),
+                    "Wikipedia",
+                    "Fetch album details and descriptions for About section",
+                    wikipediaApiEnabled,
+                    onWikipediaChange,
                     null
                 )
             )

@@ -29,11 +29,11 @@ android {
         
         val overrideVersionCode = project.findProperty("versionCodeOverride")?.toString()?.toIntOrNull()
         val overrideVersionName = project.findProperty("versionNameOverride")?.toString()
-        versionCode = overrideVersionCode ?: 534321135
-        versionName = overrideVersionName ?: "5.3.432.1135"
+        versionCode = overrideVersionCode ?: 534341139
+        versionName = overrideVersionName ?: "5.3.434.1139 Beta"
 
         val overrideReleaseDate = project.findProperty("releaseDateOverride")?.toString()
-        buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-07-17"}\"")
+        buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-07-26"}\"")
 
         val isNightly = project.findProperty("nightly")?.toString() == "true"
         buildConfigField("boolean", "IS_NIGHTLY", isNightly.toString())
@@ -61,6 +61,7 @@ android {
             buildConfigField("boolean", "ENABLE_DEEZER", "true")
             buildConfigField("boolean", "ENABLE_LRCLIB", "true")
             buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "true")
+            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "true")
             buildConfigField("String", "FLAVOR", "\"fdroid\"")
             
             versionNameSuffix = "-fdroid"
@@ -76,6 +77,7 @@ android {
             buildConfigField("boolean", "ENABLE_DEEZER", "true")
             buildConfigField("boolean", "ENABLE_LRCLIB", "true")
             buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "true")
+            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "true")
             buildConfigField("String", "FLAVOR", "\"github\"")
             
             versionNameSuffix = "-gh"

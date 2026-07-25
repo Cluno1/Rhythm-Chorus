@@ -262,17 +262,24 @@ fun AlbumDetailScreen(
         }
     }
 
+    val wikipediaApiEnabled by appSettings.wikipediaApiEnabled.collectAsState()
     var description by remember(albumId) { mutableStateOf<String?>(null) }
     var isDescriptionLoading by remember(albumId) { mutableStateOf(false) }
 
-    LaunchedEffect(albumId, albumName, album?.artist) {
-        val artistName = album?.artist
-        if (albumName.isNotBlank() && artistName != null && artistName.isNotBlank()) {
+    LaunchedEffect(albumId, albumName, album?.artist, allDisplaySongs, wikipediaApiEnabled) {
+        val fallbackArtist = allDisplaySongs.firstOrNull()?.artist
+        val effectiveArtistName = album?.artist?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
+            ?: fallbackArtist?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
+
+        if (albumName.isNotBlank()) {
             isDescriptionLoading = true
             withContext(Dispatchers.IO) {
-                var desc = AppleMusicCanvasProvider.getAlbumDescription(albumName, artistName)
-                if (desc.isNullOrBlank()) {
-                    desc = WikipediaProvider.getAlbumDescription(albumName, artistName)
+                var desc: String? = null
+                if (effectiveArtistName != null) {
+                    desc = AppleMusicCanvasProvider.getAlbumDescription(albumName, effectiveArtistName)
+                }
+                if (desc.isNullOrBlank() && wikipediaApiEnabled) {
+                    desc = WikipediaProvider.getAlbumDescription(albumName, effectiveArtistName)
                 }
                 withContext(Dispatchers.Main) {
                     description = desc
@@ -315,11 +322,14 @@ fun AlbumDetailScreen(
 
     var playAllPressed by remember { mutableStateOf(false) }
     var shufflePressed by remember { mutableStateOf(false) }
+    var addToQueuePressed by remember { mutableStateOf(false) }
     val playAllScale by animateFloatAsState(targetValue = if (playAllPressed) 0.96f else 1f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium), label = "playAllScale")
     val shuffleScale by animateFloatAsState(targetValue = if (shufflePressed) 0.96f else 1f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium), label = "shuffleScale")
+    val addToQueueScale by animateFloatAsState(targetValue = if (addToQueuePressed) 0.96f else 1f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium), label = "addToQueueScale")
 
     LaunchedEffect(playAllPressed) { if (playAllPressed) { delay(150); playAllPressed = false } }
     LaunchedEffect(shufflePressed) { if (shufflePressed) { delay(150); shufflePressed = false } }
+    LaunchedEffect(addToQueuePressed) { if (addToQueuePressed) { delay(150); addToQueuePressed = false } }
 
     val totalDuration = songDisplayState.totalDuration
     val aggregatedArtists = remember(album?.songs, effectiveDelimiters, artistSeparatorEnabled) {
@@ -1011,76 +1021,114 @@ fun AlbumDetailScreen(
                                     enter = expandVertically(animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)) + fadeIn(animationSpec = tween(300)),
                                     exit = shrinkVertically(animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)) + fadeOut(animationSpec = tween(200))
                                 ) {
-                                    Row(
+                                    Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(horizontal = 24.dp)
                                             .padding(top = 12.dp, bottom = 8.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Button(
-                                            onClick = {
-                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                                playAllPressed = true
-                                                onPlayAll(displaySongs)
-                                            },
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .height(52.dp)
-                                                .graphicsLayer {
-                                                    scaleX = playAllScale
-                                                    scaleY = playAllScale
-                                                },
-                                            shape = ButtonGroupDefaults.connectedLeadingButtonShapes().shape,
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = MaterialTheme.colorScheme.primary,
-                                                contentColor = MaterialTheme.colorScheme.onPrimary
-                                            ),
-                                            contentPadding = PaddingValues(horizontal = 16.dp)
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                                         ) {
-                                            Icon(
-                                                imageVector = RhythmIcons.Play,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(
-                                                "Play All",
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Bold
-                                            )
+                                            Button(
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    playAllPressed = true
+                                                    onPlayAll(displaySongs)
+                                                },
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .height(52.dp)
+                                                    .graphicsLayer {
+                                                        scaleX = playAllScale
+                                                        scaleY = playAllScale
+                                                    },
+                                                shape = ButtonGroupDefaults.connectedLeadingButtonShapes().shape,
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = MaterialTheme.colorScheme.primary,
+                                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                                ),
+                                                contentPadding = PaddingValues(horizontal = 16.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = RhythmIcons.Play,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    "Play All",
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+
+                                            FilledTonalButton(
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    shufflePressed = true
+                                                    onShufflePlay(displaySongs)
+                                                },
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .height(52.dp)
+                                                    .graphicsLayer {
+                                                        scaleX = shuffleScale
+                                                        scaleY = shuffleScale
+                                                    },
+                                                shape = ButtonGroupDefaults.connectedTrailingButtonShapes().shape,
+                                                colors = ButtonDefaults.filledTonalButtonColors(
+                                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                                ),
+                                                contentPadding = PaddingValues(horizontal = 16.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = RhythmIcons.Shuffle,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    stringResource(R.string.action_shuffle),
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Medium
+                                                )
+                                            }
                                         }
 
                                         FilledTonalButton(
                                             onClick = {
                                                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                                shufflePressed = true
-                                                onShufflePlay(displaySongs)
+                                                addToQueuePressed = true
+                                                displaySongs.forEach { onAddToQueue(it) }
                                             },
                                             modifier = Modifier
-                                                .weight(1f)
-                                                .height(52.dp)
+                                                .fillMaxWidth()
+                                                .height(48.dp)
                                                 .graphicsLayer {
-                                                    scaleX = shuffleScale
-                                                    scaleY = shuffleScale
+                                                    scaleX = addToQueueScale
+                                                    scaleY = addToQueueScale
                                                 },
-                                            shape = ButtonGroupDefaults.connectedTrailingButtonShapes().shape,
+                                            shape = RoundedCornerShape(24.dp),
                                             colors = ButtonDefaults.filledTonalButtonColors(
-                                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                                contentColor = MaterialTheme.colorScheme.onSurface
                                             ),
-                                            contentPadding = PaddingValues(horizontal = 16.dp)
+                                            enabled = displaySongs.isNotEmpty()
                                         ) {
                                             Icon(
-                                                imageVector = RhythmIcons.Shuffle,
+                                                imageVector = RhythmIcons.Queue,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(20.dp)
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                stringResource(R.string.action_shuffle),
+                                                text = stringResource(R.string.action_add_to_queue),
                                                 style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Medium
+                                                fontWeight = FontWeight.SemiBold
                                             )
                                         }
                                     }
@@ -1097,6 +1145,28 @@ fun AlbumDetailScreen(
                                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                             appSettings.setAlbumBottomSheetDiscFilter(disc)
                                         }
+                                    )
+                                }
+                            }
+
+                            // About Album Section
+                            if (description != null) {
+                                item {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    AboutAlbumSection(
+                                        description = description!!,
+                                        modifier = Modifier.padding(horizontal = 24.dp)
+                                    )
+                                }
+                            }
+
+                            // Songs Section Header
+                            if (displaySongs.isNotEmpty()) {
+                                item {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    AlbumSongsSectionHeader(
+                                        songsCount = displaySongs.size,
+                                        context = context
                                     )
                                 }
                             }
@@ -1576,5 +1646,49 @@ private fun AnimateIn(modifier: Modifier = Modifier, content: @Composable () -> 
 
     Box(modifier = modifier.graphicsLayer(alpha = alpha, scaleX = scale, scaleY = scale)) {
         content()
+    }
+}
+
+@Composable
+private fun AlbumSongsSectionHeader(
+    songsCount: Int,
+    context: android.content.Context
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = context.getString(R.string.bottomsheet_songs),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.secondaryContainer
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = RhythmIcons.Music.Song,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                Text(
+                    text = "$songsCount",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }
