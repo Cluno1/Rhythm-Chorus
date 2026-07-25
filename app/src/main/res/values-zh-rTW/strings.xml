@@ -288,7 +288,7 @@
     <!-- Settings - Updates -->
     
     <!-- Status Labels -->
-    <string name="status_disabled">殘障人士</string>
+    <string name="status_disabled">未啟用</string>
     <!-- HomeScreen -->
     <string name="home_title">Rhythm</string>
     <string name="home_settings_cd">設定</string>
@@ -565,7 +565,7 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">動態色彩（Material 你）</string>
+    <string name="onboarding_dynamic_colors_title">動態色彩（Material You）</string>
     <string name="onboarding_dynamic_colors_desc">應用從裝置桌布中提取的顏色，打造統一的外觀。</string>
     <string name="onboarding_player_theme_title">播放與迷你播放器主題</string>
     <string name="onboarding_player_theme_desc">個人化您的播放介面。在乾淨、現代的 Rhythm 設計或充滿活力、流暢、富有表現力的設計之間切換。</string>
@@ -818,7 +818,7 @@
     <!-- Updates Messages -->
     <string name="updates_disabled_message">應用程式更新已在設定中停用</string>
     <string name="updates_auto_disabled">自動更新檢查已停用。您仍然可以手動檢查。</string>
-    <string name="updates_up_to_date_message">你是最新的！</string>
+    <string name="updates_up_to_date_message">已是在最新版！</string>
     <string name="updates_check_frequency">Rhythm 多久檢查一次更新？</string>
     <string name="updates_experimental_coming">未來的更新即將推出更多實驗性功能</string>
     <string name="settings_interval_every_48_hours">每 48 小時一次</string>
@@ -1157,7 +1157,7 @@
     <string name="settings_artist_parsing_desc">分隔符，顯示</string>
     <string name="settings_rhythm_stats">Rhythm 統計</string>
     <string name="settings_rhythm_stats_desc">收聽時間、熱門曲目和趨勢</string>
-    <string name="settings_rhythm_guard">Rhythm 守衛</string>
+    <string name="settings_rhythm_guard">Rhythm Guard</string>
     <string name="settings_rhythm_guard_list_desc">由 Rhythm 統計數據提供支援的聽力健康護欄</string>
     <string name="settings_rhythm_guard_mode_title">保護模式</string>
     <string name="settings_rhythm_guard_mode_desc">選擇 Rhythm Guard 如何管理聽力健康狀況</string>
@@ -1438,7 +1438,7 @@
     <string name="settings_swipe_down_dismiss_tip">向下滑動迷你播放器或完整播放器即可關閉</string>
     <string name="settings_swipe_up_open">向上滑動迷你播放器可開啟完整播放器</string>
     <string name="settings_text_alignment">文字對齊</string>
-    <string name="settings_quick_brown_fox">敏捷的棕色狐狸跳過了懶狗</string>
+    <string name="settings_quick_brown_fox">南去經三國，東來過五湖。</string>
     <string name="settings_toggle_widgets">切換小工具以自訂您的主螢幕</string>
     <string name="settings_visibility">能見度</string>
     <string name="settings_widget_item_counts">小工具項目計數</string>
@@ -1724,7 +1724,7 @@
     <string name="settings_color_customization">顏色定制</string>
     <string name="settings_color_source">色源</string>
     <string name="settings_color_source_album">專輯藝術 - 藝術作品摘錄</string>
-    <string name="settings_color_source_monet">系統顏色 - Material 你</string>
+    <string name="settings_color_source_monet">系統顏色 - Material You</string>
     <string name="settings_color_source_custom">自訂方案 - %1$s</string>
     <string name="settings_color_schemes">配色方案</string>
     <string name="settings_color_schemes_desc">瀏覽並選擇預先定義的調色板</string>
