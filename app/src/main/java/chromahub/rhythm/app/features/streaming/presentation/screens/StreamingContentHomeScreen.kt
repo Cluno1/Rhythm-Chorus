@@ -50,6 +50,12 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Text
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -1195,17 +1201,40 @@ private fun StreamingRecommendationsCarousel(
         initialItem = 0,
         itemCount = { songs.size }
     )
+    val coroutineScope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (songs.isNotEmpty() && !carouselState.isScrollInProgress) {
+                    coroutineScope.launch {
+                        carouselState.scrollToItem(carouselState.currentItem.coerceIn(0, songs.lastIndex))
+                    }
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     LaunchedEffect(songs.size, autoScrollEnabled, autoScrollIntervalSeconds) {
         if (autoScrollEnabled && songs.size > 1) {
+            if (!carouselState.isScrollInProgress) {
+                carouselState.scrollToItem(carouselState.currentItem.coerceIn(0, songs.lastIndex))
+            }
             while (true) {
                 delay(autoScrollIntervalSeconds.coerceIn(2, 20) * 1000L)
-                val currentItem = carouselState.currentItem
-                val nextItem = (currentItem + 1) % songs.size
-                carouselState.animateScrollToItem(
-                    nextItem,
-                    animationSpec = tween(durationMillis = 900)
-                )
+                if (!carouselState.isScrollInProgress) {
+                    val currentItem = carouselState.currentItem
+                    val nextItem = (currentItem + 1) % songs.size
+                    carouselState.animateScrollToItem(
+                        nextItem,
+                        animationSpec = tween(durationMillis = 900)
+                    )
+                }
             }
         }
     }
