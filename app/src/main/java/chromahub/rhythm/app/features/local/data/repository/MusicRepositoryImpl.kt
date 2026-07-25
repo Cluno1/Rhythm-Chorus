@@ -872,9 +872,27 @@ class MusicRepository(context: Context) {
             }
         }.toTypedArray()
 
+        val whitelistSelectionClause = if (mediaScanMode == MediaScanMode.WHITELIST && whitelistedFolders.isNotEmpty()) {
+            val conditions = whitelistedFolders.mapNotNull { folder ->
+                val clean = folder.trim().trimEnd('/', '\\')
+                if (clean.isBlank()) null
+                else {
+                    val escaped = clean.replace("'", "''").replace("%", "\\%").replace("_", "\\_")
+                    "(${MediaStore.Audio.Media.DATA} LIKE '${escaped}/%' ESCAPE '\\' OR ${MediaStore.Audio.Media.DATA} = '${escaped}' ESCAPE '\\')"
+                }
+            }
+            if (conditions.isNotEmpty()) {
+                " AND (${conditions.joinToString(" OR ")})"
+            } else {
+                ""
+            }
+        } else {
+            ""
+        }
+
         // Include entries tagged as music or generic audio MIME types.
         // Some OTG/USB indexed tracks are not marked with IS_MUSIC=1.
-        val selection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%') AND ${MediaStore.Audio.Media.DURATION} > 10000"
+        val selection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%') AND ${MediaStore.Audio.Media.DURATION} > 10000$whitelistSelectionClause"
         val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
 
         try {

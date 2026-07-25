@@ -1184,22 +1184,23 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        // Listen for blacklist/whitelist changes and refresh playlists accordingly
+        // Listen for blacklist/whitelist or scan mode changes and refresh library & playlists accordingly
         // This runs independently but only acts after initialization completes
         viewModelScope.launch {
             combine(
                 appSettings.blacklistedSongs,
                 appSettings.blacklistedFolders,
                 appSettings.whitelistedSongs,
-                appSettings.whitelistedFolders
-            ) { blacklistedSongs, blacklistedFolders, whitelistedSongs, whitelistedFolders ->
+                appSettings.whitelistedFolders,
+                appSettings.mediaScanMode
+            ) { blacklistedSongs, blacklistedFolders, whitelistedSongs, whitelistedFolders, mediaScanMode ->
                 // Trigger when any filter changes
                 Unit
             }.collect {
                 // Wait for initialization to complete before refreshing
                 if (_isInitialized.value) {
-                    Log.d(TAG, "Blacklist/Whitelist changed, refreshing playlists to remove filtered songs")
-                    refreshPlaylists()
+                    Log.d(TAG, "Blacklist/Whitelist or scan mode changed, refreshing library & playlists")
+                    refreshLibrary(showMediaScanLoader = false)
                     removeBlacklistedSongsFromQueue()
                 }
             }
