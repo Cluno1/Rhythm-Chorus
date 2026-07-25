@@ -4994,8 +4994,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun playQueue(songs: List<Song>, enableShuffle: Boolean? = null, startIndex: Int = 0) {
-        Log.d(TAG, "Playing queue with ${songs.size} songs, shuffle: $enableShuffle, startIndex: $startIndex")
+    fun playQueue(songs: List<Song>, enableShuffle: Boolean? = null, startIndex: Int = 0, pinStartIndex: Boolean = false) {
+        Log.d(TAG, "Playing queue with ${songs.size} songs, shuffle: $enableShuffle, startIndex: $startIndex, pinStartIndex: $pinStartIndex")
 
         if (!canStartPlayback("playQueue")) {
             return
@@ -5020,15 +5020,20 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val useExoPlayerShuffle = appSettings.shuffleUsesExoplayer.value
                 val isManualShuffle = enableShuffle == true && !useExoPlayerShuffle
+                val shouldPinStart = pinStartIndex || (enableShuffle == true && validStartIndex > 0)
 
                 // If manual shuffle is requested, pre-shuffle the list
                 val finalSongs = if (isManualShuffle) {
                     val listToShuffle = songs.toMutableList()
-                    val startingSong = listToShuffle.getOrNull(validStartIndex)
-                    if (startingSong != null) {
-                        listToShuffle.removeAt(validStartIndex)
-                        listToShuffle.shuffle()
-                        listToShuffle.add(0, startingSong)
+                    if (shouldPinStart) {
+                        val startingSong = listToShuffle.getOrNull(validStartIndex)
+                        if (startingSong != null) {
+                            listToShuffle.removeAt(validStartIndex)
+                            listToShuffle.shuffle()
+                            listToShuffle.add(0, startingSong)
+                        } else {
+                            listToShuffle.shuffle()
+                        }
                     } else {
                         listToShuffle.shuffle()
                     }
@@ -5037,8 +5042,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     songs
                 }
 
-                // If manual shuffle was applied, the starting index in the final list is 0
-                val finalStartIndex = if (isManualShuffle) 0 else validStartIndex
+                // If manual shuffle was applied, the starting index in the final list is 0.
+                // If ExoPlayer shuffle is used without a pinned starting song, pick a random start index so ExoPlayer's shuffle order doesn't always start on song 0.
+                val finalStartIndex = when {
+                    isManualShuffle -> 0
+                    enableShuffle == true && !shouldPinStart && songs.size > 1 -> kotlin.random.Random.nextInt(songs.size)
+                    else -> validStartIndex
+                }
 
                 // Create all media items on background thread
                 val mediaItems = finalSongs.map { it.toMediaItem() }

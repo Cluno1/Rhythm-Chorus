@@ -2392,16 +2392,40 @@ class MusicRepository(context: Context) {
         // Separator config affects relationship rows; refresh relationships/cache when it changes.
         refreshArtistRelationshipsIfNeeded(appSettings)
 
+        val currentSongs = loadSongs()
+        if (currentSongs.isEmpty()) {
+            Log.d(TAG, "No songs in library, returning empty artists list")
+            return@withContext emptyList()
+        }
+
         // Try to load from Room cache first
         val cachedArtists = loadArtistsFromRoom(groupByAlbumArtist)
         if (cachedArtists != null && cachedArtists.isNotEmpty()) {
-            Log.d(TAG, "Loaded ${cachedArtists.size} artists from Room cache (groupByAlbumArtist=$groupByAlbumArtist)")
-            return@withContext cachedArtists
+            val cachedTotalTracks = cachedArtists.sumOf { it.numberOfTracks }
+            // Validate that Room cache is reasonably complete compared to current songs
+            if (cachedTotalTracks >= currentSongs.size) {
+                Log.d(TAG, "Loaded ${cachedArtists.size} artists from Room cache (cached tracks=$cachedTotalTracks, songs=${currentSongs.size}, groupByAlbumArtist=$groupByAlbumArtist)")
+                return@withContext cachedArtists
+            } else {
+                Log.w(TAG, "Room cached artists stale/incomplete (cached tracks=$cachedTotalTracks vs songs=${currentSongs.size}), recomputing...")
+            }
         }
 
-        Log.d(TAG, "No cached artists found, computing from relationships (groupByAlbumArtist=$groupByAlbumArtist)")
-        // Cache miss - compute from relationships
-        val artists = loadArtistsFromRelationships(groupByAlbumArtist)
+        Log.d(TAG, "Recomputing artists for ${currentSongs.size} songs (groupByAlbumArtist=$groupByAlbumArtist)")
+        
+        // Refresh song_artists relationships for current songs
+        val relationshipSets = buildSongArtistRelationshipSets(currentSongs)
+        roomDb.withTransaction {
+            roomDb.songArtistDao().replaceAll(relationshipSets.albumArtistRelationships, true)
+            roomDb.songArtistDao().replaceAll(relationshipSets.trackArtistRelationships, false)
+        }
+
+        // Compute from relationships
+        var artists = loadArtistsFromRelationships(groupByAlbumArtist)
+        if (artists.isEmpty()) {
+            Log.w(TAG, "Relationships produced 0 artists, using direct computation from songs")
+            artists = buildArtistsFromSongsDirectly(currentSongs, groupByAlbumArtist)
+        }
 
         // Cache the result
         saveArtistsToRoom(artists, groupByAlbumArtist)
@@ -2443,6 +2467,12 @@ class MusicRepository(context: Context) {
     private suspend fun loadArtistsFromRelationships(groupByAlbumArtist: Boolean): List<Artist> = withContext(Dispatchers.IO) {
         try {
             val aggregatedData = roomDb.songArtistDao().getAggregatedArtists(groupByAlbumArtist)
+            if (aggregatedData.isEmpty()) {
+                val currentSongs = loadSongs()
+                if (currentSongs.isNotEmpty()) {
+                    return@withContext buildArtistsFromSongsDirectly(currentSongs, groupByAlbumArtist)
+                }
+            }
             val artists = mutableListOf<Artist>()
 
             for (data in aggregatedData) {
@@ -2455,16 +2485,64 @@ class MusicRepository(context: Context) {
                 artists.add(artist)
             }
 
-            artists.sortedBy { it.name.lowercase() }
+            artists.sortedBy { it.name.lowercase(Locale.ROOT) }
         } catch (e: Exception) {
             Log.w(TAG, "Failed to load artists from relationships, falling back to computation", e)
-            // Fallback to old method
-            if (groupByAlbumArtist) {
+            val currentSongs = loadSongs()
+            if (currentSongs.isNotEmpty()) {
+                buildArtistsFromSongsDirectly(currentSongs, groupByAlbumArtist)
+            } else if (groupByAlbumArtist) {
                 loadArtistsGroupedByAlbumArtist()
             } else {
                 loadArtistsFromMediaStore()
             }
         }
+    }
+
+    private fun buildArtistsFromSongsDirectly(songs: List<Song>, groupByAlbumArtist: Boolean): List<Artist> {
+        val appSettings = AppSettings.getInstance(context)
+        val artistSeparatorEnabled = appSettings.artistSeparatorEnabled.value
+        val charDelimiters: List<String> = if (artistSeparatorEnabled) {
+            appSettings.artistSeparatorDelimiters.value.toList().map { it.toString() }
+        } else {
+            emptyList()
+        }
+
+        val artistTrackCounts = mutableMapOf<String, Int>()
+        val artistAlbums = mutableMapOf<String, MutableSet<String>>()
+
+        for (song in songs) {
+            val rawArtist = if (groupByAlbumArtist) {
+                val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
+                if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
+                    explicitAlbumArtist
+                } else {
+                    song.artist
+                }
+            } else {
+                song.artist
+            }
+
+            val artistNames = splitArtistNames(rawArtist, charDelimiters)
+            val albumName = song.album.takeIf { it.isNotBlank() && !it.equals("Unknown Album", ignoreCase = true) }
+
+            for (artistName in artistNames) {
+                artistTrackCounts[artistName] = (artistTrackCounts[artistName] ?: 0) + 1
+                if (albumName != null) {
+                    artistAlbums.getOrPut(artistName) { mutableSetOf() }.add(albumName)
+                }
+            }
+        }
+
+        return artistTrackCounts.map { (artistName, trackCount) ->
+            val albumCount = artistAlbums[artistName]?.size ?: 0
+            Artist(
+                id = if (groupByAlbumArtist) "album_artist_${artistName.hashCode()}" else "track_artist_${artistName.hashCode()}",
+                name = artistName,
+                numberOfAlbums = albumCount,
+                numberOfTracks = trackCount
+            )
+        }.sortedBy { it.name.lowercase(Locale.ROOT) }
     }
 
     /**
