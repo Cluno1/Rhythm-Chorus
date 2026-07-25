@@ -4488,19 +4488,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             val songIndex = queueSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
             playQueue(queueSongs, enableShuffle = shuffleQueue, startIndex = songIndex)
         } else {
-            // Add to the current queue and play immediately
+            // Add to the current queue without interrupting current playback
             addSongToQueue(song)
-            // Seek to the newly added song
-            val newIndex = _currentQueue.value.songs.indexOfFirst { it.id == song.id }
-            if (newIndex != -1) {
-                mediaController?.let { controller ->
-                    val targetControllerIndex = resolveControllerIndexForQueueSelection(song, newIndex)
-                        ?: newIndex.coerceIn(0, (controller.mediaItemCount - 1).coerceAtLeast(0))
-                    controller.seekToDefaultPosition(targetControllerIndex)
-                    if (!canStartPlayback("playSongWithQueueOption")) return
-                    controller.play()
-                }
-            }
         }
     }
 
@@ -4936,51 +4925,80 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         currentQueueSongs.addAll(insertIndex, songs)
                         controller.addMediaItems(insertIndex, mediaItems)
 
-                        val targetQueueIndex = (insertIndex + validStartIndex)
-                            .coerceIn(0, currentQueueSongs.lastIndex.coerceAtLeast(0))
-                        val targetSong = currentQueueSongs[targetQueueIndex]
+                        val isPlayingOrActive = (controller.playbackState == Player.STATE_READY || controller.playbackState == Player.STATE_BUFFERING) &&
+                                currentControllerIndex != C.INDEX_UNSET && _currentQueue.value.songs.isNotEmpty()
 
-                        val targetControllerIndex = if (controller.shuffleModeEnabled) {
-                            val occurrence = resolveQueueOccurrenceInList(
-                                queueSongs = currentQueueSongs,
-                                songId = targetSong.id,
-                                queueIndex = targetQueueIndex
-                            )
-                            findControllerIndexForSong(targetSong.id, occurrence)
-                                ?: currentControllerIndex.takeIf { it != C.INDEX_UNSET }
-                                ?: 0
-                        } else {
-                            targetQueueIndex
-                        }
+                        if (isPlayingOrActive) {
+                            val activeIndex = currentControllerIndex.coerceIn(0, currentQueueSongs.lastIndex)
+                            _currentQueue.value = Queue(currentQueueSongs, activeIndex)
+                            saveQueueToPersistence()
 
-                        _currentQueue.value = Queue(currentQueueSongs, targetQueueIndex)
-
-                        controller.seekToDefaultPosition(targetControllerIndex)
-                        controller.prepare()
-                        if (!canStartPlayback("insertQueueListAndPlay")) return@let
-                        controller.play()
-
-                        _currentSong.value = targetSong
-                        _isPlaying.value = true
-                        _isFavorite.value = _favoriteSongs.value.contains(targetSong.id)
-                        _currentSongRating.value = appSettings.getSongRating(targetSong.id)
-
-                        updateRecentlyPlayed(targetSong)
-                        updateListeningStats(targetSong)
-                        startProgressUpdates()
-                        saveQueueToPersistence()
-
-                        if (controller.shuffleModeEnabled) {
-                            viewModelScope.launch {
-                                delay(50)
-                                syncQueueWithMediaController()
+                            if (controller.shuffleModeEnabled) {
+                                viewModelScope.launch {
+                                    delay(50)
+                                    syncQueueWithMediaController()
+                                }
                             }
-                        }
 
-                        Log.d(
-                            TAG,
-                            "Inserted ${songs.size} songs (${if (insertAfterCurrent) "play_next" else "add_to_end"}) and started at queueIndex=$targetQueueIndex"
-                        )
+                            val toastContext = getApplication<android.app.Application>().applicationContext
+                            val msg = if (insertAfterCurrent) {
+                                "${songs.size} ${if (songs.size == 1) "song" else "songs"} will play next"
+                            } else {
+                                "Added ${songs.size} ${if (songs.size == 1) "song" else "songs"} to queue"
+                            }
+                            android.widget.Toast.makeText(toastContext, msg, android.widget.Toast.LENGTH_SHORT).show()
+
+                            Log.d(
+                                TAG,
+                                "Appended ${songs.size} songs (${if (insertAfterCurrent) "play_next" else "add_to_end"}) without interrupting current playback at activeIndex=$activeIndex"
+                            )
+                        } else {
+                            val targetQueueIndex = (insertIndex + validStartIndex)
+                                .coerceIn(0, currentQueueSongs.lastIndex.coerceAtLeast(0))
+                            val targetSong = currentQueueSongs[targetQueueIndex]
+
+                            val targetControllerIndex = if (controller.shuffleModeEnabled) {
+                                val occurrence = resolveQueueOccurrenceInList(
+                                    queueSongs = currentQueueSongs,
+                                    songId = targetSong.id,
+                                    queueIndex = targetQueueIndex
+                                )
+                                findControllerIndexForSong(targetSong.id, occurrence)
+                                    ?: currentControllerIndex.takeIf { it != C.INDEX_UNSET }
+                                    ?: 0
+                            } else {
+                                targetQueueIndex
+                            }
+
+                            _currentQueue.value = Queue(currentQueueSongs, targetQueueIndex)
+
+                            controller.seekToDefaultPosition(targetControllerIndex)
+                            controller.prepare()
+                            if (!canStartPlayback("insertQueueListAndPlay")) return@let
+                            controller.play()
+
+                            _currentSong.value = targetSong
+                            _isPlaying.value = true
+                            _isFavorite.value = _favoriteSongs.value.contains(targetSong.id)
+                            _currentSongRating.value = appSettings.getSongRating(targetSong.id)
+
+                            updateRecentlyPlayed(targetSong)
+                            updateListeningStats(targetSong)
+                            startProgressUpdates()
+                            saveQueueToPersistence()
+
+                            if (controller.shuffleModeEnabled) {
+                                viewModelScope.launch {
+                                    delay(50)
+                                    syncQueueWithMediaController()
+                                }
+                            }
+
+                            Log.d(
+                                TAG,
+                                "Inserted ${songs.size} songs (${if (insertAfterCurrent) "play_next" else "add_to_end"}) and started at queueIndex=$targetQueueIndex"
+                            )
+                        }
                     } ?: run {
                         playQueue(songs, enableShuffle = false, startIndex = validStartIndex)
                     }

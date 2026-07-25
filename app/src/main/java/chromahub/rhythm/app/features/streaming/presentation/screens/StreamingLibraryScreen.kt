@@ -1409,10 +1409,20 @@ fun StreamingLibraryScreen(
                                                     )
                                                 }
                                             },
+                                            onPlayNext = {
+                                                dismissMenu()
+                                                sortedSongsById[localSong.id]?.let { s ->
+                                                    if (localMusicViewModel != null) {
+                                                        viewModel.playNext(s, localMusicViewModel)
+                                                    }
+                                                }
+                                            },
                                             onAddToQueue = {
                                                 dismissMenu()
                                                 sortedSongsById[localSong.id]?.let { s ->
-                                                    viewModel.playQueue(queue = listOf(s), startIndex = 0, shuffle = false)
+                                                    if (localMusicViewModel != null) {
+                                                        viewModel.addSongToQueue(s, localMusicViewModel)
+                                                    }
                                                 }
                                             },
                                             isLiked = isLiked,
