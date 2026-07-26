@@ -71,6 +71,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.collectLatest
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -517,6 +519,24 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     ) { songs: List<Song>, settings: FilterSettings ->
         filterSongsAsync(songs, settings.mode, settings.blacklistedIds, settings.blacklistedFolders, settings.whitelistedIds, settings.whitelistedFolders)
     }.distinctUntilChanged().conflate().flowOn(Dispatchers.IO).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
+
+    // Paginated streams for Paging 3 Compose views
+    val paginatedSongs: kotlinx.coroutines.flow.Flow<PagingData<Song>> = repository.getPaginatedSongs()
+        .cachedIn(viewModelScope)
+
+    val paginatedArtists: kotlinx.coroutines.flow.Flow<PagingData<Artist>> = repository.getPaginatedArtists(appSettings.groupByAlbumArtist.value)
+        .cachedIn(viewModelScope)
+
+    fun playPaginatedSong(song: Song, fallbackIndex: Int = 0) {
+        val allCurrentSongs = filteredSongs.value.ifEmpty { _songs.value }
+        if (allCurrentSongs.isNotEmpty()) {
+            val idx = allCurrentSongs.indexOfFirst { it.id == song.id }
+            val playIdx = if (idx >= 0) idx else fallbackIndex.coerceIn(0, allCurrentSongs.size - 1)
+            playSong(allCurrentSongs[playIdx])
+        } else {
+            playSong(song)
+        }
+    }
     
     private suspend fun filterSongsAsync(
         songs: List<Song>,

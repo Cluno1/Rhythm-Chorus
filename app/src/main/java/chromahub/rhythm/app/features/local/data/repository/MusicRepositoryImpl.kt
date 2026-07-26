@@ -43,6 +43,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CoroutineScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
+import chromahub.rhythm.app.features.local.data.database.entity.toSong
+import chromahub.rhythm.app.features.local.data.database.entity.toArtist
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -165,6 +172,36 @@ class MusicRepository(context: Context) {
     val songDao by lazy { roomDb.songDao() }
     val playlistDao by lazy { roomDb.playlistDao() }
     private val appSettings by lazy { AppSettings.getInstance(context) }
+
+    fun getPaginatedSongs(): kotlinx.coroutines.flow.Flow<PagingData<Song>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = true),
+            pagingSourceFactory = { songDao.getSongsPagingSource() }
+        ).flow.map { pagingData ->
+            pagingData.map { entity -> entity.toSong() }
+        }
+    }
+
+    fun getPaginatedSongsSearch(query: String): kotlinx.coroutines.flow.Flow<PagingData<Song>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = true),
+            pagingSourceFactory = { 
+                if (query.isBlank()) songDao.getSongsPagingSource() 
+                else songDao.getSongsPagingSourceSearch(query) 
+            }
+        ).flow.map { pagingData ->
+            pagingData.map { entity -> entity.toSong() }
+        }
+    }
+
+    fun getPaginatedArtists(groupByAlbumArtist: Boolean): kotlinx.coroutines.flow.Flow<PagingData<Artist>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = true),
+            pagingSourceFactory = { roomDb.artistDao().getArtistsPagingSource(groupByAlbumArtist) }
+        ).flow.map { pagingData ->
+            pagingData.map { entity -> entity.toArtist() }
+        }
+    }
     
     /**
      * Persists the current in-memory song cache to Room database.

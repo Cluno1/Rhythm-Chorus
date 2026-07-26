@@ -35,6 +35,8 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
@@ -1630,6 +1632,7 @@ fun LibraryScreen(
                                     "SONGS" -> {
                                         SingleCardSongsContent(
                                             songs = filteredSongs,
+                                            paginatedSongs = musicViewModel.paginatedSongs,
                                             listState = songsListState,
                                             albums = albums,
                                             artists = artists,
@@ -2128,6 +2131,7 @@ fun LibraryScreen(
 @Composable
 fun SingleCardSongsContent(
     songs: List<Song>,
+    paginatedSongs: kotlinx.coroutines.flow.Flow<androidx.paging.PagingData<Song>>? = null,
     listState: LazyListState = rememberLazyListState(),
     albums: List<Album> = emptyList(),
     artists: List<Artist> = emptyList(),
