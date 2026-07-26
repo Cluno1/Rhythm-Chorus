@@ -496,7 +496,8 @@
     <string name="onboarding_library_3">设置 &gt; 库设置中提供高级显示和排序选项</string>
     <string name="onboarding_library_4">默认播放列表（最近添加、最常播放）可以在“设置”&gt;“播放列表”中切换</string>
     <string name="onboarding_theme_title">让 Rhythm 专属于你</string>
-    <string name="onboarding_theme_desc">个性化Rhythm的外观以符合您的风格。选择您的系统主题、字体或 Material You 动态颜色 (Android 12+)。</string>    <string name="onboarding_more_tuner">设置中更多自定义</string>
+    <string name="onboarding_theme_desc">个性化Rhythm的外观以符合您的风格。选择您的系统主题、字体或 Material You 动态颜色 (Android 12+)。</string>
+    <string name="onboarding_more_tuner">设置中更多自定义</string>
     <string name="onboarding_tuner_1">自定义配色方案和专辑封面颜色提取</string>
     <string name="onboarding_tuner_2">字体定制和排版设置</string>
     <string name="onboarding_tuner_3">设置 &gt; 主题自定义中提供了高级主题选项</string>
