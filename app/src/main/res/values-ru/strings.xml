@@ -2309,7 +2309,7 @@
     <string name="playing_next_simple">Дальше играет: %1$s</string>
     <string name="failed_to_request_permission">Не удалось запросить разрешение: %1$s</string>
     <string name="unexpected_error">Непредвиденная ошибка: %1$s</string>
-    <string name="rating_stars_desc">Звезды %1$s – %2$d</string>
+    <string name="rating_stars_desc">Звезды %1$s – %2$d</string>
     <string name="rating_stars_count">%1$d звезд</string>
     <string name="rating_unknown">Неизвестно</string>
     <string name="album_artwork_description">Обложка альбома %1$s</string>
@@ -2335,7 +2335,7 @@
     <string name="rating_absolute_favorite">Абсолютный фаворит</string>
     <string name="rating_desc_not_rated">Нет рейтинга</string>
     <string name="rating_desc_liked">Понравилось — подходит для периодического прослушивания</string>
-    <string name="rating_desc_good">Хорошо – сплошная трасса</string>
+    <string name="rating_desc_good">Хорошо – сплошная трасса</string>
     <string name="rating_desc_great">Отлично! Мне очень нравится</string>
     <string name="rating_desc_loved">Очень понравился – один из моих любимых</string>
     <string name="rating_desc_absolute_favorite">Абсолютный фаворит — трек высшего уровня</string>
@@ -2891,4 +2891,22 @@
     <string name="updates_channel_stable_title">Стабильный</string>
     <string name="updates_channel_beta_title">Бета</string>
     <string name="updates_channel_nightly_title">Ночные</string>
+    <string name="settings_notification_preview_subtitle"></string>
+    <string name="settings_notification_preview_title"></string>
+    <string name="settings_notification_permission_title"></string>
+    <string name="settings_system_notification_channels_desc"></string>
+    <string name="settings_library_operations_notifications"></string>
+    <string name="onboarding_integration_wikipedia"></string>
+    <string name="settings_show_codec_notifications_desc"></string>
+    <string name="settings_notifications_system_group"></string>
+    <string name="settings_notification_permission_desc"></string>
+    <string name="onboarding_integration_wikipedia_desc"></string>
+    <string name="settings_notification_permission_grant"></string>
+    <string name="settings_library_operations_notifications_desc"></string>
+    <string name="settings_notifications_playback_group"></string>
+    <string name="settings_playback_notification"></string>
+    <string name="settings_playback_notification_desc"></string>
+    <string name="settings_system_notification_channels"></string>
+    <string name="settings_show_codec_notifications"></string>
+    <string name="settings_notifications_library_group"></string>
 </resources>
