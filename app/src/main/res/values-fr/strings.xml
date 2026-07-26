@@ -136,21 +136,21 @@
     <string name="notification_playlist_export_title">Sauvegarde de la playlist</string>
     <string name="notification_playlist_import_title">Importation d\'une playlist</string>
     <string name="notification_library_setup_title">Rhythm Configuration de la bibliothèque</string>
-    <string name="notification_library_setup_complete_summary">La bibliothèque est optimisée et prête : %1$d titres, %2$d albums, %3$d artistes</string>
+    <string name="notification_library_setup_complete_summary">La bibliothèque est optimisée et prête : %1$d titres, %2$d albums, %3$d artistes</string>
     <string name="notification_playlist_not_found">Exportation interrompue : la liste de lecture cible n\'a pas été trouvée.</string>
     <string name="notification_no_playlists_to_export">Exportation interrompue : aucune liste de lecture à sauvegarder trouvée.</string>
     <string name="notification_operation_timed_out">L\'opération a expiré. Veuillez réessayer.</string>
     <string name="notification_playlist_export_complete">Liste de lecture exportée avec succès vers le stockage.</string>
-    <string name="notification_playlist_export_all_complete">Exportation réussie de %1$d listes de lecture vers le stockage.</string>
+    <string name="notification_playlist_export_all_complete">Exportation réussie de %1$d listes de lecture vers le stockage.</string>
     <string name="notification_playlist_export_failed">L\'exportation de la liste de lecture a échoué. Essayer à nouveau.</string>
-    <string name="notification_playlist_import_complete">Importation réussie de \"%1$s\" avec %2$d chansons.</string>
+    <string name="notification_playlist_import_complete">Importation réussie de \"%1$s\" avec %2$d chansons.</string>
     <string name="notification_playlist_import_failed">L\'importation de la liste de lecture a échoué. Veuillez vérifier le format du fichier.</string>
     <string name="notification_updater_channel_name">Rhythm Programme de mise à jour</string>
     <string name="notification_updater_channel_desc">Statut de téléchargement des mises à jour de l\'application</string>
     <string name="notification_updater_title">Rhythm Programme de mise à jour</string>
-    <string name="notification_updater_downloading">⬇ Téléchargement : %1$d%%</string>
+    <string name="notification_updater_downloading">⬇ Téléchargement : %1$d%%</string>
     <string name="notification_updater_download_complete">✓ Prêt à installer. Appuyez pour mettre à jour.</string>
-    <string name="notification_updater_available_title">Mise à jour disponible !</string>
+    <string name="notification_updater_available_title">Mise à jour disponible !</string>
     <string name="notification_updater_available_text">🆕 Une nouvelle version de Rhythm est là.</string>
     <string name="notification_sleep_timer_channel_name">Rhythm Minuterie de mise en veille</string>
     <string name="notification_sleep_timer_channel_desc">Compte à rebours et état des actions de la minuterie d\'arrêt</string>
@@ -162,14 +162,14 @@
     <string name="notification_streaming_channel_desc">État du service de streaming et mises à jour de synchronisation</string>
     <!-- Streaming Authentication -->
     <string name="notification_streaming_auth_title">Streaming connecté</string>
-    <string name="notification_streaming_auth_connected">🎵 %1$s est prêt à jouer ! Votre bibliothèque se synchronise en arrière-plan.</string>
+    <string name="notification_streaming_auth_connected">🎵 %1$s est prêt à jouer ! Votre bibliothèque se synchronise en arrière-plan.</string>
     <string name="notification_streaming_auth_failed">La connexion a échoué pour %1$s. Appuyez pour réessayer la configuration.</string>
     <string name="notification_streaming_auth_expired">La session a expiré pour %1$s. Appuyez pour vous reconnecter.</string>
     <!-- Streaming Library Sync -->
     <string name="notification_streaming_sync_title">Synchronisation de votre bibliothèque</string>
     <string name="notification_streaming_sync_started">Synchronisation avec %1$s…</string>
-    <string name="notification_streaming_sync_progress">Synchronisation : %1$d chansons • %2$d albums • %3$d artistes</string>
-    <string name="notification_streaming_sync_complete">✓ %1$d chansons synchronisées de %2$s !</string>
+    <string name="notification_streaming_sync_progress">Synchronisation : %1$d chansons • %2$d albums • %3$d artistes</string>
+    <string name="notification_streaming_sync_complete">✓ %1$d chansons synchronisées de %2$s !</string>
     <string name="notification_streaming_sync_failed">La synchronisation a échoué. Vérifiez votre connexion et réessayez.</string>
     <!-- Streaming Liked Songs -->
     <string name="notification_streaming_liked_title">Chansons aimées mises à jour</string>
