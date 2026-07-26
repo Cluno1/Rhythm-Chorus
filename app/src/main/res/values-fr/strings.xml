@@ -1424,7 +1424,7 @@
     <string name="settings_layout_options">Options de mise en page</string>
     <string name="settings_lightness">Légèreté</string>
     <string name="settings_miniplayer">Mini-lecteur</string>
-    <string name="settings_no_crash_logs">Aucun journal d\'erreur n\'a été trouvé. Bravo !</string>
+    <string name="settings_no_crash_logs">Aucun journal d\'erreur n\'a été trouvé. Bravo !</string>
     <string name="settings_player_controls">Contrôles du joueur</string>
     <string name="settings_player_screen">Écran du joueur</string>
     <string name="settings_presets">Préréglages</string>
@@ -2017,7 +2017,7 @@
     <string name="batchedittagssheet_enable_fields_you_want">Activez les champs que vous souhaitez mettre à jour. Les champs désactivés restent inchangés.</string>
     <string name="batchedittagssheet_tags">Balises</string>
     <string name="batchedittagssheet_batch_artwork_preview">Aperçu des illustrations par lots</string>
-    <string name="deviceconfigurationbottomsheet_supported_formats_fixedbandeq_text">Formats pris en charge : • Fichier texte FixedBandEQ (AutoEQ) • Format JSON • CSV (10 valeurs de bande)</string>
+    <string name="deviceconfigurationbottomsheet_supported_formats_fixedbandeq_text">Formats pris en charge : • Fichier texte FixedBandEQ (AutoEQ) • Format JSON • CSV (10 valeurs de bande)</string>
     <string name="deviceconfigurationbottomsheet_paste_eq_data_here">Collez les données d\'égalisation ici...</string>
     <string name="deviceconfigurationbottomsheet_open_autoeqapp">Ouvrez autoeq.app</string>
     <string name="deviceconfigurationbottomsheet_export_eq_profile">Exporter le profil d\'égalisation</string>
@@ -2068,7 +2068,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Choisissez votre mode de lecture</string>
     <string name="onboardingscreen_local_offline_player">Lecteur local hors ligne</string>
     <string name="onboardingscreen_play_audio_files_stored">Lisez des fichiers audio stockés directement sur votre appareil. Prend en charge l\'analyse avancée du répertoire local, les statistiques et la correspondance de thèmes.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO ! (Diffusion en continu)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO ! (Diffusion en continu)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Connectez-vous aux serveurs Jellyfin, Subsonic ou Navidrome pour diffuser l\'intégralité de votre bibliothèque en déplacement, avec prise en charge de la mise en cache pour une écoute hors ligne.</string>
     <string name="onboardingscreen_playback_mode_tips">Conseils sur le mode de lecture</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Basculez facilement à tout moment dans Paramètres &gt; Intégration.</string>
