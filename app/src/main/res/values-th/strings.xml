@@ -7,7 +7,7 @@
     <string name="search">ค้นหา</string>
     <string name="settings">การตั้งค่า</string>
     <!-- Media3 notification configuration -->
-    <string name="media3_notification_channel_name">Rhythm ดนตรี</string>
+    <string name="media3_notification_channel_name">กำลังเล่น</string>
     <string name="media3_notification_channel_description">ส่วนควบคุมการเล่นสื่อ</string>
     <!-- Widget strings -->
     <string name="widget_description">Rhythm วิดเจ็ตเพลง - ควบคุมการเล่นด้วยรูปแบบตอบสนองที่รองรับขนาดตาราง 2x1 ถึง 5x5</string>
@@ -39,15 +39,15 @@
     <string name="settings_notifications">การแจ้งเตือน</string>
     <string name="settings_notifications_updates_group">การอัปเดตแอป</string>
     <string name="settings_notifications_rhythm_guard_group">Rhythm ยาม</string>
-    <string name="settings_notifications_rhythm_pulse_group">Rhythm เคล็ดลับ</string>
-    <string name="settings_update_notifications_merged_desc">รับการแจ้งเตือนสำหรับเวอร์ชันใหม่และผลการตรวจสอบการอัปเดตเบื้องหลัง</string>
-    <string name="settings_rhythm_guard_alert_notifications">การแจ้งเตือนความปลอดภัย</string>
-    <string name="settings_rhythm_guard_alert_notifications_desc">แสดงการแจ้งเตือนเมื่อ Rhythm Guard ตรวจพบปริมาณหรือความเสี่ยงที่มีความเสี่ยง</string>
-    <string name="settings_rhythm_guard_timer_notifications">การแจ้งเตือนตัวจับเวลาแบ่ง</string>
-    <string name="settings_rhythm_guard_timer_notifications_desc">แสดงการแจ้งเตือนสำหรับการหยุดพักตามกำหนดเวลาและการนับถอยหลังการหมดเวลาที่ใช้งานอยู่</string>
-    <string name="settings_rhythm_pulse_notifications">Rhythm การแจ้งเตือนเคล็ดลับ</string>
-    <string name="settings_rhythm_pulse_notifications_desc">รับการแจ้งเตือนที่เป็นมิตรและเคล็ดลับการฟัง</string>
-    <string name="settings_rhythm_pulse_interval">ช่วงทิป</string>
+    <string name="settings_notifications_rhythm_pulse_group">เคล็ดลับในการฟัง</string>
+    <string name="settings_update_notifications_merged_desc">รับการแจ้งเตือนเมื่อมีการอัปเดต Rhythm เวอร์ชันใหม่</string>
+    <string name="settings_rhythm_guard_alert_notifications">คำเตือนด้านความปลอดภัยในการได้ยิน</string>
+    <string name="settings_rhythm_guard_alert_notifications_desc">แสดงการแจ้งเตือนทันทีเมื่อระดับเสียงเกินระดับที่ปลอดภัย</string>
+    <string name="settings_rhythm_guard_timer_notifications">ตัวช่วยพักการฟัง</string>
+    <string name="settings_rhythm_guard_timer_notifications_desc">แสดงการนับถอยหลังและการแจ้งเตือนสำหรับช่วงพักการฟังที่กำหนดไว้</string>
+    <string name="settings_rhythm_pulse_notifications">จุดเด่นและเคล็ดลับในการฟัง</string>
+    <string name="settings_rhythm_pulse_notifications_desc">รับข้อมูลสถิติการฟังและฟีเจอร์การเล่นเพลงที่ปรับแต่งเฉพาะบุคคล</string>
+    <string name="settings_rhythm_pulse_interval">ความถี่ในการส่งเคล็ดลับ</string>
     <string name="settings_rhythm_pulse_interval_dialog_title">Rhythm ช่วงทิป</string>
     <!-- Settings - Queue & Playback -->
     <!-- Settings - Queue -->
@@ -2875,4 +2875,13 @@
     <string name="playlist_count_format">%1$d เพลย์ลิสต์</string>
     <string name="ui_song_count">1 เพลง</string>
     <string name="duration_minutes_format">%1$dม</string>
+    <string name="settings_notifications_playback_group">สื่อและการเล่น</string>
+    <string name="settings_notifications_library_group">คลังและซิงค์</string>
+    <string name="settings_notifications_system_group">การควบคุมระบบ</string>
+    <string name="settings_playback_notification">การแจ้งเตือนที่กำลังเล่น</string>
+    <string name="settings_playback_notification_desc">แสดงปุ่มควบคุมการเล่นสื่อและภาพปกในแถบแจ้งเตือนและขณะล็อกหน้าจอ</string>
+    <string name="settings_show_codec_notifications">สัญลักษณ์คุณภาพเสียงและตัวแปลงสัญญาณ</string>
+    <string name="settings_show_codec_notifications_desc">แสดงรูปแบบเสียงที่ใช้งานอยู่ อัตราการสุ่มตัวอย่าง และบิตในสถานะการแจ้งเตือน</string>
+    <string name="settings_library_operations_notifications">การดำเนินงานและการสำรองข้อมูล</string>
+    <string name="settings_library_operations_notifications_desc">แสดงการแจ้งเตือนความคืบหน้าสำหรับการจัดทำดัชนีสื่อและการส่งออก/นำเข้าเพลย์ลิสต์</string>
 </resources>
