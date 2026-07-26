@@ -39,13 +39,13 @@
     <string name="settings_notifications">Notifications</string>
     <string name="settings_notifications_updates_group">Mises à jour de l\'application</string>
     <string name="settings_notifications_rhythm_guard_group">Rhythm Garde</string>
-    <string name="settings_notifications_rhythm_pulse_group">Rhythm Conseils</string>
+    <string name="settings_notifications_rhythm_pulse_group">Rhythm Conseils</string>
     <string name="settings_update_notifications_merged_desc">Recevez des alertes pour les nouvelles versions et les résultats de la vérification des mises à jour en arrière-plan</string>
     <string name="settings_rhythm_guard_alert_notifications">Notifications d\'alerte de sécurité</string>
     <string name="settings_rhythm_guard_alert_notifications_desc">Afficher une notification lorsque Rhythm Guard détecte un volume ou une exposition à risque</string>
     <string name="settings_rhythm_guard_timer_notifications">Notifications de minuterie de pause</string>
     <string name="settings_rhythm_guard_timer_notifications_desc">Afficher les notifications pour les pauses programmées et les comptes à rebours d\'expiration actifs</string>
-    <string name="settings_rhythm_pulse_notifications">Rhythm Notifications de conseils</string>
+    <string name="settings_rhythm_pulse_notifications">Rhythm Notifications de conseils</string>
     <string name="settings_rhythm_pulse_notifications_desc">Recevez des rappels amicaux et des conseils d\'écoute.</string>
     <string name="settings_rhythm_pulse_interval">Intervalle des conseils</string>
     <string name="settings_rhythm_pulse_interval_dialog_title">Rhythm intervalle de conseils</string>
