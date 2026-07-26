@@ -4501,10 +4501,13 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                         kotlinx.coroutines.runBlocking {
                             val db = chromahub.rhythm.app.features.local.data.database.RhythmDatabase.getInstance(context)
                             val playlistDao = db.playlistDao()
+                            val songDao = db.songDao()
                             playlistDao.deleteAllPlaylists()
+                            playlistDao.deleteAllPlaylistSongs()
                             
                             val type = object : TypeToken<List<Playlist>>() {}.type
                             val restoredPlaylists: List<Playlist> = Gson().fromJson(playlistsData, type) ?: emptyList()
+                            val songEntitiesToInsert = mutableListOf<chromahub.rhythm.app.features.local.data.database.entity.SongEntity>()
                             
                             restoredPlaylists.forEach { playlist ->
                                 val playlistEntity = chromahub.rhythm.app.features.local.data.database.entity.PlaylistEntity(
@@ -4516,6 +4519,32 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                                 )
                                 playlistDao.insertPlaylist(playlistEntity)
                                 
+                                playlist.songs.forEach { song ->
+                                    val songEntity = chromahub.rhythm.app.features.local.data.database.entity.SongEntity(
+                                        id = song.id,
+                                        title = song.title,
+                                        artist = song.artist,
+                                        album = song.album,
+                                        albumId = song.albumId,
+                                        duration = song.duration,
+                                        uri = song.uri.toString(),
+                                        artworkUri = song.artworkUri?.toString(),
+                                        trackNumber = song.trackNumber,
+                                        year = song.year,
+                                        genre = song.genre,
+                                        dateAdded = song.dateAdded,
+                                        dateModified = song.dateModified,
+                                        albumArtist = song.albumArtist,
+                                        bitrate = song.bitrate,
+                                        sampleRate = song.sampleRate,
+                                        channels = song.channels,
+                                        codec = song.codec,
+                                        discNumber = song.discNumber,
+                                        path = song.path
+                                    )
+                                    songEntitiesToInsert.add(songEntity)
+                                }
+                                
                                 val songEntities = playlist.songs.mapIndexed { index, song ->
                                     chromahub.rhythm.app.features.local.data.database.entity.PlaylistSongEntity(
                                         playlistId = playlist.id,
@@ -4524,6 +4553,12 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                                     )
                                 }
                                 playlistDao.insertPlaylistSongs(songEntities)
+                            }
+                            
+                            if (songEntitiesToInsert.isNotEmpty()) {
+                                val distinctSongs = songEntitiesToInsert.distinctBy { it.id }
+                                songDao.insertAll(distinctSongs)
+                                Log.d("AppSettings", "Restored ${distinctSongs.size} unique song metadata records directly to Room database")
                             }
                         }
                         Log.d("AppSettings", "Restored playlists directly to Room database")

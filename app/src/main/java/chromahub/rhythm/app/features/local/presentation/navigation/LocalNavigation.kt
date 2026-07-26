@@ -2727,9 +2727,9 @@ private fun LocalNavigationContent(
 
                         if (targetPlaylist != null) {
                             // Filter available songs
-                            val availableSongs =
-                                remember(allSongs, targetPlaylist.songs, searchQuery) {
-                                    allSongs.filter { song ->
+                             val availableSongs =
+                                remember(songs, targetPlaylist.songs, searchQuery) {
+                                    songs.filter { song ->
                                         // Filter out songs that are already in the playlist
                                         !targetPlaylist.songs.any { it.id == song.id }
                                     }

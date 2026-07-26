@@ -103,6 +103,28 @@ import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository // Im
 
 class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
+    sealed class RestoreResult {
+        object Idle : RestoreResult()
+        object Queued : RestoreResult()
+        data class Success(val wasQueued: Boolean) : RestoreResult()
+        data class Failure(val errorMessage: String) : RestoreResult()
+    }
+
+    data class QueuedRestore(
+        val backupJson: String,
+        val sections: AppSettings.BackupRestoreSections,
+        val onResult: (Boolean) -> Unit
+    )
+
+    private val _restoreResult = MutableStateFlow<RestoreResult>(RestoreResult.Idle)
+    val restoreResult: StateFlow<RestoreResult> = _restoreResult.asStateFlow()
+
+    private var pendingRestore: QueuedRestore? = null
+
+    fun clearRestoreResult() {
+        _restoreResult.value = RestoreResult.Idle
+    }
+
     companion object {
         private const val TAG = "MusicViewModel"
         /**
@@ -468,18 +490,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     
-    // Helper to refresh playlists from AppSettings
+    // Helper to refresh playlists from Room database
     private suspend fun refreshPlaylistsFromSettings() {
         try {
-            val playlistsJson = appSettings.playlists.value
-            if (playlistsJson != null) {
-                val type = object : TypeToken<List<Playlist>>() {}.type
-                val playlists = GsonUtils.gson.fromJson<List<Playlist>>(playlistsJson, type)
-                _playlists.value = playlists
-                Log.d(TAG, "Refreshed playlists from settings")
-            }
+            loadSavedPlaylists()
+            Log.d(TAG, "Refreshed playlists from database")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to refresh playlists from settings", e)
+            Log.e(TAG, "Failed to refresh playlists from database", e)
         }
     }
 
@@ -2341,6 +2358,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 _isMediaScanning.value = false // Hide media scan loader
                 _isLibraryRefreshing.value = false // Reset pull-to-refresh state
                 
+                // Process pending restore if queued
+                val queued = pendingRestore
+                if (queued != null) {
+                    pendingRestore = null
+                    Log.d(TAG, "Executing queued restore operation...")
+                    val success = appSettings.restoreFromBackup(queued.backupJson, queued.sections)
+                    if (success) {
+                        reloadPlaylistsFromSettings()
+                    }
+                    queued.onResult(success)
+                }
+                
                 // Ensure MediaScanLoader doesn't get stuck by dispatching a completion event
                 // This is a safety measure for cases where the StateFlow updates might not trigger UI properly
                 try {
@@ -2495,7 +2524,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         val currentSongsMap = currentSongs.associateBy { it.id }
-        val currentSongsByStableKey = currentSongs.groupBy { playlistSongStableKey(it) }
+        val currentSongsByStableKey = currentSongs.associateBy { playlistSongStableKey(it) }
+        val currentSongsByStableKeyMed = currentSongs.associateBy { playlistSongStableKeyMed(it) }
+        val currentSongsByStableKeyLight = currentSongs.associateBy { playlistSongStableKeyLight(it) }
+        val currentSongsByStableKeyBasic = currentSongs.associateBy { playlistSongStableKeyBasic(it) }
 
         val filteredSongsValue = filteredSongs.value
         val filteredSongsSet: Set<String> = if (filteredSongsValue.isEmpty()) {
@@ -2518,7 +2550,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     playlistSong
                 } else {
                     val directMatch = currentSongsMap[playlistSong.id]
-                    val resolvedSong = directMatch ?: currentSongsByStableKey[playlistSongStableKey(playlistSong)]?.firstOrNull()
+                    val resolvedSong = directMatch ?: resolveSongByStableKeys(
+                        playlistSong,
+                        currentSongsByStableKey,
+                        currentSongsByStableKeyMed,
+                        currentSongsByStableKeyLight,
+                        currentSongsByStableKeyBasic
+                    )
 
                     when {
                         resolvedSong != null && filteredSongsSet.contains(resolvedSong.id) -> {
@@ -2574,6 +2612,49 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             song.trackNumber.toString(),
             song.discNumber.toString()
         ).joinToString("|")
+    }
+
+    private fun playlistSongStableKeyMed(song: Song): String {
+        return listOf(
+            song.title.trim().lowercase(),
+            song.artist.trim().lowercase(),
+            song.album.trim().lowercase(),
+            (song.duration / 1000L).toString()
+        ).joinToString("|")
+    }
+
+    private fun playlistSongStableKeyLight(song: Song): String {
+        return listOf(
+            song.title.trim().lowercase(),
+            song.artist.trim().lowercase(),
+            (song.duration / 1000L).toString()
+        ).joinToString("|")
+    }
+
+    private fun playlistSongStableKeyBasic(song: Song): String {
+        return listOf(
+            song.title.trim().lowercase(),
+            song.artist.trim().lowercase()
+        ).joinToString("|")
+    }
+
+    private fun resolveSongByStableKeys(
+        song: Song,
+        fullMap: Map<String, Song>,
+        medMap: Map<String, Song>,
+        lightMap: Map<String, Song>,
+        basicMap: Map<String, Song>
+    ): Song? {
+        val title = song.title.trim()
+        val artist = song.artist.trim()
+        if (title.isEmpty()) return null
+        
+        return fullMap[playlistSongStableKey(song)]
+            ?: medMap[playlistSongStableKeyMed(song)]
+            ?: lightMap[playlistSongStableKeyLight(song)]
+            ?: if (artist.isNotEmpty() && artist.lowercase() != "unknown artist") {
+                basicMap[playlistSongStableKeyBasic(song)]
+            } else null
     }
     
     /**
@@ -2720,6 +2801,36 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
     
     /**
+     * Restores app data from a backup JSON string. If a media scan is active,
+     * the restore is queued until the scan finishes.
+     */
+    fun restoreFromBackup(
+        backupJson: String,
+        sections: AppSettings.BackupRestoreSections = AppSettings.BackupRestoreSections()
+    ) {
+        if (_isLibraryRefreshing.value || _isMediaScanning.value) {
+            Log.d(TAG, "Media scan is active. Queueing backup restore.")
+            pendingRestore = QueuedRestore(backupJson, sections) { success ->
+                if (success) {
+                    _restoreResult.value = RestoreResult.Success(wasQueued = true)
+                } else {
+                    _restoreResult.value = RestoreResult.Failure("Invalid backup format or corrupted data")
+                }
+            }
+            _restoreResult.value = RestoreResult.Queued
+        } else {
+            Log.d(TAG, "No active scan. Applying backup restore immediately.")
+            val success = appSettings.restoreFromBackup(backupJson, sections)
+            if (success) {
+                reloadPlaylistsFromSettings()
+                _restoreResult.value = RestoreResult.Success(wasQueued = false)
+            } else {
+                _restoreResult.value = RestoreResult.Failure("Invalid backup format or corrupted data")
+            }
+        }
+    }
+
+    /**
      * Reloads playlists and favorite songs from settings after a backup restore
      */
     fun reloadPlaylistsFromSettings() {
@@ -2730,6 +2841,42 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d(TAG, "Playlists successfully reloaded from settings")
             } catch (e: Exception) {
                 Log.e(TAG, "Error reloading playlists from settings", e)
+            }
+        }
+    }
+
+    /**
+     * Enables or disables default playlists dynamically, updating Room storage and UI.
+     */
+    fun setDefaultPlaylistsEnabled(enabled: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                Log.d(TAG, "Setting default playlists enabled: $enabled")
+                appSettings.setDefaultPlaylistsEnabled(enabled)
+                val playlistDao = repository.playlistDao
+                if (enabled) {
+                    val currentDb = playlistDao.getAllPlaylists()
+                    if (currentDb.none { it.id == "1" }) {
+                        playlistDao.insertPlaylist(PlaylistEntity("1", "Liked", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                    }
+                    if (currentDb.none { it.id == "2" }) {
+                        playlistDao.insertPlaylist(PlaylistEntity("2", "Recently Added", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                    }
+                    if (currentDb.none { it.id == "3" }) {
+                        playlistDao.insertPlaylist(PlaylistEntity("3", "Most Played", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                    }
+                } else {
+                    playlistDao.deletePlaylistById("2")
+                    playlistDao.deleteSongsFromPlaylist("2")
+                    playlistDao.deletePlaylistById("3")
+                    playlistDao.deleteSongsFromPlaylist("3")
+                }
+                loadSavedPlaylists()
+                if (enabled) {
+                    populateDefaultPlaylistsSafely()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error toggling default playlists", e)
             }
         }
     }
@@ -2752,17 +2899,43 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val playlistDao = repository.playlistDao
+                val defaultPlaylistsEnabled = appSettings.defaultPlaylistsEnabled.value
                 var dbPlaylists = playlistDao.getAllPlaylists()
+                
+                // Ensure default playlists exist if enabled
+                val currentIds = dbPlaylists.map { it.id }.toSet()
+                var needsReload = false
+                if (!currentIds.contains("1")) {
+                    playlistDao.insertPlaylist(PlaylistEntity("1", "Liked", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                    needsReload = true
+                }
+                if (defaultPlaylistsEnabled) {
+                    if (!currentIds.contains("2")) {
+                        playlistDao.insertPlaylist(PlaylistEntity("2", "Recently Added", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                        needsReload = true
+                    }
+                    if (!currentIds.contains("3")) {
+                        playlistDao.insertPlaylist(PlaylistEntity("3", "Most Played", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                        needsReload = true
+                    }
+                }
+                if (needsReload) {
+                    dbPlaylists = playlistDao.getAllPlaylists()
+                }
                 
                 val playlists = if (dbPlaylists.isNotEmpty()) {
                     val songMap = _songs.value.associateBy { it.id }
+                    val songStableKeyMap = _songs.value.associateBy { playlistSongStableKey(it) }
+                    val songStableKeyMedMap = _songs.value.associateBy { playlistSongStableKeyMed(it) }
+                    val songStableKeyLightMap = _songs.value.associateBy { playlistSongStableKeyLight(it) }
+                    val songStableKeyBasicMap = _songs.value.associateBy { playlistSongStableKeyBasic(it) }
                     dbPlaylists.map { entity ->
                         val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
                         val playlistSongs = songIds.map { songId ->
                             songMap[songId] ?: run {
                                 val songEntity = repository.songDao.getSongById(songId)
                                 if (songEntity != null) {
-                                    Song(
+                                    val dbSong = Song(
                                         id = songEntity.id,
                                         title = songEntity.title,
                                         artist = songEntity.artist,
@@ -2784,6 +2957,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                                         discNumber = songEntity.discNumber,
                                         path = songEntity.path
                                     )
+                                    // Try to match the DB song (e.g. restored from backup) to a local scanned song by stable key
+                                    resolveSongByStableKeys(
+                                        dbSong,
+                                        songStableKeyMap,
+                                        songStableKeyMedMap,
+                                        songStableKeyLightMap,
+                                        songStableKeyBasicMap
+                                    ) ?: dbSong
                                 } else {
                                     // Stub song to preserve unresolved entries temporarily (e.g. unmounted SD card)
                                     Song(
@@ -6129,10 +6310,6 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /**
-     * Populates the "Recently Added" playlist with songs from current year's albums.
-     * Only includes songs that pass the blacklist/whitelist filters.
-     */
     private suspend fun populateRecentlyAddedPlaylist() {
         val recentlyAddedPlaylist = _playlists.value.find { it.id == "2" && it.name == "Recently Added" }
         if (recentlyAddedPlaylist == null) {
@@ -6140,36 +6317,19 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-        val currentYearAlbums = _albums.value.filter { it.year == currentYear }
-            .ifEmpty {
-                // Fallback to most recent albums if no current year albums are available
-                _albums.value.sortedByDescending { it.year }.take(4)
-            }
+        // Get all songs, sorted by dateAdded descending
+        val currentFilteredSongs = filteredSongs.value
+        val topSongs = currentFilteredSongs.sortedByDescending { it.dateAdded }.take(50)
 
-        val songsToAdd = mutableSetOf<Song>()
-        currentYearAlbums.forEach { album ->
-            val albumSongs = repository.getSongsForAlbumLocal(album.id)
-            songsToAdd.addAll(albumSongs)
-        }
-
-        // Filter songs using the same blacklist/whitelist logic as filteredSongs
-        val currentFilteredSongs = filteredSongs.value.toSet()
-        val filteredSongsToAdd = songsToAdd.filter { it in currentFilteredSongs }
-
-        // Add songs to the playlist, avoiding duplicates and respecting filters
-        val updatedSongs = (recentlyAddedPlaylist.songs.toSet() + filteredSongsToAdd).toList()
-            .filter { it in currentFilteredSongs } // Remove any previously added songs that are now filtered
-        
         _playlists.value = _playlists.value.map { playlist ->
             if (playlist.id == "2") {
-                playlist.copy(songs = updatedSongs, dateModified = System.currentTimeMillis())
+                playlist.copy(songs = topSongs, dateModified = System.currentTimeMillis())
             } else {
                 playlist
             }
         }
         savePlaylists()
-        Log.d(TAG, "Populated Recently Added playlist with ${filteredSongsToAdd.size} new filtered songs (${songsToAdd.size - filteredSongsToAdd.size} filtered out).")
+        Log.d(TAG, "Populated Recently Added playlist with ${topSongs.size} songs based on dateAdded.")
     }
 
     /**
@@ -6448,6 +6608,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         viewModelScope.launch {
             val context = getApplication<Application>()
+            if (_isLibraryRefreshing.value || _isMediaScanning.value) {
+                val err = Exception("Cannot export playlists while a media scan is in progress. Please wait for the scan to finish.")
+                onResult(Result.failure(err))
+                showOperationResultNotification(
+                    notificationId = PLAYLIST_EXPORT_NOTIFICATION_ID,
+                    title = context.getString(R.string.notification_playlist_export_title),
+                    content = "Media scan in progress. Please wait.",
+                    isError = true,
+                    autoDismissMs = 5000L
+                )
+                return@launch
+            }
             showOperationProgressNotification(
                 notificationId = PLAYLIST_EXPORT_NOTIFICATION_ID,
                 title = context.getString(R.string.notification_playlist_export_title),
@@ -6527,6 +6699,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         viewModelScope.launch {
             val context = getApplication<Application>()
+            if (_isLibraryRefreshing.value || _isMediaScanning.value) {
+                val err = Exception("Cannot export playlists while a media scan is in progress. Please wait for the scan to finish.")
+                onResult(Result.failure(err))
+                showOperationResultNotification(
+                    notificationId = PLAYLIST_EXPORT_NOTIFICATION_ID,
+                    title = context.getString(R.string.notification_playlist_export_title),
+                    content = "Media scan in progress. Please wait.",
+                    isError = true,
+                    autoDismissMs = 5000L
+                )
+                return@launch
+            }
             val operationText = if (userSelectedDirectoryUri != null) {
                 context.getString(R.string.operation_exporting_playlists_location)
             } else {
@@ -6646,6 +6830,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         viewModelScope.launch {
             val context = getApplication<Application>()
+            if (_isLibraryRefreshing.value || _isMediaScanning.value) {
+                val err = Exception("Cannot import playlists while a media scan is in progress. Please wait for the scan to finish.")
+                onResult(Result.failure(err))
+                showOperationResultNotification(
+                    notificationId = PLAYLIST_IMPORT_NOTIFICATION_ID,
+                    title = context.getString(R.string.notification_playlist_import_title),
+                    content = "Media scan in progress. Please wait.",
+                    isError = true,
+                    autoDismissMs = 5000L
+                )
+                return@launch
+            }
             showOperationProgressNotification(
                 notificationId = PLAYLIST_IMPORT_NOTIFICATION_ID,
                 title = context.getString(R.string.notification_playlist_import_title),
