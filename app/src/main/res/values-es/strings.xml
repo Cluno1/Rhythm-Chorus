@@ -7,8 +7,8 @@
     <string name="search">Buscar</string>
     <string name="settings">Configuración</string>
     <!-- Media3 notification configuration -->
-    <string name="media3_notification_channel_name">Rhythm Música</string>
-    <string name="media3_notification_channel_description">Controles de reproducción multimedia</string>
+    <string name="media3_notification_channel_name">Reproduciendo ahora en Rhythm</string>
+    <string name="media3_notification_channel_description">Controles de reproducción, botones de búsqueda y carátula del álbum</string>
     <!-- Widget strings -->
     <string name="widget_description">Rhythm Widget de música: controle la reproducción con diseños responsivos que admiten tamaños de cuadrícula de 2x1 a 5x5</string>
     <string name="widget_description_glance">Rhythm Música: controla la reproducción con 9 diseños responsivos, Material 3 diseños y actualizaciones de estado en tiempo real</string>
@@ -2907,4 +2907,6 @@
     <string name="settings_system_notification_channels"></string>
     <string name="settings_show_codec_notifications"></string>
     <string name="settings_rhythm_guard_first_break_dialog_turn_off"></string>
+    <string name="settings_notifications_playback_group">Medios &amp; Reproducción</string>
+    <string name="settings_notifications_library_group">Biblioteca &amp; Sincronización</string>
 </resources>
