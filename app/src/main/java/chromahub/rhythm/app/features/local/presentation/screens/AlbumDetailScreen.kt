@@ -198,6 +198,7 @@ fun AlbumDetailScreen(
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
+    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
 
     val appSettings = remember { AppSettings.getInstance(context) }
     val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
@@ -347,7 +348,7 @@ fun AlbumDetailScreen(
     val backgroundColor = MaterialTheme.colorScheme.background
     val isLoading = isContentLoadingOverride ?: (album == null)
 
-    if (isTablet) {
+    if (isLandscapeTablet) {
         // Animated infinite transition for backdrop orbs (like full-screen lyrics view)
         val infiniteTransition = rememberInfiniteTransition(label = "tabletBackdrop")
         val translationX1 by infiniteTransition.animateFloat(

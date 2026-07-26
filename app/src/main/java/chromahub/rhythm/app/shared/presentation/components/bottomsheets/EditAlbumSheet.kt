@@ -199,8 +199,9 @@ fun EditAlbumSheet(
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
+    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
 
-    if (isTablet) {
+    if (isLandscapeTablet) {
         Dialog(
             onDismissRequest = { if (!isSaving) onDismiss() },
             properties = DialogProperties(

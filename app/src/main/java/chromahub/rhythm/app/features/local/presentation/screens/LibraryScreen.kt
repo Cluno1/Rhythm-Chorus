@@ -773,7 +773,7 @@ fun LibraryScreen(
     val isTabletLayout = LocalConfiguration.current.screenWidthDp >= 600
     val baseLibraryBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val fabBottomPadding = if (isTabletLayout) {
-        12.dp
+        (baseLibraryBottomPadding + 12.dp).coerceAtLeast(12.dp)
     } else {
         (baseLibraryBottomPadding - 4.dp).coerceAtLeast(0.dp)
     }
@@ -2423,8 +2423,8 @@ fun SingleCardPlaylistsContent(
             when (playlistSortOrder) {
                 LibraryPlaylistSortOrder.NAME_ASC -> baseList.sortedBy { it.name.lowercase() }
                 LibraryPlaylistSortOrder.NAME_DESC -> baseList.sortedByDescending { it.name.lowercase() }
-                LibraryPlaylistSortOrder.DATE_CREATED_ASC -> baseList.sortedBy { it.id.toLongOrNull() ?: 0L }
-                LibraryPlaylistSortOrder.DATE_CREATED_DESC -> baseList.sortedByDescending { it.id.toLongOrNull() ?: 0L }
+                LibraryPlaylistSortOrder.DATE_CREATED_ASC -> baseList.sortedBy { it.dateCreated }
+                LibraryPlaylistSortOrder.DATE_CREATED_DESC -> baseList.sortedByDescending { it.dateCreated }
                 LibraryPlaylistSortOrder.SONG_COUNT_ASC -> baseList.sortedBy { it.songs.size }
                 LibraryPlaylistSortOrder.SONG_COUNT_DESC -> baseList.sortedByDescending { it.songs.size }
             }

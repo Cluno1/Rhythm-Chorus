@@ -1512,15 +1512,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         try {
+            loadSavedPlaylists()
+            syncLikedPlaylistWithFavorites(_favoriteSongs.value)
             populateRecentlyAddedPlaylist()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error populating recently added playlist", e)
-        }
-        
-        try {
             populateMostPlayedPlaylist()
         } catch (e: Exception) {
-            Log.e(TAG, "Error populating most played playlist", e)
+            Log.e(TAG, "Error populating default playlists", e)
         }
     }
     

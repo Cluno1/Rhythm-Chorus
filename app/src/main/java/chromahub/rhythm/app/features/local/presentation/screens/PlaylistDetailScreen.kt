@@ -1431,7 +1431,7 @@ fun PlaylistDetailScreen(
             }
         }
     ) { modifier ->
-        if (isTablet && !isCompactHeight) {
+        if (isLandscapeTablet) {
             // Tablet split-view layout: Left side (art + controls), Right side (song list)
             Box(modifier = modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxSize()) {

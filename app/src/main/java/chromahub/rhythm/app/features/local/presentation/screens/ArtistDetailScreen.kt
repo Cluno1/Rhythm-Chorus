@@ -121,6 +121,7 @@ fun ArtistDetailScreen(
     val haptics = LocalHapticFeedback.current
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
+    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
 
     val appSettings = remember { AppSettings.getInstance(context) }
     val groupByAlbumArtist by appSettings.groupByAlbumArtist.collectAsState()
@@ -249,7 +250,7 @@ fun ArtistDetailScreen(
     val displayArtworkUri = artist?.artworkUri
     val backgroundColor = MaterialTheme.colorScheme.background
 
-    if (isTablet) {
+    if (isLandscapeTablet) {
         // Animated infinite transition for backdrop orbs (matching AlbumDetailScreen)
         val infiniteTransition = rememberInfiniteTransition(label = "tabletArtistBackdrop")
         val translationX1 by infiniteTransition.animateFloat(

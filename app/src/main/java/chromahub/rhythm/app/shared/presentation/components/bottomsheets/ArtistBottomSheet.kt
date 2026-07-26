@@ -102,6 +102,7 @@ fun ArtistBottomSheet(
     val configuration = LocalConfiguration.current
 
     val isTablet = configuration.screenWidthDp >= 600
+    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
 
     val allSongs by viewModel.filteredSongs.collectAsState()
     val allAlbums by viewModel.albums.collectAsState()
@@ -173,7 +174,7 @@ fun ArtistBottomSheet(
         }
     }
 
-    if (isTablet) {
+    if (isLandscapeTablet) {
         Dialog(
             onDismissRequest = onDismiss,
             properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true, usePlatformDefaultWidth = false)

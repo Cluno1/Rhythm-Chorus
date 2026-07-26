@@ -316,7 +316,7 @@ fun StreamingLibraryScreen(
     val isTabletLayout = LocalConfiguration.current.screenWidthDp >= 600
     val baseLibraryBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val fabBottomPaddingVal = if (isTabletLayout) {
-        12.dp
+        (baseLibraryBottomPadding + 12.dp).coerceAtLeast(12.dp)
     } else {
         (baseLibraryBottomPadding - 4.dp).coerceAtLeast(0.dp)
     }
