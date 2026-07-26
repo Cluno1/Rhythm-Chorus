@@ -2891,22 +2891,4 @@
     <string name="settings_rhythm_guard_first_break_dialog_turn_off">Wyłącz funkcję Rhythm Guard</string>
     <string name="settings_rhythm_guard_first_break_dialog_start">Początek przerwy</string>
     <string name="settings_rhythm_guard_locked_during_break">Zablokowane podczas przerwy na słuchanie</string>
-    <string name="settings_notification_preview_subtitle"></string>
-    <string name="settings_notification_preview_title"></string>
-    <string name="settings_notification_permission_title"></string>
-    <string name="settings_system_notification_channels_desc"></string>
-    <string name="settings_library_operations_notifications"></string>
-    <string name="onboarding_integration_wikipedia"></string>
-    <string name="settings_show_codec_notifications_desc"></string>
-    <string name="settings_notifications_system_group"></string>
-    <string name="settings_notification_permission_desc"></string>
-    <string name="onboarding_integration_wikipedia_desc"></string>
-    <string name="settings_notification_permission_grant"></string>
-    <string name="settings_library_operations_notifications_desc"></string>
-    <string name="settings_notifications_playback_group"></string>
-    <string name="settings_playback_notification"></string>
-    <string name="settings_playback_notification_desc"></string>
-    <string name="settings_system_notification_channels"></string>
-    <string name="settings_show_codec_notifications"></string>
-    <string name="settings_notifications_library_group"></string>
 </resources>
