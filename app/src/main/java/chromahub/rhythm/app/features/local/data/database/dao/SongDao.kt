@@ -12,6 +12,12 @@ interface SongDao {
     @Query("SELECT * FROM songs")
     suspend fun getAllSongs(): List<SongEntity>
 
+    @Query("SELECT * FROM songs")
+    fun getAllSongsFlow(): kotlinx.coroutines.flow.Flow<List<SongEntity>>
+
+    @Query("SELECT * FROM songs WHERE duration >= :minDurationMs ORDER BY title ASC")
+    fun getSongsFilteredFlow(minDurationMs: Long = 10000L): kotlinx.coroutines.flow.Flow<List<SongEntity>>
+
     @Query("SELECT * FROM songs WHERE id = :songId")
     suspend fun getSongById(songId: String): SongEntity?
 

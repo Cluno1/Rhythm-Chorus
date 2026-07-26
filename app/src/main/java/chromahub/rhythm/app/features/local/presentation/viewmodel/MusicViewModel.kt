@@ -66,6 +66,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.collectLatest
@@ -498,7 +500,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         val whitelistedFolders: List<String>
     )
 
-    private val filterSettingsFlow = kotlinx.coroutines.flow.combine(
+    private val filterSettingsFlow = combine(
         appSettings.mediaScanMode,
         appSettings.blacklistedSongs,
         appSettings.blacklistedFolders,
@@ -506,15 +508,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         appSettings.whitelistedFolders
     ) { mode, blacklistedIds, blacklistedFolders, whitelistedIds, whitelistedFolders ->
         FilterSettings(mode, blacklistedIds, blacklistedFolders, whitelistedIds, whitelistedFolders)
-    }
+    }.distinctUntilChanged()
 
     // Filtered songs excluding blacklisted ones and including only whitelisted ones (both songs and folders)
-    val filteredSongs: StateFlow<List<Song>> = kotlinx.coroutines.flow.combine(
+    val filteredSongs: StateFlow<List<Song>> = combine(
         _songs,
         filterSettingsFlow
-    ) { songs, settings ->
+    ) { songs: List<Song>, settings: FilterSettings ->
         filterSongsAsync(songs, settings.mode, settings.blacklistedIds, settings.blacklistedFolders, settings.whitelistedIds, settings.whitelistedFolders)
-    }.flowOn(Dispatchers.IO).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
+    }.distinctUntilChanged().conflate().flowOn(Dispatchers.IO).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
     
     private suspend fun filterSongsAsync(
         songs: List<Song>,
@@ -557,7 +559,22 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         val startTime = System.currentTimeMillis()
-        val result = mutableListOf<Song>()
+        val result = ArrayList<Song>(songs.size)
+
+        // Pre-normalize target folders once for O(N+M) efficiency instead of O(N*M)
+        val normBlacklistedFolders = if (useBlacklistMode && blacklistedFolders.isNotEmpty()) {
+            blacklistedFolders.map { normalizeStoragePath(it) }
+        } else {
+            emptyList()
+        }
+        val normWhitelistedFolders = if (useWhitelistMode && whitelistedFolders.isNotEmpty()) {
+            whitelistedFolders.map { normalizeStoragePath(it) }
+        } else {
+            emptyList()
+        }
+
+        val blacklistedIdsSet = if (useBlacklistMode && blacklistedIds.isNotEmpty()) blacklistedIds.toSet() else emptySet()
+        val whitelistedIdsSet = if (useWhitelistMode && whitelistedIds.isNotEmpty()) whitelistedIds.toSet() else emptySet()
         
         // Process in batches to allow yielding
         val batchSize = 100
@@ -577,12 +594,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             // In BLACKLIST mode: exclude blacklisted songs/folders, include everything else
             if (useBlacklistMode && hasBlacklist) {
                 // Check if song is individually blacklisted
-                if (blacklistedIds.contains(song.id)) {
+                if (blacklistedIdsSet.contains(song.id)) {
                     shouldInclude = false
-                } else if (blacklistedFolders.isNotEmpty()) {
+                } else if (normBlacklistedFolders.isNotEmpty()) {
                     // Check if song is in a blacklisted folder
                     val songPath = song.path ?: if (song.uri.scheme == "file") song.uri.path else getPathFromUriCached(song.uri)
-                    shouldInclude = songPath == null || !isPathBlacklisted(songPath, blacklistedFolders)
+                    shouldInclude = songPath == null || !isNormalizedPathInFolders(normalizeStoragePath(songPath), normBlacklistedFolders)
                 } else {
                     shouldInclude = true
                 }
@@ -590,15 +607,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             // In WHITELIST mode: include ONLY whitelisted songs/folders, exclude everything else
             else if (useWhitelistMode && hasWhitelist) {
                 // Check if song ID is individually whitelisted
-                if (whitelistedIds.contains(song.id)) {
+                if (whitelistedIdsSet.contains(song.id)) {
                     shouldInclude = true
-                } else if (whitelistedFolders.isNotEmpty()) {
+                } else if (normWhitelistedFolders.isNotEmpty()) {
                     // Check if song is in a whitelisted folder
                     val songPath = song.path ?: if (song.uri.scheme == "file") song.uri.path else getPathFromUriCached(song.uri)
                     if (songPath == null) {
                         Log.w(TAG, "Whitelist: could not resolve path for song '${song.title}' (${song.uri}), excluding it")
                     }
-                    shouldInclude = songPath != null && isPathWhitelisted(songPath, whitelistedFolders)
+                    shouldInclude = songPath != null && isNormalizedPathInFolders(normalizeStoragePath(songPath), normWhitelistedFolders)
                 }
             }
             
@@ -646,23 +663,27 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         return normalized
     }
 
+    private fun isNormalizedPathInFolders(normChild: String, normFolders: List<String>): Boolean {
+        return normFolders.any { normParent ->
+            normParent.equals(normChild, ignoreCase = true) ||
+                normChild.startsWith(if (normParent.endsWith('/')) normParent else "$normParent/", ignoreCase = true)
+        }
+    }
+
     private fun isFolderSubdirectoryOrEqual(parent: String, child: String): Boolean {
         val normParent = normalizeStoragePath(parent)
         val normChild = normalizeStoragePath(child)
-        return normParent.equals(normChild, ignoreCase = true) ||
-            normChild.startsWith(if (normParent.endsWith('/')) normParent else "$normParent/", ignoreCase = true)
+        return isNormalizedPathInFolders(normChild, listOf(normParent))
     }
 
     private fun isPathBlacklisted(songPath: String, blacklistedFolders: List<String>): Boolean {
-        return blacklistedFolders.any { folderPath ->
-            isFolderSubdirectoryOrEqual(folderPath, songPath)
-        }
+        val normFolders = blacklistedFolders.map { normalizeStoragePath(it) }
+        return isNormalizedPathInFolders(normalizeStoragePath(songPath), normFolders)
     }
     
     private fun isPathWhitelisted(songPath: String, whitelistedFolders: List<String>): Boolean {
-        return whitelistedFolders.any { folderPath ->
-            isFolderSubdirectoryOrEqual(folderPath, songPath)
-        }
+        val normFolders = whitelistedFolders.map { normalizeStoragePath(it) }
+        return isNormalizedPathInFolders(normalizeStoragePath(songPath), normFolders)
     }
 
     private val _albums = MutableStateFlow<List<Album>>(emptyList())
@@ -679,28 +700,32 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             ?: "Unknown Artist").lowercase(java.util.Locale.ROOT)
 
     // Filtered albums excluding albums with all songs blacklisted
-    val filteredAlbums: StateFlow<List<Album>> = kotlinx.coroutines.flow.combine(
+    val filteredAlbums: StateFlow<List<Album>> = combine(
         _albums,
         filteredSongs
     ) { albums, filteredSongs ->
-        val filteredSongsGrouped = filteredSongs.groupBy { song ->
+        if (albums.isEmpty() || filteredSongs.isEmpty()) {
+            return@combine emptyList()
+        }
+        val albumNameToArtistGroups = java.util.HashMap<String, MutableList<Pair<String, List<Song>>>>()
+        val rawGroups = filteredSongs.groupBy { song ->
             song.album.trim().lowercase(java.util.Locale.ROOT) to song.rawAlbumGroupKey()
         }
+        for ((keyPair, songList) in rawGroups) {
+            val (albumNameKey, artistKey) = keyPair
+            albumNameToArtistGroups.getOrPut(albumNameKey) { java.util.ArrayList() }.add(artistKey to songList)
+        }
 
-        albums.mapNotNull { album ->
+        val result = java.util.ArrayList<Album>(albums.size)
+        for (album in albums) {
             val albumNameKey = album.title.trim().lowercase(java.util.Locale.ROOT)
-            // Find matching group by album name; prefer exact artist match, fallback to any songs with matching name
-            val matchingGroup = filteredSongsGrouped.filterKeys { (name, _) ->
-                name == albumNameKey
-            }
-            val albumSongs = if (matchingGroup.size == 1) {
-                matchingGroup.values.first()
+            val groupsForAlbum = albumNameToArtistGroups[albumNameKey] ?: continue
+            val albumSongs = if (groupsForAlbum.size == 1) {
+                groupsForAlbum[0].second
             } else {
-                // Multiple groups with same album name - match by artist
                 val artistKey = album.artist.trim().lowercase(java.util.Locale.ROOT)
-                matchingGroup.entries.firstOrNull { (key, _) ->
-                    key.second == artistKey
-                }?.value ?: matchingGroup.values.flatten()
+                groupsForAlbum.firstOrNull { it.first == artistKey }?.second
+                    ?: groupsForAlbum.flatMap { it.second }
             }
             if (albumSongs.isNotEmpty()) {
                 val sortedSongs = albumSongs.sortedWith(
@@ -708,21 +733,22 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         .thenBy { it.trackNumber }
                         .thenBy { it.title.lowercase(java.util.Locale.ROOT) }
                 )
-                album.copy(
-                    songs = sortedSongs,
-                    numberOfSongs = sortedSongs.size
+                result.add(
+                    album.copy(
+                        songs = sortedSongs,
+                        numberOfSongs = sortedSongs.size
+                    )
                 )
-            } else {
-                null
             }
-        }.distinctBy { it.id }
-    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
+        }
+        result.distinctBy { it.id }
+    }.distinctUntilChanged().conflate().flowOn(Dispatchers.Default).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
 
     private val _artists = MutableStateFlow<List<Artist>>(emptyList())
     val artists: StateFlow<List<Artist>> = _artists.asStateFlow()
     
     // Filtered artists excluding artists with all songs blacklisted
-    val filteredArtists: StateFlow<List<Artist>> = kotlinx.coroutines.flow.combine(
+    val filteredArtists: StateFlow<List<Artist>> = combine(
         _artists,
         filteredSongs,
         appSettings.groupByAlbumArtist,
@@ -773,7 +799,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 null
             }
         }
-    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
+    }.distinctUntilChanged().conflate().flowOn(Dispatchers.Default).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
 
     private val _playlists = MutableStateFlow<List<Playlist>>(emptyList())
     val playlists: StateFlow<List<Playlist>> = _playlists.asStateFlow()
@@ -2712,9 +2738,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 var dbPlaylists = playlistDao.getAllPlaylists()
                 
                 val playlists = if (dbPlaylists.isNotEmpty()) {
+                    val songMap = _songs.value.associateBy { it.id }
                     dbPlaylists.map { entity ->
                         val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
-                        val songMap = _songs.value.associateBy { it.id }
                         val playlistSongs = songIds.map { songId ->
                             songMap[songId] ?: run {
                                 val songEntity = repository.songDao.getSongById(songId)
@@ -2805,11 +2831,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             Log.i(TAG, "Successfully migrated ${legacyPlaylists.size} legacy playlists to Room database")
                             
                             dbPlaylists = playlistDao.getAllPlaylists()
+                            val migrationSongMap = _songs.value.associateBy { it.id }
                             dbPlaylists.map { entity ->
                                 val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
-                                val songMap = _songs.value.associateBy { it.id }
                                 val playlistSongs = songIds.map { songId ->
-                                    songMap[songId] ?: run {
+                                    migrationSongMap[songId] ?: run {
                                         val songEntity = repository.songDao.getSongById(songId)
                                         if (songEntity != null) {
                                             Song(
