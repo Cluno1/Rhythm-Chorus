@@ -2017,10 +2017,7 @@
     <string name="batchedittagssheet_enable_fields_you_want">Aktivera fält som du vill uppdatera. Inaktiverade fält förblir oförändrade.</string>
     <string name="batchedittagssheet_tags">Taggar</string>
     <string name="batchedittagssheet_batch_artwork_preview">Förhandsgranskning av batchkonstverk</string>
-    <string name="deviceconfigurationbottomsheet_supported_formats_fixedbandeq_text">Supported formats:
-• FixedBandEQ text (AutoEQ)
-• JSON format
-• CSV (10 band values)</string>
+    <string name="deviceconfigurationbottomsheet_supported_formats_fixedbandeq_text">Supported formats: • FixedBandEQ text (AutoEQ) • JSON format • CSV (10 band values)</string>
     <string name="deviceconfigurationbottomsheet_paste_eq_data_here">Klistra in EQ-data här...</string>
     <string name="deviceconfigurationbottomsheet_open_autoeqapp">Öppna autoeq.app</string>
     <string name="deviceconfigurationbottomsheet_export_eq_profile">Exportera EQ-profil</string>
@@ -2239,8 +2236,7 @@
     <string name="lyricssourcesettingsscreen_lyrics_api_priority">Lyrics API Priority</string>
     <string name="lyricssourcesettingsscreen_choose_which_online_lyrics">Välj vilka onlinetexter API som ska sökas först</string>
     <string name="lyricssourcesettingsscreen_retry_using_fallbacks">Försök igen med reservalternativ</string>
-    <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• Embedded lyrics are stored in your audio files
-</string>
+    <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• Embedded lyrics are stored in your audio files</string>
     <string name="miniplayercustomizationsettingsscreen_miniplayer_theme">MiniPlayer-tema</string>
     <string name="miniplayercustomizationsettingsscreen_choose_between_rhythm_default">Välj mellan Rhythm Standard eller Expressive tema</string>
     <string name="miniplayercustomizationsettingsscreen_integrated_directly_into_the">Integrerad direkt i MiniPlayer-bakgrunden</string>
@@ -2888,4 +2884,29 @@
     <string name="lyrically_sources_title">Lyrically källor</string>
     <string name="lyrically_sources_desc">Konfigurera och prioritera textkällor inuti Lyrically. Ord-för-ord-källor kommer att testas först, och återgå till synkroniserade/enkla källor.</string>
     <string name="error_no_document_app">Ingen systemdokumentväljare hittades för att välja en mapp.</string>
+    <string name="settings_album_hide_about"></string>
+    <string name="settings_notification_preview_subtitle"></string>
+    <string name="settings_notification_preview_title"></string>
+    <string name="settings_notification_permission_title"></string>
+    <string name="settings_rhythm_guard_first_break_dialog_start"></string>
+    <string name="settings_system_notification_channels_desc"></string>
+    <string name="settings_library_operations_notifications"></string>
+    <string name="onboarding_integration_wikipedia"></string>
+    <string name="settings_show_codec_notifications_desc"></string>
+    <string name="settings_notifications_system_group"></string>
+    <string name="settings_rhythm_guard_first_break_dialog_message"></string>
+    <string name="settings_album_hide_about_desc"></string>
+    <string name="settings_notification_permission_desc"></string>
+    <string name="onboarding_integration_wikipedia_desc"></string>
+    <string name="settings_rhythm_guard_locked_during_break"></string>
+    <string name="settings_notification_permission_grant"></string>
+    <string name="settings_library_operations_notifications_desc"></string>
+    <string name="settings_rhythm_guard_first_break_dialog_title"></string>
+    <string name="settings_notifications_playback_group"></string>
+    <string name="settings_playback_notification"></string>
+    <string name="settings_playback_notification_desc"></string>
+    <string name="settings_system_notification_channels"></string>
+    <string name="settings_show_codec_notifications"></string>
+    <string name="settings_rhythm_guard_first_break_dialog_turn_off"></string>
+    <string name="settings_notifications_library_group"></string>
 </resources>
