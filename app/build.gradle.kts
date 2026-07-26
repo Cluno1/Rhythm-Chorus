@@ -29,11 +29,11 @@ android {
         
         val overrideVersionCode = project.findProperty("versionCodeOverride")?.toString()?.toIntOrNull()
         val overrideVersionName = project.findProperty("versionNameOverride")?.toString()
-        versionCode = overrideVersionCode ?: 534321135
-        versionName = overrideVersionName ?: "5.3.432.1135"
+        versionCode = overrideVersionCode ?: 534381147
+        versionName = overrideVersionName ?: "5.3.438.1147 Beta"
 
         val overrideReleaseDate = project.findProperty("releaseDateOverride")?.toString()
-        buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-07-17"}\"")
+        buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-07-26"}\"")
 
         val isNightly = project.findProperty("nightly")?.toString() == "true"
         buildConfigField("boolean", "IS_NIGHTLY", isNightly.toString())
@@ -61,6 +61,7 @@ android {
             buildConfigField("boolean", "ENABLE_DEEZER", "true")
             buildConfigField("boolean", "ENABLE_LRCLIB", "true")
             buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "true")
+            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "true")
             buildConfigField("String", "FLAVOR", "\"fdroid\"")
             
             versionNameSuffix = "-fdroid"
@@ -76,6 +77,7 @@ android {
             buildConfigField("boolean", "ENABLE_DEEZER", "true")
             buildConfigField("boolean", "ENABLE_LRCLIB", "true")
             buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "true")
+            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "true")
             buildConfigField("String", "FLAVOR", "\"github\"")
             
             versionNameSuffix = "-gh"
@@ -298,7 +300,12 @@ dependencies {
     // Room database
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.paging)
     ksp(libs.androidx.room.compiler)
+
+    // Jetpack Paging 3
+    implementation(libs.androidx.paging.runtime.ktx)
+    implementation(libs.androidx.paging.compose)
 
     // Baseline Profile – installer ensures the .prof asset is loaded into ART on first launch.
     // AGP 9.x natively picks up app/src/main/baseline-prof/baseline-prof.txt without any

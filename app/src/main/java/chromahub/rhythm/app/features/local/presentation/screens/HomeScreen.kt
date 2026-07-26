@@ -204,8 +204,11 @@ import chromahub.rhythm.app.shared.presentation.components.AudioQualityIcon
 import chromahub.rhythm.app.util.ImageUtils
 import chromahub.rhythm.app.util.M3ImageUtils
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppVersion
-import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.shared.presentation.components.dialogs.CreatePlaylistDialog
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -1581,18 +1584,41 @@ private fun ModernFeaturedSection(
     }
 
     val carouselState = rememberCarouselState { albums.size }
+    val coroutineScope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (albums.isNotEmpty() && !carouselState.isScrollInProgress) {
+                    coroutineScope.launch {
+                        carouselState.scrollToItem(carouselState.currentItem.coerceIn(0, albums.lastIndex))
+                    }
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     // Auto-scroll one album at a time so the active item always snaps correctly.
     LaunchedEffect(albums.size) {
         if (albums.size > 1) {
+            if (!carouselState.isScrollInProgress) {
+                carouselState.scrollToItem(carouselState.currentItem.coerceIn(0, albums.lastIndex))
+            }
             while (true) {
                 delay(4500)
-                val currentItem = carouselState.currentItem
-                val nextItem = (currentItem + 1) % albums.size
-                carouselState.animateScrollToItem(
-                    nextItem,
-                    animationSpec = tween(durationMillis = 900)
-                )
+                if (!carouselState.isScrollInProgress) {
+                    val currentItem = carouselState.currentItem
+                    val nextItem = (currentItem + 1) % albums.size
+                    carouselState.animateScrollToItem(
+                        nextItem,
+                        animationSpec = tween(durationMillis = 900)
+                    )
+                }
             }
         }
     }

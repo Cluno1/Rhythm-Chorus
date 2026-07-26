@@ -2852,6 +2852,11 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             .setContentIntent(pendingIntent)
             .build()
 
+        val appSettings = chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(this)
+        if (!appSettings.sleepTimerNotificationsEnabled.value) {
+            return
+        }
+
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(SLEEP_TIMER_NOTIFICATION_ID, notification)
     }

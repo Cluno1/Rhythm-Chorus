@@ -66,9 +66,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.collectLatest
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -98,6 +102,28 @@ import chromahub.rhythm.app.utils.StatusBroadcaster
 import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository // Import for enhanced stats tracking
 
 class MusicViewModel(application: Application) : AndroidViewModel(application) {
+
+    sealed class RestoreResult {
+        object Idle : RestoreResult()
+        object Queued : RestoreResult()
+        data class Success(val wasQueued: Boolean) : RestoreResult()
+        data class Failure(val errorMessage: String) : RestoreResult()
+    }
+
+    data class QueuedRestore(
+        val backupJson: String,
+        val sections: AppSettings.BackupRestoreSections,
+        val onResult: (Boolean) -> Unit
+    )
+
+    private val _restoreResult = MutableStateFlow<RestoreResult>(RestoreResult.Idle)
+    val restoreResult: StateFlow<RestoreResult> = _restoreResult.asStateFlow()
+
+    private var pendingRestore: QueuedRestore? = null
+
+    fun clearRestoreResult() {
+        _restoreResult.value = RestoreResult.Idle
+    }
 
     companion object {
         private const val TAG = "MusicViewModel"
@@ -464,18 +490,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     
-    // Helper to refresh playlists from AppSettings
+    // Helper to refresh playlists from Room database
     private suspend fun refreshPlaylistsFromSettings() {
         try {
-            val playlistsJson = appSettings.playlists.value
-            if (playlistsJson != null) {
-                val type = object : TypeToken<List<Playlist>>() {}.type
-                val playlists = GsonUtils.gson.fromJson<List<Playlist>>(playlistsJson, type)
-                _playlists.value = playlists
-                Log.d(TAG, "Refreshed playlists from settings")
-            }
+            loadSavedPlaylists()
+            Log.d(TAG, "Refreshed playlists from database")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to refresh playlists from settings", e)
+            Log.e(TAG, "Failed to refresh playlists from database", e)
         }
     }
 
@@ -498,7 +519,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         val whitelistedFolders: List<String>
     )
 
-    private val filterSettingsFlow = kotlinx.coroutines.flow.combine(
+    private val filterSettingsFlow = combine(
         appSettings.mediaScanMode,
         appSettings.blacklistedSongs,
         appSettings.blacklistedFolders,
@@ -506,15 +527,33 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         appSettings.whitelistedFolders
     ) { mode, blacklistedIds, blacklistedFolders, whitelistedIds, whitelistedFolders ->
         FilterSettings(mode, blacklistedIds, blacklistedFolders, whitelistedIds, whitelistedFolders)
-    }
+    }.distinctUntilChanged()
 
     // Filtered songs excluding blacklisted ones and including only whitelisted ones (both songs and folders)
-    val filteredSongs: StateFlow<List<Song>> = kotlinx.coroutines.flow.combine(
+    val filteredSongs: StateFlow<List<Song>> = combine(
         _songs,
         filterSettingsFlow
-    ) { songs, settings ->
+    ) { songs: List<Song>, settings: FilterSettings ->
         filterSongsAsync(songs, settings.mode, settings.blacklistedIds, settings.blacklistedFolders, settings.whitelistedIds, settings.whitelistedFolders)
-    }.flowOn(Dispatchers.IO).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
+    }.distinctUntilChanged().conflate().flowOn(Dispatchers.IO).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
+
+    // Paginated streams for Paging 3 Compose views
+    val paginatedSongs: kotlinx.coroutines.flow.Flow<PagingData<Song>> = repository.getPaginatedSongs()
+        .cachedIn(viewModelScope)
+
+    val paginatedArtists: kotlinx.coroutines.flow.Flow<PagingData<Artist>> = repository.getPaginatedArtists(appSettings.groupByAlbumArtist.value)
+        .cachedIn(viewModelScope)
+
+    fun playPaginatedSong(song: Song, fallbackIndex: Int = 0) {
+        val allCurrentSongs = filteredSongs.value.ifEmpty { _songs.value }
+        if (allCurrentSongs.isNotEmpty()) {
+            val idx = allCurrentSongs.indexOfFirst { it.id == song.id }
+            val playIdx = if (idx >= 0) idx else fallbackIndex.coerceIn(0, allCurrentSongs.size - 1)
+            playSong(allCurrentSongs[playIdx])
+        } else {
+            playSong(song)
+        }
+    }
     
     private suspend fun filterSongsAsync(
         songs: List<Song>,
@@ -557,7 +596,22 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         val startTime = System.currentTimeMillis()
-        val result = mutableListOf<Song>()
+        val result = ArrayList<Song>(songs.size)
+
+        // Pre-normalize target folders once for O(N+M) efficiency instead of O(N*M)
+        val normBlacklistedFolders = if (useBlacklistMode && blacklistedFolders.isNotEmpty()) {
+            blacklistedFolders.map { normalizeStoragePath(it) }
+        } else {
+            emptyList()
+        }
+        val normWhitelistedFolders = if (useWhitelistMode && whitelistedFolders.isNotEmpty()) {
+            whitelistedFolders.map { normalizeStoragePath(it) }
+        } else {
+            emptyList()
+        }
+
+        val blacklistedIdsSet = if (useBlacklistMode && blacklistedIds.isNotEmpty()) blacklistedIds.toSet() else emptySet()
+        val whitelistedIdsSet = if (useWhitelistMode && whitelistedIds.isNotEmpty()) whitelistedIds.toSet() else emptySet()
         
         // Process in batches to allow yielding
         val batchSize = 100
@@ -577,12 +631,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             // In BLACKLIST mode: exclude blacklisted songs/folders, include everything else
             if (useBlacklistMode && hasBlacklist) {
                 // Check if song is individually blacklisted
-                if (blacklistedIds.contains(song.id)) {
+                if (blacklistedIdsSet.contains(song.id)) {
                     shouldInclude = false
-                } else if (blacklistedFolders.isNotEmpty()) {
+                } else if (normBlacklistedFolders.isNotEmpty()) {
                     // Check if song is in a blacklisted folder
                     val songPath = song.path ?: if (song.uri.scheme == "file") song.uri.path else getPathFromUriCached(song.uri)
-                    shouldInclude = songPath == null || !isPathBlacklisted(songPath, blacklistedFolders)
+                    shouldInclude = songPath == null || !isNormalizedPathInFolders(normalizeStoragePath(songPath), normBlacklistedFolders)
                 } else {
                     shouldInclude = true
                 }
@@ -590,15 +644,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             // In WHITELIST mode: include ONLY whitelisted songs/folders, exclude everything else
             else if (useWhitelistMode && hasWhitelist) {
                 // Check if song ID is individually whitelisted
-                if (whitelistedIds.contains(song.id)) {
+                if (whitelistedIdsSet.contains(song.id)) {
                     shouldInclude = true
-                } else if (whitelistedFolders.isNotEmpty()) {
+                } else if (normWhitelistedFolders.isNotEmpty()) {
                     // Check if song is in a whitelisted folder
                     val songPath = song.path ?: if (song.uri.scheme == "file") song.uri.path else getPathFromUriCached(song.uri)
                     if (songPath == null) {
                         Log.w(TAG, "Whitelist: could not resolve path for song '${song.title}' (${song.uri}), excluding it")
                     }
-                    shouldInclude = songPath != null && isPathWhitelisted(songPath, whitelistedFolders)
+                    shouldInclude = songPath != null && isNormalizedPathInFolders(normalizeStoragePath(songPath), normWhitelistedFolders)
                 }
             }
             
@@ -646,23 +700,27 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         return normalized
     }
 
+    private fun isNormalizedPathInFolders(normChild: String, normFolders: List<String>): Boolean {
+        return normFolders.any { normParent ->
+            normParent.equals(normChild, ignoreCase = true) ||
+                normChild.startsWith(if (normParent.endsWith('/')) normParent else "$normParent/", ignoreCase = true)
+        }
+    }
+
     private fun isFolderSubdirectoryOrEqual(parent: String, child: String): Boolean {
         val normParent = normalizeStoragePath(parent)
         val normChild = normalizeStoragePath(child)
-        return normParent.equals(normChild, ignoreCase = true) ||
-            normChild.startsWith(if (normParent.endsWith('/')) normParent else "$normParent/", ignoreCase = true)
+        return isNormalizedPathInFolders(normChild, listOf(normParent))
     }
 
     private fun isPathBlacklisted(songPath: String, blacklistedFolders: List<String>): Boolean {
-        return blacklistedFolders.any { folderPath ->
-            isFolderSubdirectoryOrEqual(folderPath, songPath)
-        }
+        val normFolders = blacklistedFolders.map { normalizeStoragePath(it) }
+        return isNormalizedPathInFolders(normalizeStoragePath(songPath), normFolders)
     }
     
     private fun isPathWhitelisted(songPath: String, whitelistedFolders: List<String>): Boolean {
-        return whitelistedFolders.any { folderPath ->
-            isFolderSubdirectoryOrEqual(folderPath, songPath)
-        }
+        val normFolders = whitelistedFolders.map { normalizeStoragePath(it) }
+        return isNormalizedPathInFolders(normalizeStoragePath(songPath), normFolders)
     }
 
     private val _albums = MutableStateFlow<List<Album>>(emptyList())
@@ -679,28 +737,32 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             ?: "Unknown Artist").lowercase(java.util.Locale.ROOT)
 
     // Filtered albums excluding albums with all songs blacklisted
-    val filteredAlbums: StateFlow<List<Album>> = kotlinx.coroutines.flow.combine(
+    val filteredAlbums: StateFlow<List<Album>> = combine(
         _albums,
         filteredSongs
     ) { albums, filteredSongs ->
-        val filteredSongsGrouped = filteredSongs.groupBy { song ->
+        if (albums.isEmpty() || filteredSongs.isEmpty()) {
+            return@combine emptyList()
+        }
+        val albumNameToArtistGroups = java.util.HashMap<String, MutableList<Pair<String, List<Song>>>>()
+        val rawGroups = filteredSongs.groupBy { song ->
             song.album.trim().lowercase(java.util.Locale.ROOT) to song.rawAlbumGroupKey()
         }
+        for ((keyPair, songList) in rawGroups) {
+            val (albumNameKey, artistKey) = keyPair
+            albumNameToArtistGroups.getOrPut(albumNameKey) { java.util.ArrayList() }.add(artistKey to songList)
+        }
 
-        albums.mapNotNull { album ->
+        val result = java.util.ArrayList<Album>(albums.size)
+        for (album in albums) {
             val albumNameKey = album.title.trim().lowercase(java.util.Locale.ROOT)
-            // Find matching group by album name; prefer exact artist match, fallback to any songs with matching name
-            val matchingGroup = filteredSongsGrouped.filterKeys { (name, _) ->
-                name == albumNameKey
-            }
-            val albumSongs = if (matchingGroup.size == 1) {
-                matchingGroup.values.first()
+            val groupsForAlbum = albumNameToArtistGroups[albumNameKey] ?: continue
+            val albumSongs = if (groupsForAlbum.size == 1) {
+                groupsForAlbum[0].second
             } else {
-                // Multiple groups with same album name - match by artist
                 val artistKey = album.artist.trim().lowercase(java.util.Locale.ROOT)
-                matchingGroup.entries.firstOrNull { (key, _) ->
-                    key.second == artistKey
-                }?.value ?: matchingGroup.values.flatten()
+                groupsForAlbum.firstOrNull { it.first == artistKey }?.second
+                    ?: groupsForAlbum.flatMap { it.second }
             }
             if (albumSongs.isNotEmpty()) {
                 val sortedSongs = albumSongs.sortedWith(
@@ -708,21 +770,22 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         .thenBy { it.trackNumber }
                         .thenBy { it.title.lowercase(java.util.Locale.ROOT) }
                 )
-                album.copy(
-                    songs = sortedSongs,
-                    numberOfSongs = sortedSongs.size
+                result.add(
+                    album.copy(
+                        songs = sortedSongs,
+                        numberOfSongs = sortedSongs.size
+                    )
                 )
-            } else {
-                null
             }
-        }.distinctBy { it.id }
-    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
+        }
+        result.distinctBy { it.id }
+    }.distinctUntilChanged().conflate().flowOn(Dispatchers.Default).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
 
     private val _artists = MutableStateFlow<List<Artist>>(emptyList())
     val artists: StateFlow<List<Artist>> = _artists.asStateFlow()
     
     // Filtered artists excluding artists with all songs blacklisted
-    val filteredArtists: StateFlow<List<Artist>> = kotlinx.coroutines.flow.combine(
+    val filteredArtists: StateFlow<List<Artist>> = combine(
         _artists,
         filteredSongs,
         appSettings.groupByAlbumArtist,
@@ -773,7 +836,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 null
             }
         }
-    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
+    }.distinctUntilChanged().conflate().flowOn(Dispatchers.Default).stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, emptyList())
 
     private val _playlists = MutableStateFlow<List<Playlist>>(emptyList())
     val playlists: StateFlow<List<Playlist>> = _playlists.asStateFlow()
@@ -1184,22 +1247,23 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        // Listen for blacklist/whitelist changes and refresh playlists accordingly
+        // Listen for blacklist/whitelist or scan mode changes and refresh library & playlists accordingly
         // This runs independently but only acts after initialization completes
         viewModelScope.launch {
             combine(
                 appSettings.blacklistedSongs,
                 appSettings.blacklistedFolders,
                 appSettings.whitelistedSongs,
-                appSettings.whitelistedFolders
-            ) { blacklistedSongs, blacklistedFolders, whitelistedSongs, whitelistedFolders ->
+                appSettings.whitelistedFolders,
+                appSettings.mediaScanMode
+            ) { blacklistedSongs, blacklistedFolders, whitelistedSongs, whitelistedFolders, mediaScanMode ->
                 // Trigger when any filter changes
                 Unit
             }.collect {
                 // Wait for initialization to complete before refreshing
                 if (_isInitialized.value) {
-                    Log.d(TAG, "Blacklist/Whitelist changed, refreshing playlists to remove filtered songs")
-                    refreshPlaylists()
+                    Log.d(TAG, "Blacklist/Whitelist or scan mode changed, refreshing library & playlists")
+                    refreshLibrary(showMediaScanLoader = false)
                     removeBlacklistedSongsFromQueue()
                 }
             }
@@ -1465,15 +1529,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         try {
+            loadSavedPlaylists()
+            syncLikedPlaylistWithFavorites(_favoriteSongs.value)
             populateRecentlyAddedPlaylist()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error populating recently added playlist", e)
-        }
-        
-        try {
             populateMostPlayedPlaylist()
         } catch (e: Exception) {
-            Log.e(TAG, "Error populating most played playlist", e)
+            Log.e(TAG, "Error populating default playlists", e)
         }
     }
     
@@ -2297,6 +2358,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 _isMediaScanning.value = false // Hide media scan loader
                 _isLibraryRefreshing.value = false // Reset pull-to-refresh state
                 
+                // Process pending restore if queued
+                val queued = pendingRestore
+                if (queued != null) {
+                    pendingRestore = null
+                    Log.d(TAG, "Executing queued restore operation...")
+                    val success = appSettings.restoreFromBackup(queued.backupJson, queued.sections)
+                    if (success) {
+                        reloadPlaylistsFromSettings()
+                    }
+                    queued.onResult(success)
+                }
+                
                 // Ensure MediaScanLoader doesn't get stuck by dispatching a completion event
                 // This is a safety measure for cases where the StateFlow updates might not trigger UI properly
                 try {
@@ -2451,7 +2524,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         val currentSongsMap = currentSongs.associateBy { it.id }
-        val currentSongsByStableKey = currentSongs.groupBy { playlistSongStableKey(it) }
+        val currentSongsByStableKey = currentSongs.associateBy { playlistSongStableKey(it) }
+        val currentSongsByStableKeyMed = currentSongs.associateBy { playlistSongStableKeyMed(it) }
+        val currentSongsByStableKeyLight = currentSongs.associateBy { playlistSongStableKeyLight(it) }
+        val currentSongsByStableKeyBasic = currentSongs.associateBy { playlistSongStableKeyBasic(it) }
 
         val filteredSongsValue = filteredSongs.value
         val filteredSongsSet: Set<String> = if (filteredSongsValue.isEmpty()) {
@@ -2474,7 +2550,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     playlistSong
                 } else {
                     val directMatch = currentSongsMap[playlistSong.id]
-                    val resolvedSong = directMatch ?: currentSongsByStableKey[playlistSongStableKey(playlistSong)]?.firstOrNull()
+                    val resolvedSong = directMatch ?: resolveSongByStableKeys(
+                        playlistSong,
+                        currentSongsByStableKey,
+                        currentSongsByStableKeyMed,
+                        currentSongsByStableKeyLight,
+                        currentSongsByStableKeyBasic
+                    )
 
                     when {
                         resolvedSong != null && filteredSongsSet.contains(resolvedSong.id) -> {
@@ -2530,6 +2612,49 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             song.trackNumber.toString(),
             song.discNumber.toString()
         ).joinToString("|")
+    }
+
+    private fun playlistSongStableKeyMed(song: Song): String {
+        return listOf(
+            song.title.trim().lowercase(),
+            song.artist.trim().lowercase(),
+            song.album.trim().lowercase(),
+            (song.duration / 1000L).toString()
+        ).joinToString("|")
+    }
+
+    private fun playlistSongStableKeyLight(song: Song): String {
+        return listOf(
+            song.title.trim().lowercase(),
+            song.artist.trim().lowercase(),
+            (song.duration / 1000L).toString()
+        ).joinToString("|")
+    }
+
+    private fun playlistSongStableKeyBasic(song: Song): String {
+        return listOf(
+            song.title.trim().lowercase(),
+            song.artist.trim().lowercase()
+        ).joinToString("|")
+    }
+
+    private fun resolveSongByStableKeys(
+        song: Song,
+        fullMap: Map<String, Song>,
+        medMap: Map<String, Song>,
+        lightMap: Map<String, Song>,
+        basicMap: Map<String, Song>
+    ): Song? {
+        val title = song.title.trim()
+        val artist = song.artist.trim()
+        if (title.isEmpty()) return null
+        
+        return fullMap[playlistSongStableKey(song)]
+            ?: medMap[playlistSongStableKeyMed(song)]
+            ?: lightMap[playlistSongStableKeyLight(song)]
+            ?: if (artist.isNotEmpty() && artist.lowercase() != "unknown artist") {
+                basicMap[playlistSongStableKeyBasic(song)]
+            } else null
     }
     
     /**
@@ -2676,6 +2801,36 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
     
     /**
+     * Restores app data from a backup JSON string. If a media scan is active,
+     * the restore is queued until the scan finishes.
+     */
+    fun restoreFromBackup(
+        backupJson: String,
+        sections: AppSettings.BackupRestoreSections = AppSettings.BackupRestoreSections()
+    ) {
+        if (_isLibraryRefreshing.value || _isMediaScanning.value) {
+            Log.d(TAG, "Media scan is active. Queueing backup restore.")
+            pendingRestore = QueuedRestore(backupJson, sections) { success ->
+                if (success) {
+                    _restoreResult.value = RestoreResult.Success(wasQueued = true)
+                } else {
+                    _restoreResult.value = RestoreResult.Failure("Invalid backup format or corrupted data")
+                }
+            }
+            _restoreResult.value = RestoreResult.Queued
+        } else {
+            Log.d(TAG, "No active scan. Applying backup restore immediately.")
+            val success = appSettings.restoreFromBackup(backupJson, sections)
+            if (success) {
+                reloadPlaylistsFromSettings()
+                _restoreResult.value = RestoreResult.Success(wasQueued = false)
+            } else {
+                _restoreResult.value = RestoreResult.Failure("Invalid backup format or corrupted data")
+            }
+        }
+    }
+
+    /**
      * Reloads playlists and favorite songs from settings after a backup restore
      */
     fun reloadPlaylistsFromSettings() {
@@ -2686,6 +2841,42 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d(TAG, "Playlists successfully reloaded from settings")
             } catch (e: Exception) {
                 Log.e(TAG, "Error reloading playlists from settings", e)
+            }
+        }
+    }
+
+    /**
+     * Enables or disables default playlists dynamically, updating Room storage and UI.
+     */
+    fun setDefaultPlaylistsEnabled(enabled: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                Log.d(TAG, "Setting default playlists enabled: $enabled")
+                appSettings.setDefaultPlaylistsEnabled(enabled)
+                val playlistDao = repository.playlistDao
+                if (enabled) {
+                    val currentDb = playlistDao.getAllPlaylists()
+                    if (currentDb.none { it.id == "1" }) {
+                        playlistDao.insertPlaylist(PlaylistEntity("1", "Liked", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                    }
+                    if (currentDb.none { it.id == "2" }) {
+                        playlistDao.insertPlaylist(PlaylistEntity("2", "Recently Added", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                    }
+                    if (currentDb.none { it.id == "3" }) {
+                        playlistDao.insertPlaylist(PlaylistEntity("3", "Most Played", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                    }
+                } else {
+                    playlistDao.deletePlaylistById("2")
+                    playlistDao.deleteSongsFromPlaylist("2")
+                    playlistDao.deletePlaylistById("3")
+                    playlistDao.deleteSongsFromPlaylist("3")
+                }
+                loadSavedPlaylists()
+                if (enabled) {
+                    populateDefaultPlaylistsSafely()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error toggling default playlists", e)
             }
         }
     }
@@ -2708,17 +2899,43 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val playlistDao = repository.playlistDao
+                val defaultPlaylistsEnabled = appSettings.defaultPlaylistsEnabled.value
                 var dbPlaylists = playlistDao.getAllPlaylists()
                 
+                // Ensure default playlists exist if enabled
+                val currentIds = dbPlaylists.map { it.id }.toSet()
+                var needsReload = false
+                if (!currentIds.contains("1")) {
+                    playlistDao.insertPlaylist(PlaylistEntity("1", "Liked", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                    needsReload = true
+                }
+                if (defaultPlaylistsEnabled) {
+                    if (!currentIds.contains("2")) {
+                        playlistDao.insertPlaylist(PlaylistEntity("2", "Recently Added", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                        needsReload = true
+                    }
+                    if (!currentIds.contains("3")) {
+                        playlistDao.insertPlaylist(PlaylistEntity("3", "Most Played", System.currentTimeMillis(), System.currentTimeMillis(), null))
+                        needsReload = true
+                    }
+                }
+                if (needsReload) {
+                    dbPlaylists = playlistDao.getAllPlaylists()
+                }
+                
                 val playlists = if (dbPlaylists.isNotEmpty()) {
+                    val songMap = _songs.value.associateBy { it.id }
+                    val songStableKeyMap = _songs.value.associateBy { playlistSongStableKey(it) }
+                    val songStableKeyMedMap = _songs.value.associateBy { playlistSongStableKeyMed(it) }
+                    val songStableKeyLightMap = _songs.value.associateBy { playlistSongStableKeyLight(it) }
+                    val songStableKeyBasicMap = _songs.value.associateBy { playlistSongStableKeyBasic(it) }
                     dbPlaylists.map { entity ->
                         val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
-                        val songMap = _songs.value.associateBy { it.id }
                         val playlistSongs = songIds.map { songId ->
                             songMap[songId] ?: run {
                                 val songEntity = repository.songDao.getSongById(songId)
                                 if (songEntity != null) {
-                                    Song(
+                                    val dbSong = Song(
                                         id = songEntity.id,
                                         title = songEntity.title,
                                         artist = songEntity.artist,
@@ -2740,6 +2957,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                                         discNumber = songEntity.discNumber,
                                         path = songEntity.path
                                     )
+                                    // Try to match the DB song (e.g. restored from backup) to a local scanned song by stable key
+                                    resolveSongByStableKeys(
+                                        dbSong,
+                                        songStableKeyMap,
+                                        songStableKeyMedMap,
+                                        songStableKeyLightMap,
+                                        songStableKeyBasicMap
+                                    ) ?: dbSong
                                 } else {
                                     // Stub song to preserve unresolved entries temporarily (e.g. unmounted SD card)
                                     Song(
@@ -2804,11 +3029,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             Log.i(TAG, "Successfully migrated ${legacyPlaylists.size} legacy playlists to Room database")
                             
                             dbPlaylists = playlistDao.getAllPlaylists()
+                            val migrationSongMap = _songs.value.associateBy { it.id }
                             dbPlaylists.map { entity ->
                                 val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
-                                val songMap = _songs.value.associateBy { it.id }
                                 val playlistSongs = songIds.map { songId ->
-                                    songMap[songId] ?: run {
+                                    migrationSongMap[songId] ?: run {
                                         val songEntity = repository.songDao.getSongById(songId)
                                         if (songEntity != null) {
                                             Song(
@@ -3390,7 +3615,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         lastProgressTime = System.currentTimeMillis()
                     } else {
                         val progress = currentPos - lastPosition
-                        if (progress >= 500L || progress < 0L) {
+                        if (progress != 0L) {
                             lastPosition = currentPos
                             lastProgressTime = System.currentTimeMillis()
                         } else {
@@ -4039,7 +4264,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private fun Song.toMediaItem(): MediaItem {
         val extension = this.path?.substringAfterLast('.', "")?.lowercase() ?: ""
         val mimeType = when (extension) {
-            "opus" -> "audio/ogg"
+            "opus", "opa" -> "audio/ogg"
             "ogg", "oga" -> "audio/ogg"
             "mkv", "mka" -> "audio/x-matroska"
             "mp3" -> "audio/mpeg"
@@ -4487,19 +4712,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             val songIndex = queueSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
             playQueue(queueSongs, enableShuffle = shuffleQueue, startIndex = songIndex)
         } else {
-            // Add to the current queue and play immediately
+            // Add to the current queue without interrupting current playback
             addSongToQueue(song)
-            // Seek to the newly added song
-            val newIndex = _currentQueue.value.songs.indexOfFirst { it.id == song.id }
-            if (newIndex != -1) {
-                mediaController?.let { controller ->
-                    val targetControllerIndex = resolveControllerIndexForQueueSelection(song, newIndex)
-                        ?: newIndex.coerceIn(0, (controller.mediaItemCount - 1).coerceAtLeast(0))
-                    controller.seekToDefaultPosition(targetControllerIndex)
-                    if (!canStartPlayback("playSongWithQueueOption")) return
-                    controller.play()
-                }
-            }
         }
     }
 
@@ -4935,51 +5149,80 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         currentQueueSongs.addAll(insertIndex, songs)
                         controller.addMediaItems(insertIndex, mediaItems)
 
-                        val targetQueueIndex = (insertIndex + validStartIndex)
-                            .coerceIn(0, currentQueueSongs.lastIndex.coerceAtLeast(0))
-                        val targetSong = currentQueueSongs[targetQueueIndex]
+                        val isPlayingOrActive = (controller.playbackState == Player.STATE_READY || controller.playbackState == Player.STATE_BUFFERING) &&
+                                currentControllerIndex != C.INDEX_UNSET && _currentQueue.value.songs.isNotEmpty()
 
-                        val targetControllerIndex = if (controller.shuffleModeEnabled) {
-                            val occurrence = resolveQueueOccurrenceInList(
-                                queueSongs = currentQueueSongs,
-                                songId = targetSong.id,
-                                queueIndex = targetQueueIndex
-                            )
-                            findControllerIndexForSong(targetSong.id, occurrence)
-                                ?: currentControllerIndex.takeIf { it != C.INDEX_UNSET }
-                                ?: 0
-                        } else {
-                            targetQueueIndex
-                        }
+                        if (isPlayingOrActive) {
+                            val activeIndex = currentControllerIndex.coerceIn(0, currentQueueSongs.lastIndex)
+                            _currentQueue.value = Queue(currentQueueSongs, activeIndex)
+                            saveQueueToPersistence()
 
-                        _currentQueue.value = Queue(currentQueueSongs, targetQueueIndex)
-
-                        controller.seekToDefaultPosition(targetControllerIndex)
-                        controller.prepare()
-                        if (!canStartPlayback("insertQueueListAndPlay")) return@let
-                        controller.play()
-
-                        _currentSong.value = targetSong
-                        _isPlaying.value = true
-                        _isFavorite.value = _favoriteSongs.value.contains(targetSong.id)
-                        _currentSongRating.value = appSettings.getSongRating(targetSong.id)
-
-                        updateRecentlyPlayed(targetSong)
-                        updateListeningStats(targetSong)
-                        startProgressUpdates()
-                        saveQueueToPersistence()
-
-                        if (controller.shuffleModeEnabled) {
-                            viewModelScope.launch {
-                                delay(50)
-                                syncQueueWithMediaController()
+                            if (controller.shuffleModeEnabled) {
+                                viewModelScope.launch {
+                                    delay(50)
+                                    syncQueueWithMediaController()
+                                }
                             }
-                        }
 
-                        Log.d(
-                            TAG,
-                            "Inserted ${songs.size} songs (${if (insertAfterCurrent) "play_next" else "add_to_end"}) and started at queueIndex=$targetQueueIndex"
-                        )
+                            val toastContext = getApplication<android.app.Application>().applicationContext
+                            val msg = if (insertAfterCurrent) {
+                                "${songs.size} ${if (songs.size == 1) "song" else "songs"} will play next"
+                            } else {
+                                "Added ${songs.size} ${if (songs.size == 1) "song" else "songs"} to queue"
+                            }
+                            android.widget.Toast.makeText(toastContext, msg, android.widget.Toast.LENGTH_SHORT).show()
+
+                            Log.d(
+                                TAG,
+                                "Appended ${songs.size} songs (${if (insertAfterCurrent) "play_next" else "add_to_end"}) without interrupting current playback at activeIndex=$activeIndex"
+                            )
+                        } else {
+                            val targetQueueIndex = (insertIndex + validStartIndex)
+                                .coerceIn(0, currentQueueSongs.lastIndex.coerceAtLeast(0))
+                            val targetSong = currentQueueSongs[targetQueueIndex]
+
+                            val targetControllerIndex = if (controller.shuffleModeEnabled) {
+                                val occurrence = resolveQueueOccurrenceInList(
+                                    queueSongs = currentQueueSongs,
+                                    songId = targetSong.id,
+                                    queueIndex = targetQueueIndex
+                                )
+                                findControllerIndexForSong(targetSong.id, occurrence)
+                                    ?: currentControllerIndex.takeIf { it != C.INDEX_UNSET }
+                                    ?: 0
+                            } else {
+                                targetQueueIndex
+                            }
+
+                            _currentQueue.value = Queue(currentQueueSongs, targetQueueIndex)
+
+                            controller.seekToDefaultPosition(targetControllerIndex)
+                            controller.prepare()
+                            if (!canStartPlayback("insertQueueListAndPlay")) return@let
+                            controller.play()
+
+                            _currentSong.value = targetSong
+                            _isPlaying.value = true
+                            _isFavorite.value = _favoriteSongs.value.contains(targetSong.id)
+                            _currentSongRating.value = appSettings.getSongRating(targetSong.id)
+
+                            updateRecentlyPlayed(targetSong)
+                            updateListeningStats(targetSong)
+                            startProgressUpdates()
+                            saveQueueToPersistence()
+
+                            if (controller.shuffleModeEnabled) {
+                                viewModelScope.launch {
+                                    delay(50)
+                                    syncQueueWithMediaController()
+                                }
+                            }
+
+                            Log.d(
+                                TAG,
+                                "Inserted ${songs.size} songs (${if (insertAfterCurrent) "play_next" else "add_to_end"}) and started at queueIndex=$targetQueueIndex"
+                            )
+                        }
                     } ?: run {
                         playQueue(songs, enableShuffle = false, startIndex = validStartIndex)
                     }
@@ -4993,8 +5236,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun playQueue(songs: List<Song>, enableShuffle: Boolean? = null, startIndex: Int = 0) {
-        Log.d(TAG, "Playing queue with ${songs.size} songs, shuffle: $enableShuffle, startIndex: $startIndex")
+    fun playQueue(songs: List<Song>, enableShuffle: Boolean? = null, startIndex: Int = 0, pinStartIndex: Boolean = false) {
+        Log.d(TAG, "Playing queue with ${songs.size} songs, shuffle: $enableShuffle, startIndex: $startIndex, pinStartIndex: $pinStartIndex")
 
         if (!canStartPlayback("playQueue")) {
             return
@@ -5019,15 +5262,20 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val useExoPlayerShuffle = appSettings.shuffleUsesExoplayer.value
                 val isManualShuffle = enableShuffle == true && !useExoPlayerShuffle
+                val shouldPinStart = pinStartIndex || (enableShuffle == true && validStartIndex > 0)
 
                 // If manual shuffle is requested, pre-shuffle the list
                 val finalSongs = if (isManualShuffle) {
                     val listToShuffle = songs.toMutableList()
-                    val startingSong = listToShuffle.getOrNull(validStartIndex)
-                    if (startingSong != null) {
-                        listToShuffle.removeAt(validStartIndex)
-                        listToShuffle.shuffle()
-                        listToShuffle.add(0, startingSong)
+                    if (shouldPinStart) {
+                        val startingSong = listToShuffle.getOrNull(validStartIndex)
+                        if (startingSong != null) {
+                            listToShuffle.removeAt(validStartIndex)
+                            listToShuffle.shuffle()
+                            listToShuffle.add(0, startingSong)
+                        } else {
+                            listToShuffle.shuffle()
+                        }
                     } else {
                         listToShuffle.shuffle()
                     }
@@ -5036,8 +5284,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     songs
                 }
 
-                // If manual shuffle was applied, the starting index in the final list is 0
-                val finalStartIndex = if (isManualShuffle) 0 else validStartIndex
+                // If manual shuffle was applied, the starting index in the final list is 0.
+                // If ExoPlayer shuffle is used without a pinned starting song, pick a random start index so ExoPlayer's shuffle order doesn't always start on song 0.
+                val finalStartIndex = when {
+                    isManualShuffle -> 0
+                    enableShuffle == true && !shouldPinStart && songs.size > 1 -> kotlin.random.Random.nextInt(songs.size)
+                    else -> validStartIndex
+                }
 
                 // Create all media items on background thread
                 val mediaItems = finalSongs.map { it.toMediaItem() }
@@ -6057,10 +6310,6 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /**
-     * Populates the "Recently Added" playlist with songs from current year's albums.
-     * Only includes songs that pass the blacklist/whitelist filters.
-     */
     private suspend fun populateRecentlyAddedPlaylist() {
         val recentlyAddedPlaylist = _playlists.value.find { it.id == "2" && it.name == "Recently Added" }
         if (recentlyAddedPlaylist == null) {
@@ -6068,36 +6317,19 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-        val currentYearAlbums = _albums.value.filter { it.year == currentYear }
-            .ifEmpty {
-                // Fallback to most recent albums if no current year albums are available
-                _albums.value.sortedByDescending { it.year }.take(4)
-            }
+        // Get all songs, sorted by dateAdded descending
+        val currentFilteredSongs = filteredSongs.value
+        val topSongs = currentFilteredSongs.sortedByDescending { it.dateAdded }.take(50)
 
-        val songsToAdd = mutableSetOf<Song>()
-        currentYearAlbums.forEach { album ->
-            val albumSongs = repository.getSongsForAlbumLocal(album.id)
-            songsToAdd.addAll(albumSongs)
-        }
-
-        // Filter songs using the same blacklist/whitelist logic as filteredSongs
-        val currentFilteredSongs = filteredSongs.value.toSet()
-        val filteredSongsToAdd = songsToAdd.filter { it in currentFilteredSongs }
-
-        // Add songs to the playlist, avoiding duplicates and respecting filters
-        val updatedSongs = (recentlyAddedPlaylist.songs.toSet() + filteredSongsToAdd).toList()
-            .filter { it in currentFilteredSongs } // Remove any previously added songs that are now filtered
-        
         _playlists.value = _playlists.value.map { playlist ->
             if (playlist.id == "2") {
-                playlist.copy(songs = updatedSongs, dateModified = System.currentTimeMillis())
+                playlist.copy(songs = topSongs, dateModified = System.currentTimeMillis())
             } else {
                 playlist
             }
         }
         savePlaylists()
-        Log.d(TAG, "Populated Recently Added playlist with ${filteredSongsToAdd.size} new filtered songs (${songsToAdd.size - filteredSongsToAdd.size} filtered out).")
+        Log.d(TAG, "Populated Recently Added playlist with ${topSongs.size} songs based on dateAdded.")
     }
 
     /**
@@ -6376,6 +6608,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         viewModelScope.launch {
             val context = getApplication<Application>()
+            if (_isLibraryRefreshing.value || _isMediaScanning.value) {
+                val err = Exception("Cannot export playlists while a media scan is in progress. Please wait for the scan to finish.")
+                onResult(Result.failure(err))
+                showOperationResultNotification(
+                    notificationId = PLAYLIST_EXPORT_NOTIFICATION_ID,
+                    title = context.getString(R.string.notification_playlist_export_title),
+                    content = "Media scan in progress. Please wait.",
+                    isError = true,
+                    autoDismissMs = 5000L
+                )
+                return@launch
+            }
             showOperationProgressNotification(
                 notificationId = PLAYLIST_EXPORT_NOTIFICATION_ID,
                 title = context.getString(R.string.notification_playlist_export_title),
@@ -6455,6 +6699,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         viewModelScope.launch {
             val context = getApplication<Application>()
+            if (_isLibraryRefreshing.value || _isMediaScanning.value) {
+                val err = Exception("Cannot export playlists while a media scan is in progress. Please wait for the scan to finish.")
+                onResult(Result.failure(err))
+                showOperationResultNotification(
+                    notificationId = PLAYLIST_EXPORT_NOTIFICATION_ID,
+                    title = context.getString(R.string.notification_playlist_export_title),
+                    content = "Media scan in progress. Please wait.",
+                    isError = true,
+                    autoDismissMs = 5000L
+                )
+                return@launch
+            }
             val operationText = if (userSelectedDirectoryUri != null) {
                 context.getString(R.string.operation_exporting_playlists_location)
             } else {
@@ -6574,6 +6830,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         viewModelScope.launch {
             val context = getApplication<Application>()
+            if (_isLibraryRefreshing.value || _isMediaScanning.value) {
+                val err = Exception("Cannot import playlists while a media scan is in progress. Please wait for the scan to finish.")
+                onResult(Result.failure(err))
+                showOperationResultNotification(
+                    notificationId = PLAYLIST_IMPORT_NOTIFICATION_ID,
+                    title = context.getString(R.string.notification_playlist_import_title),
+                    content = "Media scan in progress. Please wait.",
+                    isError = true,
+                    autoDismissMs = 5000L
+                )
+                return@launch
+            }
             showOperationProgressNotification(
                 notificationId = PLAYLIST_IMPORT_NOTIFICATION_ID,
                 title = context.getString(R.string.notification_playlist_import_title),

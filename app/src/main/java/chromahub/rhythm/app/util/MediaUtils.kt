@@ -433,7 +433,7 @@ object MediaUtils {
         val path = uri.path ?: uri.toString()
         val extension = path.substringAfterLast('.', "").lowercase()
         return when (extension) {
-            "opus" -> "audio/ogg"
+            "opus", "opa" -> "audio/ogg"
             "ogg", "oga" -> "audio/ogg"
             "mkv", "mka" -> "audio/x-matroska"
             "mp3" -> "audio/mpeg"
@@ -704,7 +704,7 @@ object MediaUtils {
                     mimeType.contains("flac", ignoreCase = true) || extension == "flac" -> "FLAC"
                     mimeType.contains("ogg", ignoreCase = true) || extension == "ogg" || extension == "oga" -> "OGG"
                     mimeType.contains("alac", ignoreCase = true) || extension == "alac" -> "ALAC"
-                    mimeType.contains("opus", ignoreCase = true) || extension == "opus" -> "Opus"
+                    mimeType.contains("opus", ignoreCase = true) || extension == "opus" || extension == "opa" -> "Opus"
                     mimeType.contains("ac3", ignoreCase = true) || mimeType.contains("ac-3", ignoreCase = true) || extension == "ac3" -> "AC-3"
                     mimeType.contains("ac4", ignoreCase = true) || extension == "ac4" -> "AC-4"
                     mimeType.contains("truehd", ignoreCase = true) -> "TrueHD"
@@ -959,7 +959,7 @@ object MediaUtils {
         return when (extension.lowercase()) {
             "mp3", "flac", "ogg", "wav", "wave", "aif", "aiff",
             "mp4", "m4a", "m4p", "m4b", "wma", "dsf", "dff",
-            "opus" -> true
+            "opus", "opa" -> true
             else -> false
         }
     }

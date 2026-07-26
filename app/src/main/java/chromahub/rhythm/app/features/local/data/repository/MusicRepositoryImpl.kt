@@ -43,6 +43,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CoroutineScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
+import chromahub.rhythm.app.features.local.data.database.entity.toSong
+import chromahub.rhythm.app.features.local.data.database.entity.toArtist
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -165,6 +172,36 @@ class MusicRepository(context: Context) {
     val songDao by lazy { roomDb.songDao() }
     val playlistDao by lazy { roomDb.playlistDao() }
     private val appSettings by lazy { AppSettings.getInstance(context) }
+
+    fun getPaginatedSongs(): kotlinx.coroutines.flow.Flow<PagingData<Song>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = true),
+            pagingSourceFactory = { songDao.getSongsPagingSource() }
+        ).flow.map { pagingData ->
+            pagingData.map { entity -> entity.toSong() }
+        }
+    }
+
+    fun getPaginatedSongsSearch(query: String): kotlinx.coroutines.flow.Flow<PagingData<Song>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = true),
+            pagingSourceFactory = { 
+                if (query.isBlank()) songDao.getSongsPagingSource() 
+                else songDao.getSongsPagingSourceSearch(query) 
+            }
+        ).flow.map { pagingData ->
+            pagingData.map { entity -> entity.toSong() }
+        }
+    }
+
+    fun getPaginatedArtists(groupByAlbumArtist: Boolean): kotlinx.coroutines.flow.Flow<PagingData<Artist>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = true),
+            pagingSourceFactory = { roomDb.artistDao().getArtistsPagingSource(groupByAlbumArtist) }
+        ).flow.map { pagingData ->
+            pagingData.map { entity -> entity.toArtist() }
+        }
+    }
     
     /**
      * Persists the current in-memory song cache to Room database.
@@ -1317,7 +1354,7 @@ class MusicRepository(context: Context) {
         }
 
         return extension in setOf(
-            "mp3", "m4a", "flac", "ogg", "opus", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka",
+            "mp3", "m4a", "flac", "ogg", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka",
             "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b"
         )
     }
@@ -1493,7 +1530,7 @@ class MusicRepository(context: Context) {
         if (filePath.isNullOrBlank()) return null
 
         val extension = filePath.substringAfterLast('.', "").lowercase()
-        if (extension !in setOf("opus", "ogg", "oga")) {
+        if (extension !in setOf("opus", "ogg", "oga", "opa")) {
             return null
         }
 
@@ -2374,16 +2411,40 @@ class MusicRepository(context: Context) {
         // Separator config affects relationship rows; refresh relationships/cache when it changes.
         refreshArtistRelationshipsIfNeeded(appSettings)
 
+        val currentSongs = loadSongs()
+        if (currentSongs.isEmpty()) {
+            Log.d(TAG, "No songs in library, returning empty artists list")
+            return@withContext emptyList()
+        }
+
         // Try to load from Room cache first
         val cachedArtists = loadArtistsFromRoom(groupByAlbumArtist)
         if (cachedArtists != null && cachedArtists.isNotEmpty()) {
-            Log.d(TAG, "Loaded ${cachedArtists.size} artists from Room cache (groupByAlbumArtist=$groupByAlbumArtist)")
-            return@withContext cachedArtists
+            val cachedTotalTracks = cachedArtists.sumOf { it.numberOfTracks }
+            // Validate that Room cache is reasonably complete compared to current songs
+            if (cachedTotalTracks >= currentSongs.size) {
+                Log.d(TAG, "Loaded ${cachedArtists.size} artists from Room cache (cached tracks=$cachedTotalTracks, songs=${currentSongs.size}, groupByAlbumArtist=$groupByAlbumArtist)")
+                return@withContext cachedArtists
+            } else {
+                Log.w(TAG, "Room cached artists stale/incomplete (cached tracks=$cachedTotalTracks vs songs=${currentSongs.size}), recomputing...")
+            }
         }
 
-        Log.d(TAG, "No cached artists found, computing from relationships (groupByAlbumArtist=$groupByAlbumArtist)")
-        // Cache miss - compute from relationships
-        val artists = loadArtistsFromRelationships(groupByAlbumArtist)
+        Log.d(TAG, "Recomputing artists for ${currentSongs.size} songs (groupByAlbumArtist=$groupByAlbumArtist)")
+        
+        // Refresh song_artists relationships for current songs
+        val relationshipSets = buildSongArtistRelationshipSets(currentSongs)
+        roomDb.withTransaction {
+            roomDb.songArtistDao().replaceAll(relationshipSets.albumArtistRelationships, true)
+            roomDb.songArtistDao().replaceAll(relationshipSets.trackArtistRelationships, false)
+        }
+
+        // Compute from relationships
+        var artists = loadArtistsFromRelationships(groupByAlbumArtist)
+        if (artists.isEmpty()) {
+            Log.w(TAG, "Relationships produced 0 artists, using direct computation from songs")
+            artists = buildArtistsFromSongsDirectly(currentSongs, groupByAlbumArtist)
+        }
 
         // Cache the result
         saveArtistsToRoom(artists, groupByAlbumArtist)
@@ -2425,6 +2486,12 @@ class MusicRepository(context: Context) {
     private suspend fun loadArtistsFromRelationships(groupByAlbumArtist: Boolean): List<Artist> = withContext(Dispatchers.IO) {
         try {
             val aggregatedData = roomDb.songArtistDao().getAggregatedArtists(groupByAlbumArtist)
+            if (aggregatedData.isEmpty()) {
+                val currentSongs = loadSongs()
+                if (currentSongs.isNotEmpty()) {
+                    return@withContext buildArtistsFromSongsDirectly(currentSongs, groupByAlbumArtist)
+                }
+            }
             val artists = mutableListOf<Artist>()
 
             for (data in aggregatedData) {
@@ -2437,16 +2504,64 @@ class MusicRepository(context: Context) {
                 artists.add(artist)
             }
 
-            artists.sortedBy { it.name.lowercase() }
+            artists.sortedBy { it.name.lowercase(Locale.ROOT) }
         } catch (e: Exception) {
             Log.w(TAG, "Failed to load artists from relationships, falling back to computation", e)
-            // Fallback to old method
-            if (groupByAlbumArtist) {
+            val currentSongs = loadSongs()
+            if (currentSongs.isNotEmpty()) {
+                buildArtistsFromSongsDirectly(currentSongs, groupByAlbumArtist)
+            } else if (groupByAlbumArtist) {
                 loadArtistsGroupedByAlbumArtist()
             } else {
                 loadArtistsFromMediaStore()
             }
         }
+    }
+
+    private fun buildArtistsFromSongsDirectly(songs: List<Song>, groupByAlbumArtist: Boolean): List<Artist> {
+        val appSettings = AppSettings.getInstance(context)
+        val artistSeparatorEnabled = appSettings.artistSeparatorEnabled.value
+        val charDelimiters: List<String> = if (artistSeparatorEnabled) {
+            appSettings.artistSeparatorDelimiters.value.toList().map { it.toString() }
+        } else {
+            emptyList()
+        }
+
+        val artistTrackCounts = mutableMapOf<String, Int>()
+        val artistAlbums = mutableMapOf<String, MutableSet<String>>()
+
+        for (song in songs) {
+            val rawArtist = if (groupByAlbumArtist) {
+                val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
+                if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
+                    explicitAlbumArtist
+                } else {
+                    song.artist
+                }
+            } else {
+                song.artist
+            }
+
+            val artistNames = splitArtistNames(rawArtist, charDelimiters)
+            val albumName = song.album.takeIf { it.isNotBlank() && !it.equals("Unknown Album", ignoreCase = true) }
+
+            for (artistName in artistNames) {
+                artistTrackCounts[artistName] = (artistTrackCounts[artistName] ?: 0) + 1
+                if (albumName != null) {
+                    artistAlbums.getOrPut(artistName) { mutableSetOf() }.add(albumName)
+                }
+            }
+        }
+
+        return artistTrackCounts.map { (artistName, trackCount) ->
+            val albumCount = artistAlbums[artistName]?.size ?: 0
+            Artist(
+                id = if (groupByAlbumArtist) "album_artist_${artistName.hashCode()}" else "track_artist_${artistName.hashCode()}",
+                name = artistName,
+                numberOfAlbums = albumCount,
+                numberOfTracks = trackCount
+            )
+        }.sortedBy { it.name.lowercase(Locale.ROOT) }
     }
 
     /**
@@ -3165,7 +3280,8 @@ class MusicRepository(context: Context) {
                     // For OGG/Opus files, try direct Vorbis comment parsing
                     if (filePath?.endsWith(".ogg", ignoreCase = true) == true || 
                         filePath?.endsWith(".oga", ignoreCase = true) == true ||
-                        filePath?.endsWith(".opus", ignoreCase = true) == true) {
+                        filePath?.endsWith(".opus", ignoreCase = true) == true ||
+                        filePath?.endsWith(".opa", ignoreCase = true) == true) {
                         Log.d(TAG, "===== Detected OGG/Opus file, trying OGG extraction =====")
                         return@use extractLyricsFromOGG(filePath)
                     }

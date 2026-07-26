@@ -209,6 +209,7 @@ fun SongInfoBottomSheet(
     
     // Detect tablet mode
     val isTablet = configuration.screenWidthDp >= 600
+    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
     
     // Time format setting
     val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
@@ -487,7 +488,7 @@ fun SongInfoBottomSheet(
         )
     }
 
-    if (isTablet) {
+    if (isLandscapeTablet) {
         // Tablet layout: Dialog with side-by-side layout
         Dialog(
             onDismissRequest = onDismiss,
@@ -1834,6 +1835,7 @@ private fun EditSongSheet(
     
     // Detect tablet mode
     val isTablet = configuration.screenWidthDp >= 600
+    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
     
     // Store original values for undo functionality
     val originalTitle by remember(song.id) { mutableStateOf(song.title) }
@@ -2044,7 +2046,7 @@ private fun EditSongSheet(
         }
     }
 
-    if (isTablet) {
+    if (isLandscapeTablet) {
         // Tablet layout: Dialog with side-by-side layout
         Dialog(
             onDismissRequest = onDismiss,
