@@ -7,8 +7,8 @@
     <string name="search">Rechercher</string>
     <string name="settings">Paramètres</string>
     <!-- Media3 notification configuration -->
-    <string name="media3_notification_channel_name">Rhythm Musique</string>
-    <string name="media3_notification_channel_description">Commandes de lecture multimédia</string>
+    <string name="media3_notification_channel_name">En cours de lecture</string>
+    <string name="media3_notification_channel_description">Commandes de lecture au premier plan, actions de recherche et pochettes d\'album</string>
     <!-- Widget strings -->
     <string name="widget_description">Rhythm Music Widget - Contrôlez la lecture avec des mises en page réactives prenant en charge des tailles de grille de 2x1 à 5x5</string>
     <string name="widget_description_glance">Rhythm Musique – Contrôlez la lecture avec 9 mises en page réactives, une conception Material 3 et des mises à jour d\'état en temps réel</string>
@@ -38,17 +38,17 @@
     <!-- Settings - Notifications -->
     <string name="settings_notifications">Notifications</string>
     <string name="settings_notifications_updates_group">Mises à jour de l\'application</string>
-    <string name="settings_notifications_rhythm_guard_group">Rhythm Garde</string>
-    <string name="settings_notifications_rhythm_pulse_group">Rhythm Conseils</string>
-    <string name="settings_update_notifications_merged_desc">Recevez des alertes pour les nouvelles versions et les résultats de la vérification des mises à jour en arrière-plan</string>
-    <string name="settings_rhythm_guard_alert_notifications">Notifications d\'alerte de sécurité</string>
-    <string name="settings_rhythm_guard_alert_notifications_desc">Afficher une notification lorsque Rhythm Guard détecte un volume ou une exposition à risque</string>
-    <string name="settings_rhythm_guard_timer_notifications">Notifications de minuterie de pause</string>
-    <string name="settings_rhythm_guard_timer_notifications_desc">Afficher les notifications pour les pauses programmées et les comptes à rebours d\'expiration actifs</string>
-    <string name="settings_rhythm_pulse_notifications">Rhythm Notifications de conseils</string>
-    <string name="settings_rhythm_pulse_notifications_desc">Recevez des rappels amicaux et des conseils d\'écoute.</string>
+    <string name="settings_notifications_rhythm_guard_group">Sécurité des Gardes</string>
+    <string name="settings_notifications_rhythm_pulse_group">Points forts &amp; Conseils pour l\'écoute</string>
+    <string name="settings_update_notifications_merged_desc">Recevez des alertes lorsque de nouvelles mises à jour de Rhythm sont prêtes à être installées</string>
+    <string name="settings_rhythm_guard_alert_notifications">Avertissements relatifs à la protection auditive</string>
+    <string name="settings_rhythm_guard_alert_notifications_desc">Afficher des alertes immédiates lorsque le volume ou l\'exposition sonore dépasse les seuils de sécurité</string>
+    <string name="settings_rhythm_guard_timer_notifications">Assistant pour les pauses d\'écoute</string>
+    <string name="settings_rhythm_guard_timer_notifications_desc">Afficher les comptes à rebours et les notifications pour les pauses prévues pendant les audiences</string>
+    <string name="settings_rhythm_pulse_notifications">Points forts &amp; Conseils d\'écoute</string>
+    <string name="settings_rhythm_pulse_notifications_desc">Bénéficiez de statistiques d\'écoute personnalisées et de fonctionnalités de lecture</string>
     <string name="settings_rhythm_pulse_interval">Intervalle des conseils</string>
-    <string name="settings_rhythm_pulse_interval_dialog_title">Rhythm intervalle de conseils</string>
+    <string name="settings_rhythm_pulse_interval_dialog_title">Sélectionnez la fréquence de livraison</string>
     <!-- Settings - Queue & Playback -->
     <!-- Settings - Queue -->
     <string name="settings_queue">File d\'attente</string>
@@ -124,17 +124,17 @@
     <string name="operation_exporting_playlists">Sauvegarde de vos listes de lecture personnalisées…</string>
     <string name="operation_exporting_playlists_location">Sauvegarde des listes de lecture sur le stockage…</string>
     <string name="operation_importing_playlist">Importation d\'un fichier de playlist…</string>
-    <string name="notification_operations_channel_name">Bibliothèque Rhythm</string>
-    <string name="notification_operations_channel_desc">Progression et résultats des analyses de bibliothèque et des actions de playlist</string>
-    <string name="notification_media_scan_title">Rhythm Analyse de la bibliothèque</string>
-    <string name="notification_media_scan_stage_songs">Analyse du stockage du périphérique pour les pistes audio…</string>
-    <string name="notification_media_scan_stage_saving">Optimisation et sauvegarde de la base de données des pistes audio…</string>
-    <string name="notification_media_scan_stage_finishing">Fin de l’indexation audio…</string>
-    <string name="notification_media_scan_complete_pending_setup">Scan audio terminé, initialisation des tâches en arrière-plan…</string>
+    <string name="notification_operations_channel_name">Synchronisation de la bibliothèque de Rhythm</string>
+    <string name="notification_operations_channel_desc">Notifications de progression concernant la numérisation de la bibliothèque, l\'indexation et les sauvegardes des playlists</string>
+    <string name="notification_media_scan_title">Numérisation &amp; Indexation de la bibliothèque</string>
+    <string name="notification_media_scan_stage_songs">Recherche en cours dans le répertoire de stockage des fichiers audio…</string>
+    <string name="notification_media_scan_stage_saving">Création de l\'index des métadonnées des titres…</string>
+    <string name="notification_media_scan_stage_finishing">Finalisation de la base de données de la bibliothèque audio…</string>
+    <string name="notification_media_scan_complete_pending_setup">L\'analyse de la bibliothèque est terminée. La bibliothèque est prête.</string>
     <string name="notification_media_scan_cancelled">L\'analyse de la bibliothèque a été annulée.</string>
-    <string name="notification_media_scan_failed">L\'analyse de la bibliothèque a échoué. Vérifiez les autorisations de stockage et réessayez.</string>
-    <string name="notification_playlist_export_title">Exportation de bibliothèque Rhythm</string>
-    <string name="notification_playlist_import_title">Importation de bibliothèque Rhythm</string>
+    <string name="notification_media_scan_failed">Échec de l\'analyse de la bibliothèque. Vérifiez les droits d\'accès au stockage.</string>
+    <string name="notification_playlist_export_title">Sauvegarde de la playlist</string>
+    <string name="notification_playlist_import_title">Importation d\'une playlist</string>
     <string name="notification_library_setup_title">Rhythm Configuration de la bibliothèque</string>
     <string name="notification_library_setup_complete_summary">La bibliothèque est optimisée et prête : %1$d titres, %2$d albums, %3$d artistes</string>
     <string name="notification_playlist_not_found">Exportation interrompue : la liste de lecture cible n\'a pas été trouvée.</string>
@@ -2891,4 +2891,20 @@
     <string name="settings_rhythm_guard_locked_during_break">Verrouillé pendant la pause d\'écoute</string>
     <string name="settings_album_hide_about">Masquer la section « À propos » de l\'album</string>
     <string name="settings_album_hide_about_desc">Masquer la section « Description/À propos » sur la page de détails de l\'album</string>
+    <string name="settings_notifications_playback_group">Médias &amp; Lecture</string>
+    <string name="settings_notifications_library_group">Bibliothèque &amp; Synchronisation</string>
+    <string name="settings_notifications_system_group">Commandes du système</string>
+    <string name="settings_playback_notification">Notification « En cours de lecture »</string>
+    <string name="settings_playback_notification_desc">Afficher les commandes de lecture multimédia et les pochettes dans le volet de notifications et sur l\'écran de verrouillage</string>
+    <string name="settings_show_codec_notifications">Badge « Qualité audio et codec »</string>
+    <string name="settings_show_codec_notifications_desc">Afficher le format audio actif, la fréquence d\'échantillonnage et la profondeur de bits dans la barre de notification</string>
+    <string name="settings_library_operations_notifications">Fonctionnement de la bibliothèque &amp; Sauvegardes</string>
+    <string name="settings_library_operations_notifications_desc">Afficher les notifications de progression pour l\'indexation des fichiers multimédias et l\'exportation/l\'importation des playlists</string>
+    <string name="settings_system_notification_channels">Paramètres de notification Android</string>
+    <string name="settings_system_notification_channels_desc">Configurer les canaux de notification du système d\'exploitation, les sons, les vibrations et le comportement de l\'écran de verrouillage</string>
+    <string name="settings_notification_permission_title">Autorisation requise pour les notifications</string>
+    <string name="settings_notification_permission_desc">Activez les autorisations de notification afin que Rhythm puisse afficher les commandes multimédia et les mises à jour des tâches en arrière-plan.</string>
+    <string name="settings_notification_permission_grant">Activer les notifications</string>
+    <string name="settings_notification_preview_title">Aperçu des notifications en temps réel</string>
+    <string name="settings_notification_preview_subtitle">Aperçu du style des notifications multimédias dans le volet des notifications</string>
 </resources>
