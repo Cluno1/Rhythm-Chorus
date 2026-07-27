@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import chromahub.rhythm.app.util.GsonUtils
 import chromahub.rhythm.app.worker.BackupWorker
 import chromahub.rhythm.app.worker.RhythmPulseNotificationWorker
 import chromahub.rhythm.app.worker.UpdateNotificationWorker
@@ -4209,6 +4210,59 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         }
     }
     
+    sealed class BackupValidationResult {
+        object Valid : BackupValidationResult()
+        data class Invalid(val reason: String) : BackupValidationResult()
+    }
+
+    /**
+     * Validates a backup JSON payload for structure, header keys, and parseable playlists data
+     */
+    fun validateBackupJson(
+        backupJson: String,
+        sections: BackupRestoreSections = BackupRestoreSections()
+    ): BackupValidationResult {
+        if (backupJson.isBlank()) {
+            return BackupValidationResult.Invalid("Backup JSON payload is empty")
+        }
+        return try {
+            val type = object : TypeToken<Map<String, Any?>>() {}.type
+            val map: Map<String, Any?>? = GsonUtils.gson.fromJson(backupJson, type)
+            if (map == null || map.isEmpty()) {
+                return BackupValidationResult.Invalid("Backup content is not a valid non-empty JSON object")
+            }
+
+            if (!map.containsKey("preferences")) {
+                return BackupValidationResult.Invalid("Missing required 'preferences' key")
+            }
+
+            if (!map.containsKey("backup_version")) {
+                return BackupValidationResult.Invalid("Missing required 'backup_version' key")
+            }
+
+            val effectiveSections = if (sections.hasAtLeastOneSectionSelected) sections else BackupRestoreSections()
+
+            if (effectiveSections.includeLibraryData && map.containsKey("playlists_data")) {
+                val playlistsData = map["playlists_data"] as? String
+                if (!playlistsData.isNullOrBlank()) {
+                    try {
+                        val playlistListType = object : TypeToken<List<Playlist>>() {}.type
+                        val parsedPlaylists: List<Playlist>? = GsonUtils.gson.fromJson(playlistsData, playlistListType)
+                        if (parsedPlaylists == null) {
+                            return BackupValidationResult.Invalid("playlists_data cannot be parsed into Playlist objects")
+                        }
+                    } catch (e: Exception) {
+                        return BackupValidationResult.Invalid("Corrupted playlist structure inside backup: ${e.message}")
+                    }
+                }
+            }
+
+            BackupValidationResult.Valid
+        } catch (e: Exception) {
+            BackupValidationResult.Invalid("JSON parsing exception: ${e.message}")
+        }
+    }
+
     /**
      * Creates a complete backup of all app data as JSON
      */
@@ -4267,7 +4321,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                         val songDao = db.songDao()
                         val modelPlaylists = dbPlaylists.map { entity ->
                             val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
-                            val playlistSongs = songIds.mapNotNull { songId ->
+                            val playlistSongs = songIds.map { songId ->
                                 songDao.getSongById(songId)?.let { songEntity ->
                                     Song(
                                         id = songEntity.id,
@@ -4291,7 +4345,28 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                                         discNumber = songEntity.discNumber,
                                         path = songEntity.path
                                     )
-                                }
+                                } ?: Song(
+                                    id = songId,
+                                    title = "Unresolved Track",
+                                    artist = "Unknown Artist",
+                                    album = "Unknown Album",
+                                    albumId = "",
+                                    duration = 0L,
+                                    uri = Uri.EMPTY,
+                                    artworkUri = null,
+                                    trackNumber = 0,
+                                    year = 0,
+                                    genre = null,
+                                    dateAdded = entity.dateCreated,
+                                    dateModified = entity.dateModified,
+                                    albumArtist = null,
+                                    bitrate = null,
+                                    sampleRate = null,
+                                    channels = null,
+                                    codec = null,
+                                    discNumber = 1,
+                                    path = null
+                                )
                             }
                             Playlist(
                                 id = entity.id,
@@ -4302,21 +4377,19 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                                 artworkUri = entity.artworkUri?.let { Uri.parse(it) }
                             )
                         }
-                        Gson().toJson(modelPlaylists)
+                        GsonUtils.gson.toJson(modelPlaylists)
                     } else {
-                        prefs.getString(KEY_PLAYLISTS, null)
+                        prefs.getString(KEY_PLAYLISTS, "[]")
                     }
                 }
             } catch (e: Exception) {
                 Log.e("AppSettings", "Error reading database playlists for backup", e)
-                prefs.getString(KEY_PLAYLISTS, null)
+                prefs.getString(KEY_PLAYLISTS, "[]")
             }
             val favoriteSongsJson = prefs.getString(KEY_FAVORITE_SONGS, null)
             
-            if (playlistsJson != null) {
-                backupData["playlists_data"] = playlistsJson
-                Log.d("AppSettings", "Including playlists data in backup: ${playlistsJson.length} characters")
-            }
+            backupData["playlists_data"] = playlistsJson ?: "[]"
+            Log.d("AppSettings", "Including playlists data in backup: ${backupData["playlists_data"].toString().length} characters")
             
             if (favoriteSongsJson != null) {
                 backupData["favorite_songs_data"] = favoriteSongsJson
@@ -4393,7 +4466,13 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             }
         }
         
-        return Gson().toJson(backupData)
+        val backupJsonString = GsonUtils.gson.toJson(backupData)
+        val validation = validateBackupJson(backupJsonString, effectiveSections)
+        if (validation is BackupValidationResult.Invalid) {
+            Log.e("AppSettings", "Created backup payload failed validation: ${validation.reason}")
+            throw IllegalStateException("Backup payload validation failed: ${validation.reason}")
+        }
+        return backupJsonString
     }
     
     /**
@@ -4403,9 +4482,15 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         backupJson: String,
         sections: BackupRestoreSections = BackupRestoreSections()
     ): Boolean {
+        val validation = validateBackupJson(backupJson, sections)
+        if (validation is BackupValidationResult.Invalid) {
+            Log.e("AppSettings", "Restore rejected due to invalid backup payload: ${validation.reason}")
+            return false
+        }
+
         return try {
             val type = object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-            val backupData = Gson().fromJson<Map<String, Any?>>(backupJson, type) ?: return false
+            val backupData = GsonUtils.gson.fromJson<Map<String, Any?>>(backupJson, type) ?: return false
             val preferences = (backupData["preferences"] as? Map<*, *>)
                 ?.mapNotNull { (key, value) ->
                     (key as? String)?.let { safeKey -> safeKey to value }
@@ -4498,15 +4583,17 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                 val playlistsData = backupData["playlists_data"] as? String
                 if (playlistsData != null) {
                     try {
+                        val playlistListType = object : TypeToken<List<Playlist>>() {}.type
+                        val restoredPlaylists: List<Playlist> = GsonUtils.gson.fromJson(playlistsData, playlistListType) ?: emptyList()
+                        
                         kotlinx.coroutines.runBlocking {
                             val db = chromahub.rhythm.app.features.local.data.database.RhythmDatabase.getInstance(context)
                             val playlistDao = db.playlistDao()
                             val songDao = db.songDao()
+                            
                             playlistDao.deleteAllPlaylists()
                             playlistDao.deleteAllPlaylistSongs()
                             
-                            val type = object : TypeToken<List<Playlist>>() {}.type
-                            val restoredPlaylists: List<Playlist> = Gson().fromJson(playlistsData, type) ?: emptyList()
                             val songEntitiesToInsert = mutableListOf<chromahub.rhythm.app.features.local.data.database.entity.SongEntity>()
                             
                             restoredPlaylists.forEach { playlist ->

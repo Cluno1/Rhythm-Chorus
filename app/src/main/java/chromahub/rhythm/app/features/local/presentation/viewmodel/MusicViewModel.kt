@@ -40,6 +40,7 @@ import chromahub.rhythm.app.shared.data.model.LyricsSourcePreference
 import chromahub.rhythm.app.shared.data.model.MediaScanMode
 import chromahub.rhythm.app.shared.data.model.ScanPhase
 import chromahub.rhythm.app.features.local.data.repository.MusicRepository
+import chromahub.rhythm.app.features.local.data.database.entity.toSong
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Queue
@@ -463,9 +464,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     val existingIds = existingSongsToKeep.map { it.id }.toSet()
                     val newFavoriteIds = favoriteIds.filter { !existingIds.contains(it) }
                     
-                    // 3. Find the Song objects for these new favorites from the global _songs list
-                    val allSongs = _songs.value
-                    val newSongs = allSongs.filter { newFavoriteIds.contains(it.id) }
+                    // 3. Find the Song objects for these new favorites from _songs list OR room DB
+                    val allSongsMap = _songs.value.associateBy { it.id }
+                    val newSongs = newFavoriteIds.mapNotNull { favoriteId ->
+                        allSongsMap[favoriteId] ?: run {
+                            repository.songDao.getSongById(favoriteId)?.toSong()
+                        }
+                    }
                     
                     // 4. Append them
                     val finalSongsList = existingSongsToKeep + newSongs
@@ -2834,11 +2839,22 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Reloads playlists and favorite songs from settings after a backup restore
      */
     fun reloadPlaylistsFromSettings() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 Log.d(TAG, "Reloading playlists from settings after restore...")
-                loadSavedPlaylists()
-                Log.d(TAG, "Playlists successfully reloaded from settings")
+                loadSavedPlaylistsInternal()
+                val favoriteSongsJson = appSettings.favoriteSongs.value
+                val favoritesSet: Set<String> = if (!favoriteSongsJson.isNullOrBlank()) {
+                    val type = object : TypeToken<Set<String>>() {}.type
+                    GsonUtils.gson.fromJson(favoriteSongsJson, type) ?: emptySet()
+                } else {
+                    emptySet()
+                }
+                withContext(Dispatchers.Main) {
+                    _favoriteSongs.value = favoritesSet
+                }
+                syncLikedPlaylistWithFavorites(favoritesSet)
+                Log.d(TAG, "Playlists successfully reloaded and synced from settings")
             } catch (e: Exception) {
                 Log.e(TAG, "Error reloading playlists from settings", e)
             }
@@ -2887,7 +2903,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun ensurePlaylistsSaved() {
         try {
-            savePlaylists()
+            runBlocking(Dispatchers.IO) {
+                savePlaylistsToRoom(_playlists.value)
+            }
             saveFavoriteSongs()
             Log.d(TAG, "Playlists and favorites explicitly saved to storage")
         } catch (e: Exception) {
@@ -2897,7 +2915,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     
     private fun loadSavedPlaylists() {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
+            loadSavedPlaylistsInternal()
+        }
+    }
+
+    private suspend fun loadSavedPlaylistsInternal() {
+        try {
                 val playlistDao = repository.playlistDao
                 val defaultPlaylistsEnabled = appSettings.defaultPlaylistsEnabled.value
                 var dbPlaylists = playlistDao.getAllPlaylists()
@@ -3161,7 +3184,6 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     _favoriteSongs.value = emptySet()
                 }
             }
-        }
     }
     
     /**
@@ -3219,43 +3241,47 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private fun savePlaylists() {
         val currentPlaylists = _playlists.value
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val playlistDao = repository.playlistDao
-                
-                val dbPlaylists = playlistDao.getAllPlaylists()
-                val currentPlaylistIds = currentPlaylists.map { it.id }.toSet()
-                
-                dbPlaylists.forEach { dbPlaylist ->
-                    if (!currentPlaylistIds.contains(dbPlaylist.id)) {
-                        playlistDao.deletePlaylistById(dbPlaylist.id)
-                        playlistDao.deleteSongsFromPlaylist(dbPlaylist.id)
-                        Log.d(TAG, "Deleted playlist ID ${dbPlaylist.id} from Room")
-                    }
+            savePlaylistsToRoom(currentPlaylists)
+        }
+    }
+
+    private suspend fun savePlaylistsToRoom(currentPlaylists: List<Playlist> = _playlists.value) {
+        try {
+            val playlistDao = repository.playlistDao
+            
+            val dbPlaylists = playlistDao.getAllPlaylists()
+            val currentPlaylistIds = currentPlaylists.map { it.id }.toSet()
+            
+            dbPlaylists.forEach { dbPlaylist ->
+                if (!currentPlaylistIds.contains(dbPlaylist.id)) {
+                    playlistDao.deletePlaylistById(dbPlaylist.id)
+                    playlistDao.deleteSongsFromPlaylist(dbPlaylist.id)
+                    Log.d(TAG, "Deleted playlist ID ${dbPlaylist.id} from Room")
                 }
-                
-                currentPlaylists.forEach { playlist ->
-                    val entity = PlaylistEntity(
-                        id = playlist.id,
-                        name = playlist.name,
-                        dateCreated = playlist.dateCreated,
-                        dateModified = playlist.dateModified,
-                        artworkUri = playlist.artworkUri?.toString()
-                    )
-                    playlistDao.insertPlaylist(entity)
-                    
-                    val songEntities = playlist.songs.mapIndexed { index, song ->
-                        PlaylistSongEntity(
-                            playlistId = playlist.id,
-                            songId = song.id,
-                            orderIndex = index
-                        )
-                    }
-                    playlistDao.updatePlaylistSongs(playlist.id, songEntities)
-                }
-                Log.d(TAG, "Successfully saved ${currentPlaylists.size} playlists to Room")
-            } catch (e: Exception) {
-                Log.e(TAG, "Error saving playlists to Room", e)
             }
+            
+            currentPlaylists.forEach { playlist ->
+                val entity = PlaylistEntity(
+                    id = playlist.id,
+                    name = playlist.name,
+                    dateCreated = playlist.dateCreated,
+                    dateModified = playlist.dateModified,
+                    artworkUri = playlist.artworkUri?.toString()
+                )
+                playlistDao.insertPlaylist(entity)
+                
+                val songEntities = playlist.songs.mapIndexed { index, song ->
+                    PlaylistSongEntity(
+                        playlistId = playlist.id,
+                        songId = song.id,
+                        orderIndex = index
+                    )
+                }
+                playlistDao.updatePlaylistSongs(playlist.id, songEntities)
+            }
+            Log.d(TAG, "Successfully saved ${currentPlaylists.size} playlists to Room")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving playlists to Room", e)
         }
     }
 
