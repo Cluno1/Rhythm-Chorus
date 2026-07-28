@@ -47,7 +47,7 @@
     <string name="settings_rhythm_guard_timer_notifications_desc">Afficher les comptes à rebours et les notifications pour les pauses prévues pendant les audiences</string>
     <string name="settings_rhythm_pulse_notifications">Points forts &amp; Conseils d\'écoute</string>
     <string name="settings_rhythm_pulse_notifications_desc">Bénéficiez de statistiques d\'écoute personnalisées et de fonctionnalités de lecture</string>
-    <string name="settings_rhythm_pulse_interval">Intervalle des conseils</string>
+    <string name="settings_rhythm_pulse_interval">Fréquence d\'affichage des astuces</string>
     <string name="settings_rhythm_pulse_interval_dialog_title">Sélectionnez la fréquence de livraison</string>
     <!-- Settings - Queue & Playback -->
     <!-- Settings - Queue -->
@@ -135,42 +135,42 @@
     <string name="notification_media_scan_failed">Échec de l\'analyse de la bibliothèque. Vérifiez les droits d\'accès au stockage.</string>
     <string name="notification_playlist_export_title">Sauvegarde de la playlist</string>
     <string name="notification_playlist_import_title">Importation d\'une playlist</string>
-    <string name="notification_library_setup_title">Rhythm Configuration de la bibliothèque</string>
-    <string name="notification_library_setup_complete_summary">La bibliothèque est optimisée et prête : %1$d titres, %2$d albums, %3$d artistes</string>
+    <string name="notification_library_setup_title">Optimisation de la bibliothèque</string>
+    <string name="notification_library_setup_complete_summary">La bibliothèque est prête : %1$d titres, %2$d albums, %3$d artistes</string>
     <string name="notification_playlist_not_found">Exportation interrompue : la liste de lecture cible n\'a pas été trouvée.</string>
     <string name="notification_no_playlists_to_export">Exportation interrompue : aucune liste de lecture à sauvegarder trouvée.</string>
-    <string name="notification_operation_timed_out">L\'opération a expiré. Veuillez réessayer.</string>
-    <string name="notification_playlist_export_complete">Liste de lecture exportée avec succès vers le stockage.</string>
-    <string name="notification_playlist_export_all_complete">Exportation réussie de %1$d listes de lecture vers le stockage.</string>
-    <string name="notification_playlist_export_failed">L\'exportation de la liste de lecture a échoué. Essayer à nouveau.</string>
-    <string name="notification_playlist_import_complete">Importation réussie de \"%1$s\" avec %2$d chansons.</string>
-    <string name="notification_playlist_import_failed">L\'importation de la liste de lecture a échoué. Veuillez vérifier le format du fichier.</string>
-    <string name="notification_updater_channel_name">Rhythm Programme de mise à jour</string>
-    <string name="notification_updater_channel_desc">Statut de téléchargement des mises à jour de l\'application</string>
-    <string name="notification_updater_title">Rhythm Programme de mise à jour</string>
-    <string name="notification_updater_downloading">⬇ Téléchargement : %1$d%%</string>
-    <string name="notification_updater_download_complete">✓ Prêt à installer. Appuyez pour mettre à jour.</string>
-    <string name="notification_updater_available_title">Mise à jour disponible !</string>
-    <string name="notification_updater_available_text">🆕 Une nouvelle version de Rhythm est là.</string>
-    <string name="notification_sleep_timer_channel_name">Rhythm Minuterie de mise en veille</string>
-    <string name="notification_sleep_timer_channel_desc">Compte à rebours et état des actions de la minuterie d\'arrêt</string>
-    <string name="notification_sleep_timer_title">Rhythm Minuterie de mise en veille</string>
-    <string name="notification_sleep_timer_pause_in">⏸ Pause dans %1$s</string>
-    <string name="notification_sleep_timer_stop_in">⏹ Arrêt à %1$s</string>
+    <string name="notification_operation_timed_out">L\'opération a dépassé le délai d\'attente. Veuillez réessayer.</string>
+    <string name="notification_playlist_export_complete">La playlist a été sauvegardée avec succès sur le périphérique de stockage.</string>
+    <string name="notification_playlist_export_all_complete">Sauvegarde des %1$d playlists réussie.</string>
+    <string name="notification_playlist_export_failed">La sauvegarde de la playlist a échoué.</string>
+    <string name="notification_playlist_import_complete">Importation de « %1$s » (%2$d titres) réussie.</string>
+    <string name="notification_playlist_import_failed">L\'importation de la playlist a échoué. Vérifiez le format du fichier.</string>
+    <string name="notification_updater_channel_name">Mises à jour du système Rhythm</string>
+    <string name="notification_updater_channel_desc">Suivi du téléchargement et alertes de disponibilité pour les mises à jour des applications</string>
+    <string name="notification_updater_title">Mise à jour du logiciel Rhythm</string>
+    <string name="notification_updater_downloading">Téléchargement de la mise à jour : %1$d%%</string>
+    <string name="notification_updater_download_complete">La mise à jour est prête à être installée. Appuyez pour continuer.</string>
+    <string name="notification_updater_available_title">Nouvelle mise à jour disponible</string>
+    <string name="notification_updater_available_text">Une nouvelle version de Rhythm est disponible.</string>
+    <string name="notification_sleep_timer_channel_name">Assistant de sommeil Rhythm</string>
+    <string name="notification_sleep_timer_channel_desc">Compte à rebours et alertes d\'état pour les minuteries de mise en veille actives</string>
+    <string name="notification_sleep_timer_title">Minuterie de mise en veille activée</string>
+    <string name="notification_sleep_timer_pause_in">Mise en pause de la lecture dans %1$s</string>
+    <string name="notification_sleep_timer_stop_in">Arrêt de la lecture dans %1$s</string>
     <!-- Streaming Notifications -->
-    <string name="notification_streaming_channel_name">Rhythm Go</string>
-    <string name="notification_streaming_channel_desc">État du service de streaming et mises à jour de synchronisation</string>
+    <string name="notification_streaming_channel_name">Services Rhythm Cloud</string>
+    <string name="notification_streaming_channel_desc">État de la connexion et progression de la synchronisation pour les services de musique en ligne</string>
     <!-- Streaming Authentication -->
-    <string name="notification_streaming_auth_title">Streaming connecté</string>
-    <string name="notification_streaming_auth_connected">🎵 %1$s est prêt à jouer ! Votre bibliothèque se synchronise en arrière-plan.</string>
-    <string name="notification_streaming_auth_failed">La connexion a échoué pour %1$s. Appuyez pour réessayer la configuration.</string>
+    <string name="notification_streaming_auth_title">Connecté au service cloud</string>
+    <string name="notification_streaming_auth_connected">%1$s est connecté. Synchronisation de la bibliothèque en arrière-plan.</string>
+    <string name="notification_streaming_auth_failed">Échec de la connexion pour %1$s. Appuyez ici pour réessayer.</string>
     <string name="notification_streaming_auth_expired">La session a expiré pour %1$s. Appuyez pour vous reconnecter.</string>
     <!-- Streaming Library Sync -->
-    <string name="notification_streaming_sync_title">Synchronisation de votre bibliothèque</string>
-    <string name="notification_streaming_sync_started">Synchronisation avec %1$s…</string>
-    <string name="notification_streaming_sync_progress">Synchronisation : %1$d chansons • %2$d albums • %3$d artistes</string>
-    <string name="notification_streaming_sync_complete">✓ %1$d chansons synchronisées de %2$s !</string>
-    <string name="notification_streaming_sync_failed">La synchronisation a échoué. Vérifiez votre connexion et réessayez.</string>
+    <string name="notification_streaming_sync_title">Synchronisation de la bibliothèque dans le cloud</string>
+    <string name="notification_streaming_sync_started">Synchronisation de la bibliothèque avec %1$s…</string>
+    <string name="notification_streaming_sync_progress">Synchronisation : %1$d titres, %2$d albums, %3$d artistes</string>
+    <string name="notification_streaming_sync_complete">%1$d titres synchronisés à partir de %2$s.</string>
+    <string name="notification_streaming_sync_failed">Échec de la synchronisation. Vérifiez votre connexion réseau.</string>
     <!-- Streaming Liked Songs -->
     <string name="notification_streaming_liked_title">Chansons aimées mises à jour</string>
     <string name="notification_streaming_liked_added">♥ Ajouté aux chansons aimées sur %1$s</string>
@@ -2169,7 +2169,7 @@
     <string name="fullscreenlyricsview_retry_fetching">Réessayer de récupérer</string>
     <string name="fullscreenlyricsview_romanization">Romanisation</string>
     <string name="fullscreenlyricsview_translation">Traduction</string>
-    <string name="fullscreenlyricsview_realtime_sync_adjustment">Ajustement de la synchronisation en temps réel</string>
+    <string name="fullscreenlyricsview_realtime_sync_adjustment">Synchronisation</string>
     <string name="fullscreenlyricsview_str_05s">-0,5 s</string>
     <string name="fullscreenlyricsview_str_05s_1">+0,5 s</string>
     <string name="fullscreenlyricsview_reset_offset">Réinitialiser le décalage</string>
@@ -2907,4 +2907,6 @@
     <string name="settings_notification_permission_grant">Activer les notifications</string>
     <string name="settings_notification_preview_title">Aperçu des notifications en temps réel</string>
     <string name="settings_notification_preview_subtitle">Aperçu du style des notifications multimédias dans le volet des notifications</string>
+    <string name="onboarding_integration_wikipedia">Wikipédia</string>
+    <string name="onboarding_integration_wikipedia_desc">Récupérer les informations et les descriptions des albums pour la rubrique « À propos »</string>
 </resources>
