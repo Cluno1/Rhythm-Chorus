@@ -5,13 +5,28 @@ All notable changes to Rhythm will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## \[Unreleased]
+## [Unreleased]
+
+### Added
+- 
+
+## [5.3.440.1160] - 2026-07-28
 
 ### Added
 
-* 
+- Tablet UI fixes
+- Major Library Fixes
+- Add track error checker toggle and API fixes
+- Improve LAN server discovery and Jellyfin parsing
+- Harden backup payload and playlist restore
+- Refine fullscreen lyrics sync UI behavior #517
+- Stabilize carousel auto-scroll on resume #511
+- Keep playback active when queueing songs #514
+- Respect whitelist scan mode in library refresh #498
+- Add .opa format support across media handling #516
+- Updated translations
 
-## \[5.3.434.1139 Beta] - 2026-07-26
+## [5.3.434.1139 Beta] - 2026-07-26
 
 ### Added
 
@@ -22,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Respect whitelist scan mode in library refresh #498
 * Add .opa format support across media handling #516
 
-## \[5.3.432.1135] - 2026-07-17
+## [5.3.432.1135] - 2026-07-17
 
 ### Added
 
@@ -48,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added new translation: Uzbek
 * Updated translations: Spanish, Swedish, Ukrainian, Arabic, French, Polish, Chinese (Traditional), and Chinese (Simplified)
 
-## \[5.3.429.1123 Beta] - 2026-07-12
+## [5.3.429.1123 Beta] - 2026-07-12
 
 ### Added
 
@@ -77,7 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * chore(l10n): update Polish translation
 * chore(l10n): update Spanish translation
 
-## \[5.2.423.1109] - 2026-07-05
+## [5.2.423.1109] - 2026-07-05
 
 ### Added
 
@@ -92,7 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * chore(l10n): update French translation
 * chore(l10n): update Chinese (Simplified Han script) translation
 
-## \[5.2.422.1105] - 2026-07-04
+## [5.2.422.1105] - 2026-07-04
 
 ### Added
 
@@ -113,7 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed: cannot import playlists from json backup #449
 * Fixed: Connection failed: java.security.cert.CertPathValidatorException: Trust anchor for certification path not found.  #451
 
-## \[5.2.422.1104 Beta] - 2026-07-04
+## [5.2.422.1104 Beta] - 2026-07-04
 
 ### Added
 
@@ -124,7 +139,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Bump Compose and UI dependency versions
 * Added Canvas support
 
-## \[5.2.422.1103 Beta] - 2026-07-03
+## [5.2.422.1103 Beta] - 2026-07-03
 
 ### Added
 
@@ -135,13 +150,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Bump Compose and UI dependency versions
 * Added Canvas support
 
-## \[5.2.421.1101 Beta] - 2026-07-02
+## [5.2.421.1101 Beta] - 2026-07-02
 
 ### Added
 
 * Added Canvas support
 
-## \[5.2.419.1099 Beta] - 2026-07-02
+## [5.2.419.1099 Beta] - 2026-07-02
 
 ### Added
 
@@ -152,7 +167,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed: cannot import playlists from json backup #449
 * Minor Improvements
 
-## \[5.2.418.1097 Beta] - 2026-07-01
+## [5.2.418.1097 Beta] - 2026-07-01
 
 ### Added
 
@@ -161,7 +176,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed: cannot import playlists from json backup #449
 * Minor Improvements
 
-## \[5.2.417.1095 Beta] - 2026-07-01
+## [5.2.417.1095 Beta] - 2026-07-01
 
 ### Added
 
@@ -169,7 +184,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed: cannot import playlists from json backup #449
 * Minor Improvements
 
-## \[5.1.416.1093 Beta] - 2026-06-26
+## [5.1.416.1093 Beta] - 2026-06-26
 
 ### Added
 
@@ -180,7 +195,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed: cannot import playlists from json backup #449
 * Fixed: Connection failed: java.security.cert.CertPathValidatorException: Trust anchor for certification path not found. #451
 
-## \[5.1.415.1089 Beta] - 2026-06-25
+## [5.1.415.1089 Beta] - 2026-06-25
 
 ### Added
 
@@ -188,7 +203,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed: cannot import playlists from json backup #449
 * Fixed: Connection failed: java.security.cert.CertPathValidatorException: Trust anchor for certification path not found. #451
 
-## \[5.1.414.1086] - 2026-06-22
+## [5.1.414.1086] - 2026-06-22
 
 ### Added
 
@@ -214,7 +229,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added mkv/mka format support
 * fix(ArtistDetailScreen): Update album filtering to use more appropriate matching function
 
-## \[5.1.414.1085 Beta] - 2026-06-21
+## [5.1.414.1085 Beta] - 2026-06-21
 
 ### Added
 
@@ -224,7 +239,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed: all playlists missing in latest beta build  #437
 * Updated dependencies
 
-## \[5.1.413.1080\\ Beta] - 2026-06-20
+## [5.1.413.1080\\ Beta] - 2026-06-20
 
 ### Added
 
@@ -232,7 +247,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed: all playlists missing in latest beta build  #437
 * Updated dependencies
 
-## \[5.1.413.1080 Beta] - 2026-06-20
+## [5.1.413.1080 Beta] - 2026-06-20
 
 ### Added
 

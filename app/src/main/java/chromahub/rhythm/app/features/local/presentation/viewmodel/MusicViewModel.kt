@@ -1800,7 +1800,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val hasMissingAlbums = _albums.value.any { it.artworkUri == null }
                 val hasMissingSongs = _songs.value.any { it.artworkUri == null }
                 
-                val shouldFetchArtists = hasMissingArtists && appSettings.deezerApiEnabled.value
+                val artistSource1 = appSettings.artistArtworkSource.value
+                val shouldFetchArtists = hasMissingArtists && artistSource1 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
+                    (artistSource1 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
                 val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && appSettings.ytMusicApiEnabled.value
 
                 if (shouldFetchArtists || shouldFetchAlbumsAndSongs) {
@@ -1956,7 +1958,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val hasMissingAlbums = _albums.value.any { it.artworkUri == null }
                 val hasMissingSongs = _songs.value.any { it.artworkUri == null }
                 
-                val shouldFetchArtists = hasMissingArtists && appSettings.deezerApiEnabled.value
+                val artistSource2 = appSettings.artistArtworkSource.value
+                val shouldFetchArtists = hasMissingArtists && artistSource2 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
+                    (artistSource2 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
                 val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && appSettings.ytMusicApiEnabled.value
 
                 if (shouldFetchArtists || shouldFetchAlbumsAndSongs) {
@@ -2285,7 +2289,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         }
                         val hasMissingSongs = _songs.value.any { it.artworkUri == null }
                         
-                        val shouldFetchArtists = hasMissingArtists && appSettings.deezerApiEnabled.value
+                        val artistSource3 = appSettings.artistArtworkSource.value
+                        val shouldFetchArtists = hasMissingArtists && artistSource3 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
+                            (artistSource3 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
                         val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && appSettings.ytMusicApiEnabled.value
 
                         if (shouldFetchArtists || shouldFetchAlbumsAndSongs) {
@@ -3346,13 +3352,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         fetchArtists: Boolean = true,
         fetchAlbumsAndSongs: Boolean = true
     ) = withContext(Dispatchers.IO) {
-        if (!appSettings.isAutoFetchArtworkActive.value) {
-            Log.d(TAG, "isAutoFetchArtworkActive is disabled, skipping internet artwork fetch")
+        val artistSource = appSettings.artistArtworkSource.value
+        val isAutoFetchActive = appSettings.isAutoFetchArtworkActive.value
+        if (!isAutoFetchActive && artistSource == chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED) {
+            Log.d(TAG, "isAutoFetchArtworkActive and artist artwork are disabled, skipping internet artwork fetch")
             return@withContext
         }
         try {
-            if (fetchArtists) {
-                Log.d(TAG, "Fetching artist images from internet")
+            if (fetchArtists && artistSource != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED) {
+                Log.d(TAG, "Fetching artist images")
                 val missingArtists = _artists.value.filter { it.artworkUri == null }
                 Log.d(TAG, "Found ${missingArtists.size} artists without images out of ${_artists.value.size} total artists")
                 val chunkSize = 10

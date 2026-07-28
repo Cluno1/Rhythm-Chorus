@@ -51,6 +51,22 @@ enum class PlaylistViewType {
     LIST, GRID
 }
 
+/**
+ * Enum for artist artwork source preferences
+ */
+enum class ArtistArtworkSource {
+    PREFER_LOCAL_THEN_API,
+    LOCAL_ONLY,
+    API_ONLY,
+    DISABLED;
+
+    companion object {
+        fun fromName(name: String?): ArtistArtworkSource {
+            return entries.find { it.name.equals(name, ignoreCase = true) } ?: PREFER_LOCAL_THEN_API
+        }
+    }
+}
+
 data class RhythmAuraPolicyBand(
     val minAge: Int,
     val maxAge: Int,
@@ -277,6 +293,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_LYRICALLY_API_ENABLED = "lyrically_api_enabled"
         private const val KEY_WIKIPEDIA_API_ENABLED = "wikipedia_api_enabled"
         private const val KEY_AUTO_FETCH_ARTWORK = "auto_fetch_artwork"
+        private const val KEY_ARTIST_ARTWORK_SOURCE = "artist_artwork_source"
         private const val KEY_APPLE_CANVAS_ENABLED = "apple_canvas_enabled"
         private const val KEY_APPLE_CANVAS_NETWORK_MODE = "apple_canvas_network_mode"
         
@@ -604,7 +621,7 @@ class AppSettings private constructor(context: Context) {
     }
     
     // Playback Settings
-    private val _audioOffloadEnabled = MutableStateFlow(prefs.getBoolean(KEY_AUDIO_OFFLOAD_ENABLED, true))
+    private val _audioOffloadEnabled = MutableStateFlow(prefs.getBoolean(KEY_AUDIO_OFFLOAD_ENABLED, false))
     val audioOffloadEnabled: StateFlow<Boolean> = _audioOffloadEnabled.asStateFlow()
     
     private val _preloadLimit = MutableStateFlow(prefs.getInt(KEY_PRELOAD_LIMIT, 3))
@@ -1432,6 +1449,11 @@ class AppSettings private constructor(context: Context) {
     
     private val _autoFetchArtwork = MutableStateFlow(prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, false))
     val autoFetchArtwork: StateFlow<Boolean> = _autoFetchArtwork.asStateFlow()
+
+    private val _artistArtworkSource = MutableStateFlow(
+        ArtistArtworkSource.fromName(prefs.getString(KEY_ARTIST_ARTWORK_SOURCE, ArtistArtworkSource.PREFER_LOCAL_THEN_API.name))
+    )
+    val artistArtworkSource: StateFlow<ArtistArtworkSource> = _artistArtworkSource.asStateFlow()
 
     private val _appleCanvasEnabled = MutableStateFlow(prefs.getBoolean(KEY_APPLE_CANVAS_ENABLED, true))
     val appleCanvasEnabled: StateFlow<Boolean> = _appleCanvasEnabled.asStateFlow()
@@ -3141,6 +3163,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setAppleCanvasNetworkMode(mode: CanvasNetworkMode) {
         prefs.edit().putInt(KEY_APPLE_CANVAS_NETWORK_MODE, mode.ordinal).apply()
         _appleCanvasNetworkMode.value = mode
+    }
+
+    fun setArtistArtworkSource(source: ArtistArtworkSource) {
+        prefs.edit().putString(KEY_ARTIST_ARTWORK_SOURCE, source.name).apply()
+        _artistArtworkSource.value = source
     }
 
     fun setDeezerApiEnabled(enabled: Boolean) {

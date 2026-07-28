@@ -1022,6 +1022,16 @@
     <string name="settings_artwork_cache_size">Artwork Cache Size</string>
     <string name="settings_artist_parsing">Artists</string>
     <string name="settings_artist_parsing_desc">Separators, display</string>
+    <string name="settings_artist_artwork_source">Artist Image Source</string>
+    <string name="settings_artist_artwork_source_desc">Choose preferred source for artist artwork</string>
+    <string name="settings_artist_artwork_source_prefer_local">Prefer Local Image, then API</string>
+    <string name="settings_artist_artwork_source_prefer_local_desc">Look for local folder art (artist.jpg/band.jpg) first, fallback to online Deezer API</string>
+    <string name="settings_artist_artwork_source_local_only">Local Images Only</string>
+    <string name="settings_artist_artwork_source_local_only_desc">Only use local folder art (artist.jpg/band.jpg) and saved local images</string>
+    <string name="settings_artist_artwork_source_api_only">Online API Only (Deezer)</string>
+    <string name="settings_artist_artwork_source_api_only_desc">Fetch artist artwork exclusively from online Deezer API</string>
+    <string name="settings_artist_artwork_source_disabled">Disabled</string>
+    <string name="settings_artist_artwork_source_disabled_desc">Do not fetch or load images for artists</string>
     <string name="settings_rhythm_stats">Rhythm Stats</string>
     <string name="settings_rhythm_stats_desc">Listening time, top tracks and trends</string>
     <string name="settings_rhythm_guard">Rhythm Guard</string>

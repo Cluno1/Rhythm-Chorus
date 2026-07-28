@@ -29,8 +29,8 @@ android {
         
         val overrideVersionCode = project.findProperty("versionCodeOverride")?.toString()?.toIntOrNull()
         val overrideVersionName = project.findProperty("versionNameOverride")?.toString()
-        versionCode = overrideVersionCode ?: 534391158
-        versionName = overrideVersionName ?: "5.3.439.1158 Beta"
+        versionCode = overrideVersionCode ?: 534401160
+        versionName = overrideVersionName ?: "5.3.440.1160"
 
         val overrideReleaseDate = project.findProperty("releaseDateOverride")?.toString()
         buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-07-28"}\"")

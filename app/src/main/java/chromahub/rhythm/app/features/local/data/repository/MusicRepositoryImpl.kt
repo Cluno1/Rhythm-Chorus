@@ -2577,6 +2577,11 @@ class MusicRepository(context: Context) {
 
             // NetworkClient will handle API key dynamically (user-provided or fallback to default)
 
+            val artistArtworkSource = appSettings.artistArtworkSource.value
+            if (artistArtworkSource == chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED) {
+                return@withContext artists
+            }
+
             for (artist in artists) {
                 try {
                     Log.d(TAG, "Processing artist: ${artist.name}")
@@ -2598,26 +2603,33 @@ class MusicRepository(context: Context) {
                         continue
                     }
 
-                    // Check local storage for artist image
-                    val localImage = findLocalArtistImage(artist.name)
-                    if (localImage != null) {
-                        Log.d(TAG, "Using local image for artist: ${artist.name}")
-                        artistImageCache[artist.name] = localImage
-                        updatedArtists.add(artist.copy(artworkUri = localImage))
-                        continue
+                    if (artistArtworkSource != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY) {
+                        // Check local storage for artist image
+                        val localImage = findLocalArtistImage(artist.name)
+                        if (localImage != null) {
+                            Log.d(TAG, "Using local image for artist: ${artist.name}")
+                            artistImageCache[artist.name] = localImage
+                            updatedArtists.add(artist.copy(artworkUri = localImage))
+                            continue
+                        }
+
+                        // Check music-library folders for artist.jpg / band.jpg style images.
+                        val localFolderImage = findArtistImageInLibraryFolders(
+                            artistName = artist.name,
+                            songs = allSongsForLocalLookup,
+                            groupByAlbumArtist = groupByAlbumArtist,
+                            preloadedCharDelimiters = preloadedCharDelimiters
+                        )
+                        if (localFolderImage != null) {
+                            Log.d(TAG, "Using folder image for artist: ${artist.name} -> $localFolderImage")
+                            artistImageCache[artist.name] = localFolderImage
+                            updatedArtists.add(artist.copy(artworkUri = localFolderImage))
+                            continue
+                        }
                     }
 
-                    // Check music-library folders for artist.jpg / band.jpg style images.
-                    val localFolderImage = findArtistImageInLibraryFolders(
-                        artistName = artist.name,
-                        songs = allSongsForLocalLookup,
-                        groupByAlbumArtist = groupByAlbumArtist,
-                        preloadedCharDelimiters = preloadedCharDelimiters
-                    )
-                    if (localFolderImage != null) {
-                        Log.d(TAG, "Using folder image for artist: ${artist.name} -> $localFolderImage")
-                        artistImageCache[artist.name] = localFolderImage
-                        updatedArtists.add(artist.copy(artworkUri = localFolderImage))
+                    if (artistArtworkSource == chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.LOCAL_ONLY) {
+                        updatedArtists.add(artist)
                         continue
                     }
 

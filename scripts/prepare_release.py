@@ -87,8 +87,8 @@ def extract_unreleased_changelog():
     with open(CHANGELOG_PATH, "r", encoding="utf-8") as f:
         content = f.read()
     
-    # Regex to find everything between ## [Unreleased] and the next ## [<version>]
-    match = re.search(r"##\s*\[Unreleased\](.*?)(\n##\s*\[|\Z)", content, re.DOTALL | re.IGNORECASE)
+    # Handles both escaped (\[Unreleased]) and unescaped ([Unreleased]) bracket styles
+    match = re.search(r"##\s*\\?\[Unreleased\](.*?)(?=\n##\s*\\?\[|\Z)", content, re.DOTALL | re.IGNORECASE)
     if not match:
         return ""
     
@@ -116,6 +116,7 @@ def get_commits_since_last_tag(previous_tag=None):
             return []
             
         commits = []
+        has_translation = False
         for line in log_output.splitlines():
             parts = line.split(" ", 1)
             if len(parts) > 1:
@@ -123,7 +124,13 @@ def get_commits_since_last_tag(previous_tag=None):
                 # Skip merge and release utility commits to keep clean
                 if msg.startswith("Merge branch") or msg.startswith("Merge pull request") or msg.startswith("Release "):
                     continue
+                # Collapse all translation/l10n commits into one line
+                if re.search(r"l10n|translation|chore\(l10n\)|update.*translation|localiz", msg, re.IGNORECASE):
+                    has_translation = True
+                    continue
                 commits.append(msg)
+        if has_translation:
+            commits.append("Updated translations")
         return commits
     except Exception as e:
         print(f"Error fetching commits: {e}")
@@ -137,8 +144,9 @@ def format_fastlane_changelog(version_name, changes_text, release_type):
     title = f"Rhythm {version_str} - {release_type} Update\n\n"
     footer = "\nThanks for using Rhythm ;)"
     
-    # Parse items
+    # Parse items — collapse translation entries into one
     items = []
+    has_translation = False
     for line in changes_text.splitlines():
         line = line.strip()
         if line.startswith("-") or line.startswith("*") or line.startswith("•"):
@@ -147,7 +155,13 @@ def format_fastlane_changelog(version_name, changes_text, release_type):
             item = re.sub(r"\[(.*?)\].*?", r"\1", item)
             # Remove bold/italic markdown
             item = item.replace("**", "").replace("_", "")
+            # Group all translation/l10n lines
+            if re.search(r"l10n|translation|localiz|update.*lang", item, re.IGNORECASE):
+                has_translation = True
+                continue
             items.append(f"• {item}")
+    if has_translation:
+        items.append("• Updated translations")
             
     # Assemble with max 500 chars limit (F-Droid restriction)
     content = title
@@ -201,18 +215,43 @@ def update_changelog_file(new_version_name, raw_unreleased):
     today = datetime.today().strftime('%Y-%m-%d')
     new_section = f"## [Unreleased]\n\n### Added\n- \n\n## [{new_version_name}] - {today}\n\n{raw_unreleased}\n"
     
-    # Replace [Unreleased] section
-    pattern = r"##\s*\[Unreleased\](.*?)(\n##\s*\[|\Z)"
+    # Replace [Unreleased] section - handles both escaped (\[) and literal ([) bracket styles
+    pattern = r"##\s*\\?\[Unreleased\](.*?)(?=\n##\s*\\?\[|\Z)"
     
     def repl(m):
-        return new_section + m.group(2)
+        return new_section
         
     content = re.sub(pattern, repl, content, flags=re.DOTALL | re.IGNORECASE)
     
-    with open(CHANGELOG_PATH, "w", encoding="utf-8") as f:
+    # Normalize: remove any stray backslash-escapes on section headers (e.g. \[ -> [)
+    content = re.sub(r"(##\s*)\\\[", r"\1[", content)
+    
+    # Write with Unix line endings so git doesn't see spurious CRLF changes
+    with open(CHANGELOG_PATH, "w", encoding="utf-8", newline="\n") as f:
         f.write(content)
         
     print("Updated docs/CHANGELOG.md")
+
+
+def prompt_banner_choice(is_beta):
+    """Prompt the user to choose a release banner option."""
+    default_beta_url = "https://github.com/user-attachments/assets/52d9f9b9-722e-4e66-abab-2dcbf59b6648"
+    default_stable_url = "https://github.com/user-attachments/assets/f307174a-ec2e-41ec-b274-0a458123d4f7"
+    default_url = default_beta_url if is_beta else default_stable_url
+
+    print("\nRelease banner:")
+    print("  1. Use predefined banner (current default)")
+    print("  2. Enter a custom banner URL")
+    print("  3. No banner")
+    choice = input("Select banner option [1/2/3] (default: 1): ").strip().replace("\ufeff", "") or "1"
+
+    if choice == "2":
+        url = input("Enter the full image URL for the banner: ").strip().replace("\ufeff", "")
+        return url if url else default_url
+    elif choice == "3":
+        return None
+    else:
+        return default_url
 
 def main():
     print("=== Rhythm Release Preparation Tool ===")
@@ -223,6 +262,8 @@ def main():
         release_type = "Beta"
     else:
         release_type = "Stable"
+
+    is_beta = release_type == "Beta"
         
     # Get current versionName from build.gradle.kts to show as reference
     with open(BUILD_GRADLE_PATH, "r", encoding="utf-8") as f:
@@ -243,6 +284,9 @@ def main():
         sys.exit(1)
         
     print(f"New Version Code: {new_version_code}")
+
+    # Banner choice
+    banner_url = prompt_banner_choice(is_beta)
     
     # Prompt for changelog source
     print("\nChangelog source:")
@@ -308,6 +352,13 @@ def main():
     print(fastlane_content)
     print(f"Total Characters: {len(fastlane_content)}/500")
     print("---------------------------------\n")
+
+    # Show banner preview
+    if banner_url:
+        print(f"Banner URL: {banner_url}")
+    else:
+        print("Banner: None (no image will be included)")
+    print()
     
     confirm = input("Does this look correct? Proceed with file modifications? (y/N): ").strip().lower().replace("\ufeff", "")
     if confirm != 'y':
@@ -326,6 +377,18 @@ def main():
     with open(fastlane_file_path, "w", encoding="utf-8") as f:
         f.write(fastlane_content)
     print(f"Created Fastlane changelog: {fastlane_file_path}")
+
+    # Store banner URL choice so generate_release_notes.py can pick it up
+    banner_hint_path = os.path.join(ROOT_DIR, ".release_banner_url")
+    if banner_url:
+        with open(banner_hint_path, "w", encoding="utf-8") as f:
+            f.write(banner_url)
+        print(f"Stored banner URL: .release_banner_url")
+    else:
+        # Clear any previous stored banner
+        if os.path.exists(banner_hint_path):
+            os.remove(banner_hint_path)
+        print("No banner selected.")
     
     normalized_tag = f"v{new_version_name.lower().replace(' ', '-')}"
     print("\nRelease files prepared successfully!")
