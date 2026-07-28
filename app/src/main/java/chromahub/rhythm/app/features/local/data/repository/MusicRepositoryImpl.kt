@@ -499,7 +499,7 @@ class MusicRepository(context: Context) {
                                 savedArtworkUri
                             } else {
                                 val savedFile = savedArtworkUri?.path?.let { File(it) }
-                                val parentDir = savedFile?.parentFile ?: File(context.cacheDir, "embedded_artwork")
+                                val parentDir = savedFile?.parentFile ?: File(context.filesDir, "embedded_artwork")
                                 val baseName = fileName
                                     .removePrefix("embedded_art_lossless_")
                                     .removePrefix("embedded_art_")
@@ -527,7 +527,7 @@ class MusicRepository(context: Context) {
                             }
                         } else {
                             chromahub.rhythm.app.util.MediaUtils.getCachedEmbeddedAlbumArtUri(
-                                cacheDir = context.cacheDir,
+                                cacheDir = context.filesDir,
                                 songUri = songUri,
                                 lossless = losslessArtwork
                             )
@@ -612,13 +612,16 @@ class MusicRepository(context: Context) {
 
         val path = uri.path ?: return false
         val file = File(path)
-        val embeddedArtworkDir = File(context.cacheDir, "embedded_artwork")
+        val embeddedCacheDir = File(context.cacheDir, "embedded_artwork")
+        val embeddedFilesDir = File(context.filesDir, "embedded_artwork")
 
-        if (file.parentFile?.absolutePath == embeddedArtworkDir.absolutePath) {
+        if (file.parentFile?.absolutePath == embeddedCacheDir.absolutePath ||
+            file.parentFile?.absolutePath == embeddedFilesDir.absolutePath) {
             return file.name.startsWith("embedded_art_") || file.name.startsWith("embedded_art_lossless_")
         }
 
-        if (file.parentFile?.absolutePath == context.cacheDir.absolutePath) {
+        if (file.parentFile?.absolutePath == context.cacheDir.absolutePath ||
+            file.parentFile?.absolutePath == context.filesDir.absolutePath) {
             return file.name.startsWith("embedded_art_") || file.name.startsWith("embedded_art_lossless_")
         }
 
@@ -5557,7 +5560,7 @@ class MusicRepository(context: Context) {
                 async(Dispatchers.IO) {
                     try {
                         val embeddedUri = chromahub.rhythm.app.util.MediaUtils.extractEmbeddedAlbumArt(
-                            context, song.uri, context.cacheDir, lossless
+                            context, song.uri, context.filesDir, lossless
                         )
                         if (embeddedUri != null && embeddedUri != song.artworkUri) {
                             val updatedSong = song.copy(artworkUri = embeddedUri)

@@ -2423,15 +2423,23 @@ object MediaUtils {
         val primaryPrefix = if (lossless) "embedded_art_lossless_$songKey" else "embedded_art_$songKey"
         val fallbackPrefix = if (lossless) "embedded_art_$songKey" else "embedded_art_lossless_$songKey"
 
-        val artworkCacheDir = File(cacheDir, EMBEDDED_ARTWORK_CACHE_DIR)
+        val directoriesToSearch = mutableListOf(File(cacheDir, EMBEDDED_ARTWORK_CACHE_DIR))
+        val parent = cacheDir.parentFile
+        if (parent != null && parent.exists()) {
+            val altDirName = if (cacheDir.name == "cache") "files" else "cache"
+            directoriesToSearch.add(File(File(parent, altDirName), EMBEDDED_ARTWORK_CACHE_DIR))
+        }
+
         val extensions = listOf("jpg", "png", "webp", "gif", "bmp", "img")
-        val modernCandidate = findFirstExistingArtworkFile(
-            directory = artworkCacheDir,
-            prefixes = listOf(primaryPrefix, fallbackPrefix),
-            extensions = extensions
-        )
-        if (modernCandidate != null) {
-            return modernCandidate.toUri()
+        for (dir in directoriesToSearch) {
+            val modernCandidate = findFirstExistingArtworkFile(
+                directory = dir,
+                prefixes = listOf(primaryPrefix, fallbackPrefix),
+                extensions = extensions
+            )
+            if (modernCandidate != null) {
+                return modernCandidate.toUri()
+            }
         }
 
         val legacyHash = songUri.hashCode()

@@ -165,13 +165,22 @@ class MediaScanEngine(
                     if (existing != null && existing.dateModified == dateModified) {
                         val existingArt = existing.artworkUri ?: ""
                         val isLosslessArt = existingArt.contains("embedded_art_lossless_")
-                        val needsArtUpgrade = preferSongArtwork && (existingArt.isEmpty() || (losslessArtwork && !isLosslessArt))
+                        val isFileExist = if (existingArt.startsWith("file:") || existingArt.startsWith("/")) {
+                            try {
+                                val artPath = if (existingArt.startsWith("file:")) Uri.parse(existingArt).path else existingArt
+                                artPath?.let { File(it).exists() && File(it).length() > 0L } == true
+                            } catch (e: Exception) {
+                                false
+                            }
+                        } else true
+
+                        val needsArtUpgrade = preferSongArtwork && (existingArt.isEmpty() || !isFileExist || (losslessArtwork && !isLosslessArt))
 
                         if (needsArtUpgrade) {
                             val parsedUri = Uri.parse(existing.uri)
                             val embeddedUri = try {
                                 chromahub.rhythm.app.util.MediaUtils.extractEmbeddedAlbumArt(
-                                    context, parsedUri, context.cacheDir, losslessArtwork
+                                    context, parsedUri, context.filesDir, losslessArtwork
                                 )?.toString()
                             } catch (e: Exception) {
                                 null
@@ -206,7 +215,7 @@ class MediaScanEngine(
                             try {
                                 val parsedUri = Uri.parse(contentUri)
                                 val embeddedUri = chromahub.rhythm.app.util.MediaUtils.extractEmbeddedAlbumArt(
-                                    context, parsedUri, context.cacheDir, losslessArtwork
+                                    context, parsedUri, context.filesDir, losslessArtwork
                                 )
                                 embeddedUri?.toString() ?: defaultArtworkUri
                             } catch (e: Exception) {

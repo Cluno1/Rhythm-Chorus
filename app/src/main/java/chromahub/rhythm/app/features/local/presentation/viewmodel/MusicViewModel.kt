@@ -1860,7 +1860,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val losslessArtwork = appSettings.isLosslessArtworkActive.value
                 val isCompleted = appSettings.embeddedArtworkExtractionCompleted.value
                 val lastLosslessStatus = appSettings.embeddedArtworkExtractionLosslessStatus.value
-                val needsRun = !isCompleted || lastLosslessStatus != losslessArtwork
+                val hasMissingPhysicalFiles = _songs.value.any { song ->
+                    val uriStr = song.artworkUri?.toString() ?: ""
+                    (uriStr.startsWith("file:") || uriStr.startsWith("/")) &&
+                    !java.io.File(if (uriStr.startsWith("file:")) android.net.Uri.parse(uriStr).path ?: "" else uriStr).exists()
+                }
+                val needsRun = !isCompleted || lastLosslessStatus != losslessArtwork || hasMissingPhysicalFiles
 
                 if (preferSongArtwork && needsRun) {
                     val initialSongs = _songs.value
