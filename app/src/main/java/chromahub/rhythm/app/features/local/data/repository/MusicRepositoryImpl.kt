@@ -5543,7 +5543,7 @@ class MusicRepository(context: Context) {
                 val fileName = File(path).name
                 val isLosslessFile = fileName.startsWith("embedded_art_lossless_")
                 !(File(path).exists() && isLosslessFile == lossless)
-            } else false
+            } else true
         }
 
         if (songsToProcess.isEmpty()) return@withContext songs

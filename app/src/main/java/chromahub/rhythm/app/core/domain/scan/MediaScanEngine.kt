@@ -257,6 +257,10 @@ class MediaScanEngine(
                 if (forceRefresh) {
                     database.songDao().replaceAll(scannedSongs)
                 } else {
+                    val staleSongIds = existingDbSongs.keys - seenIds
+                    if (staleSongIds.isNotEmpty()) {
+                        database.songDao().deleteByIds(staleSongIds.toList())
+                    }
                     database.songDao().upsertAll(scannedSongs)
                 }
             }

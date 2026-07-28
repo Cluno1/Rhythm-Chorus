@@ -2339,7 +2339,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 if (queued != null) {
                     pendingRestore = null
                     Log.d(TAG, "Executing queued restore operation...")
-                    val success = appSettings.restoreFromBackup(queued.backupJson, queued.sections)
+                    val success = repository.backupRestoreManager.restoreFromBackupPayload(queued.backupJson, queued.sections)
                     if (success) {
                         reloadPlaylistsFromSettings()
                     }

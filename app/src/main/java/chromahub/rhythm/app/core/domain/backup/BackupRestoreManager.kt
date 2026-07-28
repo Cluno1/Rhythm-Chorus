@@ -267,9 +267,9 @@ class BackupRestoreManager(
                             }
                         }
 
-                        database.playlistDao().insertPlaylists(playlistEntities)
-                        database.songDao().upsertAll(songEntities)
-                        database.playlistDao().insertPlaylistSongs(playlistSongEntities)
+                        database.playlistDao().insertPlaylists(playlistEntities.distinctBy { it.id })
+                        database.songDao().upsertAll(songEntities.distinctBy { it.id })
+                        database.playlistDao().insertPlaylistSongs(playlistSongEntities.distinctBy { it.playlistId to it.songId })
                     }
                 }
             }
