@@ -51,3 +51,29 @@ fun SongEntity.toSong(): chromahub.rhythm.app.shared.data.model.Song {
         path = path
     )
 }
+
+
+fun chromahub.rhythm.app.shared.data.model.Song.toEntity(): SongEntity {
+    return SongEntity(
+        id = id,
+        title = title,
+        artist = artist,
+        album = album,
+        albumId = albumId,
+        duration = duration,
+        uri = uri.toString(),
+        artworkUri = artworkUri?.toString(),
+        trackNumber = trackNumber,
+        year = year,
+        genre = genre,
+        dateAdded = dateAdded,
+        dateModified = dateModified,
+        albumArtist = albumArtist,
+        bitrate = bitrate,
+        sampleRate = sampleRate,
+        channels = channels,
+        codec = codec,
+        discNumber = discNumber,
+        path = path
+    )
+}

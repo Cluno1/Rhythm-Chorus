@@ -1784,12 +1784,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val context = getApplication<Application>()
                 val hasMissingArtists = _artists.value.any { it.artworkUri == null }
-                val hasMissingAlbums = withContext(Dispatchers.IO) {
-                    _albums.value.any { album ->
-                        val uri = album.artworkUri
-                        uri == null || (uri.toString().startsWith("content://media/external/audio/albumart") && !isContentUriReadable(context, uri))
-                    }
-                }
+                val hasMissingAlbums = _albums.value.any { it.artworkUri == null }
                 val hasMissingSongs = _songs.value.any { it.artworkUri == null }
                 
                 val shouldFetchArtists = hasMissingArtists && appSettings.deezerApiEnabled.value
@@ -1848,8 +1843,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Log.e(TAG, "Error starting background audio metadata extraction", e)
             } finally {
                 _isExtractingMetadata.value = false
+                }
             }
-        }
 
         // Extract embedded album art in background when preferSongArtwork is enabled.
         // This runs after the UI is fully settled so it doesn't affect splash screen load time.
@@ -1940,12 +1935,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val context = getApplication<Application>()
                 val hasMissingArtists = _artists.value.any { it.artworkUri == null }
-                val hasMissingAlbums = withContext(Dispatchers.IO) {
-                    _albums.value.any { album ->
-                        val uri = album.artworkUri
-                        uri == null || (uri.toString().startsWith("content://media/external/audio/albumart") && !isContentUriReadable(context, uri))
-                    }
-                }
+                val hasMissingAlbums = _albums.value.any { it.artworkUri == null }
                 val hasMissingSongs = _songs.value.any { it.artworkUri == null }
                 
                 val shouldFetchArtists = hasMissingArtists && appSettings.deezerApiEnabled.value
@@ -2144,8 +2134,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         repository.extractAudioMetadataInBackground(
             songs = songs.value,
             onProgress = { current, total ->
-                // Optional: Could emit progress updates to UI if needed
                 Log.d(TAG, "Audio metadata extraction progress: $current/$total")
+            },
+            onBatchComplete = { batchSongs ->
+                val batchMap = batchSongs.associateBy { it.id }
+                _songs.value = _songs.value.map { song -> batchMap[song.id] ?: song }
             },
             onComplete = { updatedSongs ->
                 // Update the songs state with the new audio metadata information
@@ -2305,30 +2298,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         Log.e(TAG, "Error restarting background audio metadata extraction", e)
                     } finally {
                         _isExtractingMetadata.value = false
-                    }
                 }
-
-                // Re-run embedded artwork extraction if preferSongArtwork is enabled
-                launch {
-                    try {
-                        val preferSongArtwork = appSettings.preferSongArtwork.value
-                        val losslessArtwork = appSettings.isLosslessArtworkActive.value
-                        if (preferSongArtwork) {
-                            delay(2000)
-                            val currentSongs = _songs.value
-                            if (currentSongs.isNotEmpty()) {
-                                val updatedSongs = repository.extractEmbeddedArtworkForSongs(currentSongs, losslessArtwork)
-                                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                                    _songs.value = updatedSongs
-                                }
-                                repository.updateAndPersistSongs(updatedSongs)
-                                Log.d(TAG, "Re-extracted embedded art for ${currentSongs.size} songs after library refresh")
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error re-extracting embedded artwork after refresh", e)
                     }
-                }
 
                 val duration = System.currentTimeMillis() - startTime
                 appSettings.setLastScanTimestamp(System.currentTimeMillis())
@@ -2520,92 +2491,94 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * This removes songs from playlists if they no longer exist on the device OR are blacklisted.
      */
     private fun refreshPlaylists(preserveMissingSongs: Boolean = false) {
-        Log.d(TAG, "Refreshing playlists...")
-        val currentSongs = _songs.value
-
-        if (currentSongs.isEmpty()) {
-            Log.w(TAG, "Skipping refreshPlaylists() — songs list is empty (library not yet loaded or scan in progress)")
-            return
-        }
-
-        val currentSongsMap = currentSongs.associateBy { it.id }
-        val currentSongsByStableKey = currentSongs.associateBy { playlistSongStableKey(it) }
-        val currentSongsByStableKeyMed = currentSongs.associateBy { playlistSongStableKeyMed(it) }
-        val currentSongsByStableKeyLight = currentSongs.associateBy { playlistSongStableKeyLight(it) }
-        val currentSongsByStableKeyBasic = currentSongs.associateBy { playlistSongStableKeyBasic(it) }
-
-        val filteredSongsValue = filteredSongs.value
-        val filteredSongsSet: Set<String> = if (filteredSongsValue.isEmpty()) {
-            Log.w(TAG, "filteredSongs is empty while songs list has ${currentSongs.size} entries — using full songs list as fallback to prevent playlist wipe")
-            currentSongs.map { it.id }.toSet()
-        } else {
-            filteredSongsValue.map { it.id }.toSet()
-        }
+        viewModelScope.launch(Dispatchers.IO) {
+                Log.d(TAG, "Refreshing playlists...")
+                val currentSongs = _songs.value
         
-        _playlists.value = _playlists.value.map { playlist ->
-            var remappedByStableKey = 0
-            var preservedMissing = 0
-
-            val updatedSongs = playlist.songs.mapNotNull { playlistSong ->
-                val isStreaming = playlistSong.uri.toString().startsWith("http://") || 
-                                  playlistSong.uri.toString().startsWith("https://") || 
-                                  playlistSong.uri.toString().startsWith("streaming://")
-                
-                if (isStreaming) {
-                    playlistSong
+                if (currentSongs.isEmpty()) {
+                    Log.w(TAG, "Skipping refreshPlaylists() — songs list is empty (library not yet loaded or scan in progress)")
+                    return@launch
+                }
+        
+                val currentSongsMap = currentSongs.associateBy { it.id }
+                val currentSongsByStableKey = currentSongs.associateBy { playlistSongStableKey(it) }
+                val currentSongsByStableKeyMed = currentSongs.associateBy { playlistSongStableKeyMed(it) }
+                val currentSongsByStableKeyLight = currentSongs.associateBy { playlistSongStableKeyLight(it) }
+                val currentSongsByStableKeyBasic = currentSongs.associateBy { playlistSongStableKeyBasic(it) }
+        
+                val filteredSongsValue = filteredSongs.value
+                val filteredSongsSet: Set<String> = if (filteredSongsValue.isEmpty()) {
+                    Log.w(TAG, "filteredSongs is empty while songs list has ${currentSongs.size} entries — using full songs list as fallback to prevent playlist wipe")
+                    currentSongs.map { it.id }.toSet()
                 } else {
-                    val directMatch = currentSongsMap[playlistSong.id]
-                    val resolvedSong = directMatch ?: resolveSongByStableKeys(
-                        playlistSong,
-                        currentSongsByStableKey,
-                        currentSongsByStableKeyMed,
-                        currentSongsByStableKeyLight,
-                        currentSongsByStableKeyBasic
-                    )
-
-                    when {
-                        resolvedSong != null && filteredSongsSet.contains(resolvedSong.id) -> {
-                            if (directMatch == null && resolvedSong.id != playlistSong.id) {
-                                remappedByStableKey++
-                            }
-                            resolvedSong
-                        }
-                        preserveMissingSongs -> {
-                            preservedMissing++
+                    filteredSongsValue.map { it.id }.toSet()
+                }
+                
+                _playlists.value = _playlists.value.map { playlist ->
+                    var remappedByStableKey = 0
+                    var preservedMissing = 0
+        
+                    val updatedSongs = playlist.songs.mapNotNull { playlistSong ->
+                        val isStreaming = playlistSong.uri.toString().startsWith("http://") || 
+                                          playlistSong.uri.toString().startsWith("https://") || 
+                                          playlistSong.uri.toString().startsWith("streaming://")
+                        
+                        if (isStreaming) {
                             playlistSong
+                        } else {
+                            val directMatch = currentSongsMap[playlistSong.id]
+                            val resolvedSong = directMatch ?: resolveSongByStableKeys(
+                                playlistSong,
+                                currentSongsByStableKey,
+                                currentSongsByStableKeyMed,
+                                currentSongsByStableKeyLight,
+                                currentSongsByStableKeyBasic
+                            )
+        
+                            when {
+                                resolvedSong != null && filteredSongsSet.contains(resolvedSong.id) -> {
+                                    if (directMatch == null && resolvedSong.id != playlistSong.id) {
+                                        remappedByStableKey++
+                                    }
+                                    resolvedSong
+                                }
+                                preserveMissingSongs -> {
+                                    preservedMissing++
+                                    playlistSong
+                                }
+                                else -> null
+                            }
                         }
-                        else -> null
+                    }
+        
+                    if (updatedSongs != playlist.songs) {
+                        val removedCount = playlist.songs.size - updatedSongs.size
+                        if (remappedByStableKey > 0) {
+                            Log.d(
+                                TAG,
+                                "Remapped $remappedByStableKey songs by stable key in playlist: ${playlist.name}"
+                            )
+                        }
+                        if (preservedMissing > 0) {
+                            Log.d(
+                                TAG,
+                                "Preserved $preservedMissing unresolved songs in playlist: ${playlist.name}"
+                            )
+                        }
+                        if (removedCount > 0) {
+                            Log.d(
+                                TAG,
+                                "Removed $removedCount missing/filtered songs from playlist: ${playlist.name}"
+                            )
+                        }
+                        playlist.copy(songs = updatedSongs, dateModified = System.currentTimeMillis())
+                    } else {
+                        playlist
                     }
                 }
-            }
-
-            if (updatedSongs != playlist.songs) {
-                val removedCount = playlist.songs.size - updatedSongs.size
-                if (remappedByStableKey > 0) {
-                    Log.d(
-                        TAG,
-                        "Remapped $remappedByStableKey songs by stable key in playlist: ${playlist.name}"
-                    )
-                }
-                if (preservedMissing > 0) {
-                    Log.d(
-                        TAG,
-                        "Preserved $preservedMissing unresolved songs in playlist: ${playlist.name}"
-                    )
-                }
-                if (removedCount > 0) {
-                    Log.d(
-                        TAG,
-                        "Removed $removedCount missing/filtered songs from playlist: ${playlist.name}"
-                    )
-                }
-                playlist.copy(songs = updatedSongs, dateModified = System.currentTimeMillis())
-            } else {
-                playlist
-            }
+                savePlaylists()
+                Log.d(TAG, "Playlists refreshed.")
         }
-        savePlaylists()
-        Log.d(TAG, "Playlists refreshed.")
     }
 
     private fun playlistSongStableKey(song: Song): String {
@@ -2824,13 +2797,17 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
             _restoreResult.value = RestoreResult.Queued
         } else {
-            Log.d(TAG, "No active scan. Applying backup restore immediately.")
-            val success = appSettings.restoreFromBackup(backupJson, sections)
-            if (success) {
-                reloadPlaylistsFromSettings()
-                _restoreResult.value = RestoreResult.Success(wasQueued = false)
-            } else {
-                _restoreResult.value = RestoreResult.Failure("Invalid backup format or corrupted data")
+            Log.d(TAG, "No active scan. Applying non-blocking atomic backup restore.")
+            viewModelScope.launch(Dispatchers.IO) {
+                val success = repository.backupRestoreManager.restoreFromBackupPayload(backupJson, sections)
+                withContext(Dispatchers.Main) {
+                    if (success) {
+                        reloadPlaylistsFromSettings()
+                        _restoreResult.value = RestoreResult.Success(wasQueued = false)
+                    } else {
+                        _restoreResult.value = RestoreResult.Failure("Invalid backup format or corrupted data")
+                    }
+                }
             }
         }
     }
@@ -3302,6 +3279,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         fetchArtists: Boolean = true,
         fetchAlbumsAndSongs: Boolean = true
     ) = withContext(Dispatchers.IO) {
+        if (!appSettings.isAutoFetchArtworkActive.value) {
+            Log.d(TAG, "isAutoFetchArtworkActive is disabled, skipping internet artwork fetch")
+            return@withContext
+        }
         try {
             if (fetchArtists) {
                 Log.d(TAG, "Fetching artist images from internet")
@@ -3311,10 +3292,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 for (batch in missingArtists.chunked(chunkSize)) {
                     val updatedArtists = repository.fetchArtistImages(batch)
                     if (updatedArtists.isNotEmpty()) {
-                        val artistMap = updatedArtists.associateBy { it.id }
-                        _artists.value = _artists.value.map { artist ->
-                            artistMap[artist.id] ?: artist
-                        }
+                        val artistMap: Map<String, Artist> = updatedArtists.associateBy { a: Artist -> a.id }
+                        _artists.value = _artists.value.map { artist: Artist -> artistMap[artist.id] ?: artist }
                         Log.d(TAG, "Updated ${updatedArtists.size} artists with images from internet (batch)")
                     }
                     // Throttle between batches to avoid hitting API rate limits
@@ -3328,20 +3307,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 
                 // Only fetch for a subset of albums to avoid overwhelming the API
                 // Check for albums with genuinely missing or unreadable cover art URIs
-                val albumsToUpdate = _albums.value.filter { album ->
-                    val uri = album.artworkUri
-                    uri == null || (uri.toString().startsWith("content://media/external/audio/albumart") && !isContentUriReadable(context, uri))
-                }.take(10)
+                val albumsToUpdate = _albums.value.filter { it.artworkUri == null }.take(10)
                 
                 Log.d(TAG, "Found ${albumsToUpdate.size} albums that genuinely need artwork out of ${_albums.value.size} total albums")
                 if (albumsToUpdate.isNotEmpty()) {
                     Log.d(TAG, "Albums to update: ${albumsToUpdate.map { "${it.artist} - ${it.title}" }}")
                     val updatedAlbums = repository.fetchAlbumArtwork(albumsToUpdate)
                     // Update only the albums we fetched, keeping the rest unchanged
-                    val albumMap = updatedAlbums.associateBy { it.id }
-                    _albums.value = _albums.value.map { 
-                        albumMap[it.id] ?: it 
-                    }
+                    val albumMap: Map<String, Album> = updatedAlbums.associateBy { a: Album -> a.id }
+                    _albums.value = _albums.value.map { album: Album -> albumMap[album.id] ?: album }
                     Log.d(TAG, "Updated ${updatedAlbums.size} albums with artwork from internet")
                 } else {
                     Log.d(TAG, "No albums found that need artwork")
@@ -3351,12 +3325,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val songsToUpdate = _songs.value.filter { it.artworkUri == null }.take(40)
                 if (songsToUpdate.isNotEmpty()) {
                     val updatedSongs = repository.fetchTrackArtwork(songsToUpdate)
-                    val songMap = updatedSongs.associateBy { it.id }
-                    val mergedSongs = _songs.value.map { song ->
+                    val songMap: Map<String, Song> = updatedSongs.associateBy { song: Song -> song.id }
+                    val mergedSongs: List<Song> = _songs.value.map { song: Song ->
                         songMap[song.id] ?: song
                     }
                     _songs.value = mergedSongs
-                    Log.d(TAG, "Updated ${updatedSongs.count { it.artworkUri != null }} songs with fallback artwork")
+                    Log.d(TAG, "Updated ${updatedSongs.count { s: Song -> s.artworkUri != null }} songs with fallback artwork")
                     // Persist the updated songs list so artwork edits survive restarts.
                     repository.updateAndPersistSongs(mergedSongs)
                 } else {
@@ -3375,7 +3349,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val artist = _artists.value.find { it.id == artistId } ?: return@launch
             try {
-                val updatedArtists = repository.fetchArtistImages(listOf(artist))
+                val updatedArtists = repository.fetchArtistImages(listOf<Artist>(artist))
                 if (updatedArtists.isNotEmpty()) {
                     val updatedArtist = updatedArtists.first()
                     _artists.value = _artists.value.map { 
@@ -3395,7 +3369,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val album = _albums.value.find { it.id == albumId } ?: return@launch
             try {
-                val updatedAlbums = repository.fetchAlbumArtwork(listOf(album))
+                val updatedAlbums = repository.fetchAlbumArtwork(listOf<Album>(album))
                 if (updatedAlbums.isNotEmpty()) {
                     val updatedAlbum = updatedAlbums.first()
                     _albums.value = _albums.value.map { 
@@ -6396,8 +6370,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             val newPlaylist = repository.createPlaylist(name)
             var updatedPlaylist = newPlaylist
             if (songs.isNotEmpty()) {
-                val filteredSongsSet = filteredSongs.value.map { it.id }.toSet()
-                val existingSongIds = newPlaylist.songs.map { it.id }.toSet()
+                val filteredSongsSet: Set<String> = filteredSongs.value.map { song: Song -> song.id }.toSet()
+                val existingSongIds: Set<String> = newPlaylist.songs.map { song: Song -> song.id }.toSet()
                 val songsToAdd = songs.filter { song ->
                     val isStreaming = song.uri.toString().startsWith("http://") || 
                                       song.uri.toString().startsWith("https://") || 
@@ -6427,7 +6401,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addSongToPlaylist(song: Song, playlistId: String, showSnackbar: (String) -> Unit) {
         // Check if song is filtered out (blacklisted or not whitelisted)
-        val filteredSongsSet = filteredSongs.value.map { it.id }.toSet()
+        val filteredSongsSet: Set<String> = filteredSongs.value.map { song: Song -> song.id }.toSet()
         val isStreaming = song.uri.toString().startsWith("http://") || 
                           song.uri.toString().startsWith("https://") || 
                           song.uri.toString().startsWith("streaming://") ||
@@ -6468,7 +6442,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Returns a result with success count and playlist name
      */
     fun addSongsToPlaylist(songs: List<Song>, playlistId: String): Pair<Int, String> {
-        val filteredSongsSet = filteredSongs.value.map { it.id }.toSet()
+        val filteredSongsSet: Set<String> = filteredSongs.value.map { song: Song -> song.id }.toSet()
         var successCount = 0
         var playlistName = ""
         
@@ -9523,7 +9497,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         mediaController?.release()
         controllerFuture?.let { future ->
             MediaController.releaseFuture(future)
-        }
-    }
-    
+}
+
+}
 }

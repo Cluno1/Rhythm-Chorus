@@ -581,7 +581,7 @@ class AppSettings private constructor(context: Context) {
     }
     
     private val context: Context = context.applicationContext
-    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun setInitialSettingsSubroute(route: String?) {
         prefs.edit().putString(KEY_INITIAL_SETTINGS_SUBROUTE, route).apply()
@@ -4165,7 +4165,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             key == KEY_SONG_CUSTOM_LRC_FILES
     }
 
-    private fun isRhythmGuardTransientRuntimeKey(key: String): Boolean {
+    fun isRhythmGuardTransientRuntimeKey(key: String): Boolean {
         return key == KEY_RHYTHM_GUARD_TIMEOUT_UNTIL_MS ||
             key == KEY_RHYTHM_GUARD_TIMEOUT_REASON ||
             key == KEY_RHYTHM_GUARD_TIMEOUT_STARTED_AT_MS ||
@@ -4173,7 +4173,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             key == KEY_RHYTHM_GUARD_NEXT_ALLOWED_LIMIT_MINUTES
     }
 
-    private fun isStatsAndRhythmGuardBackupKey(key: String): Boolean {
+    fun isStatsAndRhythmGuardBackupKey(key: String): Boolean {
         if (isRhythmGuardTransientRuntimeKey(key)) {
             return false
         }
@@ -4204,7 +4204,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             key.startsWith("rhythm_aura_")
     }
 
-    private fun shouldIncludeKeyInBackupSections(
+    fun shouldIncludeKeyInBackupSections(
         key: String,
         sections: BackupRestoreSections
     ): Boolean {
@@ -4722,7 +4722,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         }
     }
 
-    private fun applyBackupPreferenceValue(
+    fun applyBackupPreferenceValue(
         editor: SharedPreferences.Editor,
         key: String,
         value: Any?,
