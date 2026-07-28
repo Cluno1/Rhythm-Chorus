@@ -81,6 +81,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import kotlinx.coroutines.withTimeoutOrNull
+import androidx.room.withTransaction
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import chromahub.rhythm.app.features.local.data.database.RhythmDatabase
 import chromahub.rhythm.app.features.local.data.database.entity.PlaylistEntity
 import chromahub.rhythm.app.features.local.data.database.entity.PlaylistSongEntity
 import java.time.Duration
@@ -454,6 +458,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     // Sync the Liked playlist with the current favorite song IDs
     private suspend fun syncLikedPlaylistWithFavorites(favoriteIds: Set<String>) {
         try {
+            if (!isPlaylistsLoaded) {
+                Log.w(TAG, "Skipping syncLikedPlaylistWithFavorites — playlists have not finished loading")
+                return
+            }
             // Update the Liked playlist directory without losing existing custom song order
             _playlists.value = _playlists.value.map { playlist ->
                 if (playlist.id == "1") {
@@ -845,6 +853,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _playlists = MutableStateFlow<List<Playlist>>(emptyList())
     val playlists: StateFlow<List<Playlist>> = _playlists.asStateFlow()
+    @Volatile
+    private var isPlaylistsLoaded = false
+    private val playlistLock = Mutex()
 
     // Use audioDeviceManager for locations instead of the mock data
     val locations = audioDeviceManager.availableDevices
@@ -1493,7 +1504,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         try {
-            loadSavedPlaylists()
+            loadSavedPlaylistsInternal()
         } catch (e: Exception) {
             Log.e(TAG, "Error loading saved playlists", e)
             allSuccess = false
@@ -1503,6 +1514,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
     
     private suspend fun populateDefaultPlaylistsSafely() {
+        // Ensure playlists are loaded from Room DB first before populating defaults
+        loadSavedPlaylistsInternal()
+
         // Only populate if default playlists are enabled
         if (!appSettings.defaultPlaylistsEnabled.value) {
             Log.d(TAG, "Default playlists are disabled, skipping population")
@@ -1534,7 +1548,6 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         try {
-            loadSavedPlaylists()
             syncLikedPlaylistWithFavorites(_favoriteSongs.value)
             populateRecentlyAddedPlaylist()
             populateMostPlayedPlaylist()
@@ -2495,7 +2508,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Refreshes all playlists by re-validating their songs against the currently available songs.
      * This removes songs from playlists if they no longer exist on the device OR are blacklisted.
      */
-    private fun refreshPlaylists(preserveMissingSongs: Boolean = false) {
+    private fun refreshPlaylists(preserveMissingSongs: Boolean = true) {
         viewModelScope.launch(Dispatchers.IO) {
                 Log.d(TAG, "Refreshing playlists...")
                 val currentSongs = _songs.value
@@ -2885,6 +2898,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun ensurePlaylistsSaved() {
         try {
+            if (!isPlaylistsLoaded) {
+                Log.w(TAG, "ensurePlaylistsSaved skipped because playlists are not loaded")
+                return
+            }
             runBlocking(Dispatchers.IO) {
                 savePlaylistsToRoom(_playlists.value)
             }
@@ -2902,7 +2919,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun loadSavedPlaylistsInternal() {
-        try {
+        playlistLock.withLock {
+            try {
                 val playlistDao = repository.playlistDao
                 val defaultPlaylistsEnabled = appSettings.defaultPlaylistsEnabled.value
                 var dbPlaylists = playlistDao.getAllPlaylists()
@@ -3133,6 +3151,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 
                 withContext(Dispatchers.Main) {
                     _playlists.value = playlists
+                    isPlaylistsLoaded = true
                     
                     val favoriteSongsJson = appSettings.favoriteSongs.value
                     if (favoriteSongsJson != null) {
@@ -3163,9 +3182,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             )
                         }
                     }
+                    isPlaylistsLoaded = true
                     _favoriteSongs.value = emptySet()
                 }
             }
+        }
     }
     
     /**
@@ -3228,70 +3249,83 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun savePlaylistsToRoom(currentPlaylists: List<Playlist> = _playlists.value) {
-        try {
-            val playlistDao = repository.playlistDao
-            
-            val dbPlaylists = playlistDao.getAllPlaylists()
-            val currentPlaylistIds = currentPlaylists.map { it.id }.toSet()
-            
-            dbPlaylists.forEach { dbPlaylist ->
-                if (!currentPlaylistIds.contains(dbPlaylist.id)) {
-                    playlistDao.deletePlaylistById(dbPlaylist.id)
-                    playlistDao.deleteSongsFromPlaylist(dbPlaylist.id)
-                    Log.d(TAG, "Deleted playlist ID ${dbPlaylist.id} from Room")
-                }
-            }
-            
-            currentPlaylists.forEach { playlist ->
-                val entity = PlaylistEntity(
-                    id = playlist.id,
-                    name = playlist.name,
-                    dateCreated = playlist.dateCreated,
-                    dateModified = playlist.dateModified,
-                    artworkUri = playlist.artworkUri?.toString()
-                )
-                playlistDao.insertPlaylist(entity)
+        if (!isPlaylistsLoaded) {
+            Log.w(TAG, "Skipping savePlaylistsToRoom — playlists have not finished loading yet")
+            return
+        }
+        if (currentPlaylists.isEmpty()) {
+            Log.w(TAG, "Skipping savePlaylistsToRoom — currentPlaylists list is empty")
+            return
+        }
+        playlistLock.withLock {
+            try {
+                val roomDb = RhythmDatabase.getInstance(getApplication())
+                val playlistDao = repository.playlistDao
                 
-                val songEntities = playlist.songs.mapIndexed { index, song ->
-                    PlaylistSongEntity(
-                        playlistId = playlist.id,
-                        songId = song.id,
-                        orderIndex = index
-                    )
-                }
-                playlistDao.updatePlaylistSongs(playlist.id, songEntities)
+                roomDb.withTransaction {
+                    val dbPlaylists = playlistDao.getAllPlaylists()
+                    val currentPlaylistIds = currentPlaylists.map { it.id }.toSet()
+                    
+                    dbPlaylists.forEach { dbPlaylist ->
+                        if (!currentPlaylistIds.contains(dbPlaylist.id)) {
+                            playlistDao.deletePlaylistById(dbPlaylist.id)
+                            playlistDao.deleteSongsFromPlaylist(dbPlaylist.id)
+                            Log.d(TAG, "Deleted playlist ID ${dbPlaylist.id} from Room")
+                        }
+                    }
+                    
+                    currentPlaylists.forEach { playlist ->
+                        val entity = PlaylistEntity(
+                            id = playlist.id,
+                            name = playlist.name,
+                            dateCreated = playlist.dateCreated,
+                            dateModified = playlist.dateModified,
+                            artworkUri = playlist.artworkUri?.toString()
+                        )
+                        playlistDao.insertPlaylist(entity)
+                        
+                        val songEntities = playlist.songs.mapIndexed { index, song ->
+                            PlaylistSongEntity(
+                                playlistId = playlist.id,
+                                songId = song.id,
+                                orderIndex = index
+                            )
+                        }
+                        playlistDao.updatePlaylistSongs(playlist.id, songEntities)
 
-                val dbSongEntities = playlist.songs.map { song ->
-                    chromahub.rhythm.app.features.local.data.database.entity.SongEntity(
-                        id = song.id,
-                        title = song.title,
-                        artist = song.artist,
-                        album = song.album,
-                        albumId = song.albumId,
-                        duration = song.duration,
-                        uri = song.uri.toString(),
-                        artworkUri = song.artworkUri?.toString(),
-                        trackNumber = song.trackNumber,
-                        year = song.year,
-                        genre = song.genre,
-                        dateAdded = song.dateAdded,
-                        dateModified = song.dateModified,
-                        albumArtist = song.albumArtist,
-                        bitrate = song.bitrate,
-                        sampleRate = song.sampleRate,
-                        channels = song.channels,
-                        codec = song.codec,
-                        discNumber = song.discNumber,
-                        path = song.path
-                    )
+                        val dbSongEntities = playlist.songs.map { song ->
+                            chromahub.rhythm.app.features.local.data.database.entity.SongEntity(
+                                id = song.id,
+                                title = song.title,
+                                artist = song.artist,
+                                album = song.album,
+                                albumId = song.albumId,
+                                duration = song.duration,
+                                uri = song.uri.toString(),
+                                artworkUri = song.artworkUri?.toString(),
+                                trackNumber = song.trackNumber,
+                                year = song.year,
+                                genre = song.genre,
+                                dateAdded = song.dateAdded,
+                                dateModified = song.dateModified,
+                                albumArtist = song.albumArtist,
+                                bitrate = song.bitrate,
+                                sampleRate = song.sampleRate,
+                                channels = song.channels,
+                                codec = song.codec,
+                                discNumber = song.discNumber,
+                                path = song.path
+                            )
+                        }
+                        if (dbSongEntities.isNotEmpty()) {
+                            repository.songDao.upsertAll(dbSongEntities)
+                        }
+                    }
                 }
-                if (dbSongEntities.isNotEmpty()) {
-                    repository.songDao.upsertAll(dbSongEntities)
-                }
+                Log.d(TAG, "Successfully saved ${currentPlaylists.size} playlists to Room")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error saving playlists to Room", e)
             }
-            Log.d(TAG, "Successfully saved ${currentPlaylists.size} playlists to Room")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error saving playlists to Room", e)
         }
     }
 
@@ -6346,6 +6380,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun populateRecentlyAddedPlaylist() {
+        if (!isPlaylistsLoaded) {
+            Log.w(TAG, "Skipping populateRecentlyAddedPlaylist — playlists not loaded yet")
+            return
+        }
         val recentlyAddedPlaylist = _playlists.value.find { it.id == "2" && it.name == "Recently Added" }
         if (recentlyAddedPlaylist == null) {
             Log.e(TAG, "Recently Added playlist not found, cannot populate.")
@@ -6371,6 +6409,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Populates the "Most Played" playlist based on song play counts.
      */
     private suspend fun populateMostPlayedPlaylist() {
+        if (!isPlaylistsLoaded) {
+            Log.w(TAG, "Skipping populateMostPlayedPlaylist — playlists not loaded yet")
+            return
+        }
         val mostPlayedPlaylist = _playlists.value.find { it.id == "3" && it.name == "Most Played" }
         if (mostPlayedPlaylist == null) {
             Log.e(TAG, "Most Played playlist not found, cannot populate.")
