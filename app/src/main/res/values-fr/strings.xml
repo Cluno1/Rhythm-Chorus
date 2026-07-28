@@ -2909,4 +2909,16 @@
     <string name="settings_notification_preview_subtitle">Aperçu du style des notifications multimédias dans le volet des notifications</string>
     <string name="onboarding_integration_wikipedia">Wikipédia</string>
     <string name="onboarding_integration_wikipedia_desc">Récupérer les informations et les descriptions des albums pour la rubrique « À propos »</string>
+    <string name="settings_artist_artwork_source">Source de l\'image de l\'artiste</string>
+    <string name="settings_artist_artwork_source_desc">Choisissez la source de votre choix pour les illustrations de l\'artiste</string>
+    <string name="settings_artist_artwork_source_prefer_local">Privilégier l\'image locale, puis l\'API</string>
+    <string name="settings_artist_artwork_source_prefer_local_desc">Rechercher d\'abord les pochettes de dossiers locaux (artiste.jpg/groupe.jpg), puis utiliser l\'API Deezer en ligne à défaut</string>
+    <string name="settings_artist_artwork_source_local_only">Images locales uniquement</string>
+    <string name="settings_artist_artwork_source_local_only_desc">N\'utilisez que les visuels du dossier local (artist.jpg/band.jpg) et les images enregistrées localement</string>
+    <string name="settings_artist_artwork_source_api_only">API en ligne uniquement (Deezer)</string>
+    <string name="settings_artist_artwork_source_api_only_desc">Récupérer les illustrations des artistes exclusivement via l\'API en ligne de Deezer</string>
+    <string name="settings_artist_artwork_source_disabled">Désactivé</string>
+    <string name="settings_artist_artwork_source_disabled_desc">Ne pas récupérer ni charger d\'images pour les artistes</string>
+    <string name="exp_track_error_checker">Vérificateur d\'erreurs de piste</string>
+    <string name="exp_track_error_checker_desc">Intercepter les pistes audio corrompues ou illisibles pour éviter les chargements infinis et les boucles de saut automatique</string>
 </resources>
