@@ -72,29 +72,56 @@ class BackupRestoreManager(
             try {
                 val playlistEntities = database.playlistDao().getAllPlaylists()
                 val playlistModels = playlistEntities.map { entity ->
-                    val songs = database.playlistDao().getSongsForPlaylist(entity.id).map { songEntity ->
-                        chromahub.rhythm.app.shared.data.model.Song(
-                            id = songEntity.id,
-                            title = songEntity.title,
-                            artist = songEntity.artist,
-                            album = songEntity.album,
-                            albumId = songEntity.albumId,
-                            duration = songEntity.duration,
-                            uri = android.net.Uri.parse(songEntity.uri),
-                            artworkUri = songEntity.artworkUri?.let { android.net.Uri.parse(it) },
-                            trackNumber = songEntity.trackNumber,
-                            year = songEntity.year,
-                            genre = songEntity.genre,
-                            dateAdded = songEntity.dateAdded,
-                            dateModified = songEntity.dateModified,
-                            albumArtist = songEntity.albumArtist,
-                            bitrate = songEntity.bitrate,
-                            sampleRate = songEntity.sampleRate,
-                            channels = songEntity.channels,
-                            codec = songEntity.codec,
-                            discNumber = songEntity.discNumber,
-                            path = songEntity.path
-                        )
+                    val songIds = database.playlistDao().getSongIdsForPlaylist(entity.id)
+                    val songs = songIds.mapNotNull { songId ->
+                        val songEntity = database.songDao().getSongById(songId)
+                        if (songEntity != null) {
+                            chromahub.rhythm.app.shared.data.model.Song(
+                                id = songEntity.id,
+                                title = songEntity.title,
+                                artist = songEntity.artist,
+                                album = songEntity.album,
+                                albumId = songEntity.albumId,
+                                duration = songEntity.duration,
+                                uri = android.net.Uri.parse(songEntity.uri),
+                                artworkUri = songEntity.artworkUri?.let { android.net.Uri.parse(it) },
+                                trackNumber = songEntity.trackNumber,
+                                year = songEntity.year,
+                                genre = songEntity.genre,
+                                dateAdded = songEntity.dateAdded,
+                                dateModified = songEntity.dateModified,
+                                albumArtist = songEntity.albumArtist,
+                                bitrate = songEntity.bitrate,
+                                sampleRate = songEntity.sampleRate,
+                                channels = songEntity.channels,
+                                codec = songEntity.codec,
+                                discNumber = songEntity.discNumber,
+                                path = songEntity.path
+                            )
+                        } else {
+                            chromahub.rhythm.app.shared.data.model.Song(
+                                id = songId,
+                                title = "Unknown Song",
+                                artist = "<unknown>",
+                                album = "<unknown>",
+                                albumId = "",
+                                duration = 0L,
+                                uri = android.net.Uri.EMPTY,
+                                artworkUri = null,
+                                trackNumber = 0,
+                                year = 0,
+                                genre = null,
+                                dateAdded = System.currentTimeMillis(),
+                                dateModified = System.currentTimeMillis(),
+                                albumArtist = null,
+                                bitrate = null,
+                                sampleRate = null,
+                                channels = null,
+                                codec = null,
+                                discNumber = 1,
+                                path = null
+                            )
+                        }
                     }
                     Playlist(
                         id = entity.id,

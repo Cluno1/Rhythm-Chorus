@@ -5975,9 +5975,10 @@ class MusicRepository(context: Context) {
             // Compare the current MediaStore count with the MediaStore count at the time of the last scan
             val lastScanCount = libraryScanPrefs.getInt("last_scan_mediastore_count", -1)
             if (lastScanCount == -1) {
-                // Fallback: if we do not have the stored count, check against cachedCount as a backup
-                if (mediaStoreCount != cachedCount) {
-                    Log.d(TAG, "Staleness check: MediaStore count ($mediaStoreCount) != cached count ($cachedCount) (no lastScanCount)")
+                // If we do not have the stored count, persist current mediaStoreCount to avoid repeating fallback
+                libraryScanPrefs.edit().putInt("last_scan_mediastore_count", mediaStoreCount).apply()
+                if (cachedCount <= 0) {
+                    Log.d(TAG, "Staleness check: no lastScanCount and cached count is 0")
                     return true
                 }
             } else if (mediaStoreCount != lastScanCount) {

@@ -101,9 +101,12 @@ class MediaScanEngine(
         val seenIds = mutableSetOf<String>()
         val seenPaths = mutableSetOf<String>()
 
+        var rawMediaStoreCount = 0
+
         try {
             context.contentResolver.query(collection, projection, selection, null, sortOrder)?.use { cursor ->
                 val totalCount = cursor.count
+                rawMediaStoreCount = totalCount
                 Log.d(TAG, "MediaStore query found $totalCount candidates")
                 _scanProgress.value = ScanProgress(0, totalCount, ScanPhase.Songs, 0)
 
@@ -275,8 +278,17 @@ class MediaScanEngine(
             }
 
             appSettings.setLastScanTimestamp(System.currentTimeMillis())
-        appSettings.setEmbeddedArtworkExtractionCompleted(true)
-        appSettings.setEmbeddedArtworkExtractionLosslessStatus(appSettings.isLosslessArtworkActive.value)
+            appSettings.setEmbeddedArtworkExtractionCompleted(true)
+            appSettings.setEmbeddedArtworkExtractionLosslessStatus(appSettings.isLosslessArtworkActive.value)
+            try {
+                context.getSharedPreferences("library_scan_metadata", Context.MODE_PRIVATE)
+                    .edit()
+                    .putInt("last_scan_mediastore_count", rawMediaStoreCount)
+                    .apply()
+                Log.d(TAG, "Saved MediaStore count ($rawMediaStoreCount) to library_scan_metadata")
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to save MediaStore count", e)
+            }
 
             val totalDuration = System.currentTimeMillis() - startTime
             Log.d(TAG, "Scan completed: ${scannedSongs.size} songs processed in ${totalDuration}ms")

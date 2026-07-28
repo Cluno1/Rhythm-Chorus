@@ -3260,6 +3260,34 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 }
                 playlistDao.updatePlaylistSongs(playlist.id, songEntities)
+
+                val dbSongEntities = playlist.songs.map { song ->
+                    chromahub.rhythm.app.features.local.data.database.entity.SongEntity(
+                        id = song.id,
+                        title = song.title,
+                        artist = song.artist,
+                        album = song.album,
+                        albumId = song.albumId,
+                        duration = song.duration,
+                        uri = song.uri.toString(),
+                        artworkUri = song.artworkUri?.toString(),
+                        trackNumber = song.trackNumber,
+                        year = song.year,
+                        genre = song.genre,
+                        dateAdded = song.dateAdded,
+                        dateModified = song.dateModified,
+                        albumArtist = song.albumArtist,
+                        bitrate = song.bitrate,
+                        sampleRate = song.sampleRate,
+                        channels = song.channels,
+                        codec = song.codec,
+                        discNumber = song.discNumber,
+                        path = song.path
+                    )
+                }
+                if (dbSongEntities.isNotEmpty()) {
+                    repository.songDao.upsertAll(dbSongEntities)
+                }
             }
             Log.d(TAG, "Successfully saved ${currentPlaylists.size} playlists to Room")
         } catch (e: Exception) {
@@ -6438,6 +6466,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         savePlaylists()
         if (success) {
+            if (playlistId == "1") {
+                val currentFavorites = _favoriteSongs.value.toMutableSet()
+                if (!currentFavorites.contains(song.id)) {
+                    currentFavorites.add(song.id)
+                    _favoriteSongs.value = currentFavorites
+                    if (_currentSong.value?.id == song.id) {
+                        _isFavorite.value = true
+                    }
+                    saveFavoriteSongs()
+                    notifyMediaServiceFavoriteChange()
+                }
+            }
             Log.d(TAG, "Added song to playlist: ${song.title}")
         }
     }
@@ -6483,6 +6523,19 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         
         if (successCount > 0) {
             savePlaylists()
+            if (playlistId == "1") {
+                val currentFavorites = _favoriteSongs.value.toMutableSet()
+                val targetPlaylist = _playlists.value.find { it.id == "1" }
+                if (targetPlaylist != null) {
+                    currentFavorites.addAll(targetPlaylist.songs.map { it.id })
+                    _favoriteSongs.value = currentFavorites
+                    if (_currentSong.value != null && currentFavorites.contains(_currentSong.value?.id)) {
+                        _isFavorite.value = true
+                    }
+                    saveFavoriteSongs()
+                    notifyMediaServiceFavoriteChange()
+                }
+            }
             Log.d(TAG, "Added $successCount songs to playlist: $playlistName")
         }
         
@@ -6510,6 +6563,16 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         savePlaylists()
         if (success) {
+            if (playlistId == "1") {
+                val currentFavorites = _favoriteSongs.value.toMutableSet()
+                currentFavorites.remove(song.id)
+                _favoriteSongs.value = currentFavorites
+                if (_currentSong.value?.id == song.id) {
+                    _isFavorite.value = false
+                }
+                saveFavoriteSongs()
+                notifyMediaServiceFavoriteChange()
+            }
             Log.d(TAG, "Removed song from playlist: ${song.title}")
         } else {
             Log.d(TAG, "Song '${song.title}' not found in playlist '$playlistId' for removal.")
@@ -6556,6 +6619,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
         savePlaylists()
+        if (playlistId == "1") {
+            val newFavoriteIds = newSongList.map { it.id }.toSet()
+            _favoriteSongs.value = newFavoriteIds
+            if (_currentSong.value != null) {
+                _isFavorite.value = newFavoriteIds.contains(_currentSong.value?.id)
+            }
+            saveFavoriteSongs()
+            notifyMediaServiceFavoriteChange()
+        }
         Log.d(TAG, "Updated song list for playlist: $playlistId")
     }
 
