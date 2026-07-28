@@ -165,17 +165,20 @@ fun NearbyServerDiscoverySheet(
                             
                             try {
                                 val json = org.json.JSONObject(responseJson)
-                                val address = json.optString("Address")
-                                val name = json.optString("Name")
-                                if (!address.isNullOrBlank()) {
+                                val rawAddress = json.optString("Address", "").trim()
+                                val name = json.optString("Name", "").trim()
+                                val pktHost = receivePacket.address.hostAddress ?: ""
+                                if (pktHost.isNotBlank()) {
+                                    val formattedPktHost = if (pktHost.contains(":") && !pktHost.startsWith("[")) "[$pktHost]" else pktHost
+                                    val finalUrl = if (rawAddress.isNotBlank()) rawAddress else "http://$formattedPktHost:8096"
                                     withContext(Dispatchers.Main) {
-                                        if (discoveredServers.none { it.url == address }) {
+                                        if (discoveredServers.none { it.url == finalUrl }) {
                                             discoveredServers.add(
                                                 DiscoveredServer(
-                                                    name = if (name.isNullOrBlank()) "Jellyfin Server" else name,
-                                                    host = receivePacket.address.hostAddress ?: "",
+                                                    name = if (name.isBlank()) "Jellyfin Server" else name,
+                                                    host = pktHost,
                                                     port = 8096,
-                                                    url = address,
+                                                    url = finalUrl,
                                                     type = "Jellyfin"
                                                 )
                                             )
@@ -292,10 +295,11 @@ fun NearbyServerDiscoverySheet(
                         // Skip non-matching services for HTTP fallback to reduce noise
                         if (type.startsWith("_http._tcp")) {
                             val name = serviceInfo.serviceName?.lowercase() ?: ""
+                            val port = serviceInfo.port
                             val isJellyfinMatch = upperServiceId == StreamingServiceId.JELLYFIN && 
-                                (name.contains("jellyfin") || name.contains("emby"))
+                                (port == 8096 || name.contains("jellyfin") || name.contains("emby") || name.contains("media") || name.contains("server") || name.contains("arch"))
                             val isSubsonicMatch = upperServiceId == StreamingServiceId.SUBSONIC && 
-                                (name.contains("subsonic") || name.contains("navidrome") || name.contains("airsonic") || name.contains("music"))
+                                (port == 4533 || port == 4040 || name.contains("subsonic") || name.contains("navidrome") || name.contains("airsonic") || name.contains("music") || name.contains("server"))
                             
                             if (!isJellyfinMatch && !isSubsonicMatch) {
                                 return

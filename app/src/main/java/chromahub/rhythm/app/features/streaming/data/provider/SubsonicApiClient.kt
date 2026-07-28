@@ -855,7 +855,7 @@ class SubsonicApiClient(context: Context) {
         if (trimmed.startsWith("http://", true) || trimmed.startsWith("https://", true)) {
             return trimmed
         }
-        return "https://$trimmed"
+        return "http://$trimmed"
     }
 
     private fun validateServerUrl(url: String): String? {
@@ -864,19 +864,32 @@ class SubsonicApiClient(context: Context) {
             return "Server URL must not contain embedded credentials"
         }
 
-        if (!parsed.isHttps && !isPrivateHost(parsed.host)) {
-            return "Use https:// for remote Subsonic/Navidrome servers"
-        }
-
         return null
     }
 
     private fun isPrivateHost(host: String): Boolean {
-        if (host.equals("localhost", true) || host.endsWith(".local", true)) {
+        val lowerHost = host.lowercase()
+        if (lowerHost == "localhost" ||
+            lowerHost.endsWith(".local") ||
+            lowerHost.endsWith(".localdomain") ||
+            lowerHost.endsWith(".lan") ||
+            lowerHost.endsWith(".home") ||
+            lowerHost.endsWith(".home.arpa") ||
+            lowerHost.endsWith(".ts.net") ||
+            lowerHost.endsWith(".mesh") ||
+            lowerHost.endsWith(".internal") ||
+            lowerHost.endsWith(".host") ||
+            lowerHost.endsWith(".priv") ||
+            !lowerHost.contains(".")
+        ) {
             return true
         }
 
-        val parts = host.split('.')
+        if (lowerHost == "::1" || lowerHost.startsWith("fe80:") || lowerHost.startsWith("fd") || lowerHost.startsWith("fc")) {
+            return true
+        }
+
+        val parts = lowerHost.split('.')
         if (parts.size != 4) return false
         val octets = parts.map { it.toIntOrNull() ?: return false }
 
@@ -886,7 +899,8 @@ class SubsonicApiClient(context: Context) {
         return first == 10 ||
             (first == 172 && second in 16..31) ||
             (first == 192 && second == 168) ||
-            (first == 127)
+            (first == 127) ||
+            (first == 100 && second in 64..127)
     }
 
     private companion object {
