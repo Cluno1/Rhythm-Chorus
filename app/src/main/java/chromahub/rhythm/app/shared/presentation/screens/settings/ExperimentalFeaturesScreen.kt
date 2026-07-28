@@ -238,6 +238,13 @@ fun ExperimentalFeaturesScreen(
                     title = context.getString(R.string.exp_developer_debugging),
                     items = listOf(
                         SettingItem(
+                            MaterialSymbolIcon("running_with_errors"),
+                            context.getString(R.string.exp_track_error_checker),
+                            context.getString(R.string.exp_track_error_checker_desc),
+                            toggleState = appSettings.trackErrorCheckerEnabled.collectAsState().value,
+                            onToggleChange = { appSettings.setTrackErrorCheckerEnabled(it) }
+                        ),
+                        SettingItem(
                             RhythmIcons.Code,
                             context.getString(R.string.exp_codec_monitoring),
                             context.getString(R.string.exp_codec_monitoring_desc),

@@ -347,6 +347,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_USE_CUSTOM_COMMAND_BUTTONS = "use_custom_command_buttons"
         private const val KEY_SCRUBBING_MODE_ENABLED = "scrubbing_mode_enabled"
         private const val KEY_STUCK_PLAYER_DETECTION_ENABLED = "stuck_player_detection_enabled"
+        private const val KEY_TRACK_ERROR_CHECKER_ENABLED = "track_error_checker_enabled"
         
         // Festive Theme Settings
         private const val KEY_FESTIVE_THEME_ENABLED = "festive_theme_enabled"
@@ -1684,6 +1685,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     val festiveSnowflakeArea: StateFlow<String> = _festiveSnowflakeArea.asStateFlow()
     
     // Developer & Debugging Settings
+    private val _trackErrorCheckerEnabled = MutableStateFlow(prefs.getBoolean(KEY_TRACK_ERROR_CHECKER_ENABLED, true))
+    val trackErrorCheckerEnabled: StateFlow<Boolean> = _trackErrorCheckerEnabled.asStateFlow()
+
     private val _codecMonitoringEnabled = MutableStateFlow(prefs.getBoolean("codec_monitoring_enabled", false))
     val codecMonitoringEnabled: StateFlow<Boolean> = _codecMonitoringEnabled.asStateFlow()
     
@@ -3490,6 +3494,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setAudioDeviceLoggingEnabled(enabled: Boolean) {
         prefs.edit().putBoolean("audio_device_logging_enabled", enabled).apply()
         _audioDeviceLoggingEnabled.value = enabled
+    }
+    
+    fun setTrackErrorCheckerEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_TRACK_ERROR_CHECKER_ENABLED, enabled).apply()
+        _trackErrorCheckerEnabled.value = enabled
     }
     
     // Media3 1.9.0 Feature Methods

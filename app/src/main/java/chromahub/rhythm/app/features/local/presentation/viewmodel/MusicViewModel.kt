@@ -3696,9 +3696,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private val playerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
             Log.e(TAG, "Player error encountered in ViewModel: ${error.message}", error)
-            _corruptedTrackName.value = _currentSong.value?.title ?: "Unknown Song"
-            _corruptedTrackMessage.value = "The player encountered a playback error: ${error.message ?: "Unknown error"}"
-            _showCorruptionDialog.value = true
+            if (appSettings.trackErrorCheckerEnabled.value) {
+                _corruptedTrackName.value = _currentSong.value?.title ?: "Unknown Song"
+                _corruptedTrackMessage.value = "The player encountered a playback error: ${error.message ?: "Unknown error"}"
+                _showCorruptionDialog.value = true
+            }
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {

@@ -1311,10 +1311,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         Log.e(TAG, "Playback error: $message", error)
         
         // Prevent auto skip and looping loading on corrupted songs by pausing/stopping the player
-        try {
-            player.pause()
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to pause player on error", e)
+        if (appSettings.trackErrorCheckerEnabled.value) {
+            try {
+                player.pause()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to pause player on error", e)
+            }
         }
     }
 

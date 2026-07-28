@@ -1752,6 +1752,8 @@
     <string name="exp_codec_monitoring">Codec Monitoring</string>
     <string name="exp_codec_monitoring_desc">Log audio codec and format info for debugging</string>
     <string name="exp_developer_debugging">Developer &amp; Debugging</string>
+    <string name="exp_track_error_checker">Track Error Checker</string>
+    <string name="exp_track_error_checker_desc">Intercept corrupted or unreadable audio tracks to prevent infinite loading and auto-skip loops</string>
     <string name="exp_launch_onboarding">Launch Rhythm Tour</string>
     <string name="exp_launch_onboarding_desc">Reset and relaunch the Rhythm Tour experience</string>
     <string name="exp_test_crash">Test Crash</string>
