@@ -537,6 +537,8 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_ART_OVERLAY_INTENSITY = "player_art_overlay_intensity" // Float 0.0-1.0
         private const val KEY_PLAYER_LYRICS_OVERLAY_TYPE = "player_lyrics_overlay_type" // 0=Gradient, 1=Blur
         private const val KEY_PLAYER_LYRICS_OVERLAY_INTENSITY = "player_lyrics_overlay_intensity" // Float 0.0-1.0
+        private const val KEY_PLAYER_CANVAS_BACKGROUND_ENABLED = "player_canvas_background_enabled" // Always show canvas-style background
+        private const val KEY_PLAYER_GLASS_INTENSITY = "player_glass_intensity" // Float 0.0-2.0, glass effect opacity multiplier
         private const val KEY_PLAYER_LYRICS_TRANSITION = "player_lyrics_transition" // 0=SlideVertical, 1=Fade, 2=Scale, 3=SlideHorizontal
         private const val KEY_PLAYER_LYRICS_TEXT_SIZE = "player_lyrics_text_size" // Float sp multiplier, default 1.0
         private const val KEY_PLAYER_LYRICS_ALIGNMENT = "player_lyrics_alignment" // "CENTER", "START", "END"
@@ -5178,6 +5180,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _playerLyricsOverlayType.value = prefs.getInt(KEY_PLAYER_LYRICS_OVERLAY_TYPE, 0)
         _playerLyricsOverlayIntensity.value = prefs.getFloat(KEY_PLAYER_LYRICS_OVERLAY_INTENSITY, 0.1f)
         _playerLyricsTransition.value = prefs.getInt(KEY_PLAYER_LYRICS_TRANSITION, 2) // 2 = Scale
+        _playerGlassIntensity.value = prefs.getFloat(KEY_PLAYER_GLASS_INTENSITY, 1.0f)
         _playerLyricsTextSize.value = prefs.getFloat(KEY_PLAYER_LYRICS_TEXT_SIZE, 1.0f)
         _playerLyricsAlignment.value = prefs.getString(KEY_PLAYER_LYRICS_ALIGNMENT, "CENTER") ?: "CENTER"
         _playerShowArtBelowLyrics.value = prefs.getBoolean(KEY_PLAYER_SHOW_ART_BELOW_LYRICS, true)
@@ -5581,6 +5584,19 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         prefs.edit().putBoolean(KEY_PLAYER_SHOW_GRADIENT_OVERLAY, value).apply()
     }
 
+    private val _playerCanvasBackgroundEnabled = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_CANVAS_BACKGROUND_ENABLED, false))
+    val playerCanvasBackgroundEnabled: StateFlow<Boolean> = _playerCanvasBackgroundEnabled.asStateFlow()
+    fun setPlayerCanvasBackgroundEnabled(enabled: Boolean) {        prefs.edit().putBoolean(KEY_PLAYER_CANVAS_BACKGROUND_ENABLED, enabled).apply()
+        _playerCanvasBackgroundEnabled.value = enabled
+    }
+
+    private val _playerGlassIntensity = MutableStateFlow(prefs.getFloat(KEY_PLAYER_GLASS_INTENSITY, 1.0f))
+    val playerGlassIntensity: StateFlow<Float> = _playerGlassIntensity.asStateFlow()
+    fun setPlayerGlassIntensity(value: Float) {
+        _playerGlassIntensity.value = value
+        prefs.edit().putFloat(KEY_PLAYER_GLASS_INTENSITY, value).apply()
+    }
+    
     private val _playerArtOverlayType = MutableStateFlow(prefs.getInt(KEY_PLAYER_ART_OVERLAY_TYPE, 0))
     val playerArtOverlayType: StateFlow<Int> = _playerArtOverlayType.asStateFlow()
     fun setPlayerArtOverlayType(value: Int) {
