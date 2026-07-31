@@ -177,7 +177,8 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
     val playerArtworkCornerRadius by appSettings.playerArtworkCornerRadius.collectAsState()
     val playerShowAudioQualityBadges by appSettings.playerShowAudioQualityBadges.collectAsState()
     val expressiveShapesEnabled by appSettings.expressiveShapesEnabled.collectAsState()
-    val playerCanvasBackgroundEnabled by appSettings.playerCanvasBackgroundEnabled.collectAsState()
+    val playerAmbientBackdropEnabled by appSettings.playerAmbientBackdropEnabled.collectAsState()
+    val playerAmbientBackdropIntensity by appSettings.playerAmbientBackdropIntensity.collectAsState()
     val playerGlassIntensity by appSettings.playerGlassIntensity.collectAsState()
 
     // Progress bar settings
@@ -189,7 +190,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
     var showCornerRadiusSheet by remember { mutableStateOf(false) }
     var showPlayerProgressStyleSheet by remember { mutableStateOf(false) }
     var showPlayerThumbStyleSheet by remember { mutableStateOf(false) }
-    var showGlassIntensitySheet by remember { mutableStateOf(false) }
+    var showAmbientIntensitySheet by remember { mutableStateOf(false) }
 
     CollapsibleHeaderScreen(
         title = context.getString(R.string.settings_player),
@@ -323,10 +324,10 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             hapticFeedback = haptics,
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("blur_on"),
-                                title = "Canvas background",
-                                description = if (isExpressiveActive) "Show blurred artwork background with motion canvas video when available" else "Expressive player only",
-                                toggleState = playerCanvasBackgroundEnabled,
-                                onToggleChange = { appSettings.setPlayerCanvasBackgroundEnabled(it) },
+                                title = "Ambient backdrop",
+                                description = if (isExpressiveActive) "Show artwork-derived ambient background behind controls" else "Expressive player only",
+                                toggleState = playerAmbientBackdropEnabled,
+                                onToggleChange = { appSettings.setPlayerAmbientBackdropEnabled(it) },
                                 enabled = isExpressiveActive
                             )
                         ),
@@ -335,9 +336,9 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             hapticFeedback = haptics,
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("opacity"),
-                                title = "Glass intensity",
-                                description = if (isExpressiveActive) "${(playerGlassIntensity * 100).toInt()}%" else "Expressive player only",
-                                onClick = { if (isExpressiveActive) showGlassIntensitySheet = true },
+                                title = "Ambient intensity",
+                                description = if (isExpressiveActive) "${(playerAmbientBackdropIntensity * 100).toInt()}%" else "Expressive player only",
+                                onClick = { if (isExpressiveActive) showAmbientIntensitySheet = true },
                                 enabled = isExpressiveActive
                             )
                         )
@@ -780,13 +781,13 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
         }
     }
 
-    // Glass Intensity Bottom Sheet
-    if (showGlassIntensitySheet) {
+    // Ambient Intensity Bottom Sheet
+    if (showAmbientIntensitySheet) {
         val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-        var tempIntensity by remember { mutableFloatStateOf(playerGlassIntensity) }
+        var tempIntensity by remember { mutableFloatStateOf(playerAmbientBackdropIntensity) }
 
         ModalBottomSheet(
-            onDismissRequest = { showGlassIntensitySheet = false },
+            onDismissRequest = { showAmbientIntensitySheet = false },
             sheetState = sheetState,
             dragHandle = {
                 BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
@@ -810,7 +811,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                 ) {
                     Column {
                         Text(
-                            text = "Glass intensity",
+                            text = "Ambient intensity",
                             style = MaterialTheme.typography.displayMedium,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface
@@ -842,9 +843,9 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                     onValueChange = { tempIntensity = it },
                     onValueChangeFinished = {
                         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        appSettings.setPlayerGlassIntensity(tempIntensity)
+                        appSettings.setPlayerAmbientBackdropIntensity(tempIntensity)
                     },
-                    valueRange = 0.0f..2.0f,
+                    valueRange = 0.0f..1.0f,
                     steps = 39,
                     colors = SliderDefaults.colors(
                         thumbColor = MaterialTheme.colorScheme.primary,
@@ -869,7 +870,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "200%",
+                        text = "100%",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -897,7 +898,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Controls how visible the glass effect is on control surfaces. Higher values make backgrounds more opaque.",
+                            text = "Controls the transparency of the controls card. Higher values make it more opaque against the ambient backdrop.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

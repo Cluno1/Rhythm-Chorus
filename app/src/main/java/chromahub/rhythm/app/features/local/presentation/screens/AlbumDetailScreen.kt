@@ -71,6 +71,8 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistCh
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.PlaylistSongOptionsBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortMenuContent
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortOption
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmDetailActionButton
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonType
 import chromahub.rhythm.app.util.ArtistSeparator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -321,15 +323,9 @@ fun AlbumDetailScreen(
     var selectedSongForOptions by remember { mutableStateOf<Song?>(null) }
     var showSortMenu by remember { mutableStateOf(false) }
 
-    var playAllPressed by remember { mutableStateOf(false) }
-    var shufflePressed by remember { mutableStateOf(false) }
     var addToQueuePressed by remember { mutableStateOf(false) }
-    val playAllScale by animateFloatAsState(targetValue = if (playAllPressed) 0.96f else 1f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium), label = "playAllScale")
-    val shuffleScale by animateFloatAsState(targetValue = if (shufflePressed) 0.96f else 1f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium), label = "shuffleScale")
     val addToQueueScale by animateFloatAsState(targetValue = if (addToQueuePressed) 0.96f else 1f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium), label = "addToQueueScale")
 
-    LaunchedEffect(playAllPressed) { if (playAllPressed) { delay(150); playAllPressed = false } }
-    LaunchedEffect(shufflePressed) { if (shufflePressed) { delay(150); shufflePressed = false } }
     LaunchedEffect(addToQueuePressed) { if (addToQueuePressed) { delay(150); addToQueuePressed = false } }
 
     val totalDuration = songDisplayState.totalDuration
@@ -551,71 +547,32 @@ fun AlbumDetailScreen(
                                     .padding(horizontal = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
-                                Button(
+                                RhythmDetailActionButton(
                                     onClick = {
                                         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                        playAllPressed = true
                                         onPlayAll(displaySongs)
                                     },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(50.dp)
-                                        .graphicsLayer {
-                                            scaleX = playAllScale
-                                            scaleY = playAllScale
-                                        },
-                                    shape = ButtonGroupDefaults.connectedLeadingButtonShapes().shape,
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = MaterialTheme.colorScheme.onPrimary
-                                    ),
-                                    contentPadding = PaddingValues(horizontal = 16.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Play,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        "Play All",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                                    height = 50.dp,
+                                    isFirst = true,
+                                    isLast = false,
+                                    icon = RhythmIcons.Play,
+                                    text = "Play All",
+                                    fontWeight = FontWeight.Bold
+                                )
 
-                                FilledTonalButton(
+                                RhythmDetailActionButton(
                                     onClick = {
                                         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                        shufflePressed = true
                                         onShufflePlay(displaySongs)
                                     },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(50.dp)
-                                        .graphicsLayer {
-                                            scaleX = shuffleScale
-                                            scaleY = shuffleScale
-                                        },
-                                    shape = ButtonGroupDefaults.connectedTrailingButtonShapes().shape,
-                                    colors = ButtonDefaults.filledTonalButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                                    ),
-                                    contentPadding = PaddingValues(horizontal = 16.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Shuffle,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        stringResource(R.string.action_shuffle),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
+                                    height = 50.dp,
+                                    type = RhythmButtonType.Tonal,
+                                    isFirst = false,
+                                    isLast = true,
+                                    icon = RhythmIcons.Shuffle,
+                                    text = stringResource(R.string.action_shuffle),
+                                    fontWeight = FontWeight.Medium
+                                )
                             }
                         }
                     }
@@ -1033,71 +990,32 @@ fun AlbumDetailScreen(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                                         ) {
-                                            Button(
+                                            RhythmDetailActionButton(
                                                 onClick = {
                                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                                    playAllPressed = true
                                                     onPlayAll(displaySongs)
                                                 },
-                                                modifier = Modifier
-                                                    .weight(1f)
-                                                    .height(52.dp)
-                                                    .graphicsLayer {
-                                                        scaleX = playAllScale
-                                                        scaleY = playAllScale
-                                                    },
-                                                shape = ButtonGroupDefaults.connectedLeadingButtonShapes().shape,
-                                                colors = ButtonDefaults.buttonColors(
-                                                    containerColor = MaterialTheme.colorScheme.primary,
-                                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                                ),
-                                                contentPadding = PaddingValues(horizontal = 16.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = RhythmIcons.Play,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(20.dp)
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Text(
-                                                    "Play All",
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            }
+                                                height = 52.dp,
+                                                isFirst = true,
+                                                isLast = false,
+                                                icon = RhythmIcons.Play,
+                                                text = "Play All",
+                                                fontWeight = FontWeight.Bold
+                                            )
 
-                                            FilledTonalButton(
+                                            RhythmDetailActionButton(
                                                 onClick = {
                                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                                    shufflePressed = true
                                                     onShufflePlay(displaySongs)
                                                 },
-                                                modifier = Modifier
-                                                    .weight(1f)
-                                                    .height(52.dp)
-                                                    .graphicsLayer {
-                                                        scaleX = shuffleScale
-                                                        scaleY = shuffleScale
-                                                    },
-                                                shape = ButtonGroupDefaults.connectedTrailingButtonShapes().shape,
-                                                colors = ButtonDefaults.filledTonalButtonColors(
-                                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                                                ),
-                                                contentPadding = PaddingValues(horizontal = 16.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = RhythmIcons.Shuffle,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(20.dp)
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Text(
-                                                    stringResource(R.string.action_shuffle),
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.Medium
-                                                )
-                                            }
+                                                height = 52.dp,
+                                                type = RhythmButtonType.Tonal,
+                                                isFirst = false,
+                                                isLast = true,
+                                                icon = RhythmIcons.Shuffle,
+                                                text = stringResource(R.string.action_shuffle),
+                                                fontWeight = FontWeight.Medium
+                                            )
                                         }
 
                                         FilledTonalButton(

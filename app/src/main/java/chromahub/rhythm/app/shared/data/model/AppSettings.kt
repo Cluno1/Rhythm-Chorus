@@ -537,7 +537,8 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_ART_OVERLAY_INTENSITY = "player_art_overlay_intensity" // Float 0.0-1.0
         private const val KEY_PLAYER_LYRICS_OVERLAY_TYPE = "player_lyrics_overlay_type" // 0=Gradient, 1=Blur
         private const val KEY_PLAYER_LYRICS_OVERLAY_INTENSITY = "player_lyrics_overlay_intensity" // Float 0.0-1.0
-        private const val KEY_PLAYER_CANVAS_BACKGROUND_ENABLED = "player_canvas_background_enabled" // Always show canvas-style background
+        private const val KEY_PLAYER_AMBIENT_BACKDROP_ENABLED = "player_ambient_backdrop_enabled" // Ambient backdrop from artwork
+        private const val KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY = "player_ambient_backdrop_intensity" // Float 0.0-1.0, controls container transparency
         private const val KEY_PLAYER_GLASS_INTENSITY = "player_glass_intensity" // Float 0.0-2.0, glass effect opacity multiplier
         private const val KEY_PLAYER_LYRICS_TRANSITION = "player_lyrics_transition" // 0=SlideVertical, 1=Fade, 2=Scale, 3=SlideHorizontal
         private const val KEY_PLAYER_LYRICS_TEXT_SIZE = "player_lyrics_text_size" // Float sp multiplier, default 1.0
@@ -5180,6 +5181,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _playerLyricsOverlayType.value = prefs.getInt(KEY_PLAYER_LYRICS_OVERLAY_TYPE, 0)
         _playerLyricsOverlayIntensity.value = prefs.getFloat(KEY_PLAYER_LYRICS_OVERLAY_INTENSITY, 0.1f)
         _playerLyricsTransition.value = prefs.getInt(KEY_PLAYER_LYRICS_TRANSITION, 2) // 2 = Scale
+        _playerAmbientBackdropEnabled.value = prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, false)
+        _playerAmbientBackdropIntensity.value = prefs.getFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, 0.85f)
         _playerGlassIntensity.value = prefs.getFloat(KEY_PLAYER_GLASS_INTENSITY, 1.0f)
         _playerLyricsTextSize.value = prefs.getFloat(KEY_PLAYER_LYRICS_TEXT_SIZE, 1.0f)
         _playerLyricsAlignment.value = prefs.getString(KEY_PLAYER_LYRICS_ALIGNMENT, "CENTER") ?: "CENTER"
@@ -5584,10 +5587,18 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         prefs.edit().putBoolean(KEY_PLAYER_SHOW_GRADIENT_OVERLAY, value).apply()
     }
 
-    private val _playerCanvasBackgroundEnabled = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_CANVAS_BACKGROUND_ENABLED, false))
-    val playerCanvasBackgroundEnabled: StateFlow<Boolean> = _playerCanvasBackgroundEnabled.asStateFlow()
-    fun setPlayerCanvasBackgroundEnabled(enabled: Boolean) {        prefs.edit().putBoolean(KEY_PLAYER_CANVAS_BACKGROUND_ENABLED, enabled).apply()
-        _playerCanvasBackgroundEnabled.value = enabled
+    private val _playerAmbientBackdropEnabled = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, false))
+    val playerAmbientBackdropEnabled: StateFlow<Boolean> = _playerAmbientBackdropEnabled.asStateFlow()
+    fun setPlayerAmbientBackdropEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, enabled).apply()
+        _playerAmbientBackdropEnabled.value = enabled
+    }
+
+    private val _playerAmbientBackdropIntensity = MutableStateFlow(prefs.getFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, 0.85f))
+    val playerAmbientBackdropIntensity: StateFlow<Float> = _playerAmbientBackdropIntensity.asStateFlow()
+    fun setPlayerAmbientBackdropIntensity(value: Float) {
+        _playerAmbientBackdropIntensity.value = value.coerceIn(0f, 1f)
+        prefs.edit().putFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, _playerAmbientBackdropIntensity.value).apply()
     }
 
     private val _playerGlassIntensity = MutableStateFlow(prefs.getFloat(KEY_PLAYER_GLASS_INTENSITY, 1.0f))

@@ -65,6 +65,8 @@ import chromahub.rhythm.app.shared.presentation.components.common.rememberExpres
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSongMenuContent
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortMenuContent
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSortOption
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmDetailActionButton
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonType
 import chromahub.rhythm.app.network.WikipediaProvider
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
@@ -1024,27 +1026,7 @@ private fun ArtistActionButtons(
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback
 ) {
     val context = LocalContext.current
-    var shufflePressed by remember { mutableStateOf(false) }
-    var playAllPressed by remember { mutableStateOf(false) }
     var addToQueuePressed by remember { mutableStateOf(false) }
-    
-    val shuffleScale by animateFloatAsState(
-        targetValue = if (shufflePressed) 0.96f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "shuffleScale"
-    )
-    
-    val playAllScale by animateFloatAsState(
-        targetValue = if (playAllPressed) 0.96f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "playAllScale"
-    )
 
     val addToQueueScale by animateFloatAsState(
         targetValue = if (addToQueuePressed) 0.96f else 1f,
@@ -1054,20 +1036,6 @@ private fun ArtistActionButtons(
         ),
         label = "addToQueueScale"
     )
-    
-    LaunchedEffect(shufflePressed) {
-        if (shufflePressed) {
-            delay(150)
-            shufflePressed = false
-        }
-    }
-    
-    LaunchedEffect(playAllPressed) {
-        if (playAllPressed) {
-            delay(150)
-            playAllPressed = false
-        }
-    }
 
     LaunchedEffect(addToQueuePressed) {
         if (addToQueuePressed) {
@@ -1087,72 +1055,35 @@ private fun ArtistActionButtons(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Play All Button - Connected Shape
-            Button(
+            RhythmDetailActionButton(
                 onClick = {
                     HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                    playAllPressed = true
                     onPlayAll()
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp)
-                    .graphicsLayer {
-                        scaleX = playAllScale
-                        scaleY = playAllScale
-                    },
-                shape = ButtonGroupDefaults.connectedLeadingButtonShapes().shape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ),
-                enabled = artistSongs.isNotEmpty()
-            ) {
-                Icon(
-                    imageVector = RhythmIcons.Play,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.action_play_all),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                isFirst = true,
+                isLast = false,
+                enabled = artistSongs.isNotEmpty(),
+                icon = RhythmIcons.Play,
+                text = stringResource(R.string.action_play_all),
+                fontWeight = FontWeight.Bold,
+                contentPadding = PaddingValues(horizontal = 24.dp)
+            )
             
             // Shuffle Button - Connected Shape
-            FilledTonalButton(
+            RhythmDetailActionButton(
                 onClick = {
                     HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                    shufflePressed = true
                     onShufflePlay()
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp)
-                    .graphicsLayer {
-                        scaleX = shuffleScale
-                        scaleY = shuffleScale
-                    },
-                shape = ButtonGroupDefaults.connectedTrailingButtonShapes().shape,
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                ),
-                enabled = artistSongs.isNotEmpty()
-            ) {
-                Icon(
-                    imageVector = RhythmIcons.Shuffle,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.cd_shuffle),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
+                type = RhythmButtonType.Tonal,
+                isFirst = false,
+                isLast = true,
+                enabled = artistSongs.isNotEmpty(),
+                icon = RhythmIcons.Shuffle,
+                text = stringResource(R.string.cd_shuffle),
+                fontWeight = FontWeight.SemiBold,
+                contentPadding = PaddingValues(horizontal = 24.dp)
+            )
         }
 
         // Add to Queue Button

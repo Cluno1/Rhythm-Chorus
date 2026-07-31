@@ -190,9 +190,9 @@ import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveElev
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapes
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
-import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveButtonGroup
-import chromahub.rhythm.app.shared.presentation.components.common.ButtonGroupStyle
-import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveGroupButton
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonWeighted
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonSize
 import chromahub.rhythm.app.shared.presentation.components.common.ActionProgressLoader
 import chromahub.rhythm.app.shared.presentation.components.common.NetworkOperationLoader
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveAnimatedCounter
@@ -1471,7 +1471,9 @@ private fun ModernSectionTitle(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
             subtitle?.let {
@@ -1479,7 +1481,9 @@ private fun ModernSectionTitle(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
+                    modifier = Modifier.padding(top = 2.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -1489,49 +1493,38 @@ private fun ModernSectionTitle(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (onPlayAll != null || onShufflePlay != null) {
-                ExpressiveButtonGroup(
-                    style = ButtonGroupStyle.Tonal
+                RhythmGroupedButton(
+                    size = RhythmButtonSize.Small,
+                    isFillMaxWidth = false,
+                    modifier = Modifier.widthIn(max = 120.dp)
                 ) {
-                    onPlayAll?.let { playAction ->
-                        ExpressiveGroupButton(
+                    val playAction = onPlayAll
+                    val shuffleAction = onShufflePlay
+                    if (playAction != null) {
+                        RhythmButtonWeighted(
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                 playAction()
                             },
-                            isStart = true,
-                            isEnd = onShufflePlay == null
-                        ) {
-                            Text(
-                                text = context.getString(R.string.action_play),
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
+                            weight = 1f,
+                            isFirst = true,
+                            isLast = shuffleAction == null,
+                            text = context.getString(R.string.action_play)
+                        )
                     }
 
-                    onShufflePlay?.let { shuffleAction ->
-                        ExpressiveGroupButton(
+                    if (shuffleAction != null) {
+                        RhythmButtonWeighted(
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                 shuffleAction()
                             },
-                            isStart = onPlayAll == null,
-                            isEnd = true
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Shuffle,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            if (onPlayAll == null) {
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = context.getString(R.string.cd_shuffle),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-                        }
+                            weight = 1f,
+                            isFirst = playAction == null,
+                            isLast = true,
+                            icon = RhythmIcons.Shuffle,
+                            text = if (playAction == null) context.getString(R.string.cd_shuffle) else null
+                        )
                     }
                 }
             }

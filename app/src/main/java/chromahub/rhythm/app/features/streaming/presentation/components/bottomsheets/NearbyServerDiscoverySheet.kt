@@ -24,7 +24,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.SheetValue
@@ -51,6 +50,10 @@ import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolI
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import chromahub.rhythm.app.shared.presentation.components.common.M3FourColorCircularLoader
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonWeighted
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonSize
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonType
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
@@ -414,13 +417,22 @@ fun NearbyServerDiscoverySheet(
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedButton(
-                        onClick = {
-                            discoveredServers.clear()
-                            scanTrigger++
-                        }
+                    RhythmGroupedButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        size = RhythmButtonSize.Large
                     ) {
-                        Text(text = stringResource(id = R.string.nearby_server_discovery_rescan))
+                        RhythmButtonWeighted(
+                            onClick = {
+                                discoveredServers.clear()
+                                scanTrigger++
+                            },
+                            weight = 1f,
+                            isFirst = true,
+                            isLast = true,
+                            type = RhythmButtonType.Tonal,
+                            icon = MaterialSymbolIcon("refresh"),
+                            text = stringResource(id = R.string.nearby_server_discovery_rescan)
+                        )
                     }
                 }
             } else if (discoveredServers.isEmpty() && isScanning) {
@@ -520,14 +532,22 @@ fun NearbyServerDiscoverySheet(
                 
                 if (!isScanning) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedButton(
-                        onClick = {
-                            discoveredServers.clear()
-                            scanTrigger++
-                        },
-                        modifier = Modifier.fillMaxWidth()
+                    RhythmGroupedButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        size = RhythmButtonSize.Large
                     ) {
-                        Text(text = stringResource(id = R.string.nearby_server_discovery_rescan))
+                        RhythmButtonWeighted(
+                            onClick = {
+                                discoveredServers.clear()
+                                scanTrigger++
+                            },
+                            weight = 1f,
+                            isFirst = true,
+                            isLast = true,
+                            type = RhythmButtonType.Tonal,
+                            icon = MaterialSymbolIcon("refresh"),
+                            text = stringResource(id = R.string.nearby_server_discovery_rescan)
+                        )
                     }
                 }
             }
