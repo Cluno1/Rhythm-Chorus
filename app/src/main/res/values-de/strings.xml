@@ -7,8 +7,8 @@
     <string name="search">Suchen</string>
     <string name="settings">Einstellungen</string>
     <!-- Media3 notification configuration -->
-    <string name="media3_notification_channel_name">Rhythm Musik</string>
-    <string name="media3_notification_channel_description">Steuerelemente für die Medienwiedergabe</string>
+    <string name="media3_notification_channel_name">Rhythm Aktuelle Wiedergabe</string>
+    <string name="media3_notification_channel_description">Steuerelemente für die Medienwiedergabe, zum Springen und für Albumcover</string>
     <!-- Widget strings -->
     <string name="widget_description">Rhythm Musik-Widget – Steuern Sie die Wiedergabe mit reaktionsfähigen Layouts, die Rastergrößen von 2x1 bis 5x5 unterstützen</string>
     <string name="widget_description_glance">Rhythm Musik – Steuern Sie die Wiedergabe mit 9 responsiven Layouts, Material 3 Design und Statusaktualisierungen in Echtzeit</string>
@@ -38,17 +38,17 @@
     <!-- Settings - Notifications -->
     <string name="settings_notifications">Benachrichtigungen</string>
     <string name="settings_notifications_updates_group">App-Updates</string>
-    <string name="settings_notifications_rhythm_guard_group">Rhythm Wache</string>
-    <string name="settings_notifications_rhythm_pulse_group">Rhythm Tipps</string>
-    <string name="settings_update_notifications_merged_desc">Erhalten Sie Benachrichtigungen über neue Versionen und Ergebnisse der Hintergrundaktualisierungsprüfung</string>
-    <string name="settings_rhythm_guard_alert_notifications">Sicherheitswarnungsbenachrichtigungen</string>
-    <string name="settings_rhythm_guard_alert_notifications_desc">Zeigt eine Benachrichtigung an, wenn Rhythm Guard ein riskantes Volumen oder eine riskante Exposition erkennt</string>
-    <string name="settings_rhythm_guard_timer_notifications">Pausen-Timer-Benachrichtigungen</string>
-    <string name="settings_rhythm_guard_timer_notifications_desc">Benachrichtigungen für geplante Pausen und aktive Timeout-Countdowns anzeigen</string>
-    <string name="settings_rhythm_pulse_notifications">Rhythm Tipps-Benachrichtigungen</string>
-    <string name="settings_rhythm_pulse_notifications_desc">Erhalten Sie freundliche Erinnerungen und Hörtipps.</string>
-    <string name="settings_rhythm_pulse_interval">Trinkgeldintervall</string>
-    <string name="settings_rhythm_pulse_interval_dialog_title">Rhythm Tipps-Intervall</string>
+    <string name="settings_notifications_rhythm_guard_group">Rhythm Wache · Sicherheit</string>
+    <string name="settings_notifications_rhythm_pulse_group">Höhepunkte des Hörerlebnises &amp; Tipps</string>
+    <string name="settings_update_notifications_merged_desc">Erhalten Sie Benachrichtigungen, sobald neue Updates installiert werden können</string>
+    <string name="settings_rhythm_guard_alert_notifications">Hörschutzwarnungen</string>
+    <string name="settings_rhythm_guard_alert_notifications_desc">Zeigt sofort eine Warnung, wenn Lautstärke oder Geräuschaussetzungen einen kritischen Wert übersteigen</string>
+    <string name="settings_rhythm_guard_timer_notifications">Hörpausenassistent</string>
+    <string name="settings_rhythm_guard_timer_notifications_desc">Benachrichtigungen und Countdowns für geplante Hörpausen anzeigen</string>
+    <string name="settings_rhythm_pulse_notifications">Höhepunkte des Hörerlebnisses &amp; Tipps</string>
+    <string name="settings_rhythm_pulse_notifications_desc">Erhalten Sie personalisierte Hörstatistiken und Wiedergabefunktionen</string>
+    <string name="settings_rhythm_pulse_interval">Tipp Zustellfrequenz</string>
+    <string name="settings_rhythm_pulse_interval_dialog_title">Zustellintervall auswählen</string>
     <!-- Settings - Queue & Playback -->
     <!-- Settings - Queue -->
     <string name="settings_queue">Warteschlange</string>
@@ -59,7 +59,7 @@
     <string name="settings_playback_desc">Wiedergabezustände, Überblendung, Zeitformatierung</string>
     <string name="settings_playback_title">Wiedergabeeinstellungen</string>
     <string name="settings_queue_behavior">Warteschlangenregeln und Mischen</string>
-    <string name="settings_use_exoplayer_shuffle">Shuffle Engine</string>
+    <string name="settings_use_exoplayer_shuffle">Shuffle-Algorithmus</string>
     <string name="settings_use_exoplayer_shuffle_desc">Verwenden Sie die Player-Timeline für die Mischreihenfolge.</string>
     <string name="settings_auto_queue">Kontextwarteschlange</string>
     <string name="settings_auto_queue_desc">Erstellen Sie eine entsprechende Warteschlange, wenn die Wiedergabe beginnt.</string>
@@ -100,7 +100,7 @@
     <!-- Settings - Playlists -->
     <string name="settings_playlists">Wiedergabelisten</string>
     <string name="settings_playlists_overview">Übersicht</string>
-    <string name="settings_playlists_management">Management</string>
+    <string name="settings_playlists_management">Verwaltung</string>
     <string name="settings_create_new_playlist">Neue Playlist erstellen</string>
     <string name="settings_create_new_playlist_desc">Fügen Sie eine neue benutzerdefinierte Wiedergabeliste hinzu</string>
     <string name="settings_import_playlists">Playlists importieren</string>
@@ -124,53 +124,53 @@
     <string name="operation_exporting_playlists">Sichern Sie Ihre benutzerdefinierten Wiedergabelisten…</string>
     <string name="operation_exporting_playlists_location">Wiedergabelisten im Speicher sichern…</string>
     <string name="operation_importing_playlist">Wiedergabelistendatei wird importiert…</string>
-    <string name="notification_operations_channel_name">Rhythm-Bibliothek</string>
-    <string name="notification_operations_channel_desc">Fortschritt und Ergebnisse für Bibliotheksscans und Playlist-Aktionen</string>
-    <string name="notification_media_scan_title">Rhythm Bibliotheksscan</string>
-    <string name="notification_media_scan_stage_songs">Gerätespeicher nach Audiotiteln durchsuchen…</string>
-    <string name="notification_media_scan_stage_saving">Optimieren und Speichern der Audiotrack-Datenbank…</string>
-    <string name="notification_media_scan_stage_finishing">Abschluss der Audioindizierung…</string>
-    <string name="notification_media_scan_complete_pending_setup">Audio-Scan abgeschlossen, Hintergrundaufgaben werden initialisiert …</string>
+    <string name="notification_operations_channel_name">Rhythm-Bibliothekssynchronisierung</string>
+    <string name="notification_operations_channel_desc">Fortschrittsbenachrichtigung für Bibliotheksscan, -indizierung und für Wiedergabelistenbackups</string>
+    <string name="notification_media_scan_title">Bibliotheksscan &amp; Indizierung</string>
+    <string name="notification_media_scan_stage_songs">Speicher nach Audiotiteln durchsuchen …</string>
+    <string name="notification_media_scan_stage_saving">Baue Titel-Metadatenindex …</string>
+    <string name="notification_media_scan_stage_finishing">Abschluss der Audiobibliothek …</string>
+    <string name="notification_media_scan_complete_pending_setup">Bibliotheksscan abgeschlossen. Bibliothek ist bereit.</string>
     <string name="notification_media_scan_cancelled">Bibliotheksscan wurde abgebrochen.</string>
-    <string name="notification_media_scan_failed">Bibliotheksscan fehlgeschlagen. Überprüfen Sie die Speicherberechtigungen und versuchen Sie es erneut.</string>
-    <string name="notification_playlist_export_title">Rhythm Bibliotheksexport</string>
-    <string name="notification_playlist_import_title">Rhythm Bibliotheksimport</string>
-    <string name="notification_library_setup_title">Rhythm Bibliothekseinrichtung</string>
-    <string name="notification_library_setup_complete_summary">Die Bibliothek ist optimiert und bereit: %1$d Titel, %2$d Alben, %3$d Künstler</string>
+    <string name="notification_media_scan_failed">Bibliotheksscan fehlgeschlagen. Überprüfen Sie die Speicherberechtigungen.</string>
+    <string name="notification_playlist_export_title">Wiedergabelistenbackup</string>
+    <string name="notification_playlist_import_title">Wiedergabelistenimport</string>
+    <string name="notification_library_setup_title">Bibliotheksoptimierung</string>
+    <string name="notification_library_setup_complete_summary">Die Bibliothek ist bereit: %1$d Titel, %2$d Alben, %3$d Künstler</string>
     <string name="notification_playlist_not_found">Export abgebrochen: Ziel-Playlist wurde nicht gefunden.</string>
     <string name="notification_no_playlists_to_export">Export abgebrochen: Es wurden keine Playlists zum Sichern gefunden.</string>
-    <string name="notification_operation_timed_out">Der Vorgang ist abgelaufen. Bitte versuchen Sie es erneut.</string>
-    <string name="notification_playlist_export_complete">Playlist erfolgreich in den Speicher exportiert.</string>
-    <string name="notification_playlist_export_all_complete">%1$d Playlists erfolgreich in den Speicher exportiert.</string>
-    <string name="notification_playlist_export_failed">Der Export der Playlist ist fehlgeschlagen. Versuchen Sie es erneut.</string>
-    <string name="notification_playlist_import_complete">„%1$s“ mit %2$d Songs erfolgreich importiert.</string>
-    <string name="notification_playlist_import_failed">Der Import der Wiedergabeliste ist fehlgeschlagen. Bitte überprüfen Sie das Dateiformat.</string>
-    <string name="notification_updater_channel_name">Rhythm-Updater</string>
-    <string name="notification_updater_channel_desc">Download-Status für App-Updates</string>
-    <string name="notification_updater_title">Rhythm-Updater</string>
-    <string name="notification_updater_downloading">⬇ Herunterladen: %1$d%%</string>
-    <string name="notification_updater_download_complete">✓ Einbaufertig. Zum Aktualisieren tippen.</string>
-    <string name="notification_updater_available_title">Update verfügbar!</string>
-    <string name="notification_updater_available_text">🆕 Eine neue Version von Rhythm ist da.</string>
-    <string name="notification_sleep_timer_channel_name">Rhythm Sleep-Timer</string>
-    <string name="notification_sleep_timer_channel_desc">Countdown und Status für Sleep-Timer-Aktionen</string>
-    <string name="notification_sleep_timer_title">Rhythm Sleep-Timer</string>
-    <string name="notification_sleep_timer_pause_in">⏸ Pause in %1$s</string>
-    <string name="notification_sleep_timer_stop_in">⏹ Anhalten in %1$s</string>
+    <string name="notification_operation_timed_out">Zeitüberschreitung. Bitte versuchen Sie es erneut.</string>
+    <string name="notification_playlist_export_complete">Playlist-Backup erfolgreich gespeichert.</string>
+    <string name="notification_playlist_export_all_complete">Backup von %1$d Playlisten erfolgreich.</string>
+    <string name="notification_playlist_export_failed">Playlist-Backup ist fehlgeschlagen.</string>
+    <string name="notification_playlist_import_complete">„%1$s“ mit %2$d Titeln erfolgreich importiert.</string>
+    <string name="notification_playlist_import_failed">Der Import der Wiedergabeliste ist fehlgeschlagen. Überprüfen Sie das Dateiformat.</string>
+    <string name="notification_updater_channel_name">Rhythm Systemupdates</string>
+    <string name="notification_updater_channel_desc">Downloadfortschritt und Veröffentlichungsbenachrichtigungen für App-Updates</string>
+    <string name="notification_updater_title">Rhythm Softwareupdate</string>
+    <string name="notification_updater_downloading">Update herunterladen: %1$d%%</string>
+    <string name="notification_updater_download_complete">Update bereit zum Installieren. Zum Fortfahren tippen.</string>
+    <string name="notification_updater_available_title">Neues Update verfügbar</string>
+    <string name="notification_updater_available_text">Eine neue Version von Rhythm ist da.</string>
+    <string name="notification_sleep_timer_channel_name">Rhythm Schlafassistent</string>
+    <string name="notification_sleep_timer_channel_desc">Countdowns und Statusbenachrichtigung für aktive Schlaftimer</string>
+    <string name="notification_sleep_timer_title">Schlaftimer aktiv</string>
+    <string name="notification_sleep_timer_pause_in">Wiedergabepause in %1$s</string>
+    <string name="notification_sleep_timer_stop_in">Wiedergabe stoppt in %1$s</string>
     <!-- Streaming Notifications -->
-    <string name="notification_streaming_channel_name">Rhythm Go</string>
-    <string name="notification_streaming_channel_desc">Streaming-Dienststatus und Synchronisierungsaktualisierungen</string>
+    <string name="notification_streaming_channel_name">Rhythm Cloud-Dienste</string>
+    <string name="notification_streaming_channel_desc">Verbindungsstatus und Synchronisierungsfortschritt für Online-Musikdienste</string>
     <!-- Streaming Authentication -->
-    <string name="notification_streaming_auth_title">Streaming verbunden</string>
-    <string name="notification_streaming_auth_connected">🎵 %1$s ist spielbereit! Ihre Bibliothek wird im Hintergrund synchronisiert.</string>
-    <string name="notification_streaming_auth_failed">Verbindung für %1$s fehlgeschlagen. Tippen Sie, um die Einrichtung erneut zu versuchen.</string>
+    <string name="notification_streaming_auth_title">Cloud-Dienst verbunden</string>
+    <string name="notification_streaming_auth_connected">%1$s verbunden. Ihre Bibliothek wird im Hintergrund synchronisiert.</string>
+    <string name="notification_streaming_auth_failed">Verbindung für %1$s fehlgeschlagen. Tippen Sie, um es erneut zu versuchen.</string>
     <string name="notification_streaming_auth_expired">Sitzung für %1$s abgelaufen. Tippen Sie, um die Verbindung wiederherzustellen.</string>
     <!-- Streaming Library Sync -->
-    <string name="notification_streaming_sync_title">Synchronisieren Ihrer Bibliothek</string>
-    <string name="notification_streaming_sync_started">Synchronisierung mit %1$s…</string>
-    <string name="notification_streaming_sync_progress">Synchronisierung: %1$d Songs • %2$d Alben • %3$d Künstler</string>
-    <string name="notification_streaming_sync_complete">✓ %1$d Songs von %2$s synchronisiert!</string>
-    <string name="notification_streaming_sync_failed">Synchronisierung fehlgeschlagen. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.</string>
+    <string name="notification_streaming_sync_title">Cloud-Bibliothekssynchronisierung</string>
+    <string name="notification_streaming_sync_started">Synchronisiere Bibliothek mit %1$s …</string>
+    <string name="notification_streaming_sync_progress">Synchronisierung: %1$d Songs, %2$d Alben, %3$d Künstler</string>
+    <string name="notification_streaming_sync_complete">%1$d von %2$s Titeln synchronisiert.</string>
+    <string name="notification_streaming_sync_failed">Synchronisierung fehlgeschlagen. Überprüfen Sie Ihre Netzwerkverbindung.</string>
     <!-- Streaming Liked Songs -->
     <string name="notification_streaming_liked_title">Gefallene Songs aktualisiert</string>
     <string name="notification_streaming_liked_added">♥ Zu den „Gefällt mir“-Songs auf %1$s hinzugefügt</string>
@@ -434,7 +434,7 @@
     <string name="updates_disabled">Updates deaktiviert</string>
     <string name="updates_manual_check">Nur manuelle Prüfung</string>
     <string name="updates_up_to_date">Auf dem neuesten Stand</string>
-    <string name="updates_whats_new">Was ist neu?</string>
+    <string name="updates_whats_new">Was ist neu</string>
     <string name="updates_known_issues">Bekannte Probleme</string>
     <string name="updates_downloading">Update wird heruntergeladen…</string>
     <string name="updates_download_complete">Download abgeschlossen</string>
@@ -471,7 +471,7 @@
     <string name="onboarding_audio_desc">Passen Sie Ihr Audioerlebnis mit haptischem Feedback, Standardbildschirm, Lautstärkereglern, Warteschlangenverhalten, Zufallseinstellungen, Liedtextanzeige und Equalizer-Einstellungen an.</string>
     <string name="onboarding_lyrics_sources">API: Online-Liedtexte • Eingebettet: Metadaten-Liedtexte • Lokal: .lrc-Dateien</string>
     <string name="onboarding_additional_features">Zusätzliche Audiofunktionen</string>
-    <string name="onboarding_equalizer_desc">Equalizer: Feinabstimmung der Audiofrequenzen unter „Einstellungen“ &gt; „Equalizer“.</string>
+    <string name="onboarding_equalizer_desc">Equalizer: Feinabstimmung der Audiofrequenzen unter „Einstellungen“ &gt; „Equalizer“</string>
     <string name="onboarding_sleep_timer_desc">Sleep-Timer: Automatisches Stoppen der Wiedergabe nach der eingestellten Zeit (Zugriff über den Bildschirm „Aktuelle Wiedergabe“)</string>
     <string name="onboarding_library_title">Organisieren Sie Ihre Musikbibliothek</string>
     <string name="onboarding_library_desc">Passen Sie die Anzeige Ihrer Alben, Künstler und Songs an. Wählen Sie Ihr bevorzugtes Layout, Sortierreihenfolge und Tab-Anordnung.</string>
@@ -553,7 +553,7 @@
     <string name="onboarding_permission_tip_3">Rhythm respektiert Ihre Privatsphäre und Daten</string>
     <!-- Onboarding Audio &amp; Playback -->
     <string name="onboarding_default_screen_title">Standard-Landebildschirm</string>
-    <string name="onboarding_default_screen_desc">Wählen Sie aus, welcher Bildschirm beim Starten von Rhythm geöffnet wird.</string>
+    <string name="onboarding_default_screen_desc">Wählen Sie aus, welcher Bildschirm beim Starten von Rhythm geöffnet wird</string>
     <string name="onboarding_system_volume_title">Systemlautstärkeregelung</string>
     <string name="onboarding_system_volume_desc">Erlauben Sie den physischen Lautstärketasten Ihres Geräts, die Wiedergabelautstärke von Rhythm zu steuern.</string>
     <string name="onboarding_auto_queue_title">Automatisch zur Warteschlange hinzufügen</string>
@@ -567,7 +567,7 @@
     <!-- Onboarding Theming -->
     <string name="onboarding_dynamic_colors_title">Dynamische Farben (Material You)</string>
     <string name="onboarding_dynamic_colors_desc">Wenden Sie Farben an, die aus dem Hintergrundbild Ihres Geräts extrahiert wurden, um ein zusammenhängendes Erscheinungsbild zu erzielen.</string>
-    <string name="onboarding_player_theme_title">Wiedergabe- und Miniplayer-Themen</string>
+    <string name="onboarding_player_theme_title">Wiedergabe- und Mini-Player-Themen</string>
     <string name="onboarding_player_theme_desc">Personalisieren Sie Ihre Wiedergabeschnittstellen. Wechseln Sie zwischen dem klaren, modernen Rhythm-Design oder dem lebendigen, fließenden Expressive-Design.</string>
     <!-- Onboarding Updater -->
     <string name="onboarding_update_check_failed">Aktualisierungsprüfung fehlgeschlagen</string>
@@ -863,7 +863,7 @@
     <string name="sleep_timer_quick">Schnelltimer</string>
     <string name="sleep_timer_custom">Benutzerdefinierter Timer</string>
     <string name="sleep_timer_action">Timer-Aktion</string>
-    <string name="sleep_timer_action_desc">Was passiert, wenn der Timer abgelaufen ist?</string>
+    <string name="sleep_timer_action_desc">Was passiert, wenn der Timer abgelaufen ist</string>
     <string name="sleep_timer_select_duration">Wählen Sie die Timer-Dauer aus</string>
     <!-- Crash Reports -->
     <string name="crash_reports">Absturzberichte</string>
@@ -946,7 +946,7 @@
     <string name="settings_section_updates_info">Updates und Informationen</string>
     <string name="settings_updates_title">Aktualisierungen</string>
     <string name="settings_updates_desc">App-Updates</string>
-    <string name="settings_about_title">Ungefähr</string>
+    <string name="settings_about_title">Über</string>
     <string name="settings_about_desc">Versionsinfo</string>
     <string name="settings_section_advanced">Fortgeschritten</string>
     <string name="settings_crash_log_history">Absturzprotokollverlauf</string>
@@ -1143,8 +1143,8 @@
     <string name="settings_player_customization_desc">Schaltflächen zum Überspringen, Fortschrittsbalken</string>
     <string name="settings_miniplayer_customization">Mini-Player</string>
     <string name="settings_miniplayer_customization_desc">Hintergrund, Kontrollen</string>
-    <string name="settings_album_bottom_sheet_gradient_blur">Albumverlauf/Unschärfe</string>
-    <string name="settings_album_bottom_sheet_gradient_blur_desc">Steuern Sie den Farbverlauf und die Unschärfe hinter den Albumblättern</string>
+    <string name="settings_album_bottom_sheet_gradient_blur">Gradient/Unschärfe der Albumseite</string>
+    <string name="settings_album_bottom_sheet_gradient_blur_desc">Steuern Sie den Farbverlauf und die Unschärfe hinter der Albumdetailseite</string>
     <string name="settings_gestures">Gesten</string>
     <string name="settings_gestures_desc">Zum Überspringen wischen</string>
     <string name="settings_ignore_mediastore_covers">Song-Art statt Album-Art anzeigen</string>
@@ -1423,7 +1423,7 @@
     <string name="settings_hue">Farbton</string>
     <string name="settings_layout_options">Layoutoptionen</string>
     <string name="settings_lightness">Leichtigkeit</string>
-    <string name="settings_miniplayer">MiniPlayer</string>
+    <string name="settings_miniplayer">Mini-Player</string>
     <string name="settings_no_crash_logs">Keine Absturzprotokolle gefunden. Gute Arbeit!</string>
     <string name="settings_player_controls">Spielersteuerung</string>
     <string name="settings_player_screen">Spielerbildschirm</string>
@@ -1501,7 +1501,7 @@
     <string name="settings_playlist_action_play_all">Vollständige Wiedergabeliste in die Warteschlange laden</string>
     <string name="settings_playlist_action_play_one">Nur ausgewählten Titel abspielen</string>
     <string name="settings_playlist_action_ask">Fragen Sie jedes Mal</string>
-    <string name="settings_list_queue_action_dialog">Aktion „Wiedergabewarteschlange auflisten“.</string>
+    <string name="settings_list_queue_action_dialog">Aktion „Wiedergabewarteschlange auflisten“</string>
     <string name="settings_list_queue_action_replace">Ersetzen Sie die Warteschlange und spielen Sie</string>
     <string name="settings_list_queue_action_ask">Fragen Sie jedes Mal</string>
     <string name="settings_list_queue_action_play_next">Als nächstes einfügen und abspielen</string>
@@ -1683,7 +1683,7 @@
     <string name="settings_double_tap_artwork">Doppeltippen Sie auf das Bild</string>
     <string name="settings_double_tap_artwork_desc">Tippen Sie zweimal auf das Albumcover, um es abzuspielen/anzuhalten</string>
     <!-- MiniPlayer Customization -->
-    <string name="settings_miniplayer_header">MiniPlayer</string>
+    <string name="settings_miniplayer_header">Mini-Player</string>
     <string name="settings_show_progress">Fortschritt anzeigen</string>
     <string name="settings_show_progress_desc">Fortschrittsanzeige anzeigen</string>
     <string name="settings_progress_mode">Fortschrittsmodus</string>
@@ -1861,7 +1861,7 @@
     <string name="settings_notifications_rhythm_pulse">Rhythm Tipps</string>
     <string name="settings_notifications_rhythm_pulse_desc">Freundliche Erinnerungen und Hörtipps.</string>
     <string name="settings_notifications_rhythm_pulse_interval">Rhythm Tipps-Intervall</string>
-    <string name="settings_notifications_rhythm_pulse_interval_desc">Wie oft werden Trinkgeldbenachrichtigungen zugestellt?</string>
+    <string name="settings_notifications_rhythm_pulse_interval_desc">Wie oft werden Tipp-Benachrichtigungen zugestellt</string>
     <!-- Expressive Shapes Search Strings -->
     <string name="settings_expressive_shapes_enabled">Ausdrucksstarke Formen</string>
     <string name="settings_expressive_shapes_enabled_search_desc">Benutzerdefinierte UI-Formen</string>
@@ -1919,7 +1919,7 @@
     <string name="settings_player_seek_buttons">Suchschaltflächen</string>
     <string name="settings_player_seek_buttons_desc">Schaltflächen zum 10-sekündigen Vorwärts-/Rückwärtsspringen anzeigen</string>
     <string name="settings_player_text_alignment">Textausrichtung</string>
-    <string name="settings_player_text_alignment_desc">Wählen Sie die Textausrichtung (Links, Mitte, Rechts).</string>
+    <string name="settings_player_text_alignment_desc">Wählen Sie die Textausrichtung (Links, Mitte, Rechts)</string>
     <string name="settings_player_progress_style">Fortschrittsstil</string>
     <string name="settings_player_progress_style_desc">Wählen Sie den Fortschrittsbalkenstil</string>
     <string name="settings_player_artwork_radius">Eckenradius des Kunstwerks</string>
@@ -2005,7 +2005,7 @@
     <string name="mainactivity_unsupported_file_format">Nicht unterstütztes Dateiformat</string>
     <string name="mainactivity_failed_to_initialize_media">Der Media Player konnte nicht initialisiert werden</string>
     <string name="mainactivity_unable_to_play_audio">Audiodatei kann nicht abgespielt werden</string>
-    <string name="autoeqpresetpickerbottomsheet_choose_autoeq_preset">Wählen Sie „AutoEQ-Voreinstellung“.</string>
+    <string name="autoeqpresetpickerbottomsheet_choose_autoeq_preset">Wählen Sie „AutoEQ-Voreinstellung“</string>
     <string name="autoeqpresetpickerbottomsheet_toggle_filters">Filter umschalten</string>
     <string name="autoeqpresetpickerbottomsheet_brand">Marke</string>
     <string name="autoeqpresetpickerbottomsheet_type">Typ</string>
@@ -2017,7 +2017,7 @@
     <string name="batchedittagssheet_enable_fields_you_want">Aktivieren Sie die Felder, die Sie aktualisieren möchten. Deaktivierte Felder bleiben unverändert.</string>
     <string name="batchedittagssheet_tags">Schlagworte</string>
     <string name="batchedittagssheet_batch_artwork_preview">Stapel-Bildvorschau</string>
-    <string name="deviceconfigurationbottomsheet_supported_formats_fixedbandeq_text">Supported formats: • FixedBandEQ text (AutoEQ) • JSON format • CSV (10 band values)</string>
+    <string name="deviceconfigurationbottomsheet_supported_formats_fixedbandeq_text">Unterstützte Formate: • FixedBandEQ-Text (AutoEQ) • JSON-Format • CSV (10 Bandwerte)</string>
     <string name="deviceconfigurationbottomsheet_paste_eq_data_here">EQ-Daten hier einfügen...</string>
     <string name="deviceconfigurationbottomsheet_open_autoeqapp">Öffnen Sie autoeq.app</string>
     <string name="deviceconfigurationbottomsheet_export_eq_profile">EQ-Profil exportieren</string>
@@ -2083,7 +2083,7 @@
     <string name="onboardingscreen_subsonic_navidrome">Subsonic / Navidrome</string>
     <string name="onboardingscreen_jellyfin_server">Jellyfin-Server</string>
     <string name="onboardingscreen_httpsyourservercom">https://your-server.com</string>
-    <string name="onboardingscreen_remember_to_include_http">Denken Sie daran, http:// oder https:// anzugeben.</string>
+    <string name="onboardingscreen_remember_to_include_http">Denken Sie daran, http:// oder https:// anzugeben</string>
     <string name="onboardingscreen_username">Benutzername</string>
     <string name="onboardingscreen_enter_server_username">Geben Sie den Server-Benutzernamen ein</string>
     <string name="onboardingscreen_enter_server_password">Geben Sie das Serverpasswort ein</string>
@@ -2102,7 +2102,7 @@
     <string name="streamingcontenthomescreen_your_connected_streaming_service">Die Wiedergabelisten Ihrer verbundenen Streaming-Dienste</string>
     <string name="streamingcontenthomescreen_no_playlists_found">Keine Playlists gefunden</string>
     <string name="streamingcontenthomescreen_create_playlists_on_your">Erstellen Sie Wiedergabelisten auf Ihrem Server, um sie hier anzuzeigen.</string>
-    <string name="streaminghomescreen_leave_go_mode">Leave Go Mode</string>
+    <string name="streaminghomescreen_leave_go_mode">Go-Modus verlassen</string>
     <string name="streaminglibraryscreen_no_albums">Keine Alben</string>
     <string name="streamingsettingsscreen_streaming_restricted">Streaming eingeschränkt</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">Nächstes Abspielen fehlgeschlagen: URL konnte nicht aufgelöst werden</string>
@@ -2159,7 +2159,7 @@
     <string name="betaprogrampopup_shape_the_future">Gestalten Sie die Zukunft</string>
     <string name="betaprogrampopup_direct_feedback">Direktes Feedback</string>
     <string name="betaprogrampopup_welcome_to_the_beta">Willkommen zur Beta</string>
-    <string name="betaprogrampopup_youre_part_of_an">Sie sind Teil einer exklusiven Gruppe, die die Zukunft des Musikplayers Rhythm mitgestaltet</string>
+    <string name="betaprogrampopup_youre_part_of_an">Sie sind Teil einer exklusiven Gruppe, welche die Zukunft des Musikplayers Rhythm mitgestaltet</string>
     <string name="betaprogrampopup_start_exploring">Beginnen Sie mit der Erkundung</string>
     <string name="playbackpitchdialog_adjust_audio_pitch">Tonhöhe anpassen</string>
     <string name="switchmodedialog_switch_play">Wechseln und spielen</string>
@@ -2169,7 +2169,7 @@
     <string name="fullscreenlyricsview_retry_fetching">Abruf wiederholen</string>
     <string name="fullscreenlyricsview_romanization">Romanisierung</string>
     <string name="fullscreenlyricsview_translation">Übersetzung</string>
-    <string name="fullscreenlyricsview_realtime_sync_adjustment">Echtzeit-Synchronisierungsanpassung</string>
+    <string name="fullscreenlyricsview_realtime_sync_adjustment">Synchronisierung</string>
     <string name="fullscreenlyricsview_str_05s">-0,5 s</string>
     <string name="fullscreenlyricsview_str_05s_1">+0,5 s</string>
     <string name="fullscreenlyricsview_reset_offset">Offset zurücksetzen</string>
@@ -2236,7 +2236,7 @@
     <string name="lyricssourcesettingsscreen_lyrics_api_priority">Liedtext API Priorität</string>
     <string name="lyricssourcesettingsscreen_choose_which_online_lyrics">Wählen Sie aus, nach welchem Online-Liedtext API zuerst gesucht werden soll</string>
     <string name="lyricssourcesettingsscreen_retry_using_fallbacks">Versuchen Sie es erneut mit Fallbacks</string>
-    <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• Embedded lyrics are stored in your audio files</string>
+    <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• Eingebettete Songtexte werden in Ihren Audiodateien gespeichert</string>
     <string name="miniplayercustomizationsettingsscreen_miniplayer_theme">MiniPlayer-Theme</string>
     <string name="miniplayercustomizationsettingsscreen_choose_between_rhythm_default">Wählen Sie zwischen dem Rhythm Standard- oder Expressive-Design</string>
     <string name="miniplayercustomizationsettingsscreen_integrated_directly_into_the">Direkt in den MiniPlayer-Hintergrund integriert</string>
@@ -2469,7 +2469,7 @@
     <string name="lyrics_settings_online_first_desc">Bevorzugen Sie Online-APIs (Rhythm Wort-für-Wort, LRCLib) und greifen Sie auf eingebettete APIs zurück</string>
     <string name="lyrics_settings_local_first">Lokal zuerst</string>
     <string name="lyrics_settings_local_first_desc">Bevorzugen Sie lokale .lrc-Dateien, dann eingebettete Liedtexte und dann Online-APIs</string>
-    <string name="lyrics_settings_lyrically_first">Lyrically First</string>
+    <string name="lyrics_settings_lyrically_first">Lyrically zuerst</string>
     <string name="lyrics_settings_lrclib_first">LRCLib zuerst</string>
     <string name="lyrics_settings_fallback_apis_desc">Versuchen Sie Fallback-APIs, wenn das bevorzugte API keinen Liedtext zurückgibt</string>
     <string name="lyrics_settings_display_styling">Anzeige &amp; Styling</string>
@@ -2558,7 +2558,7 @@
     <string name="dialog_export_playlist_to">Exportieren Sie „%1$s“ nach:</string>
     <string name="dialog_export_playlists_to">%1$d-Wiedergabelisten exportieren nach:</string>
     <!-- Mode dialog strings -->
-    <string name="dialog_switch_to_go">Switch to Rhythm Go?</string>
+    <string name="dialog_switch_to_go">Zu Rhythm Go wechseln?</string>
     <string name="dialog_switch_to_local">Zu Lokal wechseln?</string>
     <string name="dialog_switch_to_go_desc">This item belongs to Rhythm Go. Jetzt in den Streaming-Modus wechseln, um es zu streamen und abzuspielen?</string>
     <string name="dialog_switch_to_local_desc">Dieses Element gehört zu Ihrer lokalen Bibliothek. Jetzt in den lokalen Modus wechseln, um Ihre Offline-Titel abzuspielen?</string>
@@ -2612,7 +2612,7 @@
     <string name="library_category_long">Lang (&gt; 5 Min.)</string>
     <string name="library_category_mono">Mono</string>
     <string name="library_category_stereo">Stereo</string>
-    <string name="library_no_playlists_yet">Noch keine Playlists\nErstellen Sie Ihre erste Playlist mit der Schaltfläche „+“.</string>
+    <string name="library_no_playlists_yet">Noch keine Playlists\nErstellen Sie Ihre erste Playlist mit der Schaltfläche „+“</string>
     <string name="library_no_albums_yet">Noch keine Alben</string>
     <string name="library_no_artists_yet">Noch keine Künstler</string>
     <string name="library_action_add_to_playlist">Zur Playlist hinzufügen</string>
@@ -2694,7 +2694,7 @@
     <string name="shape_option_ghostish_desc">Geisterartige Form</string>
     <string name="shape_option_puffy">Aufgedunsen</string>
     <string name="shape_option_puffy_desc">Wolkenartige Form</string>
-    <string name="shape_option_puffy_diamond">Puffy Diamond</string>
+    <string name="shape_option_puffy_diamond">Weiche Raute</string>
     <string name="shape_option_puffy_diamond_desc">Puffiger Diamant</string>
     <string name="shape_option_fan">Fächer</string>
     <string name="shape_option_fan_desc">Fächerform</string>
@@ -2706,7 +2706,7 @@
     <string name="shape_option_clover_8_leaf_desc">Achtblättriges Kleeblatt</string>
     <string name="shape_option_arrow">Pfeil</string>
     <string name="shape_option_arrow_desc">Pfeilzeiger</string>
-    <string name="shape_option_arch">Arch</string>
+    <string name="shape_option_arch">Bogen</string>
     <string name="shape_option_arch_desc">Bogenform</string>
     <string name="shape_option_clam_shell">Muschelschale</string>
     <string name="shape_option_clam_shell_desc">Muschelform</string>
@@ -2875,4 +2875,50 @@
     <string name="playlist_count_format">%1$d Wiedergabelisten</string>
     <string name="ui_song_count">1 Lied</string>
     <string name="duration_minutes_format">%1$dm</string>
+    <string name="settings_notifications_playback_group">Medien &amp; Wiedergabe</string>
+    <string name="settings_notifications_library_group">Bibliothek &amp; Synchronisierung</string>
+    <string name="settings_notifications_system_group">Systemsteuerung</string>
+    <string name="settings_playback_notification_desc">Zeige Wiedergabesteuerelemente und Cover in den Benachrichtigungen und auf dem Sperrbildschirm</string>
+    <string name="settings_show_codec_notifications_desc">Zeige das Audioformat, die Abtastrate und die Bittiefe der aktuellen Wiedergabe in den Benachrichtigungen</string>
+    <string name="settings_library_operations_notifications">Bibliotheksoperationen &amp; Backups</string>
+    <string name="settings_library_operations_notifications_desc">Zeige Fortschrittsbenachrichtigungen für Medienindizierung und Import/Export von Wiedergabelisten</string>
+    <string name="settings_notification_permission_desc">Erlauben Sie Benachrichtigungen, damit Rhythm Mediensteuerung und Informationen zu Hintergrundaufgaben anzeigen kann.</string>
+    <string name="settings_system_notification_channels">Android-Benachrichtigungseinstellungen</string>
+    <string name="settings_system_notification_channels_desc">Konfigurieren Sie Benachrichtigungskanäle, -töne, -vibration und Sperrbildschirmverhalten</string>
+    <string name="settings_notification_permission_title">Benachrichtigungsberechtigung benötigt</string>
+    <string name="settings_notification_permission_grant">Benachrichtigungen aktivieren</string>
+    <string name="error_no_document_app">Kein App zum Auswählen eines Ordners gefunden.</string>
+    <string name="exp_track_error_checker_desc">Fange beschädigte oder nicht lesbare Titel ab, um endlose Lade- oder Überspringvorgänge zu verhindern</string>
+    <string name="exp_track_error_checker">Titel-Fehlerprüfer</string>
+    <string name="settings_rhythm_guard_locked_during_break">Gesperrt während Hörpause</string>
+    <string name="settings_rhythm_guard_first_break_dialog_start">Pause beginnen</string>
+    <string name="settings_rhythm_guard_first_break_dialog_message">Rhythm Guard plant Hörpausen, um Ihr Gehör zu schonen, sobald Grenzwerte für den Tag überschritten werden. Eine Hörpause sperrt die Musikwiedergabe, damit sich Ihre Ohren erholen können.\n\nBei der ersten Hörpause können Sie entscheiden, ob Sie Rhythm Guard deaktivieren möchten. Bei folgenden Hörpausen steht die Wahl allerdings nicht mehr zur Verfügung und Sie werden Rhythm Guard nicht deaktivieren können, solange die Hörpause aktiv ist. Sie können Rhythm Guard jederzeit in den Einstellungen deaktivieren, sofern gerade keine Hörpause aktiv ist.</string>
+    <string name="settings_rhythm_guard_first_break_dialog_title">Über Hörpausen</string>
+    <string name="settings_artist_artwork_source_disabled_desc">Kein Künstlerbilder abrufen oder laden</string>
+    <string name="settings_artist_artwork_source_disabled">Deaktiviert</string>
+    <string name="settings_artist_artwork_source_api_only_desc">Künstlerbilder nur von der Online-Deezer-API abrufen</string>
+    <string name="settings_artist_artwork_source_api_only">Nur Online-API (Deezer)</string>
+    <string name="settings_artist_artwork_source_prefer_local">Lokale Bilder bevorzugen, dann API</string>
+    <string name="settings_artist_artwork_source_desc">Bevorzugte Quelle für Künstlerbilder auswählen</string>
+    <string name="settings_artist_artwork_source">Quelle für Künstlerbilder</string>
+    <string name="settings_playback_notification">Benachrichtigung zur aktuellen Wiedergabe</string>
+    <string name="settings_notification_preview_title">Benachrichtigungsvorschau</string>
+    <string name="settings_notification_preview_subtitle">Vorschau des Benachrichtigungsstils im Benachrichtigungsbereich</string>
+    <string name="updates_channel_stable_title">Stabil</string>
+    <string name="updates_channel_stable_desc">Erhalten Sie nur offizielle, stabile Veröffentlichungen.</string>
+    <string name="updates_channel_beta_title">Beta</string>
+    <string name="updates_channel_beta_desc">Erhalten Sie Vorveröffentlichungen und Veröffentlichungskandidaten.</string>
+    <string name="updates_channel_nightly_title">Nightly</string>
+    <string name="updates_channel_nightly_desc">Erhalten Sie die neuesten Nightly-Versionen, kompiliert vom main-Branch.</string>
+    <string name="onboarding_integration_wikipedia">Wikipedia</string>
+    <string name="onboarding_integration_wikipedia_desc">Albumdetails und Beschreibungen für Infobereich abrufen</string>
+    <string name="settings_album_hide_about">Albuminformationsbereich verstecken</string>
+    <string name="settings_album_hide_about_desc">Beschreibung/Infobereich auf der Albumdetailseite verstecken</string>
+    <string name="settings_artist_artwork_source_prefer_local_desc">Suche zuerst nach lokalen Ordnerbildern (artist.jpg/band.jpg), nutze dann die Online-Deezer-API</string>
+    <string name="settings_artist_artwork_source_local_only">Nur lokale Bilder</string>
+    <string name="settings_artist_artwork_source_local_only_desc">Nur lokale Ordnerbilder (artist.jpg/band.jpg) und gespeicherte lokale Bilder verwenden</string>
+    <string name="settings_rhythm_guard_first_break_dialog_turn_off">Rhythm Guard deaktivieren</string>
+    <string name="lyrically_sources_title">Lyrically Quellen</string>
+    <string name="lyrically_sources_desc">Konfiguriere und priorisiere Songtextquellen innerhalb von Lyrically. Wort-für-Wort-Quellen werden zuerst versucht, dann synchronisierte/Standardquellen.</string>
+    <string name="settings_show_codec_notifications">Audioqualität &amp; Codeclabel</string>
 </resources>
