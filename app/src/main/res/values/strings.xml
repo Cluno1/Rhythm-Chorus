@@ -1107,13 +1107,16 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Grace period active</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">Break ends in %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">Grace period ends in %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Safety score: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Protection Presets</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Quickly apply tested guardrail bundles for your listening style.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Gentle</string>
     <string name="settings_rhythm_guard_protection_preset_balanced">Balanced</string>
     <string name="settings_rhythm_guard_protection_preset_strict">Strict</string>
     <string name="settings_rhythm_guard_protection_preset_custom">Custom</string>
+    <string name="settings_rhythm_guard_hero_title">Today\'s Exposure</string>
+    <string name="settings_rhythm_guard_hero_limit_exceeded">Limit exceeded! Time to rest your ears.</string>
+    <string name="settings_rhythm_guard_hero_exposure_of">of %1$s</string>
+    <string name="settings_rhythm_guard_hero_volume_limit">limit %1$s</string>
     <string name="settings_rhythm_guard_timeout_activity_title">Listening Timeout Active</string>
     <string name="settings_rhythm_guard_timeout_activity_default_reason">Plot twist: your ears started a union and called for a snack break. Rhythm Guard paused playback so everyone can cool down.</string>
     <string name="settings_rhythm_guard_timeout_activity_comic_desc">Plot twist: your ears started a union and called for a snack break. Rhythm Guard paused playback so everyone can cool down.</string>
