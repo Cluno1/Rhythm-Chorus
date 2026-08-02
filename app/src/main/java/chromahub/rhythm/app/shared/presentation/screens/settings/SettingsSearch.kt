@@ -831,15 +831,6 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             parentScreen = "Theme"
         ))
         add(SearchableSettingItem(
-            id = "theme_custom_colors",
-            title = context.getString(R.string.settings_custom_colors),
-            description = context.getString(R.string.settings_custom_colors_desc),
-            keywords = listOf("custom colors", "palette", "seed", "theme color", "hex code", "customize"),
-            icon = MaterialSymbolIcon("brush"),
-            route = SettingsRoutes.THEME_CUSTOMIZATION,
-            parentScreen = "Theme"
-        ))
-        add(SearchableSettingItem(
             id = "theme_font_source",
             title = context.getString(R.string.settings_theme_font_source),
             description = context.getString(R.string.settings_theme_font_source_desc),

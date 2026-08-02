@@ -678,8 +678,6 @@
     <string name="theme_color_source_desc">Choose how colors are extracted</string>
     <string name="theme_font_source">Font Source</string>
     <string name="theme_font_source_desc">Choose where to load fonts from</string>
-    <string name="theme_color_schemes">Color Schemes</string>
-    <string name="theme_color_schemes_desc">Choose from preset color schemes</string>
     <string name="theme_custom_picker">Custom Color Picker</string>
     <string name="theme_custom_picker_desc">Create your own color scheme</string>
     <string name="theme_font_selection">Font Selection</string>
@@ -716,10 +714,6 @@
     <string name="playlist_create_first">Create your first playlist to add songs</string>
 <string name="cache_management">Cache</string>
 
-<string name="theme_color_schemes_unavailable">Color schemes are only available when using Custom color source.</string>
-    <string name="theme_color_schemes_switch">Switch to Custom in the Color Source setting to access predefined schemes.</string>
-    <string name="theme_custom_colors_unavailable">Custom colors are only available when using Custom color source.</string>
-    <string name="theme_custom_colors_switch">Switch to Custom in the Color Source setting to create your own colors.</string>
     <string name="theme_system_fonts_unavailable">System fonts are only available when using System font source.</string>
     <string name="theme_system_fonts_switch">Switch to System in the Font Source setting to choose from available fonts.</string>
 <string name="backup_whats_included_placeholder">What\'s Included in Backup?</string>
@@ -756,8 +750,6 @@
     <string name="settings_interval_every_48_hours">Every 48 hours</string>
     <string name="settings_interval_every_72_hours">Every 72 hours</string>
 
-<string name="theme_featured_schemes">FEATURED SCHEMES</string>
-    <string name="theme_more_schemes">MORE SCHEMES</string>
     <string name="theme_quick_presets">Quick Presets</string>
     <string name="theme_advanced_rgb">Advanced RGB Controls</string>
 <string name="external_services">External Services</string>
@@ -1539,6 +1531,8 @@
     <string name="settings_seek_buttons">Seek Buttons</string>
     <string name="settings_seek_buttons_desc">Show 10-second skip forward/backward buttons</string>
     <string name="settings_thumb_style">Thumb Style</string>
+    <string name="settings_thumb_rotate">Rotate Thumb While Playing</string>
+    <string name="settings_thumb_rotate_desc">Slowly spins the thumb while music is playing</string>
 <string name="settings_display_mode">Display Mode</string>
     <string name="settings_theme_mode">Theme Mode</string>
     <string name="settings_theme_mode_desc">Choose your preferred theme</string>
@@ -1552,8 +1546,6 @@
     <string name="settings_color_schemes">Color Schemes</string>
     <string name="settings_color_schemes_desc">Browse and select predefined color palettes</string>
     <string name="settings_custom_only">Available only with Custom color source</string>
-    <string name="settings_custom_colors">Custom Colors</string>
-    <string name="settings_custom_colors_desc">Create your own unique color palette</string>
     <string name="settings_font_customization">Font Customization</string>
     <string name="settings_font_source">Font Source</string>
     <string name="settings_font_source_system">System Font - %1$s</string>
@@ -2262,9 +2254,6 @@
     <string name="color_scheme_emerald_desc">Fresh emerald greens with natural forest hues</string>
     <string name="color_scheme_mint_title">Mint</string>
     <string name="color_scheme_mint_desc">Fresh and clean cyan and mint green tones</string>
-<string name="theme_color_primary">Primary</string>
-    <string name="theme_color_secondary">Secondary</string>
-    <string name="theme_color_tertiary">Tertiary</string>
 <string name="lyrics_settings_title">Lyrics</string>
     <string name="lyrics_settings_general">General Settings</string>
     <string name="lyrics_settings_open_fullscreen_desc">Open a full-screen lyrics screen by tapping the lyrics view</string>

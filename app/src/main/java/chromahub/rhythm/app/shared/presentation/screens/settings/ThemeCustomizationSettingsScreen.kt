@@ -39,7 +39,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -63,7 +62,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -72,7 +74,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedback
@@ -121,7 +122,6 @@ import chromahub.rhythm.app.shared.presentation.components.common.SplashBackgrou
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppVersion
 import chromahub.rhythm.app.ui.theme.getFontPreviewStyle
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -130,7 +130,6 @@ import java.util.Date
 import java.util.Locale
 import java.io.File
 import chromahub.rhythm.app.utils.FontLoader
-import chromahub.rhythm.app.ui.theme.parseCustomColorScheme
 import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.TextView
 import androidx.compose.foundation.Image
@@ -218,60 +217,9 @@ fun FontSource.getDescription(context: Context): String {
 
 
 
-// HSL Color conversion utilities
-data class HSLColor(val hue: Float, val saturation: Float, val lightness: Float)
-
-fun Color.toHSL(): HSLColor {
-    val r = red
-    val g = green
-    val b = blue
-
-    val max = maxOf(r, g, b)
-    val min = minOf(r, g, b)
-    val diff = max - min
-
-    val lightness = (max + min) / 2f
-
-    val saturation = if (diff == 0f) 0f else diff / (1f - kotlin.math.abs(2f * lightness - 1f))
-
-    val hue = when (max) {
-        min -> 0f
-        r -> ((g - b) / diff) % 6
-        g -> (b - r) / diff + 2
-        b -> (r - g) / diff + 4
-        else -> 0f
-    } * 60f
-
-    return HSLColor(
-        hue = if (hue < 0) hue + 360f else hue,
-        saturation = saturation,
-        lightness = lightness
-    )
-}
 
 
 
-fun HSLColor.toColor(): Color {
-    val c = (1f - kotlin.math.abs(2f * lightness - 1f)) * saturation
-    val x = c * (1f - kotlin.math.abs((hue / 60f) % 2f - 1f))
-    val m = lightness - c / 2f
-
-    val (r, g, b) = when {
-        hue < 60 -> Triple(c, x, 0f)
-        hue < 120 -> Triple(x, c, 0f)
-        hue < 180 -> Triple(0f, c, x)
-        hue < 240 -> Triple(0f, x, c)
-        hue < 300 -> Triple(x, 0f, c)
-        else -> Triple(c, 0f, x)
-    }
-
-    return Color(
-        red = (r + m).coerceIn(0f, 1f),
-        green = (g + m).coerceIn(0f, 1f),
-        blue = (b + m).coerceIn(0f, 1f),
-        alpha = 1f
-    )
-}
 
 
 
@@ -504,8 +452,6 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
     // Dialog states
     var showColorSourceDialog by remember { mutableStateOf(false) }
     var showFontSourceDialog by remember { mutableStateOf(false) }
-    var showColorSchemesDialog by remember { mutableStateOf(false) }
-    var showCustomColorsDialog by remember { mutableStateOf(false) }
     var showFontSelectionDialog by remember { mutableStateOf(false) }
     var navigateToExpressiveShapes by remember { mutableStateOf(false) }
     
@@ -651,34 +597,6 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                 showColorSourceDialog = true
-                            }
-                        )
-                    )
-                    add(
-                        SettingItem(
-                            MaterialSymbolIcon("color_lens"),
-                            context.getString(R.string.settings_color_schemes),
-                            if (selectedColorSource == ColorSource.CUSTOM)
-                                context.getString(R.string.settings_color_schemes_desc)
-                            else
-                                context.getString(R.string.settings_custom_only),
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                showColorSchemesDialog = true
-                            }
-                        )
-                    )
-                    add(
-                        SettingItem(
-                            MaterialSymbolIcon("brush"),
-                            context.getString(R.string.settings_custom_colors),
-                            if (selectedColorSource == ColorSource.CUSTOM)
-                                context.getString(R.string.settings_custom_colors_desc)
-                            else
-                                context.getString(R.string.settings_custom_only),
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                showCustomColorsDialog = true
                             }
                         )
                     )
@@ -853,6 +771,60 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
                         }
                     }
 
+                    context.getString(R.string.settings_color_customization) -> {
+                        buildList {
+                            add(
+                                toMaterial3SettingsItem(
+                                    context = context,
+                                    item = group.items[0],
+                                    hapticFeedback = haptic
+                                )
+                            )
+                            // Inline color scheme picker
+                            add(
+                                Material3SettingsItem(
+                                    icon = MaterialSymbolIcon("color_lens"),
+                                    title = { Text(context.getString(R.string.settings_color_schemes)) },
+                                    description = {
+                                        Column {
+                                            if (selectedColorSource == ColorSource.CUSTOM) {
+                                                Text(
+                                                    text = context.getString(R.string.settings_color_schemes_desc),
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.padding(bottom = 12.dp)
+                                                )
+                                                ColorSchemePaletteRow(
+                                                    schemes = colorSchemes,
+                                                    currentScheme = customColorScheme,
+                                                    onSchemeSelected = { scheme ->
+                                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                        appSettings.setCustomColorScheme(scheme)
+                                                    }
+                                                )
+                                            } else {
+                                                Text(
+                                                    text = context.getString(R.string.settings_custom_only),
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                    }
+                                )
+                            )
+                            group.items.drop(1).forEach { item ->
+                                add(
+                                    toMaterial3SettingsItem(
+                                        context = context,
+                                        item = item,
+                                        hapticFeedback = haptic
+                                    )
+                                )
+                            }
+                        }
+                    }
+
                     else -> {
                         group.items.map { item ->
                             toMaterial3SettingsItem(context = context, item = item, hapticFeedback = haptic)
@@ -959,39 +931,6 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
             showRestartDialog = true
             restartDialogMessage = message
         }
-    )
-
-    ColorSchemesDialog(
-        showDialog = showColorSchemesDialog,
-        onDismiss = { showColorSchemesDialog = false },
-        colorSchemes = colorSchemes,
-        currentScheme = customColorScheme,
-        selectedColorSource = selectedColorSource,
-        onSchemeSelected = { scheme ->
-            appSettings.setCustomColorScheme(scheme)
-            showColorSchemesDialog = false
-        },
-        appSettings = appSettings,
-        context = context,
-        haptic = haptic
-    )
-
-    CustomColorsDialog(
-        showDialog = showCustomColorsDialog,
-        onDismiss = { showCustomColorsDialog = false },
-        currentScheme = customColorScheme,
-        selectedColorSource = selectedColorSource,
-        onApply = { primary, secondary, tertiary ->
-            val primaryHex = String.format("%06X", (primary.toArgb() and 0xFFFFFF))
-            val secondaryHex = String.format("%06X", (secondary.toArgb() and 0xFFFFFF))
-            val tertiaryHex = String.format("%06X", (tertiary.toArgb() and 0xFFFFFF))
-            val customScheme = "custom_${primaryHex}_${secondaryHex}_${tertiaryHex}"
-            appSettings.setCustomColorScheme(customScheme)
-            showCustomColorsDialog = false
-        },
-        appSettings = appSettings,
-        context = context,
-        haptic = haptic
     )
 
     FontSelectionDialog(
@@ -1313,1262 +1252,171 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
 //    }
 //}
 
-// Color Schemes Dialog for Theme Customization
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ColorSchemesDialog(
-    showDialog: Boolean,
-    onDismiss: () -> Unit,
-    colorSchemes: List<ColorSchemeOption>,
+fun ColorSchemePaletteRow(
+    schemes: List<ColorSchemeOption>,
     currentScheme: String,
-    selectedColorSource: ColorSource,
     onSchemeSelected: (String) -> Unit,
-    appSettings: AppSettings,
-    context: Context,
-    haptic: HapticFeedback
+    modifier: Modifier = Modifier
 ) {
-    if (showDialog) {
-        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-
-        // Animation states
-        var showContent by remember { mutableStateOf(false) }
-
-        val contentAlpha by animateFloatAsState(
-            targetValue = if (showContent) 1f else 0f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            ),
-            label = "contentAlpha"
-        )
-
-        LaunchedEffect(Unit) {
-            delay(100)
-            showContent = true
-        }
-
-        ModalBottomSheet(
-        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
-            onDismissRequest = onDismiss,
-            sheetState = sheetState,
-            dragHandle = {
-                BottomSheetDefaults.DragHandle(
-                    color = MaterialTheme.colorScheme.primary
-                )
-            },
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp)
-                    .graphicsLayer(alpha = contentAlpha)
-            ) {
-                // Header
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 0.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text(
-                            text = context.getString(R.string.theme_color_schemes),
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 6.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                                text = context.getString(R.string.theme_color_schemes_desc),
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 1,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (selectedColorSource != ColorSource.CUSTOM) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 0.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Info,
-                                contentDescription = null,
-                                
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = context.getString(R.string.theme_color_schemes_unavailable),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = context.getString(R.string.theme_color_schemes_switch),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                } else {
-                    LazyColumn(
-            contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        // Featured schemes
-                        item {
-                            Text(
-                                text = context.getString(R.string.theme_featured_schemes),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
-
-                        val featuredSchemes = colorSchemes.filter {
-                            it.name in listOf("Default", "Warm", "Cool", "Forest", "Rose", "Monochrome")
-                        }
-
-                        items(featuredSchemes, key = { "featured_${it.name}" }) { option ->
-                            ColorSchemeCard(
-                                option = option,
-                                isSelected = currentScheme == option.name,
-                                onSelect = {
-                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    onSchemeSelected(option.name)
-                                }
-                            )
-                        }
-
-                        // More schemes
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = context.getString(R.string.theme_more_schemes),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
-
-                        val otherSchemes = colorSchemes.filter {
-                            it.name !in listOf("Default", "Warm", "Cool", "Forest", "Rose", "Monochrome")
-                        }
-
-                        items(otherSchemes, key = { "other_${it.name}" }) { option ->
-                            ColorSchemeCard(
-                                option = option,
-                                isSelected = currentScheme == option.name,
-                                onSelect = {
-                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    onSchemeSelected(option.name)
-                                }
-                            )
-                        }
-
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    }
-                }
-            }
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        items(schemes, key = { it.name }) { option ->
+            ColorSchemeCircle(
+                option = option,
+                isSelected = currentScheme == option.name,
+                onClick = { onSchemeSelected(option.name) }
+            )
         }
     }
 }
 
-
-
 @Composable
-fun ColorSchemeCard(
+fun ColorSchemeCircle(
     option: ColorSchemeOption,
     isSelected: Boolean,
-    onSelect: () -> Unit
+    onClick: () -> Unit
 ) {
-    Card(
-        onClick = onSelect,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer
-            else
-                MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        shape = RoundedCornerShape(16.dp),
-        border = if (isSelected) {
-            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-        } else {
-            null
-        },
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Enhanced color preview with better visibility
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.padding(end = 16.dp)
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = option.primaryColor,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), CircleShape)
-                ) {}
-                Surface(
-                    shape = CircleShape,
-                    color = option.secondaryColor,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), CircleShape)
-                ) {}
-                Surface(
-                    shape = CircleShape,
-                    color = option.tertiaryColor,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), CircleShape)
-                ) {}
-            }
+    val scope = rememberCoroutineScope()
+    val clickScale = remember { Animatable(1f) }
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = option.displayName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (isSelected)
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    else
-                        MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = option.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (isSelected)
-                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                    else
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                )
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 1.04f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "colorSchemeScale"
+    )
+
+    val ringAlpha by animateFloatAsState(
+        targetValue = if (isSelected) 1f else 0f,
+        animationSpec = spring(stiffness = Spring.StiffnessVeryLow),
+        label = "colorSchemeRingAlpha"
+    )
+
+    val cornerSize by animateDpAsState(
+        targetValue = if (isSelected) 24.dp else 35.dp,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "colorSchemeCorner"
+    )
+
+    val ringCornerSize by animateDpAsState(
+        targetValue = if (isSelected) 20.dp else 35.dp,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "colorSchemeRingCorner"
+    )
+
+    val circleCorner by animateDpAsState(
+        targetValue = if (isSelected) 14.dp else 24.dp,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "colorSchemeCircleCorner"
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable(
+                interactionSource = null,
+                indication = null,
+                onClick = {
+                    scope.launch {
+                        clickScale.animateTo(0.92f, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+                        clickScale.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+                    }
+                    onClick()
+                }
+            )
+            .padding(vertical = 4.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(70.dp)
+                .graphicsLayer {
+                    scaleX = clickScale.value
+                    scaleY = clickScale.value
+                }
+                .clip(RoundedCornerShape(cornerSize))
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                if (ringAlpha > 0.01f) {
+                    val stroke = 2.5.dp.toPx()
+                    val ringPad = 5.dp.toPx()
+                    val ringSize = size.width - 2 * ringPad
+                    val ringCorner = ringCornerSize.toPx()
+                    drawRoundRect(
+                        color = option.primaryColor.copy(alpha = ringAlpha),
+                        style = Stroke(width = stroke),
+                        cornerRadius = CornerRadius(ringCorner, ringCorner),
+                        topLeft = Offset(ringPad, ringPad),
+                        size = Size(ringSize, ringSize)
+                    )
+                }
+            }
+            Canvas(
+                modifier = Modifier
+                    .size(48.dp)
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                    }
+            ) {
+                val cr = circleCorner.toPx()
+                val w = size.width
+                val h = size.height
+                val halfW = w / 2f
+                val halfH = h / 2f
+                val topPath = Path().apply {
+                    addRoundRect(RoundRect(0f, 0f, w, halfH, CornerRadius(cr), CornerRadius(cr), CornerRadius.Zero, CornerRadius.Zero))
+                }
+                drawPath(topPath, color = option.primaryColor)
+                val blPath = Path().apply {
+                    addRoundRect(RoundRect(0f, halfH, halfW, h, CornerRadius.Zero, CornerRadius.Zero, CornerRadius.Zero, CornerRadius(cr)))
+                }
+                drawPath(blPath, color = option.secondaryColor)
+                val brPath = Path().apply {
+                    addRoundRect(RoundRect(halfW, halfH, w, h, CornerRadius.Zero, CornerRadius.Zero, CornerRadius(cr), CornerRadius.Zero))
+                }
+                drawPath(brPath, color = option.tertiaryColor)
             }
 
             if (isSelected) {
                 Icon(
-                    imageVector = RhythmIcons.CheckCircle,
+                    imageVector = RhythmIcons.Check,
                     contentDescription = stringResource(R.string.streaming_selected),
-                    
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-        }
-    }
-}
-
-
-
-@Composable
-fun AnimateIn(
-    delay: Int = 50,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        delay(delay.toLong())
-        visible = true
-    }
-
-    val alpha by animateFloatAsState(
-        targetValue = if (visible) 1f else 0f,
-        animationSpec = tween(durationMillis = 350, delayMillis = 0),
-        label = "alpha"
-    )
-
-    val scale by animateFloatAsState(
-        targetValue = if (visible) 1f else 0.92f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMediumLow
-        ),
-        label = "scale"
-    )
-
-    val translationY by animateFloatAsState(
-        targetValue = if (visible) 0f else 20f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMediumLow
-        ),
-        label = "translationY"
-    )
-
-    Box(
-        modifier = modifier.graphicsLayer(
-            alpha = alpha,
-            scaleX = scale,
-            scaleY = scale,
-            translationY = translationY
-        )
-    ) {
-        content()
-    }
-}
-
-
-
-@Composable
-fun ExpressiveColorPickerControls(
-    color: Color,
-    onColorChange: (Color) -> Unit
-) {
-    val context = LocalContext.current
-    val hsl = remember(color) { color.toHSL() }
-
-    var hue by remember(color) { mutableStateOf(hsl.hue) }
-    var saturation by remember(color) { mutableStateOf(hsl.saturation) }
-    var lightness by remember(color) { mutableStateOf(hsl.lightness) }
-
-    var showAdvanced by remember { mutableStateOf(false) }
-
-    // Update color when HSL values change
-    LaunchedEffect(hue, saturation, lightness) {
-        val newColor = HSLColor(hue, saturation, lightness).toColor()
-        onColorChange(newColor)
-    }
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        // Enhanced Current color display with gradient background
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = color,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp),
-            shadowElevation = 4.dp,
-            border = BorderStroke(2.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // Subtle pattern overlay
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (color.luminance() > 0.5f) Color.Black.copy(alpha = 0.05f) else Color.White.copy(alpha = 0.1f),
+                    tint = if (option.primaryColor.luminance() > 0.5f) {
+                        Color.Black.copy(alpha = 0.72f)
+                    } else {
+                        Color.White
+                    },
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Palette,
-                                contentDescription = null,
-                                tint = if (color.luminance() > 0.5f) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.9f),
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = String.format("#%06X", (color.toArgb() and 0xFFFFFF)),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = if (color.luminance() > 0.5f) Color.Black.copy(alpha = 0.9f) else Color.White,
-                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                            )
+                        .size(24.dp)
+                        .graphicsLayer {
+                            alpha = ringAlpha
+                            scaleX = scale
+                            scaleY = scale
                         }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Color properties
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.alpha(0.8f)
-                        ) {
-                            Text(
-                                text = "H:${hue.toInt()}°",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (color.luminance() > 0.5f) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.9f)
-                            )
-                            Text(
-                                text = "S:${(saturation * 100).toInt()}%",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (color.luminance() > 0.5f) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.9f)
-                            )
-                            Text(
-                                text = "L:${(lightness * 100).toInt()}%",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (color.luminance() > 0.5f) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.9f)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Enhanced Hue Slider with gradient preview
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_hue),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    modifier = Modifier.shadow(2.dp, RoundedCornerShape(12.dp))
-                ) {
-                    Text(
-                        text = "${hue.toInt()}°",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Hue slider with enhanced gradient
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.fillMaxWidth(),
-                shadowElevation = 2.dp
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = (0..360 step 10).map { h ->
-                                    HSLColor(h.toFloat(), 1f, 0.5f).toColor()
-                                }
-                            )
-                        )
-                ) {
-                    Slider(
-                        value = hue,
-                        onValueChange = { hue = it },
-                        valueRange = 0f..360f,
-                        modifier = Modifier.fillMaxSize(),
-                        colors = SliderDefaults.colors(
-                            thumbColor = Color.White,
-                            activeTrackColor = Color.Transparent,
-                            inactiveTrackColor = Color.Transparent
-                        )
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Enhanced Saturation Slider
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_saturation),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    modifier = Modifier.shadow(2.dp, RoundedCornerShape(12.dp))
-                ) {
-                    Text(
-                        text = "${(saturation * 100).toInt()}%",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.fillMaxWidth(),
-                shadowElevation = 2.dp
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color.LightGray,
-                                    HSLColor(hue, 1f, lightness).toColor()
-                                )
-                            )
-                        )
-                ) {
-                    Slider(
-                        value = saturation,
-                        onValueChange = { saturation = it },
-                        valueRange = 0f..1f,
-                        modifier = Modifier.fillMaxSize(),
-                        colors = SliderDefaults.colors(
-                            thumbColor = Color.White,
-                            activeTrackColor = Color.Transparent,
-                            inactiveTrackColor = Color.Transparent
-                        )
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Enhanced Lightness Slider
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_lightness),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    modifier = Modifier.shadow(2.dp, RoundedCornerShape(12.dp))
-                ) {
-                    Text(
-                        text = "${(lightness * 100).toInt()}%",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.fillMaxWidth(),
-                shadowElevation = 2.dp
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color.Black,
-                                    HSLColor(hue, saturation, 0.5f).toColor(),
-                                    Color.White
-                                )
-                            )
-                        )
-                ) {
-                    Slider(
-                        value = lightness,
-                        onValueChange = { lightness = it },
-                        valueRange = 0f..1f,
-                        modifier = Modifier.fillMaxSize(),
-                        colors = SliderDefaults.colors(
-                            thumbColor = Color.White,
-                            activeTrackColor = Color.Transparent,
-                            inactiveTrackColor = Color.Transparent
-                        )
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Advanced RGB controls toggle with enhanced design
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = RhythmIcons.Tune,
-                        contentDescription = null,
-                        
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = context.getString(R.string.theme_advanced_rgb),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                TunerAnimatedSwitch(
-                    checked = showAdvanced,
-                    onCheckedChange = { showAdvanced = it }
                 )
             }
         }
 
-        // Advanced RGB controls with enhanced design
-        AnimatedVisibility(
-            visible = showAdvanced,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
-        ) {
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    val red = (color.red * 255).toInt()
-                    val green = (color.green * 255).toInt()
-                    val blue = (color.blue * 255).toInt()
+        Spacer(modifier = Modifier.height(4.dp))
 
-                    var redValue by remember(color) { mutableStateOf(red.toFloat()) }
-                    var greenValue by remember(color) { mutableStateOf(green.toFloat()) }
-                    var blueValue by remember(color) { mutableStateOf(blue.toFloat()) }
-
-                    // Update HSL when RGB changes
-                    LaunchedEffect(redValue, greenValue, blueValue) {
-                        val rgbColor = Color(
-                            red = redValue / 255f,
-                            green = greenValue / 255f,
-                            blue = blueValue / 255f
-                        )
-                        val newHsl = rgbColor.toHSL()
-                        hue = newHsl.hue
-                        saturation = newHsl.saturation
-                        lightness = newHsl.lightness
-                    }
-
-                    Text(
-                        text = stringResource(R.string.themecustomizationsettingsscreen_rgb_values),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-
-                    ExpressiveColorSlider(
-                        label = stringResource(R.string.theme_color_red),
-                        value = redValue,
-                        onValueChange = { redValue = it },
-                        color = Color.Red,
-                        valueRange = 0f..255f
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    ExpressiveColorSlider(
-                        label = stringResource(R.string.theme_color_green),
-                        value = greenValue,
-                        onValueChange = { greenValue = it },
-                        color = Color.Green,
-                        valueRange = 0f..255f
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    ExpressiveColorSlider(
-                        label = stringResource(R.string.theme_color_blue),
-                        value = blueValue,
-                        onValueChange = { blueValue = it },
-                        color = Color.Blue,
-                        valueRange = 0f..255f
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-
-@Composable
-fun PresetColorRow(
-    title: String,
-    colors: List<Color>,
-    onColorSelected: (Color) -> Unit
-) {
-    Column {
         Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
-        LazyRow(
-            contentPadding = PaddingValues(0.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(colors) { color ->
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = color,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clickable { onColorSelected(color) },
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                ) {
-                    // Empty content
-                }
-            }
-        }
-    }
-}
-
-
-
-@Composable
-fun ExpressiveColorSlider(
-    label: String,
-    value: Float,
-    onValueChange: (Float) -> Unit,
-    color: Color,
-    valueRange: ClosedFloatingPointRange<Float>
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                modifier = Modifier.shadow(2.dp, RoundedCornerShape(12.dp))
-            ) {
-                Text(
-                    text = value.toInt().toString(),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = color.copy(alpha = 0.1f),
-            modifier = Modifier.fillMaxWidth(),
-            border = BorderStroke(1.dp, color.copy(alpha = 0.3f))
-        ) {
-            Slider(
-                value = value,
-                onValueChange = onValueChange,
-                valueRange = valueRange,
-                colors = SliderDefaults.colors(
-                    thumbColor = color,
-                    activeTrackColor = color,
-                    inactiveTrackColor = color.copy(alpha = 0.3f),
-                    activeTickColor = color,
-                    inactiveTickColor = color.copy(alpha = 0.3f)
-                ),
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-            )
-        }
-    }
-}
-
-
-
-// Helper function to get color temperature (approximate)
-fun getColorTemperature(color: Color): Int {
-    // Simplified color temperature calculation
-    val r = color.red
-    val g = color.green
-    val b = color.blue
-
-    // Rough approximation using RGB ratios
-    val temperature = if (r > g && r > b) {
-        2000 + (r - b) * 3000 // Warm
-    } else if (b > r && b > g) {
-        6000 + (b - r) * 4000 // Cool
-    } else {
-        4000 + (g - r) * 2000 // Neutral
-    }
-
-    return temperature.toInt().coerceIn(2000, 10000)
-}
-
-
-
-@Composable
-fun ColorPickerControls(
-    color: Color,
-    onColorChange: (Color) -> Unit
-) {
-    val context = LocalContext.current
-    val hsl = remember(color) { color.toHSL() }
-
-    var hue by remember(color) { mutableStateOf(hsl.hue) }
-    var saturation by remember(color) { mutableStateOf(hsl.saturation) }
-    var lightness by remember(color) { mutableStateOf(hsl.lightness) }
-
-    var showAdvanced by remember { mutableStateOf(false) }
-
-    // Update color when HSL values change
-    LaunchedEffect(hue, saturation, lightness) {
-        val newColor = HSLColor(hue, saturation, lightness).toColor()
-        onColorChange(newColor)
-    }
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        // Current color display with hex code
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = color,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
-            border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (color.luminance() > 0.5f) Color.Black.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.15f),
-                    modifier = Modifier.padding(12.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        Icon(
-                            imageVector = RhythmIcons.Palette,
-                            contentDescription = null,
-                            tint = if (color.luminance() > 0.5f) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.9f),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = String.format("#%06X", (color.toArgb() and 0xFFFFFF)),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = if (color.luminance() > 0.5f) Color.Black.copy(alpha = 0.9f) else Color.White,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Hue Slider
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.settings_hue),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHighest
-            ) {
-                Text(
-                    text = "${hue.toInt()}°",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Hue slider with color gradient
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = (0..360 step 20).map { h ->
-                                HSLColor(h.toFloat(), 1f, 0.5f).toColor()
-                            }
-                        )
-                    )
-            ) {
-                Slider(
-                    value = hue,
-                    onValueChange = { hue = it },
-                    valueRange = 0f..360f,
-                    modifier = Modifier.fillMaxSize(),
-                    colors = SliderDefaults.colors(
-                        thumbColor = Color.White,
-                        activeTrackColor = Color.Transparent,
-                        inactiveTrackColor = Color.Transparent
-                    )
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Saturation Slider
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.settings_saturation),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHighest
-            ) {
-                Text(
-                    text = "${(saturation * 100).toInt()}%",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.LightGray,
-                                HSLColor(hue, 1f, lightness).toColor()
-                            )
-                        )
-                    )
-            ) {
-                Slider(
-                    value = saturation,
-                    onValueChange = { saturation = it },
-                    valueRange = 0f..1f,
-                    modifier = Modifier.fillMaxSize(),
-                    colors = SliderDefaults.colors(
-                        thumbColor = Color.White,
-                        activeTrackColor = Color.Transparent,
-                        inactiveTrackColor = Color.Transparent
-                    )
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Lightness Slider
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.settings_lightness),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHighest
-            ) {
-                Text(
-                    text = "${(lightness * 100).toInt()}%",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Black,
-                                HSLColor(hue, saturation, 0.5f).toColor(),
-                                Color.White
-                            )
-                        )
-                    )
-            ) {
-                Slider(
-                    value = lightness,
-                    onValueChange = { lightness = it },
-                    valueRange = 0f..1f,
-                    modifier = Modifier.fillMaxSize(),
-                    colors = SliderDefaults.colors(
-                        thumbColor = Color.White,
-                        activeTrackColor = Color.Transparent,
-                        inactiveTrackColor = Color.Transparent
-                    )
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Advanced RGB controls toggle
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = context.getString(R.string.theme_advanced_rgb),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            TunerAnimatedSwitch(
-                checked = showAdvanced,
-                onCheckedChange = { showAdvanced = it }
-            )
-        }
-
-        // Advanced RGB controls
-        AnimatedVisibility(
-            visible = showAdvanced,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
-        ) {
-            Column(modifier = Modifier.padding(top = 16.dp)) {
-                val red = (color.red * 255).toInt()
-                val green = (color.green * 255).toInt()
-                val blue = (color.blue * 255).toInt()
-
-                var redValue by remember(color) { mutableStateOf(red.toFloat()) }
-                var greenValue by remember(color) { mutableStateOf(green.toFloat()) }
-                var blueValue by remember(color) { mutableStateOf(blue.toFloat()) }
-
-                // Update HSL when RGB changes
-                LaunchedEffect(redValue, greenValue, blueValue) {
-                    val rgbColor = Color(
-                        red = redValue / 255f,
-                        green = greenValue / 255f,
-                        blue = blueValue / 255f
-                    )
-                    val newHsl = rgbColor.toHSL()
-                    hue = newHsl.hue
-                    saturation = newHsl.saturation
-                    lightness = newHsl.lightness
-                }
-
-                ColorSlider(
-                    label = "Red",
-                    value = redValue,
-                    onValueChange = { redValue = it },
-                    color = Color.Red,
-                    valueRange = 0f..255f
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                ColorSlider(
-                    label = "Green",
-                    value = greenValue,
-                    onValueChange = { greenValue = it },
-                    color = Color.Green,
-                    valueRange = 0f..255f
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                ColorSlider(
-                    label = "Blue",
-                    value = blueValue,
-                    onValueChange = { blueValue = it },
-                    color = Color.Blue,
-                    valueRange = 0f..255f
-                )
-            }
-        }
-    }
-}
-
-
-
-@Composable
-fun ColorSlider(
-    label: String,
-    value: Float,
-    onValueChange: (Float) -> Unit,
-    color: Color,
-    valueRange: ClosedFloatingPointRange<Float>
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
-                Text(
-                    text = value.toInt().toString(),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = valueRange,
-            colors = SliderDefaults.colors(
-                thumbColor = color,
-                activeTrackColor = color,
-                inactiveTrackColor = color.copy(alpha = 0.3f),
-                activeTickColor = color,
-                inactiveTickColor = color.copy(alpha = 0.3f)
-            )
+            text = option.displayName,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
 
 
 
-enum class ColorType {
-    PRIMARY, SECONDARY, TERTIARY
-}
+
+
 
 
 

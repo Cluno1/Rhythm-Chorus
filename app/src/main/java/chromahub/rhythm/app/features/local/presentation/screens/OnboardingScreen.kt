@@ -170,6 +170,7 @@ import chromahub.rhythm.app.shared.presentation.components.common.rememberExpres
 import androidx.compose.ui.draw.shadow
 import chromahub.rhythm.app.shared.presentation.components.common.StyledProgressBar
 import chromahub.rhythm.app.shared.presentation.components.common.ProgressStyle
+import chromahub.rhythm.app.shared.presentation.components.common.ThumbStyle
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
@@ -8559,6 +8560,10 @@ fun EnhancedPlayerThemeChoiceContent(
 
     val playerThemeId by appSettings.playerThemeId.collectAsState()
     val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
+    val playerProgressStyle by appSettings.playerProgressStyle.collectAsState()
+    val playerProgressThumbStyle by appSettings.playerProgressThumbStyle.collectAsState()
+    val playerProgressThumbRotate by appSettings.playerProgressThumbRotate.collectAsState()
+    val miniPlayerProgressStyle by appSettings.miniPlayerProgressStyle.collectAsState()
 
     var selectedViewIndex by remember { mutableStateOf(0) } // 0 = Player, 1 = Mini Player
 
@@ -8639,7 +8644,11 @@ fun EnhancedPlayerThemeChoiceContent(
                 PlaybackThemePreview(
                     isPlayer = selectedViewIndex == 0,
                     playerThemeId = playerThemeId,
-                    miniPlayerThemeId = miniPlayerThemeId
+                    miniPlayerThemeId = miniPlayerThemeId,
+                    progressStyle = playerProgressStyle,
+                    thumbStyle = playerProgressThumbStyle,
+                    rotateThumbWhenPlaying = playerProgressThumbRotate,
+                    miniPlayerProgressStyle = miniPlayerProgressStyle
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -8706,7 +8715,11 @@ fun EnhancedPlayerThemeChoiceContent(
             PlaybackThemePreview(
                 isPlayer = selectedViewIndex == 0,
                 playerThemeId = playerThemeId,
-                miniPlayerThemeId = miniPlayerThemeId
+                miniPlayerThemeId = miniPlayerThemeId,
+                progressStyle = playerProgressStyle,
+                thumbStyle = playerProgressThumbStyle,
+                rotateThumbWhenPlaying = playerProgressThumbRotate,
+                miniPlayerProgressStyle = miniPlayerProgressStyle
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -8737,10 +8750,25 @@ fun EnhancedPlayerThemeChoiceContent(
 private fun PlaybackThemePreview(
     isPlayer: Boolean,
     playerThemeId: String,
-    miniPlayerThemeId: String
+    miniPlayerThemeId: String,
+    progressStyle: String,
+    thumbStyle: String,
+    rotateThumbWhenPlaying: Boolean,
+    miniPlayerProgressStyle: String
 ) {
     val isPlayerExpressive = playerThemeId == "EXPRESSIVE"
     val isMiniPlayerExpressive = miniPlayerThemeId == "EXPRESSIVE"
+    val previewProgressStyle = try {
+        ProgressStyle.valueOf(progressStyle)
+    } catch (e: IllegalArgumentException) {
+        ProgressStyle.NORMAL
+    }
+    val previewThumbStyle = ThumbStyle.fromStorage(thumbStyle)
+    val previewMiniProgressStyle = try {
+        ProgressStyle.valueOf(miniPlayerProgressStyle)
+    } catch (e: IllegalArgumentException) {
+        ProgressStyle.NORMAL
+    }
 
     Card(
         modifier = Modifier
@@ -8962,15 +8990,19 @@ private fun PlaybackThemePreview(
                                             )
                                         }
 
-                                        // Wavy progress bar
+                                        // Progress bar
                                         StyledProgressBar(
                                             progress = 0.65f,
-                                            style = ProgressStyle.WAVY,
+                                            style = previewProgressStyle,
                                             modifier = Modifier.weight(1f),
                                             progressColor = MaterialTheme.colorScheme.primary,
                                             trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
                                             height = 4.dp,
-                                            isPlaying = true
+                                            isPlaying = true,
+                                            showThumb = previewThumbStyle != ThumbStyle.NONE,
+                                            thumbStyle = previewThumbStyle,
+                                            thumbSize = 12.dp,
+                                            rotateThumbWhenPlaying = rotateThumbWhenPlaying
                                         )
                                     }
                                 }
@@ -9068,12 +9100,16 @@ private fun PlaybackThemePreview(
                             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 StyledProgressBar(
                                     progress = 0.65f,
-                                    style = ProgressStyle.NORMAL,
+                                    style = previewProgressStyle,
                                     modifier = Modifier.fillMaxWidth(),
                                     progressColor = MaterialTheme.colorScheme.secondary,
                                     trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
                                     height = 4.dp,
-                                    isPlaying = true
+                                    isPlaying = true,
+                                    showThumb = previewThumbStyle != ThumbStyle.NONE,
+                                    thumbStyle = previewThumbStyle,
+                                    thumbSize = 12.dp,
+                                    rotateThumbWhenPlaying = rotateThumbWhenPlaying
                                 )
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -9312,10 +9348,10 @@ private fun PlaybackThemePreview(
                                         )
                                     }
 
-                                    // Inline flat progress bar (faithful to original MaterialMiniPlayer top-progress with 28.dp horizontal padding)
+                                    // Inline flat progress bar
                                     StyledProgressBar(
                                         progress = 0.45f,
-                                        style = ProgressStyle.NORMAL,
+                                        style = previewMiniProgressStyle,
                                         modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp),
                                         progressColor = MaterialTheme.colorScheme.secondary,
                                         trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),

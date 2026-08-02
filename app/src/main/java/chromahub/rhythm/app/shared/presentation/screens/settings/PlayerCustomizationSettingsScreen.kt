@@ -184,6 +184,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
     // Progress bar settings
     val playerProgressStyle by appSettings.playerProgressStyle.collectAsState()
     val playerProgressThumbStyle by appSettings.playerProgressThumbStyle.collectAsState()
+    val playerProgressThumbRotate by appSettings.playerProgressThumbRotate.collectAsState()
 
     var showChipOrderBottomSheet by remember { mutableStateOf(false) }
     var showTextAlignmentSheet by remember { mutableStateOf(false) }
@@ -403,11 +404,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                 } catch (e: IllegalArgumentException) {
                     ProgressStyle.WAVY
                 }
-                val previewThumbStyle = try {
-                    ThumbStyle.valueOf(playerProgressThumbStyle)
-                } catch (e: IllegalArgumentException) {
-                    ThumbStyle.CIRCLE
-                }
+                val previewThumbStyle = ThumbStyle.fromStorage(playerProgressThumbStyle)
                 StyledProgressBar(
                     progress = 0.65f,
                     style = previewStyle,
@@ -420,7 +417,8 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                     isPlaying = true,
                     showThumb = previewThumbStyle != ThumbStyle.NONE,
                     thumbStyle = previewThumbStyle,
-                    thumbSize = 14.dp
+                    thumbSize = 14.dp,
+                    rotateThumbWhenPlaying = playerProgressThumbRotate
                 )
 
                 Material3SettingsGroup(
@@ -443,6 +441,17 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 title = context.getString(R.string.settings_thumb_style),
                                 description = playerProgressThumbStyle.lowercase().replaceFirstChar { it.uppercase() },
                                 onClick = { showPlayerThumbStyleSheet = true }
+                            )
+                        ),
+                        toMaterial3SettingsItem(
+                            context = context,
+                            hapticFeedback = haptics,
+                            item = SettingItem(
+                                icon = MaterialSymbolIcon("rotate_right"),
+                                title = context.getString(R.string.settings_thumb_rotate),
+                                description = context.getString(R.string.settings_thumb_rotate_desc),
+                                toggleState = playerProgressThumbRotate,
+                                onToggleChange = { appSettings.setPlayerProgressThumbRotate(it) }
                             )
                         )
                     ),
@@ -1222,14 +1231,15 @@ fun ThumbStyleBottomSheet(
 
     val thumbStyles = listOf(
         ThumbStyleOption("NONE", "None", RhythmIcons.VisibilityOff, "No thumb indicator"),
-        ThumbStyleOption("CIRCLE", "Circle", MaterialSymbolIcon("fiber_manual_record"), "Circular with highlight"),
-        ThumbStyleOption("PILL", "Pill", MaterialSymbolIcon("rounded_corner"), "Vertical pill shape"),
-        ThumbStyleOption("DIAMOND", "Diamond", MaterialSymbolIcon("change_history"), "Diamond rhombus"),
-        ThumbStyleOption("LINE", "Line", RhythmIcons.Remove, "Thin vertical line"),
-        ThumbStyleOption("SQUARE", "Square", MaterialSymbolIcon("crop_square"), "Rounded square"),
-        ThumbStyleOption("GLOW", "Glow", MaterialSymbolIcon("flare"), "Glowing circle"),
-        ThumbStyleOption("ARROW", "Arrow", RhythmIcons.Play, "Arrow pointer"),
-        ThumbStyleOption("DOT", "Dot", MaterialSymbolIcon("adjust"), "Small dot with ring")
+        ThumbStyleOption("DEFAULT", "Default", MaterialSymbolIcon("fiber_manual_record"), "Official M3 slider thumb"),
+        ThumbStyleOption("CIRCLE", "Circle", MaterialSymbolIcon("circle"), "M3 circle"),
+        ThumbStyleOption("SQUARE", "Square", MaterialSymbolIcon("crop_square"), "M3 rounded square"),
+        ThumbStyleOption("PILL", "Pill", MaterialSymbolIcon("rounded_corner"), "M3 pill"),
+        ThumbStyleOption("DIAMOND", "Diamond", MaterialSymbolIcon("diamond"), "M3 diamond"),
+        ThumbStyleOption("FLOWER", "Flower", MaterialSymbolIcon("local_florist"), "M3 flower"),
+        ThumbStyleOption("HEART", "Heart", MaterialSymbolIcon("favorite"), "M3 heart"),
+        ThumbStyleOption("COOKIE", "Cookie", MaterialSymbolIcon("cookie"), "M3 6-sided cookie"),
+        ThumbStyleOption("PUFFY", "Puffy", MaterialSymbolIcon("cloud"), "M3 puffy")
     )
 
     ModalBottomSheet(
@@ -1268,11 +1278,7 @@ fun ThumbStyleBottomSheet(
             ) {
                 items(thumbStyles) { styleOption ->
                     val isSelected = currentStyle == styleOption.id
-                    val thumbStyleEnum = try {
-                        ThumbStyle.valueOf(styleOption.id)
-                    } catch (e: IllegalArgumentException) {
-                        ThumbStyle.CIRCLE
-                    }
+                    val thumbStyleEnum = ThumbStyle.fromStorage(styleOption.id)
 
                     Card(
                         modifier = Modifier
@@ -1334,15 +1340,29 @@ fun ThumbStyleBottomSheet(
                                 horizontalArrangement = Arrangement.Center,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Icon(
-                                    imageVector = styleOption.icon,
-                                    contentDescription = null,
-                                    tint = if (isSelected)
-                                        MaterialTheme.colorScheme.onPrimaryContainer
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(16.dp)
-                                )
+                                if (thumbStyleEnum == ThumbStyle.NONE || thumbStyleEnum == ThumbStyle.DEFAULT) {
+                                    Icon(
+                                        imageVector = styleOption.icon,
+                                        contentDescription = null,
+                                        tint = if (isSelected)
+                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                        else
+                                            MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                } else {
+                                    // Render the M3 shape glyph
+                                    Surface(
+                                        modifier = Modifier.size(18.dp),
+                                        shape = rememberExpressiveShape(thumbStyleEnum.shapeId ?: "CIRCLE", CircleShape),
+                                        color = if (isSelected)
+                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                        else
+                                            MaterialTheme.colorScheme.primary
+                                    ) {
+                                        Box(modifier = Modifier.fillMaxSize())
+                                    }
+                                }
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = styleOption.label,

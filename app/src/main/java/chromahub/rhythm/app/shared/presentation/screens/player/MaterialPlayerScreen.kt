@@ -345,6 +345,7 @@ fun MaterialPlayerScreen(
     // Progress bar customization settings
     val playerProgressStyle by appSettingsInstance.playerProgressStyle.collectAsState()
     val playerProgressThumbStyle by appSettingsInstance.playerProgressThumbStyle.collectAsState()
+    val playerProgressThumbRotate by appSettingsInstance.playerProgressThumbRotate.collectAsState()
     
     // Enhanced seeking settings
     val enhancedSeekingEnabled by appSettingsInstance.enhancedSeekingEnabled.collectAsState()
@@ -2553,11 +2554,7 @@ fun MaterialPlayerScreen(
                                         ProgressStyle.NORMAL
                                     }
                                     
-                                    val thumbStyle = try {
-                                        ThumbStyle.valueOf(playerProgressThumbStyle)
-                                    } catch (e: IllegalArgumentException) {
-                                        ThumbStyle.CIRCLE
-                                    }
+                                    val thumbStyle = ThumbStyle.fromStorage(playerProgressThumbStyle)
                                     
                                     Box(
                                         modifier = Modifier
@@ -2582,6 +2579,7 @@ fun MaterialPlayerScreen(
                                             showThumb = thumbStyle != ThumbStyle.NONE,
                                             thumbStyle = thumbStyle,
                                             thumbSize = 14.dp,
+                                            rotateThumbWhenPlaying = playerProgressThumbRotate,
                                             waveAmplitudeWhenPlaying = 3.dp,
                                             waveLength = 60.dp // Longer wavelength = fewer waves for Player screen
                                         )

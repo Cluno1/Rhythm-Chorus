@@ -550,7 +550,8 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_ARTWORK_CORNER_RADIUS = "player_artwork_corner_radius" // 0-40 dp
         private const val KEY_PLAYER_SHOW_AUDIO_QUALITY_BADGES = "player_show_audio_quality_badges"
         private const val KEY_PLAYER_PROGRESS_STYLE = "player_progress_style" // "NORMAL", "WAVY", "ROUNDED", "THIN", "THICK"
-        private const val KEY_PLAYER_PROGRESS_THUMB_STYLE = "player_progress_thumb_style" // "NONE", "CIRCLE", "PILL", "DIAMOND", "LINE"
+        private const val KEY_PLAYER_PROGRESS_THUMB_STYLE = "player_progress_thumb_style" // "NONE", "DEFAULT", "CIRCLE", "SQUARE", "PILL", "DIAMOND", "FLOWER", "HEART", "COOKIE", "PUFFY"
+        private const val KEY_PLAYER_PROGRESS_THUMB_ROTATE = "player_progress_thumb_rotate" // Boolean
         
         // MiniPlayer Customization Settings
         private const val KEY_MINIPLAYER_PROGRESS_STYLE = "miniplayer_progress_style" // "NORMAL", "WAVY", "ROUNDED", "THIN", "GRADIENT"
@@ -5707,12 +5708,28 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         prefs.edit().putString(KEY_PLAYER_PROGRESS_STYLE, value).apply()
     }
     
-    // Player Progress Thumb Style
-    private val _playerProgressThumbStyle = MutableStateFlow(prefs.getString(KEY_PLAYER_PROGRESS_THUMB_STYLE, "CIRCLE") ?: "CIRCLE")
+    // Player Progress Thumb Style (migrates legacy names to the M3-native set)
+    private fun migrateThumbStyle(value: String): String = when (value) {
+        "GLOW", "ARROW" -> "DEFAULT"
+        "LINE" -> "PILL"
+        "OUTLINE", "DOT", "RING" -> "CIRCLE"
+        else -> value
+    }
+    private val _playerProgressThumbStyle = MutableStateFlow(
+        migrateThumbStyle(prefs.getString(KEY_PLAYER_PROGRESS_THUMB_STYLE, "DEFAULT") ?: "DEFAULT")
+    )
     val playerProgressThumbStyle: StateFlow<String> = _playerProgressThumbStyle.asStateFlow()
     fun setPlayerProgressThumbStyle(value: String) {
         _playerProgressThumbStyle.value = value
         prefs.edit().putString(KEY_PLAYER_PROGRESS_THUMB_STYLE, value).apply()
+    }
+    
+    // Player Progress Thumb Rotate While Playing
+    private val _playerProgressThumbRotate = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_PROGRESS_THUMB_ROTATE, false))
+    val playerProgressThumbRotate: StateFlow<Boolean> = _playerProgressThumbRotate.asStateFlow()
+    fun setPlayerProgressThumbRotate(value: Boolean) {
+        _playerProgressThumbRotate.value = value
+        prefs.edit().putBoolean(KEY_PLAYER_PROGRESS_THUMB_ROTATE, value).apply()
     }
     
     // ==================== MiniPlayer Customization Settings ====================

@@ -219,6 +219,7 @@ fun ExpressivePlayerScreen(
 
     val playerProgressStyle by appSettings.playerProgressStyle.collectAsState()
     val playerProgressThumbStyle by appSettings.playerProgressThumbStyle.collectAsState()
+    val playerProgressThumbRotate by appSettings.playerProgressThumbRotate.collectAsState()
     val enhancedSeekingEnabled by appSettings.enhancedSeekingEnabled.collectAsState()
     val playerAmbientBackdropEnabled by appSettings.playerAmbientBackdropEnabled.collectAsState()
     val playerAmbientBackdropIntensity by appSettings.playerAmbientBackdropIntensity.collectAsState()
@@ -711,12 +712,12 @@ fun ExpressivePlayerScreen(
                                                     activeTrackColor = primaryColor, inactiveTrackColor = onSurfaceColor.copy(alpha = 0.2f), thumbColor = primaryColor)
                                             } else {
                                                 val ps = try { ProgressStyle.valueOf(playerProgressStyle) } catch (e: IllegalArgumentException) { ProgressStyle.NORMAL }
-                                                val ts = try { ThumbStyle.valueOf(playerProgressThumbStyle) } catch (e: IllegalArgumentException) { ThumbStyle.CIRCLE }
+                                                val ts = ThumbStyle.fromStorage(playerProgressThumbStyle)
                                                 Box(Modifier.fillMaxWidth().height(32.dp), contentAlignment = Alignment.Center) {
                                                     StyledProgressBar(progress = progressValue, style = ps, modifier = Modifier.fillMaxWidth(),
                                                         progressColor = primaryColor, trackColor = onSurfaceColor.copy(alpha = 0.2f),
                                                         height = when (ps) { ProgressStyle.THIN -> 2.dp; ProgressStyle.THICK -> 12.dp; else -> 8.dp },
-                                                        isPlaying = isPlaying, showThumb = ts != ThumbStyle.NONE, thumbStyle = ts, thumbSize = 14.dp, waveAmplitudeWhenPlaying = 3.dp, waveLength = 60.dp)
+                                                        isPlaying = isPlaying, showThumb = ts != ThumbStyle.NONE, thumbStyle = ts, thumbSize = 14.dp, rotateThumbWhenPlaying = playerProgressThumbRotate, waveAmplitudeWhenPlaying = 3.dp, waveLength = 60.dp)
                                                     Slider(value = progressValue, onValueChange = { onSeek(it) }, modifier = Modifier.fillMaxWidth(), enabled = canSeek,
                                                         colors = SliderDefaults.colors(thumbColor = Color.Transparent, activeTrackColor = Color.Transparent, inactiveTrackColor = Color.Transparent))
                                                 }
