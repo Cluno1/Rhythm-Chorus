@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Escolha como as cores são extraídas</string>
     <string name="theme_font_source">Fonte da fonte</string>
     <string name="theme_font_source_desc">Escolha de onde carregar as fontes</string>
-    <string name="theme_color_schemes">Esquemas de cores</string>
-    <string name="theme_color_schemes_desc">Escolha entre esquemas de cores predefinidos</string>
     <string name="theme_custom_picker">Seletor de cores personalizado</string>
     <string name="theme_custom_picker_desc">Crie seu próprio esquema de cores</string>
     <string name="theme_font_selection">Seleção de fonte</string>
@@ -781,10 +779,6 @@
     <!-- Components: Equalizer -->
     
     <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Os esquemas de cores só estão disponíveis ao usar a fonte de cores personalizada.</string>
-    <string name="theme_color_schemes_switch">Mude para Personalizado na configuração Fonte de cor para acessar esquemas predefinidos.</string>
-    <string name="theme_custom_colors_unavailable">As cores personalizadas só estão disponíveis ao usar a fonte de cores personalizadas.</string>
-    <string name="theme_custom_colors_switch">Mude para Personalizado na configuração Fonte de cor para criar suas próprias cores.</string>
     <string name="theme_system_fonts_unavailable">As fontes do sistema só estão disponíveis ao usar a fonte de fontes do sistema.</string>
     <string name="theme_system_fonts_switch">Mude para Sistema na configuração Fonte da fonte para escolher as fontes disponíveis.</string>
     <!-- PlaceholderScreens Additional -->
@@ -826,8 +820,6 @@
     <!-- Cache -->
     
     <!-- Theme -->
-    <string name="theme_featured_schemes">ESQUEMAS EM DESTAQUE</string>
-    <string name="theme_more_schemes">MAIS ESQUEMAS</string>
     <string name="theme_quick_presets">Predefinições rápidas</string>
     <string name="theme_advanced_rgb">Controles RGB avançados</string>
     <!-- Services -->
@@ -1224,7 +1216,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Período de carência ativo</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">O intervalo termina em %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">O período de carência termina em %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Pontuação de segurança: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Predefinições de proteção</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Aplique rapidamente pacotes de proteção testados para o seu estilo de audição.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Suave</string>
@@ -1686,7 +1677,6 @@
     <string name="settings_miniplayer_header">Miniplayer</string>
     <string name="settings_show_progress">Mostrar progresso</string>
     <string name="settings_show_progress_desc">Exibir indicador de progresso</string>
-    <string name="settings_progress_mode">Modo Progresso</string>
     <string name="settings_show_artwork">Mostrar arte</string>
     <string name="settings_show_artwork_desc">Exibir capa do álbum</string>
     <string name="settings_show_time">Hora do show</string>
@@ -1729,8 +1719,6 @@
     <string name="settings_color_schemes">Esquemas de cores</string>
     <string name="settings_color_schemes_desc">Navegue e selecione paletas de cores predefinidas</string>
     <string name="settings_custom_only">Disponível apenas com fonte de cor personalizada</string>
-    <string name="settings_custom_colors">Cores personalizadas</string>
-    <string name="settings_custom_colors_desc">Crie sua própria paleta de cores exclusiva</string>
     <string name="settings_font_customization">Personalização de fonte</string>
     <string name="settings_font_source">Fonte da fonte</string>
     <string name="settings_font_source_system">Fonte do sistema - %1$s</string>
@@ -1929,8 +1917,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Mostrar progresso</string>
     <string name="settings_miniplayer_show_progress_desc">Exibir indicador de progresso no miniplayer</string>
-    <string name="settings_miniplayer_circular_progress">Progresso Circular</string>
-    <string name="settings_miniplayer_circular_progress_desc">Use o progresso circular no botão reproduzir/pausar</string>
     <string name="settings_miniplayer_progress_style">Estilo de Progresso</string>
     <string name="settings_miniplayer_progress_style_desc">Escolha o estilo da barra de progresso do miniplayer</string>
     <string name="settings_miniplayer_show_artwork">Mostrar arte</string>
@@ -1967,7 +1953,6 @@
     <string name="settings_backup_created">Backup criado com sucesso</string>
     <string name="settings_backup_settings">Configurações</string>
     <string name="settings_center_aligned">Alinhado ao centro</string>
-    <string name="settings_choose_progress_style">Escolha o estilo do indicador de progresso</string>
     <string name="settings_create_backup">Criar backup para arquivo</string>
     <string name="settings_create_backup_desc">Exportar backup completo para um arquivo JSON</string>
     <string name="settings_backup_action_short">Backup</string>
@@ -2454,9 +2439,6 @@
     <string name="color_scheme_mint_title">Hortelã</string>
     <string name="color_scheme_mint_desc">Tons ciano e verde menta frescos e limpos</string>
     <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Primário</string>
-    <string name="theme_color_secondary">Secundário</string>
-    <string name="theme_color_tertiary">Terciário</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Letras</string>
     <string name="lyrics_settings_general">Configurações Gerais</string>
@@ -2731,8 +2713,6 @@
     <string name="option_always">Sempre</string>
     <string name="option_expanded">Expandido</string>
     <string name="option_collapsed">Colapsado</string>
-    <string name="option_linear">Linear</string>
-    <string name="option_circular">Circular</string>
     <string name="option_both">Ambos</string>
     <string name="option_icon">Ícone</string>
     <string name="option_name">Nome</string>

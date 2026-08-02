@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Wybierz sposób wyodrębniania kolorów</string>
     <string name="theme_font_source">Źródło czcionki</string>
     <string name="theme_font_source_desc">Wybierz skąd mają być ładowane czcionki</string>
-    <string name="theme_color_schemes">Schematy kolorów</string>
-    <string name="theme_color_schemes_desc">Wybieraj spośród gotowych schematów kolorów</string>
     <string name="theme_custom_picker">Niestandardowy próbnik kolorów</string>
     <string name="theme_custom_picker_desc">Stwórz własny schemat kolorów</string>
     <string name="theme_font_selection">Wybór czcionki</string>
@@ -781,10 +779,6 @@
     <!-- Components: Equalizer -->
     
     <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Schematy kolorów są dostępne tylko w przypadku korzystania z niestandardowego źródła kolorów.</string>
-    <string name="theme_color_schemes_switch">Przełącz na opcję Niestandardowe w ustawieniu Źródło koloru, aby uzyskać dostęp do predefiniowanych schematów.</string>
-    <string name="theme_custom_colors_unavailable">Kolory niestandardowe są dostępne tylko w przypadku korzystania ze źródła koloru niestandardowego.</string>
-    <string name="theme_custom_colors_switch">Przełącz na opcję Niestandardowe w ustawieniu Źródło koloru, aby utworzyć własne kolory.</string>
     <string name="theme_system_fonts_unavailable">Czcionki systemowe są dostępne tylko w przypadku korzystania ze źródła czcionek systemowych.</string>
     <string name="theme_system_fonts_switch">Przejdź do opcji System w ustawieniu Źródło czcionek, aby wybrać jedną z dostępnych czcionek.</string>
     <!-- PlaceholderScreens Additional -->
@@ -826,8 +820,6 @@
     <!-- Cache -->
     
     <!-- Theme -->
-    <string name="theme_featured_schemes">WYRÓŻNIONE SCHEMATY</string>
-    <string name="theme_more_schemes">WIĘCEJ SCHEMATÓW</string>
     <string name="theme_quick_presets">Szybkie ustawienia wstępne</string>
     <string name="theme_advanced_rgb">Zaawansowane sterowanie RGB</string>
     <!-- Services -->
@@ -1224,7 +1216,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Aktywny okres karencji</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">Przerwa kończy się za %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">Okres karencji kończy się za %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Wynik bezpieczeństwa: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Ustawienia wstępne ochrony</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Szybko zastosuj przetestowane zestawy poręczy dostosowane do Twojego stylu słuchania.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Delikatny</string>
@@ -1686,7 +1677,6 @@
     <string name="settings_miniplayer_header">Miniodtwarzacz</string>
     <string name="settings_show_progress">Pokaż postęp</string>
     <string name="settings_show_progress_desc">Wyświetlanie wskaźnika postępu</string>
-    <string name="settings_progress_mode">Tryb postępu</string>
     <string name="settings_show_artwork">Pokaż grafikę</string>
     <string name="settings_show_artwork_desc">Wyświetl okładkę albumu</string>
     <string name="settings_show_time">Czas pokazu</string>
@@ -1729,8 +1719,6 @@
     <string name="settings_color_schemes">Schematy kolorów</string>
     <string name="settings_color_schemes_desc">Przeglądaj i wybieraj predefiniowane palety kolorów</string>
     <string name="settings_custom_only">Dostępne tylko w przypadku niestandardowego źródła koloru</string>
-    <string name="settings_custom_colors">Kolory niestandardowe</string>
-    <string name="settings_custom_colors_desc">Stwórz własną, niepowtarzalną paletę kolorów</string>
     <string name="settings_font_customization">Dostosowywanie czcionki</string>
     <string name="settings_font_source">Źródło czcionki</string>
     <string name="settings_font_source_system">Czcionka systemowa - %1$s</string>
@@ -1929,8 +1917,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Pokaż postęp</string>
     <string name="settings_miniplayer_show_progress_desc">Wyświetlanie wskaźnika postępu w miniodtwarzaczu</string>
-    <string name="settings_miniplayer_circular_progress">Okrągły postęp</string>
-    <string name="settings_miniplayer_circular_progress_desc">Użyj cyklicznego postępu na przycisku odtwarzania/pauzy</string>
     <string name="settings_miniplayer_progress_style">Styl postępu</string>
     <string name="settings_miniplayer_progress_style_desc">Wybierz styl paska postępu miniodtwarzacza</string>
     <string name="settings_miniplayer_show_artwork">Pokaż grafikę</string>
@@ -1967,7 +1953,6 @@
     <string name="settings_backup_created">Pomyślnie utworzono kopię zapasową</string>
     <string name="settings_backup_settings">Ustawienia</string>
     <string name="settings_center_aligned">Wyśrodkowane</string>
-    <string name="settings_choose_progress_style">Wybierz styl wskaźnika postępu</string>
     <string name="settings_create_backup">Utwórz kopię zapasową do pliku</string>
     <string name="settings_create_backup_desc">Eksportuj całą kopię zapasową do pliku JSON</string>
     <string name="settings_backup_action_short">Kopia zapasowa</string>
@@ -2454,9 +2439,6 @@
     <string name="color_scheme_mint_title">Mięta</string>
     <string name="color_scheme_mint_desc">Świeże i czyste odcienie cyjanu i mięty</string>
     <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Podstawowy</string>
-    <string name="theme_color_secondary">Drugorzędne</string>
-    <string name="theme_color_tertiary">Trzeciorzędny</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Teksty</string>
     <string name="lyrics_settings_general">Ustawienia ogólne</string>
@@ -2731,8 +2713,6 @@
     <string name="option_always">Zawsze</string>
     <string name="option_expanded">Rozszerzone</string>
     <string name="option_collapsed">Zawalił się</string>
-    <string name="option_linear">Liniowy</string>
-    <string name="option_circular">Okólnik</string>
     <string name="option_both">Obydwa</string>
     <string name="option_icon">Ikona</string>
     <string name="option_name">Imię</string>

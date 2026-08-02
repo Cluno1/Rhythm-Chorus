@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">चुनें कि रंग कैसे निकाले जाते हैं</string>
     <string name="theme_font_source">फ़ॉन्ट स्रोत</string>
     <string name="theme_font_source_desc">चुनें कि फ़ॉन्ट कहां से लोड करना है</string>
-    <string name="theme_color_schemes">रंग योजनाएं</string>
-    <string name="theme_color_schemes_desc">पूर्व निर्धारित रंग योजनाओं में से चुनें</string>
     <string name="theme_custom_picker">कस्टम रंग चयनकर्ता</string>
     <string name="theme_custom_picker_desc">अपनी खुद की रंग योजना बनाएं</string>
     <string name="theme_font_selection">फ़ॉन्ट चयन</string>
@@ -781,10 +779,6 @@
     <!-- Components: Equalizer -->
     
     <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">रंग योजनाएं केवल कस्टम रंग स्रोत का उपयोग करने पर ही उपलब्ध होती हैं।</string>
-    <string name="theme_color_schemes_switch">पूर्वनिर्धारित योजनाओं तक पहुंचने के लिए कलर सोर्स सेटिंग में कस्टम पर स्विच करें।</string>
-    <string name="theme_custom_colors_unavailable">कस्टम रंग केवल कस्टम रंग स्रोत का उपयोग करने पर ही उपलब्ध होते हैं।</string>
-    <string name="theme_custom_colors_switch">अपने खुद के रंग बनाने के लिए कलर सोर्स सेटिंग में कस्टम पर स्विच करें।</string>
     <string name="theme_system_fonts_unavailable">सिस्टम फ़ॉन्ट केवल सिस्टम फ़ॉन्ट स्रोत का उपयोग करते समय ही उपलब्ध होते हैं।</string>
     <string name="theme_system_fonts_switch">उपलब्ध फ़ॉन्ट में से चुनने के लिए फ़ॉन्ट स्रोत सेटिंग में सिस्टम पर स्विच करें।</string>
     <!-- PlaceholderScreens Additional -->
@@ -826,8 +820,6 @@
     <!-- Cache -->
     
     <!-- Theme -->
-    <string name="theme_featured_schemes">विशेष योजनाएं</string>
-    <string name="theme_more_schemes">अधिक योजनाएं</string>
     <string name="theme_quick_presets">त्वरित प्रीसेट</string>
     <string name="theme_advanced_rgb">उन्नत आरजीबी नियंत्रण</string>
     <!-- Services -->
@@ -1224,7 +1216,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">अनुग्रह अवधि सक्रिय</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">ब्रेक %1$s में समाप्त होता है</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">अनुग्रह अवधि %1$s में समाप्त होती है</string>
-    <string name="settings_rhythm_guard_state_safety_score">सुरक्षा स्कोर: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">सुरक्षा प्रीसेट</string>
     <string name="settings_rhythm_guard_protection_presets_desc">अपनी सुनने की शैली के लिए तुरंत परीक्षण किए गए रेलिंग बंडलों को लागू करें।</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">कोमल</string>
@@ -1686,7 +1677,6 @@
     <string name="settings_miniplayer_header">मिनीप्लेयर</string>
     <string name="settings_show_progress">प्रगति दिखाएं</string>
     <string name="settings_show_progress_desc">प्रगति संकेतक प्रदर्शित करें</string>
-    <string name="settings_progress_mode">प्रगति मोड</string>
     <string name="settings_show_artwork">कलाकृति दिखाएँ</string>
     <string name="settings_show_artwork_desc">एल्बम कलाकृति प्रदर्शित करें</string>
     <string name="settings_show_time">शो टाइम</string>
@@ -1729,8 +1719,6 @@
     <string name="settings_color_schemes">रंग योजनाएं</string>
     <string name="settings_color_schemes_desc">पूर्वनिर्धारित रंग पैलेट ब्राउज़ करें और चुनें</string>
     <string name="settings_custom_only">केवल कस्टम रंग स्रोत के साथ उपलब्ध है</string>
-    <string name="settings_custom_colors">कस्टम रंग</string>
-    <string name="settings_custom_colors_desc">अपना खुद का अनोखा रंग पैलेट बनाएं</string>
     <string name="settings_font_customization">फ़ॉन्ट अनुकूलन</string>
     <string name="settings_font_source">फ़ॉन्ट स्रोत</string>
     <string name="settings_font_source_system">सिस्टम फ़ॉन्ट - %1$s</string>
@@ -1929,8 +1917,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">प्रगति दिखाएं</string>
     <string name="settings_miniplayer_show_progress_desc">मिनी प्लेयर में प्रगति संकेतक प्रदर्शित करें</string>
-    <string name="settings_miniplayer_circular_progress">चक्रीय प्रगति</string>
-    <string name="settings_miniplayer_circular_progress_desc">प्ले/पॉज़ बटन पर गोलाकार प्रगति का उपयोग करें</string>
     <string name="settings_miniplayer_progress_style">प्रगति शैली</string>
     <string name="settings_miniplayer_progress_style_desc">मिनी प्लेयर प्रोग्रेस बार शैली चुनें</string>
     <string name="settings_miniplayer_show_artwork">कलाकृति दिखाएँ</string>
@@ -1967,7 +1953,6 @@
     <string name="settings_backup_created">बैकअप सफलतापूर्वक बनाया गया</string>
     <string name="settings_backup_settings">सेटिंग्स</string>
     <string name="settings_center_aligned">केंद्र संरेखित</string>
-    <string name="settings_choose_progress_style">प्रगति सूचक शैली चुनें</string>
     <string name="settings_create_backup">फ़ाइल का बैकअप बनाएं</string>
     <string name="settings_create_backup_desc">संपूर्ण बैकअप को JSON फ़ाइल में निर्यात करें</string>
     <string name="settings_backup_action_short">बैकअप</string>
@@ -2454,9 +2439,6 @@
     <string name="color_scheme_mint_title">मिंट</string>
     <string name="color_scheme_mint_desc">ताजा और साफ सियान और पुदीना हरा टोन</string>
     <!-- Color Preview Chips -->
-    <string name="theme_color_primary">प्राथमिक</string>
-    <string name="theme_color_secondary">माध्यमिक</string>
-    <string name="theme_color_tertiary">तृतीयक</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">गीत</string>
     <string name="lyrics_settings_general">सामान्य सेटिंग्स</string>
@@ -2731,8 +2713,6 @@
     <string name="option_always">हमेशा</string>
     <string name="option_expanded">विस्तारित</string>
     <string name="option_collapsed">संक्षिप्त किए गए</string>
-    <string name="option_linear">रेखीय</string>
-    <string name="option_circular">परिपत्र</string>
     <string name="option_both">दोनों</string>
     <string name="option_icon">आइकन</string>
     <string name="option_name">नाम</string>

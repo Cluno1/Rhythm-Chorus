@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Chọn cách trích xuất màu</string>
     <string name="theme_font_source">Nguồn phông chữ</string>
     <string name="theme_font_source_desc">Chọn nơi tải phông chữ từ đó</string>
-    <string name="theme_color_schemes">Cách phối màu</string>
-    <string name="theme_color_schemes_desc">Chọn từ các bảng màu cài sẵn</string>
     <string name="theme_custom_picker">Bộ chọn màu tùy chỉnh</string>
     <string name="theme_custom_picker_desc">Tạo bảng màu của riêng bạn</string>
     <string name="theme_font_selection">Lựa chọn phông chữ</string>
@@ -781,10 +779,6 @@
     <!-- Components: Equalizer -->
     
     <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Cách phối màu chỉ khả dụng khi sử dụng Nguồn màu tùy chỉnh.</string>
-    <string name="theme_color_schemes_switch">Chuyển sang Tùy chỉnh trong cài đặt Nguồn màu để truy cập các lược đồ được xác định trước.</string>
-    <string name="theme_custom_colors_unavailable">Màu tùy chỉnh chỉ khả dụng khi sử dụng Nguồn màu tùy chỉnh.</string>
-    <string name="theme_custom_colors_switch">Chuyển sang Tùy chỉnh trong cài đặt Nguồn màu để tạo màu của riêng bạn.</string>
     <string name="theme_system_fonts_unavailable">Phông chữ hệ thống chỉ khả dụng khi sử dụng nguồn phông chữ Hệ thống.</string>
     <string name="theme_system_fonts_switch">Chuyển sang Hệ thống trong cài đặt Nguồn phông chữ để chọn từ các phông chữ có sẵn.</string>
     <!-- PlaceholderScreens Additional -->
@@ -826,8 +820,6 @@
     <!-- Cache -->
     
     <!-- Theme -->
-    <string name="theme_featured_schemes">CÁC SƠ ĐỒ NỔI BẬT</string>
-    <string name="theme_more_schemes">NHIỀU KẾ HOẠCH HƠN</string>
     <string name="theme_quick_presets">Cài đặt trước nhanh</string>
     <string name="theme_advanced_rgb">Điều khiển RGB nâng cao</string>
     <!-- Services -->
@@ -1224,7 +1216,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Thời gian ân hạn đang hoạt động</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">Nghỉ giải lao kết thúc sau %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">Thời gian gia hạn kết thúc vào %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Điểm an toàn: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Cài đặt trước bảo vệ</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Nhanh chóng áp dụng các gói lan can đã được thử nghiệm cho phong cách nghe của bạn.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Nhẹ nhàng</string>
@@ -1686,7 +1677,6 @@
     <string name="settings_miniplayer_header">Trình phát thu nhỏ</string>
     <string name="settings_show_progress">Hiển thị tiến độ</string>
     <string name="settings_show_progress_desc">Hiển thị chỉ báo tiến trình</string>
-    <string name="settings_progress_mode">Chế độ tiến bộ</string>
     <string name="settings_show_artwork">Hiển thị tác phẩm nghệ thuật</string>
     <string name="settings_show_artwork_desc">Hiển thị ảnh bìa album</string>
     <string name="settings_show_time">Thời gian chiếu</string>
@@ -1729,8 +1719,6 @@
     <string name="settings_color_schemes">Cách phối màu</string>
     <string name="settings_color_schemes_desc">Duyệt và chọn bảng màu được xác định trước</string>
     <string name="settings_custom_only">Chỉ khả dụng với nguồn màu Tùy chỉnh</string>
-    <string name="settings_custom_colors">Màu tùy chỉnh</string>
-    <string name="settings_custom_colors_desc">Tạo bảng màu độc đáo của riêng bạn</string>
     <string name="settings_font_customization">Tùy chỉnh phông chữ</string>
     <string name="settings_font_source">Nguồn phông chữ</string>
     <string name="settings_font_source_system">Phông chữ hệ thống - %1$s</string>
@@ -1929,8 +1917,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Hiển thị tiến độ</string>
     <string name="settings_miniplayer_show_progress_desc">Hiển thị chỉ báo tiến trình trong trình phát mini</string>
-    <string name="settings_miniplayer_circular_progress">Tiến độ tuần hoàn</string>
-    <string name="settings_miniplayer_circular_progress_desc">Sử dụng tiến trình vòng tròn trên nút phát/tạm dừng</string>
     <string name="settings_miniplayer_progress_style">Phong cách tiến bộ</string>
     <string name="settings_miniplayer_progress_style_desc">Chọn kiểu thanh tiến trình của trình phát mini</string>
     <string name="settings_miniplayer_show_artwork">Hiển thị tác phẩm nghệ thuật</string>
@@ -1967,7 +1953,6 @@
     <string name="settings_backup_created">Sao lưu được tạo thành công</string>
     <string name="settings_backup_settings">Cài đặt</string>
     <string name="settings_center_aligned">Căn giữa</string>
-    <string name="settings_choose_progress_style">Chọn kiểu chỉ báo tiến trình</string>
     <string name="settings_create_backup">Tạo bản sao lưu vào tập tin</string>
     <string name="settings_create_backup_desc">Xuất bản sao lưu hoàn chỉnh sang tệp JSON</string>
     <string name="settings_backup_action_short">Sao lưu</string>
@@ -2454,9 +2439,6 @@
     <string name="color_scheme_mint_title">Bạc hà</string>
     <string name="color_scheme_mint_desc">Tông màu lục lam và xanh bạc hà tươi tắn và sạch sẽ</string>
     <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Tiểu học</string>
-    <string name="theme_color_secondary">Thứ cấp</string>
-    <string name="theme_color_tertiary">Đại học</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Lời bài hát</string>
     <string name="lyrics_settings_general">Cài đặt chung</string>
@@ -2731,8 +2713,6 @@
     <string name="option_always">Luôn luôn</string>
     <string name="option_expanded">Mở rộng</string>
     <string name="option_collapsed">Đã sụp đổ</string>
-    <string name="option_linear">Tuyến tính</string>
-    <string name="option_circular">Thông tư</string>
     <string name="option_both">Cả hai</string>
     <string name="option_icon">Biểu tượng</string>
     <string name="option_name">Tên</string>

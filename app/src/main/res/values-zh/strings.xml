@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">选择颜色的提取方式</string>
     <string name="theme_font_source">字体来源</string>
     <string name="theme_font_source_desc">选择从何处加载字体</string>
-    <string name="theme_color_schemes">配色方案</string>
-    <string name="theme_color_schemes_desc">从预设配色方案中选择</string>
     <string name="theme_custom_picker">自定义颜色选择器</string>
     <string name="theme_custom_picker_desc">创建您自己的配色方案</string>
     <string name="theme_font_selection">字体选择</string>
@@ -781,10 +779,6 @@
     <!-- Components: Equalizer -->
     
     <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">配色方案仅在使用自定义颜色源时可用。</string>
-    <string name="theme_color_schemes_switch">在“颜色源”设置中切换到“自定义”以访问预定义的方案。</string>
-    <string name="theme_custom_colors_unavailable">自定义颜色仅在使用自定义颜色源时可用。</string>
-    <string name="theme_custom_colors_switch">在“颜色源”设置中切换到“自定义”以创建您自己的颜色。</string>
     <string name="theme_system_fonts_unavailable">系统字体仅在使用系统字体源时可用。</string>
     <string name="theme_system_fonts_switch">在字体源设置中切换到系统以从可用字体中进行选择。</string>
     <!-- PlaceholderScreens Additional -->
@@ -826,8 +820,6 @@
     <!-- Cache -->
     
     <!-- Theme -->
-    <string name="theme_featured_schemes">特色方案</string>
-    <string name="theme_more_schemes">更多方案</string>
     <string name="theme_quick_presets">快速预设</string>
     <string name="theme_advanced_rgb">高级 RGB 控制</string>
     <!-- Services -->
@@ -1224,7 +1216,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">宽限期已激活</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">中断以 %1$s 结束</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">宽限期于 %1$s 结束</string>
-    <string name="settings_rhythm_guard_state_safety_score">安全评分：%1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">保护预设</string>
     <string name="settings_rhythm_guard_protection_presets_desc">根据您的聆听风格快速应用经过测试的护栏束。</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">温柔</string>
@@ -1686,7 +1677,6 @@
     <string name="settings_miniplayer_header">迷你播放器</string>
     <string name="settings_show_progress">显示进度</string>
     <string name="settings_show_progress_desc">显示进度指示器</string>
-    <string name="settings_progress_mode">进度模式</string>
     <string name="settings_show_artwork">显示封面</string>
     <string name="settings_show_artwork_desc">显示专辑封面</string>
     <string name="settings_show_time">显示时间</string>
@@ -1729,8 +1719,6 @@
     <string name="settings_color_schemes">配色方案</string>
     <string name="settings_color_schemes_desc">浏览并选择预定义的调色板</string>
     <string name="settings_custom_only">仅适用于自定义颜色源</string>
-    <string name="settings_custom_colors">自定义颜色</string>
-    <string name="settings_custom_colors_desc">创建您自己独特的调色板</string>
     <string name="settings_font_customization">字体定制</string>
     <string name="settings_font_source">字体来源</string>
     <string name="settings_font_source_system">系统字体-%1$s</string>
@@ -1929,8 +1917,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">显示进度条</string>
     <string name="settings_miniplayer_show_progress_desc">在迷你播放器中显示进度指示器</string>
-    <string name="settings_miniplayer_circular_progress">循环进展</string>
-    <string name="settings_miniplayer_circular_progress_desc">在播放/暂停按钮上使用循环进度</string>
     <string name="settings_miniplayer_progress_style">进度条样式</string>
     <string name="settings_miniplayer_progress_style_desc">选择迷你播放器进度条样式</string>
     <string name="settings_miniplayer_show_artwork">显示封面</string>
@@ -1967,7 +1953,6 @@
     <string name="settings_backup_created">备份创建成功</string>
     <string name="settings_backup_settings">设置</string>
     <string name="settings_center_aligned">居中对齐</string>
-    <string name="settings_choose_progress_style">选择进度指示器样式</string>
     <string name="settings_create_backup">创建文件备份</string>
     <string name="settings_create_backup_desc">将完整备份导出到 JSON 文件</string>
     <string name="settings_backup_action_short">备份</string>
@@ -2454,9 +2439,6 @@
     <string name="color_scheme_mint_title">薄荷</string>
     <string name="color_scheme_mint_desc">清新干净的青色和薄荷绿色调</string>
     <!-- Color Preview Chips -->
-    <string name="theme_color_primary">首要色</string>
-    <string name="theme_color_secondary">次要色</string>
-    <string name="theme_color_tertiary">三级色</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">歌词</string>
     <string name="lyrics_settings_general">常规设置</string>
@@ -2731,8 +2713,6 @@
     <string name="option_always">永远</string>
     <string name="option_expanded">扩展</string>
     <string name="option_collapsed">倒塌</string>
-    <string name="option_linear">线性</string>
-    <string name="option_circular">圆形</string>
     <string name="option_both">两者</string>
     <string name="option_icon">图标</string>
     <string name="option_name">名称</string>

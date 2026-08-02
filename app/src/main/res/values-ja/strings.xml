@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">色の抽出方法を選択する</string>
     <string name="theme_font_source">フォントソース</string>
     <string name="theme_font_source_desc">フォントの読み込み元を選択します</string>
-    <string name="theme_color_schemes">配色</string>
-    <string name="theme_color_schemes_desc">プリセットの配色から選択</string>
     <string name="theme_custom_picker">カスタムカラーピッカー</string>
     <string name="theme_custom_picker_desc">独自の配色を作成する</string>
     <string name="theme_font_selection">フォントの選択</string>
@@ -781,10 +779,6 @@
     <!-- Components: Equalizer -->
     
     <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">カラー スキームは、カスタム カラー ソースを使用する場合にのみ使用できます。</string>
-    <string name="theme_color_schemes_switch">カラー ソース設定でカスタムに切り替えて、事前定義されたスキームにアクセスします。</string>
-    <string name="theme_custom_colors_unavailable">カスタム カラーは、カスタム カラー ソースを使用する場合にのみ使用できます。</string>
-    <string name="theme_custom_colors_switch">カラー ソース設定でカスタムに切り替えて、独自の色を作成します。</string>
     <string name="theme_system_fonts_unavailable">システム フォントは、システム フォント ソースを使用する場合にのみ使用できます。</string>
     <string name="theme_system_fonts_switch">[フォント ソース] 設定で [システム] に切り替えて、利用可能なフォントから選択します。</string>
     <!-- PlaceholderScreens Additional -->
@@ -826,8 +820,6 @@
     <!-- Cache -->
     
     <!-- Theme -->
-    <string name="theme_featured_schemes">注目のスキーム</string>
-    <string name="theme_more_schemes">さらなるスキーム</string>
     <string name="theme_quick_presets">クイックプリセット</string>
     <string name="theme_advanced_rgb">高度な RGB コントロール</string>
     <!-- Services -->
@@ -1224,7 +1216,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">猶予期間が有効です</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">%1$s で休憩が終了します</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">猶予期間は %1$s に終了します</string>
-    <string name="settings_rhythm_guard_state_safety_score">安全性スコア: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">保護プリセット</string>
     <string name="settings_rhythm_guard_protection_presets_desc">テスト済みのガードレール バンドルをリスニング スタイルにすばやく適用します。</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">優しい</string>
@@ -1686,7 +1677,6 @@
     <string name="settings_miniplayer_header">ミニプレーヤー</string>
     <string name="settings_show_progress">進行状況を表示</string>
     <string name="settings_show_progress_desc">進行状況インジケーターの表示</string>
-    <string name="settings_progress_mode">プログレスモード</string>
     <string name="settings_show_artwork">アートワークを表示</string>
     <string name="settings_show_artwork_desc">アルバムアートワークを表示する</string>
     <string name="settings_show_time">ショータイム</string>
@@ -1729,8 +1719,6 @@
     <string name="settings_color_schemes">配色</string>
     <string name="settings_color_schemes_desc">定義済みのカラーパレットを参照して選択します</string>
     <string name="settings_custom_only">カスタム カラー ソースでのみ使用可能</string>
-    <string name="settings_custom_colors">カスタムカラー</string>
-    <string name="settings_custom_colors_desc">独自のカラーパレットを作成する</string>
     <string name="settings_font_customization">フォントのカスタマイズ</string>
     <string name="settings_font_source">フォントソース</string>
     <string name="settings_font_source_system">システム フォント - %1$s</string>
@@ -1929,8 +1917,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">進行状況を表示</string>
     <string name="settings_miniplayer_show_progress_desc">ミニプレーヤーに進行状況インジケーターを表示する</string>
-    <string name="settings_miniplayer_circular_progress">循環進行状況</string>
-    <string name="settings_miniplayer_circular_progress_desc">再生/一時停止ボタンで円形の進行状況を使用する</string>
     <string name="settings_miniplayer_progress_style">進行スタイル</string>
     <string name="settings_miniplayer_progress_style_desc">ミニプレーヤーのプログレスバーのスタイルを選択します</string>
     <string name="settings_miniplayer_show_artwork">アートワークの表示</string>
@@ -1967,7 +1953,6 @@
     <string name="settings_backup_created">バックアップが正常に作成されました</string>
     <string name="settings_backup_settings">設定</string>
     <string name="settings_center_aligned">中央揃え</string>
-    <string name="settings_choose_progress_style">進行状況インジケーターのスタイルを選択してください</string>
     <string name="settings_create_backup">ファイルへのバックアップの作成</string>
     <string name="settings_create_backup_desc">完全なバックアップを JSON ファイルにエクスポートします</string>
     <string name="settings_backup_action_short">バックアップ</string>
@@ -2454,9 +2439,6 @@
     <string name="color_scheme_mint_title">ミント</string>
     <string name="color_scheme_mint_desc">爽やかでクリーンなシアンとミントグリーンの色合い</string>
     <!-- Color Preview Chips -->
-    <string name="theme_color_primary">プライマリー</string>
-    <string name="theme_color_secondary">二次</string>
-    <string name="theme_color_tertiary">三次</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">歌詞</string>
     <string name="lyrics_settings_general">一般設定</string>
@@ -2731,8 +2713,6 @@
     <string name="option_always">いつも</string>
     <string name="option_expanded">拡大</string>
     <string name="option_collapsed">崩壊</string>
-    <string name="option_linear">リニア</string>
-    <string name="option_circular">回覧</string>
     <string name="option_both">両方</string>
     <string name="option_icon">アイコン</string>
     <string name="option_name">名前</string>

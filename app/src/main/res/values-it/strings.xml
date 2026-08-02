@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Scegli come vengono estratti i colori</string>
     <string name="theme_font_source">Origine carattere</string>
     <string name="theme_font_source_desc">Scegli da dove caricare i caratteri</string>
-    <string name="theme_color_schemes">Combinazioni di colori</string>
-    <string name="theme_color_schemes_desc">Scegli tra gli schemi di colori preimpostati</string>
     <string name="theme_custom_picker">Selettore colore personalizzato</string>
     <string name="theme_custom_picker_desc">Crea la tua combinazione di colori</string>
     <string name="theme_font_selection">Selezione del carattere</string>
@@ -781,10 +779,6 @@
     <!-- Components: Equalizer -->
     
     <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Gli schemi di colori sono disponibili solo quando si utilizza la sorgente colore personalizzata.</string>
-    <string name="theme_color_schemes_switch">Passare a Personalizzato nell\'impostazione Origine colore per accedere agli schemi predefiniti.</string>
-    <string name="theme_custom_colors_unavailable">I colori personalizzati sono disponibili solo quando si utilizza la sorgente colore personalizzata.</string>
-    <string name="theme_custom_colors_switch">Passa a Personalizzato nell\'impostazione Origine colore per creare i tuoi colori.</string>
     <string name="theme_system_fonts_unavailable">I caratteri di sistema sono disponibili solo quando si utilizza l\'origine caratteri di sistema.</string>
     <string name="theme_system_fonts_switch">Passa a Sistema nell\'impostazione Origine carattere per scegliere tra i caratteri disponibili.</string>
     <!-- PlaceholderScreens Additional -->
@@ -826,8 +820,6 @@
     <!-- Cache -->
     
     <!-- Theme -->
-    <string name="theme_featured_schemes">SCHEMI IN EVIDENZA</string>
-    <string name="theme_more_schemes">ALTRI SCHEMI</string>
     <string name="theme_quick_presets">Preimpostazioni rapide</string>
     <string name="theme_advanced_rgb">Controlli RGB avanzati</string>
     <!-- Services -->
@@ -1224,7 +1216,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Periodo di grazia attivo</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">La pausa termina tra %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">Il periodo di tolleranza termina tra %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Punteggio di sicurezza: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Preimpostazioni di protezione</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Applica rapidamente pacchetti guardrail testati per il tuo stile di ascolto.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Gentile</string>
@@ -1686,7 +1677,6 @@
     <string name="settings_miniplayer_header">Minilettore</string>
     <string name="settings_show_progress">Mostra l\'avanzamento</string>
     <string name="settings_show_progress_desc">Visualizza l\'indicatore di avanzamento</string>
-    <string name="settings_progress_mode">Modalità Avanzamento</string>
     <string name="settings_show_artwork">Mostra grafica</string>
     <string name="settings_show_artwork_desc">Visualizza la copertina dell\'album</string>
     <string name="settings_show_time">Orario spettacolo</string>
@@ -1729,8 +1719,6 @@
     <string name="settings_color_schemes">Combinazioni di colori</string>
     <string name="settings_color_schemes_desc">Sfoglia e seleziona le tavolozze dei colori predefinite</string>
     <string name="settings_custom_only">Disponibile solo con la sorgente colore personalizzata</string>
-    <string name="settings_custom_colors">Colori personalizzati</string>
-    <string name="settings_custom_colors_desc">Crea la tua tavolozza di colori unica</string>
     <string name="settings_font_customization">Personalizzazione dei caratteri</string>
     <string name="settings_font_source">Origine carattere</string>
     <string name="settings_font_source_system">Carattere di sistema - %1$s</string>
@@ -1929,8 +1917,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Mostra i progressi</string>
     <string name="settings_miniplayer_show_progress_desc">Visualizza l\'indicatore di avanzamento nel mini player</string>
-    <string name="settings_miniplayer_circular_progress">Progresso Circolare</string>
-    <string name="settings_miniplayer_circular_progress_desc">Utilizzare l\'avanzamento circolare sul pulsante di riproduzione/pausa</string>
     <string name="settings_miniplayer_progress_style">Stile Progresso</string>
     <string name="settings_miniplayer_progress_style_desc">Scegli lo stile della barra di avanzamento del mini player</string>
     <string name="settings_miniplayer_show_artwork">Mostra grafica</string>
@@ -1967,7 +1953,6 @@
     <string name="settings_backup_created">Backup creato correttamente</string>
     <string name="settings_backup_settings">Impostazioni</string>
     <string name="settings_center_aligned">Allineato al centro</string>
-    <string name="settings_choose_progress_style">Scegli lo stile dell\'indicatore di avanzamento</string>
     <string name="settings_create_backup">Crea backup su file</string>
     <string name="settings_create_backup_desc">Esporta il backup completo in un file JSON</string>
     <string name="settings_backup_action_short">Backup</string>
@@ -2454,9 +2439,6 @@
     <string name="color_scheme_mint_title">Menta</string>
     <string name="color_scheme_mint_desc">Toni freschi e puliti di ciano e verde menta</string>
     <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Primario</string>
-    <string name="theme_color_secondary">Secondario</string>
-    <string name="theme_color_tertiary">Terziario</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Testi</string>
     <string name="lyrics_settings_general">Impostazioni generali</string>
@@ -2731,8 +2713,6 @@
     <string name="option_always">Sempre</string>
     <string name="option_expanded">Ampliato</string>
     <string name="option_collapsed">Crollato</string>
-    <string name="option_linear">Lineare</string>
-    <string name="option_circular">Circolare</string>
     <string name="option_both">Entrambi</string>
     <string name="option_icon">Icona</string>
     <string name="option_name">Nome</string>

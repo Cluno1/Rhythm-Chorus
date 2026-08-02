@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Kies hoe kleuren worden geëxtraheerd</string>
     <string name="theme_font_source">Lettertypebron</string>
     <string name="theme_font_source_desc">Kies waar u lettertypen wilt laden</string>
-    <string name="theme_color_schemes">Kleurenschema\'s</string>
-    <string name="theme_color_schemes_desc">Kies uit vooraf ingestelde kleurenschema\'s</string>
     <string name="theme_custom_picker">Aangepaste kleurkiezer</string>
     <string name="theme_custom_picker_desc">Creëer je eigen kleurenschema</string>
     <string name="theme_font_selection">Lettertypeselectie</string>
@@ -781,10 +779,6 @@
     <!-- Components: Equalizer -->
     
     <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Kleurenschema\'s zijn alleen beschikbaar bij gebruik van de aangepaste kleurbron.</string>
-    <string name="theme_color_schemes_switch">Schakel naar Aangepast in de instelling Kleurbron om toegang te krijgen tot vooraf gedefinieerde schema\'s.</string>
-    <string name="theme_custom_colors_unavailable">Aangepaste kleuren zijn alleen beschikbaar als u de aangepaste kleurbron gebruikt.</string>
-    <string name="theme_custom_colors_switch">Schakel naar Aangepast in de instelling Kleurbron om uw eigen kleuren te creëren.</string>
     <string name="theme_system_fonts_unavailable">Systeemlettertypen zijn alleen beschikbaar als u de systeemlettertypebron gebruikt.</string>
     <string name="theme_system_fonts_switch">Schakel naar Systeem in de instelling Lettertypebron om uit de beschikbare lettertypen te kiezen.</string>
     <!-- PlaceholderScreens Additional -->
@@ -826,8 +820,6 @@
     <!-- Cache -->
     
     <!-- Theme -->
-    <string name="theme_featured_schemes">AANBEVOLEN SCHEMA\'S</string>
-    <string name="theme_more_schemes">MEER REGELINGEN</string>
     <string name="theme_quick_presets">Snelle voorinstellingen</string>
     <string name="theme_advanced_rgb">Geavanceerde RGB-bediening</string>
     <!-- Services -->
@@ -1224,7 +1216,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Respijtperiode actief</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">Pauze eindigt over %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">De respijtperiode eindigt over %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Veiligheidsscore: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Beveiligingsvoorinstellingen</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Breng snel geteste vangrailbundels aan voor uw luisterstijl.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Zachtaardig</string>
@@ -1686,7 +1677,6 @@
     <string name="settings_miniplayer_header">Minispeler</string>
     <string name="settings_show_progress">Toon vooruitgang</string>
     <string name="settings_show_progress_desc">Voortgangsindicator weergeven</string>
-    <string name="settings_progress_mode">Voortgangsmodus</string>
     <string name="settings_show_artwork">Laat kunstwerken zien</string>
     <string name="settings_show_artwork_desc">Albumillustraties weergeven</string>
     <string name="settings_show_time">Tijd tonen</string>
@@ -1729,8 +1719,6 @@
     <string name="settings_color_schemes">Kleurenschema\'s</string>
     <string name="settings_color_schemes_desc">Blader en selecteer vooraf gedefinieerde kleurenpaletten</string>
     <string name="settings_custom_only">Alleen beschikbaar met aangepaste kleurbron</string>
-    <string name="settings_custom_colors">Aangepaste kleuren</string>
-    <string name="settings_custom_colors_desc">Creëer je eigen unieke kleurenpalet</string>
     <string name="settings_font_customization">Lettertypeaanpassing</string>
     <string name="settings_font_source">Lettertypebron</string>
     <string name="settings_font_source_system">Systeemlettertype - %1$s</string>
@@ -1929,8 +1917,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Laat vooruitgang zien</string>
     <string name="settings_miniplayer_show_progress_desc">Geef de voortgangsindicator weer in de minispeler</string>
-    <string name="settings_miniplayer_circular_progress">Circulaire vooruitgang</string>
-    <string name="settings_miniplayer_circular_progress_desc">Gebruik cirkelvormige voortgang op de afspeel-/pauzeknop</string>
     <string name="settings_miniplayer_progress_style">Voortgangsstijl</string>
     <string name="settings_miniplayer_progress_style_desc">Kies de voortgangsbalkstijl van de minispeler</string>
     <string name="settings_miniplayer_show_artwork">Laat kunstwerken zien</string>
@@ -1967,7 +1953,6 @@
     <string name="settings_backup_created">Back-up succesvol gemaakt</string>
     <string name="settings_backup_settings">Instellingen</string>
     <string name="settings_center_aligned">Gecentreerd uitgelijnd</string>
-    <string name="settings_choose_progress_style">Kies de stijl van de voortgangsindicator</string>
     <string name="settings_create_backup">Maak een back-up naar bestand</string>
     <string name="settings_create_backup_desc">Exporteer de volledige back-up naar een JSON-bestand</string>
     <string name="settings_backup_action_short">Back-up</string>
@@ -2454,9 +2439,6 @@
     <string name="color_scheme_mint_title">Munt</string>
     <string name="color_scheme_mint_desc">Frisse en zuivere cyaan- en mintgroene tinten</string>
     <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Primair</string>
-    <string name="theme_color_secondary">Secundair</string>
-    <string name="theme_color_tertiary">Tertiair</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Teksten</string>
     <string name="lyrics_settings_general">Algemene instellingen</string>
@@ -2731,8 +2713,6 @@
     <string name="option_always">Altijd</string>
     <string name="option_expanded">Uitgebreid</string>
     <string name="option_collapsed">Ingestort</string>
-    <string name="option_linear">Lineair</string>
-    <string name="option_circular">Circulaire</string>
     <string name="option_both">Beide</string>
     <string name="option_icon">Icoon</string>
     <string name="option_name">Naam</string>

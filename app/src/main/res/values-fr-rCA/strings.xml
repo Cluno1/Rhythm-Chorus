@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Choisissez comment les couleurs sont extraites</string>
     <string name="theme_font_source">Source de police</string>
     <string name="theme_font_source_desc">Choisissez où charger les polices</string>
-    <string name="theme_color_schemes">Schémas de couleurs</string>
-    <string name="theme_color_schemes_desc">Choisissez parmi les schémas de couleurs prédéfinis</string>
     <string name="theme_custom_picker">Sélecteur de couleurs personnalisé</string>
     <string name="theme_custom_picker_desc">Créez votre propre palette de couleurs</string>
     <string name="theme_font_selection">Sélection de police</string>
@@ -781,10 +779,6 @@
     <!-- Components: Equalizer -->
     
     <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Les jeux de couleurs ne sont disponibles que lors de l\'utilisation d\'une source de couleurs personnalisée.</string>
-    <string name="theme_color_schemes_switch">Basculez sur Personnalisé dans le paramètre Source de couleur pour accéder aux schémas prédéfinis.</string>
-    <string name="theme_custom_colors_unavailable">Les couleurs personnalisées ne sont disponibles que lors de l\'utilisation d\'une source de couleur personnalisée.</string>
-    <string name="theme_custom_colors_switch">Passez à Personnalisé dans le paramètre Source de couleur pour créer vos propres couleurs.</string>
     <string name="theme_system_fonts_unavailable">Les polices système ne sont disponibles que lors de l\'utilisation de la source de police système.</string>
     <string name="theme_system_fonts_switch">Basculez vers Système dans le paramètre Source de police pour choisir parmi les polices disponibles.</string>
     <!-- PlaceholderScreens Additional -->
@@ -826,8 +820,6 @@
     <!-- Cache -->
     
     <!-- Theme -->
-    <string name="theme_featured_schemes">SCHÉMAS EN VEDETTE</string>
-    <string name="theme_more_schemes">PLUS DE SCHÉMAS</string>
     <string name="theme_quick_presets">Préréglages rapides</string>
     <string name="theme_advanced_rgb">Commandes RVB avancées</string>
     <!-- Services -->
@@ -1224,7 +1216,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Délai de grâce actif</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">La pause se termine dans %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">Le délai de grâce se termine dans %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Score de sécurité : %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Préréglages de protection</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Appliquez rapidement des ensembles de garde-corps testés pour votre style d\'écoute.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Doux</string>
@@ -1686,7 +1677,6 @@
     <string name="settings_miniplayer_header">Mini-lecteur</string>
     <string name="settings_show_progress">Afficher la progression</string>
     <string name="settings_show_progress_desc">Afficher l\'indicateur de progression</string>
-    <string name="settings_progress_mode">Mode Progression</string>
     <string name="settings_show_artwork">Afficher les illustrations</string>
     <string name="settings_show_artwork_desc">Afficher les pochettes de l\'album</string>
     <string name="settings_show_time">Afficher l\'heure</string>
@@ -1729,8 +1719,6 @@
     <string name="settings_color_schemes">Schémas de couleurs</string>
     <string name="settings_color_schemes_desc">Parcourez et sélectionnez des palettes de couleurs prédéfinies</string>
     <string name="settings_custom_only">Disponible uniquement avec la source de couleur personnalisée</string>
-    <string name="settings_custom_colors">Couleurs personnalisées</string>
-    <string name="settings_custom_colors_desc">Créez votre propre palette de couleurs unique</string>
     <string name="settings_font_customization">Personnalisation de la police</string>
     <string name="settings_font_source">Source de police</string>
     <string name="settings_font_source_system">Police système - %1$s</string>
@@ -1929,8 +1917,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Afficher la progression</string>
     <string name="settings_miniplayer_show_progress_desc">Afficher l\'indicateur de progression dans le mini-lecteur</string>
-    <string name="settings_miniplayer_circular_progress">Progrès circulaire</string>
-    <string name="settings_miniplayer_circular_progress_desc">Utiliser la progression circulaire sur le bouton lecture/pause</string>
     <string name="settings_miniplayer_progress_style">Style de progression</string>
     <string name="settings_miniplayer_progress_style_desc">Choisissez le style de barre de progression du mini-lecteur</string>
     <string name="settings_miniplayer_show_artwork">Afficher les illustrations</string>
@@ -1967,7 +1953,6 @@
     <string name="settings_backup_created">Sauvegarde créée avec succès</string>
     <string name="settings_backup_settings">Paramètres</string>
     <string name="settings_center_aligned">Aligné au centre</string>
-    <string name="settings_choose_progress_style">Choisissez le style de l\'indicateur de progression</string>
     <string name="settings_create_backup">Créer une sauvegarde dans un fichier</string>
     <string name="settings_create_backup_desc">Exporter la sauvegarde complète vers un fichier JSON</string>
     <string name="settings_backup_action_short">Sauvegarde</string>
@@ -2454,9 +2439,6 @@
     <string name="color_scheme_mint_title">Menthe</string>
     <string name="color_scheme_mint_desc">Tons cyan et vert menthe frais et propres</string>
     <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Primaire</string>
-    <string name="theme_color_secondary">Secondaire</string>
-    <string name="theme_color_tertiary">Tertiaire</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Paroles</string>
     <string name="lyrics_settings_general">Paramètres généraux</string>
@@ -2731,8 +2713,6 @@
     <string name="option_always">Toujours</string>
     <string name="option_expanded">Élargi</string>
     <string name="option_collapsed">Effondré</string>
-    <string name="option_linear">Linéaire</string>
-    <string name="option_circular">Circulaire</string>
     <string name="option_both">Les deux</string>
     <string name="option_icon">Icône</string>
     <string name="option_name">Nom</string>
