@@ -378,6 +378,12 @@
     <string name="player_speed_label">Speed</string>
     <string name="player_pitch_label">Pitch</string>
     <string name="playback_speed">Playback Speed</string>
+    <string name="default_playback_speed">Default Playback Speed</string>
+    <string name="default_playback_speed_desc">Custom speed to automatically apply to new tracks</string>
+    <string name="use_default_playback_speed">Use Default Speed for New Songs</string>
+    <string name="use_default_playback_speed_desc">Always start new tracks at default playback speed instead of remembering last speed</string>
+    <string name="set_as_default_speed">Set as Default Speed</string>
+    <string name="enter_custom_speed">Enter exact speed (0.25 - 3.00)</string>
     <string name="sync_with_pitch">Sync with Pitch</string>
     <string name="sync_with_speed">Sync with Speed</string>
 <string name="search_view_all_songs">View All Songs</string>

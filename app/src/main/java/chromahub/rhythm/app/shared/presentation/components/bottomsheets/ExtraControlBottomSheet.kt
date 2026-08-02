@@ -11,10 +11,13 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -43,12 +46,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.shared.data.model.LyricsData
 import chromahub.rhythm.app.util.HapticUtils
@@ -61,10 +64,46 @@ import androidx.compose.ui.res.stringResource
 private data class ControlAction(
     val icon: MaterialSymbolIcon,
     val label: String,
+    val description: String?,
     val containerColor: Color,
     val iconColor: Color,
     val onClick: () -> Unit
 )
+
+private fun getGridItemShape(index: Int, totalItems: Int): RoundedCornerShape {
+    if (totalItems <= 1) return RoundedCornerShape(24.dp)
+    if (totalItems == 2) {
+        return if (index == 0) {
+            RoundedCornerShape(topStart = 24.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 8.dp)
+        } else {
+            RoundedCornerShape(topStart = 8.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 24.dp)
+        }
+    }
+    
+    val totalRows = (totalItems + 1) / 2
+    val r = index / 2
+    val c = index % 2
+    
+    return when {
+        r == 0 -> {
+            if (c == 0) {
+                RoundedCornerShape(topStart = 24.dp, topEnd = 8.dp, bottomStart = 8.dp, bottomEnd = 8.dp)
+            } else {
+                RoundedCornerShape(topStart = 8.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 8.dp)
+            }
+        }
+        r == totalRows - 1 -> {
+            if (index == totalItems - 1 && c == 0) {
+                RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
+            } else if (c == 0) {
+                RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 8.dp)
+            } else {
+                RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 8.dp, bottomEnd = 24.dp)
+            }
+        }
+        else -> RoundedCornerShape(8.dp)
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,6 +163,7 @@ fun ExtraControlBottomSheet(
         add(ControlAction(
             icon = RhythmIcons.AddToPlaylist,
             label = "Add to Playlist",
+            description = null,
             containerColor = primary,
             iconColor = onPrimary,
             onClick = {
@@ -136,6 +176,7 @@ fun ExtraControlBottomSheet(
             add(ControlAction(
                 icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
                 label = if (isFavorite) "Unfavorite" else "Favorite",
+                description = if (isFavorite) "Saved" else null,
                 containerColor = if (isFavorite) errorContainer else primary,
                 iconColor = if (isFavorite) error else onPrimary,
                 onClick = {
@@ -145,10 +186,11 @@ fun ExtraControlBottomSheet(
             ))
         }
 
-        if ("SPEED" !in hiddenChips) {
+        if ("SPEED" !in hiddenChips || "PITCH" !in hiddenChips) {
             add(ControlAction(
-                icon = MaterialSymbolIcon("speed", filled = true),
-                label = "Speed",
+                icon = MaterialSymbolIcon("tune", filled = true),
+                label = "Speed & Pitch",
+                description = "Tempo & Pitch",
                 containerColor = secondary,
                 iconColor = onSecondary,
                 onClick = {
@@ -158,23 +200,11 @@ fun ExtraControlBottomSheet(
             ))
         }
 
-        if ("PITCH" !in hiddenChips) {
-            add(ControlAction(
-                icon = MaterialSymbolIcon("graphic_eq", filled = true),
-                label = "Pitch",
-                containerColor = secondary,
-                iconColor = onSecondary,
-                onClick = {
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                    dismissAndDo { onPlaybackPitch() }
-                }
-            ))
-        }
-
         if ("EQUALIZER" !in hiddenChips) {
             add(ControlAction(
                 icon = MaterialSymbolIcon("graphic_eq", filled = true),
-                label = if (equalizerEnabled) "EQ (ON)" else "Equalizer",
+                label = "Equalizer",
+                description = if (equalizerEnabled) "Enabled" else "Disabled",
                 containerColor = if (equalizerEnabled) tertiary else secondary,
                 iconColor = if (equalizerEnabled) onTertiary else onSecondary,
                 onClick = {
@@ -189,10 +219,11 @@ fun ExtraControlBottomSheet(
                 val m = sleepTimerRemainingSeconds / 60
                 val s = sleepTimerRemainingSeconds % 60
                 "${m}:${s.toString().padStart(2, '0')}"
-            } else "Sleep Timer"
+            } else "Disabled"
             add(ControlAction(
-                icon = if (sleepTimerActive) RhythmIcons.AccessTime else RhythmIcons.AccessTime,
-                label = sleepLabel,
+                icon = RhythmIcons.AccessTime,
+                label = "Sleep Timer",
+                description = sleepLabel,
                 containerColor = if (sleepTimerActive) tertiary else secondary,
                 iconColor = if (sleepTimerActive) onTertiary else onSecondary,
                 onClick = {
@@ -203,10 +234,11 @@ fun ExtraControlBottomSheet(
         }
 
         if ("LYRICS" !in hiddenChips) {
-            val hasLyrics = lyrics?.getBestLyrics()?.isNotEmpty() == true
+            val hasLyrics = lyrics != null && lyrics.hasLyrics() && !lyrics.isErrorMessage()
             add(ControlAction(
                 icon = if (hasLyrics) RhythmIcons.Edit else MaterialSymbolIcon("lyrics", filled = true),
                 label = if (hasLyrics) "Edit Lyrics" else "Add Lyrics",
+                description = if (hasLyrics) "Has Lyrics" else null,
                 containerColor = secondary,
                 iconColor = onSecondary,
                 onClick = {
@@ -220,6 +252,7 @@ fun ExtraControlBottomSheet(
             add(ControlAction(
                 icon = RhythmIcons.AlbumFilled,
                 label = "Go to Album",
+                description = null,
                 containerColor = secondary,
                 iconColor = onSecondary,
                 onClick = {
@@ -233,6 +266,7 @@ fun ExtraControlBottomSheet(
             add(ControlAction(
                 icon = RhythmIcons.ArtistFilled,
                 label = "Go to Artist",
+                description = null,
                 containerColor = secondary,
                 iconColor = onSecondary,
                 onClick = {
@@ -246,6 +280,7 @@ fun ExtraControlBottomSheet(
         add(ControlAction(
             icon = RhythmIcons.Info,
             label = "Song Info",
+            description = null,
             containerColor = secondary,
             iconColor = onSecondary,
             onClick = {
@@ -258,6 +293,7 @@ fun ExtraControlBottomSheet(
         add(ControlAction(
             icon = RhythmIcons.Share,
             label = "Share File",
+            description = null,
             containerColor = secondary,
             iconColor = onSecondary,
             onClick = {
@@ -318,7 +354,7 @@ fun ExtraControlBottomSheet(
                 }
             }
 
-            // 2-column action grid
+            // Grouped status grid layout matching RhythmGuardTrendsRow
             AnimatedVisibility(
                 visible = showContent,
                 enter = fadeIn() + slideInVertically { it },
@@ -327,22 +363,32 @@ fun ExtraControlBottomSheet(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(horizontal = 24.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    actions.chunked(2).forEach { rowActions ->
+                    actions.chunked(2).forEachIndexed { rowIndex, rowActions ->
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Max),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            rowActions.forEach { action ->
-                                Box(modifier = Modifier.weight(1f)) {
+                            rowActions.forEachIndexed { colIndex, action ->
+                                val overallIndex = rowIndex * 2 + colIndex
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                ) {
                                     ControlGridItem(
                                         icon = action.icon,
                                         text = action.label,
+                                        description = action.description,
                                         containerColor = action.containerColor,
                                         iconColor = action.iconColor,
-                                        onClick = action.onClick
+                                        shape = getGridItemShape(overallIndex, actions.size),
+                                        onClick = action.onClick,
+                                        modifier = Modifier.fillMaxHeight()
                                     )
                                 }
                             }
@@ -351,7 +397,7 @@ fun ExtraControlBottomSheet(
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
                 }
             }
         }
@@ -362,41 +408,42 @@ fun ExtraControlBottomSheet(
 private fun ControlGridItem(
     icon: MaterialSymbolIcon,
     text: String,
+    description: String?,
     containerColor: Color,
     iconColor: Color,
+    shape: Shape,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        shape = RoundedCornerShape(16.dp),
+        shape = shape,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(16.dp)
         ) {
             Surface(
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(36.dp),
                 shape = CircleShape,
-                color = containerColor.copy(alpha = 0.3f),
+                color = containerColor.copy(alpha = 0.25f),
                 tonalElevation = 0.dp
             ) {
                 Box(
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = iconColor,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -405,12 +452,23 @@ private fun ControlGridItem(
 
             Text(
                 text = text,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2,
-                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurface
             )
+
+            if (description != null) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

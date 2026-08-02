@@ -508,7 +508,7 @@ fun ExpressivePlayerScreen(
                                 contentDescription = null, contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize())
                             if (canvasArtwork?.preferredAnimationUrl != null) {
-                                CanvasArtworkPlayer(canvasArtwork.animated, canvasArtwork.videoUrl, isPlaying, modifier = Modifier.fillMaxSize())
+                                CanvasArtworkPlayer(canvasArtwork.animated, canvasArtwork.videoUrl, isPlaying, alwaysPlay = true, modifier = Modifier.fillMaxSize())
                             }
                         }
                         // Layer 3: Dynamic overlay for depth
@@ -612,7 +612,7 @@ fun ExpressivePlayerScreen(
                                         M3ImageUtils.M3MediaImage(data = song?.artworkUri, contentDescription = stringResource(R.string.content_desc_album_artwork),
                                             modifier = Modifier.fillMaxSize(), shape = artworkClipShape, type = M3PlaceholderType.TRACK, name = song?.title, expressiveShape = playerArtworkShape)
                                         if (canvasArtwork?.preferredAnimationUrl != null) {
-                                            CanvasArtworkPlayer(canvasArtwork.animated, canvasArtwork.videoUrl, isPlaying, modifier = Modifier.fillMaxSize().clip(artworkClipShape))
+                                            CanvasArtworkPlayer(canvasArtwork.animated, canvasArtwork.videoUrl, isPlaying, alwaysPlay = true, modifier = Modifier.fillMaxSize().clip(artworkClipShape))
                                         }
                                         if (canvasLoading && canvasArtwork == null) {
                                             Box(Modifier.align(Alignment.TopEnd).padding(10.dp),

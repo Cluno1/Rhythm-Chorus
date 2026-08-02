@@ -238,6 +238,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val shuffleModePersistence = appSettings.shuffleModePersistence
     val repeatModePersistence = appSettings.repeatModePersistence
     val playbackSpeed = appSettings.playbackSpeed
+    val defaultPlaybackSpeed = appSettings.defaultPlaybackSpeed
+    val useDefaultPlaybackSpeed = appSettings.useDefaultPlaybackSpeed
     val playbackPitch = appSettings.playbackPitch
     
     // Equalizer settings
@@ -3848,6 +3850,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     
                     // Update recently played
                     updateRecentlyPlayed(song)
+
+                    // Apply default playback speed if enabled for new songs
+                    if (appSettings.useDefaultPlaybackSpeed.value) {
+                        val defaultSpeed = appSettings.defaultPlaybackSpeed.value
+                        setPlaybackSpeed(defaultSpeed)
+                    }
                     
                     // Update favorite status
                     _isFavorite.value = _favoriteSongs.value.contains(song.id)
@@ -8593,6 +8601,16 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         appSettings.setPlaybackSpeed(speed)
         val currentPitch = appSettings.playbackPitch.value
         mediaController?.playbackParameters = androidx.media3.common.PlaybackParameters(speed, currentPitch)
+    }
+
+    fun setDefaultPlaybackSpeed(speed: Float) {
+        Log.d(TAG, "Setting default playback speed to $speed")
+        appSettings.setDefaultPlaybackSpeed(speed)
+    }
+
+    fun setUseDefaultPlaybackSpeed(enabled: Boolean) {
+        Log.d(TAG, "Setting use default playback speed to $enabled")
+        appSettings.setUseDefaultPlaybackSpeed(enabled)
     }
 
     // Playback Pitch Control

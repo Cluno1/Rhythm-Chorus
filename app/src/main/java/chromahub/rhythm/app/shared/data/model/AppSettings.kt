@@ -448,6 +448,8 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_SAVED_SHUFFLE_STATE = "saved_shuffle_state"
         private const val KEY_SAVED_REPEAT_MODE = "saved_repeat_mode"
         private const val KEY_PLAYBACK_SPEED = "playback_speed"
+        private const val KEY_DEFAULT_PLAYBACK_SPEED = "default_playback_speed"
+        private const val KEY_USE_DEFAULT_PLAYBACK_SPEED = "use_default_playback_speed"
         private const val KEY_PLAYBACK_PITCH = "playback_pitch"
         private const val KEY_SYNC_SPEED_AND_PITCH = "sync_speed_and_pitch"
         private const val KEY_USE_HOURS_IN_TIME_FORMAT = "use_hours_in_time_format"
@@ -831,24 +833,17 @@ class AppSettings private constructor(context: Context) {
     val libraryCombineDiscs: StateFlow<Boolean> = _libraryCombineDiscs.asStateFlow()
     
     // Player Chip Order (Add to Playlist and Edit chips are not reorderable - they stay fixed)
-    private val defaultChipOrder = listOf("FAVORITE", "SPEED", "PITCH", "EQUALIZER", "SLEEP_TIMER", "LYRICS", "ALBUM", "ARTIST", "SHARE")
+    private val defaultChipOrder = listOf("FAVORITE", "SPEED", "EQUALIZER", "SLEEP_TIMER", "LYRICS", "ALBUM", "ARTIST", "SHARE")
     private val _playerChipOrder = MutableStateFlow(
         prefs.getString(KEY_PLAYER_CHIP_ORDER, null)
             ?.split(",")
-            ?.filter { it.isNotBlank() && it in defaultChipOrder }
+            ?.filter { it.isNotBlank() }
+            ?.map { if (it == "PITCH" || it == "SPEED_PITCH") "SPEED" else it }
+            ?.distinct()
+            ?.filter { it in defaultChipOrder }
             ?.takeIf { it.isNotEmpty() }
             ?.let { existingChips ->
-                // Add new chips if not present in existing order
                 var updated = existingChips
-                if (!updated.contains("PITCH")) {
-                    // Insert PITCH right after SPEED if SPEED exists, else append
-                    val speedIndex = updated.indexOf("SPEED")
-                    updated = if (speedIndex >= 0) {
-                        updated.toMutableList().apply { add(speedIndex + 1, "PITCH") }
-                    } else {
-                        updated + "PITCH"
-                    }
-                }
                 if (!updated.contains("SHARE")) {
                     updated = updated + "SHARE"
                 }
@@ -1069,6 +1064,12 @@ class AppSettings private constructor(context: Context) {
     
     private val _playbackSpeed = MutableStateFlow(prefs.getFloat(KEY_PLAYBACK_SPEED, 1.0f))
     val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
+
+    private val _defaultPlaybackSpeed = MutableStateFlow(prefs.getFloat(KEY_DEFAULT_PLAYBACK_SPEED, 1.0f))
+    val defaultPlaybackSpeed: StateFlow<Float> = _defaultPlaybackSpeed.asStateFlow()
+
+    private val _useDefaultPlaybackSpeed = MutableStateFlow(prefs.getBoolean(KEY_USE_DEFAULT_PLAYBACK_SPEED, false))
+    val useDefaultPlaybackSpeed: StateFlow<Boolean> = _useDefaultPlaybackSpeed.asStateFlow()
 
     private val _playbackPitch = MutableStateFlow(prefs.getFloat(KEY_PLAYBACK_PITCH, 1.0f))
     val playbackPitch: StateFlow<Float> = _playbackPitch.asStateFlow()
@@ -2733,6 +2734,16 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setPlaybackSpeed(speed: Float) {
         prefs.edit().putFloat(KEY_PLAYBACK_SPEED, speed).apply()
         _playbackSpeed.value = speed
+    }
+
+    fun setDefaultPlaybackSpeed(speed: Float) {
+        prefs.edit().putFloat(KEY_DEFAULT_PLAYBACK_SPEED, speed).apply()
+        _defaultPlaybackSpeed.value = speed
+    }
+
+    fun setUseDefaultPlaybackSpeed(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_USE_DEFAULT_PLAYBACK_SPEED, enabled).apply()
+        _useDefaultPlaybackSpeed.value = enabled
     }
 
     fun setPlaybackPitch(pitch: Float) {
@@ -5181,7 +5192,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _playerLyricsOverlayType.value = prefs.getInt(KEY_PLAYER_LYRICS_OVERLAY_TYPE, 0)
         _playerLyricsOverlayIntensity.value = prefs.getFloat(KEY_PLAYER_LYRICS_OVERLAY_INTENSITY, 0.1f)
         _playerLyricsTransition.value = prefs.getInt(KEY_PLAYER_LYRICS_TRANSITION, 2) // 2 = Scale
-        _playerAmbientBackdropEnabled.value = prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, false)
+        _playerAmbientBackdropEnabled.value = prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, true)
         _playerAmbientBackdropIntensity.value = prefs.getFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, 0.85f)
         _playerGlassIntensity.value = prefs.getFloat(KEY_PLAYER_GLASS_INTENSITY, 1.0f)
         _playerLyricsTextSize.value = prefs.getFloat(KEY_PLAYER_LYRICS_TEXT_SIZE, 1.0f)
@@ -5587,7 +5598,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         prefs.edit().putBoolean(KEY_PLAYER_SHOW_GRADIENT_OVERLAY, value).apply()
     }
 
-    private val _playerAmbientBackdropEnabled = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, false))
+    private val _playerAmbientBackdropEnabled = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, true))
     val playerAmbientBackdropEnabled: StateFlow<Boolean> = _playerAmbientBackdropEnabled.asStateFlow()
     fun setPlayerAmbientBackdropEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, enabled).apply()
