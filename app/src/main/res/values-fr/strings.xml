@@ -2892,4 +2892,13 @@
     <string name="settings_artist_artwork_source_disabled_desc">Ne pas récupérer ni charger d\'images pour les artistes</string>
     <string name="exp_track_error_checker">Vérificateur d\'erreurs de piste</string>
     <string name="exp_track_error_checker_desc">Intercepter les pistes audio corrompues ou illisibles pour éviter les chargements infinis et les boucles de saut automatique</string>
+    <string name="settings_rhythm_guard_hero_title">L\'exposition du jour</string>
+    <string name="settings_rhythm_guard_hero_limit_exceeded">Limite dépassée ! Il est temps de laisser vos oreilles se reposer.</string>
+    <string name="settings_rhythm_guard_hero_exposure_of">de %1$s</string>
+    <string name="settings_rhythm_guard_hero_volume_limit">limite %1$s</string>
+    <string name="settings_thumb_rotate">Faites pivoter votre pouce en jouant</string>
+    <string name="settings_thumb_rotate_desc">Faites tourner lentement votre pouce pendant que la musique joue</string>
+    <string name="about_copy_system_info">Copier les informations système</string>
+    <string name="about_copy_system_info_desc">Copier toutes les informations relatives à la version et au matériel dans le presse-papiers</string>
+    <string name="cd_copy">Copier</string>
 </resources>
