@@ -2,7 +2,6 @@
 
 package chromahub.rhythm.app.shared.presentation.components.player
 
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.platform.LocalConfiguration
@@ -47,7 +46,6 @@ import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.presentation.components.common.AutoScrollingTextOnDemand
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
-import chromahub.rhythm.app.shared.presentation.components.common.M3CircularLoader
 import chromahub.rhythm.app.shared.presentation.components.common.ShimmerBox
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -87,9 +85,7 @@ fun ExpressiveMiniPlayer(
     val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
     val useTabletLayout = isTablet || (alwaysShowTabletLayout && !isTablet)
 
-    val miniPlayerShowProgress by appSettings.miniPlayerShowProgress.collectAsState()
     val miniPlayerShowArtwork by appSettings.miniPlayerShowArtwork.collectAsState()
-    val miniPlayerUseCircularProgress by appSettings.miniPlayerUseCircularProgress.collectAsState()
 
     
     val animatedProgress by animateFloatAsState(
@@ -370,24 +366,19 @@ fun ExpressiveMiniPlayer(
                             .padding(start = 12.dp, end = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Album art with optional circular wavy progress ring
+                        // Album art
                         if (miniPlayerShowArtwork) {
                             Box(
                                 modifier = Modifier.size(56.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (song != null && miniPlayerShowProgress && miniPlayerUseCircularProgress) {
-                                    CircularWavyProgressIndicator(
-                                        progress = { animatedProgress },
-                                        modifier = Modifier.size(56.dp),
-                                        trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                                    )
-                                    Surface(
-                                        modifier = Modifier.size(46.dp),
-                                        shape = miniPlayerArtShape,
-                                        color = MaterialTheme.colorScheme.surfaceVariant
-                                    ) {
-                                        Box(modifier = Modifier.fillMaxSize()) {
+                                Surface(
+                                    modifier = Modifier.size(46.dp),
+                                    shape = miniPlayerArtShape,
+                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                ) {
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        if (song != null) {
                                             ShimmerBox(modifier = Modifier.fillMaxSize())
                                             M3ImageUtils.TrackImage(
                                                 imageUrl = song.artworkUri,
@@ -395,37 +386,19 @@ fun ExpressiveMiniPlayer(
                                                 modifier = Modifier.fillMaxSize(),
                                                 applyExpressiveShape = false
                                             )
-                                        }
-                                    }
-                                } else {
-                                    Surface(
-                                        modifier = Modifier.size(46.dp),
-                                        shape = miniPlayerArtShape,
-                                        color = MaterialTheme.colorScheme.surfaceVariant
-                                    ) {
-                                        Box(modifier = Modifier.fillMaxSize()) {
-                                            if (song != null) {
-                                                ShimmerBox(modifier = Modifier.fillMaxSize())
-                                                M3ImageUtils.TrackImage(
-                                                    imageUrl = song.artworkUri,
-                                                    trackName = song.title,
-                                                    modifier = Modifier.fillMaxSize(),
-                                                    applyExpressiveShape = false
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .background(MaterialTheme.colorScheme.secondaryContainer),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = RhythmIcons.Album,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(24.dp),
+                                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
                                                 )
-                                            } else {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .background(MaterialTheme.colorScheme.secondaryContainer),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Icon(
-                                                        imageVector = RhythmIcons.Album,
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(24.dp),
-                                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                                    )
-                                                }
                                             }
                                         }
                                     }
@@ -489,11 +462,6 @@ fun ExpressiveMiniPlayer(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        val playerControlsShape = rememberExpressiveShapeFor(
-                            ExpressiveShapeTarget.PLAYER_CONTROLS,
-                            fallbackShape = CircleShape
-                        )
-
                         // Skip Previous
                         IconButton(
                             onClick = {
@@ -511,50 +479,15 @@ fun ExpressiveMiniPlayer(
                         }
 
                         // Play/Pause
-                        val playInteractionSource = remember { MutableInteractionSource() }
-                        val isPlayPressed by playInteractionSource.collectIsPressedAsState()
-                        val playScale by animateFloatAsState(
-                            targetValue = if (isPlayPressed) 0.85f else 1f,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessMedium
-                            ),
-                            label = "playScale"
-                        )
-
-                        Surface(
+                        MorphingPlayPauseButton(
+                            isPlaying = isPlaying,
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                 onPlayPause()
                             },
-                            modifier = Modifier
-                                .size(44.dp)
-                                .graphicsLayer {
-                                    scaleX = playScale
-                                    scaleY = playScale
-                                },
-                            shape = playerControlsShape,
-                            color = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            interactionSource = playInteractionSource
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                if (isMediaLoading) {
-                                    M3CircularLoader(
-                                        modifier = Modifier.size(18.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.24f),
-                                        strokeWidth = 2.0f
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = if (isPlaying) RhythmIcons.Pause else RhythmIcons.Play,
-                                        contentDescription = if (isPlaying) "Pause" else "Play",
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-                        }
+                            size = 44.dp,
+                            isMediaLoading = isMediaLoading
+                        )
 
                         // Skip Next
                         IconButton(
@@ -685,50 +618,15 @@ fun ExpressiveMiniPlayer(
 
                         Spacer(modifier = Modifier.width(12.dp))
 
-                        val playInteractionSource = remember { MutableInteractionSource() }
-                        val isPlayPressed by playInteractionSource.collectIsPressedAsState()
-                        val playScale by animateFloatAsState(
-                            targetValue = if (isPlayPressed) 0.85f else 1f,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessMedium
-                            ),
-                            label = "playScale"
-                        )
-
-                        Surface(
+                        MorphingPlayPauseButton(
+                            isPlaying = isPlaying,
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                 onPlayPause()
                             },
-                            modifier = Modifier
-                                .size(56.dp)
-                                .graphicsLayer {
-                                    scaleX = playScale
-                                    scaleY = playScale
-                                },
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            interactionSource = playInteractionSource
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                if (isMediaLoading) {
-                                    M3CircularLoader(
-                                        modifier = Modifier.size(24.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.24f),
-                                        strokeWidth = 2.5f
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = if (isPlaying) RhythmIcons.Pause else RhythmIcons.Play,
-                                        contentDescription = if (isPlaying) "Pause" else "Play",
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                }
-                            }
-                        }
+                            size = 56.dp,
+                            isMediaLoading = isMediaLoading
+                        )
                     }
                 }
             }

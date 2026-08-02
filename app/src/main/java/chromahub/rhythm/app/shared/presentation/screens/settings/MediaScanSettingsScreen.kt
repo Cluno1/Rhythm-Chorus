@@ -1038,7 +1038,7 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                         item {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Suggested Folders (Detected Music)",
+                                text = context.getString(R.string.media_suggested_folders),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1107,7 +1107,7 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
 
                                     Icon(
                                         imageVector = RhythmIcons.Add,
-                                        contentDescription = "Add folder",
+                                        contentDescription = context.getString(R.string.settings_add_folder),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }

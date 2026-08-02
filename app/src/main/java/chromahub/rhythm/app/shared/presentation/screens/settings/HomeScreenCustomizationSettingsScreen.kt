@@ -389,7 +389,7 @@ fun HomeScreenCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 item = SettingItem(
                                     icon = MaterialSymbolIcon("history", filled = true),
                                     title = stringResource(R.string.settings_home_recently_played),
-                                    description = "$recentlyPlayedCount songs"
+                                    description = context.getString(R.string.settings_count_songs, recentlyPlayedCount)
                                 ),
                                 description = {
                                     Column(
@@ -427,7 +427,7 @@ fun HomeScreenCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 item = SettingItem(
                                     icon = MaterialSymbolIcon("people", filled = true),
                                     title = stringResource(R.string.settings_top_artists),
-                                    description = "$artistsCount artists"
+                                    description = context.getString(R.string.settings_count_artists, artistsCount)
                                 ),
                                 description = {
                                     Column(
@@ -465,7 +465,7 @@ fun HomeScreenCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 item = SettingItem(
                                     icon = MaterialSymbolIcon("new_releases", filled = true),
                                     title = stringResource(R.string.settings_new_releases),
-                                    description = "$newReleasesCount albums"
+                                    description = context.getString(R.string.settings_count_albums, newReleasesCount)
                                 ),
                                 description = {
                                     Column(
@@ -503,7 +503,7 @@ fun HomeScreenCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 item = SettingItem(
                                     icon = MaterialSymbolIcon("library_add", filled = true),
                                     title = stringResource(R.string.settings_recently_added),
-                                    description = "$recentlyAddedCount albums"
+                                    description = context.getString(R.string.settings_count_albums, recentlyAddedCount)
                                 ),
                                 description = {
                                     Column(
@@ -541,7 +541,7 @@ fun HomeScreenCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 item = SettingItem(
                                     icon = MaterialSymbolIcon("recommend", filled = true),
                                     title = stringResource(R.string.settings_recommended),
-                                    description = "$recommendedCount songs"
+                                    description = context.getString(R.string.settings_count_songs, recommendedCount)
                                 ),
                                 description = {
                                     Column(
@@ -681,7 +681,7 @@ fun HomeScreenCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                     item = SettingItem(
                                         icon = MaterialSymbolIcon("view_carousel", filled = true),
                                         title = stringResource(R.string.homescreencustomizationsettingsscreen_album_count),
-                                        description = "$discoverItemCount albums"
+                                        description = context.getString(R.string.settings_count_albums, discoverItemCount)
                                     ),
                                     description = {
                                         Column(

@@ -318,6 +318,10 @@ fun ExpressivePlayerScreen(
 
     // Animated colors — derived from artwork when backdrop is active, solid M3 surfaces otherwise
     val ambientAlpha = if (isBackdropEnabled) playerAmbientBackdropIntensity else 1f
+    val ambientPlayContainer = Color.White
+    val ambientPlayContent = Color.Black
+    val ambientControlContainer = Color.White.copy(alpha = 0.18f)
+    val ambientControlContent = Color.White
     val controlsContainerColor by animateColorAsState(
         targetValue = when {
             needsDarkSurfaces && artColor != null -> Color(
@@ -673,19 +677,24 @@ fun ExpressivePlayerScreen(
                                             isPlaying = isPlaying,
                                             showBuffering = showBuffering,
                                             onClick = onPlayPause,
-                                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = ambientAlpha),
-                                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            containerColor = if (needsDarkSurfaces) ambientPlayContainer
+                                                else MaterialTheme.colorScheme.primaryContainer.copy(alpha = ambientAlpha),
+                                            contentColor = if (needsDarkSurfaces) ambientPlayContent
+                                                else MaterialTheme.colorScheme.onPrimaryContainer,
                                             size = controlButtonSize,
                                             modifier = Modifier.weight(1f)
                                         )
                                         RhythmControlButton(
                                             onClick = onSkipNext,
                                             shape = playerControlShape,
-                                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = ambientAlpha),
-                                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            containerColor = if (needsDarkSurfaces) ambientControlContainer
+                                                else MaterialTheme.colorScheme.secondaryContainer.copy(alpha = ambientAlpha),
+                                            contentColor = if (needsDarkSurfaces) ambientControlContent
+                                                else MaterialTheme.colorScheme.onSecondaryContainer,
                                             size = controlButtonSize
                                         ) {
-                                            Icon(RhythmIcons.Player.SkipNext, stringResource(R.string.cd_next_track), Modifier.size(controlButtonSize * 0.45f), tint = MaterialTheme.colorScheme.onSecondaryContainer)
+                                            Icon(RhythmIcons.Player.SkipNext, stringResource(R.string.cd_next_track), Modifier.size(controlButtonSize * 0.45f),
+                                                tint = if (needsDarkSurfaces) ambientControlContent else MaterialTheme.colorScheme.onSecondaryContainer)
                                         }
                                     }
                                     Spacer(Modifier.height(if (isCompactHeight) 8.dp else 16.dp))
@@ -694,11 +703,14 @@ fun ExpressivePlayerScreen(
                                         RhythmControlButton(
                                             onClick = onSkipPrevious,
                                             shape = playerControlShape,
-                                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = ambientAlpha),
-                                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            containerColor = if (needsDarkSurfaces) ambientControlContainer
+                                                else MaterialTheme.colorScheme.secondaryContainer.copy(alpha = ambientAlpha),
+                                            contentColor = if (needsDarkSurfaces) ambientControlContent
+                                                else MaterialTheme.colorScheme.onSecondaryContainer,
                                             size = controlButtonSize
                                         ) {
-                                            Icon(RhythmIcons.Player.SkipPrevious, stringResource(R.string.cd_previous_track), Modifier.size(controlButtonSize * 0.45f), tint = MaterialTheme.colorScheme.onSecondaryContainer)
+                                            Icon(RhythmIcons.Player.SkipPrevious, stringResource(R.string.cd_previous_track), Modifier.size(controlButtonSize * 0.45f),
+                                                tint = if (needsDarkSurfaces) ambientControlContent else MaterialTheme.colorScheme.onSecondaryContainer)
                                         }
                                         val canSeek = (song?.duration ?: 0L) > 0L
                                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {

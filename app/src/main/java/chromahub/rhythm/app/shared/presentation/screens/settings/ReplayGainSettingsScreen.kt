@@ -105,13 +105,13 @@ fun ReplayGainSettingsScreen(
                         )
                         if (isOffloadEnforced) {
                             Text(
-                                text = "Disabled to conserve battery.",
+                                text = context.getString(R.string.replay_gain_disabled_battery),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         } else if (isAudioOffloadActive && !replayGain) {
                             Text(
-                                text = "Enabling will disable hardware Audio Offload",
+                                text = context.getString(R.string.replay_gain_offload_warning),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

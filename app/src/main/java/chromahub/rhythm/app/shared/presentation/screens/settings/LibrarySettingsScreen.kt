@@ -278,7 +278,7 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
                     SettingItem(
                         icon = MaterialSymbolIcon("cloud_download"),
                         title = stringResource(R.string.librarysettingsscreen_autofetch_artwork),
-                        description = "Automatically search online APIs for missing cover artwork on startup",
+                        description = context.getString(R.string.library_auto_fetch_artwork_desc),
                         toggleState = autoFetchArtwork && lyricallyApiEnabled,
                         onToggleChange = { enabled -> appSettings.setAutoFetchArtwork(enabled) },
                         enabled = lyricallyApiEnabled

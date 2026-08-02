@@ -121,24 +121,24 @@ fun NotificationsSettingsScreen(onBackClick: () -> Unit) {
                 )
             ),
             SettingGroup(
-                title = "Sleep Timer",
+                title = stringResource(R.string.sleep_timer),
                 items = listOf(
                     SettingItem(
                         RhythmIcons.AccessTime,
-                        "Sleep Timer Status",
-                        "Show notification countdown and controls when sleep timer is active",
+                        stringResource(R.string.notifications_sleep_timer_status),
+                        stringResource(R.string.notifications_sleep_timer_status_desc),
                         toggleState = sleepTimerNotificationsEnabled,
                         onToggleChange = { appSettings.setSleepTimerNotificationsEnabled(it) }
                     )
                 )
             ),
             SettingGroup(
-                title = "Cloud & Streaming",
+                title = stringResource(R.string.notifications_cloud_streaming),
                 items = listOf(
                     SettingItem(
                         MaterialSymbolIcon("cloud"),
-                        "Cloud Sync Alerts",
-                        "Show notifications for streaming service connection and sync progress",
+                        stringResource(R.string.notifications_cloud_sync_alerts),
+                        stringResource(R.string.notifications_cloud_sync_alerts_desc),
                         toggleState = streamingNotificationsEnabled,
                         onToggleChange = { appSettings.setStreamingNotificationsEnabled(it) }
                     )

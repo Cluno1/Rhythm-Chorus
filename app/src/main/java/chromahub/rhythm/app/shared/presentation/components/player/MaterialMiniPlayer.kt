@@ -36,7 +36,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -96,8 +95,6 @@ import androidx.compose.ui.unit.IntOffset
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
-import chromahub.rhythm.app.shared.presentation.components.common.M3LinearLoader
-import chromahub.rhythm.app.shared.presentation.components.common.M3CircularLoader
 import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
 import chromahub.rhythm.app.shared.presentation.components.common.AutoScrollingTextOnDemand
 import androidx.compose.material3.HorizontalDivider
@@ -112,7 +109,6 @@ import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.common.ShimmerBox
 import chromahub.rhythm.app.shared.presentation.components.common.StyledProgressBar
 import chromahub.rhythm.app.shared.presentation.components.common.ProgressStyle
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import androidx.compose.runtime.collectAsState
@@ -162,7 +158,6 @@ fun MaterialMiniPlayer(
     val miniPlayerArtworkSize by appSettings.miniPlayerArtworkSize.collectAsState()
     val miniPlayerCornerRadius by appSettings.miniPlayerCornerRadius.collectAsState()
     val miniPlayerShowTime by appSettings.miniPlayerShowTime.collectAsState()
-    val miniPlayerUseCircularProgress by appSettings.miniPlayerUseCircularProgress.collectAsState()
     
     // Gesture settings
     val miniPlayerSwipeGestures by appSettings.miniPlayerSwipeGestures.collectAsState()
@@ -524,34 +519,23 @@ fun MaterialMiniPlayer(
 
                 // Mini player progress bar (phone)
                 if (song != null && miniPlayerShowProgress && !useTabletLayout) {
-                    if (miniPlayerUseCircularProgress) {
-                        M3LinearLoader(
-                            progress = animatedProgress,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 28.dp)
-                                .height(4.dp),
-                            trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                        )
-                    } else {
-                        StyledProgressBar(
-                            progress = animatedProgress,
-                            style = try {
-                                ProgressStyle.valueOf(miniPlayerProgressStyle)
-                            } catch (e: Exception) {
-                                ProgressStyle.NORMAL
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 28.dp),
-                            progressColor = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                            isPlaying = isPlaying,
-                            height = 4.dp,
-                            waveAmplitudeWhenPlaying = 3.dp,
-                            waveLength = 30.dp // Shorter wavelength = more waves for MiniPlayer
-                        )
-                    }
+                    StyledProgressBar(
+                        progress = animatedProgress,
+                        style = try {
+                            ProgressStyle.valueOf(miniPlayerProgressStyle)
+                        } catch (e: Exception) {
+                            ProgressStyle.NORMAL
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 28.dp),
+                        progressColor = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                        isPlaying = isPlaying,
+                        height = 4.dp,
+                        waveAmplitudeWhenPlaying = 3.dp,
+                        waveLength = 30.dp // Shorter wavelength = more waves for MiniPlayer
+                    )
                 }
 
                 if (useTabletLayout) {
@@ -680,11 +664,6 @@ fun MaterialMiniPlayer(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            val playerControlsShape = rememberExpressiveShapeFor(
-                                ExpressiveShapeTarget.PLAYER_CONTROLS,
-                                fallbackShape = ExpressiveShapes.Full
-                            )
-
                             // Previous button
                             IconButton(
                                 onClick = {
@@ -702,32 +681,15 @@ fun MaterialMiniPlayer(
                             }
 
                             // Play/Pause button
-                            FilledIconButton(
+                            MorphingPlayPauseButton(
+                                isPlaying = isPlaying,
                                 onClick = {
                                     HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                     onPlayPause()
                                 },
-                                modifier = Modifier.size(44.dp),
-                                shape = playerControlsShape,
-                                colors = androidx.compose.material3.IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
-                                )
-                            ) {
-                                if (isMediaLoading) {
-                                    M3CircularLoader(
-                                        modifier = Modifier.size(20.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        strokeWidth = 2f
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = if (isPlaying) RhythmIcons.Pause else RhythmIcons.Play,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(22.dp),
-                                        tint = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                }
-                            }
+                                size = 44.dp,
+                                isMediaLoading = isMediaLoading
+                            )
 
                             // Next button
                             IconButton(
@@ -919,134 +881,24 @@ fun MaterialMiniPlayer(
                         }
 
                         // Enhanced controls with better visual hierarchy and spacing
-                        // Get miniplayer play button shape from expressive settings
-                        val miniPlayButtonShape = rememberExpressiveShapeFor(
-                            ExpressiveShapeTarget.PLAYER_CONTROLS,
-                            fallbackShape = CircleShape
-                        )
                         Row(
                             horizontalArrangement = spacedBy(if (isCompactHeight) 4.dp else 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Play/pause button with optional circular progress border
-                            if (song != null && miniPlayerUseCircularProgress) {
-                                // Circular progress as border around play/pause button using official Material 3 Expressive
-                                Box(
-                                    modifier = Modifier.size(if (isCompactHeight) 50.dp else 60.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularWavyProgressIndicator(
-                                        progress = { animatedProgress },
-                                        modifier = Modifier.size(if (isCompactHeight) 50.dp else 60.dp)
+                            // Play/pause button
+                            MorphingPlayPauseButton(
+                                isPlaying = isPlaying,
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(
+                                        context,
+                                        haptic,
+                                        HapticType.HEAVY
                                     )
-
-                                    // Expressive play/pause with bouncy animation
-                                    val phonePlayInteractionSource =
-                                        remember { MutableInteractionSource() }
-                                    val isPhonePlayPressed by phonePlayInteractionSource.collectIsPressedAsState()
-                                    val phonePlayScale by animateFloatAsState(
-                                        targetValue = if (isPhonePlayPressed) 0.88f else 1f,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessMedium
-                                        ),
-                                        label = "phone_play_scale"
-                                    )
-
-                                    FilledIconButton(
-                                        onClick = {
-                                            HapticUtils.performHapticFeedback(
-                                                context,
-                                                haptic,
-                                                HapticType.HEAVY
-                                            )
-                                            onPlayPause()
-                                        },
-                                        modifier = Modifier
-                                            .size(if (isCompactHeight) 36.dp else 44.dp)
-                                            .graphicsLayer {
-                                                scaleX = phonePlayScale
-                                                scaleY = phonePlayScale
-                                            },
-                                        shape = miniPlayButtonShape,
-                                        colors = IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.primary,
-                                            contentColor = MaterialTheme.colorScheme.onPrimary
-                                        ),
-                                        interactionSource = phonePlayInteractionSource
-                                    ) {
-                                        if (isMediaLoading) {
-                                            M3CircularLoader(
-                                                modifier = Modifier.size(if (isCompactHeight) 14.dp else 18.dp),
-                                                color = MaterialTheme.colorScheme.onPrimary,
-                                                trackColor = MaterialTheme.colorScheme.onPrimary.copy(
-                                                    alpha = 0.24f
-                                                ),
-                                                strokeWidth = 2f
-                                            )
-                                        } else {
-                                            Icon(
-                                                imageVector = if (isPlaying) RhythmIcons.Pause else RhythmIcons.Play,
-                                                contentDescription = if (isPlaying) "Pause" else "Play",
-                                                modifier = Modifier.size(if (isCompactHeight) 16.dp else 20.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            } else {
-                                // Standard play/pause button without circular progress - with expressive animation
-                                val stdPlayInteractionSource =
-                                    remember { MutableInteractionSource() }
-                                val isStdPlayPressed by stdPlayInteractionSource.collectIsPressedAsState()
-                                val stdPlayScale by animateFloatAsState(
-                                    targetValue = if (isStdPlayPressed) 0.88f else 1f,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessMedium
-                                    ),
-                                    label = "std_play_scale"
-                                )
-
-                                FilledIconButton(
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(
-                                            context,
-                                            haptic,
-                                            HapticType.HEAVY
-                                        )
-                                        onPlayPause()
-                                    },
-                                    modifier = Modifier
-                                        .size(if (isCompactHeight) 36.dp else 44.dp)
-                                        .graphicsLayer {
-                                            scaleX = stdPlayScale
-                                            scaleY = stdPlayScale
-                                        },
-                                    shape = miniPlayButtonShape,
-                                    colors = IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = MaterialTheme.colorScheme.onPrimary
-                                    ),
-                                    interactionSource = stdPlayInteractionSource
-                                ) {
-                                    if (isMediaLoading) {
-                                        M3CircularLoader(
-                                            modifier = Modifier.size(if (isCompactHeight) 14.dp else 18.dp),
-                                            color = MaterialTheme.colorScheme.onPrimary,
-                                            trackColor = MaterialTheme.colorScheme.onPrimary.copy(
-                                                alpha = 0.24f
-                                            ),
-                                            strokeWidth = 2f
-                                        )
-                                    } else {
-                                        Icon(
-                                            imageVector = if (isPlaying) RhythmIcons.Pause else RhythmIcons.Play,
-                                            contentDescription = if (isPlaying) "Pause" else "Play",
-                                            modifier = Modifier.size(if (isCompactHeight) 16.dp else 20.dp)
-                                        )
-                                    }
-                                }
-                            }
+                                    onPlayPause()
+                                },
+                                size = if (isCompactHeight) 36.dp else 44.dp,
+                                isMediaLoading = isMediaLoading
+                            )
 
                             // Enhanced next track button with expressive bouncy animation
                             val nextTrackInteractionSource = remember { MutableInteractionSource() }

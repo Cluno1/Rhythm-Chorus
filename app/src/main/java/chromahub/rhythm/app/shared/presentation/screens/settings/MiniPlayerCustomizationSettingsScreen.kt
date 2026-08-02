@@ -50,7 +50,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.*
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Slider
@@ -175,7 +174,6 @@ fun MiniPlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
     val miniPlayerArtworkSize by appSettings.miniPlayerArtworkSize.collectAsState()
     val miniPlayerCornerRadius by appSettings.miniPlayerCornerRadius.collectAsState()
     val miniPlayerShowTime by appSettings.miniPlayerShowTime.collectAsState()
-    val miniPlayerUseCircularProgress by appSettings.miniPlayerUseCircularProgress.collectAsState()
     val miniPlayerAlwaysShowTablet by appSettings.miniPlayerAlwaysShowTablet.collectAsState()
     val expressiveShapesEnabled by appSettings.expressiveShapesEnabled.collectAsState()
 
@@ -261,7 +259,7 @@ fun MiniPlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             .padding(horizontal = 20.dp, vertical = 12.dp),
                         textAlign = TextAlign.Center
                     )
-                } else if (miniPlayerShowProgress && !miniPlayerUseCircularProgress) {
+                } else if (miniPlayerShowProgress) {
                     StyledProgressBar(
                         progress = 0.45f,
                         style = previewStyle,
@@ -273,18 +271,6 @@ fun MiniPlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                         height = 4.dp,
                         isPlaying = true
                     )
-                } else if (miniPlayerShowProgress && miniPlayerUseCircularProgress) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularWavyProgressIndicator(
-                            progress = { 0.45f },
-                            modifier = Modifier.size(40.dp)
-                        )
-                    }
                 } else {
                     Text(
                         text = context.getString(R.string.settings_progress_hidden),
@@ -319,53 +305,13 @@ fun MiniPlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 context = context,
                                 hapticFeedback = haptics,
                                 item = SettingItem(
-                                    icon = MaterialSymbolIcon("change_circle"),
-                                    title = context.getString(R.string.settings_progress_mode),
-                                    description = context.getString(R.string.settings_choose_progress_style)
-                                ),
-                                description = {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 8.dp),
-                                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        Text(
-                                            text = context.getString(R.string.settings_choose_progress_style),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        ExpressiveButtonGroup(
-                                            items = listOf(
-                                                stringResource(R.string.option_linear),
-                                                stringResource(R.string.option_circular)
-                                            ),
-                                            selectedIndex = if (miniPlayerUseCircularProgress) 1 else 0,
-                                            onItemClick = { index ->
-                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                                appSettings.setMiniPlayerUseCircularProgress(index == 1)
-                                            },
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
-                                    }
-                                }
-                            )
-                        )
-
-                        if (!miniPlayerUseCircularProgress) {
-                            add(
-                                toMaterial3SettingsItem(
-                                    context = context,
-                                    hapticFeedback = haptics,
-                                    item = SettingItem(
-                                        icon = MaterialSymbolIcon("linear_scale"),
-                                        title = stringResource(R.string.settings_miniplayer_progress_style),
-                                        description = miniPlayerProgressStyle.lowercase().replaceFirstChar { it.uppercase() },
-                                        onClick = { showMiniPlayerProgressStyleSheet = true }
-                                    )
+                                    icon = MaterialSymbolIcon("linear_scale"),
+                                    title = stringResource(R.string.settings_miniplayer_progress_style),
+                                    description = miniPlayerProgressStyle.lowercase().replaceFirstChar { it.uppercase() },
+                                    onClick = { showMiniPlayerProgressStyleSheet = true }
                                 )
                             )
-                        }
+                        )
                     }
                 }
 
@@ -422,7 +368,7 @@ fun MiniPlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 SettingItem(
                                     icon = MaterialSymbolIcon("rounded_corner"),
                                     title = stringResource(R.string.settings_miniplayer_corner_radius),
-                                    description = "${miniPlayerCornerRadius}dp",
+                                    description = context.getString(R.string.settings_value_dp, miniPlayerCornerRadius),
                                     onClick = { showMiniPlayerCornerRadiusSheet = true }
                                 )
                             }

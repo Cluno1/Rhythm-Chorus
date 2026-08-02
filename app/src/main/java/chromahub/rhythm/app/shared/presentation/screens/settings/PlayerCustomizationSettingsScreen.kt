@@ -325,8 +325,8 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             hapticFeedback = haptics,
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("blur_on"),
-                                title = "Ambient backdrop",
-                                description = if (isExpressiveActive) "Show artwork-derived ambient background behind controls" else "Expressive player only",
+                                title = context.getString(R.string.player_ambient_backdrop),
+                                description = if (isExpressiveActive) context.getString(R.string.player_ambient_desc) else context.getString(R.string.player_expressive_only),
                                 toggleState = playerAmbientBackdropEnabled,
                                 onToggleChange = { appSettings.setPlayerAmbientBackdropEnabled(it) },
                                 enabled = isExpressiveActive
@@ -337,8 +337,8 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             hapticFeedback = haptics,
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("opacity"),
-                                title = "Ambient intensity",
-                                description = if (isExpressiveActive) "${(playerAmbientBackdropIntensity * 100).toInt()}%" else "Expressive player only",
+                                title = context.getString(R.string.player_ambient_intensity),
+                                description = if (isExpressiveActive) context.getString(R.string.settings_value_percent, (playerAmbientBackdropIntensity * 100).toInt()) else context.getString(R.string.player_expressive_only),
                                 onClick = { if (isExpressiveActive) showAmbientIntensitySheet = true },
                                 enabled = isExpressiveActive
                             )
@@ -477,21 +477,21 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 SettingItem(
                                     icon = MaterialSymbolIcon("rounded_corner"),
                                     title = stringResource(R.string.settings_miniplayer_corner_radius),
-                                    description = "Not supported by Expressive theme",
+                                    description = context.getString(R.string.lyrics_settings_not_supported_expressive),
                                     enabled = false
                                 )
                             } else if (expressiveShapesEnabled) {
                                 SettingItem(
                                     icon = MaterialSymbolIcon("rounded_corner"),
                                     title = stringResource(R.string.settings_miniplayer_corner_radius),
-                                    description = "Managed by Expressive Shapes",
+                                    description = context.getString(R.string.settings_managed_by_expressive_shapes),
                                     enabled = false
                                 )
                             } else {
                                 SettingItem(
                                     icon = MaterialSymbolIcon("rounded_corner"),
                                     title = stringResource(R.string.settings_miniplayer_corner_radius),
-                                    description = "${playerArtworkCornerRadius}dp",
+                                    description = context.getString(R.string.settings_value_dp, playerArtworkCornerRadius),
                                     onClick = { showCornerRadiusSheet = true }
                                 )
                             }
@@ -820,7 +820,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                 ) {
                     Column {
                         Text(
-                            text = "Ambient intensity",
+                            text = context.getString(R.string.player_ambient_intensity),
                             style = MaterialTheme.typography.displayMedium,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface
@@ -907,7 +907,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Controls the transparency of the controls card. Higher values make it more opaque against the ambient backdrop.",
+                            text = context.getString(R.string.player_ambient_intensity_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

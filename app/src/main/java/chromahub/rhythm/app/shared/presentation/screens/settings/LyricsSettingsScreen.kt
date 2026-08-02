@@ -179,9 +179,9 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
             scope.launch {
                 val success = appSettings.exportLyricsPreferencesToCsv(context, it)
                 if (success) {
-                    Toast.makeText(context, "Exported successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.lyrics_exported_success), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, "Export failed", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.lyrics_export_failed), Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -194,9 +194,9 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
             scope.launch {
                 val success = appSettings.importLyricsPreferencesFromCsv(context, it)
                 if (success) {
-                    Toast.makeText(context, "Imported successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.lyrics_imported_success), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, "Import failed", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.lyrics_import_failed), Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -502,8 +502,8 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
-                                            Text("50%", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                            Text("200%", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text(context.getString(R.string.lyrics_size_min), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text(context.getString(R.string.lyrics_size_max), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                 }
@@ -686,7 +686,7 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
                 
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Lyrics File & Data Management",
+                    text = context.getString(R.string.lyrics_file_data_management),
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.SemiBold
                     ),
@@ -698,13 +698,13 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
                     items = listOf(
                         Material3SettingsItem(
                             icon = MaterialSymbolIcon("drive_file_rename_outline"),
-                            title = { Text("LRC Rename Behavior") },
+                            title = { Text(context.getString(R.string.lyrics_lrc_rename_behavior)) },
                             description = {
                                 Text(
                                     text = when (lrcRenameBehavior) {
-                                        "always" -> "Always rename to match song"
-                                        "never" -> "Never rename (always tag)"
-                                        else -> "Ask every time"
+                                        "always" -> context.getString(R.string.lyrics_rename_always)
+                                        "never" -> context.getString(R.string.lyrics_rename_never)
+                                        else -> context.getString(R.string.lyrics_rename_ask)
                                     }
                                 )
                             },
@@ -720,8 +720,8 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
                         ),
                         Material3SettingsItem(
                             icon = MaterialSymbolIcon("upload"),
-                            title = { Text("Export Lyrics Preferences") },
-                            description = { Text("Backup song-specific source settings and custom tags to CSV") },
+                            title = { Text(context.getString(R.string.lyrics_export_preferences)) },
+                            description = { Text(context.getString(R.string.lyrics_export_preferences_desc)) },
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.HEAVY)
                                 exportCsvLauncher.launch("rhythm_lyrics_preferences.csv")
@@ -729,8 +729,8 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
                         ),
                         Material3SettingsItem(
                             icon = MaterialSymbolIcon("download"),
-                            title = { Text("Import Lyrics Preferences") },
-                            description = { Text("Restore song-specific source settings and custom tags from CSV") },
+                            title = { Text(context.getString(R.string.lyrics_import_preferences)) },
+                            description = { Text(context.getString(R.string.lyrics_import_preferences_desc)) },
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.HEAVY)
                                 importCsvLauncher.launch("*/*")

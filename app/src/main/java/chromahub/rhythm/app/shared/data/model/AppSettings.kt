@@ -560,7 +560,6 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_MINIPLAYER_ARTWORK_SIZE = "miniplayer_artwork_size" // 40-72 dp
         private const val KEY_MINIPLAYER_CORNER_RADIUS = "miniplayer_corner_radius" // 0-28 dp
         private const val KEY_MINIPLAYER_SHOW_TIME = "miniplayer_show_time"
-        private const val KEY_MINIPLAYER_USE_CIRCULAR_PROGRESS = "miniplayer_use_circular_progress"
         private const val KEY_MINIPLAYER_ARTWORK_STYLE = "miniplayer_artwork_style" // "ROUNDED", "CIRCLE", "SQUARE"
         private const val KEY_MINIPLAYER_SHOW_SKIP_BUTTONS = "miniplayer_show_skip_buttons"
         private const val KEY_MINIPLAYER_TEXT_ALIGNMENT = "miniplayer_text_alignment" // "START", "CENTER"
@@ -5774,13 +5773,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setMiniPlayerShowTime(value: Boolean) {
         _miniPlayerShowTime.value = value
         prefs.edit().putBoolean(KEY_MINIPLAYER_SHOW_TIME, value).apply()
-    }
-    
-    private val _miniPlayerUseCircularProgress = MutableStateFlow(prefs.getBoolean(KEY_MINIPLAYER_USE_CIRCULAR_PROGRESS, false))
-    val miniPlayerUseCircularProgress: StateFlow<Boolean> = _miniPlayerUseCircularProgress.asStateFlow()
-    fun setMiniPlayerUseCircularProgress(value: Boolean) {
-        _miniPlayerUseCircularProgress.value = value
-        prefs.edit().putBoolean(KEY_MINIPLAYER_USE_CIRCULAR_PROGRESS, value).apply()
     }
     
     private val _miniPlayerArtworkStyle = MutableStateFlow(prefs.getString(KEY_MINIPLAYER_ARTWORK_STYLE, "ROUNDED") ?: "ROUNDED")

@@ -216,7 +216,7 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                                 item = SettingItem(
                                     icon = RhythmIcons.Public,
                                     title = stringResource(R.string.onboarding_integration_deezer),
-                                    description = "Free artist images and album artwork - no setup needed",
+                                    description = context.getString(R.string.api_deezer_desc),
                                     toggleState = deezerApiEnabled,
                                     onToggleChange = { enabled -> appSettings.setDeezerApiEnabled(enabled) }
                                 )
@@ -232,7 +232,7 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                                 item = SettingItem(
                                     icon = RhythmIcons.Queue,
                                     title = stringResource(R.string.onboarding_integration_lrclib),
-                                    description = "Free line-by-line synced lyrics (Fallback)",
+                                    description = context.getString(R.string.api_lrclib_desc),
                                     toggleState = lrclibApiEnabled,
                                     onToggleChange = { enabled -> appSettings.setLrcLibApiEnabled(enabled) }
                                 )
@@ -248,7 +248,7 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                                 item = SettingItem(
                                     icon = MaterialSymbolIcon("music_note"),
                                     title = stringResource(R.string.apimanagementsettingsscreen_lyrically),
-                                    description = "Word-by-word synchronized lyrics (Highest Quality)",
+                                    description = context.getString(R.string.api_lyrically_desc),
                                     toggleState = lyricallyApiEnabled,
                                     onToggleChange = { enabled -> appSettings.setLyricallyApiEnabled(enabled) },
                                     onClick = {
@@ -268,11 +268,14 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                             hapticFeedback = hapticFeedback,
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("movie"),
-                                title = "Apple Music Motion Canvas",
-                                description = "Dynamic animated album artwork - " + when (appleCanvasNetworkMode) {
-                                    chromahub.rhythm.app.shared.data.model.CanvasNetworkMode.WIFI_ONLY -> "Only on Wi-Fi"
-                                    chromahub.rhythm.app.shared.data.model.CanvasNetworkMode.BOTH -> "Wi-Fi & Cellular"
-                                },
+                                title = context.getString(R.string.api_apple_motion_canvas),
+                                description = context.getString(
+                                    R.string.api_apple_motion_canvas_desc,
+                                    when (appleCanvasNetworkMode) {
+                                        chromahub.rhythm.app.shared.data.model.CanvasNetworkMode.WIFI_ONLY -> context.getString(R.string.api_apple_canvas_wifi)
+                                        chromahub.rhythm.app.shared.data.model.CanvasNetworkMode.BOTH -> context.getString(R.string.api_apple_canvas_both)
+                                    }
+                                ),
                                 toggleState = appleCanvasEnabled,
                                 onToggleChange = { enabled -> appSettings.setAppleCanvasEnabled(enabled) },
                                 onClick = {
@@ -293,7 +296,7 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                                 item = SettingItem(
                                     icon = RhythmIcons.Album,
                                     title = stringResource(R.string.onboarding_integration_ytmusic),
-                                    description = "Fallback for artist images and album artwork",
+                                    description = context.getString(R.string.api_ytmusic_desc),
                                     toggleState = ytMusicApiEnabled,
                                     onToggleChange = { enabled -> appSettings.setYTMusicApiEnabled(enabled) }
                                 )

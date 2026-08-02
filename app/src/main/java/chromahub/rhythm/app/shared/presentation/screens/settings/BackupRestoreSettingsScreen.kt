@@ -237,17 +237,17 @@ fun BackupRestoreSettingsScreen(onBackClick: () -> Unit) {
         when (val result = restoreResult) {
             is MusicViewModel.RestoreResult.Queued -> {
                 isPreparingRestore = false
-                Toast.makeText(context, "Media scan is in progress. Restore has been queued and will apply automatically when the scan finishes.", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.backup_restore_queued_message), Toast.LENGTH_LONG).show()
                 musicViewModel.clearRestoreResult()
             }
             is MusicViewModel.RestoreResult.Success -> {
                 isPreparingRestore = false
                 resultSheetState = BackupRestoreResultState(
-                    title = if (result.wasQueued) "Queued Restore Completed" else context.getString(R.string.settings_restore_completed),
+                    title = if (result.wasQueued) context.getString(R.string.backup_restore_queued_completed_title) else context.getString(R.string.settings_restore_completed),
                     message = if (result.wasQueued) {
-                        "The queued restore has completed successfully.\n\nPlease restart the app to apply all settings."
+                        context.getString(R.string.backup_restore_queued_completed_message)
                     } else {
-                        "Restore completed successfully.\n\nRestored sections:\n${selectedSectionsSummary(restoreSections)}"
+                        context.getString(R.string.backup_restore_completed_message, selectedSectionsSummary(restoreSections))
                     },
                     isError = false,
                     requiresRestart = true
@@ -270,7 +270,7 @@ fun BackupRestoreSettingsScreen(onBackClick: () -> Unit) {
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
                 if (isLibraryRefreshing) {
-                    Toast.makeText(context, "Cannot create backup while a media scan is in progress. Please wait for the scan to finish.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.backup_restore_blocked_message), Toast.LENGTH_LONG).show()
                     isCreatingBackup = false
                     return@let
                 }
@@ -294,7 +294,7 @@ fun BackupRestoreSettingsScreen(onBackClick: () -> Unit) {
 
                         resultSheetState = BackupRestoreResultState(
                             title = context.getString(R.string.settings_backup_created),
-                            message = "Backup completed successfully.\n\nIncluded sections:\n${selectedSectionsSummary(pendingBackupSections)}",
+                            message = context.getString(R.string.backup_completed_message, selectedSectionsSummary(pendingBackupSections)),
                             isError = false,
                             requiresRestart = false
                         )
@@ -612,7 +612,7 @@ fun BackupRestoreSettingsScreen(onBackClick: () -> Unit) {
                             context.getString(R.string.settings_create_backup_desc),
                             onClick = {
                                 if (isLibraryRefreshing) {
-                                    Toast.makeText(context, "Cannot create backup while a media scan is in progress. Please wait for the scan to finish.", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, context.getString(R.string.backup_restore_blocked_message), Toast.LENGTH_LONG).show()
                                 } else if (!isBusy) {
                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                                     backupSections = AppSettings.BackupRestoreSections()
