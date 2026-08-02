@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">اختيار كيفية استخلاص الألوان</string>
     <string name="theme_font_source">مصدر الخط</string>
     <string name="theme_font_source_desc">اختر مكان تحميل الخطوط منه</string>
-    <string name="theme_color_schemes">أنظمة الألوان</string>
-    <string name="theme_color_schemes_desc">اختر من بين أنظمة الألوان المعدة مسبقًا</string>
     <string name="theme_custom_picker">منتقي الألوان المخصص</string>
     <string name="theme_custom_picker_desc">قم بإنشاء نظام الألوان الخاص بك</string>
     <string name="theme_font_selection">اختيار الخط</string>
@@ -776,15 +774,6 @@
     <string name="playlist_create_first">قم بإنشاء قائمة التشغيل الأولى لإضافة الأغاني</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">ذاكرة التخزين المؤقت</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">تتوفر أنظمة الألوان فقط عند استخدام مصدر ألوان مخصص.</string>
-    <string name="theme_color_schemes_switch">قم بالتبديل إلى \"مخصص\" في إعداد \"مصدر اللون\" للوصول إلى الأنظمة المحددة مسبقًا.</string>
-    <string name="theme_custom_colors_unavailable">تتوفر الألوان المخصصة فقط عند استخدام مصدر ألوان مخصص.</string>
-    <string name="theme_custom_colors_switch">قم بالتبديل إلى \"مخصص\" في إعداد \"مصدر اللون\" لإنشاء الألوان الخاصة بك.</string>
     <string name="theme_system_fonts_unavailable">تتوفر خطوط النظام فقط عند استخدام مصدر خط النظام.</string>
     <string name="theme_system_fonts_switch">قم بالتبديل إلى النظام في إعداد مصدر الخط للاختيار من بين الخطوط المتاحة.</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +812,6 @@
     <string name="updates_experimental_coming">المزيد من الميزات التجريبية قريبًا في التحديثات المستقبلية</string>
     <string name="settings_interval_every_48_hours">كل 48 ساعة</string>
     <string name="settings_interval_every_72_hours">كل 72 ساعة</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">المخططات المميزة</string>
-    <string name="theme_more_schemes">المزيد من المخططات</string>
     <string name="theme_quick_presets">الإعدادات المسبقة السريعة</string>
     <string name="theme_advanced_rgb">عناصر تحكم RGB المتقدمة</string>
     <!-- Services -->
@@ -1224,7 +1208,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">فترة السماح نشطة</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">نهاية الاستراحة في %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">تنتهي فترة السماح في %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">درجة الأمان: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">إعدادات الحماية المسبقة</string>
     <string name="settings_rhythm_guard_protection_presets_desc">قم بتطبيق حزم الدرابزين التي تم اختبارها بسرعة لتناسب أسلوب الاستماع الخاص بك.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">لطيف</string>
@@ -1686,7 +1669,6 @@
     <string name="settings_miniplayer_header">مشغل صغير</string>
     <string name="settings_show_progress">أظهر التقدم</string>
     <string name="settings_show_progress_desc">عرض مؤشر التقدم</string>
-    <string name="settings_progress_mode">وضع التقدم</string>
     <string name="settings_show_artwork">عرض العمل الفني</string>
     <string name="settings_show_artwork_desc">عرض الأعمال الفنية للألبوم</string>
     <string name="settings_show_time">عرض الوقت</string>
@@ -1729,8 +1711,6 @@
     <string name="settings_color_schemes">أنظمة الألوان</string>
     <string name="settings_color_schemes_desc">تصفح وحدد لوحات الألوان المحددة مسبقًا</string>
     <string name="settings_custom_only">متوفر فقط مع مصدر الألوان المخصص</string>
-    <string name="settings_custom_colors">الألوان المخصصة</string>
-    <string name="settings_custom_colors_desc">قم بإنشاء لوحة الألوان الفريدة الخاصة بك</string>
     <string name="settings_font_customization">تخصيص الخط</string>
     <string name="settings_font_source">مصدر الخط</string>
     <string name="settings_font_source_system">خط النظام - %1$s</string>
@@ -1929,8 +1909,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">أظهر التقدم</string>
     <string name="settings_miniplayer_show_progress_desc">عرض مؤشر التقدم في المشغل المصغر</string>
-    <string name="settings_miniplayer_circular_progress">التقدم الدائري</string>
-    <string name="settings_miniplayer_circular_progress_desc">استخدم التقدم الدائري على زر التشغيل/الإيقاف المؤقت</string>
     <string name="settings_miniplayer_progress_style">أسلوب التقدم</string>
     <string name="settings_miniplayer_progress_style_desc">اختر نمط شريط تقدم اللاعب المصغر</string>
     <string name="settings_miniplayer_show_artwork">عرض العمل الفني</string>
@@ -1967,7 +1945,6 @@
     <string name="settings_backup_created">تم إنشاء النسخة الاحتياطية بنجاح</string>
     <string name="settings_backup_settings">الإعدادات</string>
     <string name="settings_center_aligned">بمحاذاة إلى الوسط</string>
-    <string name="settings_choose_progress_style">اختر نمط مؤشر التقدم</string>
     <string name="settings_create_backup">إنشاء نسخة احتياطية للملف</string>
     <string name="settings_create_backup_desc">تصدير نسخة احتياطية كاملة إلى ملف JSON.</string>
     <string name="settings_backup_action_short">النسخ الاحتياطي</string>
@@ -2453,10 +2430,6 @@
     <string name="color_scheme_emerald_desc">اللون الأخضر الزمردي الطازج مع ألوان الغابات الطبيعية</string>
     <string name="color_scheme_mint_title">النعناع</string>
     <string name="color_scheme_mint_desc">درجات اللون الأخضر السماوي والنعناعي المنعشة والنظيفة</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">الابتدائي</string>
-    <string name="theme_color_secondary">الثانوية</string>
-    <string name="theme_color_tertiary">التعليم العالي</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">كلمات</string>
     <string name="lyrics_settings_general">الإعدادات العامة</string>
@@ -2731,8 +2704,6 @@
     <string name="option_always">دائما</string>
     <string name="option_expanded">موسع</string>
     <string name="option_collapsed">انهارت</string>
-    <string name="option_linear">خطي</string>
-    <string name="option_circular">تعميم</string>
     <string name="option_both">كلاهما</string>
     <string name="option_icon">أيقونة</string>
     <string name="option_name">الاسم</string>

@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Välj hur färger extraheras</string>
     <string name="theme_font_source">Teckensnittskälla</string>
     <string name="theme_font_source_desc">Välj var du vill ladda typsnitt från</string>
-    <string name="theme_color_schemes">Färgscheman</string>
-    <string name="theme_color_schemes_desc">Välj bland förinställda färgscheman</string>
     <string name="theme_custom_picker">Anpassad färgväljare</string>
     <string name="theme_custom_picker_desc">Skapa ditt eget färgschema</string>
     <string name="theme_font_selection">Val av teckensnitt</string>
@@ -776,15 +774,6 @@
     <string name="playlist_create_first">Skapa din första spellista för att lägga till låtar</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">Cache</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Färgscheman är endast tillgängliga när du använder anpassad färgkälla.</string>
-    <string name="theme_color_schemes_switch">Växla till Custom i inställningen Färgkälla för att komma åt fördefinierade scheman.</string>
-    <string name="theme_custom_colors_unavailable">Anpassade färger är endast tillgängliga när du använder anpassad färgkälla.</string>
-    <string name="theme_custom_colors_switch">Växla till Custom i Color Source-inställningen för att skapa dina egna färger.</string>
     <string name="theme_system_fonts_unavailable">Systemteckensnitt är endast tillgängliga när du använder Systemfontkälla.</string>
     <string name="theme_system_fonts_switch">Växla till System i inställningen Font Source för att välja bland tillgängliga typsnitt.</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +812,6 @@
     <string name="updates_experimental_coming">Fler experimentella funktioner kommer snart i framtida uppdateringar</string>
     <string name="settings_interval_every_48_hours">Var 48:e timme</string>
     <string name="settings_interval_every_72_hours">Var 72:e timme</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">UTVALGAD SCHEMA</string>
-    <string name="theme_more_schemes">FLERA SYSTEM</string>
     <string name="theme_quick_presets">Snabbförinställningar</string>
     <string name="theme_advanced_rgb">Avancerade RGB-kontroller</string>
     <!-- Services -->
@@ -1224,7 +1208,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Respitperiod aktiv</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">Paus slutar om %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">Respitperioden slutar om %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Säkerhetspoäng: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Skyddsförinställningar</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Applicera snabbt testade skyddsräckspaket för din lyssnarstil.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Mild</string>
@@ -1686,7 +1669,6 @@
     <string name="settings_miniplayer_header">Minispelare</string>
     <string name="settings_show_progress">Visa framsteg</string>
     <string name="settings_show_progress_desc">Visa förloppsindikator</string>
-    <string name="settings_progress_mode">Förloppsläge</string>
     <string name="settings_show_artwork">Visa konstverk</string>
     <string name="settings_show_artwork_desc">Visa albumomslag</string>
     <string name="settings_show_time">Visa tid</string>
@@ -1729,8 +1711,6 @@
     <string name="settings_color_schemes">Färgscheman</string>
     <string name="settings_color_schemes_desc">Bläddra och välj fördefinierade färgpaletter</string>
     <string name="settings_custom_only">Endast tillgänglig med anpassad färgkälla</string>
-    <string name="settings_custom_colors">Anpassade färger</string>
-    <string name="settings_custom_colors_desc">Skapa din egen unika färgpalett</string>
     <string name="settings_font_customization">Teckensnittsanpassning</string>
     <string name="settings_font_source">Teckensnittskälla</string>
     <string name="settings_font_source_system">Systemteckensnitt – %1$s</string>
@@ -1929,8 +1909,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Visa framsteg</string>
     <string name="settings_miniplayer_show_progress_desc">Visa förloppsindikator i minispelare</string>
-    <string name="settings_miniplayer_circular_progress">Cirkulär framsteg</string>
-    <string name="settings_miniplayer_circular_progress_desc">Använd cirkulär förlopp på play/paus-knappen</string>
     <string name="settings_miniplayer_progress_style">Framstegsstil</string>
     <string name="settings_miniplayer_progress_style_desc">Välj stil för minispelarens förloppsindikator</string>
     <string name="settings_miniplayer_show_artwork">Visa konstverk</string>
@@ -1967,7 +1945,6 @@
     <string name="settings_backup_created">Säkerhetskopieringen har skapats</string>
     <string name="settings_backup_settings">Inställningar</string>
     <string name="settings_center_aligned">Centrerad</string>
-    <string name="settings_choose_progress_style">Välj stil för förloppsindikator</string>
     <string name="settings_create_backup">Skapa säkerhetskopia till fil</string>
     <string name="settings_create_backup_desc">Exportera fullständig säkerhetskopia till en JSON-fil</string>
     <string name="settings_backup_action_short">Säkerhetskopiering</string>
@@ -2453,10 +2430,6 @@
     <string name="color_scheme_emerald_desc">Färska smaragdgröna med naturliga skogstoner</string>
     <string name="color_scheme_mint_title">Mint</string>
     <string name="color_scheme_mint_desc">Fräscha och rena cyan- och mintgröna toner</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Primär</string>
-    <string name="theme_color_secondary">Sekundär</string>
-    <string name="theme_color_tertiary">Tertiär</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Sångtext</string>
     <string name="lyrics_settings_general">Allmänna inställningar</string>
@@ -2731,8 +2704,6 @@
     <string name="option_always">Alltid</string>
     <string name="option_expanded">Utökad</string>
     <string name="option_collapsed">Kollapsade</string>
-    <string name="option_linear">Linjär</string>
-    <string name="option_circular">Cirkulär</string>
     <string name="option_both">Båda</string>
     <string name="option_icon">Ikon</string>
     <string name="option_name">Namn</string>

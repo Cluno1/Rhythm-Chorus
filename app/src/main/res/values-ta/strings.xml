@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">நிறங்கள் எவ்வாறு பிரித்தெடுக்கப்படுகின்றன என்பதைத் தேர்ந்தெடுக்கவும்</string>
     <string name="theme_font_source">எழுத்துரு மூலம்</string>
     <string name="theme_font_source_desc">எழுத்துருக்களை எங்கிருந்து ஏற்றுவது என்பதைத் தேர்ந்தெடுக்கவும்</string>
-    <string name="theme_color_schemes">வண்ணத் திட்டங்கள்</string>
-    <string name="theme_color_schemes_desc">முன்னமைக்கப்பட்ட வண்ணத் திட்டங்களிலிருந்து தேர்வு செய்யவும்</string>
     <string name="theme_custom_picker">விருப்ப வண்ணத் தேர்வி</string>
     <string name="theme_custom_picker_desc">உங்கள் சொந்த வண்ணத் திட்டத்தை உருவாக்கவும்</string>
     <string name="theme_font_selection">எழுத்துரு தேர்வு</string>
@@ -776,15 +774,6 @@
     <string name="playlist_create_first">பாடல்களைச் சேர்க்க உங்கள் முதல் பிளேலிஸ்ட்டை உருவாக்கவும்</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">தற்காலிக சேமிப்பு</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">தனிப்பயன் வண்ண மூலத்தைப் பயன்படுத்தும் போது மட்டுமே வண்ணத் திட்டங்கள் கிடைக்கும்.</string>
-    <string name="theme_color_schemes_switch">முன் வரையறுக்கப்பட்ட திட்டங்களை அணுக, வண்ண மூல அமைப்பில் விருப்பத்திற்கு மாறவும்.</string>
-    <string name="theme_custom_colors_unavailable">தனிப்பயன் வண்ண மூலத்தைப் பயன்படுத்தும் போது மட்டுமே தனிப்பயன் வண்ணங்கள் கிடைக்கும்.</string>
-    <string name="theme_custom_colors_switch">உங்கள் சொந்த வண்ணங்களை உருவாக்க, வண்ண மூல அமைப்பில் தனிப்பயனாக்கத்திற்கு மாறவும்.</string>
     <string name="theme_system_fonts_unavailable">சிஸ்டம் எழுத்துரு மூலத்தைப் பயன்படுத்தும் போது மட்டுமே கணினி எழுத்துருக்கள் கிடைக்கும்.</string>
     <string name="theme_system_fonts_switch">கிடைக்கக்கூடிய எழுத்துருக்களில் இருந்து தேர்வு செய்ய எழுத்துரு மூல அமைப்பில் கணினிக்கு மாறவும்.</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +812,6 @@
     <string name="updates_experimental_coming">மேலும் சோதனை அம்சங்கள் எதிர்கால புதுப்பிப்புகளில் விரைவில் வரும்</string>
     <string name="settings_interval_every_48_hours">ஒவ்வொரு 48 மணிநேரமும்</string>
     <string name="settings_interval_every_72_hours">ஒவ்வொரு 72 மணிநேரமும்</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">சிறப்புத் திட்டங்கள்</string>
-    <string name="theme_more_schemes">மேலும் திட்டங்கள்</string>
     <string name="theme_quick_presets">விரைவு முன்னமைவுகள்</string>
     <string name="theme_advanced_rgb">மேம்பட்ட RGB கட்டுப்பாடுகள்</string>
     <!-- Services -->
@@ -1224,7 +1208,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">சலுகை காலம் செயலில் உள்ளது</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">இடைவேளை %1$s இல் முடிகிறது</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">சலுகை காலம் %1$s இல் முடிவடைகிறது</string>
-    <string name="settings_rhythm_guard_state_safety_score">பாதுகாப்பு மதிப்பெண்: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">பாதுகாப்பு முன்னமைவுகள்</string>
     <string name="settings_rhythm_guard_protection_presets_desc">உங்கள் கேட்கும் பாணிக்கு, சோதனை செய்யப்பட்ட காவலர் பந்தல்களை விரைவாகப் பயன்படுத்துங்கள்.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">மென்மையானவர்</string>
@@ -1686,7 +1669,6 @@
     <string name="settings_miniplayer_header">மினி பிளேயர்</string>
     <string name="settings_show_progress">முன்னேற்றத்தைக் காட்டு</string>
     <string name="settings_show_progress_desc">காட்சி முன்னேற்றம் காட்டி</string>
-    <string name="settings_progress_mode">முன்னேற்ற முறை</string>
     <string name="settings_show_artwork">கலைப்படைப்பைக் காட்டு</string>
     <string name="settings_show_artwork_desc">ஆல்பம் கலைப்படைப்பைக் காண்பி</string>
     <string name="settings_show_time">காட்சி நேரம்</string>
@@ -1729,8 +1711,6 @@
     <string name="settings_color_schemes">வண்ணத் திட்டங்கள்</string>
     <string name="settings_color_schemes_desc">முன் வரையறுக்கப்பட்ட வண்ணத் தட்டுகளை உலாவவும் தேர்ந்தெடுக்கவும்</string>
     <string name="settings_custom_only">தனிப்பயன் வண்ண மூலத்துடன் மட்டுமே கிடைக்கும்</string>
-    <string name="settings_custom_colors">விருப்ப வண்ணங்கள்</string>
-    <string name="settings_custom_colors_desc">உங்கள் சொந்த தனித்துவமான வண்ணத் தட்டுகளை உருவாக்கவும்</string>
     <string name="settings_font_customization">எழுத்துரு தனிப்பயனாக்கம்</string>
     <string name="settings_font_source">எழுத்துரு மூலம்</string>
     <string name="settings_font_source_system">கணினி எழுத்துரு - %1$s</string>
@@ -1929,8 +1909,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">முன்னேற்றத்தைக் காட்டு</string>
     <string name="settings_miniplayer_show_progress_desc">மினி பிளேயரில் முன்னேற்றம் காட்டி காட்சி</string>
-    <string name="settings_miniplayer_circular_progress">சுற்றறிக்கை முன்னேற்றம்</string>
-    <string name="settings_miniplayer_circular_progress_desc">ப்ளே/பாஸ் பட்டனில் வட்ட முன்னேற்றத்தைப் பயன்படுத்தவும்</string>
     <string name="settings_miniplayer_progress_style">முன்னேற்ற நடை</string>
     <string name="settings_miniplayer_progress_style_desc">மினி பிளேயர் முன்னேற்றப் பட்டை பாணியைத் தேர்வு செய்யவும்</string>
     <string name="settings_miniplayer_show_artwork">கலைப்படைப்பைக் காட்டு</string>
@@ -1967,7 +1945,6 @@
     <string name="settings_backup_created">காப்புப்பிரதி வெற்றிகரமாக உருவாக்கப்பட்டது</string>
     <string name="settings_backup_settings">அமைப்புகள்</string>
     <string name="settings_center_aligned">மையம் சீரமைக்கப்பட்டது</string>
-    <string name="settings_choose_progress_style">முன்னேற்றம் காட்டி பாணியை தேர்வு செய்யவும்</string>
     <string name="settings_create_backup">கோப்பில் காப்புப்பிரதியை உருவாக்கவும்</string>
     <string name="settings_create_backup_desc">முழுமையான காப்புப்பிரதியை JSON கோப்பிற்கு ஏற்றுமதி செய்யவும்</string>
     <string name="settings_backup_action_short">காப்புப்பிரதி</string>
@@ -2453,10 +2430,6 @@
     <string name="color_scheme_emerald_desc">இயற்கையான வன சாயல்களுடன் கூடிய புதிய மரகத கீரைகள்</string>
     <string name="color_scheme_mint_title">புதினா</string>
     <string name="color_scheme_mint_desc">புதிய மற்றும் சுத்தமான சியான் மற்றும் புதினா பச்சை நிற டோன்கள்</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">முதன்மை</string>
-    <string name="theme_color_secondary">இரண்டாம் நிலை</string>
-    <string name="theme_color_tertiary">மூன்றாம் நிலை</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">பாடல் வரிகள்</string>
     <string name="lyrics_settings_general">பொது அமைப்புகள்</string>
@@ -2731,8 +2704,6 @@
     <string name="option_always">எப்போதும்</string>
     <string name="option_expanded">விரிவாக்கப்பட்டது</string>
     <string name="option_collapsed">சரிந்தது</string>
-    <string name="option_linear">நேரியல்</string>
-    <string name="option_circular">சுற்றறிக்கை</string>
     <string name="option_both">இரண்டும்</string>
     <string name="option_icon">ஐகான்</string>
     <string name="option_name">பெயர்</string>

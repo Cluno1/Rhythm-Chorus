@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Виберіть спосіб виділення кольорів</string>
     <string name="theme_font_source">Джерело шрифту</string>
     <string name="theme_font_source_desc">Виберіть, звідки завантажувати шрифти</string>
-    <string name="theme_color_schemes">Кольорові схеми</string>
-    <string name="theme_color_schemes_desc">Виберіть із попередньо встановлених схем кольорів</string>
     <string name="theme_custom_picker">Спеціальний вибір кольорів</string>
     <string name="theme_custom_picker_desc">Створіть власну колірну схему</string>
     <string name="theme_font_selection">Вибір шрифту</string>
@@ -776,15 +774,6 @@
     <string name="playlist_create_first">Створіть свій перший список відтворення, щоб додати пісні</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">Кеш</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Схеми кольорів доступні, лише якщо використовується власне джерело кольорів.</string>
-    <string name="theme_color_schemes_switch">Щоб отримати доступ до попередньо визначених схем, у налаштуваннях «Джерело кольору» виберіть «Користувацький».</string>
-    <string name="theme_custom_colors_unavailable">Користувацькі кольори доступні, лише якщо використовується спеціальне джерело кольорів.</string>
-    <string name="theme_custom_colors_switch">Щоб створити власні кольори, у налаштуваннях «Джерело кольорів» виберіть «Настроюваний».</string>
     <string name="theme_system_fonts_unavailable">Системні шрифти доступні лише за використання джерела системних шрифтів.</string>
     <string name="theme_system_fonts_switch">Перейдіть на «Система» в налаштуваннях «Джерело шрифту», щоб вибрати з доступних шрифтів.</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +812,6 @@
     <string name="updates_experimental_coming">Більше експериментальних функцій незабаром з’являться в наступних оновленнях</string>
     <string name="settings_interval_every_48_hours">Кожні 48 годин</string>
     <string name="settings_interval_every_72_hours">Кожні 72 години</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">ІНФОРМАЦІЙНІ СХЕМИ</string>
-    <string name="theme_more_schemes">БІЛЬШЕ СХЕМ</string>
     <string name="theme_quick_presets">Швидкі налаштування</string>
     <string name="theme_advanced_rgb">Розширені елементи керування RGB</string>
     <!-- Services -->
@@ -1224,7 +1208,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Пільговий період активний</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">Перерва закінчується через %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">Пільговий період закінчується %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Оцінка безпеки: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Попередні налаштування захисту</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Швидко застосуйте перевірені комплекти огорожі для свого стилю прослуховування.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Ніжний</string>
@@ -1686,7 +1669,6 @@
     <string name="settings_miniplayer_header">Міні-програвач</string>
     <string name="settings_show_progress">Показати прогрес</string>
     <string name="settings_show_progress_desc">Відображення індикатора прогресу</string>
-    <string name="settings_progress_mode">Режим прогресу</string>
     <string name="settings_show_artwork">Показати ілюстрації</string>
     <string name="settings_show_artwork_desc">Показати обкладинку альбому</string>
     <string name="settings_show_time">Show Time</string>
@@ -1729,8 +1711,6 @@
     <string name="settings_color_schemes">Кольорові схеми</string>
     <string name="settings_color_schemes_desc">Перегляньте та виберіть попередньо визначені палітри кольорів</string>
     <string name="settings_custom_only">Доступно лише з власним джерелом кольорів</string>
-    <string name="settings_custom_colors">Спеціальні кольори</string>
-    <string name="settings_custom_colors_desc">Створіть власну унікальну палітру кольорів</string>
     <string name="settings_font_customization">Налаштування шрифту</string>
     <string name="settings_font_source">Джерело шрифту</string>
     <string name="settings_font_source_system">Системний шрифт - %1$s</string>
@@ -1929,8 +1909,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Показати прогрес</string>
     <string name="settings_miniplayer_show_progress_desc">Відображення індикатора прогресу в міні-плеєрі</string>
-    <string name="settings_miniplayer_circular_progress">Круговий прогрес</string>
-    <string name="settings_miniplayer_circular_progress_desc">Використовуйте круговий прогрес на кнопці відтворення/паузи</string>
     <string name="settings_miniplayer_progress_style">Стиль прогресу</string>
     <string name="settings_miniplayer_progress_style_desc">Виберіть стиль панелі прогресу міні-плеєра</string>
     <string name="settings_miniplayer_show_artwork">Показати ілюстрації</string>
@@ -1967,7 +1945,6 @@
     <string name="settings_backup_created">Резервну копію створено успішно</string>
     <string name="settings_backup_settings">Налаштування</string>
     <string name="settings_center_aligned">Вирівнювання по центру</string>
-    <string name="settings_choose_progress_style">Виберіть стиль індикатора прогресу</string>
     <string name="settings_create_backup">Створити резервну копію у файл</string>
     <string name="settings_create_backup_desc">Експортуйте повну резервну копію у файл JSON</string>
     <string name="settings_backup_action_short">Резервне копіювання</string>
@@ -2453,10 +2430,6 @@
     <string name="color_scheme_emerald_desc">Свіжа смарагдова зелень із природними лісовими відтінками</string>
     <string name="color_scheme_mint_title">Монетний двір</string>
     <string name="color_scheme_mint_desc">Свіжі та чисті блакитні та м’ятно-зелені тони</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Первинний</string>
-    <string name="theme_color_secondary">Вторинний</string>
-    <string name="theme_color_tertiary">Третинний</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Лірика</string>
     <string name="lyrics_settings_general">Загальні налаштування</string>
@@ -2731,8 +2704,6 @@
     <string name="option_always">Завжди</string>
     <string name="option_expanded">Розширено</string>
     <string name="option_collapsed">Згорнуто</string>
-    <string name="option_linear">Лінійний</string>
-    <string name="option_circular">Циркуляр</string>
     <string name="option_both">Обидва</string>
     <string name="option_icon">Значок</string>
     <string name="option_name">Ім\'я</string>

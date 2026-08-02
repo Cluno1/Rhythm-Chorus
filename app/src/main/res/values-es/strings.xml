@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Elija cómo se extraen los colores</string>
     <string name="theme_font_source">Fuente de fuente</string>
     <string name="theme_font_source_desc">Elige dónde cargar las fuentes</string>
-    <string name="theme_color_schemes">Esquemas de colores</string>
-    <string name="theme_color_schemes_desc">Elija entre esquemas de color preestablecidos</string>
     <string name="theme_custom_picker">Selector de color personalizado</string>
     <string name="theme_custom_picker_desc">Crea tu propia combinación de colores</string>
     <string name="theme_font_selection">Selección de fuente</string>
@@ -776,15 +774,6 @@
     <string name="playlist_create_first">Crea tu primera lista de reproducción para agregar canciones</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">Caché</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Los esquemas de color solo están disponibles cuando se utiliza una fuente de color personalizada.</string>
-    <string name="theme_color_schemes_switch">Cambie a Personalizado en la configuración de Fuente de color para acceder a esquemas predefinidos.</string>
-    <string name="theme_custom_colors_unavailable">Los colores personalizados solo están disponibles cuando se utiliza la fuente de color personalizada.</string>
-    <string name="theme_custom_colors_switch">Cambie a Personalizado en la configuración Fuente de color para crear sus propios colores.</string>
     <string name="theme_system_fonts_unavailable">Las fuentes del sistema solo están disponibles cuando se utiliza la fuente de fuente del sistema.</string>
     <string name="theme_system_fonts_switch">Cambie a Sistema en la configuración de Fuente de fuente para elegir entre las fuentes disponibles.</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +812,6 @@
     <string name="updates_experimental_coming">Más funciones experimentales próximamente en futuras actualizaciones</string>
     <string name="settings_interval_every_48_hours">Cada 48 horas</string>
     <string name="settings_interval_every_72_hours">Cada 72 horas</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">ESQUEMAS DESTACADOS</string>
-    <string name="theme_more_schemes">MÁS ESQUEMAS</string>
     <string name="theme_quick_presets">Preajustes rápidos</string>
     <string name="theme_advanced_rgb">Controles RGB avanzados</string>
     <!-- Services -->
@@ -1224,7 +1208,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Período de gracia activo</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">La pausa termina en %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">El período de gracia finaliza en %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Puntuación de seguridad: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Preajustes de protección</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Aplique rápidamente paquetes de barandillas probados para su estilo de escucha.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Suave</string>
@@ -1686,7 +1669,6 @@
     <string name="settings_miniplayer_header">Minireproductor</string>
     <string name="settings_show_progress">Mostrar progreso</string>
     <string name="settings_show_progress_desc">Mostrar indicador de progreso</string>
-    <string name="settings_progress_mode">Modo de progreso</string>
     <string name="settings_show_artwork">Mostrar ilustraciones</string>
     <string name="settings_show_artwork_desc">Mostrar carátula del álbum</string>
     <string name="settings_show_time">Mostrar hora</string>
@@ -1729,8 +1711,6 @@
     <string name="settings_color_schemes">Esquemas de colores</string>
     <string name="settings_color_schemes_desc">Explorar y seleccionar paletas de colores predefinidas</string>
     <string name="settings_custom_only">Disponible solo con fuente de color personalizada</string>
-    <string name="settings_custom_colors">Colores personalizados</string>
-    <string name="settings_custom_colors_desc">Crea tu propia paleta de colores única</string>
     <string name="settings_font_customization">Personalización de fuentes</string>
     <string name="settings_font_source">Fuente de fuente</string>
     <string name="settings_font_source_system">Fuente del sistema: %1$s</string>
@@ -1929,8 +1909,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Mostrar progreso</string>
     <string name="settings_miniplayer_show_progress_desc">Mostrar indicador de progreso en el minirreproductor</string>
-    <string name="settings_miniplayer_circular_progress">Progreso circular</string>
-    <string name="settings_miniplayer_circular_progress_desc">Utilice el progreso circular en el botón de reproducción/pausa</string>
     <string name="settings_miniplayer_progress_style">Estilo de progreso</string>
     <string name="settings_miniplayer_progress_style_desc">Elige el estilo de la barra de progreso del minirreproductor</string>
     <string name="settings_miniplayer_show_artwork">Mostrar ilustraciones</string>
@@ -1967,7 +1945,6 @@
     <string name="settings_backup_created">Copia de seguridad creada exitosamente</string>
     <string name="settings_backup_settings">Configuración</string>
     <string name="settings_center_aligned">Alineado al centro</string>
-    <string name="settings_choose_progress_style">Elija el estilo del indicador de progreso</string>
     <string name="settings_create_backup">Crear copia de seguridad en archivo</string>
     <string name="settings_create_backup_desc">Exportar copia de seguridad completa a un archivo JSON</string>
     <string name="settings_backup_action_short">Copia de seguridad</string>
@@ -2453,10 +2430,6 @@
     <string name="color_scheme_emerald_desc">Verdes esmeralda frescos con tonos de bosque naturales</string>
     <string name="color_scheme_mint_title">Menta</string>
     <string name="color_scheme_mint_desc">Tonos cian y verde menta frescos y limpios</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Primaria</string>
-    <string name="theme_color_secondary">Secundario</string>
-    <string name="theme_color_tertiary">Terciario</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Letras</string>
     <string name="lyrics_settings_general">Configuración general</string>
@@ -2731,8 +2704,6 @@
     <string name="option_always">Siempre</string>
     <string name="option_expanded">Ampliado</string>
     <string name="option_collapsed">Contraído</string>
-    <string name="option_linear">Lineal</string>
-    <string name="option_circular">circulares</string>
     <string name="option_both">Ambos</string>
     <string name="option_icon">Icono</string>
     <string name="option_name">Nombre</string>

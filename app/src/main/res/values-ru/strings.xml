@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Выберите способ извлечения цветов</string>
     <string name="theme_font_source">Источник шрифта</string>
     <string name="theme_font_source_desc">Выберите, откуда загружать шрифты</string>
-    <string name="theme_color_schemes">Цветовые схемы</string>
-    <string name="theme_color_schemes_desc">Выбор одной из предустановленных цветовых схем</string>
     <string name="theme_custom_picker">Выбор пользовательского цвета</string>
     <string name="theme_custom_picker_desc">Создайте свою собственную цветовую схему</string>
     <string name="theme_font_selection">Выбор шрифта</string>
@@ -776,15 +774,6 @@
     <string name="playlist_create_first">Создайте свой первый плейлист и добавьте песни</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">Тайник</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Цветовые схемы доступны только при использовании пользовательского источника цвета.</string>
-    <string name="theme_color_schemes_switch">Переключитесь на значение «Пользовательский» в настройке «Источник цвета», чтобы получить доступ к предварительно заданным схемам.</string>
-    <string name="theme_custom_colors_unavailable">Пользовательские цвета доступны только при использовании источника пользовательского цвета.</string>
-    <string name="theme_custom_colors_switch">Переключитесь на значение «Пользовательский» в настройке «Источник цвета», чтобы создавать свои собственные цвета.</string>
     <string name="theme_system_fonts_unavailable">Системные шрифты доступны только при использовании источника системных шрифтов.</string>
     <string name="theme_system_fonts_switch">Переключитесь на «Система» в настройке «Источник шрифта», чтобы выбрать один из доступных шрифтов.</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +812,6 @@
     <string name="updates_experimental_coming">В будущих обновлениях появятся новые экспериментальные функции</string>
     <string name="settings_interval_every_48_hours">Каждые 48 часов</string>
     <string name="settings_interval_every_72_hours">Каждые 72 часа</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">ПРЕДЛАГАЕМЫЕ СХЕМЫ</string>
-    <string name="theme_more_schemes">БОЛЬШЕ СХЕМ</string>
     <string name="theme_quick_presets">Быстрые настройки</string>
     <string name="theme_advanced_rgb">Расширенные элементы управления RGB</string>
     <!-- Services -->
@@ -1224,7 +1208,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Льготный период активен</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">Перерыв заканчивается в %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">Перезарядка заканчивается в %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Оценка безопасности: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Предварительные настройки защиты</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Быстрое применение проверенных комплектов ограждений в соответствии с вашим стилем прослушивания.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Нежный</string>
@@ -1686,7 +1669,6 @@
     <string name="settings_miniplayer_header">Миниплеер</string>
     <string name="settings_show_progress">Показать прогресс</string>
     <string name="settings_show_progress_desc">Отображение индикатора выполнения</string>
-    <string name="settings_progress_mode">Режим прогресса</string>
     <string name="settings_show_artwork">Показать иллюстрацию</string>
     <string name="settings_show_artwork_desc">Отображение обложки альбома</string>
     <string name="settings_show_time">Время показа</string>
@@ -1729,8 +1711,6 @@
     <string name="settings_color_schemes">Цветовые схемы</string>
     <string name="settings_color_schemes_desc">Просмотр и выбор предустановленных цветовых палитр</string>
     <string name="settings_custom_only">Доступно только с пользовательским источником цвета</string>
-    <string name="settings_custom_colors">Пользовательские цвета</string>
-    <string name="settings_custom_colors_desc">Создайте свою собственную уникальную цветовую палитру</string>
     <string name="settings_font_customization">Настройка шрифта</string>
     <string name="settings_font_source">Источник шрифта</string>
     <string name="settings_font_source_system">Системный шрифт — %1$s</string>
@@ -1929,8 +1909,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Показать прогресс</string>
     <string name="settings_miniplayer_show_progress_desc">Отображение индикатора прогресса в мини-плеере</string>
-    <string name="settings_miniplayer_circular_progress">Круговой прогресс</string>
-    <string name="settings_miniplayer_circular_progress_desc">Используйте круговой прогресс на кнопке воспроизведения/паузы</string>
     <string name="settings_miniplayer_progress_style">Стиль прогресса</string>
     <string name="settings_miniplayer_progress_style_desc">Выберите стиль индикатора прогресса мини-плеера</string>
     <string name="settings_miniplayer_show_artwork">Показать иллюстрацию</string>
@@ -1967,7 +1945,6 @@
     <string name="settings_backup_created">Резервная копия успешно создана</string>
     <string name="settings_backup_settings">Настройки</string>
     <string name="settings_center_aligned">Выровнено по центру</string>
-    <string name="settings_choose_progress_style">Выберите стиль индикатора прогресса</string>
     <string name="settings_create_backup">Создать резервную копию в файл</string>
     <string name="settings_create_backup_desc">Экспортировать полную резервную копию в файл JSON</string>
     <string name="settings_backup_action_short">Резервное копирование</string>
@@ -2453,10 +2430,6 @@
     <string name="color_scheme_emerald_desc">Свежая изумрудная зелень с естественными лесными оттенками</string>
     <string name="color_scheme_mint_title">Мята</string>
     <string name="color_scheme_mint_desc">Свежие и чистые голубые и мятно-зеленые тона</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Первичный</string>
-    <string name="theme_color_secondary">Вторичный</string>
-    <string name="theme_color_tertiary">Третичный</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Тексты песен</string>
     <string name="lyrics_settings_general">Общие настройки</string>
@@ -2731,8 +2704,6 @@
     <string name="option_always">Всегда</string>
     <string name="option_expanded">Расширенное</string>
     <string name="option_collapsed">Свернуто</string>
-    <string name="option_linear">Линейный</string>
-    <string name="option_circular">Круговой</string>
     <string name="option_both">Оба</string>
     <string name="option_icon">Значок</string>
     <string name="option_name">Имя</string>

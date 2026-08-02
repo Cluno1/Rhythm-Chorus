@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">কীভাবে রং বের করা হয় তা বেছে নিন</string>
     <string name="theme_font_source">ফন্ট সোর্স</string>
     <string name="theme_font_source_desc">কোথা থেকে ফন্ট লোড করতে হবে তা বেছে নিন</string>
-    <string name="theme_color_schemes">রঙের স্কিম</string>
-    <string name="theme_color_schemes_desc">প্রিসেট রঙের স্কিম থেকে বেছে নিন</string>
     <string name="theme_custom_picker">কাস্টম কালার পিকার</string>
     <string name="theme_custom_picker_desc">আপনার নিজস্ব রঙের স্কিম তৈরি করুন</string>
     <string name="theme_font_selection">ফন্ট নির্বাচন</string>
@@ -776,15 +774,6 @@
     <string name="playlist_create_first">গান যোগ করতে আপনার প্রথম প্লেলিস্ট তৈরি করুন</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">ক্যাশে</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">কাস্টম কালার সোর্স ব্যবহার করলেই কালার স্কিম পাওয়া যায়।</string>
-    <string name="theme_color_schemes_switch">পূর্বনির্ধারিত স্কিম অ্যাক্সেস করতে কালার সোর্স সেটিং-এ কাস্টম-এ স্যুইচ করুন।</string>
-    <string name="theme_custom_colors_unavailable">কাস্টম কালার সোর্স ব্যবহার করার সময় কাস্টম রং পাওয়া যায়।</string>
-    <string name="theme_custom_colors_switch">আপনার নিজস্ব রং তৈরি করতে কালার সোর্স সেটিং-এ কাস্টম-এ স্যুইচ করুন।</string>
     <string name="theme_system_fonts_unavailable">সিস্টেম ফন্ট শুধুমাত্র সিস্টেম ফন্ট উৎস ব্যবহার করার সময় উপলব্ধ।</string>
     <string name="theme_system_fonts_switch">উপলব্ধ ফন্ট থেকে বেছে নিতে ফন্ট সোর্স সেটিং-এ সিস্টেমে স্যুইচ করুন।</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +812,6 @@
     <string name="updates_experimental_coming">ভবিষ্যতের আপডেটে শীঘ্রই আসছে আরও পরীক্ষামূলক বৈশিষ্ট্য</string>
     <string name="settings_interval_every_48_hours">প্রতি ৪৮ ঘণ্টায়</string>
     <string name="settings_interval_every_72_hours">প্রতি ৭২ ঘণ্টায়</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">বৈশিষ্ট্যযুক্ত স্কিম</string>
-    <string name="theme_more_schemes">আরও স্কিম</string>
     <string name="theme_quick_presets">দ্রুত প্রিসেট</string>
     <string name="theme_advanced_rgb">উন্নত আরজিবি কন্ট্রোল</string>
     <!-- Services -->
@@ -1224,7 +1208,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">গ্রেস পিরিয়ড সক্রিয়</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">বিরতি %1$s এ শেষ হয়</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">গ্রেস পিরিয়ড %1$s-এ শেষ হবে</string>
-    <string name="settings_rhythm_guard_state_safety_score">নিরাপত্তা স্কোর: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">সুরক্ষা প্রিসেট</string>
     <string name="settings_rhythm_guard_protection_presets_desc">আপনার শোনার শৈলীর জন্য দ্রুত পরীক্ষিত গার্ডেল বান্ডিলগুলি প্রয়োগ করুন।</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">কোমল</string>
@@ -1686,7 +1669,6 @@
     <string name="settings_miniplayer_header">মিনি প্লেয়ার</string>
     <string name="settings_show_progress">অগ্রগতি দেখান</string>
     <string name="settings_show_progress_desc">অগ্রগতি সূচক প্রদর্শন করুন</string>
-    <string name="settings_progress_mode">অগ্রগতি মোড</string>
     <string name="settings_show_artwork">আর্টওয়ার্ক দেখান</string>
     <string name="settings_show_artwork_desc">অ্যালবাম আর্টওয়ার্ক প্রদর্শন করুন</string>
     <string name="settings_show_time">সময় দেখান</string>
@@ -1729,8 +1711,6 @@
     <string name="settings_color_schemes">কালার স্কিম</string>
     <string name="settings_color_schemes_desc">ব্রাউজ করুন এবং পূর্বনির্ধারিত রঙের প্যালেট নির্বাচন করুন</string>
     <string name="settings_custom_only">শুধুমাত্র কাস্টম রঙের উৎসের সাথে উপলব্ধ</string>
-    <string name="settings_custom_colors">কাস্টম রং</string>
-    <string name="settings_custom_colors_desc">আপনার নিজস্ব অনন্য রঙ প্যালেট তৈরি করুন</string>
     <string name="settings_font_customization">ফন্ট কাস্টমাইজেশন</string>
     <string name="settings_font_source">হরফের উৎস</string>
     <string name="settings_font_source_system">সিস্টেম ফন্ট - %1$s</string>
@@ -1929,8 +1909,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">অগ্রগতি দেখান</string>
     <string name="settings_miniplayer_show_progress_desc">মিনি প্লেয়ারে অগ্রগতি সূচক প্রদর্শন করুন</string>
-    <string name="settings_miniplayer_circular_progress">সার্কুলার অগ্রগতি</string>
-    <string name="settings_miniplayer_circular_progress_desc">প্লে/পজ বোতামে বৃত্তাকার অগ্রগতি ব্যবহার করুন</string>
     <string name="settings_miniplayer_progress_style">অগ্রগতি শৈলী</string>
     <string name="settings_miniplayer_progress_style_desc">মিনি প্লেয়ার প্রগ্রেস বার স্টাইল বেছে নিন</string>
     <string name="settings_miniplayer_show_artwork">আর্টওয়ার্ক দেখান</string>
@@ -1967,7 +1945,6 @@
     <string name="settings_backup_created">ব্যাকআপ সফলভাবে তৈরি করা হয়েছে</string>
     <string name="settings_backup_settings">সেটিংস</string>
     <string name="settings_center_aligned">কেন্দ্রে সারিবদ্ধ</string>
-    <string name="settings_choose_progress_style">অগ্রগতি নির্দেশক শৈলী বেছে নিন</string>
     <string name="settings_create_backup">ফাইলে ব্যাকআপ তৈরি করুন</string>
     <string name="settings_create_backup_desc">একটি JSON ফাইলে সম্পূর্ণ ব্যাকআপ রপ্তানি করুন</string>
     <string name="settings_backup_action_short">ব্যাকআপ</string>
@@ -2453,10 +2430,6 @@
     <string name="color_scheme_emerald_desc">প্রাকৃতিক বনের রঙের সাথে তাজা পান্না সবুজ</string>
     <string name="color_scheme_mint_title">পুদিনা</string>
     <string name="color_scheme_mint_desc">তাজা এবং পরিষ্কার সায়ান এবং পুদিনা সবুজ টোন</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">প্রাথমিক</string>
-    <string name="theme_color_secondary">মাধ্যমিক</string>
-    <string name="theme_color_tertiary">তৃতীয়</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">গানের কথা</string>
     <string name="lyrics_settings_general">সাধারণ সেটিংস</string>
@@ -2731,8 +2704,6 @@
     <string name="option_always">সর্বদা</string>
     <string name="option_expanded">প্রসারিত</string>
     <string name="option_collapsed">ধসে পড়েছে</string>
-    <string name="option_linear">রৈখিক</string>
-    <string name="option_circular">সার্কুলার</string>
     <string name="option_both">উভয়ই</string>
     <string name="option_icon">আইকন</string>
     <string name="option_name">নাম</string>

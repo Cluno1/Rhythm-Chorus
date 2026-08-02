@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">選擇顏色的擷取方式</string>
     <string name="theme_font_source">字體來源</string>
     <string name="theme_font_source_desc">選擇從何處載入字體</string>
-    <string name="theme_color_schemes">配色方案</string>
-    <string name="theme_color_schemes_desc">從預設配色方案中選擇</string>
     <string name="theme_custom_picker">自訂顏色選擇器</string>
     <string name="theme_custom_picker_desc">創造自己的配色方案</string>
     <string name="theme_font_selection">字體選擇</string>
@@ -776,15 +774,6 @@
     <string name="playlist_create_first">建立您的第一個播放清單以新增歌曲</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">緩存</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">配色方案僅在使用自訂顏色來源時可用。</string>
-    <string name="theme_color_schemes_switch">在「色彩來源」設定中切換到「自訂」以存取預先定義的方案。</string>
-    <string name="theme_custom_colors_unavailable">自訂顏色僅在使用自訂顏色來源時可用。</string>
-    <string name="theme_custom_colors_switch">在「顏色來源」設定中切換到「自訂」以建立您自己的顏色。</string>
     <string name="theme_system_fonts_unavailable">系統字型僅在使用系統字型來源時才可用。</string>
     <string name="theme_system_fonts_switch">在字型來源設定中切換到系統以從可用字型中進行選擇。</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +812,6 @@
     <string name="updates_experimental_coming">未來的更新即將推出更多實驗性功能</string>
     <string name="settings_interval_every_48_hours">每 48 小時一次</string>
     <string name="settings_interval_every_72_hours">每 72 小時一次</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">特色方案</string>
-    <string name="theme_more_schemes">更多方案</string>
     <string name="theme_quick_presets">快速預設</string>
     <string name="theme_advanced_rgb">高階 RGB 控制</string>
     <!-- Services -->
@@ -1224,7 +1208,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">寬限期有效</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">休息時間將於 %1$s 後結束</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">寬限期於 %1$s 結束</string>
-    <string name="settings_rhythm_guard_state_safety_score">安全評分：%1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">保護預設</string>
     <string name="settings_rhythm_guard_protection_presets_desc">根據您的聆聽風格快速套用經過測試的護欄束。</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">溫柔</string>
@@ -1686,7 +1669,6 @@
     <string name="settings_miniplayer_header">迷你播放器</string>
     <string name="settings_show_progress">顯示進度</string>
     <string name="settings_show_progress_desc">顯示進度指示器</string>
-    <string name="settings_progress_mode">進度模式</string>
     <string name="settings_show_artwork">展示藝術品</string>
     <string name="settings_show_artwork_desc">顯示專輯封面</string>
     <string name="settings_show_time">演出時間</string>
@@ -1729,8 +1711,6 @@
     <string name="settings_color_schemes">配色方案</string>
     <string name="settings_color_schemes_desc">瀏覽並選擇預先定義的調色板</string>
     <string name="settings_custom_only">僅適用於自訂色彩來源</string>
-    <string name="settings_custom_colors">自訂顏色</string>
-    <string name="settings_custom_colors_desc">創建您自己獨特的調色板</string>
     <string name="settings_font_customization">字體定制</string>
     <string name="settings_font_source">字體來源</string>
     <string name="settings_font_source_system">系統字型-%1$s</string>
@@ -1929,8 +1909,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">顯示進度</string>
     <string name="settings_miniplayer_show_progress_desc">在迷你播放器中顯示進度指示器</string>
-    <string name="settings_miniplayer_circular_progress">循環進展</string>
-    <string name="settings_miniplayer_circular_progress_desc">在播放/暫停按鈕上使用循環進度</string>
     <string name="settings_miniplayer_progress_style">進度風格</string>
     <string name="settings_miniplayer_progress_style_desc">選擇迷你播放器進度條樣式</string>
     <string name="settings_miniplayer_show_artwork">展示藝術品</string>
@@ -1967,7 +1945,6 @@
     <string name="settings_backup_created">備份建立成功</string>
     <string name="settings_backup_settings">設定</string>
     <string name="settings_center_aligned">居中對齊</string>
-    <string name="settings_choose_progress_style">選擇進度指示器樣式</string>
     <string name="settings_create_backup">建立檔案備份</string>
     <string name="settings_create_backup_desc">將完整備份匯出到 JSON 檔</string>
     <string name="settings_backup_action_short">備份</string>
@@ -2453,10 +2430,6 @@
     <string name="color_scheme_emerald_desc">清新翠綠，帶有天然森林色調</string>
     <string name="color_scheme_mint_title">水色天光（薄荷）</string>
     <string name="color_scheme_mint_desc">清新乾淨的青色和薄荷綠色調</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">主色</string>
-    <string name="theme_color_secondary">輔助色</string>
-    <string name="theme_color_tertiary">第三色</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">歌詞</string>
     <string name="lyrics_settings_general">一般設定</string>
@@ -2731,8 +2704,6 @@
     <string name="option_always">永遠</string>
     <string name="option_expanded">擴展</string>
     <string name="option_collapsed">倒塌</string>
-    <string name="option_linear">線性</string>
-    <string name="option_circular">圓形</string>
     <string name="option_both">兩者</string>
     <string name="option_icon">圖標</string>
     <string name="option_name">姓名</string>

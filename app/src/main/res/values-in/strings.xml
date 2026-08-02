@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Pilih bagaimana warna diekstraksi</string>
     <string name="theme_font_source">Sumber Font</string>
     <string name="theme_font_source_desc">Pilih dari mana memuat font</string>
-    <string name="theme_color_schemes">Skema Warna</string>
-    <string name="theme_color_schemes_desc">Pilih dari skema warna preset</string>
     <string name="theme_custom_picker">Pemilih Warna Kustom</string>
     <string name="theme_custom_picker_desc">Buat skema warna Anda sendiri</string>
     <string name="theme_font_selection">Pemilihan Font</string>
@@ -776,15 +774,6 @@
     <string name="playlist_create_first">Buat playlist pertama Anda untuk menambahkan lagu</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">Tembolok</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Skema warna hanya tersedia bila menggunakan sumber warna khusus.</string>
-    <string name="theme_color_schemes_switch">Beralih ke Kustom dalam pengaturan Sumber Warna untuk mengakses skema yang telah ditentukan sebelumnya.</string>
-    <string name="theme_custom_colors_unavailable">Warna khusus hanya tersedia bila menggunakan sumber warna khusus.</string>
-    <string name="theme_custom_colors_switch">Beralih ke Kustom dalam pengaturan Sumber Warna untuk membuat warna Anda sendiri.</string>
     <string name="theme_system_fonts_unavailable">Font sistem hanya tersedia saat menggunakan sumber font Sistem.</string>
     <string name="theme_system_fonts_switch">Beralih ke Sistem dalam pengaturan Sumber Font untuk memilih font yang tersedia.</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +812,6 @@
     <string name="updates_experimental_coming">Lebih banyak fitur eksperimental segera hadir di pembaruan mendatang</string>
     <string name="settings_interval_every_48_hours">Setiap 48 jam</string>
     <string name="settings_interval_every_72_hours">Setiap 72 jam</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">SKEMA UNGGULAN</string>
-    <string name="theme_more_schemes">SKEMA LEBIH BANYAK</string>
     <string name="theme_quick_presets">Preset Cepat</string>
     <string name="theme_advanced_rgb">Kontrol RGB Tingkat Lanjut</string>
     <!-- Services -->
@@ -1224,7 +1208,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Masa tenggang aktif</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">Istirahat berakhir di %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">Masa tenggang berakhir pada %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">Skor keamanan: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">Preset Perlindungan</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Terapkan dengan cepat paket pagar pembatas yang telah teruji untuk gaya mendengarkan Anda.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Lembut</string>
@@ -1686,7 +1669,6 @@
     <string name="settings_miniplayer_header">Pemutar Mini</string>
     <string name="settings_show_progress">Tunjukkan Kemajuan</string>
     <string name="settings_show_progress_desc">Menampilkan indikator kemajuan</string>
-    <string name="settings_progress_mode">Mode Kemajuan</string>
     <string name="settings_show_artwork">Tampilkan Karya Seni</string>
     <string name="settings_show_artwork_desc">Tampilkan sampul album</string>
     <string name="settings_show_time">Waktu Pertunjukan</string>
@@ -1729,8 +1711,6 @@
     <string name="settings_color_schemes">Skema Warna</string>
     <string name="settings_color_schemes_desc">Telusuri dan pilih palet warna yang telah ditentukan sebelumnya</string>
     <string name="settings_custom_only">Hanya tersedia dengan sumber warna khusus</string>
-    <string name="settings_custom_colors">Warna Khusus</string>
-    <string name="settings_custom_colors_desc">Buat palet warna unik Anda sendiri</string>
     <string name="settings_font_customization">Kustomisasi Font</string>
     <string name="settings_font_source">Sumber Font</string>
     <string name="settings_font_source_system">Font Sistem - %1$s</string>
@@ -1929,8 +1909,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">Tunjukkan Kemajuan</string>
     <string name="settings_miniplayer_show_progress_desc">Menampilkan indikator kemajuan di pemutar mini</string>
-    <string name="settings_miniplayer_circular_progress">Kemajuan Melingkar</string>
-    <string name="settings_miniplayer_circular_progress_desc">Gunakan kemajuan melingkar pada tombol putar/jeda</string>
     <string name="settings_miniplayer_progress_style">Gaya Kemajuan</string>
     <string name="settings_miniplayer_progress_style_desc">Pilih gaya bilah kemajuan pemutar mini</string>
     <string name="settings_miniplayer_show_artwork">Tampilkan Karya Seni</string>
@@ -1967,7 +1945,6 @@
     <string name="settings_backup_created">Cadangan Berhasil Dibuat</string>
     <string name="settings_backup_settings">Pengaturan</string>
     <string name="settings_center_aligned">Rata tengah</string>
-    <string name="settings_choose_progress_style">Pilih gaya indikator kemajuan</string>
     <string name="settings_create_backup">Buat Cadangan ke File</string>
     <string name="settings_create_backup_desc">Ekspor cadangan lengkap ke file JSON</string>
     <string name="settings_backup_action_short">Cadangan</string>
@@ -2453,10 +2430,6 @@
     <string name="color_scheme_emerald_desc">Hijau zamrud segar dengan warna hutan alami</string>
     <string name="color_scheme_mint_title">daun mint</string>
     <string name="color_scheme_mint_desc">Warna cyan dan hijau mint yang segar dan bersih</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Utama</string>
-    <string name="theme_color_secondary">Sekunder</string>
-    <string name="theme_color_tertiary">Tersier</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Lirik</string>
     <string name="lyrics_settings_general">Pengaturan Umum</string>
@@ -2731,8 +2704,6 @@
     <string name="option_always">Selalu</string>
     <string name="option_expanded">Diperluas</string>
     <string name="option_collapsed">Runtuh</string>
-    <string name="option_linear">Linier</string>
-    <string name="option_circular">Melingkar</string>
     <string name="option_both">Keduanya</string>
     <string name="option_icon">Ikon</string>
     <string name="option_name">Nama</string>

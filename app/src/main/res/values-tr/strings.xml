@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">Renklerin nasıl çıkarılacağını seçin</string>
     <string name="theme_font_source">Yazı Tipi Kaynağı</string>
     <string name="theme_font_source_desc">Yazı tiplerinin nereden yükleneceğini seçin</string>
-    <string name="theme_color_schemes">Renk Şemaları</string>
-    <string name="theme_color_schemes_desc">Önceden ayarlanmış renk şemaları arasından seçim yapın</string>
     <string name="theme_custom_picker">Özel Renk Seçici</string>
     <string name="theme_custom_picker_desc">Kendi renk düzeninizi yaratın</string>
     <string name="theme_font_selection">Yazı Tipi Seçimi</string>
@@ -776,15 +774,6 @@
     <string name="playlist_create_first">Şarkı eklemek için ilk çalma listenizi oluşturun</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">Önbellek</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">Renk şemaları yalnızca Özel renk kaynağı kullanıldığında kullanılabilir.</string>
-    <string name="theme_color_schemes_switch">Önceden tanımlanmış şemalara erişmek için Renk Kaynağı ayarında Özel\'e geçin.</string>
-    <string name="theme_custom_colors_unavailable">Özel renkler yalnızca Özel renk kaynağı kullanıldığında kullanılabilir.</string>
-    <string name="theme_custom_colors_switch">Kendi renklerinizi oluşturmak için Renk Kaynağı ayarında Özel\'e geçin.</string>
     <string name="theme_system_fonts_unavailable">Sistem yazı tipleri yalnızca Sistem yazı tipi kaynağı kullanıldığında kullanılabilir.</string>
     <string name="theme_system_fonts_switch">Mevcut yazı tipleri arasından seçim yapmak için Yazı Tipi Kaynağı ayarında Sistem\'e geçin.</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +812,6 @@
     <string name="updates_experimental_coming">Gelecekteki güncellemelerde yakında daha fazla deneysel özellik gelecek</string>
     <string name="settings_interval_every_48_hours">Her 48 saatte bir</string>
     <string name="settings_interval_every_72_hours">Her 72 saatte bir</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">ÖNE ÇIKAN ŞEMALAR</string>
-    <string name="theme_more_schemes">DAHA FAZLA ŞEMA</string>
     <string name="theme_quick_presets">Hızlı Ön Ayarlar</string>
     <string name="theme_advanced_rgb">Gelişmiş RGB Kontrolleri</string>
     <!-- Services -->
@@ -1224,7 +1208,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">Yetkisiz kullanım süresi etkin</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">Mola %1$s\'da bitiyor</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">Yetkisiz kullanım süresi %1$s tarihinde sona eriyor</string>
-    <string name="settings_rhythm_guard_state_safety_score">Güvenlik puanı: %%%1$d</string>
     <string name="settings_rhythm_guard_protection_presets_title">Koruma Ön Ayarları</string>
     <string name="settings_rhythm_guard_protection_presets_desc">Dinleme tarzınıza göre test edilmiş korkuluk paketlerini hızla uygulayın.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">Nazik</string>
@@ -1686,7 +1669,6 @@
     <string name="settings_miniplayer_header">Mini Oynatıcı</string>
     <string name="settings_show_progress">İlerlemeyi Göster</string>
     <string name="settings_show_progress_desc">Ekran ilerleme göstergesi</string>
-    <string name="settings_progress_mode">İlerleme Modu</string>
     <string name="settings_show_artwork">Çizimi Göster</string>
     <string name="settings_show_artwork_desc">Albüm resmini görüntüle</string>
     <string name="settings_show_time">Gösteri Zamanı</string>
@@ -1729,8 +1711,6 @@
     <string name="settings_color_schemes">Renk Şemaları</string>
     <string name="settings_color_schemes_desc">Önceden tanımlanmış renk paletlerine göz atın ve seçin</string>
     <string name="settings_custom_only">Yalnızca Özel renk kaynağıyla kullanılabilir</string>
-    <string name="settings_custom_colors">Özel Renkler</string>
-    <string name="settings_custom_colors_desc">Kendi benzersiz renk paletinizi yaratın</string>
     <string name="settings_font_customization">Yazı Tipi Özelleştirme</string>
     <string name="settings_font_source">Yazı Tipi Kaynağı</string>
     <string name="settings_font_source_system">Sistem Yazı Tipi - %1$s</string>
@@ -1929,8 +1909,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">İlerlemeyi Göster</string>
     <string name="settings_miniplayer_show_progress_desc">Mini oynatıcıda ilerleme göstergesini görüntüle</string>
-    <string name="settings_miniplayer_circular_progress">Döngüsel İlerleme</string>
-    <string name="settings_miniplayer_circular_progress_desc">Oynat/duraklat düğmesinde dairesel ilerlemeyi kullanın</string>
     <string name="settings_miniplayer_progress_style">İlerleme Tarzı</string>
     <string name="settings_miniplayer_progress_style_desc">Mini oynatıcı ilerleme çubuğu stilini seçin</string>
     <string name="settings_miniplayer_show_artwork">Çizimi Göster</string>
@@ -1967,7 +1945,6 @@
     <string name="settings_backup_created">Yedekleme Başarıyla Oluşturuldu</string>
     <string name="settings_backup_settings">Ayarlar</string>
     <string name="settings_center_aligned">Ortaya hizalanmış</string>
-    <string name="settings_choose_progress_style">İlerleme göstergesi stilini seçin</string>
     <string name="settings_create_backup">Dosyaya Yedekleme Oluştur</string>
     <string name="settings_create_backup_desc">Yedeklemenin tamamını bir JSON dosyasına aktarın</string>
     <string name="settings_backup_action_short">Yedekleme</string>
@@ -2453,10 +2430,6 @@
     <string name="color_scheme_emerald_desc">Doğal orman tonlarıyla taze zümrüt yeşilleri</string>
     <string name="color_scheme_mint_title">Nane</string>
     <string name="color_scheme_mint_desc">Taze ve temiz camgöbeği ve nane yeşili tonları</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">Birincil</string>
-    <string name="theme_color_secondary">İkincil</string>
-    <string name="theme_color_tertiary">Üçüncül</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">Şarkı Sözleri</string>
     <string name="lyrics_settings_general">Genel Ayarlar</string>
@@ -2731,8 +2704,6 @@
     <string name="option_always">Her zaman</string>
     <string name="option_expanded">Genişletilmiş</string>
     <string name="option_collapsed">Çökmüş</string>
-    <string name="option_linear">Doğrusal</string>
-    <string name="option_circular">Dairesel</string>
     <string name="option_both">İkisi de</string>
     <string name="option_icon">Simge</string>
     <string name="option_name">Ad</string>

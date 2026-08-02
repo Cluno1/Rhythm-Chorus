@@ -726,8 +726,6 @@
     <string name="theme_color_source_desc">เลือกวิธีการแยกสี</string>
     <string name="theme_font_source">แหล่งที่มาของแบบอักษร</string>
     <string name="theme_font_source_desc">เลือกว่าจะโหลดฟอนต์จากที่ไหน</string>
-    <string name="theme_color_schemes">โครงร่างสี</string>
-    <string name="theme_color_schemes_desc">เลือกจากโทนสีที่กำหนดไว้ล่วงหน้า</string>
     <string name="theme_custom_picker">ตัวเลือกสีที่กำหนดเอง</string>
     <string name="theme_custom_picker_desc">สร้างโทนสีของคุณเอง</string>
     <string name="theme_font_selection">การเลือกแบบอักษร</string>
@@ -776,15 +774,6 @@
     <string name="playlist_create_first">สร้างเพลย์ลิสต์แรกของคุณเพื่อเพิ่มเพลง</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">แคช</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">โทนสีจะพร้อมใช้งานเมื่อใช้แหล่งสีแบบกำหนดเองเท่านั้น</string>
-    <string name="theme_color_schemes_switch">สลับไปที่กำหนดเองในการตั้งค่าแหล่งสีเพื่อเข้าถึงโครงร่างที่กำหนดไว้ล่วงหน้า</string>
-    <string name="theme_custom_colors_unavailable">สีแบบกำหนดเองจะใช้ได้เฉพาะเมื่อใช้แหล่งสีแบบกำหนดเองเท่านั้น</string>
-    <string name="theme_custom_colors_switch">สลับไปที่กำหนดเองในการตั้งค่าแหล่งที่มาของสีเพื่อสร้างสีของคุณเอง</string>
     <string name="theme_system_fonts_unavailable">แบบอักษรของระบบจะพร้อมใช้งานเฉพาะเมื่อใช้แหล่งแบบอักษรของระบบเท่านั้น</string>
     <string name="theme_system_fonts_switch">สลับไปที่ระบบในการตั้งค่าแหล่งที่มาของแบบอักษรเพื่อเลือกแบบอักษรที่มี</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +812,6 @@
     <string name="updates_experimental_coming">คุณสมบัติทดลองเพิ่มเติมในการอัปเดตในอนาคตเร็ว ๆ นี้</string>
     <string name="settings_interval_every_48_hours">ทุก 48 ชั่วโมง</string>
     <string name="settings_interval_every_72_hours">ทุก ๆ 72 ชั่วโมง</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">แบบแผนที่โดดเด่น</string>
-    <string name="theme_more_schemes">รูปแบบเพิ่มเติม</string>
     <string name="theme_quick_presets">ค่าที่ตั้งล่วงหน้าด่วน</string>
     <string name="theme_advanced_rgb">การควบคุม RGB ขั้นสูง</string>
     <!-- Services -->
@@ -1224,7 +1208,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">ระยะเวลาผ่อนผันที่ใช้งานอยู่</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">เบรกสิ้นสุดใน %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">ระยะเวลาผ่อนผันจะสิ้นสุดใน %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">คะแนนความปลอดภัย: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">ค่าที่ตั้งล่วงหน้าการป้องกัน</string>
     <string name="settings_rhythm_guard_protection_presets_desc">ใช้ชุดราวกั้นที่ผ่านการทดสอบแล้วอย่างรวดเร็วสำหรับสไตล์การฟังของคุณ</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">อ่อนโยน</string>
@@ -1686,7 +1669,6 @@
     <string name="settings_miniplayer_header">มินิเพลเยอร์</string>
     <string name="settings_show_progress">แสดงความคืบหน้า</string>
     <string name="settings_show_progress_desc">แสดงตัวบ่งชี้ความคืบหน้า</string>
-    <string name="settings_progress_mode">โหมดความคืบหน้า</string>
     <string name="settings_show_artwork">แสดงผลงานศิลปะ</string>
     <string name="settings_show_artwork_desc">แสดงปกอัลบั้ม</string>
     <string name="settings_show_time">แสดงเวลา</string>
@@ -1729,8 +1711,6 @@
     <string name="settings_color_schemes">โครงร่างสี</string>
     <string name="settings_color_schemes_desc">เรียกดูและเลือกจานสีที่กำหนดไว้ล่วงหน้า</string>
     <string name="settings_custom_only">ใช้ได้เฉพาะกับแหล่งสีแบบกำหนดเองเท่านั้น</string>
-    <string name="settings_custom_colors">สีที่กำหนดเอง</string>
-    <string name="settings_custom_colors_desc">สร้างจานสีที่เป็นเอกลักษณ์ของคุณเอง</string>
     <string name="settings_font_customization">การปรับแต่งแบบอักษร</string>
     <string name="settings_font_source">แหล่งที่มาของแบบอักษร</string>
     <string name="settings_font_source_system">แบบอักษรของระบบ - %1$s</string>
@@ -1929,8 +1909,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">แสดงความคืบหน้า</string>
     <string name="settings_miniplayer_show_progress_desc">แสดงตัวบ่งชี้ความคืบหน้าในเครื่องเล่นขนาดเล็ก</string>
-    <string name="settings_miniplayer_circular_progress">ความก้าวหน้าแบบวงกลม</string>
-    <string name="settings_miniplayer_circular_progress_desc">ใช้ความคืบหน้าแบบวงกลมบนปุ่มเล่น/หยุดชั่วคราว</string>
     <string name="settings_miniplayer_progress_style">สไตล์ความก้าวหน้า</string>
     <string name="settings_miniplayer_progress_style_desc">เลือกสไตล์แถบความคืบหน้าของเครื่องเล่นขนาดเล็ก</string>
     <string name="settings_miniplayer_show_artwork">แสดงผลงานศิลปะ</string>
@@ -1967,7 +1945,6 @@
     <string name="settings_backup_created">สร้างการสำรองข้อมูลสำเร็จแล้ว</string>
     <string name="settings_backup_settings">การตั้งค่า</string>
     <string name="settings_center_aligned">จัดกึ่งกลาง</string>
-    <string name="settings_choose_progress_style">เลือกรูปแบบตัวบ่งชี้ความคืบหน้า</string>
     <string name="settings_create_backup">สร้างการสำรองข้อมูลไปยังไฟล์</string>
     <string name="settings_create_backup_desc">ส่งออกการสำรองข้อมูลทั้งหมดไปยังไฟล์ JSON</string>
     <string name="settings_backup_action_short">การสำรองข้อมูล</string>
@@ -2453,10 +2430,6 @@
     <string name="color_scheme_emerald_desc">สีเขียวมรกตสดพร้อมเฉดสีป่าธรรมชาติ</string>
     <string name="color_scheme_mint_title">มิ้นต์</string>
     <string name="color_scheme_mint_desc">โทนสีฟ้าและสีเขียวมิ้นต์ที่สดชื่นและสะอาด</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">หลัก</string>
-    <string name="theme_color_secondary">รอง</string>
-    <string name="theme_color_tertiary">ระดับอุดมศึกษา</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">เนื้อเพลง</string>
     <string name="lyrics_settings_general">การตั้งค่าทั่วไป</string>
@@ -2731,8 +2704,6 @@
     <string name="option_always">เสมอ</string>
     <string name="option_expanded">ขยายแล้ว</string>
     <string name="option_collapsed">ยุบแล้ว</string>
-    <string name="option_linear">เชิงเส้น</string>
-    <string name="option_circular">หนังสือเวียน</string>
     <string name="option_both">ทั้งคู่</string>
     <string name="option_icon">ไอคอน</string>
     <string name="option_name">ชื่อ</string>
