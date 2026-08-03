@@ -780,7 +780,7 @@ class AppSettings private constructor(context: Context) {
     val customFontFamily: StateFlow<String> = _customFontFamily.asStateFlow()
     
     // Player Theme Settings
-    private val _playerThemeId = MutableStateFlow(prefs.getString(KEY_PLAYER_THEME_ID, "default") ?: "default")
+    private val _playerThemeId = MutableStateFlow(prefs.getString(KEY_PLAYER_THEME_ID, "EXPRESSIVE") ?: "EXPRESSIVE")
     val playerThemeId: StateFlow<String> = _playerThemeId.asStateFlow()
     
     private val _miniPlayerThemeId = MutableStateFlow(prefs.getString(KEY_MINI_PLAYER_THEME_ID, "EXPRESSIVE") ?: "EXPRESSIVE")
@@ -1943,8 +1943,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     
     // Media Scan Filtering
     private val _allowedFormats = MutableStateFlow(
-        prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b"))
-            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b")
+        prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1"))
+            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1")
     )
     val allowedFormats: StateFlow<Set<String>> = _allowedFormats.asStateFlow()
     

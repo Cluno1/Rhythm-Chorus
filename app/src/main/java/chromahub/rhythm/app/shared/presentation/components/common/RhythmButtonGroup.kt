@@ -450,7 +450,9 @@ fun RowScope.RhythmDetailActionButton(
     isLoading: Boolean = false,
     textStyle: TextStyle = MaterialTheme.typography.titleMedium,
     gradientEdgeColor: Color? = null,
-    respectMarqueeGlobalSetting: Boolean = true
+    respectMarqueeGlobalSetting: Boolean = true,
+    // Optional composable slot for custom/animated text content. When set, it replaces the `text` rendering.
+    textContent: (@Composable () -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -531,32 +533,35 @@ fun RowScope.RhythmDetailActionButton(
                 size = iconSize,
                 color = resolvedContent
             )
-            if (text != null) Spacer(modifier = Modifier.width(8.dp))
+            if (text != null || textContent != null) Spacer(modifier = Modifier.width(8.dp))
         } else if (icon != null) {
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
                 modifier = Modifier.size(iconSize)
             )
-            if (text != null) Spacer(modifier = Modifier.width(8.dp))
+            if (text != null || textContent != null) Spacer(modifier = Modifier.width(8.dp))
         }
-        if (text != null) {
-            if (gradientEdgeColor != null) {
-                AutoScrollingTextOnDemand(
-                    text = text,
-                    style = textStyle.copy(fontWeight = fontWeight),
-                    gradientEdgeColor = gradientEdgeColor,
-                    textAlign = TextAlign.Start,
-                    respectGlobalSetting = respectMarqueeGlobalSetting
-                )
-            } else {
-                Text(
-                    text = text,
-                    style = textStyle,
-                    fontWeight = fontWeight,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+        when {
+            textContent != null -> textContent()
+            text != null -> {
+                if (gradientEdgeColor != null) {
+                    AutoScrollingTextOnDemand(
+                        text = text,
+                        style = textStyle.copy(fontWeight = fontWeight),
+                        gradientEdgeColor = gradientEdgeColor,
+                        textAlign = TextAlign.Start,
+                        respectGlobalSetting = respectMarqueeGlobalSetting
+                    )
+                } else {
+                    Text(
+                        text = text,
+                        style = textStyle,
+                        fontWeight = fontWeight,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
     }

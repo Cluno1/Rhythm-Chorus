@@ -222,6 +222,8 @@
                 <data android:mimeType="audio/ogg" />
                 <data android:mimeType="audio/flac" />
                 <data android:mimeType="audio/wav" />
+                <data android:mimeType="audio/eac3" />
+                <data android:mimeType="audio/mhm1" />
                 <data android:mimeType="video/x-matroska" />
                 <data android:mimeType="video/mkv" />
                 <data android:mimeType="audio/x-matroska" />

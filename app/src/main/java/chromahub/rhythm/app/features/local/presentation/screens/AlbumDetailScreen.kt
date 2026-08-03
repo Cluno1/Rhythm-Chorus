@@ -1166,6 +1166,10 @@ fun AlbumDetailScreen(
             },
             showRemoveFromPlaylist = false, // Always hide for albums
             showGoToAlbum = false,         // Already on the album screen
+            onDeleteSong = {
+                viewModel.deleteSong(selectedSongForOptions!!)
+                showSongOptionsSheet = false
+            },
             haptics = haptics
         )
     }

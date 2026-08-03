@@ -37,6 +37,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.IntentSenderRequest
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -218,6 +221,34 @@ class MainActivity : AppCompatActivity() {
                     var isLoading by rememberSaveable { mutableStateOf(true) }
                     var isInitializingApp by rememberSaveable { mutableStateOf(false) }
                     val lastCrashLog by appSettings.lastCrashLog.collectAsState() // Observe last crash log
+
+                    val pendingDeleteRequest by musicViewModel.pendingDeleteRequest.collectAsState()
+                    val deletePermissionLauncher = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.StartIntentSenderForResult()
+                    ) { result ->
+                        if (result.resultCode == RESULT_OK) {
+                            val pending = musicViewModel.pendingDeleteRequest.value
+                            if (pending != null) {
+                                musicViewModel.completeSongDeletion(pending.song)
+                            }
+                        } else {
+                            musicViewModel.cancelPendingDelete()
+                        }
+                    }
+
+                    LaunchedEffect(pendingDeleteRequest) {
+                        pendingDeleteRequest?.let { pending ->
+                            try {
+                                val intentSenderRequest = IntentSenderRequest.Builder(
+                                    pending.intentSender
+                                ).build()
+                                deletePermissionLauncher.launch(intentSenderRequest)
+                            } catch (e: Exception) {
+                                android.util.Log.e("MainActivity", "Failed to launch delete permission request", e)
+                                musicViewModel.cancelPendingDelete()
+                            }
+                        }
+                    }
 
                     // If the Activity was recreated (config change) after the splash was already
                     // dismissed, isLoading must be cleared immediately — onSplashComplete() will
@@ -707,7 +738,11 @@ class MainActivity : AppCompatActivity() {
                     uriStr.endsWith(".mkv", ignoreCase = true) ||
                     uriStr.endsWith(".mka", ignoreCase = true) ||
                     uriStr.endsWith(".ac3", ignoreCase = true) ||
+                    uriStr.endsWith(".eac", ignoreCase = true) ||
+                    uriStr.endsWith(".eac3", ignoreCase = true) ||
                     uriStr.endsWith(".ac4", ignoreCase = true) ||
+                    uriStr.endsWith(".mhm", ignoreCase = true) ||
+                    uriStr.endsWith(".mhm1", ignoreCase = true) ||
                     uriStr.endsWith(".oga", ignoreCase = true) ||
                     uriStr.endsWith(".mid", ignoreCase = true) ||
                     uriStr.endsWith(".midi", ignoreCase = true) ||

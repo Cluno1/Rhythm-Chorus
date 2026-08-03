@@ -124,6 +124,7 @@ fun PlaylistSongOptionsBottomSheet(
     onGoToAlbum: () -> Unit,
     onGoToArtist: () -> Unit,
     onShare: () -> Unit,
+    onDeleteSong: () -> Unit,
     showRemoveFromPlaylist: Boolean = true,
     showGoToAlbum: Boolean = true,
     haptics: HapticFeedback
@@ -335,6 +336,15 @@ fun PlaylistSongOptionsBottomSheet(
                                     )
                                 )
                             }
+                            add(
+                                OptionItem(
+                                    icon = RhythmIcons.Delete,
+                                    text = context.getString(R.string.action_delete_song),
+                                    containerColor = errorContainer,
+                                    iconColor = errorColor,
+                                    onClick = onDeleteSong
+                                )
+                            )
                         }
                     }
 

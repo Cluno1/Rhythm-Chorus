@@ -169,7 +169,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
 
     // State variables
     val playerThemeId by appSettings.playerThemeId.collectAsState()
-    val isExpressiveActive = playerThemeId == "EXPRESSIVE"
+    val isExpressiveActive = playerThemeId != "MATERIAL"
     val playerShowGradientOverlay by appSettings.playerShowGradientOverlay.collectAsState()
     val playerShowSeekButtons by appSettings.playerShowSeekButtons.collectAsState()
     val playerTextAlignment by appSettings.playerTextAlignment.collectAsState()
@@ -228,7 +228,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                             "Rhythm",
                                             "Expressive"
                                         ),
-                                        selectedIndex = if (playerThemeId == "EXPRESSIVE") 1 else 0,
+                                        selectedIndex = if (playerThemeId == "MATERIAL") 0 else 1,
                                         onItemClick = { index ->
                                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                             if (index == 1) {

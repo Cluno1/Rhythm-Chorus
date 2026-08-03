@@ -1632,30 +1632,31 @@ fun LibraryScreen(
                                 when (visibleTabIds.getOrNull(page)) {
                                     "SONGS" -> {
                                         SingleCardSongsContent(
-                                            songs = filteredSongs,
-                                            paginatedSongs = musicViewModel.paginatedSongs,
-                                            listState = songsListState,
-                                            albums = albums,
-                                            artists = artists,
-                                            onSongClick = onSongClick,
-                                            onAddToPlaylist = { song ->
-                                                songsToAddToPlaylist = listOf(song)
-                                                showAddToPlaylistSheet = true
-                                            },
-                                            onAddToQueue = onAddToQueue,
-                                            onPlayNext = { song -> musicViewModel.playNext(song) },
-                                            onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
-                                            favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
-                                            onGoToArtist = onArtistClick,
-                                            onGoToAlbum = onAlbumClick,
-                                            onShowSongInfo = { song ->
-                                                selectedSong = song
-                                                showSongInfoSheet = true
-                                            },
-                                            onAddToBlacklist = { song ->
-                                                appSettings.addToBlacklist(song.id)
-                                            },
-                                            onPlayQueue = onPlayQueue,
+                                        songs = filteredSongs,
+                                        paginatedSongs = musicViewModel.paginatedSongs,
+                                        listState = songsListState,
+                                        albums = albums,
+                                        artists = artists,
+                                        onSongClick = onSongClick,
+                                        onAddToPlaylist = { song ->
+                                            songsToAddToPlaylist = listOf(song)
+                                            showAddToPlaylistSheet = true
+                                        },
+                                        onAddToQueue = onAddToQueue,
+                                        onPlayNext = { song -> musicViewModel.playNext(song) },
+                                        onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
+                                        favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
+                                        onGoToArtist = onArtistClick,
+                                        onGoToAlbum = onAlbumClick,
+                                        onShowSongInfo = { song ->
+                                            selectedSong = song
+                                            showSongInfoSheet = true
+                                        },
+                                        onAddToBlacklist = { song ->
+                                            appSettings.addToBlacklist(song.id)
+                                        },
+                                        onDeleteSong = { musicViewModel.deleteSong(it) },
+                                        onPlayQueue = onPlayQueue,
                                             onPlayQueueFromIndex = onPlayQueueFromIndex,
                                             onShuffleQueue = onShuffleQueue,
                                             currentSong = currentSong,
@@ -1719,28 +1720,29 @@ fun LibraryScreen(
                                         onSortOptionChange = { artistSortOption = it }
                                     )
                                     "DATES" -> YearGroupedSongsContent(
-                                        songs = filteredSongs,
-                                        albums = albums,
-                                        listState = datesListState,
-                                        onSongClick = onSongClick,
-                                        onAddToPlaylist = { song ->
-                                            songsToAddToPlaylist = listOf(song)
-                                            showAddToPlaylistSheet = true
-                                        },
-                                        onAddToQueue = onAddToQueue,
-                                        onPlayNext = { song -> musicViewModel.playNext(song) },
-                                        onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
-                                        favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
-                                        onGoToArtist = onArtistClick,
-                                        onGoToAlbum = onAlbumClick,
-                                        onShowSongInfo = { song ->
-                                            selectedSong = song
-                                            showSongInfoSheet = true
-                                        },
-                                        onAddToBlacklist = { song ->
-                                            appSettings.addToBlacklist(song.id)
-                                        },
-                                        onPlayQueue = onPlayQueue,
+                                    songs = filteredSongs,
+                                    albums = albums,
+                                    listState = datesListState,
+                                    onSongClick = onSongClick,
+                                    onAddToPlaylist = { song ->
+                                        songsToAddToPlaylist = listOf(song)
+                                        showAddToPlaylistSheet = true
+                                    },
+                                    onAddToQueue = onAddToQueue,
+                                    onPlayNext = { song -> musicViewModel.playNext(song) },
+                                    onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
+                                    favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
+                                    onGoToArtist = onArtistClick,
+                                    onGoToAlbum = onAlbumClick,
+                                    onShowSongInfo = { song ->
+                                        selectedSong = song
+                                        showSongInfoSheet = true
+                                    },
+                                    onAddToBlacklist = { song ->
+                                        appSettings.addToBlacklist(song.id)
+                                    },
+                                    onDeleteSong = { musicViewModel.deleteSong(it) },
+                                    onPlayQueue = onPlayQueue,
                                         onPlayQueueFromIndex = onPlayQueueFromIndex,
                                         onShuffleQueue = onShuffleQueue,
                                         currentSong = currentSong,
@@ -2146,6 +2148,7 @@ fun SingleCardSongsContent(
     onGoToAlbum: (Album) -> Unit = {},
     onShowSongInfo: (Song) -> Unit,
     onAddToBlacklist: (Song) -> Unit,
+    onDeleteSong: (Song) -> Unit = {},
     onPlayQueue: (List<Song>) -> Unit = { _ -> },
     onPlayQueueFromIndex: (List<Song>, Int) -> Unit = { _, _ -> },
     onShuffleQueue: (List<Song>) -> Unit = { _ -> },
@@ -2348,12 +2351,13 @@ fun SingleCardSongsContent(
                                 }
                                 artist?.let { onGoToArtist(it) }
                             },
-                            onGoToAlbum = { 
+                            onGoToAlbum = {
                                 val album = albums.findAlbumForSong(song)
                                 album?.let { onGoToAlbum(it) }
                             },
                             onShowSongInfo = { onShowSongInfo(song) },
                             onAddToBlacklist = { onAddToBlacklist(song) },
+                            onDeleteSong = { onDeleteSong(song) },
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             haptics = haptics,
@@ -3012,6 +3016,7 @@ fun LibrarySongItem(
     onGoToAlbum: () -> Unit = {},
     onShowSongInfo: () -> Unit,
     onAddToBlacklist: () -> Unit,
+    onDeleteSong: () -> Unit = {},
     currentSong: Song? = null,
     isPlaying: Boolean = false,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
@@ -3239,6 +3244,11 @@ fun LibrarySongItem(
                                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                 showDropdown = false
                                 onAddToBlacklist()
+                            },
+                            onDeleteSong = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onDeleteSong()
                             }
                         )
                     }
@@ -3262,6 +3272,7 @@ fun LibrarySongItemWrapper(
     onGoToAlbum: () -> Unit = {},
     onShowSongInfo: () -> Unit,
     onAddToBlacklist: () -> Unit,
+    onDeleteSong: () -> Unit = {},
     currentSong: Song? = null,
     isPlaying: Boolean = false,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
@@ -3331,6 +3342,7 @@ fun LibrarySongItemWrapper(
             onGoToAlbum = onGoToAlbum,
             onShowSongInfo = onShowSongInfo,
             onAddToBlacklist = onAddToBlacklist,
+            onDeleteSong = onDeleteSong,
             currentSong = currentSong,
             isPlaying = isPlaying,
             haptics = haptics,
@@ -6260,6 +6272,7 @@ fun YearGroupedSongsContent(
     onGoToAlbum: (Album) -> Unit = {},
     onShowSongInfo: (Song) -> Unit,
     onAddToBlacklist: (Song) -> Unit,
+    onDeleteSong: (Song) -> Unit = {},
     onPlayQueue: (List<Song>) -> Unit = { _ -> },
     onPlayQueueFromIndex: (List<Song>, Int) -> Unit = { _, _ -> },
     onShuffleQueue: (List<Song>) -> Unit = { _ -> },
@@ -6376,6 +6389,7 @@ fun YearGroupedSongsContent(
                             },
                             onShowSongInfo = { onShowSongInfo(song) },
                             onAddToBlacklist = { onAddToBlacklist(song) },
+                            onDeleteSong = { onDeleteSong(song) },
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             haptics = haptics,

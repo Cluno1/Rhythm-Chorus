@@ -172,7 +172,7 @@ fun PlayerScreen(
     val playerThemeId by appSettings.playerThemeId.collectAsState()
     var showFullScreenLyrics by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = showFullScreenLyrics || (expansionFraction > 0.5f && Build.VERSION.SDK_INT < 34)) {
+    BackHandler(enabled = showFullScreenLyrics || expansionFraction > 0.5f) {
         if (showFullScreenLyrics) {
             showFullScreenLyrics = false
         } else {
@@ -233,7 +233,7 @@ fun PlayerScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (playerThemeId == "EXPRESSIVE") {
+        if (playerThemeId != "MATERIAL") {
         val haptic = LocalHapticFeedback.current
         val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
         val progressValue = progress().coerceIn(0f, 1f)

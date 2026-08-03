@@ -3,6 +3,8 @@ package chromahub.rhythm.app.shared.presentation.screens.player
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -32,7 +34,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -47,6 +52,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -56,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -97,6 +104,7 @@ import chromahub.rhythm.app.shared.data.model.LyricsData
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
+import chromahub.rhythm.app.shared.presentation.components.common.AnimatedDigitTickerText
 import chromahub.rhythm.app.shared.presentation.components.common.AutoScrollingTextOnDemand
 import chromahub.rhythm.app.shared.presentation.components.common.ButtonGroupStyle
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
@@ -141,7 +149,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -153,6 +163,45 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+
+private val artworkValidationCache = java.util.concurrent.ConcurrentHashMap<android.net.Uri, Boolean>()
+
+@Composable
+private fun rememberArtworkValidation(uri: android.net.Uri?, context: android.content.Context): Boolean {
+    if (uri == null || uri == android.net.Uri.EMPTY) return false
+    val str = uri.toString().trim()
+    if (str.isEmpty() || str == "null" || str == "content://media/external/audio/albumart/0") return false
+    if (str.startsWith("http://") || str.startsWith("https://")) return true
+
+    artworkValidationCache[uri]?.let { return it }
+
+    // Default FALSE: show music icon immediately while real validation runs in background
+    val isValidState = remember(uri) { mutableStateOf(false) }
+
+    LaunchedEffect(uri) {
+        val valid = withContext(Dispatchers.IO) {
+            try {
+                // Must actually decode a bitmap — openInputStream succeeds on dead MediaStore URIs
+                val opts = android.graphics.BitmapFactory.Options().apply {
+                    inSampleSize = 64   // tiny decode just to verify data exists
+                    inJustDecodeBounds = false
+                }
+                val bmp = context.contentResolver.openInputStream(uri)?.use { stream ->
+                    android.graphics.BitmapFactory.decodeStream(stream, null, opts)
+                }
+                val result = bmp != null && bmp.width > 0 && bmp.height > 0
+                bmp?.recycle()
+                result
+            } catch (_: Exception) {
+                false
+            }
+        }
+        artworkValidationCache[uri] = valid
+        isValidState.value = valid
+    }
+
+    return isValidState.value
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -197,6 +246,7 @@ fun ExpressivePlayerScreen(
     onBack: () -> Unit,
     location: PlaybackLocation?,
     appSettings: AppSettings,
+    musicViewModel: MusicViewModel? = null,
     onOpenFullScreenLyrics: () -> Unit = {},
     swipeToDismissEnabled: Boolean = true,
     expansionFraction: Float = 1f,
@@ -239,18 +289,37 @@ fun ExpressivePlayerScreen(
     val lyricsVisible = showLyricsView && showLyrics
     val showBuffering = isMediaLoading || isSeeking
 
-    val isBackdropEnabled = (playerAmbientBackdropEnabled || canvasArtwork?.preferredAnimationUrl != null) && song?.artworkUri != null
-    val showCanvasArtBg = isBackdropEnabled && !lyricsVisible && song?.artworkUri != null
-    val showDarkBg = showCanvasArtBg || (isBackdropEnabled && lyricsVisible && song?.artworkUri != null)
-    val showBg = showDarkBg
+    val debouncedSong = remember { mutableStateOf(song) }
+    var previousQueuePosition by remember { mutableIntStateOf(queuePosition) }
+    var debouncedQueuePosition by remember { mutableIntStateOf(queuePosition) }
+    var queueDirection by remember { mutableIntStateOf(1) }
+    LaunchedEffect(song?.id) {
+        delay(250)
+        if (debouncedSong.value?.id != song?.id) {
+            queueDirection = if (queueTotal > 1) {
+                val fwd = ((queuePosition - previousQueuePosition) % queueTotal + queueTotal) % queueTotal
+                val bwd = queueTotal - fwd
+                if (fwd <= bwd) 1 else -1
+            } else if (queuePosition > previousQueuePosition) 1 else -1
+            previousQueuePosition = queuePosition
+            debouncedQueuePosition = queuePosition
+            debouncedSong.value = song
+        }
+    }
+
+    val haptic = LocalHapticFeedback.current
+    val context = LocalContext.current
+
+    val hasValidArtwork = rememberArtworkValidation(debouncedSong.value?.artworkUri, context)
+    val isBackdropEnabled = playerAmbientBackdropEnabled || (canvasArtwork?.preferredAnimationUrl != null && hasValidArtwork)
+    val showCanvasArtBg = isBackdropEnabled && hasValidArtwork && !lyricsVisible
+    val showDarkBg = isBackdropEnabled
+    val showBg = true
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val useLightModeOnDarkBg = lyricsVisible && showDarkBg && !isDarkTheme
-
     val lyricsTextAlign = when (playerLyricsAlignment) {
         "START" -> TextAlign.Start; "END" -> TextAlign.End; else -> TextAlign.Center
     }
-    val haptic = LocalHapticFeedback.current
-    val context = LocalContext.current
 
     val shouldKeepScreenOn = keepScreenOnLyrics && lyricsVisible
     val activity = context as? android.app.Activity
@@ -258,28 +327,59 @@ fun ExpressivePlayerScreen(
         if (shouldKeepScreenOn && activity != null) activity.window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         onDispose { activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
     }
-    var showAlbumArt by remember { mutableStateOf(true) }
-    var showPlayerControls by remember { mutableStateOf(true) }
-    var showBottomButtons by remember { mutableStateOf(true) }
+    // showAlbumArt: hide center artwork card only when ambient mode is active AND artwork is valid
+    // (the blurred background fills the view). For no-art songs we still need the card area so the
+    // Music Note icon renders. Derived synchronously — no LaunchedEffect delay.
+    val showAlbumArt = !(showDarkBg && hasValidArtwork)
+    val showPlayerControls = true
+    val showBottomButtons = true
 
+    // Slow, smooth staggered entrance: a long linear drive so the cascade is even, with
+    // per-element FastOutSlowIn motion so each piece decelerates gently into place.
+    val entranceSpec = remember { tween<Float>(durationMillis = 900, easing = LinearEasing) }
     val localEntranceFraction = if (swipeToDismissEnabled) {
         var animateEntrance by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) { animateEntrance = true }
-        animateFloatAsState(targetValue = if (animateEntrance) 1f else 0f, animationSpec = spring(stiffness = Spring.StiffnessLow), label = "localEntranceFraction").value
-    } else { expansionFraction }
+        animateFloatAsState(targetValue = if (animateEntrance) 1f else 0f, animationSpec = entranceSpec, label = "localEntranceFraction").value
+    } else {
+        // Sheet path: the player stays in composition from app start (the sheet hosts it
+        // permanently), so an entrance keyed to composition time would play long before the
+        // sheet opens. Start the slide-up once the sheet is more than half open so there is
+        // only a brief beat before it begins, then let the slow motion play out over the
+        // fully-expanded sheet. The latch re-arms only after a full collapse (< 0.5) so
+        // lightly nudging the expanded sheet doesn't reset and replay the entrance.
+        var entranceStarted by remember { mutableStateOf(false) }
+        LaunchedEffect(expansionFraction >= 0.5f) {
+            if (expansionFraction >= 0.5f) {
+                delay(120)
+                entranceStarted = true
+            } else {
+                entranceStarted = false
+            }
+        }
+        val entranceValue by animateFloatAsState(
+            targetValue = if (entranceStarted) 1f else 0f,
+            animationSpec = entranceSpec,
+            label = "localEntranceFraction"
+        )
+        entranceValue
+    }
 
     val line2Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.1f) / 0.5f).coerceIn(0f, 1f))
-    val line3Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.2f) / 0.5f).coerceIn(0f, 1f))
-    val line4Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.3f) / 0.5f).coerceIn(0f, 1f))
-    val line5Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.4f) / 0.5f).coerceIn(0f, 1f))
-    val line6Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.5f) / 0.5f).coerceIn(0f, 1f))
+    // Staggered entrance: texts lead, then the controls card, then the bottom buttons.
+    // All slide up from below with FastOutSlowIn so they decelerate into place smoothly.
+    val line3Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.00f) / 0.5f).coerceIn(0f, 1f))
+    val line4Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.20f) / 0.5f).coerceIn(0f, 1f))
+    val line6Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.40f) / 0.5f).coerceIn(0f, 1f))
 
     val line2Alpha = line2Fraction
     val line2TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line2Fraction) }
     val line3Alpha = line3Fraction
+    val line3TranslationY = with(LocalDensity.current) { 44.dp.toPx() * (1f - line3Fraction) }
     val line4Alpha = line4Fraction
-    val line5Alpha = line5Fraction
+    val line4TranslationY = with(LocalDensity.current) { 40.dp.toPx() * (1f - line4Fraction) }
     val line6Alpha = line6Fraction
+    val line6TranslationY = with(LocalDensity.current) { 48.dp.toPx() * (1f - line6Fraction) }
 
     val artworkClipShape = if (lyricsVisible) RoundedCornerShape(artworkCornerRadius) else playerArtworkShape
 
@@ -288,11 +388,12 @@ fun ExpressivePlayerScreen(
     val darkScheme = remember { darkColorScheme() }
     val darkSurfaceHigh = darkScheme.surfaceContainerHigh
     val darkSurface = darkScheme.surfaceContainer
-    val artworkColor = produceState<Color?>(null, song?.artworkUri, isBackdropEnabled) {
-        if (!isBackdropEnabled || song?.artworkUri == null) return@produceState
+    val currentTrack = debouncedSong.value
+    val artworkColor = produceState<Color?>(null, currentTrack?.artworkUri, isBackdropEnabled) {
+        val artworkUri = currentTrack?.artworkUri ?: return@produceState
+        if (!isBackdropEnabled) return@produceState
         value = withContext(Dispatchers.IO) {
             try {
-                val artworkUri = song!!.artworkUri
                 val inputStream = context.contentResolver.openInputStream(artworkUri)
                 val opts = BitmapFactory.Options().apply { inSampleSize = 32 }
                 val bitmap = BitmapFactory.decodeStream(inputStream, null, opts)
@@ -314,7 +415,14 @@ fun ExpressivePlayerScreen(
             } catch (_: Exception) { null }
         }
     }
-    val artColor = artworkColor.value
+    val defaultSongColor = remember(currentTrack?.title, currentTrack?.artist) {
+        if (currentTrack != null) {
+            val seed = kotlin.math.abs(currentTrack.title.hashCode() * 31 + currentTrack.artist.hashCode())
+            val hue = (seed % 360).toFloat()
+            Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, 0.70f, 0.60f)))
+        } else null
+    }
+    val artColor = artworkColor.value ?: defaultSongColor
 
     // Animated colors — derived from artwork when backdrop is active, solid M3 surfaces otherwise
     val ambientAlpha = if (isBackdropEnabled) playerAmbientBackdropIntensity else 1f
@@ -335,20 +443,22 @@ fun ExpressivePlayerScreen(
         },
         animationSpec = tween(600), label = "controlsContainerColor"
     )
+    val isAmbientOrNoArt = playerAmbientBackdropEnabled || !hasValidArtwork
     val outerBoxBgColor by animateColorAsState(
         targetValue = when {
             useLightModeOnDarkBg -> Color.White
-            showDarkBg -> Color.Black
+            showDarkBg && hasValidArtwork -> Color.Black
+            !hasValidArtwork -> Color.Transparent
             else -> MaterialTheme.colorScheme.surface
         },
         animationSpec = tween(600), label = "outerBoxBgColor"
     )
     val onSurfaceColor by animateColorAsState(
-        targetValue = if (useLightModeOnDarkBg) Color.Black else if (showDarkBg) Color.White else MaterialTheme.colorScheme.onSurface,
+        targetValue = if (useLightModeOnDarkBg) Color.Black else if (isAmbientOrNoArt) Color.White else MaterialTheme.colorScheme.onSurface,
         animationSpec = tween(400), label = "onSurfaceColor"
     )
     val onSurfaceVariantColor by animateColorAsState(
-        targetValue = if (useLightModeOnDarkBg) Color.Black.copy(alpha = 0.65f) else if (showDarkBg) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (useLightModeOnDarkBg) Color.Black.copy(alpha = 0.65f) else if (isAmbientOrNoArt) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(400), label = "onSurfaceVariantColor"
     )
     val surfaceContainerColor by animateColorAsState(
@@ -365,7 +475,7 @@ fun ExpressivePlayerScreen(
         animationSpec = tween(400), label = "surfaceContainerColor"
     )
     val primaryColor by animateColorAsState(
-        targetValue = if (useLightModeOnDarkBg) MaterialTheme.colorScheme.primary else if (showDarkBg) Color.White else MaterialTheme.colorScheme.primary,
+        targetValue = if (useLightModeOnDarkBg) MaterialTheme.colorScheme.primary else if (isAmbientOrNoArt) Color.White else MaterialTheme.colorScheme.primary,
         animationSpec = tween(400), label = "canvasPrimaryColor"
     )
     val clearArtworkAlpha by animateFloatAsState(
@@ -375,32 +485,14 @@ fun ExpressivePlayerScreen(
         targetValue = if (lyricsVisible && showDarkBg) 1f else 0f, animationSpec = tween(600), label = "lyricsOverlayAlpha"
     )
 
-    LaunchedEffect(showDarkBg) {
-        if (showDarkBg) showAlbumArt = false
-        else { delay(400); showAlbumArt = true }
-    }
+
+    // showAlbumArt is now a derived val (computed above) — no LaunchedEffect needed.
 
     val configuration = LocalConfiguration.current
     val isCompactWidth = configuration.screenWidthDp < 360
     val isCompactHeight = configuration.screenHeightDp < 640
     val isTablet = configuration.screenWidthDp >= 600
     val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
-    val songTitle = song?.title ?: stringResource(R.string.unknown_track)
-    val songArtist = song?.artist ?: stringResource(R.string.unknown_artist)
-    val titleLength = songTitle.length
-    val titleLetterSpacing = when {
-        isCompactWidth || titleLength > 32 -> (-0.6).sp
-        titleLength > 24 -> (-1.0).sp
-        else -> (-1.5).sp
-    }
-    val titleTextStyle = when {
-        isCompactWidth -> MaterialTheme.typography.headlineSmall
-        isCompactHeight -> MaterialTheme.typography.headlineMedium
-        titleLength > 32 -> MaterialTheme.typography.headlineSmall
-        titleLength > 24 -> MaterialTheme.typography.headlineMedium
-        else -> MaterialTheme.typography.displaySmall
-    }.copy(fontWeight = FontWeight.Black, letterSpacing = titleLetterSpacing)
-
     val coroutineScope = rememberCoroutineScope()
     val screenHeightPx = with(LocalDensity.current) { configuration.screenHeightDp.dp.toPx() }
 
@@ -458,25 +550,91 @@ fun ExpressivePlayerScreen(
                     onDragCancel = { isDraggingSwipe = false; isSwipeMinimizing = false; swipeOffsetY = 0f }
                 )
             }
-    } else { modifier }    // Debounce artwork transitions during crossfade (prevents back-and-forth animation)
-    val debouncedArtworkUri = remember { mutableStateOf(song?.artworkUri) }
-    LaunchedEffect(song?.id) {
-        delay(250) // Small debounce to filter out crossfade transients
-        debouncedArtworkUri.value = song?.artworkUri
+    } else { modifier }
+
+    val autoFetchArtwork by appSettings.autoFetchArtwork.collectAsState()
+    var isAutoFetchingMissingArtwork by remember { mutableStateOf(false) }
+    var fetchedAutoArtworkUriStr by remember { mutableStateOf<String?>(null) }
+    var showAutoFetchEmbedDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(debouncedSong.value?.id, autoFetchArtwork) {
+        val currentSong = debouncedSong.value
+        if (autoFetchArtwork && currentSong != null && !hasValidArtwork && !isAutoFetchingMissingArtwork) {
+            isAutoFetchingMissingArtwork = true
+            musicViewModel?.autoFetchArtworkForSong(currentSong) { success, uriStr ->
+                isAutoFetchingMissingArtwork = false
+                if (success && uriStr != null) {
+                    fetchedAutoArtworkUriStr = uriStr
+                    showAutoFetchEmbedDialog = true
+                }
+            }
+        }
+    }
+
+    if (showAutoFetchEmbedDialog) {
+        AlertDialog(
+            onDismissRequest = { showAutoFetchEmbedDialog = false },
+            icon = { Icon(imageVector = MaterialSymbolIcon("cloud_download"), contentDescription = null) },
+            title = { Text("Artwork Auto-Fetched") },
+            text = { Text("Online artwork has been automatically applied to your library for '${debouncedSong.value?.title}'. Would you like to embed this artwork into the audio file on disk?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showAutoFetchEmbedDialog = false
+                        debouncedSong.value?.let { currentSong ->
+                            val artUri = fetchedAutoArtworkUriStr?.let { android.net.Uri.parse(it) }
+                            musicViewModel?.saveMetadataChanges(
+                                song = currentSong,
+                                title = currentSong.title,
+                                artist = currentSong.artist,
+                                album = currentSong.album,
+                                genre = currentSong.genre ?: "",
+                                year = currentSong.year,
+                                trackNumber = currentSong.trackNumber,
+                                artworkUri = artUri,
+                                onSuccess = { fileWritten ->
+                                    if (fileWritten) {
+                                        Toast.makeText(context, "Artwork embedded into file on disk!", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(context, "Artwork applied to library!", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                onError = { err ->
+                                    Toast.makeText(context, err, Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        }
+                    }
+                ) {
+                    Text("Embed in File")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAutoFetchEmbedDialog = false }) {
+                    Text("Keep Library Only")
+                }
+            }
+        )
     }
 
     // ====== Unified Background Layer (motion canvas style with smooth track transitions) ======
     val unifiedBackground = @Composable { modifier: Modifier ->
-        val currentArtworkUri = debouncedArtworkUri.value
-        if (currentArtworkUri != null) {
-            val gc = if (useLightModeOnDarkBg) Color.White else Color.Black
-            // Smooth crossfade when track artwork changes (1200ms motion canvas style)
-            AnimatedContent(
-                targetState = currentArtworkUri,
-                transitionSpec = { fadeIn(tween(1200)).togetherWith(fadeOut(tween(800))) },
-                label = "canvasArtworkTransition"
-            ) { artworkUri ->
-                if (artworkUri != null) {
+        val currentArtworkUri = debouncedSong.value?.artworkUri
+        val gc = if (useLightModeOnDarkBg) Color.White else Color.Black
+        // Crossfade the artwork↔gradient switch to prevent the gradient from flashing
+        // momentarily when skipping to a song whose artwork is not yet validated.
+        AnimatedContent(
+            targetState = hasValidArtwork,
+            transitionSpec = { fadeIn(tween(800)).togetherWith(fadeOut(tween(600))) },
+            label = "artworkValidTransition"
+        ) { validArtwork ->
+            if (validArtwork) {
+                // Smooth crossfade when track artwork changes (1200ms motion canvas style)
+                AnimatedContent(
+                    targetState = currentArtworkUri,
+                    transitionSpec = { fadeIn(tween(1200)).togetherWith(fadeOut(tween(800))) },
+                    label = "canvasArtworkTransition"
+                ) { artworkUri ->
                     Box(modifier = modifier.fillMaxSize()) {
                         // Layer 1: Full-screen blurred artwork
                         AsyncImage(
@@ -490,18 +648,18 @@ fun ExpressivePlayerScreen(
                         Box(
                             modifier = (if (isLandscapeTablet) Modifier.fillMaxWidth(0.5f).fillMaxHeight()
                                 else Modifier.fillMaxWidth().fillMaxHeight(0.58f)).alpha(clearArtworkAlpha)
-                        .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-                        .drawWithContent {
-                            drawContent()
-                            val brush = if (isLandscapeTablet) Brush.horizontalGradient(
-                                0.00f to gc, 0.55f to gc, 0.70f to gc.copy(alpha = 0.65f),
-                                0.85f to gc.copy(alpha = 0.25f), 1.00f to Color.Transparent
-                            ) else Brush.verticalGradient(
-                                0.00f to gc, 0.65f to gc, 0.80f to gc.copy(alpha = 0.65f),
-                                0.90f to gc.copy(alpha = 0.25f), 1.00f to Color.Transparent
-                            )
-                            drawRect(brush = brush, blendMode = BlendMode.DstIn)
-                                }
+                            .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+                            .drawWithContent {
+                                drawContent()
+                                val brush = if (isLandscapeTablet) Brush.horizontalGradient(
+                                    0.00f to gc, 0.55f to gc, 0.70f to gc.copy(alpha = 0.65f),
+                                    0.85f to gc.copy(alpha = 0.25f), 1.00f to Color.Transparent
+                                ) else Brush.verticalGradient(
+                                    0.00f to gc, 0.65f to gc, 0.80f to gc.copy(alpha = 0.65f),
+                                    0.90f to gc.copy(alpha = 0.25f), 1.00f to Color.Transparent
+                                )
+                                drawRect(brush = brush, blendMode = BlendMode.DstIn)
+                            }
                         ) {
                             AsyncImage(model = ImageRequest.Builder(context).data(artworkUri).crossfade(150)
                                 .memoryCacheKey(artworkUri.toString()).diskCacheKey(artworkUri.toString()).build(),
@@ -522,6 +680,32 @@ fun ExpressivePlayerScreen(
                             else Brush.verticalGradient(
                                 colors = listOf(gc.copy(alpha = 0.72f), gc.copy(alpha = 0.52f), gc.copy(alpha = 0.78f)))))
                     }
+                }
+            } else {
+                val fallbackColor = defaultSongColor ?: MaterialTheme.colorScheme.primaryContainer
+                val c1 = fallbackColor
+                val c2 = Color(
+                    red = (c1.red * 0.60f + 0.12f).coerceIn(0f, 1f),
+                    green = (c1.green * 0.60f + 0.12f).coerceIn(0f, 1f),
+                    blue = (c1.blue * 0.60f + 0.12f).coerceIn(0f, 1f)
+                )
+                Box(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .background(Brush.verticalGradient(colors = listOf(c1, c2, Color(0xFF141416))))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .alpha(lyricsOverlayAlpha)
+                            .background(
+                                if (isLandscapeTablet) Brush.horizontalGradient(
+                                    colors = listOf(gc.copy(alpha = 0.65f), gc.copy(alpha = 0.50f), gc.copy(alpha = 0.72f))
+                                ) else Brush.verticalGradient(
+                                    colors = listOf(gc.copy(alpha = 0.72f), gc.copy(alpha = 0.52f), gc.copy(alpha = 0.78f))
+                                )
+                            )
+                    )
                 }
             }
         }
@@ -608,9 +792,43 @@ fun ExpressivePlayerScreen(
                                                     artworkOffsetX = 0f
                                                 }, onDragCancel = { artworkOffsetX = 0f },
                                                 onDrag = { change, dragAmount -> change.consume(); artworkOffsetX += dragAmount.x })
-                                        }) {
-                                        M3ImageUtils.M3MediaImage(data = song?.artworkUri, contentDescription = stringResource(R.string.content_desc_album_artwork),
-                                            modifier = Modifier.fillMaxSize(), shape = artworkClipShape, type = M3PlaceholderType.TRACK, name = song?.title, expressiveShape = playerArtworkShape)
+                                        }) {                                        val currentSongArt = debouncedSong.value?.artworkUri
+
+                                        // Crossfade artwork ↔ music-note icon using the same
+                                        // AnimatedContent pattern as the background gradient switch,
+                                        // so the icon never snaps in/out abruptly on track change.
+                                        AnimatedContent(
+                                            targetState = hasValidArtwork,
+                                            transitionSpec = { fadeIn(tween(800)).togetherWith(fadeOut(tween(600))) },
+                                            label = "artworkIconTransition",
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.Center
+                                        ) { validArtwork ->
+                                            if (validArtwork) {
+                                                M3ImageUtils.M3MediaImage(
+                                                    data = currentSongArt,
+                                                    contentDescription = stringResource(R.string.content_desc_album_artwork),
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    shape = artworkClipShape,
+                                                    type = M3PlaceholderType.TRACK,
+                                                    name = debouncedSong.value?.title,
+                                                    expressiveShape = playerArtworkShape
+                                                )
+                                            } else {
+                                                Box(
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(
+                                                        imageVector = RhythmIcons.MusicNote,
+                                                        contentDescription = null,
+                                                        modifier = Modifier.size(144.dp),
+                                                        tint = if (showDarkBg) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.primary
+                                                    )
+                                                }
+                                            }
+                                        }
+
                                         if (canvasArtwork?.preferredAnimationUrl != null) {
                                             CanvasArtworkPlayer(canvasArtwork.animated, canvasArtwork.videoUrl, isPlaying, alwaysPlay = true, modifier = Modifier.fillMaxSize().clip(artworkClipShape))
                                         }
@@ -631,14 +849,49 @@ fun ExpressivePlayerScreen(
                     androidx.compose.animation.AnimatedVisibility(visible = showPlayerControls, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) {
                         Column(Modifier.fillMaxWidth().padding(start = if (isCompactWidth) 12.dp else 24.dp, end = if (isCompactWidth) 12.dp else 24.dp, bottom = if (isCompactHeight) 8.dp else 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally) {
-                            Row(Modifier.fillMaxWidth().graphicsLayer { alpha = line3Alpha }.padding(bottom = if (isCompactHeight) 8.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.fillMaxWidth().graphicsLayer { alpha = line3Alpha; translationY = line3TranslationY }.padding(bottom = if (isCompactHeight) 8.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-                                    AutoScrollingTextOnDemand(text = songTitle, style = titleTextStyle.copy(color = onSurfaceColor),
-                                        gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> MaterialTheme.colorScheme.surface },
-                                        modifier = Modifier.fillMaxWidth().clickable { onSongInfoClick() }, respectGlobalSetting = true)
-                                    AutoScrollingTextOnDemand(text = songArtist, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium, color = onSurfaceVariantColor),
-                                        gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> MaterialTheme.colorScheme.surface },
-                                        modifier = Modifier.fillMaxWidth().clickable { onShowArtistBottomSheet() }, respectGlobalSetting = true)
+                                    // Track title & artist slide horizontally based on queue direction.
+                                    // Driven by the debounced song so they stay stable during crossfade,
+                                    // with FastOutSlowIn deceleration so the slide lands smoothly.
+                                    AnimatedContent(
+                                        targetState = debouncedSong.value,
+                                        transitionSpec = {
+                                            val direction = queueDirection
+                                            (slideInHorizontally(tween(420, easing = FastOutSlowInEasing)) { fullWidth -> fullWidth * direction } +
+                                                fadeIn(tween(380, easing = FastOutSlowInEasing))).togetherWith(
+                                                slideOutHorizontally(tween(420, easing = FastOutSlowInEasing)) { fullWidth -> -fullWidth * direction } +
+                                                    fadeOut(tween(320))
+                                            )
+                                        },
+                                        modifier = Modifier.fillMaxWidth().clipToBounds(),
+                                        contentAlignment = Alignment.CenterStart,
+                                        label = "songInfoSlideTransition"
+                                    ) { targetSong ->
+                                        val targetTitle = targetSong?.title ?: stringResource(R.string.unknown_track)
+                                        val targetArtist = targetSong?.artist ?: stringResource(R.string.unknown_artist)
+                                        val targetTitleLength = targetTitle.length
+                                        val targetLetterSpacing = when {
+                                            isCompactWidth || targetTitleLength > 32 -> (-0.6).sp
+                                            targetTitleLength > 24 -> (-1.0).sp
+                                            else -> (-1.5).sp
+                                        }
+                                        val targetTextStyle = when {
+                                            isCompactWidth -> MaterialTheme.typography.headlineSmall
+                                            isCompactHeight -> MaterialTheme.typography.headlineMedium
+                                            targetTitleLength > 32 -> MaterialTheme.typography.headlineSmall
+                                            targetTitleLength > 24 -> MaterialTheme.typography.headlineMedium
+                                            else -> MaterialTheme.typography.displaySmall
+                                        }.copy(fontWeight = FontWeight.Black, letterSpacing = targetLetterSpacing)
+                                        Column(verticalArrangement = Arrangement.Center) {
+                                            AutoScrollingTextOnDemand(text = targetTitle, style = targetTextStyle.copy(color = onSurfaceColor),
+                                                gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> MaterialTheme.colorScheme.surface },
+                                                modifier = Modifier.fillMaxWidth().clickable { onSongInfoClick() }, respectGlobalSetting = true)
+                                            AutoScrollingTextOnDemand(text = targetArtist, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium, color = onSurfaceVariantColor),
+                                                gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> MaterialTheme.colorScheme.surface },
+                                                modifier = Modifier.fillMaxWidth().clickable { onShowArtistBottomSheet() }, respectGlobalSetting = true)
+                                        }
+                                    }
                                 }
                                 Spacer(Modifier.width(16.dp))
 
@@ -668,10 +921,11 @@ fun ExpressivePlayerScreen(
                                 }
                             }
 
+                            // The whole controls card (play controls + progress) slides up as one unit.
                             Surface(shape = RoundedCornerShape(32.dp), color = controlsContainerColor,
-                                modifier = Modifier.fillMaxWidth()) {
+                                modifier = Modifier.fillMaxWidth().graphicsLayer { alpha = line4Alpha; translationY = line4TranslationY }) {
                                 Column(Modifier.padding(if (isCompactWidth) 12.dp else 20.dp)) {
-                                    Row(Modifier.fillMaxWidth().graphicsLayer { alpha = line4Alpha },
+                                    Row(Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
                                         RhythmPlayButton(
                                             isPlaying = isPlaying,
@@ -698,7 +952,7 @@ fun ExpressivePlayerScreen(
                                         }
                                     }
                                     Spacer(Modifier.height(if (isCompactHeight) 8.dp else 16.dp))
-                                    Row(Modifier.fillMaxWidth().graphicsLayer { alpha = line5Alpha },
+                                    Row(Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
                                         RhythmControlButton(
                                             onClick = onSkipPrevious,
@@ -748,7 +1002,7 @@ fun ExpressivePlayerScreen(
 
                 val bottomButtonsContent = @Composable {
                     androidx.compose.animation.AnimatedVisibility(visible = showBottomButtons, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) {
-                        Column(Modifier.fillMaxWidth().graphicsLayer { alpha = line6Alpha }
+                        Column(Modifier.fillMaxWidth().graphicsLayer { alpha = line6Alpha; translationY = line6TranslationY }
                             .padding(start = if (isCompactWidth) 12.dp else 24.dp, end = if (isCompactWidth) 12.dp else 24.dp, bottom = 24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally) {
                             Spacer(Modifier.height(if (isCompactHeight) 12.dp else 16.dp))
@@ -761,8 +1015,6 @@ fun ExpressivePlayerScreen(
                                     location?.id == "speaker" -> RhythmIcons.SpeakerFilled
                                     else -> RhythmIcons.Location
                                 }
-                                val queueLabel = if (queueTotal > 0) stringResource(R.string.player_queue_format, queuePosition, queueTotal) else stringResource(R.string.player_queue)
-
                                 val deviceName = location?.name ?: "Output"
                                 val deviceTextStyle = when {
                                     deviceName.length > 28 -> MaterialTheme.typography.labelLarge
@@ -796,7 +1048,19 @@ fun ExpressivePlayerScreen(
                                     type = RhythmButtonType.Tonal,
                                     icon = RhythmIcons.Queue,
                                     iconSize = 20.dp,
-                                    text = queueLabel,
+                                    text = null,
+                                    textContent = {
+                                        // Queue counter rolls its digits like the Rhythm Guard dashboard
+                                        // countdown: only the digits that change animate (vertical rollover).
+                                        val queueText = if (queueTotal > 0) stringResource(R.string.player_queue_format, debouncedQueuePosition.coerceIn(1, queueTotal), queueTotal) else stringResource(R.string.player_queue)
+                                        AnimatedDigitTickerText(
+                                            text = queueText,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            color = primaryColor,
+                                            fontWeight = FontWeight.Bold,
+                                            prefix = "queueCounter"
+                                        )
+                                    },
                                     contentDescription = stringResource(R.string.bottomsheet_queue),
                                     containerColor = surfaceContainerColor,
                                     contentColor = primaryColor
@@ -856,12 +1120,14 @@ fun ExpressivePlayerScreen(
                     }
                 }
 
-                // Audio quality icon at top-right (like album screen but positioned in corner)
-                if (song != null) {
+                // Audio quality icon at top-right — fades in once the (debounced) track settles
+                // and auto-hides after 5 seconds
+                debouncedSong.value?.let { displaySong ->
                     AudioQualityIcon(
-                        song = song,
+                        song = displaySong,
                         iconSize = 40.dp,
                         padding = 6.dp,
+                        autoHideAfterMs = 5000,
                         tint = when {
                             useLightModeOnDarkBg -> Color.Black
                             showDarkBg -> Color.White

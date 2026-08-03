@@ -1486,6 +1486,14 @@ fun UniversalSearchScreen(
                     }
                     showSongOptionsSheet = false
                 },
+                onDeleteSong = {
+                    handleAction("LOCAL") {
+                        if (isLocal) {
+                            localViewModel.deleteSong(songObj)
+                        }
+                    }
+                    showSongOptionsSheet = false
+                },
                 haptics = haptics
             )
         }
@@ -2010,6 +2018,7 @@ fun UniversalSongOptionsBottomSheet(
     onGoToAlbum: () -> Unit,
     onGoToArtist: () -> Unit,
     onAddToBlacklist: () -> Unit,
+    onDeleteSong: () -> Unit,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback
 ) {
     val context = LocalContext.current
@@ -2152,6 +2161,15 @@ fun UniversalSongOptionsBottomSheet(
                                         containerColor = errorContainer,
                                         iconColor = errorColor,
                                         onClick = onAddToBlacklist
+                                    )
+                                )
+                                add(
+                                    UniversalOptionItem(
+                                        icon = RhythmIcons.Delete,
+                                        text = context.getString(R.string.action_delete_song),
+                                        containerColor = errorContainer,
+                                        iconColor = errorColor,
+                                        onClick = onDeleteSong
                                     )
                                 )
                             }

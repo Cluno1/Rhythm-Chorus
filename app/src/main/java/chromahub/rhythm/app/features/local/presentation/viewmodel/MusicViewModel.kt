@@ -97,6 +97,7 @@ import chromahub.rhythm.app.shared.data.model.LyricsData // Import LyricsData
 import chromahub.rhythm.app.util.PendingWriteRequest // Import for metadata write requests
 import chromahub.rhythm.app.util.PendingBatchWriteRequest
 import chromahub.rhythm.app.util.PendingLyricsWriteRequest
+import chromahub.rhythm.app.util.PendingDeleteRequest
 import chromahub.rhythm.app.util.QueueUtils
 import chromahub.rhythm.app.util.GenreUtils
 import chromahub.rhythm.app.util.NaturalSortComparator
@@ -464,15 +465,40 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Log.w(TAG, "Skipping syncLikedPlaylistWithFavorites — playlists have not finished loading")
                 return
             }
+
+            // Identify all song IDs currently in the Liked playlist
+            val likedPlaylist = _playlists.value.find { it.id == "1" }
+            val playlistSongIds = likedPlaylist?.songs?.map { it.id }?.toSet() ?: emptySet()
+
+            // Any song in the Liked playlist that is not in favoriteIds should be marked as liked
+            val unlikedSongsInPlaylist = playlistSongIds.filter { !favoriteIds.contains(it) }
+
+            val finalFavoriteIds = if (unlikedSongsInPlaylist.isNotEmpty()) {
+                val updatedFavorites = favoriteIds + unlikedSongsInPlaylist
+                withContext(Dispatchers.Main) {
+                    _favoriteSongs.value = updatedFavorites
+                    _currentSong.value?.let { song ->
+                        if (updatedFavorites.contains(song.id)) {
+                            _isFavorite.value = true
+                        }
+                    }
+                }
+                saveFavoriteSongs()
+                notifyMediaServiceFavoriteChange()
+                updatedFavorites
+            } else {
+                favoriteIds
+            }
+
             // Update the Liked playlist directory without losing existing custom song order
             _playlists.value = _playlists.value.map { playlist ->
                 if (playlist.id == "1") {
-                    // 1. Keep all existing songs that are STILL in favorites
-                    val existingSongsToKeep = playlist.songs.filter { favoriteIds.contains(it.id) }
+                    // 1. Keep all existing songs
+                    val existingSongsToKeep = playlist.songs
                     
                     // 2. Find any new favorites that are NOT in the playlist yet
                     val existingIds = existingSongsToKeep.map { it.id }.toSet()
-                    val newFavoriteIds = favoriteIds.filter { !existingIds.contains(it) }
+                    val newFavoriteIds = finalFavoriteIds.filter { !existingIds.contains(it) }
                     
                     // 3. Find the Song objects for these new favorites from _songs list OR room DB
                     val allSongsMap = _songs.value.associateBy { it.id }
@@ -979,6 +1005,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     // Pending batch write request for metadata editing (Android 11+ permission flow)
     val pendingBatchWriteRequest: StateFlow<PendingBatchWriteRequest?>
         get() = metadataManagerHelper.pendingBatchWriteRequest
+
+    // Pending delete request for Android 10/11+ permission flow
+    private val _pendingDeleteRequest = MutableStateFlow<PendingDeleteRequest?>(null)
+    val pendingDeleteRequest: StateFlow<PendingDeleteRequest?> = _pendingDeleteRequest.asStateFlow()
 
     // Sort library functionality - Load saved sort order from AppSettings
     private val _sortOrder = MutableStateFlow(
@@ -2758,6 +2788,104 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * Attempts to delete a song physically and from local databases.
+     * Uses MediaStore.createDeleteRequest on Android 11+ and RecoverableSecurityException handling on Android 10.
+     */
+    fun deleteSong(song: Song) {
+        viewModelScope.launch {
+            // First remove the song from active playback queue
+            removeFromQueue(song)
+            
+            val context = getApplication<Application>()
+            try {
+                val deletedStatus = withContext(Dispatchers.IO) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        // On Android 11+, we must request delete permission via MediaStore
+                        try {
+                            val resolvedUri = MediaUtils.getSpecificVolumeUri(context, song.id.toLongOrNull() ?: 0L) ?: song.uri
+                            val pendingIntent = android.provider.MediaStore.createDeleteRequest(context.contentResolver, listOf(resolvedUri))
+                            _pendingDeleteRequest.value = PendingDeleteRequest(pendingIntent.intentSender, song)
+                            -1 // Signifies pending permission
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to create delete request for Android 11+", e)
+                            0
+                        }
+                    } else {
+                        // On Android 10 and below, try direct deletion first.
+                        var success = false
+                        try {
+                            val count = context.contentResolver.delete(song.uri, null, null)
+                            success = count > 0
+                        } catch (e: Exception) {
+                            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && e is android.app.RecoverableSecurityException) {
+                                _pendingDeleteRequest.value = PendingDeleteRequest(e.userAction.actionIntent.intentSender, song)
+                                return@withContext -1
+                            }
+                        }
+                        
+                        if (!success && song.path != null) {
+                            val file = File(song.path)
+                            if (file.exists()) {
+                                success = file.delete()
+                            }
+                        }
+                        
+                        if (success) 1 else 0
+                    }
+                }
+                
+                if (deletedStatus == 1) {
+                    repository.deleteSong(song)
+                    refreshLibrary(showMediaScanLoader = false)
+                    withContext(Dispatchers.Main) {
+                        android.widget.Toast.makeText(context, "Song deleted successfully", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                } else if (deletedStatus == 0) {
+                    Log.e(TAG, "Failed to delete song: ${song.title}")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in deleteSong", e)
+            }
+        }
+    }
+
+    /**
+     * Completes song deletion after user grants permission via dialog.
+     */
+    fun completeSongDeletion(song: Song) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                        try {
+                            getApplication<Application>().contentResolver.delete(song.uri, null, null)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to delete file after Android 10 permission granted", e)
+                        }
+                    }
+                }
+                repository.deleteSong(song)
+                refreshLibrary(showMediaScanLoader = false)
+                _pendingDeleteRequest.value = null
+                withContext(Dispatchers.Main) {
+                    android.widget.Toast.makeText(getApplication(), "Song deleted successfully", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error completing song deletion", e)
+                _pendingDeleteRequest.value = null
+            }
+        }
+    }
+
+    /**
+     * Cancels the pending delete request.
+     */
+    fun cancelPendingDelete() {
+        _pendingDeleteRequest.value = null
+        Log.d(TAG, "Cancelled pending delete request")
+    }
+
+    /**
      * Batch-edits metadata for multiple songs at once.
      * Only enabled fields are applied; disabled fields are left untouched.
      */
@@ -3398,8 +3526,22 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     Log.d(TAG, "No albums found that need artwork")
                 }
 
-                Log.d(TAG, "Fetching track artwork fallback from YouTube Music for songs without art")
-                val songsToUpdate = _songs.value.filter { it.artworkUri == null }.take(40)
+                val songsToUpdate = _songs.value.filter { song ->
+                    val uri = song.artworkUri
+                    if (uri == null || uri == Uri.EMPTY) true
+                    else {
+                        val str = uri.toString().trim()
+                        if (str.isEmpty() || str == "null" || str == "content://media/external/audio/albumart/0") true
+                        else if (str.startsWith("http://") || str.startsWith("https://")) false
+                        else {
+                            try {
+                                context.contentResolver.openInputStream(uri)?.use { stream ->
+                                    stream.available() <= 0 && stream.read() == -1
+                                } ?: true
+                            } catch (_: Exception) { true }
+                        }
+                    }
+                }.take(40)
                 if (songsToUpdate.isNotEmpty()) {
                     val updatedSongs = repository.fetchTrackArtwork(songsToUpdate)
                     val songMap: Map<String, Song> = updatedSongs.associateBy { song: Song -> song.id }
@@ -3416,6 +3558,43 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching artwork from internet", e)
+        }
+    }
+
+    /**
+     * Auto-fetches artwork from online metadata providers for a specific song,
+     * updates the song in memory & repository, and invokes onResult callback with success & artwork Uri string.
+     */
+    fun autoFetchArtworkForSong(song: Song, onResult: (Boolean, String?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _isFetchingArtwork.value = true
+                val updated = repository.fetchTrackArtwork(listOf(song))
+                val resultSong = updated.firstOrNull()
+                if (resultSong?.artworkUri != null && resultSong.artworkUri != song.artworkUri) {
+                    val currentList = _songs.value.toMutableList()
+                    val idx = currentList.indexOfFirst { it.id == song.id }
+                    if (idx != -1) {
+                        currentList[idx] = resultSong
+                        _songs.value = currentList
+                        repository.updateAndPersistSongs(currentList)
+                    }
+                    withContext(Dispatchers.Main) {
+                        onResult(true, resultSong.artworkUri.toString())
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        onResult(false, null)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in autoFetchArtworkForSong", e)
+                withContext(Dispatchers.Main) {
+                    onResult(false, null)
+                }
+            } finally {
+                _isFetchingArtwork.value = false
+            }
         }
     }
     
@@ -3860,38 +4039,16 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     // Update favorite status
                     _isFavorite.value = _favoriteSongs.value.contains(song.id)
                     
-                    // Update queue position - comprehensive logic from both listeners
-                    val currentQueue = _currentQueue.value
-                    val newIndex = currentQueue.songs.indexOfFirst { it.id == song.id }
-                    
-                    if (newIndex != -1 && newIndex != currentQueue.currentIndex) {
-                        // Only update if the index actually changed
-                        Log.d(TAG, "Updating queue index from ${currentQueue.currentIndex} to $newIndex")
-                        _currentQueue.value = currentQueue.copy(currentIndex = newIndex)
-                        
-                        // Save queue to persistence when position changes
+                    // Update queue position - comprehensive logic from both listeners.
+                    // Resolve the position against the controller's actual playback order
+                    // (shuffle-aware traversal under the shuffle engine, plain timeline order
+                    // otherwise) instead of a possibly-stale local list. This keeps the
+                    // displayed index linear while shuffling instead of jumping around, and
+                    // self-corrects the queue after restores or queue edits.
+                    val previousIndex = _currentQueue.value.currentIndex
+                    syncQueueWithMediaController()
+                    if (_currentQueue.value.currentIndex != previousIndex) {
                         saveQueueToPersistence()
-                    } else if (newIndex == -1) {
-                        // Song not found in current queue - sync with MediaController
-                        Log.d(TAG, "Song not in queue, syncing queue from MediaController for: ${song.title}")
-                        mediaController?.let { controller ->
-                            val mediaItems = (0 until controller.mediaItemCount).map { index ->
-                                controller.getMediaItemAt(index)
-                            }
-                            val mediaItemSongs = mediaItems.mapNotNull { mediaItem ->
-                                resolveSongFromMediaItem(mediaItem)
-                            }
-                            
-                            if (mediaItemSongs.isNotEmpty()) {
-                                val currentMediaIndex = controller.currentMediaItemIndex
-                                _currentQueue.value = Queue(mediaItemSongs, currentMediaIndex.coerceAtLeast(0))
-                                
-                                // Save queue after sync
-                                saveQueueToPersistence()
-                                
-                                Log.d(TAG, "Synced queue with MediaController: ${mediaItemSongs.size} songs, index: $currentMediaIndex")
-                            }
-                        }
                     }
                     
                     // Fetch lyrics for the new song
@@ -4358,7 +4515,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             "wav" -> "audio/wav"
             "aac", "adts" -> "audio/aac"
             "ac3" -> "audio/ac3"
+            "eac", "eac3" -> "audio/eac3"
             "ac4" -> "audio/ac4"
+            "mhm", "mhm1" -> "audio/mhm1"
             "mid", "midi" -> "audio/midi"
             "ape" -> "audio/x-ape"
             "wv" -> "audio/x-wavpack"
@@ -8874,8 +9033,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
 
+                // Resolve songs via an id -> song map so this stays O(n) even for large queues.
+                val songsById = _songs.value.associateBy { it.id }
                 val mediaItemSongs = mediaItems.mapNotNull { mediaItem ->
-                    _songs.value.find { it.id == mediaItem.mediaId } ?: mediaItemToTransientSong(mediaItem)
+                    songsById[mediaItem.mediaId] ?: mediaItemToTransientSong(mediaItem)
                 }
 
                 val currentMediaId = controller.currentMediaItem?.mediaId

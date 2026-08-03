@@ -212,7 +212,7 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
     val playerLyricsTextSize by appSettings.playerLyricsTextSize.collectAsState()
     val playerLyricsAlignment by appSettings.playerLyricsAlignment.collectAsState()
     val playerThemeId by appSettings.playerThemeId.collectAsState()
-    val isExpressiveActive = playerThemeId == "EXPRESSIVE"
+    val isExpressiveActive = playerThemeId != "MATERIAL"
 
     val lyricBold by appSettings.lyricBold.collectAsState()
     val trimLyrics by appSettings.trimLyrics.collectAsState()

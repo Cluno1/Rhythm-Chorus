@@ -8756,7 +8756,7 @@ private fun PlaybackThemePreview(
     rotateThumbWhenPlaying: Boolean,
     miniPlayerProgressStyle: String
 ) {
-    val isPlayerExpressive = playerThemeId == "EXPRESSIVE"
+    val isPlayerExpressive = playerThemeId != "MATERIAL"
     val isMiniPlayerExpressive = miniPlayerThemeId == "EXPRESSIVE"
     val previewProgressStyle = try {
         ProgressStyle.valueOf(progressStyle)
@@ -9458,7 +9458,7 @@ private fun ThemeSelectionButtons(
     onThemeChange: (String) -> Unit
 ) {
     val currentTheme = if (isPlayer) playerThemeId else miniPlayerThemeId
-    val isExpressive = currentTheme == "EXPRESSIVE"
+    val isExpressive = if (isPlayer) playerThemeId != "MATERIAL" else miniPlayerThemeId == "EXPRESSIVE"
 
     ExpressiveButtonGroup(
         items = listOf(

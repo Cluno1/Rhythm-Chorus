@@ -60,19 +60,22 @@ object M3ImageUtils {
                 .build()
         }
         
-        var showPlaceholder by remember { mutableStateOf(true) }
+        var showPlaceholder by remember(data) { mutableStateOf(data == null || data.toString().isBlank()) }
         
         Box(modifier = modifier) {
-            AsyncImage(
-                model = imageRequest,
-                contentDescription = contentDescription,
-                modifier = if (shape != null) Modifier.fillMaxSize().clip(shape) else Modifier.fillMaxSize(),
-                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                onState = { state ->
-                    showPlaceholder = state is AsyncImagePainter.State.Loading || 
-                                     state is AsyncImagePainter.State.Error
-                }
-            )
+            if (data != null && data.toString().isNotBlank()) {
+                AsyncImage(
+                    model = imageRequest,
+                    contentDescription = contentDescription,
+                    modifier = if (shape != null) Modifier.fillMaxSize().clip(shape) else Modifier.fillMaxSize(),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    onState = { state ->
+                        showPlaceholder = state is AsyncImagePainter.State.Loading || 
+                                         state is AsyncImagePainter.State.Error ||
+                                         state is AsyncImagePainter.State.Empty
+                    }
+                )
+            }
             
             // Show appropriate placeholder based on loading state
             AnimatedVisibility(

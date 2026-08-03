@@ -50,9 +50,7 @@ fun PlaybackSpeedAndPitchBottomSheet(
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
 
     val minVal = 0.25f
     val maxVal = 3.0f

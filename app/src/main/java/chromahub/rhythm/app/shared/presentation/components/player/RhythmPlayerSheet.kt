@@ -137,7 +137,10 @@ fun RhythmPlayerSheet(
         
         val expansionFraction = ((collapsedOffset - animatedOffset) / collapsedOffset).coerceIn(0f, 1f)
         
-        val topCornerSize = 28.dp * (1f - expansionFraction)
+        val maxCornerRadius = 32.dp
+        val cornerBlendProgress = ((expansionFraction - 0.82f) / 0.18f).coerceIn(0f, 1f)
+        val smoothBlend = cornerBlendProgress * cornerBlendProgress * cornerBlendProgress
+        val topCornerSize = maxCornerRadius * (1f - smoothBlend)
         val bottomCornerSize = 28.dp * (1f - expansionFraction)
         val sheetShape = RoundedCornerShape(
             topStart = topCornerSize,

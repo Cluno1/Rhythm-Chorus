@@ -649,7 +649,7 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             id = "auto_fetch_artwork",
             title = context.getString(R.string.librarysettingsscreen_autofetch_artwork),
             description = context.getString(R.string.library_auto_fetch_artwork_desc),
-            keywords = listOf("auto fetch", "fetch artwork", "online artwork", "missing cover", "startup"),
+            keywords = listOf("auto fetch", "fetch artwork", "online artwork", "missing cover", "embed artwork", "auto fetch artwork", "track artwork", "startup"),
             icon = MaterialSymbolIcon("cloud_download"),
             route = SettingsRoutes.LIBRARY_SETTINGS,
             parentScreen = context.getString(R.string.settings_library_settings),

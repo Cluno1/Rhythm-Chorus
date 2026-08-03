@@ -98,7 +98,7 @@ object AudioQualityDetector {
 
         // CRITICAL: First check if codec is explicitly LOSSY - these can NEVER be lossless
         // regardless of bitrate or bit depth. Lossy codecs discard data during encoding.
-        val isLossyCodec = normalizedCodec in listOf("MP3", "AAC", "OGG", "OPUS", "VORBIS", "AC-3", "AC3", "E-AC-3", "EAC3", "AC-4", "AC4", "MP2", "AMR", "AMR-NB", "AMR-WB") ||
+        val isLossyCodec = normalizedCodec in listOf("MP3", "AAC", "OGG", "OPUS", "VORBIS", "AC-3", "AC3", "E-AC-3", "EAC3", "AC-4", "AC4", "MP2", "AMR", "AMR-NB", "AMR-WB", "MPEG-H", "MHM1", "MHM") ||
                           (normalizedCodec.contains("WMA") && !normalizedCodec.contains("LOSSLESS"))
         
         // Determine if codec is inherently lossless

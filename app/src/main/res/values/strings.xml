@@ -2040,7 +2040,7 @@
     <string name="festivesettingsscreen_festive_decorations_add_a">Festive decorations add a touch of celebration to your music experience. When auto-detect is enabled, decorations appear automatically during holidays like Christmas (Dec 15-31).</string>
     <string name="homescreencustomizationsettingsscreen_immersive_mode_is_active">Immersive mode is active. Only supported discover controls are shown.</string>
     <string name="homescreencustomizationsettingsscreen_album_count">Album Count</string>
-    <string name="librarysettingsscreen_autofetch_artwork">Auto-Fetch Artwork</string>
+    <string name="librarysettingsscreen_autofetch_artwork">Auto-fetch Missing Track Artwork</string>
     <string name="lyricssourcesettingsscreen_online_api_options">Online API Options</string>
     <string name="lyricssourcesettingsscreen_lyrics_api_priority">Lyrics API Priority</string>
     <string name="lyricssourcesettingsscreen_choose_which_online_lyrics">Choose which online lyrics API to search first</string>
@@ -2110,6 +2110,7 @@
     <string name="artist_artwork_description">Artist artwork for %1$s</string>
     <string name="explorer_item_icon_description">%1$s icon</string>
     <string name="song_added_to_blacklist_format">%1$s added to blacklist</string>
+    <string name="action_delete_song">Delete song</string>
     <string name="playlist_import_success">Successfully imported %1$d playlists.\n%2$s\n\nRestart the app to apply changes.</string>
     <string name="play_artist">Play %1$s</string>
     <string name="will_play_next">%1$s will play next</string>
@@ -2665,7 +2666,7 @@
     <string name="settings_count_songs">%1$d songs</string>
     <string name="settings_count_artists">%1$d artists</string>
     <string name="settings_count_albums">%1$d albums</string>
-    <string name="library_auto_fetch_artwork_desc">Automatically search online APIs for missing cover artwork on startup</string>
+    <string name="library_auto_fetch_artwork_desc">Automatically fetch missing cover art online when playing tracks or on startup</string>
     <string name="lyrics_exported_success">Exported successfully</string>
     <string name="lyrics_export_failed">Export failed</string>
     <string name="lyrics_imported_success">Imported successfully</string>
