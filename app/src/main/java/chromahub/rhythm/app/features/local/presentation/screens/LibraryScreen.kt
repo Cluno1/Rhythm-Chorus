@@ -1786,7 +1786,12 @@ fun LibraryScreen(
                                         currentPath = explorerPath,
                                         onPathChanged = { explorerPath = it },
                                         onFolderSongsChanged = { explorerFolderSongs = it },
-                                        bottomPadding = adjustedSongsBottomPadding
+                                        bottomPadding = adjustedSongsBottomPadding,
+                                        isSelectionMode = isSelectionMode,
+                                        selectedSongIds = selectedSongIds,
+                                        onSongLongPress = onSongLongPress,
+                                        onSongSelectionToggle = onSongSelectionToggle,
+                                        multiSelectionState = multiSelectionState
                                     )
                                 }
                             }
