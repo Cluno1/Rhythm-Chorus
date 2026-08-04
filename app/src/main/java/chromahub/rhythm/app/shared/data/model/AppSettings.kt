@@ -1451,7 +1451,7 @@ class AppSettings private constructor(context: Context) {
     private val _wikipediaApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_WIKIPEDIA_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val wikipediaApiEnabled: StateFlow<Boolean> = _wikipediaApiEnabled.asStateFlow()
     
-    private val _autoFetchArtwork = MutableStateFlow(prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, false))
+    private val _autoFetchArtwork = MutableStateFlow(prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true))
     val autoFetchArtwork: StateFlow<Boolean> = _autoFetchArtwork.asStateFlow()
 
     private val _artistArtworkSource = MutableStateFlow(
@@ -5077,7 +5077,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             ?.filter { it.isNotBlank() && it in defaultLyricallySources }
             ?.toSet()
             ?: if (BuildConfig.FLAVOR == "fdroid") defaultLyricallySources.toSet() else emptySet()
-        _autoFetchArtwork.value = prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, false)
+        _autoFetchArtwork.value = prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true)
         _spotifyClientId.value = prefs.getString(KEY_SPOTIFY_CLIENT_ID, "") ?: ""
         _spotifyClientSecret.value = prefs.getString(KEY_SPOTIFY_CLIENT_SECRET, "") ?: ""
 

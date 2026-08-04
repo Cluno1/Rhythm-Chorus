@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">Rhythm</string>
+    <string name="shortcut_play_pause_label">Play/Pause</string>
+    <string name="shortcut_play_pause_long_label">Play or Pause Music</string>
+    <string name="shortcut_open_player_label">Open Player</string>
+    <string name="shortcut_open_player_long_label">Open Music Player</string>
 <string name="home">Home</string>
     <string name="library">Library</string>
     <string name="search">Search</string>
