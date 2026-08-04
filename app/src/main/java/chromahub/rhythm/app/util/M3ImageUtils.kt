@@ -28,6 +28,9 @@ import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShap
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
 import androidx.compose.ui.res.stringResource
 import chromahub.rhythm.app.R
+import androidx.compose.runtime.collectAsState
+import chromahub.rhythm.app.shared.data.model.AppSettings
+import chromahub.rhythm.app.shared.data.model.ArtistArtworkSource
 
 /**
  * Modern Material 3 style utilities for image handling using Compose and Coil
@@ -140,6 +143,10 @@ object M3ImageUtils {
         shape: Shape? = null,
         applyExpressiveShape: Boolean = true
     ) {
+        val context = LocalContext.current
+        val artistArtworkSource by remember { AppSettings.getInstance(context).artistArtworkSource }.collectAsState()
+        val data = if (artistArtworkSource == ArtistArtworkSource.DISABLED) null else imageUrl
+
         val expressiveShape = if (applyExpressiveShape) {
             rememberExpressiveShapeFor(
                 ExpressiveShapeTarget.ARTIST_ART,
@@ -151,7 +158,7 @@ object M3ImageUtils {
         val finalShape = shape ?: expressiveShape
         
         M3MediaImage(
-            data = imageUrl,
+            data = data,
             contentDescription = stringResource(R.string.artist_artwork_description, artistName ?: ""),
             modifier = modifier,
             shape = finalShape,

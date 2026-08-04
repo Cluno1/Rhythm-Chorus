@@ -1833,7 +1833,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val hasMissingSongs = _songs.value.any { it.artworkUri == null }
                 
                 val artistSource1 = appSettings.artistArtworkSource.value
-                val shouldFetchArtists = hasMissingArtists && artistSource1 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
+                val shouldFetchArtists = hasMissingArtists &&
+                    artistSource1 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
                     (artistSource1 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
                 val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && appSettings.ytMusicApiEnabled.value
 
@@ -1991,7 +1992,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val hasMissingSongs = _songs.value.any { it.artworkUri == null }
                 
                 val artistSource2 = appSettings.artistArtworkSource.value
-                val shouldFetchArtists = hasMissingArtists && artistSource2 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
+                val shouldFetchArtists = hasMissingArtists &&
+                    artistSource2 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
                     (artistSource2 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
                 val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && appSettings.ytMusicApiEnabled.value
 
@@ -2322,7 +2324,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         val hasMissingSongs = _songs.value.any { it.artworkUri == null }
                         
                         val artistSource3 = appSettings.artistArtworkSource.value
-                        val shouldFetchArtists = hasMissingArtists && artistSource3 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
+                        val shouldFetchArtists = hasMissingArtists &&
+                            artistSource3 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
                             (artistSource3 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
                         val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && appSettings.ytMusicApiEnabled.value
 
@@ -3603,6 +3606,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun refreshArtistImage(artistId: String) {
         viewModelScope.launch {
+            if (appSettings.artistArtworkSource.value == chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED) return@launch
             val artist = _artists.value.find { it.id == artistId } ?: return@launch
             try {
                 val updatedArtists = repository.fetchArtistImages(listOf<Artist>(artist))

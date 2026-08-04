@@ -2493,7 +2493,7 @@ fun SingleCardPlaylistsContent(
             }
 
             if (playlistViewType == PlaylistViewType.GRID) {
-                val configuration = LocalContext.current.resources.configuration
+                val configuration = LocalConfiguration.current
                 val columnsCount = remember(configuration.screenWidthDp) {
                     val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
                     maxOf(cols, 1)
@@ -2659,7 +2659,7 @@ fun SingleCardAlbumsContent(
             }
 
             if (albumViewType == AlbumViewType.GRID) {
-                val configuration = LocalContext.current.resources.configuration
+                val configuration = LocalConfiguration.current
                 val columnsCount = remember(configuration.screenWidthDp) {
                     val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
                     maxOf(cols, 1)
@@ -4051,7 +4051,7 @@ fun AlbumsGrid(
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback
 ) {
     val uniqueAlbums = remember(albums) { albums.distinctBy { it.id } }
-    val configuration = LocalContext.current.resources.configuration
+    val configuration = LocalConfiguration.current
     val columnsCount = remember(configuration.screenWidthDp) {
         val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
         maxOf(cols, 1)
@@ -4486,7 +4486,7 @@ fun SingleCardArtistsContent(
         }
 
         if (isGridView) {
-            val configuration = LocalContext.current.resources.configuration
+            val configuration = LocalConfiguration.current
             val columnsCount = remember(configuration.screenWidthDp) {
                 val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
                 maxOf(cols, 1)
