@@ -28,6 +28,28 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.SpringSpec
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.util.lerp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlin.math.absoluteValue
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,9 +65,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.LaunchedEffect
 import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository
@@ -230,7 +250,7 @@ fun SettingsScreen(
                 onQueryChange = { searchQuery = it },
                 modifier = Modifier
                     .padding(horizontal = if (isTablet) 32.dp else 24.dp)
-                    .padding(top = 8.dp, bottom = 8.dp)
+                    .padding(top = 14.dp, bottom = 8.dp)
             )
         }
     ) { modifier ->
@@ -439,7 +459,7 @@ fun SettingsScreen(
                                 appMode = appMode,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 8.dp, bottom = 2.dp)
+                                    .padding(top = 14.dp, bottom = 2.dp)
                             )
                         }
                     }
@@ -951,6 +971,7 @@ fun SettingsScreenWrapper(
 ) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
+    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
 
     var currentRoute by rememberSaveable { mutableStateOf<String?>(null) }
     var showSleepTimerBottomSheet by rememberSaveable { mutableStateOf(false) }
@@ -1016,7 +1037,7 @@ fun SettingsScreenWrapper(
         }
     }
 
-    if (isTablet) {
+    if (isLandscapeTablet) {
         // Tablet layout: Master-detail with settings always visible on left
         Row(modifier = Modifier.fillMaxSize()) {
             // Master pane - always visible settings list
@@ -1329,7 +1350,6 @@ fun AnimatedSwitch(
 }
 
 data class SettingsTipData(
-    val id: String,
     val icon: MaterialSymbolIcon,
     val title: String,
     val text: String,
@@ -1347,7 +1367,6 @@ fun SettingsTipsRow(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var dismissedIds by rememberSaveable { mutableStateOf(setOf<String>()) }
     
     // Playback stats
     var todayExposureMinutes by remember { mutableStateOf(0) }
@@ -1394,7 +1413,6 @@ fun SettingsTipsRow(
     val tips = remember(
         rhythmGuardMode,
         appMode,
-        dismissedIds,
         todayExposureMinutes,
         currentRiskLevel,
         autoBackupEnabled,
@@ -1421,7 +1439,7 @@ fun SettingsTipsRow(
         }
 
         buildList {
-            if (isLocalMode && "rhythm_guard" !in dismissedIds) {
+            if (isLocalMode) {
                 val desc = when (rhythmGuardMode) {
                     "OFF" -> "${context.getString(R.string.settings_tip_rhythm_guard_off)} ${listeningPulseLabel.lowercase()} ${dayMomentLabel}."
                     "MANUAL" -> "${context.getString(R.string.settings_tip_rhythm_guard_manual)} ${todayExposureMinutes} min played today."
@@ -1432,7 +1450,6 @@ fun SettingsTipsRow(
 
                 add(
                     SettingsTipData(
-                        id = "rhythm_guard",
                         icon = RhythmIcons.Security,
                         title = context.getString(R.string.settings_rhythm_guard),
                         text = desc,
@@ -1443,39 +1460,33 @@ fun SettingsTipsRow(
                     )
                 )
             }
-            if ("theme" !in dismissedIds) {
-                val descs = listOf(
-                    context.getString(R.string.settings_tip_theme),
-                    context.getString(R.string.settings_tip_theme_desc_1),
-                    context.getString(R.string.settings_tip_theme_desc_2)
+            val themeDescs = listOf(
+                context.getString(R.string.settings_tip_theme),
+                context.getString(R.string.settings_tip_theme_desc_1),
+                context.getString(R.string.settings_tip_theme_desc_2)
+            )
+            add(
+                SettingsTipData(
+                    icon = RhythmIcons.Palette,
+                    title = context.getString(R.string.settingsscreen_personalization),
+                    text = themeDescs.random(random),
+                    route = SettingsRoutes.THEME_CUSTOMIZATION
                 )
-                add(
-                    SettingsTipData(
-                        id = "theme",
-                        icon = RhythmIcons.Palette,
-                        title = context.getString(R.string.settingsscreen_personalization),
-                        text = descs.random(random),
-                        route = SettingsRoutes.THEME_CUSTOMIZATION
-                    )
+            )
+            val gesturesDescs = listOf(
+                context.getString(R.string.settings_tip_gestures),
+                context.getString(R.string.settings_tip_gestures_swipe),
+                context.getString(R.string.settings_tip_gestures_artwork)
+            )
+            add(
+                SettingsTipData(
+                    icon = MaterialSymbolIcon("gesture"),
+                    title = context.getString(R.string.settings_gestures),
+                    text = gesturesDescs.random(random),
+                    route = SettingsRoutes.GESTURES
                 )
-            }
-            if ("gestures" !in dismissedIds) {
-                val descs = listOf(
-                    context.getString(R.string.settings_tip_gestures),
-                    context.getString(R.string.settings_tip_gestures_swipe),
-                    context.getString(R.string.settings_tip_gestures_artwork)
-                )
-                add(
-                    SettingsTipData(
-                        id = "gestures",
-                        icon = MaterialSymbolIcon("gesture"),
-                        title = context.getString(R.string.settings_gestures),
-                        text = descs.random(random),
-                        route = SettingsRoutes.GESTURES
-                    )
-                )
-            }
-            if (isLocalMode && "media_scan" !in dismissedIds) {
+            )
+            if (isLocalMode) {
                 val descs = listOf(
                     context.getString(R.string.settings_tip_media_scan),
                     context.getString(R.string.settings_tip_media_scan_desc_1),
@@ -1483,7 +1494,6 @@ fun SettingsTipsRow(
                 )
                 add(
                     SettingsTipData(
-                        id = "media_scan",
                         icon = RhythmIcons.Folder,
                         title = context.getString(R.string.settingsscreen_library_focus),
                         text = descs.random(random),
@@ -1491,14 +1501,13 @@ fun SettingsTipsRow(
                     )
                 )
             }
-            if (isLocalMode && "sleep_timer" !in dismissedIds) {
+            if (isLocalMode) {
                 val descs = listOf(
                     context.getString(R.string.settings_tip_sleep_timer_desc_1),
                     context.getString(R.string.settings_tip_sleep_timer_desc_2)
                 )
                 add(
                     SettingsTipData(
-                        id = "sleep_timer",
                         icon = RhythmIcons.AccessTime,
                         title = context.getString(R.string.settings_sleep_timer_search),
                         text = descs.random(random),
@@ -1506,14 +1515,13 @@ fun SettingsTipsRow(
                     )
                 )
             }
-            if (isLocalMode && "equalizer" !in dismissedIds) {
+            if (isLocalMode) {
                 val descs = listOf(
                     context.getString(R.string.settings_tip_equalizer_desc_1),
                     context.getString(R.string.settings_tip_equalizer_desc_2)
                 )
                 add(
                     SettingsTipData(
-                        id = "equalizer",
                         icon = RhythmIcons.Equalizer,
                         title = context.getString(R.string.settingsscreen_audio_equalizer),
                         text = descs.random(random),
@@ -1521,7 +1529,7 @@ fun SettingsTipsRow(
                     )
                 )
             }
-            if (isLocalMode && "backup_restore" !in dismissedIds) {
+            if (isLocalMode) {
                 val descs = if (autoBackupEnabled) {
                     listOf(
                         context.getString(R.string.settings_tip_backup_active_desc_1),
@@ -1535,7 +1543,6 @@ fun SettingsTipsRow(
                 }
                 add(
                     SettingsTipData(
-                        id = "backup_restore",
                         icon = MaterialSymbolIcon("backup"),
                         title = context.getString(R.string.settings_backup_restore),
                         text = descs.random(random),
@@ -1543,95 +1550,83 @@ fun SettingsTipsRow(
                     )
                 )
             }
-            if ("updates" !in dismissedIds) {
-                val descs = if (updatesEnabled) {
-                    listOf(
-                        context.getString(R.string.settings_tip_updates_active_desc_1),
-                        context.getString(R.string.settings_tip_updates_active_desc_2)
-                    )
-                } else {
-                    listOf(
-                        context.getString(R.string.settings_tip_updates_inactive_desc_1),
-                        context.getString(R.string.settings_tip_updates_inactive_desc_2)
-                    )
-                }
-                add(
-                    SettingsTipData(
-                        id = "updates",
-                        icon = RhythmIcons.Update,
-                        title = context.getString(R.string.cd_app_updates),
-                        text = descs.random(random),
-                        route = SettingsRoutes.UPDATES
-                    )
+            val updatesDescs = if (updatesEnabled) {
+                listOf(
+                    context.getString(R.string.settings_tip_updates_active_desc_1),
+                    context.getString(R.string.settings_tip_updates_active_desc_2)
+                )
+            } else {
+                listOf(
+                    context.getString(R.string.settings_tip_updates_inactive_desc_1),
+                    context.getString(R.string.settings_tip_updates_inactive_desc_2)
                 )
             }
-            if ("queue_playback" !in dismissedIds) {
-                val descs = if (gesturePlayerSwipeTracks) {
-                    listOf(
-                        context.getString(R.string.settings_tip_queue_active_desc_1),
-                        context.getString(R.string.settings_tip_queue_active_desc_2)
-                    )
-                } else {
-                    listOf(
-                        context.getString(R.string.settings_tip_queue_inactive_desc_1),
-                        context.getString(R.string.settings_tip_queue_inactive_desc_2)
-                    )
-                }
-                add(
-                    SettingsTipData(
-                        id = "queue_playback",
-                        icon = RhythmIcons.Queue,
-                        title = context.getString(R.string.settings_queue_title),
-                        text = descs.random(random),
-                        route = SettingsRoutes.QUEUE
-                    )
+            add(
+                SettingsTipData(
+                    icon = RhythmIcons.Update,
+                    title = context.getString(R.string.cd_app_updates),
+                    text = updatesDescs.random(random),
+                    route = SettingsRoutes.UPDATES
+                )
+            )
+            val queueDescs = if (gesturePlayerSwipeTracks) {
+                listOf(
+                    context.getString(R.string.settings_tip_queue_active_desc_1),
+                    context.getString(R.string.settings_tip_queue_active_desc_2)
+                )
+            } else {
+                listOf(
+                    context.getString(R.string.settings_tip_queue_inactive_desc_1),
+                    context.getString(R.string.settings_tip_queue_inactive_desc_2)
                 )
             }
-            if ("player_controls" !in dismissedIds) {
-                val descs = if (playerShowSeekButtons) {
-                    listOf(
-                        context.getString(R.string.settings_tip_controls_active_desc_1),
-                        context.getString(R.string.settings_tip_controls_active_desc_2)
-                    )
-                } else {
-                    listOf(
-                        context.getString(R.string.settings_tip_controls_inactive_desc_1),
-                        context.getString(R.string.settings_tip_controls_inactive_desc_2)
-                    )
-                }
-                add(
-                    SettingsTipData(
-                        id = "player_controls",
-                        icon = RhythmIcons.MusicNote,
-                        title = context.getString(R.string.settings_shapes_player_controls),
-                        text = descs.random(random),
-                        route = SettingsRoutes.PLAYER_CUSTOMIZATION
-                    )
+            add(
+                SettingsTipData(
+                    icon = RhythmIcons.Queue,
+                    title = context.getString(R.string.settings_queue_title),
+                    text = queueDescs.random(random),
+                    route = SettingsRoutes.QUEUE
+                )
+            )
+            val controlsDescs = if (playerShowSeekButtons) {
+                listOf(
+                    context.getString(R.string.settings_tip_controls_active_desc_1),
+                    context.getString(R.string.settings_tip_controls_active_desc_2)
+                )
+            } else {
+                listOf(
+                    context.getString(R.string.settings_tip_controls_inactive_desc_1),
+                    context.getString(R.string.settings_tip_controls_inactive_desc_2)
                 )
             }
-            if ("miniplayer" !in dismissedIds) {
-                val descs = if (miniPlayerShowProgress) {
-                    listOf(
-                        context.getString(R.string.settings_tip_miniplayer_active_desc_1),
-                        context.getString(R.string.settings_tip_miniplayer_active_desc_2)
-                    )
-                } else {
-                    listOf(
-                        context.getString(R.string.settings_tip_miniplayer_inactive_desc_1),
-                        context.getString(R.string.settings_tip_miniplayer_inactive_desc_2)
-                    )
-                }
-                add(
-                    SettingsTipData(
-                        id = "miniplayer",
-                        icon = MaterialSymbolIcon("play_circle_filled"),
-                        title = context.getString(R.string.settings_shapes_mini_player),
-                        text = descs.random(random),
-                        route = SettingsRoutes.MINIPLAYER_CUSTOMIZATION
-                    )
+            add(
+                SettingsTipData(
+                    icon = RhythmIcons.MusicNote,
+                    title = context.getString(R.string.settings_shapes_player_controls),
+                    text = controlsDescs.random(random),
+                    route = SettingsRoutes.PLAYER_CUSTOMIZATION
+                )
+            )
+            val miniplayerDescs = if (miniPlayerShowProgress) {
+                listOf(
+                    context.getString(R.string.settings_tip_miniplayer_active_desc_1),
+                    context.getString(R.string.settings_tip_miniplayer_active_desc_2)
+                )
+            } else {
+                listOf(
+                    context.getString(R.string.settings_tip_miniplayer_inactive_desc_1),
+                    context.getString(R.string.settings_tip_miniplayer_inactive_desc_2)
                 )
             }
-            if (isLocalMode && "library_settings" !in dismissedIds) {
+            add(
+                SettingsTipData(
+                    icon = MaterialSymbolIcon("play_circle_filled"),
+                    title = context.getString(R.string.settings_shapes_mini_player),
+                    text = miniplayerDescs.random(random),
+                    route = SettingsRoutes.MINIPLAYER_CUSTOMIZATION
+                )
+            )
+            if (isLocalMode) {
                 val descs = if (enableRatingSystem) {
                     listOf(
                         context.getString(R.string.settings_tip_library_active_desc_1),
@@ -1645,7 +1640,6 @@ fun SettingsTipsRow(
                 }
                 add(
                     SettingsTipData(
-                        id = "library_settings",
                         icon = RhythmIcons.Library,
                         title = context.getString(R.string.settingsscreen_library_settings),
                         text = descs.random(random),
@@ -1657,34 +1651,205 @@ fun SettingsTipsRow(
     }
 
     if (tips.isNotEmpty()) {
-        LazyRow(
-            modifier = modifier,
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 0.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
-        ) {
-            items(tips, key = { it.id }) { tip ->
-                SettingsTipCard(
-                    tip = tip,
-                    onDismiss = { dismissedIds = dismissedIds + tip.id },
-                    onClick = { tip.route?.let { onNavigateTo(it) } }
-                )
-            }
-        }
+        SettingsTipsCarousel(
+            tips = tips,
+            onTipClick = { tip -> tip.route?.let { onNavigateTo(it) } },
+            modifier = modifier
+        )
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun SettingsTipCard(
+fun SettingsTipsCarousel(
+    tips: List<SettingsTipData>,
+    onTipClick: (SettingsTipData) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (tips.isEmpty()) return
+
+    val itemsCount = tips.size
+    val pagerState = rememberPagerState { itemsCount }
+    val coroutineScope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    val spacing = 4.dp
+
+    val carouselAnimationSpec = remember {
+        spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow)
+    }
+
+    val autoScrollProgress = remember { Animatable(0f) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(pagerState.settledPage, itemsCount, lifecycleOwner) {
+        if (itemsCount > 1) {
+            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                autoScrollProgress.snapTo(0f)
+                val startTime = System.currentTimeMillis()
+                while (true) {
+                    val elapsed = System.currentTimeMillis() - startTime
+                    val p = (elapsed.toFloat() / 5000f).coerceIn(0f, 1f)
+                    autoScrollProgress.snapTo(p)
+                    if (p >= 1f) break
+                    delay(16)
+                }
+
+                if (!pagerState.isScrollInProgress) {
+                    val nextStep = (pagerState.currentPage + 1) % itemsCount
+                    pagerState.animateScrollToPage(
+                        page = nextStep,
+                        animationSpec = carouselAnimationSpec
+                    )
+                }
+            }
+        } else {
+            autoScrollProgress.snapTo(0f)
+        }
+    }
+
+    val interactionSources = remember(itemsCount) { List(itemsCount) { MutableInteractionSource() } }
+
+    val expressiveSpring = spring<Float>(
+        dampingRatio = Spring.DampingRatioLowBouncy,
+        stiffness = Spring.StiffnessLow
+    )
+
+    val visualProgress by remember {
+        derivedStateOf { pagerState.currentPage + pagerState.currentPageOffsetFraction }
+    }
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+        ) {
+            val totalWidthPx = constraints.maxWidth.toFloat()
+            val spacingPx = with(density) { spacing.toPx() }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp),
+                horizontalArrangement = Arrangement.spacedBy(spacing)
+            ) {
+                for (i in 0 until itemsCount) {
+                    val dist = (visualProgress - i).absoluteValue
+                    val currentWeight = when {
+                        dist < 1.0f -> {
+                            val maxW = if (i == 0 || i == itemsCount - 1) 0.9f else 0.82f
+                            lerp(maxW, 0.1f, dist)
+                        }
+                        dist < 2.0f -> lerp(0.1f, 0.0f, dist - 1.0f)
+                        else -> 0.0f
+                    }
+
+                    if (currentWeight > 0.005f) {
+                        val currentCornerRadius = if (dist < 1.0f) lerp(24f, 16f, dist) else 16f
+                        val currentAlpha = when {
+                            dist < 1.0f -> lerp(1f, 0.4f, dist)
+                            dist < 2.0f -> lerp(0.4f, 0f, dist - 1.0f)
+                            else -> 0f
+                        }
+
+                        val baseColor = if (tips[i].isPrimary) {
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.84f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerHighest
+                        }
+
+                        SettingsTipCard(
+                            tip = tips[i],
+                            dist = dist,
+                            isToTheLeft = i < visualProgress,
+                            interactionSource = interactionSources[i],
+                            modifier = Modifier.weight(currentWeight),
+                            containerColor = baseColor.copy(alpha = currentAlpha),
+                            cornerRadius = currentCornerRadius.dp,
+                            motionSpec = expressiveSpring,
+                            onClick = { onTipClick(tips[i]) }
+                        )
+                    }
+                }
+            }
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .alpha(0f)
+                    .pointerInput(itemsCount) {
+                        detectTapGestures { offset ->
+                            val tapX = offset.x
+                            var currentX = 0f
+                            val currentProgress = pagerState.currentPage + pagerState.currentPageOffsetFraction
+
+                            val renderedWeights = (0 until itemsCount).map { i ->
+                                val dist = (currentProgress - i).absoluteValue
+                                when {
+                                    dist < 1.0f -> lerp(if (i == 0 || i == itemsCount - 1) 0.9f else 0.82f, 0.1f, dist)
+                                    dist < 2.0f -> lerp(0.1f, 0.0f, dist - 1.0f)
+                                    else -> 0.0f
+                                }
+                            }
+
+                            val visibleIndices = renderedWeights.indices.filter { renderedWeights[it] > 0.005f }
+                            val totalGaps = (visibleIndices.size - 1).coerceAtLeast(0)
+                            val availableWidthForCards = totalWidthPx - (spacingPx * totalGaps)
+
+                            for (i in visibleIndices) {
+                                val weight = renderedWeights[i]
+                                val cardWidth = weight * availableWidthForCards
+
+                                if (tapX >= currentX && tapX <= currentX + cardWidth) {
+                                    coroutineScope.launch {
+                                        val press = PressInteraction.Press(offset)
+                                        interactionSources[i].emit(press)
+                                        delay(150)
+                                        interactionSources[i].emit(PressInteraction.Release(press))
+
+                                        if (pagerState.currentPage == i) {
+                                            tips[i].let(onTipClick)
+                                        } else {
+                                            pagerState.animateScrollToPage(
+                                                page = i,
+                                                animationSpec = carouselAnimationSpec
+                                            )
+                                        }
+                                    }
+                                    break
+                                }
+                                currentX += cardWidth + spacingPx
+                            }
+                        }
+                    }
+            ) {
+                Box(Modifier.fillMaxSize())
+            }
+        }
+
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun RowScope.SettingsTipCard(
     tip: SettingsTipData,
-    onDismiss: () -> Unit,
+    dist: Float,
+    isToTheLeft: Boolean,
+    interactionSource: MutableInteractionSource,
+    containerColor: Color,
+    cornerRadius: Dp,
+    modifier: Modifier = Modifier,
+    motionSpec: SpringSpec<Float>,
     onClick: () -> Unit
 ) {
+    val isFocused = dist < 0.6f
     val isPrimary = tip.isPrimary
-    val containerColor = if (isPrimary) {
-        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.84f)
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerHighest
-    }
     val contentColor = if (isPrimary) {
         MaterialTheme.colorScheme.onPrimaryContainer
     } else {
@@ -1700,79 +1865,113 @@ fun SettingsTipCard(
     // Use health status directly for icon background if available, looks much cleaner than partial filling!
     val indicatorColor = if (tip.riskLevel != null) {
         when (tip.riskLevel) {
-            RhythmGuardRiskLevel.LOW -> androidx.compose.ui.graphics.Color(0xFF4CAF50)
-            RhythmGuardRiskLevel.MODERATE -> androidx.compose.ui.graphics.Color(0xFFFF9800)
-            RhythmGuardRiskLevel.HIGH -> androidx.compose.ui.graphics.Color(0xFFFF5722)
+            RhythmGuardRiskLevel.LOW -> Color(0xFF4CAF50)
+            RhythmGuardRiskLevel.MODERATE -> Color(0xFFFF9800)
+            RhythmGuardRiskLevel.HIGH -> Color(0xFFFF5722)
             RhythmGuardRiskLevel.SEVERE -> MaterialTheme.colorScheme.error
         }
     } else null
 
     Card(
-        modifier = Modifier
-            .width(320.dp)
-            .height(160.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(if (isPrimary) 24.dp else 20.dp),
+        modifier = modifier
+            .fillMaxHeight()
+            .clip(RoundedCornerShape(cornerRadius))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {}
+            ),
         colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(cornerRadius)
     ) {
-        Row(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .padding(20.dp)
-                    .fillMaxSize()
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = tip.icon,
-                        contentDescription = null,
-                        tint = indicatorColor ?: iconColor,
-                        modifier = Modifier.size(30.dp)
-                    )
-                    
-                    androidx.compose.material3.IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = if (isPrimary) 0.55f else 0.44f))
-                    ) {
-                        Icon(
-                            imageVector = RhythmIcons.Close,
-                            contentDescription = stringResource(R.string.onboarding_dismiss),
-                            tint = contentColor,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                Text(
-                    text = tip.title,
-                    style = MaterialTheme.typography.titleLarge, 
-                    fontWeight = FontWeight.Bold,
-                    color = contentColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                
-                Spacer(modifier = Modifier.height(6.dp))
-                
-                Text(
-                    text = tip.text,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = contentColor.copy(alpha = 0.85f),
-                    lineHeight = 18.sp,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
+        AnimatedContent(
+            targetState = isFocused,
+            transitionSpec = {
+                val springSpec = spring<IntOffset>(
+                    stiffness = motionSpec.stiffness,
+                    dampingRatio = motionSpec.dampingRatio
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
+                val slideIn = if (targetState) {
+                    slideInHorizontally(animationSpec = springSpec) { if (isToTheLeft) -it else it }
+                } else {
+                    slideInHorizontally(animationSpec = springSpec) { if (isToTheLeft) it else -it }
+                }
+
+                val slideOut = if (targetState) {
+                    slideOutHorizontally(animationSpec = springSpec) { if (isToTheLeft) it else -it }
+                } else {
+                    slideOutHorizontally(animationSpec = springSpec) { if (isToTheLeft) -it else it }
+                }
+
+                (fadeIn(animationSpec = spring(stiffness = motionSpec.stiffness, dampingRatio = motionSpec.dampingRatio)) + slideIn +
+                    scaleIn(initialScale = 0.92f, animationSpec = spring(stiffness = motionSpec.stiffness, dampingRatio = motionSpec.dampingRatio)))
+                    .togetherWith(
+                        fadeOut(animationSpec = spring(stiffness = motionSpec.stiffness, dampingRatio = motionSpec.dampingRatio)) + slideOut +
+                            scaleOut(targetScale = 0.92f, animationSpec = spring(stiffness = motionSpec.stiffness, dampingRatio = motionSpec.dampingRatio))
+                    )
+            },
+            label = "TipCardContentTransition",
+            modifier = Modifier.fillMaxSize()
+        ) { focused ->
+            if (focused) {
+                // Card content layout (icon row, title, description) minus the close button
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(20.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = tip.icon,
+                            contentDescription = null,
+                            tint = indicatorColor ?: iconColor,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = tip.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = contentColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = tip.text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = contentColor.copy(alpha = 0.85f),
+                        lineHeight = 18.sp,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (isToTheLeft)
+                            MaterialSymbolIcon("chevron_left")
+                        else
+                            MaterialSymbolIcon("chevron_right"),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = contentColor.copy(alpha = 0.6f)
+                    )
+                }
             }
         }
     }

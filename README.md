@@ -235,7 +235,6 @@ We welcome contributions! See our [CONTRIBUTING.md](https://github.com/cromaguy/
 * [linsui](https://github.com/linsui) & [Licaon_Kter](https://github.com/licaon-kter) - F-Droid repository management
 * [theovilardo](https://github.com/theovilardo) - Guide & PixelPlayer's Lead Dev
 * [Nick](https://github.com/nift4) - Guide & Gramophone's Maintainer
-* [Christian](https://github.com/mardous) - Guide & Booming Music's Lead Dev
 * [Alex](https://github.com/Paxsenix0) - Lyrically API's Lead Dev
 * [vivi](https://github.com/vivizzz007) - Guide & Lead Developer of Vivi Music
 * The **Google Material Design Team**, **AOSP**, **JetBrains**, and the fantastic **Open Source Community**.

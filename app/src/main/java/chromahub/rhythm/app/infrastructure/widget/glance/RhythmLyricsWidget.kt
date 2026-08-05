@@ -237,9 +237,10 @@ class RhythmLyricsWidget : GlanceAppWidget() {
         Box(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .background(GlanceTheme.colors.surface)
                 .cornerRadius(28.dp)
+                .background(GlanceTheme.colors.widgetBackground)
         ) {
+
             // Main content container utilizing the full widget width
             Column(
                 modifier = GlanceModifier
@@ -363,7 +364,7 @@ class RhythmLyricsWidget : GlanceAppWidget() {
                         }
                     } else {
                         Text(
-                            text = "Your rhythm, your way",
+                            text = "Your Music, Your Rhythm",
                             style = TextStyle(
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,

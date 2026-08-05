@@ -137,7 +137,10 @@ fun RhythmPlayerSheet(
         
         val expansionFraction = ((collapsedOffset - animatedOffset) / collapsedOffset).coerceIn(0f, 1f)
         
-        val topCornerSize = 28.dp * (1f - expansionFraction)
+        val maxCornerRadius = 32.dp
+        val cornerBlendProgress = ((expansionFraction - 0.82f) / 0.18f).coerceIn(0f, 1f)
+        val smoothBlend = cornerBlendProgress * cornerBlendProgress * cornerBlendProgress
+        val topCornerSize = maxCornerRadius * (1f - smoothBlend)
         val bottomCornerSize = 28.dp * (1f - expansionFraction)
         val sheetShape = RoundedCornerShape(
             topStart = topCornerSize,
@@ -184,22 +187,39 @@ fun RhythmPlayerSheet(
         }
         val sheetBackgroundColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = sheetBackgroundAlpha)
 
+        val configuration = LocalConfiguration.current
+        val isTablet = configuration.screenWidthDp >= 600
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .offset { IntOffset(0, animatedOffset.roundToInt()) }
         ) {
-            Box(
-                modifier = Modifier
+            val sheetContainerModifier = if (isTablet && expansionFraction < 0.15f) {
+                Modifier
+                    .fillMaxWidth()
+                    .height(sheetHeightDp)
+            } else {
+                Modifier
                     .fillMaxWidth()
                     .height(sheetHeightDp)
                     .clip(sheetShape)
                     .background(sheetBackgroundColor, sheetShape)
                     .then(dragModifier)
+            }
+
+            Box(
+                modifier = sheetContainerModifier
             ) {
                 // Collapsed Miniplayer Content
-                Box(
-                    modifier = Modifier
+                val miniPlayerContainerModifier = if (isTablet && expansionFraction < 0.15f) {
+                    Modifier
+                        .fillMaxWidth()
+                        .height(miniPlayerHeight)
+                        .zIndex(if (expansionFraction < 0.5f) 1f else 0f)
+                        .graphicsLayer { alpha = (1f - expansionFraction).coerceIn(0f, 1f) }
+                } else {
+                    Modifier
                         .fillMaxWidth()
                         .height(miniPlayerHeight)
                         .zIndex(if (expansionFraction < 0.5f) 1f else 0f)
@@ -208,6 +228,10 @@ fun RhythmPlayerSheet(
                         .clickable(enabled = expansionFraction < 0.15f && dragOffset == 0f) {
                             onExpand()
                         }
+                }
+
+                Box(
+                    modifier = miniPlayerContainerModifier
                 ) {
                     MiniPlayer(
                         song = song,

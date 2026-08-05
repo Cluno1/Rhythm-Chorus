@@ -54,8 +54,9 @@ import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.presentation.components.common.ButtonGroupStyle
-import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveButtonGroup
-import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveGroupButton
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonWeighted
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonSize
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import kotlinx.coroutines.launch
@@ -98,8 +99,9 @@ fun PlayerChipOrderBottomSheet(
     fun getChipInfo(chipId: String): Pair<String, MaterialSymbolIcon> {
         return when (chipId) {
             "FAVORITE" -> Pair("Favorite", RhythmIcons.FavoriteFilled)
-            "SPEED" -> Pair("Speed", MaterialSymbolIcon("speed", filled = true))
-            "PITCH" -> Pair("Pitch", MaterialSymbolIcon("graphic_eq", filled = true))
+            "SPEED_PITCH" -> Pair("Speed & Pitch", MaterialSymbolIcon("tune", filled = true))
+            "SPEED" -> Pair("Speed & Pitch", MaterialSymbolIcon("speed", filled = true))
+            "PITCH" -> Pair("Speed & Pitch", MaterialSymbolIcon("graphic_eq", filled = true))
             "EQUALIZER" -> Pair("Equalizer", MaterialSymbolIcon("graphic_eq", filled = true))
             "SLEEP_TIMER" -> Pair("Sleep Timer", RhythmIcons.AccessTime)
             "LYRICS" -> Pair("Lyrics", MaterialSymbolIcon("lyrics", filled = true))
@@ -297,36 +299,30 @@ fun PlayerChipOrderBottomSheet(
                 color = MaterialTheme.colorScheme.surfaceContainer,
                 tonalElevation = 3.dp
             ) {
-                ExpressiveButtonGroup(
+                RhythmGroupedButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp, vertical = 16.dp),
-                    style = ButtonGroupStyle.Tonal
+                    size = RhythmButtonSize.Large
                 ) {
                     // Reset button
-                    ExpressiveGroupButton(
+                    RhythmButtonWeighted(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             appSettings.resetPlayerChipOrder()
                             appSettings.setHiddenPlayerChips(emptySet())
-                            reorderableList = listOf("FAVORITE", "SPEED", "PITCH", "EQUALIZER", "SLEEP_TIMER", "LYRICS", "ALBUM", "ARTIST", "SHARE")
+                            reorderableList = listOf("FAVORITE", "SPEED", "EQUALIZER", "SLEEP_TIMER", "LYRICS", "ALBUM", "ARTIST", "SHARE")
                             hiddenChipsSet = emptySet()
                             Toast.makeText(context, R.string.player_chip_order_reset, Toast.LENGTH_SHORT).show()
                         },
-                        modifier = Modifier.weight(1f),
-                        isStart = true
-                    ) {
-                        Icon(
-                            imageVector = MaterialSymbolIcon("restart_alt"),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(context.getString(R.string.bottomsheet_reset))
-                    }
+                        weight = 1f,
+                        isFirst = true,
+                        icon = MaterialSymbolIcon("restart_alt"),
+                        text = context.getString(R.string.bottomsheet_reset)
+                    )
 
                     // Save button
-                    ExpressiveGroupButton(
+                    RhythmButtonWeighted(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             appSettings.setPlayerChipOrder(reorderableList)
@@ -340,17 +336,11 @@ fun PlayerChipOrderBottomSheet(
                                 }
                             }
                         },
-                        modifier = Modifier.weight(1f),
-                        isEnd = true
-                    ) {
-                        Icon(
-                            imageVector = RhythmIcons.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(context.getString(R.string.bottomsheet_save))
-                    }
+                        weight = 1f,
+                        isLast = true,
+                        icon = RhythmIcons.Check,
+                        text = context.getString(R.string.bottomsheet_save)
+                    )
                 }
             }
         }

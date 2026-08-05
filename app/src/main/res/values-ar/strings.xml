@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm موسيقى</string>
     <string name="media3_notification_channel_description">عناصر التحكم في تشغيل الوسائط</string>
     <!-- Widget strings -->
-    <string name="widget_description">أداة الموسيقى Rhythm - التحكم في التشغيل من خلال تخطيطات سريعة الاستجابة تدعم أحجام الشبكة من 2x1 إلى 5x5</string>
     <string name="widget_description_glance">موسيقى Rhythm - التحكم في التشغيل باستخدام 9 تخطيطات سريعة الاستجابة وتصميم Material 3 وتحديثات الحالة في الوقت الفعلي</string>
     <string name="widget_name_glance">Rhythm موسيقى</string>
     <string name="no_song_playing">لا توجد أغنية قيد التشغيل</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">القطعة</string>
     <string name="settings_widget_desc">أدوات الشاشة الرئيسية</string>
     <string name="widget_show_album_art">عرض صورة الألبوم</string>
-    <string name="widget_show_album_art_desc">عرض الألبوم الفني في القطعة</string>
     <string name="widget_show_artist">إظهار اسم الفنان</string>
     <string name="widget_show_artist_desc">عرض معلومات الفنان</string>
     <string name="widget_show_album">عرض اسم الألبوم</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">الألوان الديناميكية (Material أنت)</string>
-    <string name="onboarding_dynamic_colors_desc">قم بتطبيق الألوان المستخرجة من خلفية جهازك للحصول على مظهر متماسك.</string>
     <string name="onboarding_player_theme_title">سمات التشغيل والمشغل الصغير</string>
     <string name="onboarding_player_theme_desc">قم بتخصيص واجهات التشغيل الخاصة بك. يمكنك التبديل بين تصميم Rhythm النظيف والحديث أو التصميم المعبّر النابض بالحياة والسلس.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">الحاجيات قاذفة</string>
     <string name="onboarding_widgets_desc">أضف عناصر واجهة المستخدم Rhythm إلى المشغل الخاص بك للتحكم السريع في الموسيقى. قم بتخصيص المعلومات التي يتم عرضها وكيف تبدو الأداة.</string>
-    <string name="onboarding_widget_album_art">عرض صورة الألبوم</string>
-    <string name="onboarding_widget_album_art_desc">عرض الألبوم الفني في القطعة</string>
     <string name="onboarding_widget_artist">إظهار اسم الفنان</string>
     <string name="onboarding_widget_artist_desc">عرض الفنان الحالي في القطعة</string>
     <string name="onboarding_widget_album">عرض اسم الألبوم</string>
     <string name="onboarding_widget_album_desc">عرض عنوان الألبوم في القطعة</string>
     <string name="onboarding_widgets_tips_title">نصائح القطعة</string>
-    <string name="onboarding_widget_tip_1">اضغط على القطعة لفتح التطبيق</string>
-    <string name="onboarding_widget_tip_2">تغيير حجم الأدوات لتخطيطات مختلفة (2x1 إلى 5x5)</string>
-    <string name="onboarding_widget_tip_3">يتم تحديث الأدوات في الوقت الفعلي أثناء التشغيل</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">قم بتوصيل خدماتك</string>
     <string name="onboarding_integrations_desc">عزز تجربة الاستماع الخاصة بك عن طريق الاتصال بالخدمات الخارجية. احصل على صورة الألبوم، وكلمات الأغاني، وقم بتمرير الأغاني، وشارك ما تستمع إليه.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">اكتشف رؤى حول عاداتك الموسيقية. تتبع وقت الاستماع والأغاني الأكثر تشغيلًا والفنانين المفضلين والمزيد باستخدام تصورات جميلة.</string>
     <string name="onboarding_stats_show_home">عرض الإحصائيات على الصفحة الرئيسية</string>
     <string name="onboarding_stats_show_home_desc">قم بعرض أداة إحصائيات الاستماع على شاشتك الرئيسية</string>
-    <string name="onboarding_stats_rating">تمكين تقييمات الأغنية</string>
-    <string name="onboarding_stats_rating_desc">قم بتقييم أغانيك لتتبع الأغاني المفضلة وإنشاء قوائم تشغيل ذكية</string>
     <string name="onboarding_stats_features_title">ميزات الإحصائيات</string>
     <string name="onboarding_stats_feature_1">تتبع إجمالي وقت الاستماع حسب اليوم أو الأسبوع أو الشهر</string>
     <string name="onboarding_stats_feature_2">شاهد الأغاني الأكثر تشغيلًا</string>
@@ -726,8 +715,6 @@
     <string name="theme_color_source_desc">اختيار كيفية استخلاص الألوان</string>
     <string name="theme_font_source">مصدر الخط</string>
     <string name="theme_font_source_desc">اختر مكان تحميل الخطوط منه</string>
-    <string name="theme_color_schemes">أنظمة الألوان</string>
-    <string name="theme_color_schemes_desc">اختر من بين أنظمة الألوان المعدة مسبقًا</string>
     <string name="theme_custom_picker">منتقي الألوان المخصص</string>
     <string name="theme_custom_picker_desc">قم بإنشاء نظام الألوان الخاص بك</string>
     <string name="theme_font_selection">اختيار الخط</string>
@@ -776,15 +763,6 @@
     <string name="playlist_create_first">قم بإنشاء قائمة التشغيل الأولى لإضافة الأغاني</string>
     <!-- Components: Cache Management (Bottom Sheet) -->
     <string name="cache_management">ذاكرة التخزين المؤقت</string>
-    <!-- Components: Beta Program -->
-    
-    <!-- Components: Equalizer -->
-    
-    <!-- Theme Customization Notes -->
-    <string name="theme_color_schemes_unavailable">تتوفر أنظمة الألوان فقط عند استخدام مصدر ألوان مخصص.</string>
-    <string name="theme_color_schemes_switch">قم بالتبديل إلى \"مخصص\" في إعداد \"مصدر اللون\" للوصول إلى الأنظمة المحددة مسبقًا.</string>
-    <string name="theme_custom_colors_unavailable">تتوفر الألوان المخصصة فقط عند استخدام مصدر ألوان مخصص.</string>
-    <string name="theme_custom_colors_switch">قم بالتبديل إلى \"مخصص\" في إعداد \"مصدر اللون\" لإنشاء الألوان الخاصة بك.</string>
     <string name="theme_system_fonts_unavailable">تتوفر خطوط النظام فقط عند استخدام مصدر خط النظام.</string>
     <string name="theme_system_fonts_switch">قم بالتبديل إلى النظام في إعداد مصدر الخط للاختيار من بين الخطوط المتاحة.</string>
     <!-- PlaceholderScreens Additional -->
@@ -823,11 +801,6 @@
     <string name="updates_experimental_coming">المزيد من الميزات التجريبية قريبًا في التحديثات المستقبلية</string>
     <string name="settings_interval_every_48_hours">كل 48 ساعة</string>
     <string name="settings_interval_every_72_hours">كل 72 ساعة</string>
-    <!-- Cache -->
-    
-    <!-- Theme -->
-    <string name="theme_featured_schemes">المخططات المميزة</string>
-    <string name="theme_more_schemes">المزيد من المخططات</string>
     <string name="theme_quick_presets">الإعدادات المسبقة السريعة</string>
     <string name="theme_advanced_rgb">عناصر تحكم RGB المتقدمة</string>
     <!-- Services -->
@@ -1224,7 +1197,6 @@
     <string name="settings_rhythm_guard_state_cooldown_active">فترة السماح نشطة</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">نهاية الاستراحة في %1$s</string>
     <string name="settings_rhythm_guard_state_cooldown_remaining">تنتهي فترة السماح في %1$s</string>
-    <string name="settings_rhythm_guard_state_safety_score">درجة الأمان: %1$d%%</string>
     <string name="settings_rhythm_guard_protection_presets_title">إعدادات الحماية المسبقة</string>
     <string name="settings_rhythm_guard_protection_presets_desc">قم بتطبيق حزم الدرابزين التي تم اختبارها بسرعة لتناسب أسلوب الاستماع الخاص بك.</string>
     <string name="settings_rhythm_guard_protection_preset_gentle">لطيف</string>
@@ -1686,7 +1658,6 @@
     <string name="settings_miniplayer_header">مشغل صغير</string>
     <string name="settings_show_progress">أظهر التقدم</string>
     <string name="settings_show_progress_desc">عرض مؤشر التقدم</string>
-    <string name="settings_progress_mode">وضع التقدم</string>
     <string name="settings_show_artwork">عرض العمل الفني</string>
     <string name="settings_show_artwork_desc">عرض الأعمال الفنية للألبوم</string>
     <string name="settings_show_time">عرض الوقت</string>
@@ -1729,8 +1700,6 @@
     <string name="settings_color_schemes">أنظمة الألوان</string>
     <string name="settings_color_schemes_desc">تصفح وحدد لوحات الألوان المحددة مسبقًا</string>
     <string name="settings_custom_only">متوفر فقط مع مصدر الألوان المخصص</string>
-    <string name="settings_custom_colors">الألوان المخصصة</string>
-    <string name="settings_custom_colors_desc">قم بإنشاء لوحة الألوان الفريدة الخاصة بك</string>
     <string name="settings_font_customization">تخصيص الخط</string>
     <string name="settings_font_source">مصدر الخط</string>
     <string name="settings_font_source_system">خط النظام - %1$s</string>
@@ -1929,8 +1898,6 @@
     <!-- MiniPlayer Customization Search Strings -->
     <string name="settings_miniplayer_show_progress">أظهر التقدم</string>
     <string name="settings_miniplayer_show_progress_desc">عرض مؤشر التقدم في المشغل المصغر</string>
-    <string name="settings_miniplayer_circular_progress">التقدم الدائري</string>
-    <string name="settings_miniplayer_circular_progress_desc">استخدم التقدم الدائري على زر التشغيل/الإيقاف المؤقت</string>
     <string name="settings_miniplayer_progress_style">أسلوب التقدم</string>
     <string name="settings_miniplayer_progress_style_desc">اختر نمط شريط تقدم اللاعب المصغر</string>
     <string name="settings_miniplayer_show_artwork">عرض العمل الفني</string>
@@ -1967,7 +1934,6 @@
     <string name="settings_backup_created">تم إنشاء النسخة الاحتياطية بنجاح</string>
     <string name="settings_backup_settings">الإعدادات</string>
     <string name="settings_center_aligned">بمحاذاة إلى الوسط</string>
-    <string name="settings_choose_progress_style">اختر نمط مؤشر التقدم</string>
     <string name="settings_create_backup">إنشاء نسخة احتياطية للملف</string>
     <string name="settings_create_backup_desc">تصدير نسخة احتياطية كاملة إلى ملف JSON.</string>
     <string name="settings_backup_action_short">النسخ الاحتياطي</string>
@@ -2017,10 +1983,7 @@
     <string name="batchedittagssheet_enable_fields_you_want">قم بتمكين الحقول التي تريد تحديثها. تبقى الحقول المعطلة دون تغيير.</string>
     <string name="batchedittagssheet_tags">العلامات</string>
     <string name="batchedittagssheet_batch_artwork_preview">معاينة دفعة العمل الفني</string>
-    <string name="deviceconfigurationbottomsheet_supported_formats_fixedbandeq_text">Supported formats:
-• FixedBandEQ text (AutoEQ)
-• JSON format
-• CSV (10 band values)</string>
+    <string name="deviceconfigurationbottomsheet_supported_formats_fixedbandeq_text">Supported formats: • FixedBandEQ text (AutoEQ) • JSON format • CSV (10 band values)</string>
     <string name="deviceconfigurationbottomsheet_paste_eq_data_here">الصق بيانات المعادل هنا...</string>
     <string name="deviceconfigurationbottomsheet_open_autoeqapp">افتح تطبيق autoeq.app</string>
     <string name="deviceconfigurationbottomsheet_export_eq_profile">تصدير ملف تعريف المعادل</string>
@@ -2110,8 +2073,6 @@
     <string name="streamingsettingsscreen_streaming_restricted">البث مقيد</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">فشل التشغيل التالي: غير قادر على حل عنوان URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">فشلت الإضافة إلى قائمة الانتظار: غير قادر على حل عنوان URL</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">القطعة الرأسية 1×2</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">القطعة المتوسطة 3×2</string>
     <string name="rhythmmusicwidget_album_art_placeholder">العنصر النائب لصورة الألبوم</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">معاينات عناصر واجهة المستخدم Rhythm Glance.</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 القطعة المدمجة</string>
@@ -2239,8 +2200,7 @@
     <string name="lyricssourcesettingsscreen_lyrics_api_priority">كلمات API الأولوية</string>
     <string name="lyricssourcesettingsscreen_choose_which_online_lyrics">اختر كلمات الأغاني الموجودة على الإنترنت API للبحث عنها أولاً</string>
     <string name="lyricssourcesettingsscreen_retry_using_fallbacks">أعد المحاولة باستخدام الإجراءات الاحتياطية</string>
-    <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• Embedded lyrics are stored in your audio files
-</string>
+    <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• Embedded lyrics are stored in your audio files</string>
     <string name="miniplayercustomizationsettingsscreen_miniplayer_theme">موضوع MiniPlayer</string>
     <string name="miniplayercustomizationsettingsscreen_choose_between_rhythm_default">اختر بين Rhythm السمة الافتراضية أو التعبيرية</string>
     <string name="miniplayercustomizationsettingsscreen_integrated_directly_into_the">مدمج مباشرة في خلفية MiniPlayer</string>
@@ -2273,9 +2233,6 @@
     <string name="widgetsettingsscreen_widget_settings">إعدادات القطعة</string>
     <string name="widgetsettingsscreen_show_favorite_button">إظهار الزر المفضل</string>
     <string name="widgetsettingsscreen_widget_theme">موضوع القطعة</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">يستخدم Rhythm Material 3 تصميمًا معبرًا بألوان ديناميكية</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">تتكيف الأداة من زر التشغيل 1x1 إلى التخطيط الكامل 5x5+</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">الضغط لفترة طويلة وتغيير الحجم للتخطيطات التعبيرية المختلفة</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">ينطبق على عناصر واجهة المستخدم Glance فقط</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">تخصيص أدوات الشاشة الرئيسية</string>
     <string name="festivesplashgreeting_merry_christmas">عيد ميلاد سعيد!</string>
@@ -2457,10 +2414,6 @@
     <string name="color_scheme_emerald_desc">اللون الأخضر الزمردي الطازج مع ألوان الغابات الطبيعية</string>
     <string name="color_scheme_mint_title">النعناع</string>
     <string name="color_scheme_mint_desc">درجات اللون الأخضر السماوي والنعناعي المنعشة والنظيفة</string>
-    <!-- Color Preview Chips -->
-    <string name="theme_color_primary">الابتدائي</string>
-    <string name="theme_color_secondary">الثانوية</string>
-    <string name="theme_color_tertiary">التعليم العالي</string>
     <!-- Lyrics Settings Screen -->
     <string name="lyrics_settings_title">كلمات</string>
     <string name="lyrics_settings_general">الإعدادات العامة</string>
@@ -2735,8 +2688,6 @@
     <string name="option_always">دائما</string>
     <string name="option_expanded">موسع</string>
     <string name="option_collapsed">انهارت</string>
-    <string name="option_linear">خطي</string>
-    <string name="option_circular">تعميم</string>
     <string name="option_both">كلاهما</string>
     <string name="option_icon">أيقونة</string>
     <string name="option_name">الاسم</string>

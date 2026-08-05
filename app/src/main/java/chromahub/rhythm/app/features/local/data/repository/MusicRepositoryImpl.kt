@@ -1,4 +1,8 @@
 package chromahub.rhythm.app.features.local.data.repository
+import chromahub.rhythm.app.shared.data.model.ScanProgress
+import chromahub.rhythm.app.core.domain.scan.MediaScanEngine
+import chromahub.rhythm.app.core.domain.backup.BackupRestoreManager
+
 
 import android.content.ContentUris
 import android.content.Context
@@ -43,7 +47,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CoroutineScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
+import chromahub.rhythm.app.features.local.data.database.entity.toSong
+import chromahub.rhythm.app.features.local.data.database.entity.toArtist
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -81,17 +94,13 @@ import androidx.room.withTransaction
 import chromahub.rhythm.app.features.local.data.database.RhythmDatabase
 import chromahub.rhythm.app.features.local.data.database.entity.ArtistEntity
 import chromahub.rhythm.app.features.local.data.database.entity.SongEntity
+import chromahub.rhythm.app.features.local.data.database.entity.toEntity
 import chromahub.rhythm.app.features.local.data.database.entity.SongArtistEntity
 
 /**
  * Scan progress data class for real-time updates
  */
-data class ScanProgress(
-    val current: Int,
-    val total: Int,
-    val stage: ScanPhase,
-    val estimatedTimeMs: Long = 0
-)
+
 
 /**
  * Scan statistics for tracking library state
@@ -148,8 +157,21 @@ class MusicRepository(context: Context) {
     private val libraryScanPrefs: SharedPreferences by lazy { context.getSharedPreferences("library_scan_metadata", Context.MODE_PRIVATE) }
     
     // Scan progress tracking
+    
     private val _scanProgress = MutableStateFlow(ScanProgress(0, 0, ScanPhase.Idle))
     val scanProgress: StateFlow<ScanProgress> = _scanProgress.asStateFlow()
+
+        private val appSettings: AppSettings by lazy { AppSettings.getInstance(context) }
+    private val mediaScanEngine: MediaScanEngine by lazy { 
+        MediaScanEngine(context, roomDb, appSettings).also { engine ->
+            repositoryScope.launch {
+                engine.scanProgress.collect { progress ->
+                    _scanProgress.value = progress
+                }
+            }
+        }
+    }
+    val backupRestoreManager: BackupRestoreManager by lazy { BackupRestoreManager(context, appSettings, roomDb) }
     
     // Scan history
     private val _scanHistory = MutableStateFlow<List<ScanHistoryEntry>>(emptyList())
@@ -164,7 +186,36 @@ class MusicRepository(context: Context) {
     private val roomDb by lazy { RhythmDatabase.getInstance(context) }
     val songDao by lazy { roomDb.songDao() }
     val playlistDao by lazy { roomDb.playlistDao() }
-    private val appSettings by lazy { AppSettings.getInstance(context) }
+    
+    fun getPaginatedSongs(): kotlinx.coroutines.flow.Flow<PagingData<Song>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = true),
+            pagingSourceFactory = { songDao.getSongsPagingSource() }
+        ).flow.map { pagingData ->
+            pagingData.map { entity -> entity.toSong() }
+        }
+    }
+
+    fun getPaginatedSongsSearch(query: String): kotlinx.coroutines.flow.Flow<PagingData<Song>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = true),
+            pagingSourceFactory = { 
+                if (query.isBlank()) songDao.getSongsPagingSource() 
+                else songDao.getSongsPagingSourceSearch(query) 
+            }
+        ).flow.map { pagingData ->
+            pagingData.map { entity -> entity.toSong() }
+        }
+    }
+
+    fun getPaginatedArtists(groupByAlbumArtist: Boolean): kotlinx.coroutines.flow.Flow<PagingData<Artist>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = true),
+            pagingSourceFactory = { roomDb.artistDao().getArtistsPagingSource(groupByAlbumArtist) }
+        ).flow.map { pagingData ->
+            pagingData.map { entity -> entity.toArtist() }
+        }
+    }
     
     /**
      * Persists the current in-memory song cache to Room database.
@@ -448,7 +499,7 @@ class MusicRepository(context: Context) {
                                 savedArtworkUri
                             } else {
                                 val savedFile = savedArtworkUri?.path?.let { File(it) }
-                                val parentDir = savedFile?.parentFile ?: File(context.cacheDir, "embedded_artwork")
+                                val parentDir = savedFile?.parentFile ?: File(context.filesDir, "embedded_artwork")
                                 val baseName = fileName
                                     .removePrefix("embedded_art_lossless_")
                                     .removePrefix("embedded_art_")
@@ -476,7 +527,7 @@ class MusicRepository(context: Context) {
                             }
                         } else {
                             chromahub.rhythm.app.util.MediaUtils.getCachedEmbeddedAlbumArtUri(
-                                cacheDir = context.cacheDir,
+                                cacheDir = context.filesDir,
                                 songUri = songUri,
                                 lossless = losslessArtwork
                             )
@@ -561,13 +612,16 @@ class MusicRepository(context: Context) {
 
         val path = uri.path ?: return false
         val file = File(path)
-        val embeddedArtworkDir = File(context.cacheDir, "embedded_artwork")
+        val embeddedCacheDir = File(context.cacheDir, "embedded_artwork")
+        val embeddedFilesDir = File(context.filesDir, "embedded_artwork")
 
-        if (file.parentFile?.absolutePath == embeddedArtworkDir.absolutePath) {
+        if (file.parentFile?.absolutePath == embeddedCacheDir.absolutePath ||
+            file.parentFile?.absolutePath == embeddedFilesDir.absolutePath) {
             return file.name.startsWith("embedded_art_") || file.name.startsWith("embedded_art_lossless_")
         }
 
-        if (file.parentFile?.absolutePath == context.cacheDir.absolutePath) {
+        if (file.parentFile?.absolutePath == context.cacheDir.absolutePath ||
+            file.parentFile?.absolutePath == context.filesDir.absolutePath) {
             return file.name.startsWith("embedded_art_") || file.name.startsWith("embedded_art_lossless_")
         }
 
@@ -841,410 +895,34 @@ class MusicRepository(context: Context) {
         val whitelistedFolders = appSettings.whitelistedFolders.value
         val includeHiddenWhitelistedMedia = appSettings.includeHiddenWhitelistedMedia.value
         
-        Log.d(TAG, "Starting media scan on Android ${Build.VERSION.SDK_INT} (API ${Build.VERSION.SDK_INT})")
-        
-        val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-        } else {
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        }
-        
-        Log.d(TAG, "Using MediaStore URI: $collection")
-
-        val projection = mutableListOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.TITLE,
-            MediaStore.MediaColumns.DISPLAY_NAME,
-            MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.ALBUM,
-            MediaStore.Audio.Media.ALBUM_ID,
-            MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.TRACK,
-            MediaStore.Audio.Media.YEAR,
-            MediaStore.Audio.Media.DATE_ADDED,
-            MediaStore.Audio.Media.DATE_MODIFIED,
-            MediaStore.Audio.Media.SIZE,
-            MediaStore.Audio.Media.DATA // For path-based duplicate detection
-        ).apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                add(MediaStore.Audio.Media.GENRE)
-                add(MediaStore.Audio.Media.ALBUM_ARTIST)
-            }
-        }.toTypedArray()
-
-        // Include entries tagged as music or generic audio MIME types.
-        // Some OTG/USB indexed tracks are not marked with IS_MUSIC=1.
-        val selection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%') AND ${MediaStore.Audio.Media.DURATION} > 10000"
-        val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
-
-        try {
-            _scanProgress.value = ScanProgress(0, 0, ScanPhase.Songs, 0)
-            
-            Log.d(TAG, "Querying MediaStore with selection: $selection")
-            
-            context.contentResolver.query(
-                collection,
-                projection,
-                selection,
-                null,
-                sortOrder
-            )?.use { cursor ->
-                val count = cursor.count
-                Log.d(TAG, "MediaStore query successful: Found $count audio files to process")
-                _scanProgress.value = ScanProgress(0, count, ScanPhase.Songs, 0)
-                
-                if (count == 0) {
-                    Log.w(TAG, "No audio files found in MediaStore - this may indicate a permission or storage access issue on Android ${Build.VERSION.SDK_INT}")
-                    Log.w(TAG, "Please verify:")
-                    Log.w(TAG, "1. Storage permission is granted")
-                    Log.w(TAG, "2. Files are visible in MediaStore (try MediaScanner)")
-                    Log.w(TAG, "3. Files meet criteria: IS_MUSIC=1 AND DURATION>10000ms")
-                    // On Android 8-10, MediaStore indexing can be slow or incomplete on first query.
-                    // Retry once after a short delay to give MediaStore time to index.
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                        Log.d(TAG, "Android 8/9 detected: retrying MediaStore query after 3s delay")
-                        delay(3000L)
-                        val retryCount = context.contentResolver.query(
-                            collection, projection, selection, null, sortOrder
-                        )?.use { it.count } ?: 0
-                        if (retryCount == 0) {
-                            Log.w(TAG, "Retry also found 0 files — library is empty or MediaStore not yet indexed")
-                        } else {
-                            Log.d(TAG, "Retry found $retryCount files — re-running full scan")
-                            // Recursive call: MediaStore is now ready
-                            return@withContext loadSongs(
-                                forceRefresh = true,
-                                allowedFormats = allowedFormats,
-                                minimumBitrate = minimumBitrate,
-                                minimumDuration = minimumDuration
-                            )
-                        }
-                    }
-                    return@withContext emptyList()
-                }
-
-                // Pre-allocate list with known size for better performance
-                if (songs is ArrayList) {
-                    songs.ensureCapacity(count)
-                }
-                
-                // Cache all column indices once
-                val columnIndices = try {
-                    ColumnIndices(
-                        id = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID),
-                        title = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE),
-                        displayName = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME),
-                        artist = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST),
-                        album = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM),
-                        albumId = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID),
-                        duration = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION),
-                        track = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK),
-                        year = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR),
-                        dateAdded = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED),
-                        dateModified = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED),
-                        size = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE),
-                        // GENRE was added to MediaStore in API 30; use getColumnIndex (may be -1 on Android 8/9)
-                        genre = cursor.getColumnIndex(MediaStore.Audio.Media.GENRE),
-                        albumArtist = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ARTIST), // May be -1 on older devices
-                        discNumber = cursor.getColumnIndex("disc_number"),
-                        data = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-                    )
-                } catch (e: IllegalArgumentException) {
-                    Log.e(TAG, "Required column not found in MediaStore on Android ${Build.VERSION.SDK_INT}", e)
-                    _scanProgress.value = ScanProgress(0, 0, ScanPhase.Error, 0)
-                    return@withContext emptyList()
-                }
-
-                var processedCount = 0
-                val batchSize = 100
-                val pathColumnIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-                // Pre-loaded AppSettings is reused here to avoid repeated getInstance calls.
-                
-                while (cursor.moveToNext()) {
-                    try {
-                        val song = createSongFromCursor(cursor, columnIndices, appSettings)
-                        if (song != null) {
-                            // Duplicate detection by ID
-                            if (seenIds.contains(song.id)) {
-                                Log.d(TAG, "Skipping duplicate ID: ${song.id} - ${song.title}")
-                                duplicatesFound++
-                                processedCount++
-                                continue
-                            }
-                            
-                            // Duplicate detection by path
-                            if (pathColumnIndex >= 0) {
-                                val path = cursor.getString(pathColumnIndex)
-                                if (path != null) {
-                                    val normalizedPath = normalizeStoragePath(path)
-                                    if (seenPaths.contains(normalizedPath)) {
-                                        Log.d(TAG, "Skipping duplicate path: $path (normalized: $normalizedPath) - ${song.title}")
-                                        duplicatesFound++
-                                        processedCount++
-                                        continue
-                                    }
-                                    
-                                    // Format filtering
-                                    if (allowedFormats != null && path.isNotEmpty()) {
-                                        val extension = path.substringAfterLast('.', "").lowercase()
-                                        if (extension.isNotEmpty() && !allowedFormats.contains(extension)) {
-                                            filteredByFormat++
-                                            processedCount++
-                                            continue
-                                        }
-                                    }
-                                    
-                                    seenPaths.add(normalizedPath)
-                                }
-                            }
-
-                            // Duration filtering (quality check)
-                            
-                            // Duration filtering (quality check)
-                            if (minimumDuration > 0 && song.duration < minimumDuration) {
-                                filteredByQuality++
-                                processedCount++
-                                continue
-                            }
-                            
-                            // Note: Bitrate filtering is done later since we need to extract metadata
-                            // For now, we add the song and can filter in post-processing if needed
-                            
-                            seenIds.add(song.id)
-                            songs.add(song)
-                        }
-                        
-                        processedCount++
-                        
-                        // Update progress periodically (dynamic frequency based on count to avoid UI lag)
-                        val progressUpdateInterval = if (count > 500) 100 else if (count > 100) 50 else 10
-                        if (processedCount % progressUpdateInterval == 0 || processedCount == count) {
-                            _scanProgress.value = ScanProgress(processedCount, count, ScanPhase.Songs, 0)
-                        }
-                        
-                        // Yield control periodically to avoid blocking
-                        if (processedCount % batchSize == 0) {
-                            yield()
-                        }
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Error processing song at position ${cursor.position}", e)
-                        errors.add(cursor.position to e)
-                        processedCount++
-                        continue
-                    }
-                }
-                
-                val endTime = System.currentTimeMillis()
-                val duration = endTime - startTime
-
-                // In whitelist mode, also scan explicit folders to include hidden/.nomedia files
-                // that MediaStore may not index.
-                if (mediaScanMode == MediaScanMode.WHITELIST && includeHiddenWhitelistedMedia && whitelistedFolders.isNotEmpty()) {
-                    val whitelistSongs = loadSongsFromWhitelistedFolders(
-                        whitelistedFolders = whitelistedFolders,
-                        seenPaths = seenPaths,
-                        allowedFormats = allowedFormats,
-                        minimumDuration = minimumDuration,
-                        appSettings = appSettings
-                    )
-                    if (whitelistSongs.isNotEmpty()) {
-                        songs.addAll(whitelistSongs)
-                        Log.d(
-                            TAG,
-                            "Added ${whitelistSongs.size} songs from whitelisted folders (hidden/.nomedia support)"
-                        )
-                    }
-                }
-
-                Log.d(TAG, "Loaded ${songs.size} songs in ${duration}ms")
-                Log.d(TAG, "Filtering stats - Duplicates: $duplicatesFound, Format: $filteredByFormat, Quality: $filteredByQuality, Errors: ${errors.size}")
-                
-                // Persist to Room synchronously so other initialization tasks can safely use the DB
-                Log.d(TAG, "Persisting ${songs.size} songs to disk cache synchronously before proceeding")
-                _scanProgress.value = ScanProgress(songs.size, count, ScanPhase.SavingDb, 0)
-                saveSongsToRoom(songs, clearArtistCache = true, previousSongs = cachedSongs)
-                
-                // Update scan progress to complete
-                _scanProgress.value = ScanProgress(songs.size, count, ScanPhase.Complete, duration)
-                appSettings.setLastScanTimestamp(System.currentTimeMillis())
-                libraryScanPrefs.edit().putInt("last_scan_mediastore_count", count).apply()
-                
-                // Log errors if any
-                if (errors.isNotEmpty()) {
-                    Log.w(TAG, "Scan completed with ${errors.size} errors. First error: ${errors.first().second.message}")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Critical error during song scan", e)
-            _scanProgress.value = ScanProgress(0, 0, ScanPhase.Error, 0)
-            // Return partial results if available
-            return@withContext songs
-        } finally {
-            flushPendingDateAddedWrites()
-        }
-
-        return@withContext songs
+        Log.d(TAG, "Executing scan via MediaScanEngine")
+        val scanned = mediaScanEngine.performScan(
+            forceRefresh = shouldForceRefresh,
+            allowedFormats = allowedFormats,
+            minimumDuration = minimumDuration
+        )
+        cachedSongs = scanned
+        cacheTimestamp = System.currentTimeMillis()
+        return@withContext scanned
     }
-    
-    /**
-     * Perform incremental scan for newly added songs only
-     */
+
     suspend fun performIncrementalScan(
         lastScanTimestamp: Long,
         allowedFormats: Set<String>? = null,
         minimumBitrate: Int = 0,
         minimumDuration: Long = 0L
     ): List<Song> = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Starting incremental scan since timestamp: $lastScanTimestamp")
-        val startTime = System.currentTimeMillis()
-        val newSongs = mutableListOf<Song>()
-        var filteredByFormat = 0
-        var filteredByQuality = 0
-        
-        val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-        } else {
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        }
-
-        val projection = mutableListOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.TITLE,
-            MediaStore.MediaColumns.DISPLAY_NAME,
-            MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.ALBUM,
-            MediaStore.Audio.Media.ALBUM_ID,
-            MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.TRACK,
-            MediaStore.Audio.Media.YEAR,
-            MediaStore.Audio.Media.DATE_ADDED,
-            MediaStore.Audio.Media.DATE_MODIFIED,
-            MediaStore.Audio.Media.SIZE,
-            MediaStore.Audio.Media.DATA
-        ).apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                add(MediaStore.Audio.Media.GENRE)
-                add(MediaStore.Audio.Media.ALBUM_ARTIST)
-            }
-        }.toTypedArray()
-
-        // Only scan songs added after last scan. Keep OTG/USB compatibility by accepting audio MIME entries.
-        val selection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%') AND ${MediaStore.Audio.Media.DURATION} > 10000 AND ${MediaStore.Audio.Media.DATE_ADDED} > ?"
-        val selectionArgs = arrayOf((lastScanTimestamp / 1000).toString())
-        val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
-
-        try {
-            context.contentResolver.query(
-                collection,
-                projection,
-                selection,
-                selectionArgs,
-                sortOrder
-            )?.use { cursor ->
-                val count = cursor.count
-                Log.d(TAG, "Found $count new audio files")
-                _scanProgress.value = ScanProgress(0, count, ScanPhase.Incremental, 0)
-                
-                if (count == 0) {
-                    return@withContext emptyList()
-                }
-
-                val columnIndices = try {
-                    ColumnIndices(
-                        id = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID),
-                        title = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE),
-                        displayName = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME),
-                        artist = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST),
-                        album = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM),
-                        albumId = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID),
-                        duration = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION),
-                        track = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK),
-                        year = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR),
-                        dateAdded = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED),
-                        dateModified = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED),
-                        size = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE),
-                        // GENRE column is optional; not available on all Android versions (pre-API 30)
-                        genre = cursor.getColumnIndex(MediaStore.Audio.Media.GENRE),
-                        albumArtist = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ARTIST),
-                        discNumber = cursor.getColumnIndex("disc_number"),
-                        data = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-                    )
-                } catch (e: IllegalArgumentException) {
-                    Log.e(TAG, "Required column not found in MediaStore", e)
-                    return@withContext emptyList()
-                }
-
-                var processedCount = 0
-                val pathColumnIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-                // Pre-load AppSettings once to avoid per-song getInstance calls (performance fix for Android 8-10)
-                val appSettings = AppSettings.getInstance(context)
-                
-                while (cursor.moveToNext()) {
-                    try {
-                        val song = createSongFromCursor(cursor, columnIndices, appSettings)
-                        if (song != null) {
-                            // Format filtering
-                            if (allowedFormats != null && pathColumnIndex >= 0) {
-                                val path = cursor.getString(pathColumnIndex)
-                                if (path != null && path.isNotEmpty()) {
-                                    val extension = path.substringAfterLast('.', "").lowercase()
-                                    if (extension.isNotEmpty() && !allowedFormats.contains(extension)) {
-                                        filteredByFormat++
-                                        processedCount++
-                                        continue
-                                    }
-                                }
-                            }
-                            
-                            // Duration filtering
-                            if (minimumDuration > 0 && song.duration < minimumDuration) {
-                                filteredByQuality++
-                                processedCount++
-                                continue
-                            }
-                            
-                            newSongs.add(song)
-                        }
-                        processedCount++
-                        // Update progress periodically (dynamic frequency based on count to avoid UI lag)
-                        val progressUpdateInterval = if (count > 500) 100 else if (count > 100) 50 else 10
-                        if (processedCount % progressUpdateInterval == 0 || processedCount == count) {
-                            _scanProgress.value = ScanProgress(processedCount, count, ScanPhase.Incremental, 0)
-                        }
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Error processing new song at position ${cursor.position}", e)
-                    }
-                }
-                
-                val duration = System.currentTimeMillis() - startTime
-                Log.d(TAG, "Incremental scan complete: ${newSongs.size} new songs in ${duration}ms")
-                Log.d(TAG, "Filtering stats - Format: $filteredByFormat, Quality: $filteredByQuality")
-                _scanProgress.value = ScanProgress(newSongs.size, count, ScanPhase.Complete, duration)
-                
-                // Update raw MediaStore count cache after incremental scan
-                try {
-                    val countCursor = context.contentResolver.query(
-                        collection,
-                        arrayOf(MediaStore.Audio.Media._ID),
-                        "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%') AND ${MediaStore.Audio.Media.DURATION} > 10000",
-                        null,
-                        null
-                    )
-                    val mediaStoreCount = countCursor?.use { it.count } ?: 0
-                    libraryScanPrefs.edit().putInt("last_scan_mediastore_count", mediaStoreCount).apply()
-                    Log.d(TAG, "Saved incremental MediaStore count: $mediaStoreCount")
-                } catch (e: Exception) {
-                    Log.w(TAG, "Failed to save incremental MediaStore count", e)
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error during incremental scan", e)
-        } finally {
-            flushPendingDateAddedWrites()
-        }
-
-        return@withContext newSongs
+        Log.d(TAG, "Starting incremental scan via MediaScanEngine")
+        val songs = mediaScanEngine.performScan(
+            forceRefresh = false,
+            allowedFormats = allowedFormats,
+            minimumDuration = minimumDuration
+        )
+        cachedSongs = songs
+        cacheTimestamp = System.currentTimeMillis()
+        return@withContext songs
     }
+
     
     private data class ColumnIndices(
         val id: Int,
@@ -1317,8 +995,8 @@ class MusicRepository(context: Context) {
         }
 
         return extension in setOf(
-            "mp3", "m4a", "flac", "ogg", "opus", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka",
-            "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b"
+            "mp3", "m4a", "flac", "ogg", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka",
+            "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1"
         )
     }
 
@@ -1493,7 +1171,7 @@ class MusicRepository(context: Context) {
         if (filePath.isNullOrBlank()) return null
 
         val extension = filePath.substringAfterLast('.', "").lowercase()
-        if (extension !in setOf("opus", "ogg", "oga")) {
+        if (extension !in setOf("opus", "ogg", "oga", "opa")) {
             return null
         }
 
@@ -1966,7 +1644,8 @@ class MusicRepository(context: Context) {
                     it.contains("m4a", ignoreCase = true) -> "M4A"
                     it.contains("ac4", ignoreCase = true) -> "AC-4"
                     it.contains("ac3", ignoreCase = true) || it.contains("ac-3", ignoreCase = true) -> "AC-3"
-                    it.contains("eac3", ignoreCase = true) || it.contains("ec-3", ignoreCase = true) -> "E-AC-3"
+                    it.contains("eac3", ignoreCase = true) || it.contains("ec-3", ignoreCase = true) || it.contains("eac", ignoreCase = true) -> "E-AC-3"
+                    it.contains("mpegh", ignoreCase = true) || it.contains("mpeg-h", ignoreCase = true) || it.contains("mhm1", ignoreCase = true) -> "MPEG-H"
                     it.contains("truehd", ignoreCase = true) -> "TrueHD"
                     it.contains("atmos", ignoreCase = true) -> "Dolby Atmos"
                     it.contains("dts-hd", ignoreCase = true) || it.contains("dtshd", ignoreCase = true) -> "DTS-HD MA"
@@ -2320,7 +1999,10 @@ class MusicRepository(context: Context) {
                             id = albumId,
                             title = albumName,
                             artist = smartArtist,
-                            artworkUri = albumSongs.first().artworkUri,
+                            artworkUri = albumSongs.mapNotNull { it.artworkUri }.firstOrNull { uri ->
+                            val s = uri.toString()
+                            s.contains("embedded_art_") || s.startsWith("file://")
+                        } ?: albumSongs.firstOrNull()?.artworkUri,
                             year = year,
                             songs = sortedSongs,
                             numberOfSongs = sortedSongs.size,
@@ -2346,7 +2028,10 @@ class MusicRepository(context: Context) {
                         id = albumId,
                         title = albumName,
                         artist = albumArtist,
-                        artworkUri = songsWithName.first().artworkUri,
+                        artworkUri = songsWithName.mapNotNull { it.artworkUri }.firstOrNull { uri ->
+                            val s = uri.toString()
+                            s.contains("embedded_art_") || s.startsWith("file://")
+                        } ?: songsWithName.firstOrNull()?.artworkUri,
                         year = year,
                         songs = sortedSongs,
                         numberOfSongs = sortedSongs.size,
@@ -2374,16 +2059,40 @@ class MusicRepository(context: Context) {
         // Separator config affects relationship rows; refresh relationships/cache when it changes.
         refreshArtistRelationshipsIfNeeded(appSettings)
 
+        val currentSongs = loadSongs()
+        if (currentSongs.isEmpty()) {
+            Log.d(TAG, "No songs in library, returning empty artists list")
+            return@withContext emptyList()
+        }
+
         // Try to load from Room cache first
         val cachedArtists = loadArtistsFromRoom(groupByAlbumArtist)
         if (cachedArtists != null && cachedArtists.isNotEmpty()) {
-            Log.d(TAG, "Loaded ${cachedArtists.size} artists from Room cache (groupByAlbumArtist=$groupByAlbumArtist)")
-            return@withContext cachedArtists
+            val cachedTotalTracks = cachedArtists.sumOf { it.numberOfTracks }
+            // Validate that Room cache is reasonably complete compared to current songs
+            if (cachedTotalTracks >= currentSongs.size) {
+                Log.d(TAG, "Loaded ${cachedArtists.size} artists from Room cache (cached tracks=$cachedTotalTracks, songs=${currentSongs.size}, groupByAlbumArtist=$groupByAlbumArtist)")
+                return@withContext cachedArtists
+            } else {
+                Log.w(TAG, "Room cached artists stale/incomplete (cached tracks=$cachedTotalTracks vs songs=${currentSongs.size}), recomputing...")
+            }
         }
 
-        Log.d(TAG, "No cached artists found, computing from relationships (groupByAlbumArtist=$groupByAlbumArtist)")
-        // Cache miss - compute from relationships
-        val artists = loadArtistsFromRelationships(groupByAlbumArtist)
+        Log.d(TAG, "Recomputing artists for ${currentSongs.size} songs (groupByAlbumArtist=$groupByAlbumArtist)")
+        
+        // Refresh song_artists relationships for current songs
+        val relationshipSets = buildSongArtistRelationshipSets(currentSongs)
+        roomDb.withTransaction {
+            roomDb.songArtistDao().replaceAll(relationshipSets.albumArtistRelationships, true)
+            roomDb.songArtistDao().replaceAll(relationshipSets.trackArtistRelationships, false)
+        }
+
+        // Compute from relationships
+        var artists = loadArtistsFromRelationships(groupByAlbumArtist)
+        if (artists.isEmpty()) {
+            Log.w(TAG, "Relationships produced 0 artists, using direct computation from songs")
+            artists = buildArtistsFromSongsDirectly(currentSongs, groupByAlbumArtist)
+        }
 
         // Cache the result
         saveArtistsToRoom(artists, groupByAlbumArtist)
@@ -2425,6 +2134,12 @@ class MusicRepository(context: Context) {
     private suspend fun loadArtistsFromRelationships(groupByAlbumArtist: Boolean): List<Artist> = withContext(Dispatchers.IO) {
         try {
             val aggregatedData = roomDb.songArtistDao().getAggregatedArtists(groupByAlbumArtist)
+            if (aggregatedData.isEmpty()) {
+                val currentSongs = loadSongs()
+                if (currentSongs.isNotEmpty()) {
+                    return@withContext buildArtistsFromSongsDirectly(currentSongs, groupByAlbumArtist)
+                }
+            }
             val artists = mutableListOf<Artist>()
 
             for (data in aggregatedData) {
@@ -2437,16 +2152,64 @@ class MusicRepository(context: Context) {
                 artists.add(artist)
             }
 
-            artists.sortedBy { it.name.lowercase() }
+            artists.sortedBy { it.name.lowercase(Locale.ROOT) }
         } catch (e: Exception) {
             Log.w(TAG, "Failed to load artists from relationships, falling back to computation", e)
-            // Fallback to old method
-            if (groupByAlbumArtist) {
+            val currentSongs = loadSongs()
+            if (currentSongs.isNotEmpty()) {
+                buildArtistsFromSongsDirectly(currentSongs, groupByAlbumArtist)
+            } else if (groupByAlbumArtist) {
                 loadArtistsGroupedByAlbumArtist()
             } else {
                 loadArtistsFromMediaStore()
             }
         }
+    }
+
+    private fun buildArtistsFromSongsDirectly(songs: List<Song>, groupByAlbumArtist: Boolean): List<Artist> {
+        val appSettings = AppSettings.getInstance(context)
+        val artistSeparatorEnabled = appSettings.artistSeparatorEnabled.value
+        val charDelimiters: List<String> = if (artistSeparatorEnabled) {
+            appSettings.artistSeparatorDelimiters.value.toList().map { it.toString() }
+        } else {
+            emptyList()
+        }
+
+        val artistTrackCounts = mutableMapOf<String, Int>()
+        val artistAlbums = mutableMapOf<String, MutableSet<String>>()
+
+        for (song in songs) {
+            val rawArtist = if (groupByAlbumArtist) {
+                val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
+                if (explicitAlbumArtist.isNotBlank() && !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)) {
+                    explicitAlbumArtist
+                } else {
+                    song.artist
+                }
+            } else {
+                song.artist
+            }
+
+            val artistNames = splitArtistNames(rawArtist, charDelimiters)
+            val albumName = song.album.takeIf { it.isNotBlank() && !it.equals("Unknown Album", ignoreCase = true) }
+
+            for (artistName in artistNames) {
+                artistTrackCounts[artistName] = (artistTrackCounts[artistName] ?: 0) + 1
+                if (albumName != null) {
+                    artistAlbums.getOrPut(artistName) { mutableSetOf() }.add(albumName)
+                }
+            }
+        }
+
+        return artistTrackCounts.map { (artistName, trackCount) ->
+            val albumCount = artistAlbums[artistName]?.size ?: 0
+            Artist(
+                id = if (groupByAlbumArtist) "album_artist_${artistName.hashCode()}" else "track_artist_${artistName.hashCode()}",
+                name = artistName,
+                numberOfAlbums = albumCount,
+                numberOfTracks = trackCount
+            )
+        }.sortedBy { it.name.lowercase(Locale.ROOT) }
     }
 
     /**
@@ -2815,6 +2578,11 @@ class MusicRepository(context: Context) {
 
             // NetworkClient will handle API key dynamically (user-provided or fallback to default)
 
+            val artistArtworkSource = appSettings.artistArtworkSource.value
+            if (artistArtworkSource == chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED) {
+                return@withContext artists
+            }
+
             for (artist in artists) {
                 try {
                     Log.d(TAG, "Processing artist: ${artist.name}")
@@ -2836,26 +2604,33 @@ class MusicRepository(context: Context) {
                         continue
                     }
 
-                    // Check local storage for artist image
-                    val localImage = findLocalArtistImage(artist.name)
-                    if (localImage != null) {
-                        Log.d(TAG, "Using local image for artist: ${artist.name}")
-                        artistImageCache[artist.name] = localImage
-                        updatedArtists.add(artist.copy(artworkUri = localImage))
-                        continue
+                    if (artistArtworkSource != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY) {
+                        // Check local storage for artist image
+                        val localImage = findLocalArtistImage(artist.name)
+                        if (localImage != null) {
+                            Log.d(TAG, "Using local image for artist: ${artist.name}")
+                            artistImageCache[artist.name] = localImage
+                            updatedArtists.add(artist.copy(artworkUri = localImage))
+                            continue
+                        }
+
+                        // Check music-library folders for artist.jpg / band.jpg style images.
+                        val localFolderImage = findArtistImageInLibraryFolders(
+                            artistName = artist.name,
+                            songs = allSongsForLocalLookup,
+                            groupByAlbumArtist = groupByAlbumArtist,
+                            preloadedCharDelimiters = preloadedCharDelimiters
+                        )
+                        if (localFolderImage != null) {
+                            Log.d(TAG, "Using folder image for artist: ${artist.name} -> $localFolderImage")
+                            artistImageCache[artist.name] = localFolderImage
+                            updatedArtists.add(artist.copy(artworkUri = localFolderImage))
+                            continue
+                        }
                     }
 
-                    // Check music-library folders for artist.jpg / band.jpg style images.
-                    val localFolderImage = findArtistImageInLibraryFolders(
-                        artistName = artist.name,
-                        songs = allSongsForLocalLookup,
-                        groupByAlbumArtist = groupByAlbumArtist,
-                        preloadedCharDelimiters = preloadedCharDelimiters
-                    )
-                    if (localFolderImage != null) {
-                        Log.d(TAG, "Using folder image for artist: ${artist.name} -> $localFolderImage")
-                        artistImageCache[artist.name] = localFolderImage
-                        updatedArtists.add(artist.copy(artworkUri = localFolderImage))
+                    if (artistArtworkSource == chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.LOCAL_ONLY) {
+                        updatedArtists.add(artist)
                         continue
                     }
 
@@ -3165,7 +2940,8 @@ class MusicRepository(context: Context) {
                     // For OGG/Opus files, try direct Vorbis comment parsing
                     if (filePath?.endsWith(".ogg", ignoreCase = true) == true || 
                         filePath?.endsWith(".oga", ignoreCase = true) == true ||
-                        filePath?.endsWith(".opus", ignoreCase = true) == true) {
+                        filePath?.endsWith(".opus", ignoreCase = true) == true ||
+                        filePath?.endsWith(".opa", ignoreCase = true) == true) {
                         Log.d(TAG, "===== Detected OGG/Opus file, trying OGG extraction =====")
                         return@use extractLyricsFromOGG(filePath)
                     }
@@ -5771,43 +5547,58 @@ class MusicRepository(context: Context) {
      */
     suspend fun extractEmbeddedArtworkForSongs(
         songs: List<Song>,
-        lossless: Boolean = false
+        lossless: Boolean = false,
+        onBatchUpdated: ((List<Song>) -> Unit)? = null
     ): List<Song> = withContext(Dispatchers.IO) {
+        if (songs.isEmpty()) return@withContext emptyList()
         val updatedSongs = songs.toMutableList()
-        var anyUpdated = false
-        for (i in updatedSongs.indices) {
-            val song = updatedSongs[i]
-            
-            val hasValidArtwork = song.artworkUri?.let { uri ->
-                if (isEmbeddedArtworkCacheUri(uri)) {
-                    val path = uri.path ?: return@let false
-                    val fileName = File(path).name
-                    val isLosslessFile = fileName.startsWith("embedded_art_lossless_")
-                    File(path).exists() && isLosslessFile == lossless
-                } else {
-                    false
-                }
-            } ?: false
-            
-            if (hasValidArtwork) {
-                continue
-            }
+        val songsToProcess = songs.mapIndexed { index, song -> index to song }.filter { (_, song) ->
+            val uri = song.artworkUri ?: return@filter true
+            if (isEmbeddedArtworkCacheUri(uri)) {
+                val path = uri.path ?: return@filter true
+                val fileName = File(path).name
+                val isLosslessFile = fileName.startsWith("embedded_art_lossless_")
+                !(File(path).exists() && isLosslessFile == lossless)
+            } else true
+        }
 
-            try {
-                val embeddedUri = chromahub.rhythm.app.util.MediaUtils.extractEmbeddedAlbumArt(
-                    context, song.uri, context.cacheDir, lossless
-                )
-                if (embeddedUri != null && embeddedUri != song.artworkUri) {
-                    updatedSongs[i] = song.copy(artworkUri = embeddedUri)
-                    anyUpdated = true
+        if (songsToProcess.isEmpty()) return@withContext songs
+
+        val batchSize = 25
+        songsToProcess.chunked(batchSize).forEach { batch ->
+            val changedEntities = mutableListOf<SongEntity>()
+            val batchChangedSongs = mutableListOf<Song>()
+
+            val results = batch.map { (index, song) ->
+                async(Dispatchers.IO) {
+                    try {
+                        val embeddedUri = chromahub.rhythm.app.util.MediaUtils.extractEmbeddedAlbumArt(
+                            context, song.uri, context.filesDir, lossless
+                        )
+                        if (embeddedUri != null && embeddedUri != song.artworkUri) {
+                            val updatedSong = song.copy(artworkUri = embeddedUri)
+                            index to updatedSong
+                        } else null
+                    } catch (e: Exception) {
+                        null
+                    }
                 }
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to extract embedded art for ${song.title}", e)
+            }.awaitAll().filterNotNull()
+
+            if (results.isNotEmpty()) {
+                results.forEach { (index, updatedSong) ->
+                    updatedSongs[index] = updatedSong
+                    batchChangedSongs.add(updatedSong)
+                    changedEntities.add(updatedSong.toEntity())
+                }
+                roomDb.songDao().upsertAll(changedEntities)
+                cachedSongs = updatedSongs
+                onBatchUpdated?.invoke(batchChangedSongs)
             }
+            yield()
         }
-        if (anyUpdated) {
-            cachedSongs = updatedSongs
-        }
+
+        cachedSongs = updatedSongs
         updatedSongs
     }
 
@@ -5819,80 +5610,63 @@ class MusicRepository(context: Context) {
         val updatedSongs = mutableListOf<Song>()
 
         for (song in songs) {
-            // Only fetch if song doesn't have artwork already
-            if (song.artworkUri != null) {
-                updatedSongs.add(song)
-                continue
-            }
-
-            // Check if album has artwork - if yes, we don't need track-specific artwork
-            val album = loadAlbums().findAlbumForSong(song)
-            if (album?.artworkUri != null) {
-                // Album has artwork, no need for track-specific image
-                updatedSongs.add(song)
-                continue
-            }
-
             val cacheKey = "${song.artist}:${song.title}"
             
-            // Check cache first
-            val cachedUri = albumImageCache[cacheKey] // Reuse album cache for tracks
-            if (cachedUri != null) {
-                updatedSongs.add(song.copy(artworkUri = cachedUri))
+            // Skip songs with empty or "Unknown" title
+            if (song.title.isBlank() || song.title.equals("Unknown", ignoreCase = true)) {
+                updatedSongs.add(song)
                 continue
             }
 
-            try {
-                // Skip songs with empty or "Unknown" artist/title
-                if (song.artist.isBlank() || song.title.isBlank() ||
-                    song.artist.equals("Unknown", ignoreCase = true) ||
-                    song.title.equals("Unknown", ignoreCase = true)
-                ) {
-                    updatedSongs.add(song)
-                    continue
-                }
+            var fetchedUri: Uri? = null
 
-                if (!NetworkClient.isYTMusicApiEnabled() || ytmusicApiService == null) {
-                    Log.d(TAG, "YTMusic API is disabled or unavailable, skipping track artwork for: ${song.title}")
-                    updatedSongs.add(song)
-                    continue
-                }
-
-                Log.d(TAG, "Searching YTMusic for track: ${song.title} by ${song.artist}")
-
-                // Add delay to avoid rate limiting
-                delay(200)
-
-                // Create search request for song/track
-                val searchQuery = "${song.title} ${song.artist}"
-                val searchRequest = YTMusicSearchRequest(
-                    context = YTMusicContext(YTMusicClient()),
-                    query = searchQuery,
-                    params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D" // Song search filter
-                )
-
-                val searchResponse = ytmusicApiService.search(request = searchRequest)
-                if (searchResponse.isSuccessful) {
-                    // For tracks, we can extract image from the first result
-                    val imageUrl = searchResponse.body()?.extractAlbumImageUrl() // Tracks use same thumbnail structure
-                    if (!imageUrl.isNullOrEmpty()) {
-                        val imageUri = Uri.parse(imageUrl)
-                        albumImageCache[cacheKey] = imageUri // Cache for future use
-                        updatedSongs.add(song.copy(artworkUri = imageUri))
-                        Log.d(TAG, "Found YTMusic track image for ${song.title}: $imageUrl")
-                        continue
+            // 1. Try Deezer search first (Deezer returns high resolution album/track artwork)
+            if (NetworkClient.isDeezerApiEnabled() && deezerApiService != null) {
+                try {
+                    val query = if (song.artist.isNotBlank() && !song.artist.equals("Unknown", ignoreCase = true)) {
+                        "${song.title} ${song.artist}"
+                    } else song.title
+                    val response = deezerApiService.searchAlbums(query)
+                    val bestMatch = findBestAlbumMatch(response.data, song.album.ifBlank { song.title }, song.artist)
+                    val imgUrl = bestMatch?.coverXl ?: bestMatch?.coverBig ?: bestMatch?.coverMedium ?: response.data.firstOrNull()?.coverXl ?: response.data.firstOrNull()?.coverBig
+                    if (!imgUrl.isNullOrEmpty() && imgUrl.startsWith("http")) {
+                        fetchedUri = Uri.parse(imgUrl)
+                        Log.d(TAG, "Found Deezer artwork for track: ${song.title}, URL: $imgUrl")
                     }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Deezer track search failed for ${song.title}: ${e.message}")
                 }
+            }
 
-                Log.d(TAG, "No YTMusic image found for track: ${song.title}")
-                updatedSongs.add(song)
+            // 2. YTMusic fallback if Deezer didn't return an image
+            if (fetchedUri == null && NetworkClient.isYTMusicApiEnabled() && ytmusicApiService != null) {
+                try {
+                    val query = "${song.title} ${song.artist}".trim()
+                    val searchRequest = YTMusicSearchRequest(
+                        context = YTMusicContext(YTMusicClient()),
+                        query = query,
+                        params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D"
+                    )
+                    val searchResponse = ytmusicApiService.search(request = searchRequest)
+                    if (searchResponse.isSuccessful) {
+                        val imageUrl = searchResponse.body()?.extractAlbumImageUrl()
+                        if (!imageUrl.isNullOrEmpty()) {
+                            fetchedUri = Uri.parse(imageUrl)
+                            Log.d(TAG, "Found YTMusic track image for ${song.title}: $imageUrl")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "YTMusic track search failed for ${song.title}: ${e.message}")
+                }
+            }
 
-            } catch (e: Exception) {
-                Log.w(TAG, "YTMusic track image fetch failed for ${song.title}: ${e.message}")
+            if (fetchedUri != null) {
+                albumImageCache[cacheKey] = fetchedUri
+                updatedSongs.add(song.copy(artworkUri = fetchedUri))
+            } else {
                 updatedSongs.add(song)
             }
         }
-
         updatedSongs
     }
 
@@ -6134,6 +5908,25 @@ class MusicRepository(context: Context) {
     }
     
     /**
+     * Deletes a song from local database and invalidates local caches.
+     */
+    suspend fun deleteSong(song: Song) {
+        withContext(Dispatchers.IO) {
+            try {
+                roomDb.withTransaction {
+                    songDao.deleteByIds(listOf(song.id))
+                    roomDb.songArtistDao().deleteBySongId(song.id)
+                    roomDb.playlistDao().deleteSongFromAllPlaylists(song.id)
+                }
+                clearInMemoryCaches()
+                Log.d(TAG, "Successfully deleted song ${song.title} from database")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting song ${song.title} from database", e)
+            }
+        }
+    }
+
+    /**
      * Clears all in-memory caches
      */
     fun clearInMemoryCaches() {
@@ -6196,9 +5989,10 @@ class MusicRepository(context: Context) {
             // Compare the current MediaStore count with the MediaStore count at the time of the last scan
             val lastScanCount = libraryScanPrefs.getInt("last_scan_mediastore_count", -1)
             if (lastScanCount == -1) {
-                // Fallback: if we do not have the stored count, check against cachedCount as a backup
-                if (mediaStoreCount != cachedCount) {
-                    Log.d(TAG, "Staleness check: MediaStore count ($mediaStoreCount) != cached count ($cachedCount) (no lastScanCount)")
+                // If we do not have the stored count, persist current mediaStoreCount to avoid repeating fallback
+                libraryScanPrefs.edit().putInt("last_scan_mediastore_count", mediaStoreCount).apply()
+                if (cachedCount <= 0) {
+                    Log.d(TAG, "Staleness check: no lastScanCount and cached count is 0")
                     return true
                 }
             } else if (mediaStoreCount != lastScanCount) {
@@ -6570,8 +6364,9 @@ class MusicRepository(context: Context) {
                 }
             }
 
+            val updatedMap = updatedSongs.associateBy { it.id }
             val finalSongs = songs.map { originalSong ->
-                updatedSongs.find { it.id == originalSong.id } ?: originalSong
+                updatedMap[originalSong.id] ?: originalSong
             }
 
             val genreCount = finalSongs.count { song -> 
@@ -6594,77 +6389,63 @@ class MusicRepository(context: Context) {
     suspend fun extractAudioMetadataInBackground(
         songs: List<Song>,
         onProgress: ((Int, Int) -> Unit)? = null,
+        onBatchComplete: ((List<Song>) -> Unit)? = null,
         onComplete: ((List<Song>) -> Unit)? = null
     ) = withContext(Dispatchers.IO) {
         val songsWithoutMetadata = songs.filter { 
             it.bitrate == null || it.sampleRate == null || it.channels == null || it.codec == null 
         }
         
-        Log.d(TAG, "Songs total: ${songs.size}, songs without metadata: ${songsWithoutMetadata.size}")
-        if (songsWithoutMetadata.isNotEmpty()) {
-            Log.d(TAG, "Sample songs without metadata: ${songsWithoutMetadata.take(3).map { "${it.title} (bitrate=${it.bitrate}, sampleRate=${it.sampleRate}, channels=${it.channels}, codec=${it.codec})" }}")
-        }
-        
         if (songsWithoutMetadata.isEmpty()) {
-            Log.d(TAG, "All songs already have audio metadata, skipping background extraction")
             onComplete?.invoke(songs)
             return@withContext
         }
 
-        Log.d(TAG, "Starting background audio metadata extraction for ${songsWithoutMetadata.size} songs")
+        Log.d(TAG, "Starting fast parallel audio metadata extraction for ${songsWithoutMetadata.size} songs")
         val updatedSongs = mutableListOf<Song>()
-        val batchSize = 20 // Smaller batches for metadata extraction (more expensive operation)
+        val batchSize = 25
         var processedCount = 0
 
         songsWithoutMetadata.chunked(batchSize).forEach { batch ->
             val batchStartTime = System.currentTimeMillis()
 
-            batch.forEach { song ->
-                try {
-                    // Use AudioFormatDetector for more accurate metadata extraction
-                    val formatInfo = AudioFormatDetector.detectFormat(context, song.uri, song)
-                    
-                    Log.d(TAG, "Extracted metadata for ${song.title}: codec=${formatInfo.codec}, bitrate=${formatInfo.bitrateKbps}kbps, sampleRate=${formatInfo.sampleRateHz}Hz, channels=${formatInfo.channelCount}, bitDepth=${formatInfo.bitDepth}")
-                    
-                    val updatedSong = song.copy(
-                        bitrate = if (formatInfo.bitrateKbps > 0) formatInfo.bitrateKbps * 1000 else -1,
-                        sampleRate = if (formatInfo.sampleRateHz > 0) formatInfo.sampleRateHz else -1,
-                        channels = if (formatInfo.channelCount > 0) formatInfo.channelCount else -1,
-                        codec = if (formatInfo.codec != "Unknown") formatInfo.codec else "-"
-                    )
-                    updatedSongs.add(updatedSong)
-                    
-                    processedCount++
-                    onProgress?.invoke(processedCount, songsWithoutMetadata.size)
-
-                } catch (e: Exception) {
-                    Log.w(TAG, "Error extracting audio metadata for song ${song.title}", e)
-                    // Save sentinels so we don't infinitely retry failed songs in the background on next startup
-                    val failedSong = song.copy(bitrate = -1, sampleRate = -1, channels = -1, codec = "-")
-                    updatedSongs.add(failedSong) // Assign sentinels
-                    processedCount++
-                    onProgress?.invoke(processedCount, songsWithoutMetadata.size)
+            val batchResults = batch.map { song ->
+                async(Dispatchers.IO) {
+                    try {
+                        val formatInfo = AudioFormatDetector.detectFormat(context, song.uri, song)
+                        song.copy(
+                            bitrate = if (formatInfo.bitrateKbps > 0) formatInfo.bitrateKbps * 1000 else -1,
+                            sampleRate = if (formatInfo.sampleRateHz > 0) formatInfo.sampleRateHz else -1,
+                            channels = if (formatInfo.channelCount > 0) formatInfo.channelCount else -1,
+                            codec = if (formatInfo.codec != "Unknown") formatInfo.codec else "-"
+                        )
+                    } catch (e: Exception) {
+                        song.copy(bitrate = -1, sampleRate = -1, channels = -1, codec = "-")
+                    }
                 }
-            }
+            }.awaitAll()
 
-            val batchEndTime = System.currentTimeMillis()
-            val batchDuration = batchEndTime - batchStartTime
-            Log.d(TAG, "Processed metadata batch of ${batch.size} songs in ${batchDuration}ms")
+            updatedSongs.addAll(batchResults)
+            processedCount += batchResults.size
+            onProgress?.invoke(processedCount, songsWithoutMetadata.size)
 
-            // Yield control to allow other coroutines to run
+            val batchEntities = batchResults.map { it.toEntity() }
+
+            // Immediately persist batch metadata to Room DB & update memory cache
+            roomDb.songDao().upsertAll(batchEntities)
+            onBatchComplete?.invoke(batchResults)
+
+            val batchDuration = System.currentTimeMillis() - batchStartTime
+            Log.d(TAG, "Processed and persisted metadata batch of ${batch.size} songs in ${batchDuration}ms")
             yield()
-
-            // Small delay between batches to prevent overwhelming the system
-            if (batchDuration < 200) { // If batch processed quickly, add a small delay
-                delay(100)
-            }
         }
 
+        val updatedMap = updatedSongs.associateBy { it.id }
         val finalSongs = songs.map { originalSong ->
-            updatedSongs.find { it.id == originalSong.id } ?: originalSong
+            updatedMap[originalSong.id] ?: originalSong
         }
 
-        Log.d(TAG, "Background audio metadata extraction complete. Updated ${updatedSongs.size} songs")
+        cachedSongs = finalSongs
         onComplete?.invoke(finalSongs)
     }
     

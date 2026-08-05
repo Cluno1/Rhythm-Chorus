@@ -997,59 +997,6 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
     }
 }
 
-
-
-@Composable
-fun ColorPreviewItem(
-    label: String,
-    color: Color,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .width(80.dp)
-            .clickable(onClick = onClick)
-    ) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = color,
-            modifier = Modifier
-                .size(48.dp)
-                .border(
-                    width = if (isSelected) 3.dp else 1.dp,
-                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                    shape = RoundedCornerShape(16.dp)
-                )
-        ) {
-            if (isSelected) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.Check,
-                        contentDescription = stringResource(R.string.streaming_selected),
-                        tint = if (color.luminance() > 0.5f) Color.Black else Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-        )
-    }
-}
-
 @Composable
 private fun getLocalizedShapeName(id: String): String {
     val resId = when (id) {

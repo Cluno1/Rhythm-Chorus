@@ -51,6 +51,7 @@ fun RhythmSongMenuContent(
     onGoToAlbum: (() -> Unit)? = null,
     onGoToArtist: (() -> Unit)? = null,
     onAddToBlacklist: (() -> Unit)? = null,
+    onDeleteSong: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -194,6 +195,17 @@ fun RhythmSongMenuContent(
                 )
             )
         }
+        onDeleteSong?.let { action ->
+            add(
+                SongMenuItem(
+                    title = context.getString(R.string.action_delete_song),
+                    icon = RhythmIcons.Delete,
+                    iconBgColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f),
+                    iconTint = MaterialTheme.colorScheme.onErrorContainer,
+                    onClick = action
+                )
+            )
+        }
     }
 
     if (menuItems.isNotEmpty()) {
@@ -270,7 +282,7 @@ fun RhythmSongMenuContent(
                             text = item.title,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
-                            color = if (item.icon == RhythmIcons.Block) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                            color = if (item.icon == RhythmIcons.Block || item.icon == RhythmIcons.Delete) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f)
                         )
                     }

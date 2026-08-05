@@ -187,7 +187,7 @@ fun AboutScreen(
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
-        Toast.makeText(context, "$label copied!", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.about_copied_format, label), Toast.LENGTH_SHORT).show()
     }
 
     CollapsibleHeaderScreen(
@@ -340,11 +340,11 @@ fun AboutScreen(
                         icon = RhythmIcons.Info,
                         title = { Text(context.getString(R.string.settings_about_version_label)) },
                         description = { Text(BuildConfig.VERSION_NAME) },
-                        onClick = { copyToClipboard("Version", BuildConfig.VERSION_NAME) },
+                        onClick = { copyToClipboard(context.getString(R.string.settings_about_version_label), BuildConfig.VERSION_NAME) },
                         trailingContent = {
                             Icon(
                                 imageVector = MaterialSymbolIcon("content_copy"),
-                                contentDescription = "Copy",
+                                contentDescription = context.getString(R.string.cd_copy),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                 modifier = Modifier.size(18.dp)
                             )
@@ -354,11 +354,11 @@ fun AboutScreen(
                         icon = MaterialSymbolIcon("build"),
                         title = { Text(context.getString(R.string.settings_about_build)) },
                         description = { Text("${BuildConfig.VERSION_CODE} • $buildVariant") },
-                        onClick = { copyToClipboard("Build Info", "${BuildConfig.VERSION_CODE} • $buildVariant") },
+                        onClick = { copyToClipboard(context.getString(R.string.settings_about_build), "${BuildConfig.VERSION_CODE} • $buildVariant") },
                         trailingContent = {
                             Icon(
                                 imageVector = MaterialSymbolIcon("content_copy"),
-                                contentDescription = "Copy",
+                                contentDescription = context.getString(R.string.cd_copy),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                 modifier = Modifier.size(18.dp)
                             )
@@ -368,11 +368,11 @@ fun AboutScreen(
                         icon = MaterialSymbolIcon("developer_mode"),
                         title = { Text(context.getString(R.string.settings_about_target_sdk)) },
                         description = { Text(appInfo.targetSdkVersion.toString()) },
-                        onClick = { copyToClipboard("Target SDK", appInfo.targetSdkVersion.toString()) },
+                        onClick = { copyToClipboard(context.getString(R.string.settings_about_target_sdk), appInfo.targetSdkVersion.toString()) },
                         trailingContent = {
                             Icon(
                                 imageVector = MaterialSymbolIcon("content_copy"),
-                                contentDescription = "Copy",
+                                contentDescription = context.getString(R.string.cd_copy),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                 modifier = Modifier.size(18.dp)
                             )
@@ -382,11 +382,11 @@ fun AboutScreen(
                         icon = MaterialSymbolIcon("memory"),
                         title = { Text(context.getString(R.string.settings_about_architecture)) },
                         description = { Text(detectedAbis) },
-                        onClick = { copyToClipboard("Architecture", detectedAbis) },
+                        onClick = { copyToClipboard(context.getString(R.string.settings_about_architecture), detectedAbis) },
                         trailingContent = {
                             Icon(
                                 imageVector = MaterialSymbolIcon("content_copy"),
-                                contentDescription = "Copy",
+                                contentDescription = context.getString(R.string.cd_copy),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                 modifier = Modifier.size(18.dp)
                             )
@@ -394,8 +394,8 @@ fun AboutScreen(
                     ),
                     Material3SettingsItem(
                         icon = MaterialSymbolIcon("content_copy"),
-                        title = { Text("Copy System Info") },
-                        description = { Text("Copy all version and hardware details to clipboard") },
+                        title = { Text(context.getString(R.string.about_copy_system_info)) },
+                        description = { Text(context.getString(R.string.about_copy_system_info_desc)) },
                         onClick = {
                             val allInfo = """
                                 App: Rhythm
@@ -521,14 +521,6 @@ fun AboutScreen(
 
                 val collaboratorItems = remember(context, haptics) {
                     listOf(
-                        createCommunityMemberItem(
-                            context = context,
-                            haptics = haptics,
-                            name = "Christian",
-                            role = "Guide & Booming Music's Lead Dev",
-                            githubUsername = "mardous",
-                            avatarUrl = "https://github.com/mardous.png"
-                        ),
                         createCommunityMemberItem(
                             context = context,
                             haptics = haptics,

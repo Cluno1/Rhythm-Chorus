@@ -141,6 +141,29 @@ import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
 import chromahub.rhythm.app.features.streaming.presentation.components.bottomsheets.NearbyServerDiscoverySheet
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
+import chromahub.rhythm.app.shared.presentation.screens.settings.ColorSchemeOption
+import chromahub.rhythm.app.shared.presentation.screens.settings.ColorSchemePaletteRow
+import chromahub.rhythm.app.shared.presentation.screens.settings.ActionPickerSheet
+import chromahub.rhythm.app.shared.presentation.screens.settings.ColorSource
+import chromahub.rhythm.app.shared.presentation.screens.settings.ColorSourceDialog
+import chromahub.rhythm.app.shared.presentation.screens.settings.FontOption
+import chromahub.rhythm.app.shared.presentation.screens.settings.FontSelectionDialog
+import chromahub.rhythm.app.shared.presentation.screens.settings.FontSource
+import chromahub.rhythm.app.shared.presentation.screens.settings.MiniPlayerArtworkSizeSheet
+import chromahub.rhythm.app.shared.presentation.screens.settings.WidgetCornerRadiusSheet
+import chromahub.rhythm.app.shared.presentation.screens.settings.WidgetThemeSheet
+import chromahub.rhythm.app.shared.presentation.screens.settings.MiniPlayerCornerRadiusSheet
+import chromahub.rhythm.app.shared.presentation.screens.settings.PickerOption
+import chromahub.rhythm.app.shared.presentation.screens.settings.PlayerTextAlignmentBottomSheet
+import chromahub.rhythm.app.shared.presentation.screens.settings.ProgressStyleBottomSheet
+import chromahub.rhythm.app.shared.presentation.screens.settings.ThumbStyleBottomSheet
+import chromahub.rhythm.app.shared.presentation.screens.settings.cookieActionIcon
+import chromahub.rhythm.app.shared.presentation.screens.settings.cookieActionLabel
+import chromahub.rhythm.app.shared.presentation.screens.settings.statsGemIcon
+import chromahub.rhythm.app.shared.presentation.screens.settings.statsGemLabel
+import chromahub.rhythm.app.shared.presentation.screens.settings.statsRangeIcon
+import chromahub.rhythm.app.shared.presentation.screens.settings.statsRangeLabel
+import chromahub.rhythm.app.shared.presentation.screens.settings.updateAllWidgets
 import chromahub.rhythm.app.shared.presentation.viewmodel.ThemeViewModel
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.LyricallySourcesBottomSheet
 import chromahub.rhythm.app.shared.presentation.screens.settings.CanvasNetworkModeDialog
@@ -170,6 +193,7 @@ import chromahub.rhythm.app.shared.presentation.components.common.rememberExpres
 import androidx.compose.ui.draw.shadow
 import chromahub.rhythm.app.shared.presentation.components.common.StyledProgressBar
 import chromahub.rhythm.app.shared.presentation.components.common.ProgressStyle
+import chromahub.rhythm.app.shared.presentation.components.common.ThumbStyle
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
@@ -2777,6 +2801,8 @@ fun EnhancedBackupRestoreContent(
     // State for backup settings
     val autoBackupEnabled by appSettings.autoBackupEnabled.collectAsState()
     val lastBackupTimestamp by appSettings.lastBackupTimestamp.collectAsState()
+    val isLibraryRefreshing by musicViewModel.isLibraryRefreshing.collectAsState()
+    val restoreResult by musicViewModel.restoreResult.collectAsState()
 
     // Local UI state
     var isCreatingBackup by remember { mutableStateOf(false) }
@@ -2798,6 +2824,32 @@ fun EnhancedBackupRestoreContent(
         Runtime.getRuntime().exit(0)
     }
 
+    LaunchedEffect(restoreResult) {
+        when (val result = restoreResult) {
+            is MusicViewModel.RestoreResult.Queued -> {
+                Toast.makeText(context, "Media scan is in progress. Restore has been queued and will apply automatically when the scan finishes.", Toast.LENGTH_LONG).show()
+                musicViewModel.clearRestoreResult()
+            }
+            is MusicViewModel.RestoreResult.Success -> {
+                backupStatusIsError = false
+                backupStatusMessage = if (result.wasQueued) {
+                    "Queued restore completed successfully! Please restart the app."
+                } else {
+                    context.getString(R.string.backup_restored_success)
+                }
+                showRestartHint = true
+                musicViewModel.clearRestoreResult()
+            }
+            is MusicViewModel.RestoreResult.Failure -> {
+                backupStatusIsError = true
+                backupStatusMessage = result.errorMessage
+                showRestartHint = false
+                musicViewModel.clearRestoreResult()
+            }
+            else -> {}
+        }
+    }
+
     fun handleRestorePayload(backupJson: String?) {
         if (backupJson.isNullOrEmpty()) {
             backupStatusIsError = true
@@ -2806,16 +2858,7 @@ fun EnhancedBackupRestoreContent(
             return
         }
 
-        if (appSettings.restoreFromBackup(backupJson)) {
-            musicViewModel.reloadPlaylistsFromSettings()
-            backupStatusIsError = false
-            backupStatusMessage = context.getString(R.string.backup_restored_success)
-            showRestartHint = true
-        } else {
-            backupStatusIsError = true
-            backupStatusMessage = context.getString(R.string.backup_invalid_format)
-            showRestartHint = false
-        }
+        musicViewModel.restoreFromBackup(backupJson)
     }
 
     val backupLocationLauncher = rememberLauncherForActivityResult(
@@ -2823,6 +2866,11 @@ fun EnhancedBackupRestoreContent(
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
+                if (isLibraryRefreshing) {
+                    Toast.makeText(context, "Cannot create backup while a media scan is in progress. Please wait for the scan to finish.", Toast.LENGTH_LONG).show()
+                    isCreatingBackup = false
+                    return@let
+                }
                 scope.launch {
                     try {
                         isCreatingBackup = true
@@ -4461,12 +4509,8 @@ private fun AudioPlaybackSettingsCard(
 private fun ThemeSettingsCard(
     useSystemTheme: Boolean,
     darkMode: Boolean,
-    useDynamicColors: Boolean,
-    festiveTheme: Boolean,
     onSystemThemeChange: (Boolean) -> Unit,
-    onDarkModeChange: (Boolean) -> Unit,
-    onDynamicColorsChange: (Boolean) -> Unit,
-    onFestiveThemeChange: (Boolean) -> Unit
+    onDarkModeChange: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -4520,49 +4564,6 @@ private fun ThemeSettingsCard(
             )
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            add(
-                Material3SettingsItem(
-                    icon = RhythmIcons.Palette,
-                    title = { Text(context.getString(R.string.onboarding_dynamic_colors_title)) },
-                    description = { Text(context.getString(R.string.onboarding_dynamic_colors_desc)) },
-                    trailingContent = {
-                        OnboardingAnimatedSwitch(
-                            checked = useDynamicColors,
-                            onCheckedChange = {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                onDynamicColorsChange(it)
-                            }
-                        )
-                    },
-                    onClick = {
-                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                        onDynamicColorsChange(!useDynamicColors)
-                    }
-                )
-            )
-        }
-
-        add(
-            Material3SettingsItem(
-                icon = RhythmIcons.AutoAwesome,
-                title = { Text(stringResource(R.string.settings_exp_festive_theme)) },
-                description = { Text(stringResource(R.string.onboardingscreen_enable_festive_decorations_and)) },
-                trailingContent = {
-                    OnboardingAnimatedSwitch(
-                        checked = festiveTheme,
-                        onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            onFestiveThemeChange(it)
-                        }
-                    )
-                },
-                onClick = {
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                    onFestiveThemeChange(!festiveTheme)
-                }
-            )
-        )
     }
 
     Material3SettingsGroup(
@@ -4662,8 +4663,6 @@ fun EnhancedThemingContent(
     val haptic = LocalHapticFeedback.current
     val useSystemTheme by themeViewModel.useSystemTheme.collectAsState()
     val darkMode by themeViewModel.darkMode.collectAsState()
-    val useDynamicColors by themeViewModel.useDynamicColors.collectAsState()
-    val festiveTheme by appSettings.festiveThemeEnabled.collectAsState()
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     
@@ -4918,8 +4917,6 @@ fun EnhancedThemingContent(
                 ThemeSettingsCard(
                     useSystemTheme = useSystemTheme,
                     darkMode = darkMode,
-                    useDynamicColors = useDynamicColors,
-                    festiveTheme = festiveTheme,
                     onSystemThemeChange = { enabled ->
                         scope.launch {
                             themeViewModel.setUseSystemTheme(enabled)
@@ -4929,15 +4926,12 @@ fun EnhancedThemingContent(
                         scope.launch {
                             themeViewModel.setDarkMode(enabled)
                         }
-                    },
-                    onDynamicColorsChange = { enabled ->
-                        scope.launch {
-                            themeViewModel.setUseDynamicColors(enabled)
-                        }
-                    },
-                    onFestiveThemeChange = { enabled ->
-                        appSettings.setFestiveThemeEnabled(enabled)
                     }
+                )
+
+                ThemingCustomizationSection(
+                    appSettings = appSettings,
+                    context = context
                 )
 
 //                // Font selection card
@@ -5177,8 +5171,6 @@ fun EnhancedThemingContent(
             ThemeSettingsCard(
                 useSystemTheme = useSystemTheme,
                 darkMode = darkMode,
-                useDynamicColors = useDynamicColors,
-                festiveTheme = festiveTheme,
                 onSystemThemeChange = { enabled ->
                     scope.launch {
                         themeViewModel.setUseSystemTheme(enabled)
@@ -5188,15 +5180,12 @@ fun EnhancedThemingContent(
                     scope.launch {
                         themeViewModel.setDarkMode(enabled)
                     }
-                },
-                onDynamicColorsChange = { enabled ->
-                    scope.launch {
-                        themeViewModel.setUseDynamicColors(enabled)
-                    }
-                },
-                onFestiveThemeChange = { enabled ->
-                    appSettings.setFestiveThemeEnabled(enabled)
                 }
+            )
+
+            ThemingCustomizationSection(
+                appSettings = appSettings,
+                context = context
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -8533,9 +8522,6 @@ fun EnhancedPlayerThemeChoiceContent(
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
-    val playerThemeId by appSettings.playerThemeId.collectAsState()
-    val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
-
     var selectedViewIndex by remember { mutableStateOf(0) } // 0 = Player, 1 = Mini Player
 
     if (isTablet) {
@@ -8576,7 +8562,10 @@ fun EnhancedPlayerThemeChoiceContent(
 
                 // Tab Switcher between Player and Miniplayer
                 ExpressiveButtonGroup(
-                    items = listOf("Full Player", "Mini Player"),
+                    items = listOf(
+                        context.getString(R.string.settings_player),
+                        context.getString(R.string.settings_miniplayer)
+                    ),
                     selectedIndex = selectedViewIndex,
                     onItemClick = { index ->
                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
@@ -8604,35 +8593,10 @@ fun EnhancedPlayerThemeChoiceContent(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = "Live Preview",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                // Interactive Preview
-                PlaybackThemePreview(
+                PlayerThemeSettingsSection(
                     isPlayer = selectedViewIndex == 0,
-                    playerThemeId = playerThemeId,
-                    miniPlayerThemeId = miniPlayerThemeId
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Selector Buttons
-                ThemeSelectionButtons(
-                    isPlayer = selectedViewIndex == 0,
-                    playerThemeId = playerThemeId,
-                    miniPlayerThemeId = miniPlayerThemeId,
-                    onThemeChange = { newTheme ->
-                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                        if (selectedViewIndex == 0) {
-                            appSettings.setPlayerThemeId(newTheme)
-                        } else {
-                            appSettings.setMiniPlayerThemeId(newTheme)
-                        }
-                    }
+                    appSettings = appSettings,
+                    context = context
                 )
             }
         }
@@ -8669,7 +8633,10 @@ fun EnhancedPlayerThemeChoiceContent(
 
             // Switcher Tabs for Player vs Miniplayer
             ExpressiveButtonGroup(
-                items = listOf("Full Player", "Mini Player"),
+                items = listOf(
+                    context.getString(R.string.settings_player),
+                    context.getString(R.string.settings_miniplayer)
+                ),
                 selectedIndex = selectedViewIndex,
                 onItemClick = { index ->
                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
@@ -8678,28 +8645,10 @@ fun EnhancedPlayerThemeChoiceContent(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
             )
 
-            // Interactive Preview Card
-            PlaybackThemePreview(
+            PlayerThemeSettingsSection(
                 isPlayer = selectedViewIndex == 0,
-                playerThemeId = playerThemeId,
-                miniPlayerThemeId = miniPlayerThemeId
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Selector Button Group
-            ThemeSelectionButtons(
-                isPlayer = selectedViewIndex == 0,
-                playerThemeId = playerThemeId,
-                miniPlayerThemeId = miniPlayerThemeId,
-                onThemeChange = { newTheme ->
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                    if (selectedViewIndex == 0) {
-                        appSettings.setPlayerThemeId(newTheme)
-                    } else {
-                        appSettings.setMiniPlayerThemeId(newTheme)
-                    }
-                }
+                appSettings = appSettings,
+                context = context
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -8709,710 +8658,6 @@ fun EnhancedPlayerThemeChoiceContent(
     }
 }
 
-@Composable
-private fun PlaybackThemePreview(
-    isPlayer: Boolean,
-    playerThemeId: String,
-    miniPlayerThemeId: String
-) {
-    val isPlayerExpressive = playerThemeId == "EXPRESSIVE"
-    val isMiniPlayerExpressive = miniPlayerThemeId == "EXPRESSIVE"
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(320.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(0.dp, MaterialTheme.colorScheme.outlineVariant)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isPlayer) {
-                // Full Player Previews
-                AnimatedContent(
-                    targetState = isPlayerExpressive,
-                    transitionSpec = {
-                        (fadeIn(animationSpec = tween(400)) + scaleIn(initialScale = 0.95f, animationSpec = tween(400)))
-                            .togetherWith(fadeOut(animationSpec = tween(300)) + scaleOut(targetScale = 0.95f, animationSpec = tween(300)))
-                    },
-                    label = "player_preview_animation"
-                ) { expressive ->
-                    if (expressive) {
-                        // Expressive Player Preview Mock (Highly faithful to ExpressivePlayerScreen.kt)
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            // Top Bar Placeholder
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Back,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "Expressive Design",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceHigh),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.More,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
-
-                            // Expressive shape artwork
-                            Box(
-                                modifier = Modifier
-                                    .size(72.dp)
-                                    .shadow(4.dp, rememberExpressiveShapeFor(ExpressiveShapeTarget.ALBUM_ART))
-                                    .background(
-                                        color = MaterialTheme.colorScheme.primaryContainer,
-                                        shape = rememberExpressiveShapeFor(ExpressiveShapeTarget.ALBUM_ART)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.MusicNote,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-
-                            // Song info and favorite/lyrics buttons row
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "Song",
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Black,
-                                            letterSpacing = (-0.5).sp
-                                        ),
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Text(
-                                        text = "Artist",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-                                
-                                // Lyrics & Fav double button group placeholder
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(32.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceHigh),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.Player.Lyrics,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                    Box(
-                                        modifier = Modifier
-                                            .size(32.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceHigh),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.FavoriteFilled,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                }
-                            }
-
-                            // Playback controls container card (mimics real ExpressivePlayerScreen)
-                            Card(
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceHigh
-                                ),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(10.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    // Row 1: wide pill play/pause and circle skip next
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .height(36.dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.primaryContainer),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = "Pause",
-                                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                                            )
-                                        }
-                                        Box(
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .clip(rememberExpressiveShapeFor(ExpressiveShapeTarget.PLAYER_CONTROLS))
-                                                .background(MaterialTheme.colorScheme.secondaryContainer),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = RhythmIcons.Player.SkipNext,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    }
-
-                                    // Row 2: circle skip previous and wavy progress slider
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .clip(rememberExpressiveShapeFor(ExpressiveShapeTarget.PLAYER_CONTROLS))
-                                                .background(MaterialTheme.colorScheme.secondaryContainer),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = RhythmIcons.Player.SkipPrevious,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-
-                                        // Wavy progress bar
-                                        StyledProgressBar(
-                                            progress = 0.65f,
-                                            style = ProgressStyle.WAVY,
-                                            modifier = Modifier.weight(1f),
-                                            progressColor = MaterialTheme.colorScheme.primary,
-                                            trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                                            height = 4.dp,
-                                            isPlaying = true
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        // Rhythm (Material) Player Preview Mock (Highly faithful to MaterialPlayerScreen.kt)
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            // Top Bar Placeholder
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Back,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "NOW PLAYING",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        letterSpacing = 1.sp
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                                )
-                                Icon(
-                                    imageVector = RhythmIcons.More,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-
-                            // Classic round-corner square artwork
-                            Box(
-                                modifier = Modifier
-                                    .size(72.dp)
-                                    .shadow(4.dp, RoundedCornerShape(12.dp))
-                                    .background(
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        shape = RoundedCornerShape(12.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.MusicNote,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSecondary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-
-                            // Song info and favorite row
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "Song",
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Text(
-                                        text = "Artist",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-                                Icon(
-                                    imageVector = RhythmIcons.Favorite,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-
-                            // Classic linear progress bar
-                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                StyledProgressBar(
-                                    progress = 0.65f,
-                                    style = ProgressStyle.NORMAL,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    progressColor = MaterialTheme.colorScheme.secondary,
-                                    trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                                    height = 4.dp,
-                                    isPlaying = true
-                                )
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(text = "02:40", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    Text(text = "04:15", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            }
-
-                            // Unified Expressive Player Controls Row (faithful to real MaterialPlayerScreen using ExpressivePlayerControlGroup)
-                            Surface(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(20.dp),
-                                color = MaterialTheme.colorScheme.surfaceHighest,
-                                tonalElevation = 2.dp
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 6.dp, vertical = 6.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // Previous button
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(32.dp)
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .background(MaterialTheme.colorScheme.tertiary),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.SkipPrevious,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onTertiary,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                    
-                                    // Seek back
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(32.dp)
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceHigh),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.Replay10,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                    }
-                                    
-                                    // Play/Pause center button
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1.2f)
-                                            .height(32.dp)
-                                            .clip(RoundedCornerShape(14.dp))
-                                            .background(MaterialTheme.colorScheme.primary),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.Pause,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onPrimary,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                    
-                                    // Seek forward
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(32.dp)
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceHigh),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.Forward10,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                    }
-                                    
-                                    // Next button
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(32.dp)
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .background(MaterialTheme.colorScheme.tertiary),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.SkipNext,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onTertiary,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Mini Player Previews
-                AnimatedContent(
-                    targetState = isMiniPlayerExpressive,
-                    transitionSpec = {
-                        (fadeIn(animationSpec = tween(400)) + scaleIn(initialScale = 0.95f, animationSpec = tween(400)))
-                            .togetherWith(fadeOut(animationSpec = tween(300)) + scaleOut(targetScale = 0.95f, animationSpec = tween(300)))
-                    },
-                    label = "mini_player_preview_animation"
-                ) { expressive ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (expressive) {
-                            // Expressive Mini Player Preview: floating pill card with integrated progress background
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(72.dp)
-                                    .shadow(4.dp, CircleShape)
-                                    .background(MaterialTheme.colorScheme.surface, shape = CircleShape)
-                                    .clip(CircleShape)
-                            ) {
-                                // Progress overlay acts as dynamic background
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .fillMaxWidth(0.65f)
-                                        .background(MaterialTheme.colorScheme.primaryContainer)
-                                )
-
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // Organic squircle artwork
-                                    Box(
-                                        modifier = Modifier
-                                            .size(48.dp)
-                                            .background(
-                                                color = MaterialTheme.colorScheme.primary,
-                                                shape = rememberExpressiveShapeFor(ExpressiveShapeTarget.MINI_PLAYER)
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.MusicNote,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onPrimary,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-
-                                    Spacer(modifier = Modifier.width(12.dp))
-
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = "Song",
-                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                        Text(
-                                            text = "Artist",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-
-                                    // One large circular Play/Pause button
-                                    Box(
-                                        modifier = Modifier
-                                            .size(44.dp)
-                                            .background(
-                                                color = MaterialTheme.colorScheme.primary,
-                                                shape = CircleShape
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.Pause,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onPrimary,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        } else {
-                            // Rhythm (Material) Mini Player Preview: Clean bottom bar mockup
-                            Card(
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface
-                                ),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .shadow(2.dp, RoundedCornerShape(16.dp))
-                            ) {
-                                Column(modifier = Modifier.fillMaxWidth()) {
-                                    // Top handle drag indicator
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 4.dp, bottom = 2.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        HorizontalDivider(
-                                            modifier = Modifier
-                                                .width(30.dp)
-                                                .height(3.dp)
-                                                .clip(RoundedCornerShape(1.5.dp)),
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-                                        )
-                                    }
-
-                                    // Inline flat progress bar (faithful to original MaterialMiniPlayer top-progress with 28.dp horizontal padding)
-                                    StyledProgressBar(
-                                        progress = 0.45f,
-                                        style = ProgressStyle.NORMAL,
-                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp),
-                                        progressColor = MaterialTheme.colorScheme.secondary,
-                                        trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                                        height = 3.dp,
-                                        isPlaying = true
-                                    )
-
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 20.dp, vertical = 12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        // Square artwork
-                                        Box(
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .background(
-                                                    color = MaterialTheme.colorScheme.secondary,
-                                                    shape = RoundedCornerShape(8.dp)
-                                                ),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = RhythmIcons.MusicNote,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onSecondary,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-
-                                        Spacer(modifier = Modifier.width(10.dp))
-
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = "Song",
-                                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                            Text(
-                                                text = "Artist",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                        }
-
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(32.dp)
-                                                    .background(
-                                                        color = MaterialTheme.colorScheme.primary,
-                                                        shape = CircleShape
-                                                    ),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    imageVector = RhythmIcons.Pause,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                            }
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(32.dp)
-                                                    .background(
-                                                        color = MaterialTheme.colorScheme.secondaryContainer,
-                                                        shape = CircleShape
-                                                    ),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    imageVector = RhythmIcons.SkipNext,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ThemeSelectionButtons(
-    isPlayer: Boolean,
-    playerThemeId: String,
-    miniPlayerThemeId: String,
-    onThemeChange: (String) -> Unit
-) {
-    val currentTheme = if (isPlayer) playerThemeId else miniPlayerThemeId
-    val isExpressive = currentTheme == "EXPRESSIVE"
-
-    ExpressiveButtonGroup(
-        items = listOf(
-            "Rhythm (Material)",
-            "Expressive (Modern)"
-        ),
-        selectedIndex = if (isExpressive) 1 else 0,
-        onItemClick = { index ->
-            val themeVal = if (index == 1) "EXPRESSIVE" else "MATERIAL"
-            onThemeChange(themeVal)
-        },
-        modifier = Modifier.fillMaxWidth()
-    )
-}
 
 // =====================================================
 // GESTURES ONBOARDING STEP
@@ -9739,10 +8984,9 @@ fun EnhancedWidgetsContent(
     val scrollState = rememberScrollState()
 
     // Widget settings
-    val showAlbumArt by appSettings.widgetShowAlbumArt.collectAsState()
     val showArtist by appSettings.widgetShowArtist.collectAsState()
     val showAlbum by appSettings.widgetShowAlbum.collectAsState()
-    val autoUpdate by appSettings.widgetAutoUpdate.collectAsState()
+    val showFavorite by appSettings.widgetShowFavoriteButton.collectAsState()
 
     if (isTablet) {
         Row(
@@ -9799,12 +9043,22 @@ fun EnhancedWidgetsContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 WidgetSettingsCard(
-                    showAlbumArt = showAlbumArt,
                     showArtist = showArtist,
                     showAlbum = showAlbum,
-                    onAlbumArtChange = { appSettings.setWidgetShowAlbumArt(it) },
+                    showFavorite = showFavorite,
                     onArtistChange = { appSettings.setWidgetShowArtist(it) },
-                    onAlbumChange = { appSettings.setWidgetShowAlbum(it) }
+                    onAlbumChange = { appSettings.setWidgetShowAlbum(it) },
+                    onFavoriteChange = { appSettings.setWidgetShowFavoriteButton(it) }
+                )
+
+                WidgetAppearanceSection(
+                    appSettings = appSettings,
+                    context = context
+                )
+
+                WidgetCustomizationSection(
+                    appSettings = appSettings,
+                    context = context
                 )
             }
         }
@@ -9841,12 +9095,22 @@ fun EnhancedWidgetsContent(
             )
 
             WidgetSettingsCard(
-                showAlbumArt = showAlbumArt,
                 showArtist = showArtist,
                 showAlbum = showAlbum,
-                onAlbumArtChange = { appSettings.setWidgetShowAlbumArt(it) },
+                showFavorite = showFavorite,
                 onArtistChange = { appSettings.setWidgetShowArtist(it) },
-                onAlbumChange = { appSettings.setWidgetShowAlbum(it) }
+                onAlbumChange = { appSettings.setWidgetShowAlbum(it) },
+                onFavoriteChange = { appSettings.setWidgetShowFavoriteButton(it) }
+            )
+
+            WidgetAppearanceSection(
+                appSettings = appSettings,
+                context = context
+            )
+
+            WidgetCustomizationSection(
+                appSettings = appSettings,
+                context = context
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -9859,37 +9123,92 @@ fun EnhancedWidgetsContent(
 }
 
 @Composable
+private fun WidgetAppearanceSection(
+    appSettings: AppSettings,
+    context: Context
+) {
+    val haptic = LocalHapticFeedback.current
+    val cornerRadius by appSettings.widgetCornerRadius.collectAsState()
+    val widgetTheme by appSettings.widgetTheme.collectAsState()
+    var showCornerRadiusSheet by remember { mutableStateOf(false) }
+    var showThemeSheet by remember { mutableStateOf(false) }
+
+    val themeName = when (widgetTheme) {
+        1 -> context.getString(R.string.widget_theme_solid_dark)
+        2 -> context.getString(R.string.widget_theme_translucent_dark)
+        3 -> context.getString(R.string.widget_theme_solid_purple)
+        else -> context.getString(R.string.widget_theme_dynamic)
+    }
+
+    TourSectionTitle(context.getString(R.string.widget_appearance))
+    Material3SettingsGroup(
+        items = listOf(
+            Material3SettingsItem(
+                icon = MaterialSymbolIcon("rounded_corner"),
+                title = { Text(context.getString(R.string.settings_miniplayer_corner_radius)) },
+                description = { Text(context.getString(R.string.widget_settings_radius_desc, cornerRadius)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = RhythmIcons.Forward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                    showCornerRadiusSheet = true
+                }
+            ),
+            Material3SettingsItem(
+                icon = MaterialSymbolIcon("palette"),
+                title = { Text(context.getString(R.string.widgetsettingsscreen_widget_theme)) },
+                description = { Text(context.getString(R.string.widget_theme_glance_suffix, themeName)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = RhythmIcons.Forward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                    showThemeSheet = true
+                }
+            )
+        ),
+        containerColor = MaterialTheme.colorScheme.surface
+    )
+
+    if (showCornerRadiusSheet) {
+        WidgetCornerRadiusSheet(
+            currentRadius = cornerRadius,
+            onDismiss = { showCornerRadiusSheet = false },
+            appSettings = appSettings
+        )
+    }
+    if (showThemeSheet) {
+        WidgetThemeSheet(
+            currentTheme = widgetTheme,
+            onDismiss = { showThemeSheet = false },
+            appSettings = appSettings
+        )
+    }
+}
+
+@Composable
 private fun WidgetSettingsCard(
-    showAlbumArt: Boolean,
     showArtist: Boolean,
     showAlbum: Boolean,
-    onAlbumArtChange: (Boolean) -> Unit,
+    showFavorite: Boolean,
     onArtistChange: (Boolean) -> Unit,
-    onAlbumChange: (Boolean) -> Unit
+    onAlbumChange: (Boolean) -> Unit,
+    onFavoriteChange: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
 
     Material3SettingsGroup(
         items = listOf(
-            Material3SettingsItem(
-                icon = RhythmIcons.Image,
-                title = { Text(context.getString(R.string.onboarding_widget_album_art)) },
-                description = { Text(context.getString(R.string.onboarding_widget_album_art_desc)) },
-                trailingContent = {
-                    OnboardingAnimatedSwitch(
-                        checked = showAlbumArt,
-                        onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            onAlbumArtChange(it)
-                        }
-                    )
-                },
-                onClick = {
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                    onAlbumArtChange(!showAlbumArt)
-                }
-            ),
             Material3SettingsItem(
                 icon = RhythmIcons.Artist,
                 title = { Text(context.getString(R.string.onboarding_widget_artist)) },
@@ -9924,6 +9243,24 @@ private fun WidgetSettingsCard(
                 onClick = {
                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                     onAlbumChange(!showAlbum)
+                }
+            ),
+            Material3SettingsItem(
+                icon = RhythmIcons.FavoriteFilled,
+                title = { Text(context.getString(R.string.widgetsettingsscreen_show_favorite_button)) },
+                description = { Text(context.getString(R.string.widget_show_favorite_button_desc)) },
+                trailingContent = {
+                    OnboardingAnimatedSwitch(
+                        checked = showFavorite,
+                        onCheckedChange = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            onFavoriteChange(it)
+                        }
+                    )
+                },
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                    onFavoriteChange(!showFavorite)
                 }
             )
         ),
@@ -9961,22 +9298,789 @@ private fun WidgetTipsCard() {
             Spacer(modifier = Modifier.height(12.dp))
 
             OnboardingTipItem(
+                icon = MaterialSymbolIcon("cookie"),
+                text = context.getString(R.string.widget_tip_cookie_corners)
+            )
+            OnboardingTipItem(
+                icon = MaterialSymbolIcon("auto_graph"),
+                text = context.getString(R.string.widget_tip_stats_widget)
+            )
+            OnboardingTipItem(
                 icon = MaterialSymbolIcon("touch_app"),
-                text = context.getString(R.string.onboarding_widget_tip_1)
+                text = context.getString(R.string.widget_tip_controls)
             )
             OnboardingTipItem(
                 icon = MaterialSymbolIcon("aspect_ratio"),
-                text = context.getString(R.string.onboarding_widget_tip_2)
-            )
-            OnboardingTipItem(
-                icon = RhythmIcons.Refresh,
-                text = context.getString(R.string.onboarding_widget_tip_3)
+                text = context.getString(R.string.widget_tip_resize_settings)
             )
         }
     }
 }
 
 // =====================================================
+// TOUR SETTINGS SECTIONS (mirror the Settings screens)
+// =====================================================
+
+@Composable
+private fun WidgetCustomizationSection(
+    appSettings: AppSettings,
+    context: Context
+) {
+    val haptic = LocalHapticFeedback.current
+    var showCookieLeftSheet by remember { mutableStateOf(false) }
+    var showCookieRightSheet by remember { mutableStateOf(false) }
+    var showStatsRangeSheet by remember { mutableStateOf(false) }
+    var showStatsGemSheet by remember { mutableStateOf(false) }
+
+    val cookieBottomLeft by appSettings.widgetCookieBottomLeft.collectAsState()
+    val cookieBottomRight by appSettings.widgetCookieBottomRight.collectAsState()
+    val statsRange by appSettings.widgetStatsRange.collectAsState()
+    val statsGem by appSettings.widgetStatsGem.collectAsState()
+
+    TourSectionTitle(context.getString(R.string.widget_cookie_section_title))
+    Material3SettingsGroup(
+        items = listOf(
+            Material3SettingsItem(
+                icon = cookieActionIcon(cookieBottomLeft, isLeft = true),
+                title = { Text(context.getString(R.string.widget_cookie_bottom_left)) },
+                description = { Text(cookieActionLabel(cookieBottomLeft)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = RhythmIcons.Forward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                    showCookieLeftSheet = true
+                }
+            ),
+            Material3SettingsItem(
+                icon = cookieActionIcon(cookieBottomRight, isLeft = false),
+                title = { Text(context.getString(R.string.widget_cookie_bottom_right)) },
+                description = { Text(cookieActionLabel(cookieBottomRight)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = RhythmIcons.Forward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                    showCookieRightSheet = true
+                }
+            )
+        ),
+        containerColor = MaterialTheme.colorScheme.surface
+    )
+
+    TourSectionTitle(context.getString(R.string.widget_stats_section_title))
+    Material3SettingsGroup(
+        items = listOf(
+            Material3SettingsItem(
+                icon = statsRangeIcon(statsRange),
+                title = { Text(context.getString(R.string.widget_stats_time_range)) },
+                description = { Text(statsRangeLabel(statsRange)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = RhythmIcons.Forward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                    showStatsRangeSheet = true
+                }
+            ),
+            Material3SettingsItem(
+                icon = statsGemIcon(statsGem),
+                title = { Text(context.getString(R.string.widget_stats_gem)) },
+                description = { Text(statsGemLabel(statsGem)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = RhythmIcons.Forward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                    showStatsGemSheet = true
+                }
+            )
+        ),
+        containerColor = MaterialTheme.colorScheme.surface
+    )
+
+    if (showCookieLeftSheet) {
+        ActionPickerSheet(
+            title = context.getString(R.string.widget_cookie_bottom_left),
+            selectedValue = cookieBottomLeft,
+            options = listOf(
+                PickerOption(0, context.getString(R.string.widget_cookie_action_skip), context.getString(R.string.widget_cookie_action_skip_left_desc), MaterialSymbolIcon("skip_previous")),
+                PickerOption(1, context.getString(R.string.widget_cookie_action_shuffle), context.getString(R.string.widget_cookie_action_shuffle_desc), MaterialSymbolIcon("shuffle")),
+                PickerOption(2, context.getString(R.string.widget_cookie_action_repeat), context.getString(R.string.widget_cookie_action_repeat_desc), MaterialSymbolIcon("repeat")),
+                PickerOption(3, context.getString(R.string.widget_cookie_action_favorite), context.getString(R.string.widget_cookie_action_favorite_desc), MaterialSymbolIcon("favorite")),
+                PickerOption(4, context.getString(R.string.widget_cookie_action_none), context.getString(R.string.widget_cookie_action_none_desc), MaterialSymbolIcon("block"))
+            ),
+            onDismiss = { showCookieLeftSheet = false },
+            onSelect = { value ->
+                appSettings.setWidgetCookieBottomLeft(value)
+                updateAllWidgets(context)
+                showCookieLeftSheet = false
+            }
+        )
+    }
+
+    if (showCookieRightSheet) {
+        ActionPickerSheet(
+            title = context.getString(R.string.widget_cookie_bottom_right),
+            selectedValue = cookieBottomRight,
+            options = listOf(
+                PickerOption(0, context.getString(R.string.widget_cookie_action_skip), context.getString(R.string.widget_cookie_action_skip_right_desc), MaterialSymbolIcon("skip_next")),
+                PickerOption(1, context.getString(R.string.widget_cookie_action_shuffle), context.getString(R.string.widget_cookie_action_shuffle_desc), MaterialSymbolIcon("shuffle")),
+                PickerOption(2, context.getString(R.string.widget_cookie_action_repeat), context.getString(R.string.widget_cookie_action_repeat_desc), MaterialSymbolIcon("repeat")),
+                PickerOption(3, context.getString(R.string.widget_cookie_action_favorite), context.getString(R.string.widget_cookie_action_favorite_desc), MaterialSymbolIcon("favorite")),
+                PickerOption(4, context.getString(R.string.widget_cookie_action_none), context.getString(R.string.widget_cookie_action_none_desc), MaterialSymbolIcon("block"))
+            ),
+            onDismiss = { showCookieRightSheet = false },
+            onSelect = { value ->
+                appSettings.setWidgetCookieBottomRight(value)
+                updateAllWidgets(context)
+                showCookieRightSheet = false
+            }
+        )
+    }
+
+    if (showStatsRangeSheet) {
+        ActionPickerSheet(
+            title = context.getString(R.string.widget_stats_time_range),
+            selectedValue = statsRange,
+            options = listOf(
+                PickerOption(0, context.getString(R.string.widget_stats_range_all_time), context.getString(R.string.widget_stats_range_all_time_desc), MaterialSymbolIcon("all_inclusive")),
+                PickerOption(1, context.getString(R.string.widget_stats_range_today), context.getString(R.string.widget_stats_range_today_desc), MaterialSymbolIcon("today")),
+                PickerOption(2, context.getString(R.string.widget_stats_range_week), context.getString(R.string.widget_stats_range_week_desc), MaterialSymbolIcon("date_range")),
+                PickerOption(3, context.getString(R.string.widget_stats_range_month), context.getString(R.string.widget_stats_range_month_desc), MaterialSymbolIcon("calendar_month"))
+            ),
+            onDismiss = { showStatsRangeSheet = false },
+            onSelect = { value ->
+                appSettings.setWidgetStatsRange(value)
+                updateAllWidgets(context)
+                showStatsRangeSheet = false
+            }
+        )
+    }
+
+    if (showStatsGemSheet) {
+        ActionPickerSheet(
+            title = context.getString(R.string.widget_stats_gem),
+            selectedValue = statsGem,
+            options = listOf(
+                PickerOption(0, context.getString(R.string.widget_stats_gem_longest_streak), context.getString(R.string.widget_stats_gem_longest_streak_desc), MaterialSymbolIcon("workspace_premium")),
+                PickerOption(1, context.getString(R.string.widget_stats_gem_current_streak), context.getString(R.string.widget_stats_gem_current_streak_desc), MaterialSymbolIcon("local_fire_department")),
+                PickerOption(2, context.getString(R.string.widget_stats_gem_active_days), context.getString(R.string.widget_stats_gem_active_days_desc), MaterialSymbolIcon("event_available")),
+                PickerOption(3, context.getString(R.string.widget_stats_gem_sessions), context.getString(R.string.widget_stats_gem_sessions_desc), MaterialSymbolIcon("history"))
+            ),
+            onDismiss = { showStatsGemSheet = false },
+            onSelect = { value ->
+                appSettings.setWidgetStatsGem(value)
+                updateAllWidgets(context)
+                showStatsGemSheet = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun TourSectionTitle(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, bottom = 8.dp, top = 12.dp)
+    )
+}
+
+@Composable
+private fun tourToggleItem(
+    icon: MaterialSymbolIcon,
+    title: String,
+    description: String,
+    checked: Boolean,
+    context: Context,
+    enabled: Boolean = true,
+    onCheckedChange: (Boolean) -> Unit
+): Material3SettingsItem {
+    val haptic = LocalHapticFeedback.current
+    return Material3SettingsItem(
+        icon = icon,
+        title = { Text(title) },
+        description = { Text(description) },
+        enabled = enabled,
+        trailingContent = {
+            OnboardingAnimatedSwitch(
+                checked = checked,
+                enabled = enabled,
+                onCheckedChange = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                    onCheckedChange(it)
+                }
+            )
+        },
+        onClick = {
+            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+            onCheckedChange(!checked)
+        }
+    )
+}
+
+@Composable
+private fun tourSheetRow(
+    icon: MaterialSymbolIcon,
+    title: String,
+    description: String,
+    context: Context,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+): Material3SettingsItem {
+    val haptic = LocalHapticFeedback.current
+    return Material3SettingsItem(
+        icon = icon,
+        title = { Text(title) },
+        description = { Text(description) },
+        enabled = enabled,
+        trailingContent = {
+            Icon(
+                imageVector = RhythmIcons.Forward,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        onClick = {
+            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+            onClick()
+        }
+    )
+}
+
+private fun playerAlignmentLabel(value: String, context: Context): String {
+    return when (value) {
+        "START" -> context.getString(R.string.settings_left_aligned)
+        "END" -> context.getString(R.string.settings_right_aligned)
+        else -> context.getString(R.string.settings_center_aligned)
+    }
+}
+
+@Composable
+private fun PlayerThemeSettingsSection(
+    isPlayer: Boolean,
+    appSettings: AppSettings,
+    context: Context
+) {
+    val haptic = LocalHapticFeedback.current
+
+    var showTextAlignmentSheet by remember { mutableStateOf(false) }
+    var showProgressStyleSheet by remember { mutableStateOf(false) }
+    var showThumbStyleSheet by remember { mutableStateOf(false) }
+    var showArtworkSizeSheet by remember { mutableStateOf(false) }
+    var showCornerRadiusSheet by remember { mutableStateOf(false) }
+
+    // Full player settings
+    val playerThemeId by appSettings.playerThemeId.collectAsState()
+    val playerIsExpressive = playerThemeId != "MATERIAL"
+    val showGradientOverlay by appSettings.playerShowGradientOverlay.collectAsState()
+    val showSongInfo by appSettings.playerShowSongInfoOnArtwork.collectAsState()
+    val showQualityBadges by appSettings.playerShowAudioQualityBadges.collectAsState()
+    val showSeekButtons by appSettings.playerShowSeekButtons.collectAsState()
+    val playerTextAlignment by appSettings.playerTextAlignment.collectAsState()
+    val playerProgressStyle by appSettings.playerProgressStyle.collectAsState()
+    val playerThumbStyle by appSettings.playerProgressThumbStyle.collectAsState()
+    val thumbRotate by appSettings.playerProgressThumbRotate.collectAsState()
+    val ambientBackdrop by appSettings.playerAmbientBackdropEnabled.collectAsState()
+
+    // Mini player settings
+    val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
+    val miniIsExpressive = miniPlayerThemeId == "EXPRESSIVE"
+    val miniShowProgress by appSettings.miniPlayerShowProgress.collectAsState()
+    val miniProgressStyle by appSettings.miniPlayerProgressStyle.collectAsState()
+    val miniShowArtwork by appSettings.miniPlayerShowArtwork.collectAsState()
+    val miniArtworkSize by appSettings.miniPlayerArtworkSize.collectAsState()
+    val miniCornerRadius by appSettings.miniPlayerCornerRadius.collectAsState()
+    val miniShowTime by appSettings.miniPlayerShowTime.collectAsState()
+    val miniTabletLayout by appSettings.miniPlayerAlwaysShowTablet.collectAsState()
+
+    if (isPlayer) {
+        TourSectionTitle(context.getString(R.string.settings_theme))
+        Material3SettingsGroup(
+            items = listOf(
+                Material3SettingsItem(
+                    icon = MaterialSymbolIcon("palette"),
+                    title = { Text(context.getString(R.string.playercustomizationsettingsscreen_playback_theme)) },
+                    description = {
+                        Column {
+                            Text(context.getString(R.string.miniplayercustomizationsettingsscreen_choose_between_rhythm_default))
+                            Spacer(modifier = Modifier.height(12.dp))
+                            ExpressiveButtonGroup(
+                                items = listOf(
+                                    context.getString(R.string.theme_rhythm),
+                                    context.getString(R.string.theme_expressive)
+                                ),
+                                selectedIndex = if (playerIsExpressive) 1 else 0,
+                                onItemClick = { index ->
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    if (index == 1) {
+                                        appSettings.setPlayerThemeId("EXPRESSIVE")
+                                    } else {
+                                        appSettings.setPlayerThemeId("MATERIAL")
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                )
+            ),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+
+        TourSectionTitle(context.getString(R.string.settings_display_options))
+        Material3SettingsGroup(
+            items = listOf(
+                tourToggleItem(
+                    icon = MaterialSymbolIcon("gradient"),
+                    title = context.getString(R.string.settings_artwork_overlay),
+                    description = if (playerIsExpressive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_artwork_overlay_desc),
+                    checked = showGradientOverlay,
+                    context = context,
+                    enabled = !playerIsExpressive,
+                    onCheckedChange = { appSettings.setPlayerShowGradientOverlay(it) }
+                ),
+                tourToggleItem(
+                    icon = RhythmIcons.Info,
+                    title = context.getString(R.string.settings_song_info_artwork),
+                    description = if (playerIsExpressive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_song_info_artwork_desc),
+                    checked = showSongInfo,
+                    context = context,
+                    enabled = !playerIsExpressive,
+                    onCheckedChange = { appSettings.setPlayerShowSongInfoOnArtwork(it) }
+                ),
+                tourToggleItem(
+                    icon = MaterialSymbolIcon("high_quality"),
+                    title = context.getString(R.string.settings_audio_quality_badges),
+                    description = if (playerIsExpressive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_audio_quality_badges_desc),
+                    checked = showQualityBadges,
+                    context = context,
+                    enabled = !playerIsExpressive,
+                    onCheckedChange = { appSettings.setPlayerShowAudioQualityBadges(it) }
+                ),
+                tourToggleItem(
+                    icon = MaterialSymbolIcon("blur_on"),
+                    title = context.getString(R.string.player_ambient_backdrop),
+                    description = if (playerIsExpressive) context.getString(R.string.player_ambient_desc) else context.getString(R.string.player_expressive_only),
+                    checked = ambientBackdrop,
+                    context = context,
+                    enabled = playerIsExpressive,
+                    onCheckedChange = { appSettings.setPlayerAmbientBackdropEnabled(it) }
+                )
+            ),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+
+        TourSectionTitle(context.getString(R.string.settings_layout_options))
+        Material3SettingsGroup(
+            items = listOf(
+                tourToggleItem(
+                    icon = RhythmIcons.Forward10,
+                    title = context.getString(R.string.settings_seek_buttons),
+                    description = if (playerIsExpressive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_seek_buttons_desc),
+                    checked = showSeekButtons,
+                    context = context,
+                    enabled = !playerIsExpressive,
+                    onCheckedChange = { appSettings.setPlayerShowSeekButtons(it) }
+                ),
+                tourSheetRow(
+                    icon = MaterialSymbolIcon("format_align_center"),
+                    title = context.getString(R.string.settings_text_alignment),
+                    description = playerAlignmentLabel(playerTextAlignment, context),
+                    context = context,
+                    enabled = !playerIsExpressive,
+                    onClick = { showTextAlignmentSheet = true }
+                )
+            ),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+
+        TourSectionTitle(context.getString(R.string.settings_progress_display))
+        Material3SettingsGroup(
+            items = listOf(
+                tourSheetRow(
+                    icon = MaterialSymbolIcon("linear_scale"),
+                    title = context.getString(R.string.settings_miniplayer_progress_style),
+                    description = playerProgressStyle.lowercase().replaceFirstChar { it.uppercase() },
+                    context = context,
+                    onClick = { showProgressStyleSheet = true }
+                ),
+                tourSheetRow(
+                    icon = MaterialSymbolIcon("touch_app"),
+                    title = context.getString(R.string.settings_thumb_style),
+                    description = playerThumbStyle.lowercase().replaceFirstChar { it.uppercase() },
+                    context = context,
+                    onClick = { showThumbStyleSheet = true }
+                ),
+                tourToggleItem(
+                    icon = MaterialSymbolIcon("rotate_right"),
+                    title = context.getString(R.string.settings_thumb_rotate),
+                    description = context.getString(R.string.settings_thumb_rotate_desc),
+                    checked = thumbRotate,
+                    context = context,
+                    onCheckedChange = { appSettings.setPlayerProgressThumbRotate(it) }
+                )
+            ),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    } else {
+        TourSectionTitle(context.getString(R.string.settings_theme))
+        Material3SettingsGroup(
+            items = listOf(
+                Material3SettingsItem(
+                    icon = MaterialSymbolIcon("palette"),
+                    title = { Text(context.getString(R.string.miniplayercustomizationsettingsscreen_miniplayer_theme)) },
+                    description = {
+                        Column {
+                            Text(context.getString(R.string.miniplayercustomizationsettingsscreen_choose_between_rhythm_default))
+                            Spacer(modifier = Modifier.height(12.dp))
+                            ExpressiveButtonGroup(
+                                items = listOf(
+                                    context.getString(R.string.theme_rhythm),
+                                    context.getString(R.string.theme_expressive)
+                                ),
+                                selectedIndex = if (miniIsExpressive) 1 else 0,
+                                onItemClick = { index ->
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    if (index == 1) {
+                                        appSettings.setMiniPlayerThemeId("EXPRESSIVE")
+                                    } else {
+                                        appSettings.setMiniPlayerThemeId("MATERIAL")
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                )
+            ),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+
+        TourSectionTitle(context.getString(R.string.settings_progress_display))
+        Material3SettingsGroup(
+            items = listOf(
+                tourToggleItem(
+                    icon = RhythmIcons.Visibility,
+                    title = context.getString(R.string.settings_show_progress),
+                    description = if (miniIsExpressive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_show_progress_desc),
+                    checked = miniShowProgress,
+                    context = context,
+                    enabled = !miniIsExpressive,
+                    onCheckedChange = { appSettings.setMiniPlayerShowProgress(it) }
+                ),
+                tourSheetRow(
+                    icon = MaterialSymbolIcon("linear_scale"),
+                    title = context.getString(R.string.settings_miniplayer_progress_style),
+                    description = miniProgressStyle.lowercase().replaceFirstChar { it.uppercase() },
+                    context = context,
+                    enabled = miniShowProgress && !miniIsExpressive,
+                    onClick = { showProgressStyleSheet = true }
+                )
+            ),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+
+        TourSectionTitle(context.getString(R.string.settings_artwork))
+        Material3SettingsGroup(
+            items = listOf(
+                tourToggleItem(
+                    icon = RhythmIcons.Album,
+                    title = context.getString(R.string.settings_show_artwork),
+                    description = if (miniIsExpressive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_show_artwork_desc),
+                    checked = miniShowArtwork,
+                    context = context,
+                    enabled = !miniIsExpressive,
+                    onCheckedChange = { appSettings.setMiniPlayerShowArtwork(it) }
+                ),
+                tourSheetRow(
+                    icon = MaterialSymbolIcon("photo_size_select_large"),
+                    title = context.getString(R.string.settings_miniplayer_artwork_size),
+                    description = if (miniIsExpressive) context.getString(R.string.lyrics_settings_not_supported_expressive) else "${miniArtworkSize}dp",
+                    context = context,
+                    enabled = !miniIsExpressive,
+                    onClick = { showArtworkSizeSheet = true }
+                ),
+                tourSheetRow(
+                    icon = MaterialSymbolIcon("rounded_corner"),
+                    title = context.getString(R.string.settings_miniplayer_corner_radius),
+                    description = if (miniIsExpressive) context.getString(R.string.lyrics_settings_not_supported_expressive) else "${miniCornerRadius}dp",
+                    context = context,
+                    enabled = !miniIsExpressive,
+                    onClick = { showCornerRadiusSheet = true }
+                )
+            ),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+
+        TourSectionTitle(context.getString(R.string.settings_display_options))
+        Material3SettingsGroup(
+            items = listOf(
+                tourToggleItem(
+                    icon = MaterialSymbolIcon("timer"),
+                    title = context.getString(R.string.settings_show_time),
+                    description = if (miniIsExpressive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_show_time_desc),
+                    checked = miniShowTime,
+                    context = context,
+                    enabled = !miniIsExpressive,
+                    onCheckedChange = { appSettings.setMiniPlayerShowTime(it) }
+                ),
+                tourToggleItem(
+                    icon = MaterialSymbolIcon("tablet"),
+                    title = context.getString(R.string.settings_tablet_layout),
+                    description = if (miniIsExpressive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_tablet_layout_desc),
+                    checked = miniTabletLayout,
+                    context = context,
+                    enabled = !miniIsExpressive,
+                    onCheckedChange = { appSettings.setMiniPlayerAlwaysShowTablet(it) }
+                )
+            ),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
+
+    // Bottom sheets - same components as the Settings screens
+    if (showTextAlignmentSheet) {
+        PlayerTextAlignmentBottomSheet(
+            currentAlignment = playerTextAlignment,
+            onAlignmentSelected = { value ->
+                appSettings.setPlayerTextAlignment(value)
+                showTextAlignmentSheet = false
+            },
+            onDismiss = { showTextAlignmentSheet = false },
+            context = context,
+            haptics = haptic
+        )
+    }
+    if (showProgressStyleSheet) {
+        ProgressStyleBottomSheet(
+            title = context.getString(R.string.settings_miniplayer_progress_style),
+            currentStyle = if (isPlayer) playerProgressStyle else miniProgressStyle,
+            onStyleSelected = { style ->
+                if (isPlayer) {
+                    appSettings.setPlayerProgressStyle(style)
+                } else {
+                    appSettings.setMiniPlayerProgressStyle(style)
+                }
+                showProgressStyleSheet = false
+            },
+            onDismiss = { showProgressStyleSheet = false },
+            context = context,
+            haptics = haptic
+        )
+    }
+    if (showThumbStyleSheet) {
+        ThumbStyleBottomSheet(
+            title = context.getString(R.string.settings_thumb_style),
+            currentStyle = playerThumbStyle,
+            onStyleSelected = { style ->
+                appSettings.setPlayerProgressThumbStyle(style)
+                showThumbStyleSheet = false
+            },
+            onDismiss = { showThumbStyleSheet = false },
+            context = context,
+            haptics = haptic
+        )
+    }
+    if (showArtworkSizeSheet) {
+        MiniPlayerArtworkSizeSheet(
+            currentSize = miniArtworkSize,
+            onSizeSelected = { size ->
+                appSettings.setMiniPlayerArtworkSize(size)
+                showArtworkSizeSheet = false
+            },
+            onDismiss = { showArtworkSizeSheet = false },
+            context = context,
+            haptics = haptic
+        )
+    }
+    if (showCornerRadiusSheet) {
+        MiniPlayerCornerRadiusSheet(
+            currentRadius = miniCornerRadius,
+            onRadiusSelected = { radius ->
+                appSettings.setMiniPlayerCornerRadius(radius)
+                showCornerRadiusSheet = false
+            },
+            onDismiss = { showCornerRadiusSheet = false },
+            context = context,
+            haptics = haptic
+        )
+    }
+}
+
+
+@Composable
+private fun ThemingCustomizationSection(
+    appSettings: AppSettings,
+    context: Context
+) {
+    val haptic = LocalHapticFeedback.current
+    var showColorSourceDialog by remember { mutableStateOf(false) }
+    var showFontSelectionDialog by remember { mutableStateOf(false) }
+
+    val colorSource by appSettings.colorSource.collectAsState()
+    val customColorScheme by appSettings.customColorScheme.collectAsState()
+    val customFont by appSettings.customFont.collectAsState()
+
+    // Color schemes - same list as Theme Customization settings screen
+    val colorSchemes = remember(context) {
+        listOf(
+            ColorSchemeOption("Default", context.getString(R.string.color_scheme_default_title), context.getString(R.string.color_scheme_default_desc), Color(0xFF6750A4), Color(0xFF625B71), Color(0xFF7D5260)),
+            ColorSchemeOption("Warm", context.getString(R.string.color_scheme_warm_title), context.getString(R.string.color_scheme_warm_desc), Color(0xFFFF6B35), Color(0xFFF7931E), Color(0xFFFFC857)),
+            ColorSchemeOption("Cool", context.getString(R.string.color_scheme_cool_title), context.getString(R.string.color_scheme_cool_desc), Color(0xFF1E88E5), Color(0xFF00897B), Color(0xFF80DEEA)),
+            ColorSchemeOption("Forest", context.getString(R.string.color_scheme_forest_title), context.getString(R.string.color_scheme_forest_desc), Color(0xFF2E7D32), Color(0xFF558B2F), Color(0xFF9CCC65)),
+            ColorSchemeOption("Rose", context.getString(R.string.color_scheme_rose_title), context.getString(R.string.color_scheme_rose_desc), Color(0xFFE91E63), Color(0xFFC2185B), Color(0xFFF8BBD0)),
+            ColorSchemeOption("Monochrome", context.getString(R.string.color_scheme_monochrome_title), context.getString(R.string.color_scheme_monochrome_desc), Color(0xFF424242), Color(0xFF616161), Color(0xFF9E9E9E)),
+            ColorSchemeOption("Lavender", context.getString(R.string.color_scheme_lavender_title), context.getString(R.string.color_scheme_lavender_desc), Color(0xFF7C4DFF), Color(0xFF9575CD), Color(0xFFBA68C8)),
+            ColorSchemeOption("Ocean", context.getString(R.string.color_scheme_ocean_title), context.getString(R.string.color_scheme_ocean_desc), Color(0xFF006064), Color(0xFF00838F), Color(0xFF00ACC1)),
+            ColorSchemeOption("Aurora", context.getString(R.string.color_scheme_aurora_title), context.getString(R.string.color_scheme_aurora_desc), Color(0xFF00C853), Color(0xFF00E676), Color(0xFF69F0AE)),
+            ColorSchemeOption("Amber", context.getString(R.string.color_scheme_amber_title), context.getString(R.string.color_scheme_amber_desc), Color(0xFFFF6F00), Color(0xFFFF8F00), Color(0xFFFFC107)),
+            ColorSchemeOption("Crimson", context.getString(R.string.color_scheme_crimson_title), context.getString(R.string.color_scheme_crimson_desc), Color(0xFFB71C1C), Color(0xFFC62828), Color(0xFFD32F2F)),
+            ColorSchemeOption("Emerald", context.getString(R.string.color_scheme_emerald_title), context.getString(R.string.color_scheme_emerald_desc), Color(0xFF2E7D32), Color(0xFF388E3C), Color(0xFF4CAF50)),
+            ColorSchemeOption("Mint", context.getString(R.string.color_scheme_mint_title), context.getString(R.string.color_scheme_mint_desc), Color(0xFF0097A7), Color(0xFF00ACC1), Color(0xFF00BCD4))
+        )
+    }
+
+    val fontOptions = remember(context) {
+        listOf(
+            FontOption("Geom", "Geom", context.getString(R.string.font_geom_desc)),
+            FontOption("System", context.getString(R.string.font_system_title), context.getString(R.string.font_system_desc)),
+            FontOption("Slate", "Slate", context.getString(R.string.font_slate_desc)),
+            FontOption("Inter", "Inter", context.getString(R.string.font_inter_desc)),
+            FontOption("JetBrains", "JetBrains Mono", context.getString(R.string.font_jetbrains_desc)),
+            FontOption("Quicksand", "Quicksand", context.getString(R.string.font_quicksand_desc))
+        )
+    }
+
+    val colorSourceDescription = when (colorSource) {
+        "ALBUM_ART" -> context.getString(R.string.color_source_album_art_desc)
+        "MONET" -> context.getString(R.string.color_source_system_colors_desc)
+        else -> context.getString(R.string.color_source_custom_scheme_desc)
+    }
+    val fontIndex = fontOptions.indexOfFirst { it.name == customFont }.coerceAtLeast(0)
+
+    TourSectionTitle(context.getString(R.string.settings_color_customization))
+    Material3SettingsGroup(
+        items = listOf(
+            Material3SettingsItem(
+                icon = RhythmIcons.Palette,
+                title = { Text(context.getString(R.string.settings_color_source)) },
+                description = { Text(colorSourceDescription) },
+                trailingContent = {
+                    Icon(
+                        imageVector = RhythmIcons.Forward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                    showColorSourceDialog = true
+                }
+            )
+        ) + if (colorSource == "CUSTOM") {
+            listOf(
+                Material3SettingsItem(
+                    icon = MaterialSymbolIcon("color_lens"),
+                    title = { Text(context.getString(R.string.settings_color_schemes)) },
+                    description = {
+                        Column {
+                            Text(
+                                text = context.getString(R.string.settings_color_schemes_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+                            ColorSchemePaletteRow(
+                                schemes = colorSchemes,
+                                currentScheme = customColorScheme,
+                                onSchemeSelected = { scheme ->
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    appSettings.setCustomColorScheme(scheme)
+                                }
+                            )
+                        }
+                    }
+                )
+            )
+        } else {
+            emptyList()
+        },
+        containerColor = MaterialTheme.colorScheme.surface
+    )
+
+    TourSectionTitle(context.getString(R.string.settings_font_customization))
+    Material3SettingsGroup(
+        items = listOf(                Material3SettingsItem(
+                    icon = MaterialSymbolIcon("text_fields"),
+                    title = { Text(context.getString(R.string.settings_font_selection)) },
+                    description = { Text(fontOptions[fontIndex].description) },
+                    trailingContent = {
+                        Icon(
+                            imageVector = RhythmIcons.Forward,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                        showFontSelectionDialog = true
+                    }
+                )
+        ),
+        containerColor = MaterialTheme.colorScheme.surface
+    )
+
+    ColorSourceDialog(
+        showDialog = showColorSourceDialog,
+        onDismiss = { showColorSourceDialog = false },
+        selectedColorSource = when (colorSource) {
+            "ALBUM_ART" -> ColorSource.ALBUM_ART
+            "MONET" -> ColorSource.MONET
+            else -> ColorSource.CUSTOM
+        },
+        onColorSourceSelected = { _ -> /* applied internally via appSettings */ },
+        appSettings = appSettings,
+        context = context,
+        haptic = haptic
+    )
+
+    FontSelectionDialog(
+        showDialog = showFontSelectionDialog,
+        onDismiss = { showFontSelectionDialog = false },
+        fontOptions = fontOptions,
+        currentFont = customFont,
+        selectedFontSource = FontSource.SYSTEM,
+        onFontSelected = { selectedFont ->
+            appSettings.setCustomFont(selectedFont)
+            showFontSelectionDialog = false
+        },
+        appSettings = appSettings,
+        context = context,
+        haptic = haptic
+    )
+}
+
 // INTEGRATIONS ONBOARDING STEP
 // =====================================================
 
@@ -10000,6 +10104,7 @@ fun EnhancedIntegrationsContent(
     val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
     val ytMusicApiEnabled by appSettings.ytMusicApiEnabled.collectAsState()
     val spotifyApiEnabled by appSettings.spotifyApiEnabled.collectAsState()
+    val wikipediaApiEnabled by appSettings.wikipediaApiEnabled.collectAsState()
     val broadcastStatusEnabled by appSettings.broadcastStatusEnabled.collectAsState()
     val bluetoothLyricsEnabled by appSettings.bluetoothLyricsEnabled.collectAsState()
     val appleCanvasEnabled by appSettings.appleCanvasEnabled.collectAsState()
@@ -10065,6 +10170,7 @@ fun EnhancedIntegrationsContent(
                     lyricallyApiEnabled = lyricallyApiEnabled,
                     ytMusicApiEnabled = ytMusicApiEnabled,
                     spotifyApiEnabled = spotifyApiEnabled,
+                    wikipediaApiEnabled = wikipediaApiEnabled,
                     broadcastStatusEnabled = broadcastStatusEnabled,
                     bluetoothLyricsEnabled = bluetoothLyricsEnabled,
                     appleCanvasEnabled = appleCanvasEnabled,
@@ -10074,6 +10180,7 @@ fun EnhancedIntegrationsContent(
                     onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
                     onYtMusicChange = { appSettings.setYTMusicApiEnabled(it) },
                     onSpotifyChange = { appSettings.setSpotifyApiEnabled(it) },
+                    onWikipediaChange = { appSettings.setWikipediaApiEnabled(it) },
                     onBroadcastChange = { appSettings.setBroadcastStatusEnabled(it) },
                     onBluetoothLyricsChange = {
                         appSettings.setBluetoothLyricsEnabled(it)
@@ -10125,6 +10232,7 @@ fun EnhancedIntegrationsContent(
                 lyricallyApiEnabled = lyricallyApiEnabled,
                 ytMusicApiEnabled = ytMusicApiEnabled,
                 spotifyApiEnabled = spotifyApiEnabled,
+                wikipediaApiEnabled = wikipediaApiEnabled,
                 broadcastStatusEnabled = broadcastStatusEnabled,
                 bluetoothLyricsEnabled = bluetoothLyricsEnabled,
                 appleCanvasEnabled = appleCanvasEnabled,
@@ -10134,6 +10242,7 @@ fun EnhancedIntegrationsContent(
                 onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
                 onYtMusicChange = { appSettings.setYTMusicApiEnabled(it) },
                 onSpotifyChange = { appSettings.setSpotifyApiEnabled(it) },
+                onWikipediaChange = { appSettings.setWikipediaApiEnabled(it) },
                 onBroadcastChange = { appSettings.setBroadcastStatusEnabled(it) },
                 onBluetoothLyricsChange = {
                     appSettings.setBluetoothLyricsEnabled(it)
@@ -10162,6 +10271,7 @@ private fun IntegrationsSettingsCards(
     lyricallyApiEnabled: Boolean,
     ytMusicApiEnabled: Boolean,
     spotifyApiEnabled: Boolean,
+    wikipediaApiEnabled: Boolean,
     broadcastStatusEnabled: Boolean,
     bluetoothLyricsEnabled: Boolean,
     appleCanvasEnabled: Boolean,
@@ -10171,6 +10281,7 @@ private fun IntegrationsSettingsCards(
     onLyricallyChange: (Boolean) -> Unit,
     onYtMusicChange: (Boolean) -> Unit,
     onSpotifyChange: (Boolean) -> Unit,
+    onWikipediaChange: (Boolean) -> Unit,
     onBroadcastChange: (Boolean) -> Unit,
     onBluetoothLyricsChange: (Boolean) -> Unit,
     onAppleCanvasChange: (Boolean) -> Unit,
@@ -10292,6 +10403,18 @@ private fun IntegrationsSettingsCards(
                 )
             )
         }
+        if (chromahub.rhythm.app.BuildConfig.ENABLE_WIKIPEDIA) {
+            add(
+                onboardingToggleItem(
+                    MaterialSymbolIcon("article"),
+                    "Wikipedia",
+                    "Fetch album details and descriptions for About section",
+                    wikipediaApiEnabled,
+                    onWikipediaChange,
+                    null
+                )
+            )
+        }
     }
 
     val socialItems = listOf(
@@ -10396,7 +10519,6 @@ fun EnhancedRhythmStatsContent(
 
     // Stats settings
     val homeShowListeningStats by appSettings.homeShowListeningStats.collectAsState()
-    val enableRatingSystem by appSettings.enableRatingSystem.collectAsState()
 
     if (isTablet) {
         Row(
@@ -10454,9 +10576,7 @@ fun EnhancedRhythmStatsContent(
             ) {
                 StatsSettingsCard(
                     showOnHome = homeShowListeningStats,
-                    enableRating = enableRatingSystem,
-                    onShowOnHomeChange = { appSettings.setHomeShowListeningStats(it) },
-                    onEnableRatingChange = { appSettings.setEnableRatingSystem(it) }
+                    onShowOnHomeChange = { appSettings.setHomeShowListeningStats(it) }
                 )
             }
         }
@@ -10494,9 +10614,7 @@ fun EnhancedRhythmStatsContent(
 
             StatsSettingsCard(
                 showOnHome = homeShowListeningStats,
-                enableRating = enableRatingSystem,
-                onShowOnHomeChange = { appSettings.setHomeShowListeningStats(it) },
-                onEnableRatingChange = { appSettings.setEnableRatingSystem(it) }
+                onShowOnHomeChange = { appSettings.setHomeShowListeningStats(it) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -10511,9 +10629,7 @@ fun EnhancedRhythmStatsContent(
 @Composable
 private fun StatsSettingsCard(
     showOnHome: Boolean,
-    enableRating: Boolean,
-    onShowOnHomeChange: (Boolean) -> Unit,
-    onEnableRatingChange: (Boolean) -> Unit
+    onShowOnHomeChange: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -10536,24 +10652,6 @@ private fun StatsSettingsCard(
                 onClick = {
                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                     onShowOnHomeChange(!showOnHome)
-                }
-            ),
-            Material3SettingsItem(
-                icon = MaterialSymbolIcon("star"),
-                title = { Text(context.getString(R.string.onboarding_stats_rating)) },
-                description = { Text(context.getString(R.string.onboarding_stats_rating_desc)) },
-                trailingContent = {
-                    OnboardingAnimatedSwitch(
-                        checked = enableRating,
-                        onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            onEnableRatingChange(it)
-                        }
-                    )
-                },
-                onClick = {
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                    onEnableRatingChange(!enableRating)
                 }
             )
         ),
@@ -11640,7 +11738,7 @@ private fun StreamingSetupSelectionAndForm(
 @Composable
 private fun Material3SettingsGroup(
     title: String? = null,
-    items: List<chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem>,
+    items: List<Material3SettingsItem>,
     containerColor: Color = MaterialTheme.colorScheme.surface
 ) {
     chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup(

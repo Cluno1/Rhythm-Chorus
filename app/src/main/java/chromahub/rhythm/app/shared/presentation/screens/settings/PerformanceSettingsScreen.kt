@@ -278,7 +278,7 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                                         item = SettingItem(
                                             icon = MaterialSymbolIcon("touch_app"),
                                             title = stringResource(R.string.performancesettingsscreen_disable_haptics),
-                                            description = "All physical haptic feedback is disabled to conserve battery.",
+                                            description = context.getString(R.string.performancesettingsscreen_haptics_detail),
                                             toggleState = true,
                                             onToggleChange = {},
                                             enabled = false
@@ -290,7 +290,7 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                                         item = SettingItem(
                                             icon = MaterialSymbolIcon("bolt"),
                                             title = stringResource(R.string.performancesettingsscreen_enable_audio_offload),
-                                            description = "Forced hardware DSP decoding to minimize CPU workload.",
+                                            description = context.getString(R.string.performancesettingsscreen_offload_detail),
                                             toggleState = true,
                                             onToggleChange = {},
                                             enabled = false
@@ -302,7 +302,7 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                                         item = SettingItem(
                                             icon = MaterialSymbolIcon("slideshow"),
                                             title = stringResource(R.string.performancesettingsscreen_disable_text_marquee),
-                                            description = "Sliding animations are paused to reduce display refresh cycles.",
+                                            description = context.getString(R.string.performancesettingsscreen_marquee_detail),
                                             toggleState = true,
                                             onToggleChange = {},
                                             enabled = false
@@ -314,7 +314,7 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                                         item = SettingItem(
                                             icon = RhythmIcons.Image,
                                             title = stringResource(R.string.performancesettingsscreen_disable_lossless_artwork),
-                                            description = "Lossless artwork is disabled to reduce data decoding and memory overhead.",
+                                            description = context.getString(R.string.performancesettingsscreen_lossless_detail),
                                             toggleState = true,
                                             onToggleChange = {},
                                             enabled = false
@@ -326,7 +326,7 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                                         item = SettingItem(
                                             icon = MaterialSymbolIcon("cloud_off"),
                                             title = stringResource(R.string.performancesettingsscreen_disable_auto_fetch_artwork),
-                                            description = "Auto-fetching missing artwork from online sources is disabled to prevent lag.",
+                                            description = context.getString(R.string.performancesettingsscreen_autofetch_detail),
                                             toggleState = true,
                                             onToggleChange = {},
                                             enabled = false
@@ -345,7 +345,7 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                                         item = SettingItem(
                                             icon = MaterialSymbolIcon("touch_app"),
                                             title = stringResource(R.string.performancesettingsscreen_disable_haptics),
-                                            description = "Disable touch vibrations to extend battery life",
+                                            description = context.getString(R.string.performancesettingsscreen_disable_haptics_desc),
                                             toggleState = batterySaverDisableHaptics,
                                             onToggleChange = { appSettings.setBatterySaverDisableHaptics(it) }
                                         )
@@ -356,7 +356,7 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                                         item = SettingItem(
                                             icon = MaterialSymbolIcon("bolt"),
                                             title = stringResource(R.string.performancesettingsscreen_enable_audio_offload),
-                                            description = "Use hardware DSP decoding under Performance",
+                                            description = context.getString(R.string.performancesettingsscreen_enable_audio_offload_desc),
                                             toggleState = batterySaverEnableOffload,
                                             onToggleChange = { appSettings.setBatterySaverEnableOffload(it) }
                                         )
@@ -367,7 +367,7 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                                         item = SettingItem(
                                             icon = MaterialSymbolIcon("slideshow"),
                                             title = stringResource(R.string.performancesettingsscreen_disable_text_marquee),
-                                            description = "Pause title sliding animations to save screen power",
+                                            description = context.getString(R.string.performancesettingsscreen_disable_text_marquee_desc),
                                             toggleState = batterySaverDisableMarquee,
                                             onToggleChange = { appSettings.setBatterySaverDisableMarquee(it) }
                                         )
@@ -378,7 +378,7 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                                         item = SettingItem(
                                             icon = RhythmIcons.Image,
                                             title = stringResource(R.string.performancesettingsscreen_disable_lossless_artwork),
-                                            description = "Use standard artwork instead of lossless under Performance",
+                                            description = context.getString(R.string.performancesettingsscreen_disable_lossless_artwork_desc),
                                             toggleState = batterySaverDisableLosslessArtwork,
                                             onToggleChange = { appSettings.setBatterySaverDisableLosslessArtwork(it) }
                                         )
@@ -389,7 +389,7 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                                         item = SettingItem(
                                             icon = MaterialSymbolIcon("cloud_off"),
                                             title = stringResource(R.string.performancesettingsscreen_disable_auto_fetch_artwork),
-                                            description = "Disable auto-fetching artwork to reduce lag and network overhead",
+                                            description = context.getString(R.string.performancesettingsscreen_disable_auto_fetch_artwork_desc),
                                             toggleState = batterySaverDisableAutoFetchArtwork,
                                             onToggleChange = { appSettings.setBatterySaverDisableAutoFetchArtwork(it) }
                                         )

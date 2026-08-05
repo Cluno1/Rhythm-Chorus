@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -185,7 +186,7 @@ fun UniversalSearchScreen(
     }
 
     val localSongs by localViewModel.filteredSongs.collectAsState()
-    val fullLocalAlbums by localViewModel.albums.collectAsState()
+    val fullLocalAlbums by localViewModel.filteredAlbums.collectAsState()
     val localArtists by localViewModel.filteredArtists.collectAsState()
     val localPlaylists by localViewModel.playlists.collectAsState()
     val searchHistory by localViewModel.searchHistory.collectAsState()
@@ -1075,29 +1076,35 @@ fun UniversalSearchScreen(
         }
 
         // Bottom Search Bar & Controls Area
-        Column(
+        Box(
             modifier = Modifier
-                .then(
-                    if (isTablet) {
-                        Modifier.widthIn(max = 680.dp).align(Alignment.BottomCenter)
-                    } else {
-                        Modifier.fillMaxWidth().align(Alignment.BottomCenter)
-                    }
-                )
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
                 .background(
                     brush = Brush.verticalGradient(
                         colorStops = arrayOf(
                             0f to Color.Transparent,
-                            0.2f to MaterialTheme.colorScheme.background.copy(alpha = 0.92f),
+                            0.18f to MaterialTheme.colorScheme.background.copy(alpha = 0.93f),
                             1f to MaterialTheme.colorScheme.background
                         )
                     )
                 )
                 .navigationBarsPadding()
                 .imePadding()
+        ) {
+        Column(
+            modifier = Modifier
+                .then(
+                    if (isTablet) {
+                        Modifier.widthIn(max = 680.dp).align(Alignment.BottomCenter)
+                    } else {
+                        Modifier.fillMaxWidth()
+                    }
+                )
                 .padding(horizontal = horizontalPadding)
                 .padding(top = 16.dp, bottom = 12.dp)
                 .animateContentSize(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium))
+                .align(Alignment.BottomCenter)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1314,6 +1321,7 @@ fun UniversalSearchScreen(
                 }
             }
         }
+        } // end Box (gradient wrapper)
 
         AnimatedVisibility(
             visible = showAllSongsPage,
@@ -1418,7 +1426,7 @@ fun UniversalSearchScreen(
                 onGoToAlbum = {
                     showSongOptionsSheet = false
                     if (isLocal) {
-                        val album = localViewModel.albums.value.findAlbumForSong(songObj)
+                        val album = localViewModel.filteredAlbums.value.findAlbumForSong(songObj)
                         if (album != null) {
                             handleAction("LOCAL") { onLocalAlbumClick(album) }
                         } else Toast.makeText(context, R.string.universalsearchscreen_album_not_found, Toast.LENGTH_SHORT).show()
@@ -1474,6 +1482,14 @@ fun UniversalSearchScreen(
                         if (isLocal) {
                             appSettings.addToBlacklist(songObj.id)
                             Toast.makeText(context, context.getString(R.string.song_added_to_blacklist_format, songObj.title), Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    showSongOptionsSheet = false
+                },
+                onDeleteSong = {
+                    handleAction("LOCAL") {
+                        if (isLocal) {
+                            localViewModel.deleteSong(songObj)
                         }
                     }
                     showSongOptionsSheet = false
@@ -2002,6 +2018,7 @@ fun UniversalSongOptionsBottomSheet(
     onGoToAlbum: () -> Unit,
     onGoToArtist: () -> Unit,
     onAddToBlacklist: () -> Unit,
+    onDeleteSong: () -> Unit,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback
 ) {
     val context = LocalContext.current
@@ -2146,6 +2163,15 @@ fun UniversalSongOptionsBottomSheet(
                                         onClick = onAddToBlacklist
                                     )
                                 )
+                                add(
+                                    UniversalOptionItem(
+                                        icon = RhythmIcons.Delete,
+                                        text = context.getString(R.string.action_delete_song),
+                                        containerColor = errorContainer,
+                                        iconColor = errorColor,
+                                        onClick = onDeleteSong
+                                    )
+                                )
                             }
                             add(
                                 UniversalOptionItem(
@@ -2161,43 +2187,61 @@ fun UniversalSongOptionsBottomSheet(
 
                     val chunks = remember(gridItems) { gridItems.chunked(2) }
 
-                    chunks.forEach { chunk ->
+                    chunks.forEachIndexed { rowIndex, chunk ->
                         if (chunk.size == 2) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(IntrinsicSize.Max),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Box(modifier = Modifier.weight(1f)) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                ) {
+                                    val index0 = rowIndex * 2
                                     UniversalSongOptionGridItem(
                                         icon = chunk[0].icon,
                                         text = chunk[0].text,
                                         containerColor = chunk[0].containerColor,
                                         iconColor = chunk[0].iconColor,
+                                        shape = getUniversalGridItemShape(index0, gridItems.size),
                                         onClick = {
                                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                             chunk[0].onClick()
-                                        }
+                                        },
+                                        modifier = Modifier.fillMaxHeight()
                                     )
                                 }
-                                Box(modifier = Modifier.weight(1f)) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                ) {
+                                    val index1 = rowIndex * 2 + 1
                                     UniversalSongOptionGridItem(
                                         icon = chunk[1].icon,
                                         text = chunk[1].text,
                                         containerColor = chunk[1].containerColor,
                                         iconColor = chunk[1].iconColor,
+                                        shape = getUniversalGridItemShape(index1, gridItems.size),
                                         onClick = {
                                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                             chunk[1].onClick()
-                                        }
+                                        },
+                                        modifier = Modifier.fillMaxHeight()
                                     )
                                 }
                             }
                         } else {
+                            val index0 = rowIndex * 2
                             UniversalSongOptionGridItem(
                                 icon = chunk[0].icon,
                                 text = chunk[0].text,
                                 containerColor = chunk[0].containerColor,
                                 iconColor = chunk[0].iconColor,
+                                shape = getUniversalGridItemShape(index0, gridItems.size),
                                 onClick = {
                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                     chunk[0].onClick()
@@ -2315,12 +2359,48 @@ private fun UniversalSongOptionsHeader(
     }
 }
 
+private fun getUniversalGridItemShape(index: Int, totalItems: Int): RoundedCornerShape {
+    if (totalItems <= 1) return RoundedCornerShape(24.dp)
+    if (totalItems == 2) {
+        return if (index == 0) {
+            RoundedCornerShape(topStart = 24.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 8.dp)
+        } else {
+            RoundedCornerShape(topStart = 8.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 24.dp)
+        }
+    }
+    
+    val totalRows = (totalItems + 1) / 2
+    val r = index / 2
+    val c = index % 2
+    
+    return when {
+        r == 0 -> {
+            if (c == 0) {
+                RoundedCornerShape(topStart = 24.dp, topEnd = 8.dp, bottomStart = 8.dp, bottomEnd = 8.dp)
+            } else {
+                RoundedCornerShape(topStart = 8.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 8.dp)
+            }
+        }
+        r == totalRows - 1 -> {
+            if (index == totalItems - 1 && c == 0) {
+                RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
+            } else if (c == 0) {
+                RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 8.dp)
+            } else {
+                RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 8.dp, bottomEnd = 24.dp)
+            }
+        }
+        else -> RoundedCornerShape(8.dp)
+    }
+}
+
 @Composable
 private fun UniversalSongOptionGridItem(
     icon: chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon,
     text: String,
     containerColor: Color,
     iconColor: Color,
+    shape: Shape,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -2330,41 +2410,29 @@ private fun UniversalSongOptionGridItem(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        shape = RoundedCornerShape(16.dp),
+        shape = shape,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(16.dp)
         ) {
             Surface(
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(36.dp),
                 shape = CircleShape,
-                color = containerColor.copy(alpha = 0.3f),
+                color = containerColor.copy(alpha = 0.25f),
                 tonalElevation = 0.dp
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    containerColor.copy(alpha = 0.15f),
-                                    containerColor.copy(alpha = 0.05f)
-                                ),
-                                radius = 22f
-                            )
-                        )
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = iconColor,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -2373,10 +2441,10 @@ private fun UniversalSongOptionGridItem(
 
             Text(
                 text = text,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2,
-                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
@@ -2432,11 +2500,11 @@ private fun UniversalGenreBrowseSection(
             val isTablet = configuration.screenWidthDp >= 600
             val columnsCount = if (isTablet) 3 else 2
             val rows = remember(genres, columnsCount) { genres.chunked(columnsCount) }
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 rows.forEachIndexed { rowIndex, rowGenres ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         rowGenres.forEachIndexed { colIndex, genre ->
                             val itemIndex = rowIndex * columnsCount + colIndex
@@ -2444,6 +2512,8 @@ private fun UniversalGenreBrowseSection(
                                 genre = genre,
                                 songCount = genreSongCounts[genre] ?: 0,
                                 index = itemIndex,
+                                totalItems = genres.size,
+                                columnsCount = columnsCount,
                                 onClick = { onGenreClick(genre) },
                                 modifier = Modifier.weight(1f)
                             )
@@ -2460,21 +2530,34 @@ private fun UniversalGenreBrowseSection(
     }
 }
 
+private fun getUniversalResponsiveGridItemShape(index: Int, totalItems: Int, columnsCount: Int): RoundedCornerShape {
+    if (totalItems <= 1) return RoundedCornerShape(24.dp)
+    val totalRows = (totalItems + columnsCount - 1) / columnsCount
+    val r = index / columnsCount
+    val c = index % columnsCount
+    val isTopRow = r == 0
+    val isBottomRow = r == totalRows - 1
+    val isLeftColumn = c == 0
+    val isRightColumn = c == columnsCount - 1 || index == totalItems - 1
+    val topStart = if (isTopRow && isLeftColumn) 24.dp else 8.dp
+    val topEnd = if (isTopRow && isRightColumn) 24.dp else 8.dp
+    val bottomStart = if (isBottomRow && isLeftColumn) 24.dp else 8.dp
+    val bottomEnd = if (isBottomRow && isRightColumn) 24.dp else 8.dp
+    return RoundedCornerShape(topStart = topStart, topEnd = topEnd, bottomStart = bottomStart, bottomEnd = bottomEnd)
+}
+
 @Composable
 private fun UniversalGenreBrowseItemCard(
     genre: String,
     songCount: Int,
     index: Int,
+    totalItems: Int,
+    columnsCount: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val shape = remember(index) {
-        when (index % 4) {
-            0 -> RoundedCornerShape(topStart = 32.dp, topEnd = 12.dp, bottomEnd = 32.dp, bottomStart = 12.dp)
-            1 -> RoundedCornerShape(topStart = 12.dp, topEnd = 32.dp, bottomEnd = 12.dp, bottomStart = 32.dp)
-            2 -> RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp, bottomEnd = 12.dp, bottomStart = 12.dp)
-            else -> RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomEnd = 32.dp, bottomStart = 32.dp)
-        }
+    val shape = remember(index, totalItems, columnsCount) {
+        getUniversalResponsiveGridItemShape(index, totalItems, columnsCount)
     }
 
     val colorPair = when (index % 3) {

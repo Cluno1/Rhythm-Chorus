@@ -80,7 +80,7 @@ fun FestiveSettingsScreen(
                         FestiveSettingRow(
                             icon = MaterialSymbolIcon("celebration"),
                             title = stringResource(R.string.theme_enable_festive),
-                            description = "Show festive decorations across the app",
+                            description = context.getString(R.string.festive_enabled_desc),
                             checked = festiveEnabled,
                             onCheckedChange = { 
                                 HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.HEAVY)
@@ -97,7 +97,7 @@ fun FestiveSettingsScreen(
                             FestiveSettingRow(
                                 icon = MaterialSymbolIcon("event_available"),
                                 title = stringResource(R.string.theme_auto_detect),
-                                description = "Automatically show decorations for holidays",
+                                description = context.getString(R.string.festive_auto_detect_desc),
                                 checked = festiveAutoDetect,
                                 onCheckedChange = { 
                                     HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.HEAVY)
@@ -132,7 +132,7 @@ fun FestiveSettingsScreen(
                             FestiveTypeOption(
                                 icon = MaterialSymbolIcon("ac_unit"),
                                 title = stringResource(R.string.settings_festival_christmas),
-                                description = "Snowfall decorations",
+                                description = context.getString(R.string.festive_christmas_desc),
                                 selected = festiveType == "CHRISTMAS",
                                 onClick = { 
                                     HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.HEAVY)
@@ -148,7 +148,7 @@ fun FestiveSettingsScreen(
                             FestiveTypeOption(
                                 icon = MaterialSymbolIcon("celebration"),
                                 title = stringResource(R.string.settings_festival_new_year),
-                                description = "Festive snowfall and sparkles",
+                                description = context.getString(R.string.festive_new_year_desc),
                                 selected = festiveType == "NEW_YEAR",
                                 onClick = { 
                                     HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.HEAVY)

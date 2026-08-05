@@ -2,7 +2,6 @@
 
 package chromahub.rhythm.app.shared.presentation.components.player
 
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.platform.LocalConfiguration
@@ -47,7 +46,6 @@ import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.presentation.components.common.AutoScrollingTextOnDemand
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
-import chromahub.rhythm.app.shared.presentation.components.common.M3CircularLoader
 import chromahub.rhythm.app.shared.presentation.components.common.ShimmerBox
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -84,11 +82,10 @@ fun ExpressiveMiniPlayer(
     val isCompactHeight = configuration.screenHeightDp < 500
     val isLargeHeight = configuration.screenHeightDp >= 700
     val alwaysShowTabletLayout by appSettings.miniPlayerAlwaysShowTablet.collectAsState()
+    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
     val useTabletLayout = isTablet || (alwaysShowTabletLayout && !isTablet)
 
-    val miniPlayerShowProgress by appSettings.miniPlayerShowProgress.collectAsState()
     val miniPlayerShowArtwork by appSettings.miniPlayerShowArtwork.collectAsState()
-    val miniPlayerUseCircularProgress by appSettings.miniPlayerUseCircularProgress.collectAsState()
 
     
     val animatedProgress by animateFloatAsState(
@@ -195,158 +192,157 @@ fun ExpressiveMiniPlayer(
         }
     }
 
+    val surfaceModifier = (if (useTabletLayout) {
+        if (isLandscapeTablet) {
+            Modifier
+                .width(380.dp)
+                .height(84.dp)
+                .padding(end = 24.dp, bottom = 8.dp)
+        } else {
+            Modifier
+                .widthIn(max = 500.dp)
+                .fillMaxWidth(0.92f)
+                .height(84.dp)
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 8.dp)
+        }
+    } else {
+        Modifier
+            .fillMaxWidth()
+            .height(84.dp)
+            .padding(horizontal = 14.dp, vertical = 6.dp)
+    })
+        .scale(scale * songBounceScale * initialAppearanceBounceScale * dragScale)
+        .graphicsLayer {
+            translationY = translationOffsetY
+            translationX = translationOffsetX
+            alpha = alphaValue
+        }
+        .pointerInput(miniPlayerSwipeGestures, verticalDragEnabled) {
+            if (miniPlayerSwipeGestures) {
+                if (verticalDragEnabled) {
+                    detectDragGestures(
+                        onDragStart = {
+                            lastHapticOffset = 0f
+                            lastHapticOffsetX = 0f
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                        },
+                        onDragEnd = {
+                            val absX = abs(offsetX)
+                            val absY = abs(offsetY)
+
+                            if (absX > absY) {
+                                if (offsetX < -swipeHorizontalThreshold) {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    onSkipNext()
+                                } else if (offsetX > swipeHorizontalThreshold) {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    onSkipPrevious()
+                                } else {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                }
+                            } else {
+                                if (offsetY < -swipeUpThreshold) {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    onPlayerClick()
+                                } else if (offsetY > swipeDownThreshold) {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    isDismissingPlayer = true
+                                } else {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                }
+                            }
+
+                            if (!isDismissingPlayer) {
+                                offsetY = 0f
+                                offsetX = 0f
+                            }
+                        },
+                        onDragCancel = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            if (!isDismissingPlayer) {
+                                offsetY = 0f
+                                offsetX = 0f
+                            }
+                        },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            offsetX += dragAmount.x
+                            offsetY += dragAmount.y
+
+                            if (abs(offsetY) > abs(offsetX)) {
+                                if (offsetY < 0 && abs(offsetY) - abs(lastHapticOffset) > swipeUpThreshold / 3) {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    lastHapticOffset = offsetY
+                                } else if (offsetY > 0 && abs(offsetY) - abs(lastHapticOffset) > swipeDownThreshold / 3) {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    lastHapticOffset = offsetY
+                                }
+                            } else {
+                                if (abs(offsetX) - abs(lastHapticOffsetX) > swipeHorizontalThreshold / 3) {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    lastHapticOffsetX = offsetX
+                                }
+                            }
+                        }
+                    )
+                } else {
+                    detectHorizontalDragGestures(
+                        onDragStart = {
+                            lastHapticOffsetX = 0f
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                        },
+                        onDragEnd = {
+                            if (offsetX < -swipeHorizontalThreshold) {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                onSkipNext()
+                            } else if (offsetX > swipeHorizontalThreshold) {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                onSkipPrevious()
+                            } else {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            }
+                            offsetX = 0f
+                        },
+                        onDragCancel = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            offsetX = 0f
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            offsetX += dragAmount
+                            if (abs(offsetX) - abs(lastHapticOffsetX) > swipeHorizontalThreshold / 3) {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                lastHapticOffsetX = offsetX
+                            }
+                        }
+                    )
+                }
+            }
+        }
+        .clickable(
+            interactionSource = interactionSource,
+            indication = null,
+            onClick = {
+                if (!isDismissingPlayer) {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                    onPlayerClick()
+                }
+            }
+        )
+
     Box(
         modifier = modifier.fillMaxWidth(),
-        contentAlignment = if (useTabletLayout) Alignment.BottomEnd else Alignment.BottomCenter
+        contentAlignment = if (useTabletLayout) {
+            if (isLandscapeTablet) Alignment.BottomEnd else Alignment.BottomCenter
+        } else {
+            Alignment.BottomCenter
+        }
     ) {
         Surface(
-            modifier = if (useTabletLayout) {
-                Modifier
-                    .width(380.dp)
-                    .height(92.dp)
-                    .padding(end = 24.dp, bottom = 16.dp)
-                    .scale(scale * songBounceScale * initialAppearanceBounceScale)
-                    .graphicsLayer {
-                        translationY = translationOffsetY
-                        translationX = translationOffsetX
-                        alpha = alphaValue
-                    }
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = {
-                            if (!isDismissingPlayer) {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                onPlayerClick()
-                            }
-                        }
-                    )
-            } else {
-                Modifier
-                    .fillMaxWidth()
-                    .height(84.dp)
-                    .padding(horizontal = 14.dp, vertical = 6.dp)
-                    .scale(scale * songBounceScale * initialAppearanceBounceScale * dragScale)
-                    .graphicsLayer {
-                        translationY = translationOffsetY
-                        translationX = translationOffsetX
-                        alpha = alphaValue
-                    }
-                    .pointerInput(miniPlayerSwipeGestures, verticalDragEnabled) {
-                        if (miniPlayerSwipeGestures) {
-                            if (verticalDragEnabled) {
-                                detectDragGestures(
-                                    onDragStart = {
-                                        lastHapticOffset = 0f
-                                        lastHapticOffsetX = 0f
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    },
-                                    onDragEnd = {
-                                        val absX = abs(offsetX)
-                                        val absY = abs(offsetY)
-
-                                        if (absX > absY) {
-                                            if (offsetX < -swipeHorizontalThreshold) {
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                                onSkipNext()
-                                            } else if (offsetX > swipeHorizontalThreshold) {
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                                onSkipPrevious()
-                                            } else {
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                            }
-                                        } else {
-                                            if (offsetY < -swipeUpThreshold) {
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                                onPlayerClick()
-                                            } else if (offsetY > swipeDownThreshold) {
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                                isDismissingPlayer = true
-                                            } else {
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                            }
-                                        }
-
-                                        if (!isDismissingPlayer) {
-                                            offsetY = 0f
-                                            offsetX = 0f
-                                        }
-                                    },
-                                    onDragCancel = {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                        if (!isDismissingPlayer) {
-                                            offsetY = 0f
-                                            offsetX = 0f
-                                        }
-                                    },
-                                    onDrag = { change, dragAmount ->
-                                        change.consume()
-                                        offsetX += dragAmount.x
-                                        offsetY += dragAmount.y
-
-                                        if (abs(offsetY) > abs(offsetX)) {
-                                            if (offsetY < 0 && abs(offsetY) - abs(lastHapticOffset) > swipeUpThreshold / 3) {
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                                lastHapticOffset = offsetY
-                                            } else if (offsetY > 0 && abs(offsetY) - abs(lastHapticOffset) > swipeDownThreshold / 3) {
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                                lastHapticOffset = offsetY
-                                            }
-                                        } else {
-                                            if (abs(offsetX) - abs(lastHapticOffsetX) > swipeHorizontalThreshold / 3) {
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                                lastHapticOffsetX = offsetX
-                                            }
-                                        }
-                                    }
-                                )
-                            } else {
-                                detectHorizontalDragGestures(
-                                    onDragStart = {
-                                        lastHapticOffsetX = 0f
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    },
-                                    onDragEnd = {
-                                        if (offsetX < -swipeHorizontalThreshold) {
-                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                            onSkipNext()
-                                        } else if (offsetX > swipeHorizontalThreshold) {
-                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                            onSkipPrevious()
-                                        } else {
-                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                        }
-                                        offsetX = 0f
-                                    },
-                                    onDragCancel = {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                        offsetX = 0f
-                                    },
-                                    onHorizontalDrag = { change, dragAmount ->
-                                        change.consume()
-                                        offsetX += dragAmount
-                                        if (abs(offsetX) - abs(lastHapticOffsetX) > swipeHorizontalThreshold / 3) {
-                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                            lastHapticOffsetX = offsetX
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = {
-                            if (!isDismissingPlayer) {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                onPlayerClick()
-                            }
-                        }
-                    )
-            },
+            modifier = surfaceModifier,
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainer // Unplayed background base
+            color = MaterialTheme.colorScheme.surfaceContainer
         ) {
             if (useTabletLayout) {
                 // Tablet layout
@@ -370,24 +366,19 @@ fun ExpressiveMiniPlayer(
                             .padding(start = 12.dp, end = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Album art with optional circular wavy progress ring
+                        // Album art
                         if (miniPlayerShowArtwork) {
                             Box(
                                 modifier = Modifier.size(56.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (song != null && miniPlayerShowProgress && miniPlayerUseCircularProgress) {
-                                    CircularWavyProgressIndicator(
-                                        progress = { animatedProgress },
-                                        modifier = Modifier.size(56.dp),
-                                        trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                                    )
-                                    Surface(
-                                        modifier = Modifier.size(46.dp),
-                                        shape = miniPlayerArtShape,
-                                        color = MaterialTheme.colorScheme.surfaceVariant
-                                    ) {
-                                        Box(modifier = Modifier.fillMaxSize()) {
+                                Surface(
+                                    modifier = Modifier.size(46.dp),
+                                    shape = miniPlayerArtShape,
+                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                ) {
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        if (song != null) {
                                             ShimmerBox(modifier = Modifier.fillMaxSize())
                                             M3ImageUtils.TrackImage(
                                                 imageUrl = song.artworkUri,
@@ -395,37 +386,19 @@ fun ExpressiveMiniPlayer(
                                                 modifier = Modifier.fillMaxSize(),
                                                 applyExpressiveShape = false
                                             )
-                                        }
-                                    }
-                                } else {
-                                    Surface(
-                                        modifier = Modifier.size(46.dp),
-                                        shape = miniPlayerArtShape,
-                                        color = MaterialTheme.colorScheme.surfaceVariant
-                                    ) {
-                                        Box(modifier = Modifier.fillMaxSize()) {
-                                            if (song != null) {
-                                                ShimmerBox(modifier = Modifier.fillMaxSize())
-                                                M3ImageUtils.TrackImage(
-                                                    imageUrl = song.artworkUri,
-                                                    trackName = song.title,
-                                                    modifier = Modifier.fillMaxSize(),
-                                                    applyExpressiveShape = false
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .background(MaterialTheme.colorScheme.secondaryContainer),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = RhythmIcons.Album,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(24.dp),
+                                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
                                                 )
-                                            } else {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .background(MaterialTheme.colorScheme.secondaryContainer),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Icon(
-                                                        imageVector = RhythmIcons.Album,
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(24.dp),
-                                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                                    )
-                                                }
                                             }
                                         }
                                     }
@@ -489,11 +462,6 @@ fun ExpressiveMiniPlayer(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        val playerControlsShape = rememberExpressiveShapeFor(
-                            ExpressiveShapeTarget.PLAYER_CONTROLS,
-                            fallbackShape = CircleShape
-                        )
-
                         // Skip Previous
                         IconButton(
                             onClick = {
@@ -511,50 +479,15 @@ fun ExpressiveMiniPlayer(
                         }
 
                         // Play/Pause
-                        val playInteractionSource = remember { MutableInteractionSource() }
-                        val isPlayPressed by playInteractionSource.collectIsPressedAsState()
-                        val playScale by animateFloatAsState(
-                            targetValue = if (isPlayPressed) 0.85f else 1f,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessMedium
-                            ),
-                            label = "playScale"
-                        )
-
-                        Surface(
+                        MorphingPlayPauseButton(
+                            isPlaying = isPlaying,
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                 onPlayPause()
                             },
-                            modifier = Modifier
-                                .size(44.dp)
-                                .graphicsLayer {
-                                    scaleX = playScale
-                                    scaleY = playScale
-                                },
-                            shape = playerControlsShape,
-                            color = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            interactionSource = playInteractionSource
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                if (isMediaLoading) {
-                                    M3CircularLoader(
-                                        modifier = Modifier.size(18.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.24f),
-                                        strokeWidth = 2.0f
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = if (isPlaying) RhythmIcons.Pause else RhythmIcons.Play,
-                                        contentDescription = if (isPlaying) "Pause" else "Play",
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-                        }
+                            size = 44.dp,
+                            isMediaLoading = isMediaLoading
+                        )
 
                         // Skip Next
                         IconButton(
@@ -685,50 +618,15 @@ fun ExpressiveMiniPlayer(
 
                         Spacer(modifier = Modifier.width(12.dp))
 
-                        val playInteractionSource = remember { MutableInteractionSource() }
-                        val isPlayPressed by playInteractionSource.collectIsPressedAsState()
-                        val playScale by animateFloatAsState(
-                            targetValue = if (isPlayPressed) 0.85f else 1f,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessMedium
-                            ),
-                            label = "playScale"
-                        )
-
-                        Surface(
+                        MorphingPlayPauseButton(
+                            isPlaying = isPlaying,
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                 onPlayPause()
                             },
-                            modifier = Modifier
-                                .size(56.dp)
-                                .graphicsLayer {
-                                    scaleX = playScale
-                                    scaleY = playScale
-                                },
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            interactionSource = playInteractionSource
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                if (isMediaLoading) {
-                                    M3CircularLoader(
-                                        modifier = Modifier.size(24.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.24f),
-                                        strokeWidth = 2.5f
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = if (isPlaying) RhythmIcons.Pause else RhythmIcons.Play,
-                                        contentDescription = if (isPlaying) "Pause" else "Play",
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                }
-                            }
-                        }
+                            size = 56.dp,
+                            isMediaLoading = isMediaLoading
+                        )
                     }
                 }
             }

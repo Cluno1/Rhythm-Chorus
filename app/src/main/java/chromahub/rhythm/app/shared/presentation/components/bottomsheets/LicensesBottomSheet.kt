@@ -80,10 +80,10 @@ fun LicensesBottomSheet(
             haptic = haptic
         ),
         licenseItem(
-            name = "Booming Music",
-            description = "Modern, offline-focused local music player for Android",
+            name = "Zenith",
+            description = "A Material Design 3 Expressive Digital Wellbeing App",
             license = "GPL v3.0 License",
-            url = "https://github.com/mardous/BoomingMusic",
+            url = "https://github.com/1372Slash/Zenith",
             icon = RhythmIcons.Connectivity.OpenInNew,
             context = context,
             haptic = haptic

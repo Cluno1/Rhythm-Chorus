@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
+import chromahub.rhythm.app.features.local.data.repository.MusicRepository
 
 
 
@@ -513,7 +514,7 @@ fun CacheManagementSettingsScreen(onBackClick: () -> Unit) {
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("data_usage", filled = true),
                                 title = context.getString(R.string.cache_max_size),
-                                description = "${String.format("%.1f", maxCacheSize / (1024f * 1024f))} MB",
+                                description = context.getString(R.string.settings_cache_size_mb, String.format("%.1f", maxCacheSize / (1024f * 1024f))),
                                 onClick = { showCacheSizeDialog = true }
                             )
                         ),

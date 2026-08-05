@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher picker preview for the Rhythm Cookie widget.
+     Mirrors the widget design: tinted cookie with the Rhythm app logo,
+     sunny play button on the top-right rim, skip buttons on the bottom corners. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="110dp"
+    android:layout_height="110dp">
+
+    <!-- Cookie background -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/widget_preview_cookie"
+        app:tint="@color/widget_preview_surface" />
+
+    <!-- Rhythm app logo mark (notification icon) -->
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_notification"
+        app:tint="@color/widget_preview_on_primary_container" />
+
+    <!-- Play/Pause - sunny badge, top-right corner (rim) -->
+    <FrameLayout
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/widget_preview_sunny"
+            app:tint="@color/widget_preview_primary" />
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_play_arrow"
+            app:tint="@color/widget_preview_on_primary" />
+    </FrameLayout>
+
+    <!-- Previous - circle badge, bottom-left corner -->
+    <FrameLayout
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="6dp"
+        android:layout_marginBottom="6dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/widget_preview_circle"
+            app:tint="@color/widget_preview_tertiary" />
+
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_skip_previous"
+            app:tint="@color/widget_preview_on_tertiary" />
+    </FrameLayout>
+
+    <!-- Next - circle badge, bottom-right corner -->
+    <FrameLayout
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="6dp"
+        android:layout_marginBottom="6dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/widget_preview_circle"
+            app:tint="@color/widget_preview_tertiary" />
+
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_skip_next"
+            app:tint="@color/widget_preview_on_tertiary" />
+    </FrameLayout>
+</FrameLayout>

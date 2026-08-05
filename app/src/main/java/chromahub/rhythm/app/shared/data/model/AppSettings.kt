@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import chromahub.rhythm.app.util.GsonUtils
 import chromahub.rhythm.app.worker.BackupWorker
 import chromahub.rhythm.app.worker.RhythmPulseNotificationWorker
 import chromahub.rhythm.app.worker.UpdateNotificationWorker
@@ -48,6 +49,22 @@ enum class ArtistViewType {
  */
 enum class PlaylistViewType {
     LIST, GRID
+}
+
+/**
+ * Enum for artist artwork source preferences
+ */
+enum class ArtistArtworkSource {
+    PREFER_LOCAL_THEN_API,
+    LOCAL_ONLY,
+    API_ONLY,
+    DISABLED;
+
+    companion object {
+        fun fromName(name: String?): ArtistArtworkSource {
+            return entries.find { it.name.equals(name, ignoreCase = true) } ?: PREFER_LOCAL_THEN_API
+        }
+    }
 }
 
 data class RhythmAuraPolicyBand(
@@ -274,7 +291,9 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_SPOTIFY_CLIENT_ID = "spotify_client_id"
         private const val KEY_SPOTIFY_CLIENT_SECRET = "spotify_client_secret"
         private const val KEY_LYRICALLY_API_ENABLED = "lyrically_api_enabled"
+        private const val KEY_WIKIPEDIA_API_ENABLED = "wikipedia_api_enabled"
         private const val KEY_AUTO_FETCH_ARTWORK = "auto_fetch_artwork"
+        private const val KEY_ARTIST_ARTWORK_SOURCE = "artist_artwork_source"
         private const val KEY_APPLE_CANVAS_ENABLED = "apple_canvas_enabled"
         private const val KEY_APPLE_CANVAS_NETWORK_MODE = "apple_canvas_network_mode"
         
@@ -323,6 +342,9 @@ class AppSettings private constructor(context: Context) {
         
         // Notification Settings
     private const val KEY_USE_CUSTOM_NOTIFICATION = "use_custom_notification"
+    private const val KEY_LIBRARY_OPERATIONS_NOTIFICATIONS_ENABLED = "library_operations_notifications_enabled"
+    private const val KEY_SLEEP_TIMER_NOTIFICATIONS_ENABLED = "sleep_timer_notifications_enabled"
+    private const val KEY_STREAMING_NOTIFICATIONS_ENABLED = "streaming_notifications_enabled"
     private const val KEY_RHYTHM_GUARD_ALERT_NOTIFICATIONS_ENABLED = "rhythm_guard_alert_notifications_enabled"
     private const val KEY_RHYTHM_GUARD_TIMER_NOTIFICATIONS_ENABLED = "rhythm_guard_timer_notifications_enabled"
     private const val KEY_RHYTHM_PULSE_NOTIFICATIONS_ENABLED = "rhythm_pulse_notifications_enabled"
@@ -342,6 +364,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_USE_CUSTOM_COMMAND_BUTTONS = "use_custom_command_buttons"
         private const val KEY_SCRUBBING_MODE_ENABLED = "scrubbing_mode_enabled"
         private const val KEY_STUCK_PLAYER_DETECTION_ENABLED = "stuck_player_detection_enabled"
+        private const val KEY_TRACK_ERROR_CHECKER_ENABLED = "track_error_checker_enabled"
         
         // Festive Theme Settings
         private const val KEY_FESTIVE_THEME_ENABLED = "festive_theme_enabled"
@@ -425,6 +448,8 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_SAVED_SHUFFLE_STATE = "saved_shuffle_state"
         private const val KEY_SAVED_REPEAT_MODE = "saved_repeat_mode"
         private const val KEY_PLAYBACK_SPEED = "playback_speed"
+        private const val KEY_DEFAULT_PLAYBACK_SPEED = "default_playback_speed"
+        private const val KEY_USE_DEFAULT_PLAYBACK_SPEED = "use_default_playback_speed"
         private const val KEY_PLAYBACK_PITCH = "playback_pitch"
         private const val KEY_SYNC_SPEED_AND_PITCH = "sync_speed_and_pitch"
         private const val KEY_USE_HOURS_IN_TIME_FORMAT = "use_hours_in_time_format"
@@ -445,6 +470,13 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_WIDGET_AUTO_UPDATE = "widget_auto_update"
         private const val KEY_WIDGET_SHOW_FAVORITE_BUTTON = "widget_show_favorite_button"
         private const val KEY_WIDGET_THEME = "widget_theme"
+        // Rhythm Cookie widget corner actions: 0=skip, 1=shuffle, 2=repeat, 3=favorite, 4=none
+        private const val KEY_WIDGET_COOKIE_BOTTOM_LEFT = "widget_cookie_bottom_left"
+        private const val KEY_WIDGET_COOKIE_BOTTOM_RIGHT = "widget_cookie_bottom_right"
+        // Rhythm Stats widget: 0=all time, 1=today, 2=week, 3=month
+        private const val KEY_WIDGET_STATS_RANGE = "widget_stats_range"
+        // Rhythm Stats gem: 0=longest streak, 1=current streak, 2=active days, 3=total sessions
+        private const val KEY_WIDGET_STATS_GEM = "widget_stats_gem"
         
         // Global Header Settings
         private const val KEY_HEADER_COLLAPSE_BEHAVIOR = "header_collapse_behavior" // 0=Normal, 1=Always Collapsed (applies to all screens)
@@ -515,6 +547,9 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_ART_OVERLAY_INTENSITY = "player_art_overlay_intensity" // Float 0.0-1.0
         private const val KEY_PLAYER_LYRICS_OVERLAY_TYPE = "player_lyrics_overlay_type" // 0=Gradient, 1=Blur
         private const val KEY_PLAYER_LYRICS_OVERLAY_INTENSITY = "player_lyrics_overlay_intensity" // Float 0.0-1.0
+        private const val KEY_PLAYER_AMBIENT_BACKDROP_ENABLED = "player_ambient_backdrop_enabled" // Ambient backdrop from artwork
+        private const val KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY = "player_ambient_backdrop_intensity" // Float 0.0-1.0, controls container transparency
+        private const val KEY_PLAYER_GLASS_INTENSITY = "player_glass_intensity" // Float 0.0-2.0, glass effect opacity multiplier
         private const val KEY_PLAYER_LYRICS_TRANSITION = "player_lyrics_transition" // 0=SlideVertical, 1=Fade, 2=Scale, 3=SlideHorizontal
         private const val KEY_PLAYER_LYRICS_TEXT_SIZE = "player_lyrics_text_size" // Float sp multiplier, default 1.0
         private const val KEY_PLAYER_LYRICS_ALIGNMENT = "player_lyrics_alignment" // "CENTER", "START", "END"
@@ -525,7 +560,8 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_ARTWORK_CORNER_RADIUS = "player_artwork_corner_radius" // 0-40 dp
         private const val KEY_PLAYER_SHOW_AUDIO_QUALITY_BADGES = "player_show_audio_quality_badges"
         private const val KEY_PLAYER_PROGRESS_STYLE = "player_progress_style" // "NORMAL", "WAVY", "ROUNDED", "THIN", "THICK"
-        private const val KEY_PLAYER_PROGRESS_THUMB_STYLE = "player_progress_thumb_style" // "NONE", "CIRCLE", "PILL", "DIAMOND", "LINE"
+        private const val KEY_PLAYER_PROGRESS_THUMB_STYLE = "player_progress_thumb_style" // "NONE", "DEFAULT", "CIRCLE", "SQUARE", "PILL", "DIAMOND", "FLOWER", "HEART", "COOKIE", "PUFFY"
+        private const val KEY_PLAYER_PROGRESS_THUMB_ROTATE = "player_progress_thumb_rotate" // Boolean
         
         // MiniPlayer Customization Settings
         private const val KEY_MINIPLAYER_PROGRESS_STYLE = "miniplayer_progress_style" // "NORMAL", "WAVY", "ROUNDED", "THIN", "GRADIENT"
@@ -534,7 +570,6 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_MINIPLAYER_ARTWORK_SIZE = "miniplayer_artwork_size" // 40-72 dp
         private const val KEY_MINIPLAYER_CORNER_RADIUS = "miniplayer_corner_radius" // 0-28 dp
         private const val KEY_MINIPLAYER_SHOW_TIME = "miniplayer_show_time"
-        private const val KEY_MINIPLAYER_USE_CIRCULAR_PROGRESS = "miniplayer_use_circular_progress"
         private const val KEY_MINIPLAYER_ARTWORK_STYLE = "miniplayer_artwork_style" // "ROUNDED", "CIRCLE", "SQUARE"
         private const val KEY_MINIPLAYER_SHOW_SKIP_BUTTONS = "miniplayer_show_skip_buttons"
         private const val KEY_MINIPLAYER_TEXT_ALIGNMENT = "miniplayer_text_alignment" // "START", "CENTER"
@@ -576,7 +611,7 @@ class AppSettings private constructor(context: Context) {
     }
     
     private val context: Context = context.applicationContext
-    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun setInitialSettingsSubroute(route: String?) {
         prefs.edit().putString(KEY_INITIAL_SETTINGS_SUBROUTE, route).apply()
@@ -599,7 +634,7 @@ class AppSettings private constructor(context: Context) {
     }
     
     // Playback Settings
-    private val _audioOffloadEnabled = MutableStateFlow(prefs.getBoolean(KEY_AUDIO_OFFLOAD_ENABLED, true))
+    private val _audioOffloadEnabled = MutableStateFlow(prefs.getBoolean(KEY_AUDIO_OFFLOAD_ENABLED, false))
     val audioOffloadEnabled: StateFlow<Boolean> = _audioOffloadEnabled.asStateFlow()
     
     private val _preloadLimit = MutableStateFlow(prefs.getInt(KEY_PRELOAD_LIMIT, 3))
@@ -753,7 +788,7 @@ class AppSettings private constructor(context: Context) {
     val customFontFamily: StateFlow<String> = _customFontFamily.asStateFlow()
     
     // Player Theme Settings
-    private val _playerThemeId = MutableStateFlow(prefs.getString(KEY_PLAYER_THEME_ID, "default") ?: "default")
+    private val _playerThemeId = MutableStateFlow(prefs.getString(KEY_PLAYER_THEME_ID, "EXPRESSIVE") ?: "EXPRESSIVE")
     val playerThemeId: StateFlow<String> = _playerThemeId.asStateFlow()
     
     private val _miniPlayerThemeId = MutableStateFlow(prefs.getString(KEY_MINI_PLAYER_THEME_ID, "EXPRESSIVE") ?: "EXPRESSIVE")
@@ -806,24 +841,17 @@ class AppSettings private constructor(context: Context) {
     val libraryCombineDiscs: StateFlow<Boolean> = _libraryCombineDiscs.asStateFlow()
     
     // Player Chip Order (Add to Playlist and Edit chips are not reorderable - they stay fixed)
-    private val defaultChipOrder = listOf("FAVORITE", "SPEED", "PITCH", "EQUALIZER", "SLEEP_TIMER", "LYRICS", "ALBUM", "ARTIST", "SHARE")
+    private val defaultChipOrder = listOf("FAVORITE", "SPEED", "EQUALIZER", "SLEEP_TIMER", "LYRICS", "ALBUM", "ARTIST", "SHARE")
     private val _playerChipOrder = MutableStateFlow(
         prefs.getString(KEY_PLAYER_CHIP_ORDER, null)
             ?.split(",")
-            ?.filter { it.isNotBlank() && it in defaultChipOrder }
+            ?.filter { it.isNotBlank() }
+            ?.map { if (it == "PITCH" || it == "SPEED_PITCH") "SPEED" else it }
+            ?.distinct()
+            ?.filter { it in defaultChipOrder }
             ?.takeIf { it.isNotEmpty() }
             ?.let { existingChips ->
-                // Add new chips if not present in existing order
                 var updated = existingChips
-                if (!updated.contains("PITCH")) {
-                    // Insert PITCH right after SPEED if SPEED exists, else append
-                    val speedIndex = updated.indexOf("SPEED")
-                    updated = if (speedIndex >= 0) {
-                        updated.toMutableList().apply { add(speedIndex + 1, "PITCH") }
-                    } else {
-                        updated + "PITCH"
-                    }
-                }
                 if (!updated.contains("SHARE")) {
                     updated = updated + "SHARE"
                 }
@@ -1044,6 +1072,12 @@ class AppSettings private constructor(context: Context) {
     
     private val _playbackSpeed = MutableStateFlow(prefs.getFloat(KEY_PLAYBACK_SPEED, 1.0f))
     val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
+
+    private val _defaultPlaybackSpeed = MutableStateFlow(prefs.getFloat(KEY_DEFAULT_PLAYBACK_SPEED, 1.0f))
+    val defaultPlaybackSpeed: StateFlow<Float> = _defaultPlaybackSpeed.asStateFlow()
+
+    private val _useDefaultPlaybackSpeed = MutableStateFlow(prefs.getBoolean(KEY_USE_DEFAULT_PLAYBACK_SPEED, false))
+    val useDefaultPlaybackSpeed: StateFlow<Boolean> = _useDefaultPlaybackSpeed.asStateFlow()
 
     private val _playbackPitch = MutableStateFlow(prefs.getFloat(KEY_PLAYBACK_PITCH, 1.0f))
     val playbackPitch: StateFlow<Float> = _playbackPitch.asStateFlow()
@@ -1424,9 +1458,17 @@ class AppSettings private constructor(context: Context) {
     
     private val _lyricallyApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_LYRICALLY_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val lyricallyApiEnabled: StateFlow<Boolean> = _lyricallyApiEnabled.asStateFlow()
+
+    private val _wikipediaApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_WIKIPEDIA_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    val wikipediaApiEnabled: StateFlow<Boolean> = _wikipediaApiEnabled.asStateFlow()
     
-    private val _autoFetchArtwork = MutableStateFlow(prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, false))
+    private val _autoFetchArtwork = MutableStateFlow(prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true))
     val autoFetchArtwork: StateFlow<Boolean> = _autoFetchArtwork.asStateFlow()
+
+    private val _artistArtworkSource = MutableStateFlow(
+        ArtistArtworkSource.fromName(prefs.getString(KEY_ARTIST_ARTWORK_SOURCE, ArtistArtworkSource.PREFER_LOCAL_THEN_API.name))
+    )
+    val artistArtworkSource: StateFlow<ArtistArtworkSource> = _artistArtworkSource.asStateFlow()
 
     private val _appleCanvasEnabled = MutableStateFlow(prefs.getBoolean(KEY_APPLE_CANVAS_ENABLED, true))
     val appleCanvasEnabled: StateFlow<Boolean> = _appleCanvasEnabled.asStateFlow()
@@ -1612,6 +1654,21 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     private val _useCustomNotification = MutableStateFlow(prefs.getBoolean(KEY_USE_CUSTOM_NOTIFICATION, false))
     val useCustomNotification: StateFlow<Boolean> = _useCustomNotification.asStateFlow()
 
+    private val _libraryOperationsNotificationsEnabled = MutableStateFlow(
+        prefs.getBoolean(KEY_LIBRARY_OPERATIONS_NOTIFICATIONS_ENABLED, true)
+    )
+    val libraryOperationsNotificationsEnabled: StateFlow<Boolean> = _libraryOperationsNotificationsEnabled.asStateFlow()
+
+    private val _sleepTimerNotificationsEnabled = MutableStateFlow(
+        prefs.getBoolean(KEY_SLEEP_TIMER_NOTIFICATIONS_ENABLED, true)
+    )
+    val sleepTimerNotificationsEnabled: StateFlow<Boolean> = _sleepTimerNotificationsEnabled.asStateFlow()
+
+    private val _streamingNotificationsEnabled = MutableStateFlow(
+        prefs.getBoolean(KEY_STREAMING_NOTIFICATIONS_ENABLED, true)
+    )
+    val streamingNotificationsEnabled: StateFlow<Boolean> = _streamingNotificationsEnabled.asStateFlow()
+
     private val _rhythmGuardAlertNotificationsEnabled = MutableStateFlow(
         prefs.getBoolean(KEY_RHYTHM_GUARD_ALERT_NOTIFICATIONS_ENABLED, true)
     )
@@ -1665,6 +1722,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     val festiveSnowflakeArea: StateFlow<String> = _festiveSnowflakeArea.asStateFlow()
     
     // Developer & Debugging Settings
+    private val _trackErrorCheckerEnabled = MutableStateFlow(prefs.getBoolean(KEY_TRACK_ERROR_CHECKER_ENABLED, true))
+    val trackErrorCheckerEnabled: StateFlow<Boolean> = _trackErrorCheckerEnabled.asStateFlow()
+
     private val _codecMonitoringEnabled = MutableStateFlow(prefs.getBoolean("codec_monitoring_enabled", false))
     val codecMonitoringEnabled: StateFlow<Boolean> = _codecMonitoringEnabled.asStateFlow()
     
@@ -1894,8 +1954,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     
     // Media Scan Filtering
     private val _allowedFormats = MutableStateFlow(
-        prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b"))
-            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b")
+        prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1"))
+            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1")
     )
     val allowedFormats: StateFlow<Set<String>> = _allowedFormats.asStateFlow()
     
@@ -2687,6 +2747,16 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _playbackSpeed.value = speed
     }
 
+    fun setDefaultPlaybackSpeed(speed: Float) {
+        prefs.edit().putFloat(KEY_DEFAULT_PLAYBACK_SPEED, speed).apply()
+        _defaultPlaybackSpeed.value = speed
+    }
+
+    fun setUseDefaultPlaybackSpeed(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_USE_DEFAULT_PLAYBACK_SPEED, enabled).apply()
+        _useDefaultPlaybackSpeed.value = enabled
+    }
+
     fun setPlaybackPitch(pitch: Float) {
         prefs.edit().putFloat(KEY_PLAYBACK_PITCH, pitch).apply()
         _playbackPitch.value = pitch
@@ -3125,6 +3195,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _appleCanvasNetworkMode.value = mode
     }
 
+    fun setArtistArtworkSource(source: ArtistArtworkSource) {
+        prefs.edit().putString(KEY_ARTIST_ARTWORK_SOURCE, source.name).apply()
+        _artistArtworkSource.value = source
+    }
+
     fun setDeezerApiEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_DEEZER_API_ENABLED, enabled).apply()
         _deezerApiEnabled.value = enabled
@@ -3148,6 +3223,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setLyricallyApiEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_LYRICALLY_API_ENABLED, enabled).apply()
         _lyricallyApiEnabled.value = enabled
+    }
+
+    fun setWikipediaApiEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_WIKIPEDIA_API_ENABLED, enabled).apply()
+        _wikipediaApiEnabled.value = enabled
     }
     
     fun setAutoFetchArtwork(enabled: Boolean) {
@@ -3391,6 +3471,21 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _useCustomNotification.value = enabled
     }
 
+    fun setLibraryOperationsNotificationsEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_LIBRARY_OPERATIONS_NOTIFICATIONS_ENABLED, enabled).apply()
+        _libraryOperationsNotificationsEnabled.value = enabled
+    }
+
+    fun setSleepTimerNotificationsEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_SLEEP_TIMER_NOTIFICATIONS_ENABLED, enabled).apply()
+        _sleepTimerNotificationsEnabled.value = enabled
+    }
+
+    fun setStreamingNotificationsEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_STREAMING_NOTIFICATIONS_ENABLED, enabled).apply()
+        _streamingNotificationsEnabled.value = enabled
+    }
+
     fun setRhythmGuardAlertNotificationsEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_RHYTHM_GUARD_ALERT_NOTIFICATIONS_ENABLED, enabled).apply()
         _rhythmGuardAlertNotificationsEnabled.value = enabled
@@ -3456,6 +3551,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setAudioDeviceLoggingEnabled(enabled: Boolean) {
         prefs.edit().putBoolean("audio_device_logging_enabled", enabled).apply()
         _audioDeviceLoggingEnabled.value = enabled
+    }
+    
+    fun setTrackErrorCheckerEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_TRACK_ERROR_CHECKER_ENABLED, enabled).apply()
+        _trackErrorCheckerEnabled.value = enabled
     }
     
     // Media3 1.9.0 Feature Methods
@@ -4122,7 +4222,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             key == KEY_SONG_CUSTOM_LRC_FILES
     }
 
-    private fun isRhythmGuardTransientRuntimeKey(key: String): Boolean {
+    fun isRhythmGuardTransientRuntimeKey(key: String): Boolean {
         return key == KEY_RHYTHM_GUARD_TIMEOUT_UNTIL_MS ||
             key == KEY_RHYTHM_GUARD_TIMEOUT_REASON ||
             key == KEY_RHYTHM_GUARD_TIMEOUT_STARTED_AT_MS ||
@@ -4130,7 +4230,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             key == KEY_RHYTHM_GUARD_NEXT_ALLOWED_LIMIT_MINUTES
     }
 
-    private fun isStatsAndRhythmGuardBackupKey(key: String): Boolean {
+    fun isStatsAndRhythmGuardBackupKey(key: String): Boolean {
         if (isRhythmGuardTransientRuntimeKey(key)) {
             return false
         }
@@ -4161,7 +4261,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             key.startsWith("rhythm_aura_")
     }
 
-    private fun shouldIncludeKeyInBackupSections(
+    fun shouldIncludeKeyInBackupSections(
         key: String,
         sections: BackupRestoreSections
     ): Boolean {
@@ -4176,6 +4276,59 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         }
     }
     
+    sealed class BackupValidationResult {
+        object Valid : BackupValidationResult()
+        data class Invalid(val reason: String) : BackupValidationResult()
+    }
+
+    /**
+     * Validates a backup JSON payload for structure, header keys, and parseable playlists data
+     */
+    fun validateBackupJson(
+        backupJson: String,
+        sections: BackupRestoreSections = BackupRestoreSections()
+    ): BackupValidationResult {
+        if (backupJson.isBlank()) {
+            return BackupValidationResult.Invalid("Backup JSON payload is empty")
+        }
+        return try {
+            val type = object : TypeToken<Map<String, Any?>>() {}.type
+            val map: Map<String, Any?>? = GsonUtils.gson.fromJson(backupJson, type)
+            if (map == null || map.isEmpty()) {
+                return BackupValidationResult.Invalid("Backup content is not a valid non-empty JSON object")
+            }
+
+            if (!map.containsKey("preferences")) {
+                return BackupValidationResult.Invalid("Missing required 'preferences' key")
+            }
+
+            if (!map.containsKey("backup_version")) {
+                return BackupValidationResult.Invalid("Missing required 'backup_version' key")
+            }
+
+            val effectiveSections = if (sections.hasAtLeastOneSectionSelected) sections else BackupRestoreSections()
+
+            if (effectiveSections.includeLibraryData && map.containsKey("playlists_data")) {
+                val playlistsData = map["playlists_data"] as? String
+                if (!playlistsData.isNullOrBlank()) {
+                    try {
+                        val playlistListType = object : TypeToken<List<Playlist>>() {}.type
+                        val parsedPlaylists: List<Playlist>? = GsonUtils.gson.fromJson(playlistsData, playlistListType)
+                        if (parsedPlaylists == null) {
+                            return BackupValidationResult.Invalid("playlists_data cannot be parsed into Playlist objects")
+                        }
+                    } catch (e: Exception) {
+                        return BackupValidationResult.Invalid("Corrupted playlist structure inside backup: ${e.message}")
+                    }
+                }
+            }
+
+            BackupValidationResult.Valid
+        } catch (e: Exception) {
+            BackupValidationResult.Invalid("JSON parsing exception: ${e.message}")
+        }
+    }
+
     /**
      * Creates a complete backup of all app data as JSON
      */
@@ -4234,7 +4387,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                         val songDao = db.songDao()
                         val modelPlaylists = dbPlaylists.map { entity ->
                             val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
-                            val playlistSongs = songIds.mapNotNull { songId ->
+                            val playlistSongs = songIds.map { songId ->
                                 songDao.getSongById(songId)?.let { songEntity ->
                                     Song(
                                         id = songEntity.id,
@@ -4258,7 +4411,28 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                                         discNumber = songEntity.discNumber,
                                         path = songEntity.path
                                     )
-                                }
+                                } ?: Song(
+                                    id = songId,
+                                    title = "Unresolved Track",
+                                    artist = "Unknown Artist",
+                                    album = "Unknown Album",
+                                    albumId = "",
+                                    duration = 0L,
+                                    uri = Uri.EMPTY,
+                                    artworkUri = null,
+                                    trackNumber = 0,
+                                    year = 0,
+                                    genre = null,
+                                    dateAdded = entity.dateCreated,
+                                    dateModified = entity.dateModified,
+                                    albumArtist = null,
+                                    bitrate = null,
+                                    sampleRate = null,
+                                    channels = null,
+                                    codec = null,
+                                    discNumber = 1,
+                                    path = null
+                                )
                             }
                             Playlist(
                                 id = entity.id,
@@ -4269,21 +4443,19 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                                 artworkUri = entity.artworkUri?.let { Uri.parse(it) }
                             )
                         }
-                        Gson().toJson(modelPlaylists)
+                        GsonUtils.gson.toJson(modelPlaylists)
                     } else {
-                        prefs.getString(KEY_PLAYLISTS, null)
+                        prefs.getString(KEY_PLAYLISTS, "[]")
                     }
                 }
             } catch (e: Exception) {
                 Log.e("AppSettings", "Error reading database playlists for backup", e)
-                prefs.getString(KEY_PLAYLISTS, null)
+                prefs.getString(KEY_PLAYLISTS, "[]")
             }
             val favoriteSongsJson = prefs.getString(KEY_FAVORITE_SONGS, null)
             
-            if (playlistsJson != null) {
-                backupData["playlists_data"] = playlistsJson
-                Log.d("AppSettings", "Including playlists data in backup: ${playlistsJson.length} characters")
-            }
+            backupData["playlists_data"] = playlistsJson ?: "[]"
+            Log.d("AppSettings", "Including playlists data in backup: ${backupData["playlists_data"].toString().length} characters")
             
             if (favoriteSongsJson != null) {
                 backupData["favorite_songs_data"] = favoriteSongsJson
@@ -4360,7 +4532,13 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             }
         }
         
-        return Gson().toJson(backupData)
+        val backupJsonString = GsonUtils.gson.toJson(backupData)
+        val validation = validateBackupJson(backupJsonString, effectiveSections)
+        if (validation is BackupValidationResult.Invalid) {
+            Log.e("AppSettings", "Created backup payload failed validation: ${validation.reason}")
+            throw IllegalStateException("Backup payload validation failed: ${validation.reason}")
+        }
+        return backupJsonString
     }
     
     /**
@@ -4370,9 +4548,15 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         backupJson: String,
         sections: BackupRestoreSections = BackupRestoreSections()
     ): Boolean {
+        val validation = validateBackupJson(backupJson, sections)
+        if (validation is BackupValidationResult.Invalid) {
+            Log.e("AppSettings", "Restore rejected due to invalid backup payload: ${validation.reason}")
+            return false
+        }
+
         return try {
             val type = object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-            val backupData = Gson().fromJson<Map<String, Any?>>(backupJson, type) ?: return false
+            val backupData = GsonUtils.gson.fromJson<Map<String, Any?>>(backupJson, type) ?: return false
             val preferences = (backupData["preferences"] as? Map<*, *>)
                 ?.mapNotNull { (key, value) ->
                     (key as? String)?.let { safeKey -> safeKey to value }
@@ -4465,13 +4649,18 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                 val playlistsData = backupData["playlists_data"] as? String
                 if (playlistsData != null) {
                     try {
+                        val playlistListType = object : TypeToken<List<Playlist>>() {}.type
+                        val restoredPlaylists: List<Playlist> = GsonUtils.gson.fromJson(playlistsData, playlistListType) ?: emptyList()
+                        
                         kotlinx.coroutines.runBlocking {
                             val db = chromahub.rhythm.app.features.local.data.database.RhythmDatabase.getInstance(context)
                             val playlistDao = db.playlistDao()
-                            playlistDao.deleteAllPlaylists()
+                            val songDao = db.songDao()
                             
-                            val type = object : TypeToken<List<Playlist>>() {}.type
-                            val restoredPlaylists: List<Playlist> = Gson().fromJson(playlistsData, type) ?: emptyList()
+                            playlistDao.deleteAllPlaylists()
+                            playlistDao.deleteAllPlaylistSongs()
+                            
+                            val songEntitiesToInsert = mutableListOf<chromahub.rhythm.app.features.local.data.database.entity.SongEntity>()
                             
                             restoredPlaylists.forEach { playlist ->
                                 val playlistEntity = chromahub.rhythm.app.features.local.data.database.entity.PlaylistEntity(
@@ -4483,6 +4672,32 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                                 )
                                 playlistDao.insertPlaylist(playlistEntity)
                                 
+                                playlist.songs.forEach { song ->
+                                    val songEntity = chromahub.rhythm.app.features.local.data.database.entity.SongEntity(
+                                        id = song.id,
+                                        title = song.title,
+                                        artist = song.artist,
+                                        album = song.album,
+                                        albumId = song.albumId,
+                                        duration = song.duration,
+                                        uri = song.uri.toString(),
+                                        artworkUri = song.artworkUri?.toString(),
+                                        trackNumber = song.trackNumber,
+                                        year = song.year,
+                                        genre = song.genre,
+                                        dateAdded = song.dateAdded,
+                                        dateModified = song.dateModified,
+                                        albumArtist = song.albumArtist,
+                                        bitrate = song.bitrate,
+                                        sampleRate = song.sampleRate,
+                                        channels = song.channels,
+                                        codec = song.codec,
+                                        discNumber = song.discNumber,
+                                        path = song.path
+                                    )
+                                    songEntitiesToInsert.add(songEntity)
+                                }
+                                
                                 val songEntities = playlist.songs.mapIndexed { index, song ->
                                     chromahub.rhythm.app.features.local.data.database.entity.PlaylistSongEntity(
                                         playlistId = playlist.id,
@@ -4491,6 +4706,12 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                                     )
                                 }
                                 playlistDao.insertPlaylistSongs(songEntities)
+                            }
+                            
+                            if (songEntitiesToInsert.isNotEmpty()) {
+                                val distinctSongs = songEntitiesToInsert.distinctBy { it.id }
+                                songDao.insertAll(distinctSongs)
+                                Log.d("AppSettings", "Restored ${distinctSongs.size} unique song metadata records directly to Room database")
                             }
                         }
                         Log.d("AppSettings", "Restored playlists directly to Room database")
@@ -4558,7 +4779,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         }
     }
 
-    private fun applyBackupPreferenceValue(
+    fun applyBackupPreferenceValue(
         editor: SharedPreferences.Editor,
         key: String,
         value: Any?,
@@ -4857,6 +5078,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _ytMusicApiEnabled.value = prefs.getBoolean(KEY_YTMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _spotifyApiEnabled.value = prefs.getBoolean(KEY_SPOTIFY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _lyricallyApiEnabled.value = prefs.getBoolean(KEY_LYRICALLY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _wikipediaApiEnabled.value = prefs.getBoolean(KEY_WIKIPEDIA_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _appleCanvasEnabled.value = prefs.getBoolean(KEY_APPLE_CANVAS_ENABLED, true)
         _appleCanvasNetworkMode.value = CanvasNetworkMode.fromOrdinal(
             prefs.getInt(KEY_APPLE_CANVAS_NETWORK_MODE, CanvasNetworkMode.BOTH.ordinal)
@@ -4871,7 +5093,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             ?.filter { it.isNotBlank() && it in defaultLyricallySources }
             ?.toSet()
             ?: if (BuildConfig.FLAVOR == "fdroid") defaultLyricallySources.toSet() else emptySet()
-        _autoFetchArtwork.value = prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, false)
+        _autoFetchArtwork.value = prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true)
         _spotifyClientId.value = prefs.getString(KEY_SPOTIFY_CLIENT_ID, "") ?: ""
         _spotifyClientSecret.value = prefs.getString(KEY_SPOTIFY_CLIENT_SECRET, "") ?: ""
 
@@ -4959,8 +5181,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _lastScanDuration.value = safeLong(KEY_LAST_SCAN_DURATION, 0L)
         
         // Media Scan Filtering
-        _allowedFormats.value = prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka"))
-            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "wav", "aac", "wma", "mkv", "mka")
+        _allowedFormats.value = prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka"))
+            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka")
         _minimumBitrate.value = prefs.getInt(KEY_MINIMUM_BITRATE, 0)
         _minimumDuration.value = safeLong(KEY_MINIMUM_DURATION, 0L)
 
@@ -4973,11 +5195,15 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         // Widget Settings
         _widgetShowAlbumArt.value = prefs.getBoolean(KEY_WIDGET_SHOW_ALBUM_ART, true)
         _widgetShowArtist.value = prefs.getBoolean(KEY_WIDGET_SHOW_ARTIST, true)
-        _widgetShowAlbum.value = prefs.getBoolean(KEY_WIDGET_SHOW_ALBUM, true)
+        _widgetShowAlbum.value = prefs.getBoolean(KEY_WIDGET_SHOW_ALBUM, false)
         _widgetCornerRadius.value = prefs.getInt(KEY_WIDGET_CORNER_RADIUS, 28)
         _widgetAutoUpdate.value = prefs.getBoolean(KEY_WIDGET_AUTO_UPDATE, true)
         _widgetShowFavoriteButton.value = prefs.getBoolean(KEY_WIDGET_SHOW_FAVORITE_BUTTON, true)
         _widgetTheme.value = prefs.getInt(KEY_WIDGET_THEME, 0)
+        _widgetCookieBottomLeft.value = prefs.getInt(KEY_WIDGET_COOKIE_BOTTOM_LEFT, 3)
+        _widgetCookieBottomRight.value = prefs.getInt(KEY_WIDGET_COOKIE_BOTTOM_RIGHT, 4)
+        _widgetStatsRange.value = prefs.getInt(KEY_WIDGET_STATS_RANGE, 0)
+        _widgetStatsGem.value = prefs.getInt(KEY_WIDGET_STATS_GEM, 0)
         
         // Player Screen Customization Settings
         _playerShowGradientOverlay.value = prefs.getBoolean(KEY_PLAYER_SHOW_GRADIENT_OVERLAY, true)
@@ -4986,6 +5212,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _playerLyricsOverlayType.value = prefs.getInt(KEY_PLAYER_LYRICS_OVERLAY_TYPE, 0)
         _playerLyricsOverlayIntensity.value = prefs.getFloat(KEY_PLAYER_LYRICS_OVERLAY_INTENSITY, 0.1f)
         _playerLyricsTransition.value = prefs.getInt(KEY_PLAYER_LYRICS_TRANSITION, 2) // 2 = Scale
+        _playerAmbientBackdropEnabled.value = prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, true)
+        _playerAmbientBackdropIntensity.value = prefs.getFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, 0.85f)
+        _playerGlassIntensity.value = prefs.getFloat(KEY_PLAYER_GLASS_INTENSITY, 1.0f)
         _playerLyricsTextSize.value = prefs.getFloat(KEY_PLAYER_LYRICS_TEXT_SIZE, 1.0f)
         _playerLyricsAlignment.value = prefs.getString(KEY_PLAYER_LYRICS_ALIGNMENT, "CENTER") ?: "CENTER"
         _playerShowArtBelowLyrics.value = prefs.getBoolean(KEY_PLAYER_SHOW_ART_BELOW_LYRICS, true)
@@ -5185,7 +5414,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         prefs.edit().putBoolean(KEY_WIDGET_SHOW_ARTIST, value).apply()
     }
     
-    private val _widgetShowAlbum = MutableStateFlow(prefs.getBoolean(KEY_WIDGET_SHOW_ALBUM, true))
+    private val _widgetShowAlbum = MutableStateFlow(prefs.getBoolean(KEY_WIDGET_SHOW_ALBUM, false))
     val widgetShowAlbum: StateFlow<Boolean> = _widgetShowAlbum.asStateFlow()
     fun setWidgetShowAlbum(value: Boolean) {
         _widgetShowAlbum.value = value
@@ -5220,6 +5449,34 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setWidgetTheme(value: Int) {
         _widgetTheme.value = value
         prefs.edit().putInt(KEY_WIDGET_THEME, value).apply()
+    }
+    
+    private val _widgetCookieBottomLeft = MutableStateFlow(prefs.getInt(KEY_WIDGET_COOKIE_BOTTOM_LEFT, 3))
+    val widgetCookieBottomLeft: StateFlow<Int> = _widgetCookieBottomLeft.asStateFlow()
+    fun setWidgetCookieBottomLeft(value: Int) {
+        _widgetCookieBottomLeft.value = value
+        prefs.edit().putInt(KEY_WIDGET_COOKIE_BOTTOM_LEFT, value).apply()
+    }
+    
+    private val _widgetCookieBottomRight = MutableStateFlow(prefs.getInt(KEY_WIDGET_COOKIE_BOTTOM_RIGHT, 4))
+    val widgetCookieBottomRight: StateFlow<Int> = _widgetCookieBottomRight.asStateFlow()
+    fun setWidgetCookieBottomRight(value: Int) {
+        _widgetCookieBottomRight.value = value
+        prefs.edit().putInt(KEY_WIDGET_COOKIE_BOTTOM_RIGHT, value).apply()
+    }
+    
+    private val _widgetStatsRange = MutableStateFlow(prefs.getInt(KEY_WIDGET_STATS_RANGE, 0))
+    val widgetStatsRange: StateFlow<Int> = _widgetStatsRange.asStateFlow()
+    fun setWidgetStatsRange(value: Int) {
+        _widgetStatsRange.value = value
+        prefs.edit().putInt(KEY_WIDGET_STATS_RANGE, value).apply()
+    }
+    
+    private val _widgetStatsGem = MutableStateFlow(prefs.getInt(KEY_WIDGET_STATS_GEM, 0))
+    val widgetStatsGem: StateFlow<Int> = _widgetStatsGem.asStateFlow()
+    fun setWidgetStatsGem(value: Int) {
+        _widgetStatsGem.value = value
+        prefs.edit().putInt(KEY_WIDGET_STATS_GEM, value).apply()
     }
     
     // ==================== Global Header Settings ====================
@@ -5389,6 +5646,27 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         prefs.edit().putBoolean(KEY_PLAYER_SHOW_GRADIENT_OVERLAY, value).apply()
     }
 
+    private val _playerAmbientBackdropEnabled = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, true))
+    val playerAmbientBackdropEnabled: StateFlow<Boolean> = _playerAmbientBackdropEnabled.asStateFlow()
+    fun setPlayerAmbientBackdropEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, enabled).apply()
+        _playerAmbientBackdropEnabled.value = enabled
+    }
+
+    private val _playerAmbientBackdropIntensity = MutableStateFlow(prefs.getFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, 0.85f))
+    val playerAmbientBackdropIntensity: StateFlow<Float> = _playerAmbientBackdropIntensity.asStateFlow()
+    fun setPlayerAmbientBackdropIntensity(value: Float) {
+        _playerAmbientBackdropIntensity.value = value.coerceIn(0f, 1f)
+        prefs.edit().putFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, _playerAmbientBackdropIntensity.value).apply()
+    }
+
+    private val _playerGlassIntensity = MutableStateFlow(prefs.getFloat(KEY_PLAYER_GLASS_INTENSITY, 1.0f))
+    val playerGlassIntensity: StateFlow<Float> = _playerGlassIntensity.asStateFlow()
+    fun setPlayerGlassIntensity(value: Float) {
+        _playerGlassIntensity.value = value
+        prefs.edit().putFloat(KEY_PLAYER_GLASS_INTENSITY, value).apply()
+    }
+    
     private val _playerArtOverlayType = MutableStateFlow(prefs.getInt(KEY_PLAYER_ART_OVERLAY_TYPE, 0))
     val playerArtOverlayType: StateFlow<Int> = _playerArtOverlayType.asStateFlow()
     fun setPlayerArtOverlayType(value: Int) {
@@ -5488,12 +5766,28 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         prefs.edit().putString(KEY_PLAYER_PROGRESS_STYLE, value).apply()
     }
     
-    // Player Progress Thumb Style
-    private val _playerProgressThumbStyle = MutableStateFlow(prefs.getString(KEY_PLAYER_PROGRESS_THUMB_STYLE, "CIRCLE") ?: "CIRCLE")
+    // Player Progress Thumb Style (migrates legacy names to the M3-native set)
+    private fun migrateThumbStyle(value: String): String = when (value) {
+        "GLOW", "ARROW" -> "DEFAULT"
+        "LINE" -> "PILL"
+        "OUTLINE", "DOT", "RING" -> "CIRCLE"
+        else -> value
+    }
+    private val _playerProgressThumbStyle = MutableStateFlow(
+        migrateThumbStyle(prefs.getString(KEY_PLAYER_PROGRESS_THUMB_STYLE, "DEFAULT") ?: "DEFAULT")
+    )
     val playerProgressThumbStyle: StateFlow<String> = _playerProgressThumbStyle.asStateFlow()
     fun setPlayerProgressThumbStyle(value: String) {
         _playerProgressThumbStyle.value = value
         prefs.edit().putString(KEY_PLAYER_PROGRESS_THUMB_STYLE, value).apply()
+    }
+    
+    // Player Progress Thumb Rotate While Playing
+    private val _playerProgressThumbRotate = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_PROGRESS_THUMB_ROTATE, false))
+    val playerProgressThumbRotate: StateFlow<Boolean> = _playerProgressThumbRotate.asStateFlow()
+    fun setPlayerProgressThumbRotate(value: Boolean) {
+        _playerProgressThumbRotate.value = value
+        prefs.edit().putBoolean(KEY_PLAYER_PROGRESS_THUMB_ROTATE, value).apply()
     }
     
     // ==================== MiniPlayer Customization Settings ====================
@@ -5538,13 +5832,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setMiniPlayerShowTime(value: Boolean) {
         _miniPlayerShowTime.value = value
         prefs.edit().putBoolean(KEY_MINIPLAYER_SHOW_TIME, value).apply()
-    }
-    
-    private val _miniPlayerUseCircularProgress = MutableStateFlow(prefs.getBoolean(KEY_MINIPLAYER_USE_CIRCULAR_PROGRESS, false))
-    val miniPlayerUseCircularProgress: StateFlow<Boolean> = _miniPlayerUseCircularProgress.asStateFlow()
-    fun setMiniPlayerUseCircularProgress(value: Boolean) {
-        _miniPlayerUseCircularProgress.value = value
-        prefs.edit().putBoolean(KEY_MINIPLAYER_USE_CIRCULAR_PROGRESS, value).apply()
     }
     
     private val _miniPlayerArtworkStyle = MutableStateFlow(prefs.getString(KEY_MINIPLAYER_ARTWORK_STYLE, "ROUNDED") ?: "ROUNDED")

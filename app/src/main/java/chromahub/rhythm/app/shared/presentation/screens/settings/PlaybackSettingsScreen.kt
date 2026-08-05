@@ -41,6 +41,7 @@ import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGrou
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import androidx.lifecycle.viewmodel.compose.viewModel
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
+import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaybackSpeedDialog
 
 @Composable
 fun PlaybackSettingsScreen(
@@ -52,6 +53,7 @@ fun PlaybackSettingsScreen(
     val hapticFeedback = LocalHapticFeedback.current
     val musicViewModel: MusicViewModel = viewModel()
 
+    val replayGain by appSettings.replayGain.collectAsState()
     val repeatModePersistence by appSettings.repeatModePersistence.collectAsState()
     val shuffleModePersistence by appSettings.shuffleModePersistence.collectAsState()
     val useHoursInTimeFormat by appSettings.useHoursInTimeFormat.collectAsState()
@@ -70,6 +72,10 @@ fun PlaybackSettingsScreen(
     val batterySaverMode by appSettings.batterySaverMode.collectAsState()
     val batterySaverEnableOffload by appSettings.batterySaverEnableOffload.collectAsState()
     val isOffloadEnforced = batterySaverEnabled && (batterySaverMode == "auto" || (batterySaverMode == "manual" && batterySaverEnableOffload))
+
+    val defaultPlaybackSpeed by appSettings.defaultPlaybackSpeed.collectAsState()
+    val useDefaultPlaybackSpeed by appSettings.useDefaultPlaybackSpeed.collectAsState()
+    var showDefaultSpeedDialog by remember { mutableStateOf(false) }
 
     CollapsibleHeaderScreen(
         title = context.getString(R.string.settings_playback_title),
@@ -119,6 +125,19 @@ fun PlaybackSettingsScreen(
                         context.getString(R.string.settings_stop_playback_on_close_desc),
                         toggleState = stopPlaybackOnAppClose,
                         onToggleChange = { appSettings.setStopPlaybackOnAppClose(it) }
+                    ),
+                    SettingItem(
+                        MaterialSymbolIcon("speed"),
+                        context.getString(R.string.use_default_playback_speed),
+                        context.getString(R.string.use_default_playback_speed_desc),
+                        toggleState = useDefaultPlaybackSpeed,
+                        onToggleChange = { appSettings.setUseDefaultPlaybackSpeed(it) }
+                    ),
+                    SettingItem(
+                        MaterialSymbolIcon("tune"),
+                        context.getString(R.string.default_playback_speed),
+                        "${String.format(java.util.Locale.US, "%.3f", defaultPlaybackSpeed).dropLastWhile { it == '0' }.dropLastWhile { it == '.' }}x — ${context.getString(R.string.default_playback_speed_desc)}",
+                        onClick = { showDefaultSpeedDialog = true }
                     )
                 )
             ),
@@ -161,7 +180,16 @@ fun PlaybackSettingsScreen(
                         onToggleChange = { if (!isOffloadEnforced) appSettings.setCrossfadeOnSkip(it) },
                         enabled = crossfadeEnabled && !isOffloadEnforced
                     ),
-
+                    SettingItem(
+                        MaterialSymbolIcon("volume_up"),
+                        context.getString(R.string.replay_gain),
+                        when {
+                            isOffloadEnforced -> "Disabled under Lite Mode to conserve battery."
+                            isAudioOffloadActive && !replayGain -> "${context.getString(R.string.replay_gain_desc)}\n(Enabling will disable hardware Audio Offload)"
+                            else -> context.getString(R.string.replay_gain_desc)
+                        },
+                        onClick = { onNavigateTo(SettingsRoutes.REPLAY_GAIN) }
+                    )
                 )
             ),
             SettingGroup(
@@ -345,6 +373,18 @@ fun PlaybackSettingsScreen(
             }
 
             item(key = "playback_bottom_spacer") { Spacer(modifier = Modifier.height(100.dp)) }
+        }
+
+        if (showDefaultSpeedDialog) {
+            PlaybackSpeedDialog(
+                currentSpeed = defaultPlaybackSpeed,
+                syncEnabled = false,
+                onDismiss = { showDefaultSpeedDialog = false },
+                onSave = { speed ->
+                    appSettings.setDefaultPlaybackSpeed(speed)
+                    showDefaultSpeedDialog = false
+                }
+            )
         }
     }
 }

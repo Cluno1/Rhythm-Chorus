@@ -14,6 +14,7 @@ import chromahub.rhythm.app.infrastructure.widget.glance.RhythmMusicWidget
 import chromahub.rhythm.app.infrastructure.widget.glance.RhythmLyricsWidget
 import kotlinx.coroutines.delay
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.glance.appwidget.state.updateAppWidgetState
 
 
@@ -153,3 +154,81 @@ class ToggleFavoriteAction : ActionCallback {
         try { RhythmMusicWidget().updateAll(context) } catch (_: Exception) {}
     }
 }
+
+/**
+ * Toggle shuffle action callback for widget
+ */
+class ToggleShuffleAction : ActionCallback {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
+        if (!hasActiveSongSnapshot(context)) {
+            openRhythm(context)
+            return
+        }
+
+        try {
+            val prefs = context.getSharedPreferences("widget_prefs", Context.MODE_PRIVATE)
+            val currentShuffle = prefs.getBoolean("is_shuffle", false)
+            val newShuffle = !currentShuffle
+
+            prefs.edit().putBoolean("is_shuffle", newShuffle).apply()
+
+            updateAppWidgetState(context, glanceId) { glancePrefs ->
+                glancePrefs[booleanPreferencesKey("is_shuffle")] = newShuffle
+            }
+            try { RhythmCookieWidget().update(context, glanceId) } catch (_: Exception) {}
+        } catch (e: Exception) {
+            Log.e("WidgetAction", "Error during optimistic shuffle toggle", e)
+        }
+
+        dispatchServiceAction(context, MediaPlaybackService.ACTION_TOGGLE_SHUFFLE)
+
+        delay(150)
+        GlanceWidgetUpdater.forceUpdateAll(context)
+    }
+}
+
+/**
+ * Toggle repeat mode action callback for widget
+ */
+class ToggleRepeatAction : ActionCallback {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
+        if (!hasActiveSongSnapshot(context)) {
+            openRhythm(context)
+            return
+        }
+
+        try {
+            val prefs = context.getSharedPreferences("widget_prefs", Context.MODE_PRIVATE)
+            val currentRepeat = prefs.getInt("repeat_mode", 0)
+            val newRepeat = when (currentRepeat) {
+                0 -> 2 // off -> all
+                2 -> 1 // all -> one
+                1 -> 0 // one -> off
+                else -> 0
+            }
+
+            prefs.edit().putInt("repeat_mode", newRepeat).apply()
+
+            updateAppWidgetState(context, glanceId) { glancePrefs ->
+                glancePrefs[intPreferencesKey("repeat_mode")] = newRepeat
+            }
+            try { RhythmCookieWidget().update(context, glanceId) } catch (_: Exception) {}
+        } catch (e: Exception) {
+            Log.e("WidgetAction", "Error during optimistic repeat toggle", e)
+        }
+
+        dispatchServiceAction(context, MediaPlaybackService.ACTION_TOGGLE_REPEAT)
+
+        delay(150)
+        GlanceWidgetUpdater.forceUpdateAll(context)
+    }
+}
+

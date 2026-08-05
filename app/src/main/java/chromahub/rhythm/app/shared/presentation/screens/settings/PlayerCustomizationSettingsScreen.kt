@@ -169,7 +169,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
 
     // State variables
     val playerThemeId by appSettings.playerThemeId.collectAsState()
-    val isExpressiveActive = playerThemeId == "EXPRESSIVE"
+    val isExpressiveActive = playerThemeId != "MATERIAL"
     val playerShowGradientOverlay by appSettings.playerShowGradientOverlay.collectAsState()
     val playerShowSeekButtons by appSettings.playerShowSeekButtons.collectAsState()
     val playerTextAlignment by appSettings.playerTextAlignment.collectAsState()
@@ -177,16 +177,21 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
     val playerArtworkCornerRadius by appSettings.playerArtworkCornerRadius.collectAsState()
     val playerShowAudioQualityBadges by appSettings.playerShowAudioQualityBadges.collectAsState()
     val expressiveShapesEnabled by appSettings.expressiveShapesEnabled.collectAsState()
+    val playerAmbientBackdropEnabled by appSettings.playerAmbientBackdropEnabled.collectAsState()
+    val playerAmbientBackdropIntensity by appSettings.playerAmbientBackdropIntensity.collectAsState()
+    val playerGlassIntensity by appSettings.playerGlassIntensity.collectAsState()
 
     // Progress bar settings
     val playerProgressStyle by appSettings.playerProgressStyle.collectAsState()
     val playerProgressThumbStyle by appSettings.playerProgressThumbStyle.collectAsState()
+    val playerProgressThumbRotate by appSettings.playerProgressThumbRotate.collectAsState()
 
     var showChipOrderBottomSheet by remember { mutableStateOf(false) }
     var showTextAlignmentSheet by remember { mutableStateOf(false) }
     var showCornerRadiusSheet by remember { mutableStateOf(false) }
     var showPlayerProgressStyleSheet by remember { mutableStateOf(false) }
     var showPlayerThumbStyleSheet by remember { mutableStateOf(false) }
+    var showAmbientIntensitySheet by remember { mutableStateOf(false) }
 
     CollapsibleHeaderScreen(
         title = context.getString(R.string.settings_player),
@@ -223,7 +228,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                             "Rhythm",
                                             "Expressive"
                                         ),
-                                        selectedIndex = if (playerThemeId == "EXPRESSIVE") 1 else 0,
+                                        selectedIndex = if (playerThemeId == "MATERIAL") 0 else 1,
                                         onItemClick = { index ->
                                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                             if (index == 1) {
@@ -242,8 +247,8 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                 )
             }
 
-            // Player Controls Section
-            item {
+            // Player Controls Section — only shown for Rhythm (Material) theme; Expressive has no chips
+            if (!isExpressiveActive) item {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = context.getString(R.string.settings_player_controls),
@@ -268,7 +273,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                 )
             }
 
-            // Display Options Section
+
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
@@ -313,6 +318,29 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 toggleState = playerShowAudioQualityBadges,
                                 onToggleChange = { appSettings.setPlayerShowAudioQualityBadges(it) },
                                 enabled = !isExpressiveActive
+                            )
+                        ),
+                        toMaterial3SettingsItem(
+                            context = context,
+                            hapticFeedback = haptics,
+                            item = SettingItem(
+                                icon = MaterialSymbolIcon("blur_on"),
+                                title = context.getString(R.string.player_ambient_backdrop),
+                                description = if (isExpressiveActive) context.getString(R.string.player_ambient_desc) else context.getString(R.string.player_expressive_only),
+                                toggleState = playerAmbientBackdropEnabled,
+                                onToggleChange = { appSettings.setPlayerAmbientBackdropEnabled(it) },
+                                enabled = isExpressiveActive
+                            )
+                        ),
+                        toMaterial3SettingsItem(
+                            context = context,
+                            hapticFeedback = haptics,
+                            item = SettingItem(
+                                icon = MaterialSymbolIcon("opacity"),
+                                title = context.getString(R.string.player_ambient_intensity),
+                                description = if (isExpressiveActive) context.getString(R.string.settings_value_percent, (playerAmbientBackdropIntensity * 100).toInt()) else context.getString(R.string.player_expressive_only),
+                                onClick = { if (isExpressiveActive) showAmbientIntensitySheet = true },
+                                enabled = isExpressiveActive
                             )
                         )
                     ),
@@ -376,11 +404,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                 } catch (e: IllegalArgumentException) {
                     ProgressStyle.WAVY
                 }
-                val previewThumbStyle = try {
-                    ThumbStyle.valueOf(playerProgressThumbStyle)
-                } catch (e: IllegalArgumentException) {
-                    ThumbStyle.CIRCLE
-                }
+                val previewThumbStyle = ThumbStyle.fromStorage(playerProgressThumbStyle)
                 StyledProgressBar(
                     progress = 0.65f,
                     style = previewStyle,
@@ -393,7 +417,8 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                     isPlaying = true,
                     showThumb = previewThumbStyle != ThumbStyle.NONE,
                     thumbStyle = previewThumbStyle,
-                    thumbSize = 14.dp
+                    thumbSize = 14.dp,
+                    rotateThumbWhenPlaying = playerProgressThumbRotate
                 )
 
                 Material3SettingsGroup(
@@ -416,6 +441,17 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 title = context.getString(R.string.settings_thumb_style),
                                 description = playerProgressThumbStyle.lowercase().replaceFirstChar { it.uppercase() },
                                 onClick = { showPlayerThumbStyleSheet = true }
+                            )
+                        ),
+                        toMaterial3SettingsItem(
+                            context = context,
+                            hapticFeedback = haptics,
+                            item = SettingItem(
+                                icon = MaterialSymbolIcon("rotate_right"),
+                                title = context.getString(R.string.settings_thumb_rotate),
+                                description = context.getString(R.string.settings_thumb_rotate_desc),
+                                toggleState = playerProgressThumbRotate,
+                                onToggleChange = { appSettings.setPlayerProgressThumbRotate(it) }
                             )
                         )
                     ),
@@ -441,21 +477,21 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 SettingItem(
                                     icon = MaterialSymbolIcon("rounded_corner"),
                                     title = stringResource(R.string.settings_miniplayer_corner_radius),
-                                    description = "Not supported by Expressive theme",
+                                    description = context.getString(R.string.lyrics_settings_not_supported_expressive),
                                     enabled = false
                                 )
                             } else if (expressiveShapesEnabled) {
                                 SettingItem(
                                     icon = MaterialSymbolIcon("rounded_corner"),
                                     title = stringResource(R.string.settings_miniplayer_corner_radius),
-                                    description = "Managed by Expressive Shapes",
+                                    description = context.getString(R.string.settings_managed_by_expressive_shapes),
                                     enabled = false
                                 )
                             } else {
                                 SettingItem(
                                     icon = MaterialSymbolIcon("rounded_corner"),
                                     title = stringResource(R.string.settings_miniplayer_corner_radius),
-                                    description = "${playerArtworkCornerRadius}dp",
+                                    description = context.getString(R.string.settings_value_dp, playerArtworkCornerRadius),
                                     onClick = { showCornerRadiusSheet = true }
                                 )
                             }
@@ -525,97 +561,17 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
     }
 
     if (showTextAlignmentSheet) {
-        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-
-        ModalBottomSheet(
-            onDismissRequest = { showTextAlignmentSheet = false },
-            sheetState = sheetState,
-            dragHandle = {
-                BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+        PlayerTextAlignmentBottomSheet(
+            currentAlignment = playerTextAlignment,
+            onAlignmentSelected = { value ->
+                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                appSettings.setPlayerTextAlignment(value)
+                showTextAlignmentSheet = false
             },
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_player_text_alignment),
-                    style = MaterialTheme.typography.displayMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                listOf(
-                    Triple("START", "Left", MaterialSymbolIcon("align_horizontal_left", filled = true)),
-                    Triple("CENTER", "Center", MaterialSymbolIcon("format_align_center")),
-                    Triple("END", "Right", MaterialSymbolIcon("align_horizontal_right", filled = true))
-                ).forEach { (value, label, icon) ->
-                    val isSelected = playerTextAlignment == value
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected)
-                                MaterialTheme.colorScheme.primaryContainer
-                            else
-                                MaterialTheme.colorScheme.surfaceContainerHigh
-                        ),
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                            appSettings.setPlayerTextAlignment(value)
-                            showTextAlignmentSheet = false
-                        }
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = label,
-                                tint = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                else
-                                    MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            if (isSelected) {
-                                Icon(
-                                    imageVector = RhythmIcons.Check,
-                                    contentDescription = stringResource(R.string.streaming_selected),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
+            onDismiss = { showTextAlignmentSheet = false },
+            context = context,
+            haptics = haptics
+        )
     }
 
     // Player Progress Style Bottom Sheet
@@ -743,6 +699,135 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = context.getString(R.string.settings_adjust_artwork_corners),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+    }
+
+    // Ambient Intensity Bottom Sheet
+    if (showAmbientIntensitySheet) {
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+        var tempIntensity by remember { mutableFloatStateOf(playerAmbientBackdropIntensity) }
+
+        ModalBottomSheet(
+            onDismissRequest = { showAmbientIntensitySheet = false },
+            sheetState = sheetState,
+            dragHandle = {
+                BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+            },
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp)
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 0.dp, vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = context.getString(R.string.player_ambient_intensity),
+                            style = MaterialTheme.typography.displayMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 6.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelLarge,
+                                text = "${(tempIntensity * 100).toInt()}%",
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Slider(
+                    value = tempIntensity,
+                    onValueChange = { tempIntensity = it },
+                    onValueChangeFinished = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        appSettings.setPlayerAmbientBackdropIntensity(tempIntensity)
+                    },
+                    valueRange = 0.0f..1.0f,
+                    steps = 39,
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "0%",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "100%",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "100%",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Info card
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = RhythmIcons.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = context.getString(R.string.player_ambient_intensity_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1066,14 +1151,15 @@ fun ThumbStyleBottomSheet(
 
     val thumbStyles = listOf(
         ThumbStyleOption("NONE", "None", RhythmIcons.VisibilityOff, "No thumb indicator"),
-        ThumbStyleOption("CIRCLE", "Circle", MaterialSymbolIcon("fiber_manual_record"), "Circular with highlight"),
-        ThumbStyleOption("PILL", "Pill", MaterialSymbolIcon("rounded_corner"), "Vertical pill shape"),
-        ThumbStyleOption("DIAMOND", "Diamond", MaterialSymbolIcon("change_history"), "Diamond rhombus"),
-        ThumbStyleOption("LINE", "Line", RhythmIcons.Remove, "Thin vertical line"),
-        ThumbStyleOption("SQUARE", "Square", MaterialSymbolIcon("crop_square"), "Rounded square"),
-        ThumbStyleOption("GLOW", "Glow", MaterialSymbolIcon("flare"), "Glowing circle"),
-        ThumbStyleOption("ARROW", "Arrow", RhythmIcons.Play, "Arrow pointer"),
-        ThumbStyleOption("DOT", "Dot", MaterialSymbolIcon("adjust"), "Small dot with ring")
+        ThumbStyleOption("DEFAULT", "Default", MaterialSymbolIcon("fiber_manual_record"), "Official M3 slider thumb"),
+        ThumbStyleOption("CIRCLE", "Circle", MaterialSymbolIcon("circle"), "M3 circle"),
+        ThumbStyleOption("SQUARE", "Square", MaterialSymbolIcon("crop_square"), "M3 rounded square"),
+        ThumbStyleOption("PILL", "Pill", MaterialSymbolIcon("rounded_corner"), "M3 pill"),
+        ThumbStyleOption("DIAMOND", "Diamond", MaterialSymbolIcon("diamond"), "M3 diamond"),
+        ThumbStyleOption("FLOWER", "Flower", MaterialSymbolIcon("local_florist"), "M3 flower"),
+        ThumbStyleOption("HEART", "Heart", MaterialSymbolIcon("favorite"), "M3 heart"),
+        ThumbStyleOption("COOKIE", "Cookie", MaterialSymbolIcon("cookie"), "M3 6-sided cookie"),
+        ThumbStyleOption("PUFFY", "Puffy", MaterialSymbolIcon("cloud"), "M3 puffy")
     )
 
     ModalBottomSheet(
@@ -1112,11 +1198,7 @@ fun ThumbStyleBottomSheet(
             ) {
                 items(thumbStyles) { styleOption ->
                     val isSelected = currentStyle == styleOption.id
-                    val thumbStyleEnum = try {
-                        ThumbStyle.valueOf(styleOption.id)
-                    } catch (e: IllegalArgumentException) {
-                        ThumbStyle.CIRCLE
-                    }
+                    val thumbStyleEnum = ThumbStyle.fromStorage(styleOption.id)
 
                     Card(
                         modifier = Modifier
@@ -1178,15 +1260,29 @@ fun ThumbStyleBottomSheet(
                                 horizontalArrangement = Arrangement.Center,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Icon(
-                                    imageVector = styleOption.icon,
-                                    contentDescription = null,
-                                    tint = if (isSelected)
-                                        MaterialTheme.colorScheme.onPrimaryContainer
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(16.dp)
-                                )
+                                if (thumbStyleEnum == ThumbStyle.NONE || thumbStyleEnum == ThumbStyle.DEFAULT) {
+                                    Icon(
+                                        imageVector = styleOption.icon,
+                                        contentDescription = null,
+                                        tint = if (isSelected)
+                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                        else
+                                            MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                } else {
+                                    // Render the M3 shape glyph
+                                    Surface(
+                                        modifier = Modifier.size(18.dp),
+                                        shape = rememberExpressiveShape(thumbStyleEnum.shapeId ?: "CIRCLE", CircleShape),
+                                        color = if (isSelected)
+                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                        else
+                                            MaterialTheme.colorScheme.primary
+                                    ) {
+                                        Box(modifier = Modifier.fillMaxSize())
+                                    }
+                                }
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = styleOption.label,
@@ -1219,6 +1315,108 @@ fun ThumbStyleBottomSheet(
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+/**
+ * Bottom sheet for choosing player text alignment (shared with the onboarding tour).
+ */
+@Composable
+fun PlayerTextAlignmentBottomSheet(
+    currentAlignment: String,
+    onAlignmentSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
+    context: Context,
+    haptics: HapticFeedback
+) {
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        dragHandle = {
+            BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+        },
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.settings_player_text_alignment),
+                style = MaterialTheme.typography.displayMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            listOf(
+                Triple("START", "Left", MaterialSymbolIcon("align_horizontal_left", filled = true)),
+                Triple("CENTER", "Center", MaterialSymbolIcon("format_align_center")),
+                Triple("END", "Right", MaterialSymbolIcon("align_horizontal_right", filled = true))
+            ).forEach { (value, label, icon) ->
+                val isSelected = currentAlignment == value
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isSelected)
+                            MaterialTheme.colorScheme.primaryContainer
+                        else
+                            MaterialTheme.colorScheme.surfaceContainerHigh
+                    ),
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                        onAlignmentSelected(value)
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = label,
+                            tint = if (isSelected)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else
+                                MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (isSelected)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else
+                                MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        if (isSelected) {
+                            Icon(
+                                imageVector = RhythmIcons.Check,
+                                contentDescription = stringResource(R.string.streaming_selected),
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
                 }

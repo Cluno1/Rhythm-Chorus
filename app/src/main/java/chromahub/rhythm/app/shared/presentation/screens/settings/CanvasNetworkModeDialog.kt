@@ -62,7 +62,7 @@ fun CanvasNetworkModeDialog(
             ) {
                 Column {
                     Text(
-                        text = "Canvas Connectivity",
+                        text = context.getString(R.string.canvas_connectivity),
                         style = MaterialTheme.typography.displayMedium,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -78,7 +78,7 @@ fun CanvasNetworkModeDialog(
                         Text(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                             style = MaterialTheme.typography.labelLarge,
-                            text = "Choose when to play animated canvas",
+                            text = context.getString(R.string.canvas_connectivity_desc),
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1,
                             color = MaterialTheme.colorScheme.onSurface
@@ -162,7 +162,7 @@ fun CanvasNetworkModeDialog(
                         if (isSelected) {
                             Icon(
                                 imageVector = RhythmIcons.CheckCircle,
-                                contentDescription = "Selected",
+                                contentDescription = context.getString(R.string.cd_selected),
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -193,7 +193,7 @@ fun CanvasNetworkModeDialog(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Note: Loading animated motion artwork requires extra network usage. Canvas playback will pause automatically when you are offline.",
+                            text = context.getString(R.string.canvas_network_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onTertiaryContainer
                         )

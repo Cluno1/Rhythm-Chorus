@@ -9,6 +9,8 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -483,7 +485,12 @@ fun LocalNavigation(
             }
             basePadding + systemNavBarPadding
         } else {
-            0.dp
+            if (showMiniPlayer) {
+                val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 84.dp else 96.dp
+                miniPlayerHeight + 16.dp + systemNavBarPadding
+            } else {
+                0.dp
+            }
         },
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -824,11 +831,12 @@ private fun LocalNavigationContent(
                 animationSpec = tween(durationMillis = 220),
                 label = "local_bottom_chrome_alpha"
             )
+            val systemNavBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             val miniPlayerBottomOffset by animateDpAsState(
                 targetValue = when {
-                    showBottomNav -> MusicDimensions.bottomNavigationHeight + 12.dp
-                    currentRoute == Screen.Search.route -> 88.dp // Height of search bar + padding
-                    else -> 8.dp
+                    showBottomNav -> MusicDimensions.bottomNavigationHeight + 12.dp + systemNavBarPadding
+                    currentRoute == Screen.Search.route -> 88.dp + systemNavBarPadding
+                    else -> 8.dp + systemNavBarPadding
                 },
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioNoBouncy,
@@ -880,7 +888,6 @@ private fun LocalNavigationContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars)
                         .align(Alignment.BottomCenter)
                 ) {
 
@@ -891,10 +898,22 @@ private fun LocalNavigationContent(
                     RhythmPlayerSheet(
                         isExpanded = currentRoute == Screen.Player.route,
                         onExpand = {
-                            navController.navigate(Screen.Player.route)
+                            navController.navigate(Screen.Player.route) {
+                                launchSingleTop = true
+                            }
                         },
                         onCollapse = {
-                            navigateBackOrToLanding()
+                            try {
+                                val hasPlayerEntry = try {
+                                    navController.getBackStackEntry(Screen.Player.route)
+                                    true
+                                } catch (_: IllegalArgumentException) {
+                                    false
+                                }
+                                if (hasPlayerEntry) {
+                                    navController.popBackStack(Screen.Player.route, inclusive = true)
+                                }
+                            } catch (_: Exception) { }
                         },
                         onMiniPlayerDismiss = {
                             onMiniPlayerDismiss()
@@ -1018,7 +1037,9 @@ private fun LocalNavigationContent(
                 // Navigation bar shown only on specific routes with spring animation
                 AnimatedVisibility(
                     visible = showBottomNav,
-                    modifier = Modifier.align(Alignment.BottomCenter),
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .windowInsetsPadding(WindowInsets.navigationBars),
                     enter = slideInVertically(
                         initialOffsetY = { fullHeight -> fullHeight / 2 },
                         animationSpec = spring(
@@ -1947,74 +1968,10 @@ private fun LocalNavigationContent(
 
                 composable(
                     route = Screen.Player.route,
-                    enterTransition = {
-                        slideInVertically(
-                            initialOffsetY = { it },
-                            animationSpec = spring(
-                                dampingRatio = 0.75f,
-                                stiffness = Spring.StiffnessMediumLow
-                            )
-                        ) + scaleIn(
-                            initialScale = 0.85f,
-                            animationSpec = spring(
-                                dampingRatio = 0.75f,
-                                stiffness = Spring.StiffnessMediumLow
-                            )
-                        ) + fadeIn(
-                            animationSpec = tween(durationMillis = 200)
-                        )
-                    },
-                    exitTransition = {
-                        slideOutVertically(
-                            targetOffsetY = { it },
-                            animationSpec = spring(
-                                dampingRatio = 0.8f,
-                                stiffness = Spring.StiffnessMedium
-                            )
-                        ) + scaleOut(
-                            targetScale = 0.85f,
-                            animationSpec = spring(
-                                dampingRatio = 0.8f,
-                                stiffness = Spring.StiffnessMedium
-                            )
-                        ) + fadeOut(
-                            animationSpec = tween(durationMillis = 200)
-                        )
-                    },
-                    popExitTransition = {
-                        slideOutVertically(
-                            targetOffsetY = { it },
-                            animationSpec = spring(
-                                dampingRatio = 0.8f,
-                                stiffness = Spring.StiffnessMedium
-                            )
-                        ) + scaleOut(
-                            targetScale = 0.85f,
-                            animationSpec = spring(
-                                dampingRatio = 0.8f,
-                                stiffness = Spring.StiffnessMedium
-                            )
-                        ) + fadeOut(
-                            animationSpec = tween(durationMillis = 200)
-                        )
-                    },
-                    popEnterTransition = {
-                        slideInVertically(
-                            initialOffsetY = { it },
-                            animationSpec = spring(
-                                dampingRatio = 0.75f,
-                                stiffness = Spring.StiffnessMediumLow
-                            )
-                        ) + scaleIn(
-                            initialScale = 0.85f,
-                            animationSpec = spring(
-                                dampingRatio = 0.75f,
-                                stiffness = Spring.StiffnessMediumLow
-                            )
-                        ) + fadeIn(
-                            animationSpec = tween(durationMillis = 200)
-                        )
-                    }
+                    enterTransition = { EnterTransition.None },
+                    exitTransition = { ExitTransition.None },
+                    popEnterTransition = { EnterTransition.None },
+                    popExitTransition = { ExitTransition.None }
                 ) {
                     Box(modifier = Modifier.fillMaxSize())
                 }
@@ -2722,9 +2679,9 @@ private fun LocalNavigationContent(
 
                         if (targetPlaylist != null) {
                             // Filter available songs
-                            val availableSongs =
-                                remember(allSongs, targetPlaylist.songs, searchQuery) {
-                                    allSongs.filter { song ->
+                             val availableSongs =
+                                remember(songs, targetPlaylist.songs, searchQuery) {
+                                    songs.filter { song ->
                                         // Filter out songs that are already in the playlist
                                         !targetPlaylist.songs.any { it.id == song.id }
                                     }

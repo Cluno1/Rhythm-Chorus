@@ -50,12 +50,19 @@ import androidx.compose.ui.text.font.FontWeight
  * First item → 24dp top, 6dp bottom
  * Middle items → 6dp all
  * Last item → 6dp top, 24dp bottom
+ *
+ * When [itemShape] is provided it overrides the corner radii for every card in
+ * the group, letting the group blend into a larger connected card stack. When
+ * [lastItemShape] is provided it overrides only the last card (taking precedence
+ * over [itemShape]) so the group can cap the bottom of a connected stack.
  */
 @Composable
 fun Material3SettingsGroup(
     title: String? = null,
     items: List<Material3SettingsItem>,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceContainer
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
+    itemShape: Shape? = null,
+    lastItemShape: Shape? = null
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         title?.let {
@@ -74,13 +81,16 @@ fun Material3SettingsGroup(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items.forEachIndexed { index, item ->
+                val isLast = index == items.size - 1
                 val shape = when {
+                    lastItemShape != null && isLast -> lastItemShape
+                    itemShape != null -> itemShape
                     items.size == 1 -> RoundedCornerShape(24.dp)
                     index == 0 -> RoundedCornerShape(
                         topStart = 24.dp, topEnd = 24.dp,
                         bottomStart = 6.dp, bottomEnd = 6.dp
                     )
-                    index == items.size - 1 -> RoundedCornerShape(
+                    isLast -> RoundedCornerShape(
                         topStart = 6.dp, topEnd = 6.dp,
                         bottomStart = 24.dp, bottomEnd = 24.dp
                     )

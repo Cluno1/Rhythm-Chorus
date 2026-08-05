@@ -29,6 +29,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.shared.data.model.ArtistArtworkSource
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistArtworkSourceBottomSheet
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -173,12 +175,21 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
     val albumHideAbout by appSettings.albumHideAbout.collectAsState()
     val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
     val autoFetchArtwork by appSettings.autoFetchArtwork.collectAsState()
+    val artistArtworkSource by appSettings.artistArtworkSource.collectAsState()
 
     var showLibraryTabOrderBottomSheet by remember { mutableStateOf(false) }
+    var showArtistArtworkSourceBottomSheet by remember { mutableStateOf(false) }
     var showRestartDialog by remember { mutableStateOf(false) }
     var restartRequiresArtworkRescan by remember { mutableStateOf(false) }
     var restartDialogMessage by remember {
         mutableStateOf(context.getString(R.string.settings_song_artwork_restart_required))
+    }
+
+    val artistArtworkSourceSubtitle = when (artistArtworkSource) {
+        ArtistArtworkSource.PREFER_LOCAL_THEN_API -> stringResource(R.string.settings_artist_artwork_source_prefer_local)
+        ArtistArtworkSource.LOCAL_ONLY -> stringResource(R.string.settings_artist_artwork_source_local_only)
+        ArtistArtworkSource.API_ONLY -> stringResource(R.string.settings_artist_artwork_source_api_only)
+        ArtistArtworkSource.DISABLED -> stringResource(R.string.settings_artist_artwork_source_disabled)
     }
 
     CollapsibleHeaderScreen(
@@ -267,10 +278,15 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
                     SettingItem(
                         icon = MaterialSymbolIcon("cloud_download"),
                         title = stringResource(R.string.librarysettingsscreen_autofetch_artwork),
-                        description = "Automatically search online APIs for missing cover artwork on startup",
-                        toggleState = autoFetchArtwork && lyricallyApiEnabled,
-                        onToggleChange = { enabled -> appSettings.setAutoFetchArtwork(enabled) },
-                        enabled = lyricallyApiEnabled
+                        description = context.getString(R.string.library_auto_fetch_artwork_desc),
+                        toggleState = autoFetchArtwork,
+                        onToggleChange = { enabled -> appSettings.setAutoFetchArtwork(enabled) }
+                    ),
+                    SettingItem(
+                        icon = MaterialSymbolIcon("portrait"),
+                        title = stringResource(R.string.settings_artist_artwork_source),
+                        description = artistArtworkSourceSubtitle,
+                        onClick = { showArtistArtworkSourceBottomSheet = true }
                     )
                 )
             )
@@ -305,6 +321,13 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
             onDismiss = { showLibraryTabOrderBottomSheet = false },
             appSettings = appSettings,
             haptics = haptics
+        )
+    }
+
+    if (showArtistArtworkSourceBottomSheet) {
+        ArtistArtworkSourceBottomSheet(
+            onDismiss = { showArtistArtworkSourceBottomSheet = false },
+            appSettings = appSettings
         )
     }
 
