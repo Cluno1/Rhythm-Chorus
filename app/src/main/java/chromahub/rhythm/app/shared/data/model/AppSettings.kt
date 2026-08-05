@@ -96,7 +96,8 @@ private val RHYTHM_GUARD_POLICY_BANDS = RHYTHM_AURA_POLICY_BANDS
  */
 enum class LyricsApiPriority(val displayName: String) {
     LYRICALLY_FIRST("Lyrically"),
-    LRCLIB_FIRST("LRCLib");
+    LRCLIB_FIRST("LRCLib"),
+    BETTERLYRICS_FIRST("Better Lyrics");
 
     companion object {
         fun fromOrdinal(ordinal: Int): LyricsApiPriority {
@@ -286,6 +287,7 @@ class AppSettings private constructor(context: Context) {
         // API Integration
         private const val KEY_DEEZER_API_ENABLED = "deezer_api_enabled"
         private const val KEY_LRCLIB_API_ENABLED = "lrclib_api_enabled"
+        private const val KEY_BETTERLYRICS_API_ENABLED = "better_lyrics_api_enabled"
         private const val KEY_YTMUSIC_API_ENABLED = "ytmusic_api_enabled"
         private const val KEY_SPOTIFY_API_ENABLED = "spotify_api_enabled"
         private const val KEY_SPOTIFY_CLIENT_ID = "spotify_client_id"
@@ -897,6 +899,14 @@ class AppSettings private constructor(context: Context) {
         "MUSIXMATCH",
         "GENIUS"
     )
+    val defaultDisabledLyricallySources = setOf(
+        "SPOTIFY",
+        "QQ_MUSIC",
+        "YOUTUBE",
+        "DEEZER",
+        "MUSIXMATCH",
+        "GENIUS"
+    )
     private val _lyricallySourcesOrder = MutableStateFlow(
         prefs.getString(KEY_LYRICALLY_SOURCES_ORDER, null)
             ?.split(",")
@@ -911,7 +921,7 @@ class AppSettings private constructor(context: Context) {
             ?.split(",")
             ?.filter { it.isNotBlank() && it in defaultLyricallySources }
             ?.toSet()
-            ?: if (BuildConfig.FLAVOR == "fdroid") defaultLyricallySources.toSet() else emptySet()
+            ?: defaultDisabledLyricallySources
     )
     val disabledLyricallySources: StateFlow<Set<String>> = _disabledLyricallySources.asStateFlow()
     
@@ -1449,6 +1459,9 @@ class AppSettings private constructor(context: Context) {
     
     private val _lrclibApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_LRCLIB_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val lrclibApiEnabled: StateFlow<Boolean> = _lrclibApiEnabled.asStateFlow()
+    
+    private val _betterLyricsApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_BETTERLYRICS_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    val betterLyricsApiEnabled: StateFlow<Boolean> = _betterLyricsApiEnabled.asStateFlow()
     
     private val _ytMusicApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_YTMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val ytMusicApiEnabled: StateFlow<Boolean> = _ytMusicApiEnabled.asStateFlow()
@@ -2207,6 +2220,10 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setLyricsApiPriority(priority: LyricsApiPriority) {
         prefs.edit().putInt(KEY_LYRICS_API_PRIORITY, priority.ordinal).apply()
         _lyricsApiPriority.value = priority
+    }
+    
+    fun isLyricsApiPrioritySet(): Boolean {
+        return prefs.contains(KEY_LYRICS_API_PRIORITY)
     }
 
     fun setLyricsApiFallbackRetry(enable: Boolean) {
@@ -3208,6 +3225,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setLrcLibApiEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_LRCLIB_API_ENABLED, enabled).apply()
         _lrclibApiEnabled.value = enabled
+    }
+    
+    fun setBetterLyricsApiEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_BETTERLYRICS_API_ENABLED, enabled).apply()
+        _betterLyricsApiEnabled.value = enabled
     }
     
     fun setYTMusicApiEnabled(enabled: Boolean) {
@@ -5075,6 +5097,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         // API Enable/Disable States
         _deezerApiEnabled.value = prefs.getBoolean(KEY_DEEZER_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _lrclibApiEnabled.value = prefs.getBoolean(KEY_LRCLIB_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _betterLyricsApiEnabled.value = prefs.getBoolean(KEY_BETTERLYRICS_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _ytMusicApiEnabled.value = prefs.getBoolean(KEY_YTMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _spotifyApiEnabled.value = prefs.getBoolean(KEY_SPOTIFY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _lyricallyApiEnabled.value = prefs.getBoolean(KEY_LYRICALLY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
@@ -5092,7 +5115,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             ?.split(",")
             ?.filter { it.isNotBlank() && it in defaultLyricallySources }
             ?.toSet()
-            ?: if (BuildConfig.FLAVOR == "fdroid") defaultLyricallySources.toSet() else emptySet()
+            ?: defaultDisabledLyricallySources
         _autoFetchArtwork.value = prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true)
         _spotifyClientId.value = prefs.getString(KEY_SPOTIFY_CLIENT_ID, "") ?: ""
         _spotifyClientSecret.value = prefs.getString(KEY_SPOTIFY_CLIENT_SECRET, "") ?: ""

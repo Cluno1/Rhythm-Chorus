@@ -23,6 +23,7 @@ object NetworkClient {
     private const val TAG = "NetworkClient"
     
     private const val LRCLIB_BASE_URL = "https://lrclib.net/"
+    private const val BETTERLYRICS_BASE_URL = "https://lyrics-api.boidu.dev/"
     private const val DEEZER_BASE_URL = "https://api.deezer.com/"
     private const val YTMUSIC_BASE_URL = "https://music.youtube.com/"
     private const val SPOTIFY_API_BASE_URL = "https://api.spotify.com/v1/"
@@ -174,6 +175,24 @@ object NetworkClient {
             .build()
     }
     
+    private val betterlyricsHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
+            .connectionPool(connectionPool)
+            .build()
+    }
+    
+    private val betterlyricsRetrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(BETTERLYRICS_BASE_URL)
+            .client(betterlyricsHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+    
     private val ytmusicHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .addInterceptor(deezerHeadersInterceptor())
@@ -260,6 +279,10 @@ object NetworkClient {
         if (BuildConfig.ENABLE_LRCLIB) lrclibRetrofit.create(LRCLibApiService::class.java) else null
     }
     
+    val betterLyricsApiService: BetterLyricsApiService? by lazy {
+        if (BuildConfig.ENABLE_BETTERLYRICS) betterlyricsRetrofit.create(BetterLyricsApiService::class.java) else null
+    }
+    
     val ytmusicApiService: YTMusicApiService? by lazy {
         if (BuildConfig.ENABLE_YOUTUBE_MUSIC) ytmusicRetrofit.create(YTMusicApiService::class.java) else null
     }
@@ -286,6 +309,7 @@ object NetworkClient {
     // Helper methods to check if APIs are enabled (respects both BuildConfig AND runtime settings)
     fun isDeezerApiEnabled(): Boolean = BuildConfig.ENABLE_DEEZER && (appSettings?.deezerApiEnabled?.value ?: false)
     fun isLrcLibApiEnabled(): Boolean = BuildConfig.ENABLE_LRCLIB && (appSettings?.lrclibApiEnabled?.value ?: false)
+    fun isBetterLyricsApiEnabled(): Boolean = BuildConfig.ENABLE_BETTERLYRICS && (appSettings?.betterLyricsApiEnabled?.value ?: false)
     fun isYTMusicApiEnabled(): Boolean = BuildConfig.ENABLE_YOUTUBE_MUSIC && (appSettings?.ytMusicApiEnabled?.value ?: false)
     fun isSpotifyApiEnabled(): Boolean = BuildConfig.ENABLE_SPOTIFY_SEARCH && (appSettings?.spotifyApiEnabled?.value ?: false)
     fun isLyricallyApiEnabled(): Boolean = BuildConfig.ENABLE_LYRICALLY_API && (appSettings?.lyricallyApiEnabled?.value ?: false)

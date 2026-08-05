@@ -431,7 +431,11 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
                             title = { Text(stringResource(R.string.lyricssourcesettingsscreen_lyrics_api_priority)) },
                             description = {
                                 Text(
-                                    text = if (apiPriority == chromahub.rhythm.app.shared.data.model.LyricsApiPriority.LYRICALLY_FIRST) context.getString(R.string.lyrics_settings_lyrically_first) else context.getString(R.string.lyrics_settings_lrclib_first),
+                                    text = when (apiPriority) {
+                                        chromahub.rhythm.app.shared.data.model.LyricsApiPriority.BETTERLYRICS_FIRST -> context.getString(R.string.lyrics_settings_betterlyrics_first)
+                                        chromahub.rhythm.app.shared.data.model.LyricsApiPriority.LYRICALLY_FIRST -> context.getString(R.string.lyrics_settings_lyrically_first)
+                                        chromahub.rhythm.app.shared.data.model.LyricsApiPriority.LRCLIB_FIRST -> context.getString(R.string.lyrics_settings_lrclib_first)
+                                    },
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

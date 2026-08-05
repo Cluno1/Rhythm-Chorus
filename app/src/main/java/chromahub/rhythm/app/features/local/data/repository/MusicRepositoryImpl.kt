@@ -666,6 +666,7 @@ class MusicRepository(context: Context) {
     
     private val deezerApiService = NetworkClient.deezerApiService
     private val lrclibApiService = NetworkClient.lrclibApiService
+    private val betterLyricsApiService = NetworkClient.betterLyricsApiService
     private val ytmusicApiService = NetworkClient.ytmusicApiService
     private val rhythmLyricsApiService = NetworkClient.rhythmLyricsApiService
     private val itunesSearchApiService = NetworkClient.itunesSearchApiService
@@ -4593,6 +4594,40 @@ class MusicRepository(context: Context) {
 
         val appSettings = AppSettings.getInstance(context)
 
+        // Try Better Lyrics first (high quality syllable/TTML synced lyrics)
+        val fetchBetterLyrics = suspend {
+            if (NetworkClient.isBetterLyricsApiEnabled() && betterLyricsApiService != null) {
+                try {
+                    var response = betterLyricsApiService.getLyrics(artist = cleanArtist, song = cleanTitle)
+                    
+                    if (response.ttml.isNullOrBlank()) {
+                        val simplifiedArtist = cleanArtist.split(" feat.", " ft.", " featuring").first().trim()
+                        val simplifiedTitle = cleanTitle.split(" feat.", " ft.", " featuring").first().trim()
+                        if (simplifiedArtist != cleanArtist || simplifiedTitle != cleanTitle) {
+                            response = betterLyricsApiService.getLyrics(artist = simplifiedArtist, song = simplifiedTitle)
+                        }
+                    }
+                    
+                    response.ttml?.let { ttml ->
+                        if (ttml.isNotBlank()) {
+                            val parsedLines = RhythmLyricsParser.parseTtmlLyrics(ttml)
+                            if (parsedLines.isNotEmpty()) {
+                                val wordByWordJson = Gson().toJson(parsedLines)
+                                val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
+                                val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
+                                val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
+                                Log.d(TAG, "Better Lyrics: Syllable-synced lyrics found and parsed successfully")
+                                LyricsData(plain, lrc, wordByWordJson, "Better Lyrics", isCorrected = true)
+                            } else null
+                        } else null
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Better Lyrics lyrics fetch failed: ${e.message}", e)
+                    null
+                }
+            } else null
+        }
+
         val fetchLyrically = suspend {
             if (NetworkClient.isLyricallyApiEnabled() && rhythmLyricsApiService != null) {
                 try {
@@ -4703,24 +4738,44 @@ class MusicRepository(context: Context) {
 
         val apiPriority = appSettings.lyricsApiPriority.value
         val fallbackRetry = appSettings.lyricsApiFallbackRetry.value
+        val isPrioritySet = appSettings.isLyricsApiPrioritySet()
 
-        Log.d(TAG, "fetchLyricsFromAPIs: priority=$apiPriority, fallbackRetry=$fallbackRetry")
+        Log.d(TAG, "fetchLyricsFromAPIs: priority=$apiPriority, isPrioritySet=$isPrioritySet, fallbackRetry=$fallbackRetry")
 
-        if (apiPriority == LyricsApiPriority.LYRICALLY_FIRST) {
+        if (!isPrioritySet || apiPriority == LyricsApiPriority.BETTERLYRICS_FIRST) {
+            // Default first: Better Lyrics -> Lyrically -> LRCLib
+            val betterLyricsResult = fetchBetterLyrics()
+            if (betterLyricsResult != null) return betterLyricsResult
+            
             val lyricallyResult = fetchLyrically()
             if (lyricallyResult != null) return lyricallyResult
-
-            if (fallbackRetry) {
-                val lrcResult = fetchLrcLib()
-                if (lrcResult != null) return lrcResult
-            }
-        } else {
+            
             val lrcResult = fetchLrcLib()
             if (lrcResult != null) return lrcResult
-
-            if (fallbackRetry) {
+        } else {
+            // User explicitly set priority
+            if (apiPriority == LyricsApiPriority.LYRICALLY_FIRST) {
                 val lyricallyResult = fetchLyrically()
                 if (lyricallyResult != null) return lyricallyResult
+
+                if (fallbackRetry) {
+                    val betterLyricsResult = fetchBetterLyrics()
+                    if (betterLyricsResult != null) return betterLyricsResult
+                    
+                    val lrcResult = fetchLrcLib()
+                    if (lrcResult != null) return lrcResult
+                }
+            } else { // LRCLIB_FIRST
+                val lrcResult = fetchLrcLib()
+                if (lrcResult != null) return lrcResult
+
+                if (fallbackRetry) {
+                    val betterLyricsResult = fetchBetterLyrics()
+                    if (betterLyricsResult != null) return betterLyricsResult
+                    
+                    val lyricallyResult = fetchLyrically()
+                    if (lyricallyResult != null) return lyricallyResult
+                }
             }
         }
 

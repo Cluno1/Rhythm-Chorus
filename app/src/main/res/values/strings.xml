@@ -613,6 +613,8 @@
     <string name="onboarding_integration_deezer_desc">Fetch high-quality album artwork and metadata</string>
     <string name="onboarding_integration_lrclib">LrcLib</string>
     <string name="onboarding_integration_lrclib_desc">Download synchronized lyrics for your songs</string>
+    <string name="onboarding_integration_betterlyrics">Better Lyrics</string>
+    <string name="onboarding_integration_betterlyrics_desc">Download word-by-word synchronized lyrics (syllable timing) for karaoke mode</string>
     <string name="onboarding_integration_ytmusic">YouTube Music</string>
     <string name="onboarding_integration_ytmusic_desc">Access metadata and recommendations from YouTube Music</string>
     <string name="onboarding_integration_wikipedia">Wikipedia</string>
@@ -2264,6 +2266,7 @@
     <string name="lyrics_settings_local_first_desc">Prefer local .lrc files, then embedded lyrics, then online APIs</string>
     <string name="lyrics_settings_lyrically_first">Lyrically First</string>
     <string name="lyrics_settings_lrclib_first">LRCLib First</string>
+    <string name="lyrics_settings_betterlyrics_first">Better Lyrics First</string>
     <string name="lyrics_settings_fallback_apis_desc">Attempt fallback APIs if the preferred API fails to return lyrics</string>
     <string name="lyrics_settings_display_styling">Display &amp; Styling</string>
     <string name="lyrics_settings_size_percentage">Size: %1$d%%</string>
@@ -2640,6 +2643,7 @@
     <string name="about_copied_format">%1$s copied!</string>
     <string name="api_deezer_desc">Free artist images and album artwork - no setup needed</string>
     <string name="api_lrclib_desc">Free line-by-line synced lyrics (Fallback)</string>
+    <string name="api_betterlyrics_desc">Word-by-word synced lyrics (Karaoke Mode)</string>
     <string name="api_lyrically_desc">Word-by-word synchronized lyrics (Highest Quality)</string>
     <string name="api_apple_motion_canvas">Apple Music Motion Canvas</string>
     <string name="api_apple_motion_canvas_desc">Dynamic animated album artwork - %1$s</string>

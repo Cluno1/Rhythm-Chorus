@@ -93,14 +93,19 @@ fun LyricsApiPriorityBottomSheet(
 
             // Options
             val priorityOptions = listOf(
+                LyricsApiPriority.BETTERLYRICS_FIRST to Triple(
+                    "Better Lyrics First",
+                    "Search Better Lyrics API first, fallback to others",
+                    MaterialSymbolIcon("lyrics")
+                ),
                 LyricsApiPriority.LYRICALLY_FIRST to Triple(
                     "Lyrically First",
-                    "Search Lyrically API first, fallback to LRCLib",
+                    "Search Lyrically API first, fallback to others",
                     MaterialSymbolIcon("music_note")
                 ),
                 LyricsApiPriority.LRCLIB_FIRST to Triple(
                     "LRCLib First",
-                    "Search LRCLib API first, fallback to Lyrically",
+                    "Search LRCLib API first, fallback to others",
                     MaterialSymbolIcon("cloud_queue")
                 )
             )

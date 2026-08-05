@@ -53,6 +53,15 @@ fun LicensesBottomSheet(
 
     val licenseItems = listOf(
         licenseItem(
+            name = "Better Lyrics",
+            description = "Open-source lyrics provider for word-by-word synchronized lyrics",
+            license = "GPL v3.0 License",
+            url = "https://github.com/better-lyrics/api",
+            icon = RhythmIcons.Connectivity.OpenInNew,
+            context = context,
+            haptic = haptic
+        ),
+        licenseItem(
             name = "Gramophone",
             description = "Feature-rich, privacy-focused music player for Android",
             license = "GPL v3.0 License",

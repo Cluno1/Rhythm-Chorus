@@ -170,6 +170,7 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
     // API states
     val deezerApiEnabled by appSettings.deezerApiEnabled.collectAsState()
     val lrclibApiEnabled by appSettings.lrclibApiEnabled.collectAsState()
+    val betterLyricsApiEnabled by appSettings.betterLyricsApiEnabled.collectAsState()
     val ytMusicApiEnabled by appSettings.ytMusicApiEnabled.collectAsState()
     val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
     val wikipediaApiEnabled by appSettings.wikipediaApiEnabled.collectAsState()
@@ -235,6 +236,22 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                                     description = context.getString(R.string.api_lrclib_desc),
                                     toggleState = lrclibApiEnabled,
                                     onToggleChange = { enabled -> appSettings.setLrcLibApiEnabled(enabled) }
+                                )
+                            )
+                        )
+                    }
+
+                    if (chromahub.rhythm.app.BuildConfig.ENABLE_BETTERLYRICS) {
+                        add(
+                            toMaterial3SettingsItem(
+                                context = context,
+                                hapticFeedback = hapticFeedback,
+                                item = SettingItem(
+                                    icon = RhythmIcons.Queue,
+                                    title = stringResource(R.string.onboarding_integration_betterlyrics),
+                                    description = context.getString(R.string.api_betterlyrics_desc),
+                                    toggleState = betterLyricsApiEnabled,
+                                    onToggleChange = { enabled -> appSettings.setBetterLyricsApiEnabled(enabled) }
                                 )
                             )
                         )
