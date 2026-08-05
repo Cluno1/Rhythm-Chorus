@@ -3,6 +3,7 @@
      Mirrors the widget design: tinted cookie with the Rhythm app logo,
      sunny play button on the top-right rim, skip buttons on the bottom corners. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="110dp"
     android:layout_height="110dp">
 
@@ -11,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@drawable/widget_preview_cookie"
-        android:tint="@color/widget_preview_surface" />
+        app:tint="@color/widget_preview_surface" />
 
     <!-- Rhythm app logo mark (notification icon) -->
     <ImageView
@@ -19,7 +20,7 @@
         android:layout_height="64dp"
         android:layout_gravity="center"
         android:src="@drawable/ic_notification"
-        android:tint="@color/widget_preview_on_primary_container" />
+        app:tint="@color/widget_preview_on_primary_container" />
 
     <!-- Play/Pause - sunny badge, top-right corner (rim) -->
     <FrameLayout
@@ -33,14 +34,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/widget_preview_sunny"
-            android:tint="@color/widget_preview_primary" />
+            app:tint="@color/widget_preview_primary" />
 
         <ImageView
             android:layout_width="18dp"
             android:layout_height="18dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_play_arrow"
-            android:tint="@color/widget_preview_on_primary" />
+            app:tint="@color/widget_preview_on_primary" />
     </FrameLayout>
 
     <!-- Previous - circle badge, bottom-left corner -->
@@ -55,14 +56,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/widget_preview_circle"
-            android:tint="@color/widget_preview_tertiary" />
+            app:tint="@color/widget_preview_tertiary" />
 
         <ImageView
             android:layout_width="14dp"
             android:layout_height="14dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_skip_previous"
-            android:tint="@color/widget_preview_on_tertiary" />
+            app:tint="@color/widget_preview_on_tertiary" />
     </FrameLayout>
 
     <!-- Next - circle badge, bottom-right corner -->
@@ -77,13 +78,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/widget_preview_circle"
-            android:tint="@color/widget_preview_tertiary" />
+            app:tint="@color/widget_preview_tertiary" />
 
         <ImageView
             android:layout_width="14dp"
             android:layout_height="14dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_skip_next"
-            android:tint="@color/widget_preview_on_tertiary" />
+            app:tint="@color/widget_preview_on_tertiary" />
     </FrameLayout>
 </FrameLayout>
