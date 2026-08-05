@@ -996,7 +996,11 @@ fun ExpressivePlayerScreen(
                                                         colors = SliderDefaults.colors(thumbColor = Color.Transparent, activeTrackColor = Color.Transparent, inactiveTrackColor = Color.Transparent))
                                                 }
                                             }
-                                            Row(Modifier.fillMaxWidth().padding(top = 4.dp, start = 4.dp, end = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp, start = 4.dp, end = 4.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
                                                 Text(currentTimeStr, style = MaterialTheme.typography.labelMedium, color = onSurfaceVariantColor)
                                                 Text(
                                                     text = totalTimeStr,
