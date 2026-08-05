@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm Музика</string>
     <string name="media3_notification_channel_description">Елементи керування відтворенням медіа</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm Музичний віджет - керуйте відтворенням за допомогою адаптивних макетів, які підтримують розміри сітки від 2x1 до 5x5</string>
     <string name="widget_description_glance">Rhythm Музика – керуйте відтворенням за допомогою 9 адаптивних макетів, Material 3 дизайну та оновлення стану в реальному часі</string>
     <string name="widget_name_glance">Rhythm Музика</string>
     <string name="no_song_playing">Пісня не відтворюється</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">Віджет</string>
     <string name="settings_widget_desc">Віджети головного екрана</string>
     <string name="widget_show_album_art">Показати обкладинку альбому</string>
-    <string name="widget_show_album_art_desc">Відображати обкладинку альбому у віджеті</string>
     <string name="widget_show_artist">Показати ім’я виконавця</string>
     <string name="widget_show_artist_desc">Відображення інформації про виконавця</string>
     <string name="widget_show_album">Показати назву альбому</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">Динамічні кольори (Material Ви)</string>
-    <string name="onboarding_dynamic_colors_desc">Застосуйте кольори, витягнуті з шпалер вашого пристрою, для створення цілісного вигляду.</string>
     <string name="onboarding_player_theme_title">Теми відтворення та міні-плеєра</string>
     <string name="onboarding_player_theme_desc">Персоналізуйте інтерфейси відтворення. Перемикайтеся між чистим, сучасним дизайном Rhythm або яскравим, плавним експресивним дизайном.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">Віджети панелі запуску</string>
     <string name="onboarding_widgets_desc">Додайте віджети Rhythm до панелі запуску для швидкого керування музикою. Налаштуйте, яка інформація відображатиметься та як виглядатиме віджет.</string>
-    <string name="onboarding_widget_album_art">Показати обкладинку альбому</string>
-    <string name="onboarding_widget_album_art_desc">Відображати обкладинку альбому у віджеті</string>
     <string name="onboarding_widget_artist">Показати ім’я виконавця</string>
     <string name="onboarding_widget_artist_desc">Відображення поточного виконавця у віджеті</string>
     <string name="onboarding_widget_album">Показати назву альбому</string>
     <string name="onboarding_widget_album_desc">Відображення назви альбому у віджеті</string>
     <string name="onboarding_widgets_tips_title">Поради щодо віджетів</string>
-    <string name="onboarding_widget_tip_1">Торкніться віджета, щоб відкрити програму</string>
-    <string name="onboarding_widget_tip_2">Зміна розміру віджетів для різних макетів (2x1 до 5x5)</string>
-    <string name="onboarding_widget_tip_3">Віджети оновлюються в реальному часі під час відтворення</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">Підключіть свої послуги</string>
     <string name="onboarding_integrations_desc">Покращуйте враження від прослуховування, підключившись до зовнішніх служб. Отримуйте обкладинки альбомів, тексти пісень, гортайте свої п’єси та діліться тим, що ви слухаєте.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">Дізнайтеся про свої музичні звички. Відстежуйте час прослуховування, пісні, які найчастіше слухали, улюблених виконавців тощо за допомогою красивих візуалізацій.</string>
     <string name="onboarding_stats_show_home">Показати статистику на головній сторінці</string>
     <string name="onboarding_stats_show_home_desc">Відобразити віджет статистики прослуховування на головному екрані</string>
-    <string name="onboarding_stats_rating">Увімкнути рейтинги пісень</string>
-    <string name="onboarding_stats_rating_desc">Оцінюйте свої пісні, щоб відстежувати улюблені та створювати розумні списки відтворення</string>
     <string name="onboarding_stats_features_title">Функції статистики</string>
     <string name="onboarding_stats_feature_1">Відстежуйте загальну тривалість прослуховування за днями, тижнями чи місяцями</string>
     <string name="onboarding_stats_feature_2">Перегляньте пісні, які ви найчастіше слухаєте</string>
@@ -2084,8 +2073,6 @@
     <string name="streamingsettingsscreen_streaming_restricted">Потокове передавання обмежено</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">Не вдалося відтворити далі: не вдається розпізнати URL-адресу</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">Не вдалося додати до черги: не вдалося вирішити URL-адресу</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">Вертикальний віджет 1×2</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">Середній віджет 3×2</string>
     <string name="rhythmmusicwidget_album_art_placeholder">Обкладинка альбому</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance Попередній перегляд віджетів</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">Компактний віджет 1×1</string>
@@ -2246,9 +2233,6 @@
     <string name="widgetsettingsscreen_widget_settings">Налаштування віджетів</string>
     <string name="widgetsettingsscreen_show_favorite_button">Показати кнопку «Вибране».</string>
     <string name="widgetsettingsscreen_widget_theme">Тема віджета</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm використовує Material 3 Виразний дизайн із динамічними кольорами</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">Віджет адаптується від кнопки відтворення 1x1 до повного макета 5x5+</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">Утримуйте та змінюйте розмір для різних виразних макетів</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Застосовується лише до віджетів Glance</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">Персоналізуйте віджети головного екрана</string>
     <string name="festivesplashgreeting_merry_christmas">З Різдвом Христовим!</string>

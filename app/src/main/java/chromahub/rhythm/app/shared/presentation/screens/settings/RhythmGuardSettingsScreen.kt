@@ -466,7 +466,6 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                     overallProgress = overallHealthProgress,
                     statusText = guardStatusText,
                     statusDetail = guardStatusDetail,
-                    exposureMillis = todayExposureMs,
                     isExceeded = isExposureLimitExceeded,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -1793,7 +1792,6 @@ fun RhythmGuardHeroCard(
     overallProgress: Float,
     statusText: String,
     statusDetail: String?,
-    exposureMillis: Long,
     isExceeded: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -1820,60 +1818,13 @@ fun RhythmGuardHeroCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = stringResource(R.string.settings_rhythm_guard_hero_title),
+                text = "Rhythm Guard Status",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Medium
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            val hours = exposureMillis / (1000 * 60 * 60)
-            val minutes = (exposureMillis / (1000 * 60)) % 60
-            val seconds = (exposureMillis / 1000) % 60
-
-            Row(
-                modifier = Modifier.animateContentSize(
-                    animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
-                ),
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                AnimatedVisibility(
-                    visible = hours > 0,
-                    enter = fadeIn() + expandHorizontally(),
-                    exit = fadeOut() + shrinkHorizontally()
-                ) {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        RhythmGuardDigitTicker(hours.toString(), MaterialTheme.typography.displayMedium, MaterialTheme.colorScheme.onSurface, prefix = "h")
-                        RhythmGuardTickerUnit("h")
-                        Spacer(modifier = Modifier.width(12.dp))
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = minutes > 0 || hours > 0,
-                    enter = fadeIn() + expandHorizontally(),
-                    exit = fadeOut() + shrinkHorizontally()
-                ) {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        RhythmGuardDigitTicker(minutes.toString(), MaterialTheme.typography.displayMedium, MaterialTheme.colorScheme.onSurface, prefix = "m")
-                        RhythmGuardTickerUnit("m")
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = hours == 0L && minutes == 0L,
-                    enter = fadeIn() + expandHorizontally(),
-                    exit = fadeOut() + shrinkHorizontally()
-                ) {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        RhythmGuardDigitTicker(seconds.toString(), MaterialTheme.typography.displayMedium, MaterialTheme.colorScheme.onSurface, prefix = "s")
-                        RhythmGuardTickerUnit("s")
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             val statusLine = if (isExceeded) {
                 stringResource(R.string.settings_rhythm_guard_hero_limit_exceeded)
@@ -1882,22 +1833,23 @@ fun RhythmGuardHeroCard(
             }
             Text(
                 text = statusLine,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (isExceeded) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 4.dp)
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = if (isExceeded) MaterialTheme.colorScheme.error else heroColor,
+                textAlign = TextAlign.Center
             )
             if (!statusDetail.isNullOrBlank()) {
                 Text(
                     text = statusDetail,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 2.dp)
+                    modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             val animatedProgress by animateFloatAsState(
                 targetValue = overallProgress.coerceIn(0f, 1f),

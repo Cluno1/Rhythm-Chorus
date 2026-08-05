@@ -57,6 +57,7 @@ import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.AppSettings
+import chromahub.rhythm.app.shared.data.model.ArtistArtworkSource
 import chromahub.rhythm.app.shared.data.model.Artist
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
@@ -249,7 +250,8 @@ fun ArtistDetailScreen(
     }
 
     val totalDuration = remember(rawArtistSongs) { rawArtistSongs.sumOf { it.duration } }
-    val displayArtworkUri = artist?.artworkUri
+    val artistArtworkSource by appSettings.artistArtworkSource.collectAsState()
+    val displayArtworkUri = if (artistArtworkSource == ArtistArtworkSource.DISABLED) null else artist?.artworkUri
     val backgroundColor = MaterialTheme.colorScheme.background
 
     if (isLandscapeTablet) {

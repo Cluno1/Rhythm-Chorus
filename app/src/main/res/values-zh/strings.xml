@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm 音乐</string>
     <string name="media3_notification_channel_description">媒体播放控件</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm 音乐小部件 - 使用支持 2x1 至 5x5 网格尺寸的响应式布局控制播放</string>
     <string name="widget_description_glance">Rhythm 音乐 - 通过 9 种响应式布局、Material 3 设计和实时状态更新控制播放</string>
     <string name="widget_name_glance">Rhythm 音乐</string>
     <string name="no_song_playing">没有播放歌曲</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">小工具</string>
     <string name="settings_widget_desc">主屏幕小部件</string>
     <string name="widget_show_album_art">显示专辑封面</string>
-    <string name="widget_show_album_art_desc">在小部件中显示专辑封面</string>
     <string name="widget_show_artist">显示艺术家姓名</string>
     <string name="widget_show_artist_desc">显示艺术家信息</string>
     <string name="widget_show_album">显示专辑名称</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">动态色彩（Material You）</string>
-    <string name="onboarding_dynamic_colors_desc">应用从设备壁纸中提取的颜色，打造统一的外观。</string>
     <string name="onboarding_player_theme_title">播放和迷你播放器主题</string>
     <string name="onboarding_player_theme_desc">个性化您的播放界面。在干净、现代的 Rhythm 设计或充满活力、流畅、富有表现力的设计之间切换。</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">启动器小部件</string>
     <string name="onboarding_widgets_desc">将 Rhythm 小部件添加到您的启动器以快速控制音乐。自定义显示的信息以及小部件的外观。</string>
-    <string name="onboarding_widget_album_art">显示专辑封面</string>
-    <string name="onboarding_widget_album_art_desc">在小部件中显示专辑封面</string>
     <string name="onboarding_widget_artist">显示艺术家姓名</string>
     <string name="onboarding_widget_artist_desc">在小部件中显示当前艺术家</string>
     <string name="onboarding_widget_album">显示专辑名称</string>
     <string name="onboarding_widget_album_desc">在小部件中显示专辑标题</string>
     <string name="onboarding_widgets_tips_title">小部件提示</string>
-    <string name="onboarding_widget_tip_1">点击小部件打开应用程序</string>
-    <string name="onboarding_widget_tip_2">调整不同布局的小部件大小（2x1 到 5x5）</string>
-    <string name="onboarding_widget_tip_3">播放时小部件实时更新</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">连接您的服务</string>
     <string name="onboarding_integrations_desc">通过连接到外部服务来增强您的聆听体验。获取专辑封面、歌词，记录您的戏剧，并分享您正在听的内容。</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">发现有关您的音乐习惯的见解。通过精美的可视化效果跟踪您的收听时间、最常播放的歌曲、最喜欢的艺术家等。</string>
     <string name="onboarding_stats_show_home">显示主页统计数据</string>
     <string name="onboarding_stats_show_home_desc">在主屏幕上显示收听统计小部件</string>
-    <string name="onboarding_stats_rating">启用歌曲评级</string>
-    <string name="onboarding_stats_rating_desc">对您的歌曲进行评分以跟踪收藏夹并构建智能播放列表</string>
     <string name="onboarding_stats_features_title">统计特征</string>
     <string name="onboarding_stats_feature_1">按天、周或月跟踪总收听时间</string>
     <string name="onboarding_stats_feature_2">查看您最常播放的歌曲</string>
@@ -2084,8 +2073,6 @@
     <string name="streamingsettingsscreen_streaming_restricted">流媒体限制</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">无法播放下一个：无法解析 URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">添加到队列失败：无法解析 URL</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">1×2 垂直小部件</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">3×2 中型小部件</string>
     <string name="rhythmmusicwidget_album_art_placeholder">专辑艺术占位符</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance 小部件预览</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 紧凑小部件</string>
@@ -2246,9 +2233,6 @@
     <string name="widgetsettingsscreen_widget_settings">小部件设置</string>
     <string name="widgetsettingsscreen_show_favorite_button">显示收藏夹按钮</string>
     <string name="widgetsettingsscreen_widget_theme">小部件主题</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm 使用 Material 3 具有动态色彩的表现力设计</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">Widget 从 1x1 播放按钮适应 5x5+ 完整布局</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">长按并调整大小以获得不同表现力的布局</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">仅适用于 Glance 小部件</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">个性化主屏幕小部件</string>
     <string name="festivesplashgreeting_merry_christmas">圣诞快乐！</string>

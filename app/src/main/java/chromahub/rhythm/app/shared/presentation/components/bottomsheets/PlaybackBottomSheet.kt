@@ -158,6 +158,8 @@ fun PlaybackBottomSheet(
     val batterySaverEnableOffload by appSettings.batterySaverEnableOffload.collectAsState()
     val isOffloadEnforced = batterySaverEnabled && (batterySaverMode == "auto" || (batterySaverMode == "manual" && batterySaverEnableOffload))
     
+    var showSpeedPitchSheet by remember { mutableStateOf(false) }
+    
     val contentAlpha by animateFloatAsState(
         targetValue = if (showContent) 1f else 0f,
         animationSpec = spring(
@@ -368,34 +370,15 @@ fun PlaybackBottomSheet(
                     }
                 }
 
-                // Playback Pitch Section
+                // Playback Speed & Pitch Section
                 item {
                     AnimateIn {
-                        PlaybackPitchCard(
-                            currentPitch = playbackPitch,
-                            onPitchChange = { pitch ->
-                                musicViewModel.setPlaybackPitch(pitch)
-                                if (syncSpeedAndPitch) musicViewModel.setPlaybackSpeed(pitch)
-                            },
-                            syncEnabled = syncSpeedAndPitch,
-                            onSyncChange = { appSettings.setSyncSpeedAndPitch(it) },
-                            haptics = haptics,
-                            context = context
-                        )
-                    }
-                }
-                
-                // Playback Speed Section
-                item {
-                    AnimateIn {
-                        PlaybackSpeedCard(
+                        PlaybackSpeedAndPitchCard(
                             currentSpeed = playbackSpeed,
-                            onSpeedChange = { speed ->
-                                musicViewModel.setPlaybackSpeed(speed)
-                                if (syncSpeedAndPitch) musicViewModel.setPlaybackPitch(speed)
-                            },
+                            currentPitch = playbackPitch,
                             syncEnabled = syncSpeedAndPitch,
                             onSyncChange = { appSettings.setSyncSpeedAndPitch(it) },
+                            onOpenSpeedPitchSheet = { showSpeedPitchSheet = true },
                             haptics = haptics,
                             context = context
                         )
@@ -433,6 +416,23 @@ fun PlaybackBottomSheet(
         )
     }
 
+    if (showSpeedPitchSheet) {
+        PlaybackSpeedAndPitchBottomSheet(
+            currentSpeed = playbackSpeed,
+            currentPitch = playbackPitch,
+            syncEnabled = syncSpeedAndPitch,
+            onSyncChange = { appSettings.setSyncSpeedAndPitch(it) },
+            onDismiss = { showSpeedPitchSheet = false },
+            onSave = { speed, pitch ->
+                musicViewModel.setPlaybackSpeed(speed)
+                musicViewModel.setPlaybackPitch(pitch)
+                showSpeedPitchSheet = false
+            },
+            onSetDefaultSpeed = { speed ->
+                musicViewModel.setDefaultPlaybackSpeed(speed)
+            }
+        )
+    }
 }
 
 @Composable
@@ -728,192 +728,82 @@ private fun VolumeAndDeviceCard(
 }
 
 @Composable
-private fun PlaybackSpeedCard(
+private fun PlaybackSpeedAndPitchCard(
     currentSpeed: Float,
-    onSpeedChange: (Float) -> Unit,
+    currentPitch: Float,
     syncEnabled: Boolean,
     onSyncChange: (Boolean) -> Unit,
+    onOpenSpeedPitchSheet: () -> Unit,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
     context: Context,
     modifier: Modifier = Modifier
 ) {
-    var selectedSpeed by remember(currentSpeed) { mutableFloatStateOf(currentSpeed) }
-    
-    Card(
+    fun formatClean(v: Float): String {
+        val s = String.format(java.util.Locale.US, "%.3f", v)
+        return s.dropLastWhile { it == '0' }.dropLastWhile { it == '.' }
+    }
+
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp
-        )
+            .padding(horizontal = 24.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
-        ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = MaterialSymbolIcon("speed", filled = true),
-                    contentDescription = stringResource(R.string.player_chip_speed),
-                    
-                    modifier = Modifier.size(24.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(12.dp))
-                
-                Text(
-                    text = context.getString(R.string.playback_speed),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                // Current speed display
-                Text(
-                    text = "${String.format("%.2f", selectedSpeed)}x",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Sync toggle — expressive design matching settings
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Surface(
-                        modifier = Modifier.size(32.dp),
-                        shape = RoundedCornerShape(34.dp),
-                        color = if (syncEnabled) MaterialTheme.colorScheme.primaryContainer
-                                else MaterialTheme.colorScheme.surfaceContainerHighest
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Icon(
-                                imageVector = MaterialSymbolIcon("sync_alt", filled = true),
-                                contentDescription = null,
-                                tint = if (syncEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-                                       else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
+        Material3SettingsGroup(
+            title = "Speed & Pitch",
+            containerColor = MaterialTheme.colorScheme.surface,
+            items = listOf(
+                Material3SettingsItem(
+                    icon = MaterialSymbolIcon("sync_alt", filled = true),
+                    title = { Text(text = "Sync Speed & Pitch") },
+                    description = { Text(text = "Synchronize playback tempo and pitch") },
+                    trailingContent = {
+                        chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch(
+                            checked = syncEnabled,
+                            onCheckedChange = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                onSyncChange(it)
+                            }
+                        )
+                    },
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        onSyncChange(!syncEnabled)
                     }
-                    Text(
-                        text = context.getString(R.string.sync_with_pitch),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (syncEnabled) MaterialTheme.colorScheme.onSurface
-                                else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch(
-                    checked = syncEnabled,
-                    onCheckedChange = {
+                ),
+                Material3SettingsItem(
+                    icon = MaterialSymbolIcon("speed", filled = true),
+                    title = { Text(text = "Playback Speed") },
+                    description = { Text(text = "Current: ${formatClean(currentSpeed)}x") },
+                    trailingContent = {
+                        Icon(
+                            imageVector = RhythmIcons.Forward,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    onClick = {
                         HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                        onSyncChange(it)
+                        onOpenSpeedPitchSheet()
+                    }
+                ),
+                Material3SettingsItem(
+                    icon = MaterialSymbolIcon("graphic_eq", filled = true),
+                    title = { Text(text = "Playback Pitch") },
+                    description = { Text(text = "Current: ${formatClean(currentPitch)}x") },
+                    trailingContent = {
+                        Icon(
+                            imageVector = RhythmIcons.Forward,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                        onOpenSpeedPitchSheet()
                     }
                 )
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // Slider with labels
-            Column {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = stringResource(R.string.playbackbottomsheet_str_025x),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = stringResource(R.string.playbackbottomsheet_str_30x),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Slider(
-                    value = selectedSpeed,
-                    onValueChange = { newValue ->
-                        selectedSpeed = newValue
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                    },
-                    onValueChangeFinished = {
-                        onSpeedChange(selectedSpeed)
-                    },
-                    valueRange = 0.25f..3.0f,
-                    steps = 54,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // Quick preset buttons
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(listOf(0.5f, 0.75f, 0.8f, 0.9f, 1.0f, 1.25f, 1.5f, 2.0f, 2.5f, 3.0f)) { presetSpeed ->
-                    AssistChip(
-                        onClick = {
-                            selectedSpeed = presetSpeed
-                            onSpeedChange(presetSpeed)
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        },
-                        label = {
-                            Text(
-                                text = "${String.format("%.2f", presetSpeed)}x",
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        },
-                        modifier = Modifier.height(32.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = if (selectedSpeed == presetSpeed)
-                                MaterialTheme.colorScheme.primaryContainer
-                            else
-                                MaterialTheme.colorScheme.surfaceVariant,
-                            labelColor = if (selectedSpeed == presetSpeed)
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        border = null
-                    )
-                }
-            }
-        }
+            )
+        )
     }
 }
 

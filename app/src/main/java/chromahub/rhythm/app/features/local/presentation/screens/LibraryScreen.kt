@@ -83,6 +83,7 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
@@ -1631,30 +1632,31 @@ fun LibraryScreen(
                                 when (visibleTabIds.getOrNull(page)) {
                                     "SONGS" -> {
                                         SingleCardSongsContent(
-                                            songs = filteredSongs,
-                                            paginatedSongs = musicViewModel.paginatedSongs,
-                                            listState = songsListState,
-                                            albums = albums,
-                                            artists = artists,
-                                            onSongClick = onSongClick,
-                                            onAddToPlaylist = { song ->
-                                                songsToAddToPlaylist = listOf(song)
-                                                showAddToPlaylistSheet = true
-                                            },
-                                            onAddToQueue = onAddToQueue,
-                                            onPlayNext = { song -> musicViewModel.playNext(song) },
-                                            onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
-                                            favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
-                                            onGoToArtist = onArtistClick,
-                                            onGoToAlbum = onAlbumClick,
-                                            onShowSongInfo = { song ->
-                                                selectedSong = song
-                                                showSongInfoSheet = true
-                                            },
-                                            onAddToBlacklist = { song ->
-                                                appSettings.addToBlacklist(song.id)
-                                            },
-                                            onPlayQueue = onPlayQueue,
+                                        songs = filteredSongs,
+                                        paginatedSongs = musicViewModel.paginatedSongs,
+                                        listState = songsListState,
+                                        albums = albums,
+                                        artists = artists,
+                                        onSongClick = onSongClick,
+                                        onAddToPlaylist = { song ->
+                                            songsToAddToPlaylist = listOf(song)
+                                            showAddToPlaylistSheet = true
+                                        },
+                                        onAddToQueue = onAddToQueue,
+                                        onPlayNext = { song -> musicViewModel.playNext(song) },
+                                        onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
+                                        favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
+                                        onGoToArtist = onArtistClick,
+                                        onGoToAlbum = onAlbumClick,
+                                        onShowSongInfo = { song ->
+                                            selectedSong = song
+                                            showSongInfoSheet = true
+                                        },
+                                        onAddToBlacklist = { song ->
+                                            appSettings.addToBlacklist(song.id)
+                                        },
+                                        onDeleteSong = { musicViewModel.deleteSong(it) },
+                                        onPlayQueue = onPlayQueue,
                                             onPlayQueueFromIndex = onPlayQueueFromIndex,
                                             onShuffleQueue = onShuffleQueue,
                                             currentSong = currentSong,
@@ -1718,28 +1720,29 @@ fun LibraryScreen(
                                         onSortOptionChange = { artistSortOption = it }
                                     )
                                     "DATES" -> YearGroupedSongsContent(
-                                        songs = filteredSongs,
-                                        albums = albums,
-                                        listState = datesListState,
-                                        onSongClick = onSongClick,
-                                        onAddToPlaylist = { song ->
-                                            songsToAddToPlaylist = listOf(song)
-                                            showAddToPlaylistSheet = true
-                                        },
-                                        onAddToQueue = onAddToQueue,
-                                        onPlayNext = { song -> musicViewModel.playNext(song) },
-                                        onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
-                                        favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
-                                        onGoToArtist = onArtistClick,
-                                        onGoToAlbum = onAlbumClick,
-                                        onShowSongInfo = { song ->
-                                            selectedSong = song
-                                            showSongInfoSheet = true
-                                        },
-                                        onAddToBlacklist = { song ->
-                                            appSettings.addToBlacklist(song.id)
-                                        },
-                                        onPlayQueue = onPlayQueue,
+                                    songs = filteredSongs,
+                                    albums = albums,
+                                    listState = datesListState,
+                                    onSongClick = onSongClick,
+                                    onAddToPlaylist = { song ->
+                                        songsToAddToPlaylist = listOf(song)
+                                        showAddToPlaylistSheet = true
+                                    },
+                                    onAddToQueue = onAddToQueue,
+                                    onPlayNext = { song -> musicViewModel.playNext(song) },
+                                    onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
+                                    favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
+                                    onGoToArtist = onArtistClick,
+                                    onGoToAlbum = onAlbumClick,
+                                    onShowSongInfo = { song ->
+                                        selectedSong = song
+                                        showSongInfoSheet = true
+                                    },
+                                    onAddToBlacklist = { song ->
+                                        appSettings.addToBlacklist(song.id)
+                                    },
+                                    onDeleteSong = { musicViewModel.deleteSong(it) },
+                                    onPlayQueue = onPlayQueue,
                                         onPlayQueueFromIndex = onPlayQueueFromIndex,
                                         onShuffleQueue = onShuffleQueue,
                                         currentSong = currentSong,
@@ -1783,7 +1786,12 @@ fun LibraryScreen(
                                         currentPath = explorerPath,
                                         onPathChanged = { explorerPath = it },
                                         onFolderSongsChanged = { explorerFolderSongs = it },
-                                        bottomPadding = adjustedSongsBottomPadding
+                                        bottomPadding = adjustedSongsBottomPadding,
+                                        isSelectionMode = isSelectionMode,
+                                        selectedSongIds = selectedSongIds,
+                                        onSongLongPress = onSongLongPress,
+                                        onSongSelectionToggle = onSongSelectionToggle,
+                                        multiSelectionState = multiSelectionState
                                     )
                                 }
                             }
@@ -2145,6 +2153,7 @@ fun SingleCardSongsContent(
     onGoToAlbum: (Album) -> Unit = {},
     onShowSongInfo: (Song) -> Unit,
     onAddToBlacklist: (Song) -> Unit,
+    onDeleteSong: (Song) -> Unit = {},
     onPlayQueue: (List<Song>) -> Unit = { _ -> },
     onPlayQueueFromIndex: (List<Song>, Int) -> Unit = { _, _ -> },
     onShuffleQueue: (List<Song>) -> Unit = { _ -> },
@@ -2347,12 +2356,13 @@ fun SingleCardSongsContent(
                                 }
                                 artist?.let { onGoToArtist(it) }
                             },
-                            onGoToAlbum = { 
+                            onGoToAlbum = {
                                 val album = albums.findAlbumForSong(song)
                                 album?.let { onGoToAlbum(it) }
                             },
                             onShowSongInfo = { onShowSongInfo(song) },
                             onAddToBlacklist = { onAddToBlacklist(song) },
+                            onDeleteSong = { onDeleteSong(song) },
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             haptics = haptics,
@@ -2483,6 +2493,11 @@ fun SingleCardPlaylistsContent(
             }
 
             if (playlistViewType == PlaylistViewType.GRID) {
+                val configuration = LocalConfiguration.current
+                val columnsCount = remember(configuration.screenWidthDp) {
+                    val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
+                    maxOf(cols, 1)
+                }
                 LazyVerticalGrid(
                     state = gridState,
                     columns = GridCells.Adaptive(160.dp),
@@ -2493,19 +2508,21 @@ fun SingleCardPlaylistsContent(
                         top = 16.dp,
                         bottom = bottomPadding + 80.dp
                     ),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    items(
+                    itemsIndexed(
                         items = preparedPlaylists,
-                        key = { it.id },
-                        contentType = { "playlist" }
-                    ) { playlist ->
+                        key = { _, item -> item.id },
+                        contentType = { _, _ -> "playlist" }
+                    ) { index, playlist ->
                         AnimateIn(modifier = Modifier.animateItem()) {
+                            val shape = getLibraryResponsiveGridItemShape(index, preparedPlaylists.size, columnsCount)
                             PlaylistGridItem(
                                 playlist = playlist,
                                 onClick = { onPlaylistClick(playlist) },
-                                haptics = haptics
+                                haptics = haptics,
+                                shape = shape
                             )
                         }
                     }
@@ -2642,6 +2659,11 @@ fun SingleCardAlbumsContent(
             }
 
             if (albumViewType == AlbumViewType.GRID) {
+                val configuration = LocalConfiguration.current
+                val columnsCount = remember(configuration.screenWidthDp) {
+                    val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
+                    maxOf(cols, 1)
+                }
                 LazyVerticalGrid(
                     state = gridState,
                     columns = GridCells.Adaptive(160.dp),
@@ -2652,20 +2674,22 @@ fun SingleCardAlbumsContent(
                         top = 16.dp,
                         bottom = bottomPadding + 80.dp
                     ),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    items(
+                    itemsIndexed(
                         items = preparedAlbums,
-                        key = { it.id },
-                        contentType = { "album" }
-                    ) { album ->
+                        key = { _, item -> item.id },
+                        contentType = { _, _ -> "album" }
+                    ) { index, album ->
                         AnimateIn(modifier = Modifier.animateItem()) {
+                            val shape = getLibraryResponsiveGridItemShape(index, preparedAlbums.size, columnsCount)
                             AlbumGridItem(
                                 album = album,
                                 onClick = { onAlbumBottomSheetClick(album) },
                                 onPlayClick = { onAlbumClick(album) },
-                                haptics = haptics
+                                haptics = haptics,
+                                shape = shape
                             )
                         }
                     }
@@ -2997,6 +3021,7 @@ fun LibrarySongItem(
     onGoToAlbum: () -> Unit = {},
     onShowSongInfo: () -> Unit,
     onAddToBlacklist: () -> Unit,
+    onDeleteSong: () -> Unit = {},
     currentSong: Song? = null,
     isPlaying: Boolean = false,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
@@ -3224,6 +3249,11 @@ fun LibrarySongItem(
                                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                 showDropdown = false
                                 onAddToBlacklist()
+                            },
+                            onDeleteSong = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                showDropdown = false
+                                onDeleteSong()
                             }
                         )
                     }
@@ -3247,6 +3277,7 @@ fun LibrarySongItemWrapper(
     onGoToAlbum: () -> Unit = {},
     onShowSongInfo: () -> Unit,
     onAddToBlacklist: () -> Unit,
+    onDeleteSong: () -> Unit = {},
     currentSong: Song? = null,
     isPlaying: Boolean = false,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
@@ -3316,6 +3347,7 @@ fun LibrarySongItemWrapper(
             onGoToAlbum = onGoToAlbum,
             onShowSongInfo = onShowSongInfo,
             onAddToBlacklist = onAddToBlacklist,
+            onDeleteSong = onDeleteSong,
             currentSong = currentSong,
             isPlaying = isPlaying,
             haptics = haptics,
@@ -3994,6 +4026,22 @@ private fun AnimateIn(
     }
 }
 
+private fun getLibraryResponsiveGridItemShape(index: Int, totalItems: Int, columnsCount: Int): RoundedCornerShape {
+    if (totalItems <= 1) return RoundedCornerShape(24.dp)
+    val totalRows = (totalItems + columnsCount - 1) / columnsCount
+    val r = index / columnsCount
+    val c = index % columnsCount
+    val isTopRow = r == 0
+    val isBottomRow = r == totalRows - 1
+    val isLeftColumn = c == 0
+    val isRightColumn = c == columnsCount - 1 || index == totalItems - 1
+    val topStart = if (isTopRow && isLeftColumn) 24.dp else 8.dp
+    val topEnd = if (isTopRow && isRightColumn) 24.dp else 8.dp
+    val bottomStart = if (isBottomRow && isLeftColumn) 24.dp else 8.dp
+    val bottomEnd = if (isBottomRow && isRightColumn) 24.dp else 8.dp
+    return RoundedCornerShape(topStart = topStart, topEnd = topEnd, bottomStart = bottomStart, bottomEnd = bottomEnd)
+}
+
 @Composable
 fun AlbumsGrid(
     albums: List<Album>,
@@ -4003,6 +4051,11 @@ fun AlbumsGrid(
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback
 ) {
     val uniqueAlbums = remember(albums) { albums.distinctBy { it.id } }
+    val configuration = LocalConfiguration.current
+    val columnsCount = remember(configuration.screenWidthDp) {
+        val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
+        maxOf(cols, 1)
+    }
     LazyVerticalGrid(
         columns = GridCells.Adaptive(160.dp),
         modifier = Modifier
@@ -4012,19 +4065,21 @@ fun AlbumsGrid(
             top = 8.dp,
             bottom = 16.dp
         ),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        items(
+        itemsIndexed(
             items = uniqueAlbums,
-            key = { it.id }
-        ) { album ->
+            key = { _, item -> item.id }
+        ) { index, album ->
             AnimateIn {
+                val shape = getLibraryResponsiveGridItemShape(index, uniqueAlbums.size, columnsCount)
                 AlbumGridItem(
                     album = album,
                     onClick = { onAlbumClick(album) },
                     onPlayClick = { onAlbumPlay(album) },
-                    haptics = haptics
+                    haptics = haptics,
+                    shape = shape
                 )
             }
         }
@@ -4037,7 +4092,8 @@ fun PlaylistGridItem(
     playlist: Playlist,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    haptics: androidx.compose.ui.hapticfeedback.HapticFeedback
+    haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
+    shape: Shape = RoundedCornerShape(20.dp)
 ) {
     val context = LocalContext.current
     
@@ -4048,7 +4104,7 @@ fun PlaylistGridItem(
         },
         modifier = modifier
             .fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
@@ -4149,7 +4205,8 @@ fun AlbumGridItem(
     onClick: () -> Unit,
     onPlayClick: () -> Unit = {},
     modifier: Modifier = Modifier,
-    haptics: androidx.compose.ui.hapticfeedback.HapticFeedback
+    haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
+    shape: Shape = RoundedCornerShape(20.dp)
 ) {
     val context = LocalContext.current
     
@@ -4160,7 +4217,7 @@ fun AlbumGridItem(
         },
         modifier = modifier
             .fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
@@ -4429,6 +4486,11 @@ fun SingleCardArtistsContent(
         }
 
         if (isGridView) {
+            val configuration = LocalConfiguration.current
+            val columnsCount = remember(configuration.screenWidthDp) {
+                val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
+                maxOf(cols, 1)
+            }
             LazyVerticalGrid(
                 state = gridState,
                 columns = GridCells.Adaptive(160.dp),
@@ -4439,19 +4501,20 @@ fun SingleCardArtistsContent(
                     top = 16.dp,
                     bottom = bottomPadding + 80.dp
                 ),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 if (sortedArtists.isNotEmpty()) {
-                    items(
+                    itemsIndexed(
                         items = sortedArtists,
-                        key = { "gridartist_${it.id}" },
-                        contentType = { "artist" }
-                    ) { artist ->
+                        key = { _, item -> "gridartist_${item.id}" },
+                        contentType = { _, _ -> "artist" }
+                    ) { index, artist ->
                         AnimateIn(modifier = Modifier.animateItem()) {
+                            val shape = getLibraryResponsiveGridItemShape(index, sortedArtists.size, columnsCount)
                             Surface(
                                 color = MaterialTheme.colorScheme.surfaceContainer,
-                                shape = RoundedCornerShape(16.dp),
+                                shape = shape,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 ArtistGridCard(
@@ -6214,6 +6277,7 @@ fun YearGroupedSongsContent(
     onGoToAlbum: (Album) -> Unit = {},
     onShowSongInfo: (Song) -> Unit,
     onAddToBlacklist: (Song) -> Unit,
+    onDeleteSong: (Song) -> Unit = {},
     onPlayQueue: (List<Song>) -> Unit = { _ -> },
     onPlayQueueFromIndex: (List<Song>, Int) -> Unit = { _, _ -> },
     onShuffleQueue: (List<Song>) -> Unit = { _ -> },
@@ -6330,6 +6394,7 @@ fun YearGroupedSongsContent(
                             },
                             onShowSongInfo = { onShowSongInfo(song) },
                             onAddToBlacklist = { onAddToBlacklist(song) },
+                            onDeleteSong = { onDeleteSong(song) },
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             haptics = haptics,

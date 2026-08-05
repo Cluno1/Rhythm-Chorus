@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm Musik</string>
     <string name="media3_notification_channel_description">Medieuppspelningskontroller</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm musikwidget – styr uppspelningen med responsiva layouter som stöder rutnätsstorlekarna 2x1 till 5x5</string>
     <string name="widget_description_glance">Rhythm Musik - Styr uppspelningen med 9 responsiva layouter, Material 3 design och realtidsuppdateringar</string>
     <string name="widget_name_glance">Rhythm Musik</string>
     <string name="no_song_playing">Ingen låt spelas</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">Widget</string>
     <string name="settings_widget_desc">Widgetar på startskärmen</string>
     <string name="widget_show_album_art">Visa albumomslag</string>
-    <string name="widget_show_album_art_desc">Visa albumomslag i widget</string>
     <string name="widget_show_artist">Visa artistnamn</string>
     <string name="widget_show_artist_desc">Visa artistinformation</string>
     <string name="widget_show_album">Visa albumnamn</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">Dynamiska färger (Material du)</string>
-    <string name="onboarding_dynamic_colors_desc">Använd färger som extraherats från enhetens tapeter för ett sammanhängande utseende.</string>
     <string name="onboarding_player_theme_title">Uppspelning och minispelare teman</string>
     <string name="onboarding_player_theme_desc">Anpassa dina uppspelningsgränssnitt. Växla mellan den rena, moderna Rhythm-designen eller den livfulla, flytande uttrycksfulla designen.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">Launcher-widgets</string>
     <string name="onboarding_widgets_desc">Lägg till Rhythm-widgets i startprogrammet för snabb musikkontroll. Anpassa vilken information som visas och hur widgeten ser ut.</string>
-    <string name="onboarding_widget_album_art">Visa albumomslag</string>
-    <string name="onboarding_widget_album_art_desc">Visa albumomslag i widgeten</string>
     <string name="onboarding_widget_artist">Visa artistnamn</string>
     <string name="onboarding_widget_artist_desc">Visa den aktuella artisten i widgeten</string>
     <string name="onboarding_widget_album">Visa albumnamn</string>
     <string name="onboarding_widget_album_desc">Visa albumtiteln i widgeten</string>
     <string name="onboarding_widgets_tips_title">Widgettips</string>
-    <string name="onboarding_widget_tip_1">Tryck på widgeten för att öppna appen</string>
-    <string name="onboarding_widget_tip_2">Ändra storlek på widgets för olika layouter (2x1 till 5x5)</string>
-    <string name="onboarding_widget_tip_3">Widgetar uppdateras i realtid under uppspelning</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">Anslut dina tjänster</string>
     <string name="onboarding_integrations_desc">Förbättra din lyssningsupplevelse genom att ansluta till externa tjänster. Få skivomslag, texter, scrobbla dina pjäser och dela det du lyssnar på.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">Upptäck insikter om dina musikvanor. Spåra din lyssningstid, mest spelade låtar, favoritartister och mer med vackra visualiseringar.</string>
     <string name="onboarding_stats_show_home">Visa statistik på Home</string>
     <string name="onboarding_stats_show_home_desc">Visa en lyssningsstatistikwidget på din startskärm</string>
-    <string name="onboarding_stats_rating">Aktivera låtklassificeringar</string>
-    <string name="onboarding_stats_rating_desc">Betygsätt dina låtar för att spåra favoriter och bygga smarta spellistor</string>
     <string name="onboarding_stats_features_title">Statistikfunktioner</string>
     <string name="onboarding_stats_feature_1">Spåra den totala lyssningstiden per dag, vecka eller månad</string>
     <string name="onboarding_stats_feature_2">Se dina mest spelade låtar</string>
@@ -2084,8 +2073,6 @@
     <string name="streamingsettingsscreen_streaming_restricted">Strömningsbegränsad</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">Det gick inte att spela nästa: Det gick inte att lösa URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">Det gick inte att lägga till i kön: Det gick inte att lösa URL</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">1×2 Vertikal widget</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">3×2 Medium Widget</string>
     <string name="rhythmmusicwidget_album_art_placeholder">Platshållare för albumkonst</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance Widget-förhandsvisningar</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 kompakt widget</string>
@@ -2246,9 +2233,6 @@
     <string name="widgetsettingsscreen_widget_settings">Widgetinställningar</string>
     <string name="widgetsettingsscreen_show_favorite_button">Visa favoritknapp</string>
     <string name="widgetsettingsscreen_widget_theme">Widgettema</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm använder Material 3 Uttrycksfull design med dynamiska färger</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">Widget anpassar sig från 1x1 uppspelningsknapp till 5x5+ full layout</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">Tryck länge och ändra storlek för olika uttrycksfulla layouter</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Gäller endast Glance widgets</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">Anpassa startskärmswidgetar</string>
     <string name="festivesplashgreeting_merry_christmas">God jul!</string>

@@ -89,6 +89,14 @@ data class PendingLyricsWriteRequest(
 )
 
 /**
+ * Data class representing a pending delete request for Android 10/11+
+ */
+data class PendingDeleteRequest(
+    val intentSender: IntentSender,
+    val song: Song
+)
+
+/**
  * Utility class for handling media-related operations
  */
 object MediaUtils {
@@ -442,7 +450,9 @@ object MediaUtils {
             "wav" -> "audio/wav"
             "aac", "adts" -> "audio/aac"
             "ac3" -> "audio/ac3"
+            "eac", "eac3" -> "audio/eac3"
             "ac4" -> "audio/ac4"
+            "mhm", "mhm1" -> "audio/mhm1"
             "mid", "midi" -> "audio/midi"
             "ape" -> "audio/x-ape"
             "wv" -> "audio/x-wavpack"

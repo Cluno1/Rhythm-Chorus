@@ -217,6 +217,7 @@ import chromahub.rhythm.app.shared.presentation.components.lyrics.WordByWordLyri
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ExtraControlBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaybackSpeedDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaybackPitchDialog
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.PlaybackSpeedAndPitchBottomSheet
 import androidx.navigation.NavController
 import androidx.compose.ui.res.stringResource
 
@@ -1710,6 +1711,7 @@ fun MaterialPlayerScreen(
                                                     primaryUrl = canvasArtwork.animated,
                                                     fallbackUrl = canvasArtwork.videoUrl,
                                                     isPlaying = isPlaying,
+                                                    alwaysPlay = true,
                                                     modifier = Modifier
                                                         .fillMaxSize()
                                                         .clip(playerArtworkShape)
@@ -4057,36 +4059,26 @@ fun MaterialPlayerScreen(
         }
     }
     
-    if (showPlaybackSpeedDialog) {
+    if (showPlaybackSpeedDialog || showPlaybackPitchDialog) {
         val syncSpeedAndPitch by appSettings.syncSpeedAndPitch.collectAsState()
-        PlaybackSpeedDialog(
+        val playbackPitch by musicViewModel.playbackPitch.collectAsState()
+        PlaybackSpeedAndPitchBottomSheet(
             currentSpeed = playbackSpeed,
+            currentPitch = playbackPitch,
             syncEnabled = syncSpeedAndPitch,
             onSyncChange = { appSettings.setSyncSpeedAndPitch(it) },
-            onDismiss = { showPlaybackSpeedDialog = false },
-            onSave = { speed ->
-                musicViewModel.setPlaybackSpeed(speed)
-                if (syncSpeedAndPitch) {
-                    musicViewModel.setPlaybackPitch(speed)
-                }
+            onDismiss = {
                 showPlaybackSpeedDialog = false
-            }
-        )
-    }
-    
-    if (showPlaybackPitchDialog) {
-        val syncSpeedAndPitch by appSettings.syncSpeedAndPitch.collectAsState()
-        PlaybackPitchDialog(
-            currentPitch = musicViewModel.playbackPitch.collectAsState().value,
-            syncEnabled = syncSpeedAndPitch,
-            onSyncChange = { appSettings.setSyncSpeedAndPitch(it) },
-            onDismiss = { showPlaybackPitchDialog = false },
-            onSave = { pitch ->
-                musicViewModel.setPlaybackPitch(pitch)
-                if (syncSpeedAndPitch) {
-                    musicViewModel.setPlaybackSpeed(pitch)
-                }
                 showPlaybackPitchDialog = false
+            },
+            onSave = { speed, pitch ->
+                musicViewModel.setPlaybackSpeed(speed)
+                musicViewModel.setPlaybackPitch(pitch)
+                showPlaybackSpeedDialog = false
+                showPlaybackPitchDialog = false
+            },
+            onSetDefaultSpeed = { speed ->
+                musicViewModel.setDefaultPlaybackSpeed(speed)
             }
         )
     }

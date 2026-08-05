@@ -71,6 +71,7 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.QueueBot
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaybackPitchDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaybackSpeedDialog
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.PlaybackSpeedAndPitchBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.player.SleepTimerBottomSheetNew
 import chromahub.rhythm.app.shared.presentation.components.lyrics.LyricsEditorBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.player.formatDuration
@@ -171,7 +172,7 @@ fun PlayerScreen(
     val playerThemeId by appSettings.playerThemeId.collectAsState()
     var showFullScreenLyrics by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = showFullScreenLyrics || (expansionFraction > 0.5f && Build.VERSION.SDK_INT < 34)) {
+    BackHandler(enabled = showFullScreenLyrics || expansionFraction > 0.5f) {
         if (showFullScreenLyrics) {
             showFullScreenLyrics = false
         } else {
@@ -232,7 +233,7 @@ fun PlayerScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (playerThemeId == "EXPRESSIVE") {
+        if (playerThemeId != "MATERIAL") {
         val haptic = LocalHapticFeedback.current
         val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
         val progressValue = progress().coerceIn(0f, 1f)
@@ -684,34 +685,24 @@ fun PlayerScreen(
             )
         }
 
-        if (showPlaybackSpeedDialog) {
-            PlaybackSpeedDialog(
+        if (showPlaybackSpeedDialog || showPlaybackPitchDialog) {
+            PlaybackSpeedAndPitchBottomSheet(
                 currentSpeed = playbackSpeed,
-                syncEnabled = syncSpeedAndPitch,
-                onSyncChange = { appSettings.setSyncSpeedAndPitch(it) },
-                onDismiss = { showPlaybackSpeedDialog = false },
-                onSave = { speed ->
-                    musicViewModel.setPlaybackSpeed(speed)
-                    if (syncSpeedAndPitch) {
-                        musicViewModel.setPlaybackPitch(speed)
-                    }
-                    showPlaybackSpeedDialog = false
-                }
-            )
-        }
-
-        if (showPlaybackPitchDialog) {
-            PlaybackPitchDialog(
                 currentPitch = playbackPitch,
                 syncEnabled = syncSpeedAndPitch,
                 onSyncChange = { appSettings.setSyncSpeedAndPitch(it) },
-                onDismiss = { showPlaybackPitchDialog = false },
-                onSave = { pitch ->
-                    musicViewModel.setPlaybackPitch(pitch)
-                    if (syncSpeedAndPitch) {
-                        musicViewModel.setPlaybackSpeed(pitch)
-                    }
+                onDismiss = {
+                    showPlaybackSpeedDialog = false
                     showPlaybackPitchDialog = false
+                },
+                onSave = { speed, pitch ->
+                    musicViewModel.setPlaybackSpeed(speed)
+                    musicViewModel.setPlaybackPitch(pitch)
+                    showPlaybackSpeedDialog = false
+                    showPlaybackPitchDialog = false
+                },
+                onSetDefaultSpeed = { speed ->
+                    musicViewModel.setDefaultPlaybackSpeed(speed)
                 }
             )
         }

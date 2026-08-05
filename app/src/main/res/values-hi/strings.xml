@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm संगीत</string>
     <string name="media3_notification_channel_description">मीडिया प्लेबैक नियंत्रण</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm संगीत विजेट - 2x1 से 5x5 ग्रिड आकारों का समर्थन करने वाले उत्तरदायी लेआउट के साथ प्लेबैक को नियंत्रित करें</string>
     <string name="widget_description_glance">Rhythm संगीत - 9 प्रतिक्रियाशील लेआउट, Material 3 डिज़ाइन और वास्तविक समय स्थिति अपडेट के साथ प्लेबैक को नियंत्रित करें</string>
     <string name="widget_name_glance">Rhythm संगीत</string>
     <string name="no_song_playing">कोई गाना नहीं बज रहा है</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">विजेट</string>
     <string name="settings_widget_desc">होम स्क्रीन विजेट</string>
     <string name="widget_show_album_art">एल्बम कला दिखाएँ</string>
-    <string name="widget_show_album_art_desc">विजेट में एल्बम कलाकृति प्रदर्शित करें</string>
     <string name="widget_show_artist">कलाकार का नाम दिखाएँ</string>
     <string name="widget_show_artist_desc">कलाकार की जानकारी प्रदर्शित करें</string>
     <string name="widget_show_album">एल्बम का नाम दिखाएँ</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">गतिशील रंग (Material आप)</string>
-    <string name="onboarding_dynamic_colors_desc">एक सामंजस्यपूर्ण लुक के लिए अपने डिवाइस के वॉलपेपर से निकाले गए रंगों को लागू करें।</string>
     <string name="onboarding_player_theme_title">प्लेबैक और मिनी प्लेयर थीम्स</string>
     <string name="onboarding_player_theme_desc">अपने प्लेबैक इंटरफेस को वैयक्तिकृत करें। स्वच्छ, आधुनिक Rhythm डिज़ाइन या जीवंत, तरल अभिव्यंजक डिज़ाइन के बीच टॉगल करें।</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">लॉन्चर विजेट</string>
     <string name="onboarding_widgets_desc">त्वरित संगीत नियंत्रण के लिए अपने लॉन्चर में Rhythm विजेट जोड़ें। अनुकूलित करें कि कौन सी जानकारी प्रदर्शित की जाए और विजेट कैसा दिखे।</string>
-    <string name="onboarding_widget_album_art">एल्बम कला दिखाएँ</string>
-    <string name="onboarding_widget_album_art_desc">विजेट में एल्बम कलाकृति प्रदर्शित करें</string>
     <string name="onboarding_widget_artist">कलाकार का नाम दिखाएँ</string>
     <string name="onboarding_widget_artist_desc">विजेट में वर्तमान कलाकार को प्रदर्शित करें</string>
     <string name="onboarding_widget_album">एल्बम का नाम दिखाएँ</string>
     <string name="onboarding_widget_album_desc">विजेट में एल्बम का शीर्षक प्रदर्शित करें</string>
     <string name="onboarding_widgets_tips_title">विजेट युक्तियाँ</string>
-    <string name="onboarding_widget_tip_1">ऐप खोलने के लिए विजेट पर टैप करें</string>
-    <string name="onboarding_widget_tip_2">विभिन्न लेआउट के लिए विजेट का आकार बदलें (2x1 से 5x5)</string>
-    <string name="onboarding_widget_tip_3">प्लेबैक के दौरान विजेट वास्तविक समय में अपडेट होते हैं</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">अपनी सेवाएं कनेक्ट करें</string>
     <string name="onboarding_integrations_desc">बाहरी सेवाओं से जुड़कर अपने सुनने के अनुभव को बेहतर बनाएं। एल्बम कला, गीत प्राप्त करें, अपने नाटकों को खंगालें और जो आप सुन रहे हैं उसे साझा करें।</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">अपनी संगीत आदतों के बारे में अंतर्दृष्टि खोजें। सुंदर विज़ुअलाइज़ेशन के साथ अपने सुनने के समय, सबसे अधिक बजाए गए गाने, पसंदीदा कलाकार और बहुत कुछ ट्रैक करें।</string>
     <string name="onboarding_stats_show_home">होम पर आँकड़े दिखाएँ</string>
     <string name="onboarding_stats_show_home_desc">अपनी होम स्क्रीन पर श्रवण सांख्यिकी विजेट प्रदर्शित करें</string>
-    <string name="onboarding_stats_rating">गाने की रेटिंग सक्षम करें</string>
-    <string name="onboarding_stats_rating_desc">पसंदीदा ट्रैक करने और स्मार्ट प्लेलिस्ट बनाने के लिए अपने गानों को रेट करें</string>
     <string name="onboarding_stats_features_title">आँकड़े सुविधाएँ</string>
     <string name="onboarding_stats_feature_1">सुनने के कुल समय को दिन, सप्ताह या महीने के अनुसार ट्रैक करें</string>
     <string name="onboarding_stats_feature_2">अपने सर्वाधिक सुने जाने वाले गाने देखें</string>
@@ -2084,8 +2073,6 @@
     <string name="streamingsettingsscreen_streaming_restricted">स्ट्रीमिंग प्रतिबंधित</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">आगे खेलने में विफल: यूआरएल को हल करने में असमर्थ</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">कतार में जोड़ने में विफल: यूआरएल को हल करने में असमर्थ</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">1×2 वर्टिकल विजेट</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">3×2 मध्यम विजेट</string>
     <string name="rhythmmusicwidget_album_art_placeholder">एल्बम आर्ट प्लेसहोल्डर</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance विजेट पूर्वावलोकन</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 कॉम्पैक्ट विजेट</string>
@@ -2246,9 +2233,6 @@
     <string name="widgetsettingsscreen_widget_settings">विजेट सेटिंग्स</string>
     <string name="widgetsettingsscreen_show_favorite_button">पसंदीदा बटन दिखाएँ</string>
     <string name="widgetsettingsscreen_widget_theme">विजेट थीम</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm गतिशील रंगों के साथ Material 3 अभिव्यंजक डिज़ाइन का उपयोग करता है</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">विजेट 1x1 प्ले बटन से 5x5+ पूर्ण लेआउट में अनुकूलित होता है</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">विभिन्न अभिव्यंजक लेआउट के लिए लंबे समय तक दबाएं और आकार बदलें</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">केवल Glance विजेट पर लागू होता है</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">होम स्क्रीन विजेट को वैयक्तिकृत करें</string>
     <string name="festivesplashgreeting_merry_christmas">मेरी क्रिसमस!</string>

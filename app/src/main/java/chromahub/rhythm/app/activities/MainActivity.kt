@@ -37,6 +37,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.IntentSenderRequest
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -219,6 +222,34 @@ class MainActivity : AppCompatActivity() {
                     var isInitializingApp by rememberSaveable { mutableStateOf(false) }
                     val lastCrashLog by appSettings.lastCrashLog.collectAsState() // Observe last crash log
 
+                    val pendingDeleteRequest by musicViewModel.pendingDeleteRequest.collectAsState()
+                    val deletePermissionLauncher = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.StartIntentSenderForResult()
+                    ) { result ->
+                        if (result.resultCode == RESULT_OK) {
+                            val pending = musicViewModel.pendingDeleteRequest.value
+                            if (pending != null) {
+                                musicViewModel.completeSongDeletion(pending.song)
+                            }
+                        } else {
+                            musicViewModel.cancelPendingDelete()
+                        }
+                    }
+
+                    LaunchedEffect(pendingDeleteRequest) {
+                        pendingDeleteRequest?.let { pending ->
+                            try {
+                                val intentSenderRequest = IntentSenderRequest.Builder(
+                                    pending.intentSender
+                                ).build()
+                                deletePermissionLauncher.launch(intentSenderRequest)
+                            } catch (e: Exception) {
+                                android.util.Log.e("MainActivity", "Failed to launch delete permission request", e)
+                                musicViewModel.cancelPendingDelete()
+                            }
+                        }
+                    }
+
                     // If the Activity was recreated (config change) after the splash was already
                     // dismissed, isLoading must be cleared immediately — onSplashComplete() will
                     // never fire again because showSplash is already false.
@@ -246,6 +277,9 @@ class MainActivity : AppCompatActivity() {
                         // Handle startup intents after splash to ensure view models are ready.
                         val shouldHandleStartupIntent = startupIntent?.let {
                             (it.action == Intent.ACTION_VIEW && it.data != null) ||
+                                it.action == "chromahub.rhythm.app.action.SHORTCUT_PLAY_PAUSE" ||
+                                it.action == "chromahub.rhythm.app.action.SHORTCUT_SKIP_NEXT" ||
+                                it.action == "chromahub.rhythm.app.action.SHORTCUT_SKIP_PREVIOUS" ||
                                 it.getBooleanExtra(EXTRA_OPEN_PLAYER, false) ||
                                 it.getBooleanExtra(EXTRA_OPEN_QUEUE, false)
                         } == true
@@ -524,6 +558,39 @@ class MainActivity : AppCompatActivity() {
             }
             
             when (intent.action) {
+                "chromahub.rhythm.app.action.SHORTCUT_PLAY_PAUSE" -> {
+                    Log.d(TAG, "Received Play/Pause shortcut action")
+                    val playPauseIntent = Intent(this, chromahub.rhythm.app.infrastructure.service.MediaPlaybackService::class.java).apply {
+                        action = chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_PLAY_PAUSE
+                    }
+                    try {
+                        androidx.core.content.ContextCompat.startForegroundService(this, playPauseIntent)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to start service for play/pause shortcut", e)
+                    }
+                }
+                "chromahub.rhythm.app.action.SHORTCUT_SKIP_NEXT" -> {
+                    Log.d(TAG, "Received Skip Next shortcut action")
+                    val nextIntent = Intent(this, chromahub.rhythm.app.infrastructure.service.MediaPlaybackService::class.java).apply {
+                        action = chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_SKIP_NEXT
+                    }
+                    try {
+                        androidx.core.content.ContextCompat.startForegroundService(this, nextIntent)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to start service for next shortcut", e)
+                    }
+                }
+                "chromahub.rhythm.app.action.SHORTCUT_SKIP_PREVIOUS" -> {
+                    Log.d(TAG, "Received Skip Previous shortcut action")
+                    val prevIntent = Intent(this, chromahub.rhythm.app.infrastructure.service.MediaPlaybackService::class.java).apply {
+                        action = chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_SKIP_PREVIOUS
+                    }
+                    try {
+                        androidx.core.content.ContextCompat.startForegroundService(this, prevIntent)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to start service for previous shortcut", e)
+                    }
+                }
                 Intent.ACTION_VIEW -> {
                     // Handle external audio file with validation
                     intent.data?.let { uri ->
@@ -707,7 +774,11 @@ class MainActivity : AppCompatActivity() {
                     uriStr.endsWith(".mkv", ignoreCase = true) ||
                     uriStr.endsWith(".mka", ignoreCase = true) ||
                     uriStr.endsWith(".ac3", ignoreCase = true) ||
+                    uriStr.endsWith(".eac", ignoreCase = true) ||
+                    uriStr.endsWith(".eac3", ignoreCase = true) ||
                     uriStr.endsWith(".ac4", ignoreCase = true) ||
+                    uriStr.endsWith(".mhm", ignoreCase = true) ||
+                    uriStr.endsWith(".mhm1", ignoreCase = true) ||
                     uriStr.endsWith(".oga", ignoreCase = true) ||
                     uriStr.endsWith(".mid", ignoreCase = true) ||
                     uriStr.endsWith(".midi", ignoreCase = true) ||

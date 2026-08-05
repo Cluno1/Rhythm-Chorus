@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm موسيقى</string>
     <string name="media3_notification_channel_description">عناصر التحكم في تشغيل الوسائط</string>
     <!-- Widget strings -->
-    <string name="widget_description">أداة الموسيقى Rhythm - التحكم في التشغيل من خلال تخطيطات سريعة الاستجابة تدعم أحجام الشبكة من 2x1 إلى 5x5</string>
     <string name="widget_description_glance">موسيقى Rhythm - التحكم في التشغيل باستخدام 9 تخطيطات سريعة الاستجابة وتصميم Material 3 وتحديثات الحالة في الوقت الفعلي</string>
     <string name="widget_name_glance">Rhythm موسيقى</string>
     <string name="no_song_playing">لا توجد أغنية قيد التشغيل</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">القطعة</string>
     <string name="settings_widget_desc">أدوات الشاشة الرئيسية</string>
     <string name="widget_show_album_art">عرض صورة الألبوم</string>
-    <string name="widget_show_album_art_desc">عرض الألبوم الفني في القطعة</string>
     <string name="widget_show_artist">إظهار اسم الفنان</string>
     <string name="widget_show_artist_desc">عرض معلومات الفنان</string>
     <string name="widget_show_album">عرض اسم الألبوم</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">الألوان الديناميكية (Material أنت)</string>
-    <string name="onboarding_dynamic_colors_desc">قم بتطبيق الألوان المستخرجة من خلفية جهازك للحصول على مظهر متماسك.</string>
     <string name="onboarding_player_theme_title">سمات التشغيل والمشغل الصغير</string>
     <string name="onboarding_player_theme_desc">قم بتخصيص واجهات التشغيل الخاصة بك. يمكنك التبديل بين تصميم Rhythm النظيف والحديث أو التصميم المعبّر النابض بالحياة والسلس.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">الحاجيات قاذفة</string>
     <string name="onboarding_widgets_desc">أضف عناصر واجهة المستخدم Rhythm إلى المشغل الخاص بك للتحكم السريع في الموسيقى. قم بتخصيص المعلومات التي يتم عرضها وكيف تبدو الأداة.</string>
-    <string name="onboarding_widget_album_art">عرض صورة الألبوم</string>
-    <string name="onboarding_widget_album_art_desc">عرض الألبوم الفني في القطعة</string>
     <string name="onboarding_widget_artist">إظهار اسم الفنان</string>
     <string name="onboarding_widget_artist_desc">عرض الفنان الحالي في القطعة</string>
     <string name="onboarding_widget_album">عرض اسم الألبوم</string>
     <string name="onboarding_widget_album_desc">عرض عنوان الألبوم في القطعة</string>
     <string name="onboarding_widgets_tips_title">نصائح القطعة</string>
-    <string name="onboarding_widget_tip_1">اضغط على القطعة لفتح التطبيق</string>
-    <string name="onboarding_widget_tip_2">تغيير حجم الأدوات لتخطيطات مختلفة (2x1 إلى 5x5)</string>
-    <string name="onboarding_widget_tip_3">يتم تحديث الأدوات في الوقت الفعلي أثناء التشغيل</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">قم بتوصيل خدماتك</string>
     <string name="onboarding_integrations_desc">عزز تجربة الاستماع الخاصة بك عن طريق الاتصال بالخدمات الخارجية. احصل على صورة الألبوم، وكلمات الأغاني، وقم بتمرير الأغاني، وشارك ما تستمع إليه.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">اكتشف رؤى حول عاداتك الموسيقية. تتبع وقت الاستماع والأغاني الأكثر تشغيلًا والفنانين المفضلين والمزيد باستخدام تصورات جميلة.</string>
     <string name="onboarding_stats_show_home">عرض الإحصائيات على الصفحة الرئيسية</string>
     <string name="onboarding_stats_show_home_desc">قم بعرض أداة إحصائيات الاستماع على شاشتك الرئيسية</string>
-    <string name="onboarding_stats_rating">تمكين تقييمات الأغنية</string>
-    <string name="onboarding_stats_rating_desc">قم بتقييم أغانيك لتتبع الأغاني المفضلة وإنشاء قوائم تشغيل ذكية</string>
     <string name="onboarding_stats_features_title">ميزات الإحصائيات</string>
     <string name="onboarding_stats_feature_1">تتبع إجمالي وقت الاستماع حسب اليوم أو الأسبوع أو الشهر</string>
     <string name="onboarding_stats_feature_2">شاهد الأغاني الأكثر تشغيلًا</string>
@@ -2084,8 +2073,6 @@
     <string name="streamingsettingsscreen_streaming_restricted">البث مقيد</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">فشل التشغيل التالي: غير قادر على حل عنوان URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">فشلت الإضافة إلى قائمة الانتظار: غير قادر على حل عنوان URL</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">القطعة الرأسية 1×2</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">القطعة المتوسطة 3×2</string>
     <string name="rhythmmusicwidget_album_art_placeholder">العنصر النائب لصورة الألبوم</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">معاينات عناصر واجهة المستخدم Rhythm Glance.</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 القطعة المدمجة</string>
@@ -2246,9 +2233,6 @@
     <string name="widgetsettingsscreen_widget_settings">إعدادات القطعة</string>
     <string name="widgetsettingsscreen_show_favorite_button">إظهار الزر المفضل</string>
     <string name="widgetsettingsscreen_widget_theme">موضوع القطعة</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">يستخدم Rhythm Material 3 تصميمًا معبرًا بألوان ديناميكية</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">تتكيف الأداة من زر التشغيل 1x1 إلى التخطيط الكامل 5x5+</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">الضغط لفترة طويلة وتغيير الحجم للتخطيطات التعبيرية المختلفة</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">ينطبق على عناصر واجهة المستخدم Glance فقط</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">تخصيص أدوات الشاشة الرئيسية</string>
     <string name="festivesplashgreeting_merry_christmas">عيد ميلاد سعيد!</string>

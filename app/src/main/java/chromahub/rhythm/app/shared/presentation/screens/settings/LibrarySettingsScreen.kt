@@ -279,9 +279,8 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
                         icon = MaterialSymbolIcon("cloud_download"),
                         title = stringResource(R.string.librarysettingsscreen_autofetch_artwork),
                         description = context.getString(R.string.library_auto_fetch_artwork_desc),
-                        toggleState = autoFetchArtwork && lyricallyApiEnabled,
-                        onToggleChange = { enabled -> appSettings.setAutoFetchArtwork(enabled) },
-                        enabled = lyricallyApiEnabled
+                        toggleState = autoFetchArtwork,
+                        onToggleChange = { enabled -> appSettings.setAutoFetchArtwork(enabled) }
                     ),
                     SettingItem(
                         icon = MaterialSymbolIcon("portrait"),

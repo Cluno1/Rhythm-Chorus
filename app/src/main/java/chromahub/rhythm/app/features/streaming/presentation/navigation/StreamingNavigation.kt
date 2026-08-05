@@ -493,8 +493,9 @@ fun StreamingNavigation(
                 animationSpec = tween(durationMillis = 220),
                 label = "streaming_bottom_chrome_alpha"
             )
+            val systemNavBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             val miniPlayerBottomOffset by animateDpAsState(
-                targetValue = if (showBottomNavValue) MusicDimensions.bottomNavigationHeight + 12.dp else 8.dp,
+                targetValue = if (showBottomNavValue) MusicDimensions.bottomNavigationHeight + 12.dp + systemNavBarPadding else 8.dp + systemNavBarPadding,
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioNoBouncy,
                     stiffness = Spring.StiffnessLow
@@ -545,7 +546,6 @@ fun StreamingNavigation(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars)
                         .align(Alignment.BottomCenter)
                 ) {
 
@@ -827,7 +827,9 @@ fun StreamingNavigation(
 
                 AnimatedVisibility(
                     visible = showBottomNavValue,
-                    modifier = Modifier.align(Alignment.BottomCenter),
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .windowInsetsPadding(WindowInsets.navigationBars),
                     enter = slideInVertically(
                         initialOffsetY = { fullHeight -> fullHeight / 2 },
                         animationSpec = spring(

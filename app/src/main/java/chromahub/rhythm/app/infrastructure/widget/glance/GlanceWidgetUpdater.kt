@@ -1,6 +1,7 @@
 package chromahub.rhythm.app.infrastructure.widget.glance
 
 import android.content.Context
+import android.content.Intent
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.appwidget.updateAll
@@ -19,6 +20,7 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.size.Size
 import kotlinx.coroutines.withContext
+import chromahub.rhythm.app.infrastructure.service.RhythmTileService
 
 /**
  * Utility object for updating the Glance-based widget
@@ -38,9 +40,14 @@ object GlanceWidgetUpdater {
         isPlaying: Boolean,
         hasPrevious: Boolean = false,
         hasNext: Boolean = false,
-        isFavorite: Boolean = false
+        isFavorite: Boolean = false,
+        isShuffleEnabled: Boolean = false,
+        repeatMode: Int = 0
     ) {
-        // Update SharedPreferences for legacy widget
+        // Update dynamic launcher shortcuts
+        updateAppShortcuts(context, isPlaying)
+
+        // Update SharedPreferences shared with the Glance widgets
         val prefs = context.getSharedPreferences("widget_prefs", Context.MODE_PRIVATE)
         prefs.edit().apply {
             if (song != null) {
@@ -60,6 +67,8 @@ object GlanceWidgetUpdater {
             putBoolean(RhythmMusicWidget.KEY_HAS_PREVIOUS, hasPrevious)
             putBoolean(RhythmMusicWidget.KEY_HAS_NEXT, hasNext)
             putBoolean(RhythmMusicWidget.KEY_IS_FAVORITE, isFavorite)
+            putBoolean("is_shuffle", isShuffleEnabled)
+            putInt("repeat_mode", repeatMode)
             apply() // Use apply for async write
         }
         
@@ -88,31 +97,43 @@ object GlanceWidgetUpdater {
                 }
 
                 val manager = GlanceAppWidgetManager(context)
-                val glanceIds = manager.getGlanceIds(RhythmMusicWidget::class.java)
                 
-                glanceIds.forEach { glanceId ->
-                    updateAppWidgetState(context, glanceId) { prefs ->
-                        if (song != null) {
-                            prefs[stringPreferencesKey(RhythmMusicWidget.KEY_SONG_ID)] = song.id
-                            prefs[stringPreferencesKey(RhythmMusicWidget.KEY_SONG_TITLE)] = song.title
-                            prefs[stringPreferencesKey(RhythmMusicWidget.KEY_ARTIST_NAME)] = song.artist
-                            prefs[stringPreferencesKey(RhythmMusicWidget.KEY_ALBUM_NAME)] = song.album
-                            song.artworkUri?.let {
-                                prefs[stringPreferencesKey(RhythmMusicWidget.KEY_ARTWORK_URI)] = it.toString()
-                            }
-                        } else {
-                            prefs.remove(stringPreferencesKey(RhythmMusicWidget.KEY_SONG_ID))
-                            prefs[stringPreferencesKey(RhythmMusicWidget.KEY_SONG_TITLE)] = "Rhythm"
-                            prefs[stringPreferencesKey(RhythmMusicWidget.KEY_ARTIST_NAME)] = ""
-                            prefs[stringPreferencesKey(RhythmMusicWidget.KEY_ALBUM_NAME)] = ""
-                            prefs.remove(stringPreferencesKey(RhythmMusicWidget.KEY_ARTWORK_URI))
+                // Helper to update state for any music widget
+                val updatePrefsHelper = { mutablePrefs: androidx.datastore.preferences.core.MutablePreferences ->
+                    if (song != null) {
+                        mutablePrefs[stringPreferencesKey(RhythmMusicWidget.KEY_SONG_ID)] = song.id
+                        mutablePrefs[stringPreferencesKey(RhythmMusicWidget.KEY_SONG_TITLE)] = song.title
+                        mutablePrefs[stringPreferencesKey(RhythmMusicWidget.KEY_ARTIST_NAME)] = song.artist
+                        mutablePrefs[stringPreferencesKey(RhythmMusicWidget.KEY_ALBUM_NAME)] = song.album
+                        song.artworkUri?.let {
+                            mutablePrefs[stringPreferencesKey(RhythmMusicWidget.KEY_ARTWORK_URI)] = it.toString()
                         }
-                        prefs[booleanPreferencesKey(RhythmMusicWidget.KEY_IS_PLAYING)] = isPlaying
-                        prefs[booleanPreferencesKey(RhythmMusicWidget.KEY_HAS_PREVIOUS)] = hasPrevious
-                        prefs[booleanPreferencesKey(RhythmMusicWidget.KEY_HAS_NEXT)] = hasNext
-                        prefs[booleanPreferencesKey(RhythmMusicWidget.KEY_IS_FAVORITE)] = isFavorite
+                    } else {
+                        mutablePrefs.remove(stringPreferencesKey(RhythmMusicWidget.KEY_SONG_ID))
+                        mutablePrefs[stringPreferencesKey(RhythmMusicWidget.KEY_SONG_TITLE)] = "Rhythm"
+                        mutablePrefs[stringPreferencesKey(RhythmMusicWidget.KEY_ARTIST_NAME)] = ""
+                        mutablePrefs[stringPreferencesKey(RhythmMusicWidget.KEY_ALBUM_NAME)] = ""
+                        mutablePrefs.remove(stringPreferencesKey(RhythmMusicWidget.KEY_ARTWORK_URI))
                     }
+                    mutablePrefs[booleanPreferencesKey(RhythmMusicWidget.KEY_IS_PLAYING)] = isPlaying
+                    mutablePrefs[booleanPreferencesKey(RhythmMusicWidget.KEY_HAS_PREVIOUS)] = hasPrevious
+                    mutablePrefs[booleanPreferencesKey(RhythmMusicWidget.KEY_HAS_NEXT)] = hasNext
+                    mutablePrefs[booleanPreferencesKey(RhythmMusicWidget.KEY_IS_FAVORITE)] = isFavorite
+                    mutablePrefs[booleanPreferencesKey("is_shuffle")] = isShuffleEnabled
+                    mutablePrefs[intPreferencesKey("repeat_mode")] = repeatMode
                 }
+
+                // 1. RhythmMusicWidget
+                manager.getGlanceIds(RhythmMusicWidget::class.java).forEach { glanceId ->
+                    updateAppWidgetState(context, glanceId) { prefs -> updatePrefsHelper(prefs) }
+                }
+                
+                // 2. RhythmCookieWidget
+                try {
+                    manager.getGlanceIds(RhythmCookieWidget::class.java).forEach { glanceId ->
+                        updateAppWidgetState(context, glanceId) { prefs -> updatePrefsHelper(prefs) }
+                    }
+                } catch (_: Exception) {}
                 
                 // Update RhythmLyricsWidget as well
                 val lyricGlanceIds = manager.getGlanceIds(RhythmLyricsWidget::class.java)
@@ -137,7 +158,21 @@ object GlanceWidgetUpdater {
                 
                 // Force update all widgets
                 try { RhythmMusicWidget().updateAll(context) } catch (_: Exception) {}
+                try { RhythmCookieWidget().updateAll(context) } catch (_: Exception) {}
                 try { RhythmLyricsWidget().updateAll(context) } catch (_: Exception) {}
+                try { RhythmStatsWidget().updateAll(context) } catch (_: Exception) {}
+
+                // Update Quick Settings Tile
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                    try {
+                        android.service.quicksettings.TileService.requestListeningState(
+                            context,
+                            android.content.ComponentName(context, RhythmTileService::class.java)
+                        )
+                    } catch (e: Exception) {
+                        android.util.Log.e("GlanceWidgetUpdater", "Error updating tile listening state", e)
+                    }
+                }
             } catch (e: Exception) {
                 android.util.Log.e("GlanceWidgetUpdater", "Error updating widget", e)
             }
@@ -162,16 +197,10 @@ object GlanceWidgetUpdater {
      */
     fun forceUpdateAll(context: Context) {
         scope.launch {
-            try {
-                RhythmMusicWidget().updateAll(context)
-            } catch (e: Exception) {
-                android.util.Log.e("GlanceWidgetUpdater", "Error forcing widget update", e)
-            }
-            try {
-                RhythmLyricsWidget().updateAll(context)
-            } catch (e: Exception) {
-                android.util.Log.e("GlanceWidgetUpdater", "Error forcing lyrics widget update", e)
-            }
+            try { RhythmMusicWidget().updateAll(context) } catch (_: Exception) {}
+            try { RhythmCookieWidget().updateAll(context) } catch (_: Exception) {}
+            try { RhythmLyricsWidget().updateAll(context) } catch (_: Exception) {}
+            try { RhythmStatsWidget().updateAll(context) } catch (_: Exception) {}
         }
         
         // Also trigger worker update
@@ -218,6 +247,57 @@ object GlanceWidgetUpdater {
             } catch (e: Exception) {
                 android.util.Log.e("GlanceWidgetUpdater", "Error updating lyrics widget", e)
             }
+        }
+    }
+
+    /**
+     * Update launcher app shortcuts dynamically
+     */
+    private fun updateAppShortcuts(context: Context, isPlaying: Boolean) {
+        try {
+            val shortcutManager = context.getSystemService(android.content.pm.ShortcutManager::class.java)
+            if (shortcutManager != null) {
+                val playPauseShortcut = android.content.pm.ShortcutInfo.Builder(context, "shortcut_play_pause")
+                    .setShortLabel(if (isPlaying) "Pause" else "Play")
+                    .setLongLabel(if (isPlaying) "Pause Music" else "Play Music")
+                    .setIcon(android.graphics.drawable.Icon.createWithResource(context, if (isPlaying) chromahub.rhythm.app.R.drawable.ic_pause_shortcut else chromahub.rhythm.app.R.drawable.ic_play_shortcut))
+                    .setIntent(Intent(context, chromahub.rhythm.app.activities.MainActivity::class.java).apply {
+                        action = "chromahub.rhythm.app.action.SHORTCUT_PLAY_PAUSE"
+                    })
+                    .build()
+
+                val nextShortcut = android.content.pm.ShortcutInfo.Builder(context, "shortcut_next")
+                    .setShortLabel("Next")
+                    .setLongLabel("Next Track")
+                    .setIcon(android.graphics.drawable.Icon.createWithResource(context, chromahub.rhythm.app.R.drawable.ic_skip_next_shortcut))
+                    .setIntent(Intent(context, chromahub.rhythm.app.activities.MainActivity::class.java).apply {
+                        action = "chromahub.rhythm.app.action.SHORTCUT_SKIP_NEXT"
+                    })
+                    .build()
+
+                val prevShortcut = android.content.pm.ShortcutInfo.Builder(context, "shortcut_previous")
+                    .setShortLabel("Previous")
+                    .setLongLabel("Previous Track")
+                    .setIcon(android.graphics.drawable.Icon.createWithResource(context, chromahub.rhythm.app.R.drawable.ic_skip_previous_shortcut))
+                    .setIntent(Intent(context, chromahub.rhythm.app.activities.MainActivity::class.java).apply {
+                        action = "chromahub.rhythm.app.action.SHORTCUT_SKIP_PREVIOUS"
+                    })
+                    .build()
+
+                val openPlayerShortcut = android.content.pm.ShortcutInfo.Builder(context, "shortcut_open_player")
+                    .setShortLabel("Open Player")
+                    .setLongLabel("Open Music Player")
+                    .setIcon(android.graphics.drawable.Icon.createWithResource(context, chromahub.rhythm.app.R.drawable.rhythm_icon_small))
+                    .setIntent(Intent(context, chromahub.rhythm.app.activities.MainActivity::class.java).apply {
+                        action = Intent.ACTION_MAIN
+                        putExtra("OPEN_PLAYER", true)
+                    })
+                    .build()
+
+                shortcutManager.dynamicShortcuts = listOf(playPauseShortcut, nextShortcut, prevShortcut, openPlayerShortcut)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("GlanceWidgetUpdater", "Error updating dynamic shortcuts", e)
         }
     }
 }

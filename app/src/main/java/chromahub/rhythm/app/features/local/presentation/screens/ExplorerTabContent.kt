@@ -133,7 +133,12 @@ fun SingleCardExplorerContent(
     currentSong: Song? = null,
     isPlaying: Boolean = false,
     enableRatingSystem: Boolean = true,
-    listState: LazyListState = rememberLazyListState()
+    listState: LazyListState = rememberLazyListState(),
+    isSelectionMode: Boolean = false,
+    selectedSongIds: Set<String> = emptySet(),
+    onSongLongPress: (Song) -> Unit = {},
+    onSongSelectionToggle: (Song) -> Unit = {},
+    multiSelectionState: chromahub.rhythm.app.features.local.presentation.viewmodel.MultiSelectionStateHolder? = null
 ) {
     val context = LocalContext.current
     val activity = context as Activity
@@ -468,7 +473,7 @@ fun SingleCardExplorerContent(
         onFolderSongsChanged(currentFolderSongs)
     }
 
-    BackHandler(enabled = currentPath != null) {
+    BackHandler(enabled = currentPath != null && !isSelectionMode) {
         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
         onPathChanged(getParentPath(currentPath!!))
     }
@@ -710,11 +715,15 @@ fun SingleCardExplorerContent(
                                     }
                                     ExplorerItemType.FILE -> {
                                         item.song?.let { song ->
-                                            val songIndex = currentFolderSongs.indexOfFirst { it.id == song.id }
-                                            if (songIndex >= 0) {
-                                                onPlayQueueFromIndex(currentFolderSongs, songIndex)
+                                            if (isSelectionMode) {
+                                                onSongSelectionToggle(song)
                                             } else {
-                                                onSongClick(song)
+                                                val songIndex = currentFolderSongs.indexOfFirst { it.id == song.id }
+                                                if (songIndex >= 0) {
+                                                    onPlayQueueFromIndex(currentFolderSongs, songIndex)
+                                                } else {
+                                                    onSongClick(song)
+                                                }
                                             }
                                         }
                                     }
@@ -775,7 +784,11 @@ fun SingleCardExplorerContent(
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             enableRatingSystem = enableRatingSystem,
-                            itemShape = groupedLibraryItemShape(index, currentItems.size)
+                            itemShape = groupedLibraryItemShape(index, currentItems.size),
+                            isSelected = item.song?.let { selectedSongIds.contains(it.id) } ?: false,
+                            isSelectionMode = isSelectionMode,
+                            selectionIndex = item.song?.let { multiSelectionState?.getSelectionIndex(it.id) },
+                            onLongPress = { item.song?.let { onSongLongPress(it) } }
                         )
                     }
                 }
@@ -2080,7 +2093,11 @@ fun ExplorerItemCard(
     onAddFolderToQueue: ((ExplorerItem) -> Unit)? = null,
     currentSong: Song? = null,
     isPlaying: Boolean = false,
-    enableRatingSystem: Boolean = true
+    enableRatingSystem: Boolean = true,
+    isSelected: Boolean = false,
+    isSelectionMode: Boolean = false,
+    selectionIndex: Int? = null,
+    onLongPress: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -2391,7 +2408,11 @@ fun ExplorerItemCard(
                     isPlaying = isPlaying,
                     haptics = haptics,
                     enableRatingSystem = enableRatingSystem,
-                    itemShape = itemShape ?: RoundedCornerShape(16.dp)
+                    itemShape = itemShape ?: RoundedCornerShape(16.dp),
+                    isSelected = isSelected,
+                    isSelectionMode = isSelectionMode,
+                    selectionIndex = selectionIndex,
+                    onLongPress = onLongPress
                 )
             }
         }

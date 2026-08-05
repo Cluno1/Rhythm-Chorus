@@ -276,6 +276,7 @@ fun FullScreenLyricsView(
                             primaryUrl = canvasArtwork.animated,
                             fallbackUrl = canvasArtwork.videoUrl,
                             isPlaying = isPlaying,
+                            alwaysPlay = true,
                             modifier = Modifier.fillMaxSize()
                         )
                     }

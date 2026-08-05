@@ -99,8 +99,9 @@ fun PlayerChipOrderBottomSheet(
     fun getChipInfo(chipId: String): Pair<String, MaterialSymbolIcon> {
         return when (chipId) {
             "FAVORITE" -> Pair("Favorite", RhythmIcons.FavoriteFilled)
-            "SPEED" -> Pair("Speed", MaterialSymbolIcon("speed", filled = true))
-            "PITCH" -> Pair("Pitch", MaterialSymbolIcon("graphic_eq", filled = true))
+            "SPEED_PITCH" -> Pair("Speed & Pitch", MaterialSymbolIcon("tune", filled = true))
+            "SPEED" -> Pair("Speed & Pitch", MaterialSymbolIcon("speed", filled = true))
+            "PITCH" -> Pair("Speed & Pitch", MaterialSymbolIcon("graphic_eq", filled = true))
             "EQUALIZER" -> Pair("Equalizer", MaterialSymbolIcon("graphic_eq", filled = true))
             "SLEEP_TIMER" -> Pair("Sleep Timer", RhythmIcons.AccessTime)
             "LYRICS" -> Pair("Lyrics", MaterialSymbolIcon("lyrics", filled = true))
@@ -310,7 +311,7 @@ fun PlayerChipOrderBottomSheet(
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             appSettings.resetPlayerChipOrder()
                             appSettings.setHiddenPlayerChips(emptySet())
-                            reorderableList = listOf("FAVORITE", "SPEED", "PITCH", "EQUALIZER", "SLEEP_TIMER", "LYRICS", "ALBUM", "ARTIST", "SHARE")
+                            reorderableList = listOf("FAVORITE", "SPEED", "EQUALIZER", "SLEEP_TIMER", "LYRICS", "ALBUM", "ARTIST", "SHARE")
                             hiddenChipsSet = emptySet()
                             Toast.makeText(context, R.string.player_chip_order_reset, Toast.LENGTH_SHORT).show()
                         },

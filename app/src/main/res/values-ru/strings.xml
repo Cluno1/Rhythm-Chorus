@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm Музыка</string>
     <string name="media3_notification_channel_description">Элементы управления воспроизведением мультимедиа</string>
     <!-- Widget strings -->
-    <string name="widget_description">Музыкальный виджет Rhythm - Управление воспроизведением с помощью адаптивных макетов, поддерживающих размеры сетки от 2x1 до 5x5</string>
     <string name="widget_description_glance">Музыка Rhythm - Управляйте воспроизведением с помощью 9 адаптивных макетов, дизайна Material 3 и обновлений состояния в реальном времени</string>
     <string name="widget_name_glance">Rhythm Музыка</string>
     <string name="no_song_playing">Песня не воспроизводится</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">Виджет</string>
     <string name="settings_widget_desc">Виджеты главного экрана</string>
     <string name="widget_show_album_art">Показать обложку альбома</string>
-    <string name="widget_show_album_art_desc">Отображение обложки альбома в виджете</string>
     <string name="widget_show_artist">Показать имя исполнителя</string>
     <string name="widget_show_artist_desc">Отображение информации об исполнителе</string>
     <string name="widget_show_album">Показать название альбома</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">Динамические цвета (Material You)</string>
-    <string name="onboarding_dynamic_colors_desc">Примените цвета, извлеченные из обоев вашего устройства, для создания целостного образа.</string>
     <string name="onboarding_player_theme_title">Темы воспроизведения и мини-плеера</string>
     <string name="onboarding_player_theme_desc">Персонализируйте интерфейсы воспроизведения. Переключайтесь между чистым современным дизайном Rhythm или ярким, плавным выразительным дизайном.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">Виджеты запуска</string>
     <string name="onboarding_widgets_desc">Добавьте виджеты Rhythm в панель запуска для быстрого управления музыкой. Настройте, какая информация будет отображаться и как будет выглядеть виджет.</string>
-    <string name="onboarding_widget_album_art">Показать обложку альбома</string>
-    <string name="onboarding_widget_album_art_desc">Отображение обложки альбома в виджете</string>
     <string name="onboarding_widget_artist">Показать имя исполнителя</string>
     <string name="onboarding_widget_artist_desc">Отображение текущего исполнителя в виджете</string>
     <string name="onboarding_widget_album">Показать название альбома</string>
     <string name="onboarding_widget_album_desc">Отображение названия альбома в виджете</string>
     <string name="onboarding_widgets_tips_title">Советы по виджетам</string>
-    <string name="onboarding_widget_tip_1">Коснитесь виджета, чтобы открыть приложение</string>
-    <string name="onboarding_widget_tip_2">Изменение размера виджетов для разных макетов (от 2x1 до 5x5)</string>
-    <string name="onboarding_widget_tip_3">Виджеты обновляются в режиме реального времени во время воспроизведения</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">Подключите свои услуги</string>
     <string name="onboarding_integrations_desc">Улучшите качество прослушивания, подключившись к внешним сервисам. Получайте обложки альбомов, тексты песен, скроббли свои прослушивания и делитесь тем, что слушаете.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">Узнайте больше о своих музыкальных привычках. Отслеживайте время прослушивания, самые популярные песни, любимых исполнителей и многое другое с помощью красивой визуализации.</string>
     <string name="onboarding_stats_show_home">Показать статистику на главной странице</string>
     <string name="onboarding_stats_show_home_desc">Отображение виджета статистики прослушивания на главном экране</string>
-    <string name="onboarding_stats_rating">Включить рейтинги песен</string>
-    <string name="onboarding_stats_rating_desc">Оценивайте свои песни, отслеживайте избранные и создавайте умные плейлисты</string>
     <string name="onboarding_stats_features_title">Функции статистики</string>
     <string name="onboarding_stats_feature_1">Отслеживайте общее время прослушивания по дням, неделям или месяцам</string>
     <string name="onboarding_stats_feature_2">Посмотрите ваши самые популярные песни</string>
@@ -2084,8 +2073,6 @@
     <string name="streamingsettingsscreen_streaming_restricted">Потоковое вещание ограничено</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">Не удалось начать следующее воспроизведение: невозможно разрешить URL-адрес</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">Не удалось добавить в очередь: невозможно разрешить URL-адрес</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">Вертикальный виджет 1×2</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">Средний виджет 3×2</string>
     <string name="rhythmmusicwidget_album_art_placeholder">Заполнитель обложки альбома</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance Предварительный просмотр виджетов</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">Компактный виджет 1×1</string>
@@ -2246,9 +2233,6 @@
     <string name="widgetsettingsscreen_widget_settings">Настройки виджета</string>
     <string name="widgetsettingsscreen_show_favorite_button">Показать кнопку «Избранное»</string>
     <string name="widgetsettingsscreen_widget_theme">Тема виджета</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">В Rhythm используется Material 3. Выразительный дизайн с динамическими цветами</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">Виджет адаптируется от кнопки воспроизведения 1x1 до полного макета 5x5+</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">Длительное нажатие и изменение размера для создания различных выразительных макетов</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Применяется только к виджетам Glance</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">Персонализация виджетов главного экрана</string>
     <string name="festivesplashgreeting_merry_christmas">С Рождеством!</string>

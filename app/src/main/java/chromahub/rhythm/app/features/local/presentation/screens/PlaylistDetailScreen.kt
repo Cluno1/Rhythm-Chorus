@@ -706,6 +706,10 @@ fun PlaylistDetailScreen(
                 showSongOptionsSheet = false
             },
             showRemoveFromPlaylist = canEditPlaylist,
+            onDeleteSong = {
+                musicViewModel.deleteSong(selectedSongForOptions!!)
+                showSongOptionsSheet = false
+            },
             haptics = haptics
         )
     }

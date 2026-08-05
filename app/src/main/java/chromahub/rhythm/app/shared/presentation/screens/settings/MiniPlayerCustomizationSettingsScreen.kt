@@ -479,145 +479,192 @@ fun MiniPlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
 
     // MiniPlayer Artwork Size Bottom Sheet
     if (showMiniPlayerArtworkSizeSheet) {
-        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-        var tempSize by remember { mutableIntStateOf(miniPlayerArtworkSize) }
-
-        ModalBottomSheet(
-            onDismissRequest = { showMiniPlayerArtworkSizeSheet = false },
-            sheetState = sheetState,
-            dragHandle = {
-                BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+        MiniPlayerArtworkSizeSheet(
+            currentSize = miniPlayerArtworkSize,
+            onSizeSelected = { size ->
+                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                appSettings.setMiniPlayerArtworkSize(size)
+                showMiniPlayerArtworkSizeSheet = false
             },
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.settings_miniplayer_artwork_size),
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 6.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                                text = "${tempSize}dp",
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Slider(
-                    value = tempSize.toFloat(),
-                    onValueChange = { tempSize = it.toInt() },
-                    onValueChangeFinished = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        appSettings.setMiniPlayerArtworkSize(tempSize)
-                    },
-                    valueRange = 40f..72f,
-                    steps = 31,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
+            onDismiss = { showMiniPlayerArtworkSizeSheet = false },
+            context = context,
+            haptics = haptics
+        )
     }
 
     // MiniPlayer Corner Radius Bottom Sheet
     if (showMiniPlayerCornerRadiusSheet) {
-        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-        var tempRadius by remember { mutableIntStateOf(miniPlayerCornerRadius) }
-
-        ModalBottomSheet(
-            onDismissRequest = { showMiniPlayerCornerRadiusSheet = false },
-            sheetState = sheetState,
-            dragHandle = {
-                BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+        MiniPlayerCornerRadiusSheet(
+            currentRadius = miniPlayerCornerRadius,
+            onRadiusSelected = { radius ->
+                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                appSettings.setMiniPlayerCornerRadius(radius)
+                showMiniPlayerCornerRadiusSheet = false
             },
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
+            onDismiss = { showMiniPlayerCornerRadiusSheet = false },
+            context = context,
+            haptics = haptics
+        )
+    }
+}
+/**
+ * Bottom sheet for choosing mini player artwork size (shared with the onboarding tour).
+ */
+@Composable
+fun MiniPlayerArtworkSizeSheet(
+    currentSize: Int,
+    onSizeSelected: (Int) -> Unit,
+    onDismiss: () -> Unit,
+    context: Context,
+    haptics: HapticFeedback
+) {
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+    var tempSize by remember { mutableIntStateOf(currentSize) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        dragHandle = {
+            BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+        },
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
+                Column {
+                    Text(
+                        text = stringResource(R.string.settings_miniplayer_artwork_size),
+                        style = MaterialTheme.typography.displayMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 6.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                shape = CircleShape
+                            )
+                    ) {
                         Text(
-                            text = stringResource(R.string.settings_miniplayer_corner_radius),
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            text = "${tempSize}dp",
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 6.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                                text = "${tempRadius}dp",
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Slider(
-                    value = tempRadius.toFloat(),
-                    onValueChange = { tempRadius = it.toInt() },
-                    onValueChangeFinished = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                        appSettings.setMiniPlayerCornerRadius(tempRadius)
-                    },
-                    valueRange = 0f..28f,
-                    steps = 27,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Slider(
+                value = tempSize.toFloat(),
+                onValueChange = { tempSize = it.toInt() },
+                onValueChangeFinished = {
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    onSizeSelected(tempSize)
+                },
+                valueRange = 40f..72f,
+                steps = 31,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+/**
+ * Bottom sheet for choosing mini player corner radius (shared with the onboarding tour).
+ */
+@Composable
+fun MiniPlayerCornerRadiusSheet(
+    currentRadius: Int,
+    onRadiusSelected: (Int) -> Unit,
+    onDismiss: () -> Unit,
+    context: Context,
+    haptics: HapticFeedback
+) {
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+    var tempRadius by remember { mutableIntStateOf(currentRadius) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        dragHandle = {
+            BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+        },
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.settings_miniplayer_corner_radius),
+                        style = MaterialTheme.typography.displayMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 6.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                shape = CircleShape
+                            )
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            text = "${tempRadius}dp",
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Slider(
+                value = tempRadius.toFloat(),
+                onValueChange = { tempRadius = it.toInt() },
+                onValueChangeFinished = {
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    onRadiusSelected(tempRadius)
+                },
+                valueRange = 0f..28f,
+                steps = 27,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

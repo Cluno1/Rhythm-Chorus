@@ -501,6 +501,8 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         const val ACTION_SKIP_NEXT = "chromahub.rhythm.app.action.SKIP_NEXT"
         const val ACTION_SKIP_PREVIOUS = "chromahub.rhythm.app.action.SKIP_PREVIOUS"
         const val ACTION_TOGGLE_FAVORITE = "chromahub.rhythm.app.action.TOGGLE_FAVORITE"
+        const val ACTION_TOGGLE_SHUFFLE = "chromahub.rhythm.app.action.TOGGLE_SHUFFLE"
+        const val ACTION_TOGGLE_REPEAT = "chromahub.rhythm.app.action.TOGGLE_REPEAT"
         
         // Broadcast actions for status updates
         const val BROADCAST_SLEEP_TIMER_STATUS = "chromahub.rhythm.app.broadcast.SLEEP_TIMER_STATUS"
@@ -1916,9 +1918,31 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         val isPlaying = prefs.getBoolean("is_playing", false)
                         val hasPrevious = prefs.getBoolean("has_previous", false)
                         val hasNext = prefs.getBoolean("has_next", false)
+                        val isShuffleEnabled = prefs.getBoolean("is_shuffle", false)
+                        val repeatMode = prefs.getInt("repeat_mode", 0)
                         
-                        WidgetUpdater.updateWidget(this, song, isPlaying, hasPrevious, hasNext, isFavorite)
+                        WidgetUpdater.updateWidget(this, song, isPlaying, hasPrevious, hasNext, isFavorite, isShuffleEnabled, repeatMode)
                     }
+                }
+            }
+            ACTION_TOGGLE_SHUFFLE -> {
+                Log.d(TAG, "Widget toggle shuffle action")
+                if (::player.isInitialized) {
+                    player.shuffleModeEnabled = !player.shuffleModeEnabled
+                    updateWidgetFromMediaItem(player.currentMediaItem)
+                }
+            }
+            ACTION_TOGGLE_REPEAT -> {
+                Log.d(TAG, "Widget toggle repeat action")
+                if (::player.isInitialized) {
+                    val nextRepeatMode = when (player.repeatMode) {
+                        Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
+                        Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
+                        Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_OFF
+                        else -> Player.REPEAT_MODE_OFF
+                    }
+                    player.repeatMode = nextRepeatMode
+                    updateWidgetFromMediaItem(player.currentMediaItem)
                 }
             }
             ACTION_MUTE -> {
@@ -2600,6 +2624,8 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 val isFavorite = isCurrentSongFavorite()
                 val hasPrevious = player.hasPreviousMediaItem()
                 val hasNext = player.hasNextMediaItem()
+                val isShuffleEnabled = player.shuffleModeEnabled
+                val repeatMode = player.repeatMode
                 val snapshotKey = buildString {
                     append(song.id)
                     append('|')
@@ -2610,6 +2636,10 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     append(hasNext)
                     append('|')
                     append(isFavorite)
+                    append('|')
+                    append(isShuffleEnabled)
+                    append('|')
+                    append(repeatMode)
                 }
 
                 if (snapshotKey == lastWidgetSnapshotKey) {
@@ -2617,7 +2647,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 }
                 lastWidgetSnapshotKey = snapshotKey
 
-                WidgetUpdater.updateWidget(this, song, player.isPlaying, hasPrevious, hasNext, isFavorite)
+                WidgetUpdater.updateWidget(this, song, player.isPlaying, hasPrevious, hasNext, isFavorite, isShuffleEnabled, repeatMode)
             } else {
                 if (lastWidgetSnapshotKey == "empty|false") {
                     return

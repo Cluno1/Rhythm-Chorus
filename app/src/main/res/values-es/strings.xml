@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Reproduciendo ahora en Rhythm</string>
     <string name="media3_notification_channel_description">Controles de reproducción, botones de búsqueda y carátula del álbum</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm Widget de música: controle la reproducción con diseños responsivos que admiten tamaños de cuadrícula de 2x1 a 5x5</string>
     <string name="widget_description_glance">Rhythm Música: controla la reproducción con 9 diseños responsivos, Material 3 diseños y actualizaciones de estado en tiempo real</string>
     <string name="widget_name_glance">Rhythm Música</string>
     <string name="no_song_playing">No se reproduce ninguna canción</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">Widget</string>
     <string name="settings_widget_desc">Widgets de la pantalla de inicio</string>
     <string name="widget_show_album_art">Mostrar carátula del álbum</string>
-    <string name="widget_show_album_art_desc">Mostrar la carátula del álbum en el widget</string>
     <string name="widget_show_artist">Mostrar nombre del artista</string>
     <string name="widget_show_artist_desc">Mostrar información del artista</string>
     <string name="widget_show_album">Mostrar nombre del álbum</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">Colores dinámicos (Material Tú)</string>
-    <string name="onboarding_dynamic_colors_desc">Aplique colores extraídos del fondo de pantalla de su dispositivo para una apariencia coherente.</string>
     <string name="onboarding_player_theme_title">Temas de reproducción y minirreproductor</string>
     <string name="onboarding_player_theme_desc">Personaliza tus interfaces de reproducción. Alterna entre el diseño limpio y moderno Rhythm o el diseño vibrante y fluido Expressive.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">Widgets del iniciador</string>
     <string name="onboarding_widgets_desc">Agregue Rhythm widgets a su iniciador para un control rápido de la música. Personalice qué información se muestra y cómo se ve el widget.</string>
-    <string name="onboarding_widget_album_art">Mostrar carátula del álbum</string>
-    <string name="onboarding_widget_album_art_desc">Mostrar la carátula del álbum en el widget</string>
     <string name="onboarding_widget_artist">Mostrar nombre del artista</string>
     <string name="onboarding_widget_artist_desc">Muestra el artista actual en el widget</string>
     <string name="onboarding_widget_album">Mostrar nombre del álbum</string>
     <string name="onboarding_widget_album_desc">Mostrar el título del álbum en el widget</string>
     <string name="onboarding_widgets_tips_title">Consejos sobre widgets</string>
-    <string name="onboarding_widget_tip_1">Toca el widget para abrir la aplicación</string>
-    <string name="onboarding_widget_tip_2">Cambiar el tamaño de los widgets para diferentes diseños (2x1 a 5x5)</string>
-    <string name="onboarding_widget_tip_3">Los widgets se actualizan en tiempo real durante la reproducción</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">Conecte sus servicios</string>
     <string name="onboarding_integrations_desc">Mejore su experiencia auditiva conectándose a servicios externos. Obtén carátulas de álbumes, letras, explora tus obras y comparte lo que estás escuchando.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">Descubra información sobre sus hábitos musicales. Realice un seguimiento de su tiempo de escucha, las canciones más reproducidas, sus artistas favoritos y más con hermosas visualizaciones.</string>
     <string name="onboarding_stats_show_home">Mostrar estadísticas en Inicio</string>
     <string name="onboarding_stats_show_home_desc">Muestra un widget de estadísticas de escucha en tu pantalla de inicio</string>
-    <string name="onboarding_stats_rating">Habilitar clasificaciones de canciones</string>
-    <string name="onboarding_stats_rating_desc">Califica tus canciones para realizar un seguimiento de tus favoritas y crear listas de reproducción inteligentes</string>
     <string name="onboarding_stats_features_title">Funciones de estadísticas</string>
     <string name="onboarding_stats_feature_1">Realice un seguimiento del tiempo total de escucha por día, semana o mes</string>
     <string name="onboarding_stats_feature_2">Mira tus canciones más reproducidas</string>
@@ -2084,8 +2073,6 @@
     <string name="streamingsettingsscreen_streaming_restricted">Transmisión restringida</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">No se pudo reproducir a continuación: no se puede resolver la URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">No se pudo agregar a la cola: no se puede resolver la URL</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">Widget vertical 1×2</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">Widget mediano 3×2</string>
     <string name="rhythmmusicwidget_album_art_placeholder">Marcador de posición de la carátula del álbum</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance Vistas previas del widget</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">Widget compacto 1×1</string>
@@ -2246,9 +2233,6 @@
     <string name="widgetsettingsscreen_widget_settings">Configuración de widgets</string>
     <string name="widgetsettingsscreen_show_favorite_button">Mostrar botón favorito</string>
     <string name="widgetsettingsscreen_widget_theme">Tema de widgets</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm usa Material 3 Diseño expresivo con colores dinámicos</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">El widget se adapta del botón de reproducción 1x1 al diseño completo 5x5+</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">Mantenga presionado y cambie el tamaño para diferentes diseños expresivos</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Se aplica solo a Glance widgets</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">Personalizar los widgets de la pantalla de inicio</string>
     <string name="festivesplashgreeting_merry_christmas">¡Feliz Navidad!</string>

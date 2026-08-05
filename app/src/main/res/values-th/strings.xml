@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">กำลังเล่น</string>
     <string name="media3_notification_channel_description">ส่วนควบคุมการเล่นสื่อ</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm วิดเจ็ตเพลง - ควบคุมการเล่นด้วยรูปแบบตอบสนองที่รองรับขนาดตาราง 2x1 ถึง 5x5</string>
     <string name="widget_description_glance">Rhythm เพลง - ควบคุมการเล่นด้วยเค้าโครงที่ตอบสนอง 9 แบบ, Material การออกแบบ 3 แบบ และการอัปเดตสถานะแบบเรียลไทม์</string>
     <string name="widget_name_glance">Rhythm ดนตรี</string>
     <string name="no_song_playing">ไม่มีการเล่นเพลง</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">วิดเจ็ต</string>
     <string name="settings_widget_desc">วิดเจ็ตบนหน้าจอหลัก</string>
     <string name="widget_show_album_art">แสดงปกอัลบั้ม</string>
-    <string name="widget_show_album_art_desc">แสดงปกอัลบั้มในวิดเจ็ต</string>
     <string name="widget_show_artist">แสดงชื่อศิลปิน</string>
     <string name="widget_show_artist_desc">แสดงข้อมูลศิลปิน</string>
     <string name="widget_show_album">แสดงชื่ออัลบั้ม</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">สีไดนามิก (Material คุณ)</string>
-    <string name="onboarding_dynamic_colors_desc">ใช้สีที่ดึงมาจากวอลเปเปอร์ของอุปกรณ์เพื่อให้ดูกลมกลืน</string>
     <string name="onboarding_player_theme_title">การเล่นและธีมเครื่องเล่นขนาดเล็ก</string>
     <string name="onboarding_player_theme_desc">ปรับแต่งอินเทอร์เฟซการเล่นของคุณ สลับระหว่างการออกแบบ Rhythm ที่สะอาดตา ทันสมัย ​​หรือการออกแบบที่แสดงออกถึงความมีชีวิตชีวาและลื่นไหล</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">วิดเจ็ตตัวเรียกใช้งาน</string>
     <string name="onboarding_widgets_desc">เพิ่มวิดเจ็ต Rhythm ลงใน Launcher เพื่อการควบคุมเพลงอย่างรวดเร็ว ปรับแต่งข้อมูลที่จะแสดงและลักษณะที่ปรากฏของวิดเจ็ต</string>
-    <string name="onboarding_widget_album_art">แสดงปกอัลบั้ม</string>
-    <string name="onboarding_widget_album_art_desc">แสดงปกอัลบั้มในวิดเจ็ต</string>
     <string name="onboarding_widget_artist">แสดงชื่อศิลปิน</string>
     <string name="onboarding_widget_artist_desc">แสดงศิลปินปัจจุบันในวิดเจ็ต</string>
     <string name="onboarding_widget_album">แสดงชื่ออัลบั้ม</string>
     <string name="onboarding_widget_album_desc">แสดงชื่ออัลบั้มในวิดเจ็ต</string>
     <string name="onboarding_widgets_tips_title">เคล็ดลับวิดเจ็ต</string>
-    <string name="onboarding_widget_tip_1">แตะวิดเจ็ตเพื่อเปิดแอป</string>
-    <string name="onboarding_widget_tip_2">ปรับขนาดวิดเจ็ตสำหรับเค้าโครงที่แตกต่างกัน (2x1 ถึง 5x5)</string>
-    <string name="onboarding_widget_tip_3">วิดเจ็ตอัปเดตแบบเรียลไทม์ระหว่างการเล่น</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">เชื่อมต่อบริการของคุณ</string>
     <string name="onboarding_integrations_desc">ยกระดับประสบการณ์การฟังของคุณด้วยการเชื่อมต่อกับบริการภายนอก รับปกอัลบั้ม เนื้อเพลง เขียนบทละครของคุณ และแบ่งปันสิ่งที่คุณกำลังฟัง</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">ค้นพบข้อมูลเชิงลึกเกี่ยวกับนิสัยการฟังเพลงของคุณ ติดตามเวลาในการฟัง เพลงที่เล่นบ่อยที่สุด ศิลปินคนโปรด และอื่นๆ อีกมากมายด้วยการแสดงภาพที่สวยงาม</string>
     <string name="onboarding_stats_show_home">แสดงสถิติบนหน้าแรก</string>
     <string name="onboarding_stats_show_home_desc">แสดงวิดเจ็ตสถิติการฟังบนหน้าจอหลักของคุณ</string>
-    <string name="onboarding_stats_rating">เปิดใช้งานการให้คะแนนเพลง</string>
-    <string name="onboarding_stats_rating_desc">ให้คะแนนเพลงของคุณเพื่อติดตามรายการโปรดและสร้างเพลย์ลิสต์อัจฉริยะ</string>
     <string name="onboarding_stats_features_title">คุณสมบัติสถิติ</string>
     <string name="onboarding_stats_feature_1">ติดตามเวลาในการฟังทั้งหมดตามวัน สัปดาห์ หรือเดือน</string>
     <string name="onboarding_stats_feature_2">ดูเพลงที่คุณเล่นบ่อยที่สุด</string>
@@ -2084,8 +2073,6 @@
     <string name="streamingsettingsscreen_streaming_restricted">จำกัดการสตรีม</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">ไม่สามารถเล่นถัดไป: ไม่สามารถแก้ไข URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">ไม่สามารถเพิ่มลงในคิว: ไม่สามารถแก้ไข URL ได้</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">วิดเจ็ตแนวตั้ง 1×2</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">วิดเจ็ตขนาดกลาง 3×2</string>
     <string name="rhythmmusicwidget_album_art_placeholder">ตัวยึดตำแหน่งปกอัลบั้ม</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance ตัวอย่างวิดเจ็ต</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">วิดเจ็ตขนาดกะทัดรัด 1×1</string>
@@ -2246,9 +2233,6 @@
     <string name="widgetsettingsscreen_widget_settings">การตั้งค่าวิดเจ็ต</string>
     <string name="widgetsettingsscreen_show_favorite_button">แสดงปุ่มรายการโปรด</string>
     <string name="widgetsettingsscreen_widget_theme">ธีมวิดเจ็ต</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm ใช้ Material 3 การออกแบบที่แสดงออกพร้อมสีสันแบบไดนามิก</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">วิดเจ็ตปรับจากปุ่มเล่น 1x1 เป็นเค้าโครงเต็มขนาด 5x5+</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">กดค้างไว้และปรับขนาดเพื่อเค้าโครงที่สื่อความหมายต่างๆ</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">ใช้กับวิดเจ็ต Glance เท่านั้น</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">ปรับแต่งวิดเจ็ตหน้าจอหลักในแบบของคุณ</string>
     <string name="festivesplashgreeting_merry_christmas">สุขสันต์วันคริสต์มาส!</string>

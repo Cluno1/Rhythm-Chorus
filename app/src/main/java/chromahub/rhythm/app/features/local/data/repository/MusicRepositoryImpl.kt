@@ -996,7 +996,7 @@ class MusicRepository(context: Context) {
 
         return extension in setOf(
             "mp3", "m4a", "flac", "ogg", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka",
-            "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b"
+            "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1"
         )
     }
 
@@ -1644,7 +1644,8 @@ class MusicRepository(context: Context) {
                     it.contains("m4a", ignoreCase = true) -> "M4A"
                     it.contains("ac4", ignoreCase = true) -> "AC-4"
                     it.contains("ac3", ignoreCase = true) || it.contains("ac-3", ignoreCase = true) -> "AC-3"
-                    it.contains("eac3", ignoreCase = true) || it.contains("ec-3", ignoreCase = true) -> "E-AC-3"
+                    it.contains("eac3", ignoreCase = true) || it.contains("ec-3", ignoreCase = true) || it.contains("eac", ignoreCase = true) -> "E-AC-3"
+                    it.contains("mpegh", ignoreCase = true) || it.contains("mpeg-h", ignoreCase = true) || it.contains("mhm1", ignoreCase = true) -> "MPEG-H"
                     it.contains("truehd", ignoreCase = true) -> "TrueHD"
                     it.contains("atmos", ignoreCase = true) -> "Dolby Atmos"
                     it.contains("dts-hd", ignoreCase = true) || it.contains("dtshd", ignoreCase = true) -> "DTS-HD MA"
@@ -5608,82 +5609,64 @@ class MusicRepository(context: Context) {
     suspend fun fetchTrackArtwork(songs: List<Song>): List<Song> = withContext(Dispatchers.IO) {
         val updatedSongs = mutableListOf<Song>()
 
-        val albumsList = loadAlbums()
         for (song in songs) {
-            // Only fetch if song doesn't have artwork already
-            if (song.artworkUri != null) {
-                updatedSongs.add(song)
-                continue
-            }
-
-            // Check if album has artwork - if yes, we don't need track-specific artwork
-            val album = albumsList.findAlbumForSong(song)
-            if (album?.artworkUri != null) {
-                // Album has artwork, no need for track-specific image
-                updatedSongs.add(song)
-                continue
-            }
-
             val cacheKey = "${song.artist}:${song.title}"
             
-            // Check cache first
-            val cachedUri = albumImageCache[cacheKey] // Reuse album cache for tracks
-            if (cachedUri != null) {
-                updatedSongs.add(song.copy(artworkUri = cachedUri))
+            // Skip songs with empty or "Unknown" title
+            if (song.title.isBlank() || song.title.equals("Unknown", ignoreCase = true)) {
+                updatedSongs.add(song)
                 continue
             }
 
-            try {
-                // Skip songs with empty or "Unknown" artist/title
-                if (song.artist.isBlank() || song.title.isBlank() ||
-                    song.artist.equals("Unknown", ignoreCase = true) ||
-                    song.title.equals("Unknown", ignoreCase = true)
-                ) {
-                    updatedSongs.add(song)
-                    continue
-                }
+            var fetchedUri: Uri? = null
 
-                if (!NetworkClient.isYTMusicApiEnabled() || ytmusicApiService == null) {
-                    Log.d(TAG, "YTMusic API is disabled or unavailable, skipping track artwork for: ${song.title}")
-                    updatedSongs.add(song)
-                    continue
-                }
-
-                Log.d(TAG, "Searching YTMusic for track: ${song.title} by ${song.artist}")
-
-                // Add delay to avoid rate limiting
-                delay(200)
-
-                // Create search request for song/track
-                val searchQuery = "${song.title} ${song.artist}"
-                val searchRequest = YTMusicSearchRequest(
-                    context = YTMusicContext(YTMusicClient()),
-                    query = searchQuery,
-                    params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D" // Song search filter
-                )
-
-                val searchResponse = ytmusicApiService.search(request = searchRequest)
-                if (searchResponse.isSuccessful) {
-                    // For tracks, we can extract image from the first result
-                    val imageUrl = searchResponse.body()?.extractAlbumImageUrl() // Tracks use same thumbnail structure
-                    if (!imageUrl.isNullOrEmpty()) {
-                        val imageUri = Uri.parse(imageUrl)
-                        albumImageCache[cacheKey] = imageUri // Cache for future use
-                        updatedSongs.add(song.copy(artworkUri = imageUri))
-                        Log.d(TAG, "Found YTMusic track image for ${song.title}: $imageUrl")
-                        continue
+            // 1. Try Deezer search first (Deezer returns high resolution album/track artwork)
+            if (NetworkClient.isDeezerApiEnabled() && deezerApiService != null) {
+                try {
+                    val query = if (song.artist.isNotBlank() && !song.artist.equals("Unknown", ignoreCase = true)) {
+                        "${song.title} ${song.artist}"
+                    } else song.title
+                    val response = deezerApiService.searchAlbums(query)
+                    val bestMatch = findBestAlbumMatch(response.data, song.album.ifBlank { song.title }, song.artist)
+                    val imgUrl = bestMatch?.coverXl ?: bestMatch?.coverBig ?: bestMatch?.coverMedium ?: response.data.firstOrNull()?.coverXl ?: response.data.firstOrNull()?.coverBig
+                    if (!imgUrl.isNullOrEmpty() && imgUrl.startsWith("http")) {
+                        fetchedUri = Uri.parse(imgUrl)
+                        Log.d(TAG, "Found Deezer artwork for track: ${song.title}, URL: $imgUrl")
                     }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Deezer track search failed for ${song.title}: ${e.message}")
                 }
+            }
 
-                Log.d(TAG, "No YTMusic image found for track: ${song.title}")
-                updatedSongs.add(song)
+            // 2. YTMusic fallback if Deezer didn't return an image
+            if (fetchedUri == null && NetworkClient.isYTMusicApiEnabled() && ytmusicApiService != null) {
+                try {
+                    val query = "${song.title} ${song.artist}".trim()
+                    val searchRequest = YTMusicSearchRequest(
+                        context = YTMusicContext(YTMusicClient()),
+                        query = query,
+                        params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D"
+                    )
+                    val searchResponse = ytmusicApiService.search(request = searchRequest)
+                    if (searchResponse.isSuccessful) {
+                        val imageUrl = searchResponse.body()?.extractAlbumImageUrl()
+                        if (!imageUrl.isNullOrEmpty()) {
+                            fetchedUri = Uri.parse(imageUrl)
+                            Log.d(TAG, "Found YTMusic track image for ${song.title}: $imageUrl")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "YTMusic track search failed for ${song.title}: ${e.message}")
+                }
+            }
 
-            } catch (e: Exception) {
-                Log.w(TAG, "YTMusic track image fetch failed for ${song.title}: ${e.message}")
+            if (fetchedUri != null) {
+                albumImageCache[cacheKey] = fetchedUri
+                updatedSongs.add(song.copy(artworkUri = fetchedUri))
+            } else {
                 updatedSongs.add(song)
             }
         }
-
         updatedSongs
     }
 
@@ -5924,6 +5907,25 @@ class MusicRepository(context: Context) {
         }
     }
     
+    /**
+     * Deletes a song from local database and invalidates local caches.
+     */
+    suspend fun deleteSong(song: Song) {
+        withContext(Dispatchers.IO) {
+            try {
+                roomDb.withTransaction {
+                    songDao.deleteByIds(listOf(song.id))
+                    roomDb.songArtistDao().deleteBySongId(song.id)
+                    roomDb.playlistDao().deleteSongFromAllPlaylists(song.id)
+                }
+                clearInMemoryCaches()
+                Log.d(TAG, "Successfully deleted song ${song.title} from database")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting song ${song.title} from database", e)
+            }
+        }
+    }
+
     /**
      * Clears all in-memory caches
      */

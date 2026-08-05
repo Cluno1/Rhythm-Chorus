@@ -97,6 +97,7 @@ import chromahub.rhythm.app.shared.data.model.LyricsData // Import LyricsData
 import chromahub.rhythm.app.util.PendingWriteRequest // Import for metadata write requests
 import chromahub.rhythm.app.util.PendingBatchWriteRequest
 import chromahub.rhythm.app.util.PendingLyricsWriteRequest
+import chromahub.rhythm.app.util.PendingDeleteRequest
 import chromahub.rhythm.app.util.QueueUtils
 import chromahub.rhythm.app.util.GenreUtils
 import chromahub.rhythm.app.util.NaturalSortComparator
@@ -238,6 +239,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val shuffleModePersistence = appSettings.shuffleModePersistence
     val repeatModePersistence = appSettings.repeatModePersistence
     val playbackSpeed = appSettings.playbackSpeed
+    val defaultPlaybackSpeed = appSettings.defaultPlaybackSpeed
+    val useDefaultPlaybackSpeed = appSettings.useDefaultPlaybackSpeed
     val playbackPitch = appSettings.playbackPitch
     
     // Equalizer settings
@@ -462,15 +465,21 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Log.w(TAG, "Skipping syncLikedPlaylistWithFavorites — playlists have not finished loading")
                 return
             }
+
+            // Sync direction is favorites -> playlist only. Songs that were unliked (disliked)
+            // must never be re-added to favorites just because they are still listed in the
+            // Liked playlist — that would make the like reappear right after disliking.
+            val finalFavoriteIds = favoriteIds
+
             // Update the Liked playlist directory without losing existing custom song order
             _playlists.value = _playlists.value.map { playlist ->
                 if (playlist.id == "1") {
-                    // 1. Keep all existing songs that are STILL in favorites
-                    val existingSongsToKeep = playlist.songs.filter { favoriteIds.contains(it.id) }
+                    // 1. Keep existing songs that are still favorites (preserves custom order)
+                    val existingSongsToKeep = playlist.songs.filter { it.id in favoriteIds }
                     
                     // 2. Find any new favorites that are NOT in the playlist yet
                     val existingIds = existingSongsToKeep.map { it.id }.toSet()
-                    val newFavoriteIds = favoriteIds.filter { !existingIds.contains(it) }
+                    val newFavoriteIds = finalFavoriteIds.filter { !existingIds.contains(it) }
                     
                     // 3. Find the Song objects for these new favorites from _songs list OR room DB
                     val allSongsMap = _songs.value.associateBy { it.id }
@@ -977,6 +986,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     // Pending batch write request for metadata editing (Android 11+ permission flow)
     val pendingBatchWriteRequest: StateFlow<PendingBatchWriteRequest?>
         get() = metadataManagerHelper.pendingBatchWriteRequest
+
+    // Pending delete request for Android 10/11+ permission flow
+    private val _pendingDeleteRequest = MutableStateFlow<PendingDeleteRequest?>(null)
+    val pendingDeleteRequest: StateFlow<PendingDeleteRequest?> = _pendingDeleteRequest.asStateFlow()
 
     // Sort library functionality - Load saved sort order from AppSettings
     private val _sortOrder = MutableStateFlow(
@@ -1801,7 +1814,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val hasMissingSongs = _songs.value.any { it.artworkUri == null }
                 
                 val artistSource1 = appSettings.artistArtworkSource.value
-                val shouldFetchArtists = hasMissingArtists && artistSource1 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
+                val shouldFetchArtists = hasMissingArtists &&
+                    artistSource1 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
                     (artistSource1 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
                 val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && appSettings.ytMusicApiEnabled.value
 
@@ -1959,7 +1973,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val hasMissingSongs = _songs.value.any { it.artworkUri == null }
                 
                 val artistSource2 = appSettings.artistArtworkSource.value
-                val shouldFetchArtists = hasMissingArtists && artistSource2 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
+                val shouldFetchArtists = hasMissingArtists &&
+                    artistSource2 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
                     (artistSource2 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
                 val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && appSettings.ytMusicApiEnabled.value
 
@@ -2290,7 +2305,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         val hasMissingSongs = _songs.value.any { it.artworkUri == null }
                         
                         val artistSource3 = appSettings.artistArtworkSource.value
-                        val shouldFetchArtists = hasMissingArtists && artistSource3 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
+                        val shouldFetchArtists = hasMissingArtists &&
+                            artistSource3 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
                             (artistSource3 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
                         val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && appSettings.ytMusicApiEnabled.value
 
@@ -2753,6 +2769,104 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun cancelPendingMetadataWrite() {
         metadataManagerHelper.cancelPendingMetadataWrite()
+    }
+
+    /**
+     * Attempts to delete a song physically and from local databases.
+     * Uses MediaStore.createDeleteRequest on Android 11+ and RecoverableSecurityException handling on Android 10.
+     */
+    fun deleteSong(song: Song) {
+        viewModelScope.launch {
+            // First remove the song from active playback queue
+            removeFromQueue(song)
+            
+            val context = getApplication<Application>()
+            try {
+                val deletedStatus = withContext(Dispatchers.IO) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        // On Android 11+, we must request delete permission via MediaStore
+                        try {
+                            val resolvedUri = MediaUtils.getSpecificVolumeUri(context, song.id.toLongOrNull() ?: 0L) ?: song.uri
+                            val pendingIntent = android.provider.MediaStore.createDeleteRequest(context.contentResolver, listOf(resolvedUri))
+                            _pendingDeleteRequest.value = PendingDeleteRequest(pendingIntent.intentSender, song)
+                            -1 // Signifies pending permission
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to create delete request for Android 11+", e)
+                            0
+                        }
+                    } else {
+                        // On Android 10 and below, try direct deletion first.
+                        var success = false
+                        try {
+                            val count = context.contentResolver.delete(song.uri, null, null)
+                            success = count > 0
+                        } catch (e: Exception) {
+                            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && e is android.app.RecoverableSecurityException) {
+                                _pendingDeleteRequest.value = PendingDeleteRequest(e.userAction.actionIntent.intentSender, song)
+                                return@withContext -1
+                            }
+                        }
+                        
+                        if (!success && song.path != null) {
+                            val file = File(song.path)
+                            if (file.exists()) {
+                                success = file.delete()
+                            }
+                        }
+                        
+                        if (success) 1 else 0
+                    }
+                }
+                
+                if (deletedStatus == 1) {
+                    repository.deleteSong(song)
+                    refreshLibrary(showMediaScanLoader = false)
+                    withContext(Dispatchers.Main) {
+                        android.widget.Toast.makeText(context, "Song deleted successfully", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                } else if (deletedStatus == 0) {
+                    Log.e(TAG, "Failed to delete song: ${song.title}")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in deleteSong", e)
+            }
+        }
+    }
+
+    /**
+     * Completes song deletion after user grants permission via dialog.
+     */
+    fun completeSongDeletion(song: Song) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                        try {
+                            getApplication<Application>().contentResolver.delete(song.uri, null, null)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to delete file after Android 10 permission granted", e)
+                        }
+                    }
+                }
+                repository.deleteSong(song)
+                refreshLibrary(showMediaScanLoader = false)
+                _pendingDeleteRequest.value = null
+                withContext(Dispatchers.Main) {
+                    android.widget.Toast.makeText(getApplication(), "Song deleted successfully", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error completing song deletion", e)
+                _pendingDeleteRequest.value = null
+            }
+        }
+    }
+
+    /**
+     * Cancels the pending delete request.
+     */
+    fun cancelPendingDelete() {
+        _pendingDeleteRequest.value = null
+        Log.d(TAG, "Cancelled pending delete request")
     }
 
     /**
@@ -3396,8 +3510,22 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     Log.d(TAG, "No albums found that need artwork")
                 }
 
-                Log.d(TAG, "Fetching track artwork fallback from YouTube Music for songs without art")
-                val songsToUpdate = _songs.value.filter { it.artworkUri == null }.take(40)
+                val songsToUpdate = _songs.value.filter { song ->
+                    val uri = song.artworkUri
+                    if (uri == null || uri == Uri.EMPTY) true
+                    else {
+                        val str = uri.toString().trim()
+                        if (str.isEmpty() || str == "null" || str == "content://media/external/audio/albumart/0") true
+                        else if (str.startsWith("http://") || str.startsWith("https://")) false
+                        else {
+                            try {
+                                context.contentResolver.openInputStream(uri)?.use { stream ->
+                                    stream.available() <= 0 && stream.read() == -1
+                                } ?: true
+                            } catch (_: Exception) { true }
+                        }
+                    }
+                }.take(40)
                 if (songsToUpdate.isNotEmpty()) {
                     val updatedSongs = repository.fetchTrackArtwork(songsToUpdate)
                     val songMap: Map<String, Song> = updatedSongs.associateBy { song: Song -> song.id }
@@ -3416,12 +3544,50 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             Log.e(TAG, "Error fetching artwork from internet", e)
         }
     }
+
+    /**
+     * Auto-fetches artwork from online metadata providers for a specific song,
+     * updates the song in memory & repository, and invokes onResult callback with success & artwork Uri string.
+     */
+    fun autoFetchArtworkForSong(song: Song, onResult: (Boolean, String?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _isFetchingArtwork.value = true
+                val updated = repository.fetchTrackArtwork(listOf(song))
+                val resultSong = updated.firstOrNull()
+                if (resultSong?.artworkUri != null && resultSong.artworkUri != song.artworkUri) {
+                    val currentList = _songs.value.toMutableList()
+                    val idx = currentList.indexOfFirst { it.id == song.id }
+                    if (idx != -1) {
+                        currentList[idx] = resultSong
+                        _songs.value = currentList
+                        repository.updateAndPersistSongs(currentList)
+                    }
+                    withContext(Dispatchers.Main) {
+                        onResult(true, resultSong.artworkUri.toString())
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        onResult(false, null)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in autoFetchArtworkForSong", e)
+                withContext(Dispatchers.Main) {
+                    onResult(false, null)
+                }
+            } finally {
+                _isFetchingArtwork.value = false
+            }
+        }
+    }
     
     /**
      * Refreshes artwork for a specific artist
      */
     fun refreshArtistImage(artistId: String) {
         viewModelScope.launch {
+            if (appSettings.artistArtworkSource.value == chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED) return@launch
             val artist = _artists.value.find { it.id == artistId } ?: return@launch
             try {
                 val updatedArtists = repository.fetchArtistImages(listOf<Artist>(artist))
@@ -3848,42 +4014,26 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     
                     // Update recently played
                     updateRecentlyPlayed(song)
+
+                    // Apply default playback speed if enabled for new songs
+                    if (appSettings.useDefaultPlaybackSpeed.value) {
+                        val defaultSpeed = appSettings.defaultPlaybackSpeed.value
+                        setPlaybackSpeed(defaultSpeed)
+                    }
                     
                     // Update favorite status
                     _isFavorite.value = _favoriteSongs.value.contains(song.id)
                     
-                    // Update queue position - comprehensive logic from both listeners
-                    val currentQueue = _currentQueue.value
-                    val newIndex = currentQueue.songs.indexOfFirst { it.id == song.id }
-                    
-                    if (newIndex != -1 && newIndex != currentQueue.currentIndex) {
-                        // Only update if the index actually changed
-                        Log.d(TAG, "Updating queue index from ${currentQueue.currentIndex} to $newIndex")
-                        _currentQueue.value = currentQueue.copy(currentIndex = newIndex)
-                        
-                        // Save queue to persistence when position changes
+                    // Update queue position - comprehensive logic from both listeners.
+                    // Resolve the position against the controller's actual playback order
+                    // (shuffle-aware traversal under the shuffle engine, plain timeline order
+                    // otherwise) instead of a possibly-stale local list. This keeps the
+                    // displayed index linear while shuffling instead of jumping around, and
+                    // self-corrects the queue after restores or queue edits.
+                    val previousIndex = _currentQueue.value.currentIndex
+                    syncQueueWithMediaController()
+                    if (_currentQueue.value.currentIndex != previousIndex) {
                         saveQueueToPersistence()
-                    } else if (newIndex == -1) {
-                        // Song not found in current queue - sync with MediaController
-                        Log.d(TAG, "Song not in queue, syncing queue from MediaController for: ${song.title}")
-                        mediaController?.let { controller ->
-                            val mediaItems = (0 until controller.mediaItemCount).map { index ->
-                                controller.getMediaItemAt(index)
-                            }
-                            val mediaItemSongs = mediaItems.mapNotNull { mediaItem ->
-                                resolveSongFromMediaItem(mediaItem)
-                            }
-                            
-                            if (mediaItemSongs.isNotEmpty()) {
-                                val currentMediaIndex = controller.currentMediaItemIndex
-                                _currentQueue.value = Queue(mediaItemSongs, currentMediaIndex.coerceAtLeast(0))
-                                
-                                // Save queue after sync
-                                saveQueueToPersistence()
-                                
-                                Log.d(TAG, "Synced queue with MediaController: ${mediaItemSongs.size} songs, index: $currentMediaIndex")
-                            }
-                        }
                     }
                     
                     // Fetch lyrics for the new song
@@ -4350,7 +4500,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             "wav" -> "audio/wav"
             "aac", "adts" -> "audio/aac"
             "ac3" -> "audio/ac3"
+            "eac", "eac3" -> "audio/eac3"
             "ac4" -> "audio/ac4"
+            "mhm", "mhm1" -> "audio/mhm1"
             "mid", "midi" -> "audio/midi"
             "ape" -> "audio/x-ape"
             "wv" -> "audio/x-wavpack"
@@ -6189,9 +6341,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             _currentSongRating.value = rating
         }
         
-        // If rating is set to >0, automatically add to favorites
-        // If rating is 0, this could mean unrating or just setting no favorite level
+        // Rating 1-5 means "liked": automatically add to favorites.
+        // Rating 0 means "disliked"/unrated: remove from favorites so the like doesn't linger.
         if (rating > 0 && !_favoriteSongs.value.contains(songId)) {
+            toggleFavorite(song)
+        } else if (rating == 0 && _favoriteSongs.value.contains(songId)) {
             toggleFavorite(song)
         }
         
@@ -8595,6 +8749,16 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         mediaController?.playbackParameters = androidx.media3.common.PlaybackParameters(speed, currentPitch)
     }
 
+    fun setDefaultPlaybackSpeed(speed: Float) {
+        Log.d(TAG, "Setting default playback speed to $speed")
+        appSettings.setDefaultPlaybackSpeed(speed)
+    }
+
+    fun setUseDefaultPlaybackSpeed(enabled: Boolean) {
+        Log.d(TAG, "Setting use default playback speed to $enabled")
+        appSettings.setUseDefaultPlaybackSpeed(enabled)
+    }
+
     // Playback Pitch Control
     fun setPlaybackPitch(pitch: Float) {
         Log.d(TAG, "Setting playback pitch to $pitch")
@@ -8856,8 +9020,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
 
+                // Resolve songs via an id -> song map so this stays O(n) even for large queues.
+                val songsById = _songs.value.associateBy { it.id }
                 val mediaItemSongs = mediaItems.mapNotNull { mediaItem ->
-                    _songs.value.find { it.id == mediaItem.mediaId } ?: mediaItemToTransientSong(mediaItem)
+                    songsById[mediaItem.mediaId] ?: mediaItemToTransientSong(mediaItem)
                 }
 
                 val currentMediaId = controller.currentMediaItem?.mediaId

@@ -175,7 +175,7 @@ object AudioFormatDetector {
             mime.contains("atmos", ignoreCase = true) -> "Dolby Atmos"
             mime.contains("mlp", ignoreCase = true) -> "TrueHD" // MLP is TrueHD
             mime.contains("ac4", ignoreCase = true) -> "AC-4"
-            mime.contains("eac3", ignoreCase = true) || mime.contains("ec-3", ignoreCase = true) -> "E-AC-3"
+            mime.contains("eac3", ignoreCase = true) || mime.contains("ec-3", ignoreCase = true) || mime.contains("eac", ignoreCase = true) -> "E-AC-3"
             mime.contains("ac3", ignoreCase = true) || mime.contains("ac-3", ignoreCase = true) -> "AC-3"
             // Enhanced DTS detection
             mime.contains("dts-x", ignoreCase = true) || mime.contains("dtsx", ignoreCase = true) -> "DTS:X"
@@ -192,7 +192,7 @@ object AudioFormatDetector {
             mime.contains("midi", ignoreCase = true) || mime.contains("mid", ignoreCase = true) -> "MIDI"
             mime.contains("mp2", ignoreCase = true) -> "MP2"
             mime.contains("amr", ignoreCase = true) -> "AMR"
-            mime.contains("mpegh", ignoreCase = true) || mime.contains("mpeg-h", ignoreCase = true) -> "MPEG-H"
+            mime.contains("mpegh", ignoreCase = true) || mime.contains("mpeg-h", ignoreCase = true) || mime.contains("mhm1", ignoreCase = true) -> "MPEG-H"
             mime.contains("lc3", ignoreCase = true) -> "LC3"
             mime.contains("celt", ignoreCase = true) -> "CELT"
             mime.contains("dra", ignoreCase = true) -> "DRA"
@@ -328,6 +328,9 @@ object AudioFormatDetector {
                 mime?.contains("mp4", ignoreCase = true) == true -> "AAC" // Could be ALAC in MP4 container
                 mime?.contains("mpeg", ignoreCase = true) == true -> "MP3"
                 mime?.contains("ogg", ignoreCase = true) == true -> "OGG Vorbis"
+                mime?.contains("eac3", ignoreCase = true) == true || mime?.contains("ec-3", ignoreCase = true) == true || mime?.contains("eac", ignoreCase = true) == true -> "E-AC-3"
+                mime?.contains("ac3", ignoreCase = true) == true || mime?.contains("ac-3", ignoreCase = true) == true -> "AC-3"
+                mime?.contains("mpegh", ignoreCase = true) == true || mime?.contains("mpeg-h", ignoreCase = true) == true || mime?.contains("mhm1", ignoreCase = true) == true -> "MPEG-H"
                 else -> "Unknown"
             }
             
