@@ -2241,10 +2241,11 @@ class MusicRepository(context: Context) {
     private suspend fun saveArtistsToRoom(artists: List<Artist>, groupByAlbumArtist: Boolean) = withContext(Dispatchers.IO) {
         try {
             val artistEntities = artists.map { artist ->
+                val resolvedUri = artist.artworkUri ?: findLocalArtistImage(artist.name)
                 ArtistEntity(
                     id = artist.id,
                     name = artist.name,
-                    artworkUri = artist.artworkUri?.toString(),
+                    artworkUri = resolvedUri?.toString(),
                     numberOfAlbums = artist.numberOfAlbums,
                     numberOfTracks = artist.numberOfTracks,
                     groupByAlbumArtist = groupByAlbumArtist
@@ -5812,7 +5813,11 @@ class MusicRepository(context: Context) {
     private fun findLocalArtistImage(artistName: String): Uri? {
         val fileName = "${artistName}.jpg".replace(Regex("[^a-zA-Z0-9._-]"), "_")
         val file = File(context.filesDir, "artist_images/$fileName")
-        return if (file.exists()) Uri.fromFile(file) else null
+        return if (file.exists()) {
+            Uri.fromFile(file).buildUpon().appendQueryParameter("t", file.lastModified().toString()).build()
+        } else {
+            null
+        }
     }
 
     /**
@@ -5904,6 +5909,78 @@ class MusicRepository(context: Context) {
             Log.d(TAG, "Saved artist image to local file: ${file.absolutePath}")
         } catch (e: Exception) {
             Log.e(TAG, "Error saving artist image to local file: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Saves custom artist artwork URI to local storage and database.
+     * If artworkUri is null, removes custom image and updates database.
+     */
+    suspend fun saveArtistArtwork(artistName: String, artworkUri: Uri?): Uri? = withContext(Dispatchers.IO) {
+        try {
+            val fileName = "${artistName}.jpg".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+            val imageDir = File(context.filesDir, "artist_images")
+            if (!imageDir.exists()) {
+                imageDir.mkdirs()
+            }
+            val file = File(imageDir, fileName)
+
+            if (artworkUri == null) {
+                if (file.exists()) {
+                    file.delete()
+                }
+                artistImageCache.remove(artistName)
+                roomDb.artistDao().updateArtworkForArtist(artistName, null)
+                null
+            } else {
+                context.contentResolver.openInputStream(artworkUri)?.use { inputStream ->
+                    file.outputStream().use { outputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+                val newUri = Uri.fromFile(file).buildUpon().appendQueryParameter("t", System.currentTimeMillis().toString()).build()
+                artistImageCache[artistName] = newUri
+                roomDb.artistDao().updateArtworkForArtist(artistName, newUri.toString())
+                newUri
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save artist artwork", e)
+            null
+        }
+    }
+
+    /**
+     * Saves custom playlist artwork URI to local storage and database.
+     * If artworkUri is null, removes custom image and updates database.
+     */
+    suspend fun savePlaylistArtwork(playlistId: String, artworkUri: Uri?): Uri? = withContext(Dispatchers.IO) {
+        try {
+            val fileName = "${playlistId}.jpg".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+            val imageDir = File(context.filesDir, "playlist_images")
+            if (!imageDir.exists()) {
+                imageDir.mkdirs()
+            }
+            val file = File(imageDir, fileName)
+
+            if (artworkUri == null) {
+                if (file.exists()) {
+                    file.delete()
+                }
+                playlistDao.updateArtworkForPlaylist(playlistId, null)
+                null
+            } else {
+                context.contentResolver.openInputStream(artworkUri)?.use { inputStream ->
+                    file.outputStream().use { outputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+                val newUri = Uri.fromFile(file).buildUpon().appendQueryParameter("t", System.currentTimeMillis().toString()).build()
+                playlistDao.updateArtworkForPlaylist(playlistId, newUri.toString())
+                newUri
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save playlist artwork", e)
+            null
         }
     }
     

@@ -38,6 +38,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import chromahub.rhythm.app.shared.presentation.components.dialogs.CustomizePlaylistImageDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -237,6 +238,34 @@ fun PlaylistDetailScreen(
     var showPlaylistSelector by remember { mutableStateOf(false) }
     var selectedSongForInfo by remember { mutableStateOf<Song?>(null) }
     var showSongInfo by remember { mutableStateOf(false) }
+
+    var currentArtworkUri by remember(playlist.id, playlist.artworkUri) {
+        mutableStateOf(playlist.artworkUri)
+    }
+    var showCustomizeImageDialog by remember { mutableStateOf(false) }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            musicViewModel.updatePlaylistArtwork(playlist.id, uri) {
+                currentArtworkUri = uri
+            }
+        }
+    }
+
+    if (showCustomizeImageDialog) {
+        CustomizePlaylistImageDialog(
+            playlistName = playlist.name,
+            onDismiss = { showCustomizeImageDialog = false },
+            onSelectImage = { imagePickerLauncher.launch("image/*") },
+            onResetImage = {
+                musicViewModel.updatePlaylistArtwork(playlist.id, null) {
+                    currentArtworkUri = null
+                }
+            }
+        )
+    }
     
     // Multi-select mode state
     var isMultiSelectMode by remember { mutableStateOf(false) }
@@ -1086,6 +1115,47 @@ fun PlaylistDetailScreen(
                         }
                     }
                     
+                    // Customize playlist image option
+                    Surface(
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    "Customize image",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            leadingIcon = {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                                    shape = CircleShape,
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = RhythmIcons.Image,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(6.dp)
+                                    )
+                                }
+                            },
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                showMenu = false
+                                showCustomizeImageDialog = true
+                            }
+                        )
+                    }
+
                     // Rename playlist option
                     if (!isDefault) {
                         Surface(
@@ -1379,36 +1449,80 @@ fun PlaylistDetailScreen(
 
                     // Playlist artwork
                     val playlistArtSize = 180.dp
-                    Surface(
-                        modifier = Modifier.size(playlistArtSize),
-                        shape = rememberExpressiveShapeFor(
-                            ExpressiveShapeTarget.PLAYLIST_ART,
-                            fallbackShape = RoundedCornerShape(32.dp)
-                        ),
-                        tonalElevation = 8.dp,
-                        shadowElevation = 0.dp
+                    Box(
+                        contentAlignment = Alignment.BottomEnd,
+                        modifier = Modifier.size(playlistArtSize)
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            if (playlist.artworkUri != null) {
-                                M3ImageUtils.PlaylistImage(
-                                    imageUrl = playlist.artworkUri,
-                                    playlistName = playlist.name,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            } else {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .then(
+                                    if (canEditPlaylist) {
+                                        Modifier.clickable {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            showCustomizeImageDialog = true
+                                        }
+                                    } else {
+                                        Modifier
+                                    }
+                                ),
+                            shape = rememberExpressiveShapeFor(
+                                ExpressiveShapeTarget.PLAYLIST_ART,
+                                fallbackShape = RoundedCornerShape(32.dp)
+                            ),
+                            tonalElevation = 8.dp,
+                            shadowElevation = 0.dp
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                if (currentArtworkUri != null) {
+                                    M3ImageUtils.PlaylistImage(
+                                        imageUrl = currentArtworkUri,
+                                        playlistName = playlist.name,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(
+                                                MaterialTheme.colorScheme.primaryContainer,
+                                                RoundedCornerShape(32.dp)
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.PlaylistFilled,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(90.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (canEditPlaylist) {
+                            Surface(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .padding(4.dp)
+                                    .clickable {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                        showCustomizeImageDialog = true
+                                    },
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                border = BorderStroke(2.dp, MaterialTheme.colorScheme.surface),
+                                shadowElevation = 4.dp
+                            ) {
                                 Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(
-                                            MaterialTheme.colorScheme.primaryContainer,
-                                            RoundedCornerShape(32.dp)
-                                        ),
-                                    contentAlignment = Alignment.Center
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxSize()
                                 ) {
                                     Icon(
-                                        imageVector = RhythmIcons.PlaylistFilled,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(90.dp)
+                                        imageVector = RhythmIcons.Edit,
+                                        contentDescription = "Edit Image",
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.size(16.dp)
                                     )
                                 }
                             }

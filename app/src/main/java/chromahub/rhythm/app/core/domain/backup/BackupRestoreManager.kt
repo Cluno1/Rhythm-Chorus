@@ -133,6 +133,42 @@ class BackupRestoreManager(
                     )
                 }
                 backupData["playlists_data"] = GsonUtils.gson.toJson(playlistModels)
+
+                // Backup custom artist images
+                val artistImages = mutableMapOf<String, String>()
+                val artistImagesDir = File(context.filesDir, "artist_images")
+                if (artistImagesDir.exists()) {
+                    artistImagesDir.listFiles()?.forEach { file ->
+                        if (file.isFile && file.name.endsWith(".jpg")) {
+                            try {
+                                val bytes = file.readBytes()
+                                val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                                artistImages[file.name] = base64
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Error encoding artist image ${file.name}", e)
+                            }
+                        }
+                    }
+                }
+                backupData["custom_artist_images"] = artistImages
+
+                // Backup custom playlist images
+                val playlistImages = mutableMapOf<String, String>()
+                val playlistImagesDir = File(context.filesDir, "playlist_images")
+                if (playlistImagesDir.exists()) {
+                    playlistImagesDir.listFiles()?.forEach { file ->
+                        if (file.isFile && file.name.endsWith(".jpg")) {
+                            try {
+                                val bytes = file.readBytes()
+                                val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                                playlistImages[file.name] = base64
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Error encoding playlist image ${file.name}", e)
+                            }
+                        }
+                    }
+                }
+                backupData["custom_playlist_images"] = playlistImages
             } catch (e: Exception) {
                 Log.e(TAG, "Error generating playlist snapshot for backup", e)
             }
@@ -240,6 +276,48 @@ class BackupRestoreManager(
                     val playlistListType = object : TypeToken<List<Playlist>>() {}.type
                     val restoredPlaylists: List<Playlist> = GsonUtils.gson.fromJson(playlistsData, playlistListType) ?: emptyList()
 
+                    // Restore custom artist images
+                    val customArtistImages = backupData["custom_artist_images"] as? Map<*, *>
+                    if (customArtistImages != null) {
+                        val artistImagesDir = File(context.filesDir, "artist_images")
+                        if (!artistImagesDir.exists()) {
+                            artistImagesDir.mkdirs()
+                        }
+                        customArtistImages.forEach { (nameKey, base64Value) ->
+                            val filename = nameKey as? String
+                            val base64 = base64Value as? String
+                            if (filename != null && base64 != null) {
+                                try {
+                                    val bytes = android.util.Base64.decode(base64, android.util.Base64.NO_WRAP)
+                                    File(artistImagesDir, filename).writeBytes(bytes)
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Error decoding artist image $filename", e)
+                                }
+                            }
+                        }
+                    }
+
+                    // Restore custom playlist images
+                    val customPlaylistImages = backupData["custom_playlist_images"] as? Map<*, *>
+                    if (customPlaylistImages != null) {
+                        val playlistImagesDir = File(context.filesDir, "playlist_images")
+                        if (!playlistImagesDir.exists()) {
+                            playlistImagesDir.mkdirs()
+                        }
+                        customPlaylistImages.forEach { (nameKey, base64Value) ->
+                            val filename = nameKey as? String
+                            val base64 = base64Value as? String
+                            if (filename != null && base64 != null) {
+                                try {
+                                    val bytes = android.util.Base64.decode(base64, android.util.Base64.NO_WRAP)
+                                    File(playlistImagesDir, filename).writeBytes(bytes)
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Error decoding playlist image $filename", e)
+                                }
+                            }
+                        }
+                    }
+
                     database.withTransaction {
                         database.playlistDao().deleteAllPlaylists()
                         database.playlistDao().deleteAllPlaylistSongs()
@@ -249,13 +327,23 @@ class BackupRestoreManager(
                         val playlistSongEntities = mutableListOf<PlaylistSongEntity>()
 
                         restoredPlaylists.forEach { playlist ->
+                            val entityArtworkUri = playlist.artworkUri?.toString()?.let { uriStr ->
+                                if (uriStr.startsWith("file://")) {
+                                    val fileName = uriStr.substringAfterLast("/")
+                                    val cleanFileName = fileName.substringBefore("?")
+                                    val query = if (uriStr.contains("?")) "?" + uriStr.substringAfter("?") else ""
+                                    "file://" + File(context.filesDir, "playlist_images/$cleanFileName").absolutePath + query
+                                } else {
+                                    uriStr
+                                }
+                            }
                             playlistEntities.add(
                                 PlaylistEntity(
                                     id = playlist.id,
                                     name = playlist.name,
                                     dateCreated = playlist.dateCreated,
                                     dateModified = playlist.dateModified,
-                                    artworkUri = playlist.artworkUri?.toString()
+                                    artworkUri = entityArtworkUri
                                 )
                             )
 

@@ -18,6 +18,9 @@ interface ArtistDao {
     @Query("SELECT * FROM artists WHERE groupByAlbumArtist = :groupByAlbumArtist ORDER BY name ASC")
     fun getArtistsPagingSource(groupByAlbumArtist: Boolean): androidx.paging.PagingSource<Int, ArtistEntity>
 
+    @Query("UPDATE artists SET artworkUri = :artworkUri WHERE name = :name")
+    suspend fun updateArtworkForArtist(name: String, artworkUri: String?)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(artists: List<ArtistEntity>)
 

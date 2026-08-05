@@ -20,6 +20,9 @@ interface PlaylistDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlaylist(playlist: PlaylistEntity)
 
+    @Query("UPDATE playlists SET artworkUri = :artworkUri WHERE id = :playlistId")
+    suspend fun updateArtworkForPlaylist(playlistId: String, artworkUri: String?)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlaylists(playlists: List<PlaylistEntity>)
 

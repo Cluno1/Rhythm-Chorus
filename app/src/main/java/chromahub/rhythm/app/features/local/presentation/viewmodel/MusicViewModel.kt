@@ -2711,6 +2711,44 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             Log.d(TAG, "Updated song metadata: ${updatedSong.title} by ${updatedSong.artist}")
         }
     }
+
+    /**
+     * Updates an artist's custom image/artwork
+     */
+    fun updateArtistArtwork(artist: Artist, newUri: Uri?, onComplete: () -> Unit = {}) {
+        viewModelScope.launch {
+            val updatedUri = repository.saveArtistArtwork(artist.name, newUri)
+            
+            // Now, update our in-memory list _artists
+            _artists.value = _artists.value.map { currentArtist ->
+                if (currentArtist.name == artist.name) {
+                    currentArtist.copy(artworkUri = updatedUri)
+                } else {
+                    currentArtist
+                }
+            }
+            onComplete()
+        }
+    }
+
+    /**
+     * Updates a playlist's custom image/artwork
+     */
+    fun updatePlaylistArtwork(playlistId: String, newUri: Uri?, onComplete: () -> Unit = {}) {
+        viewModelScope.launch {
+            val updatedUri = repository.savePlaylistArtwork(playlistId, newUri)
+            
+            // Now, update our in-memory list _playlists
+            _playlists.value = _playlists.value.map { currentPlaylist ->
+                if (currentPlaylist.id == playlistId) {
+                    currentPlaylist.copy(artworkUri = updatedUri)
+                } else {
+                    currentPlaylist
+                }
+            }
+            onComplete()
+        }
+    }
     
     /**
      * Saves metadata changes to the audio file and updates the UI

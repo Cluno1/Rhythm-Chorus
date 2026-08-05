@@ -2,6 +2,9 @@ package chromahub.rhythm.app.shared.presentation.components.bottomsheets
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import chromahub.rhythm.app.shared.presentation.components.dialogs.CustomizeArtistImageDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -90,6 +93,36 @@ fun ArtistBottomSheet(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val viewModel: MusicViewModel = viewModel()
+
+    var currentArtworkUri by remember(artist.id, artist.artworkUri) {
+        mutableStateOf(artist.artworkUri)
+    }
+    var showCustomizeImageDialog by remember { mutableStateOf(false) }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            viewModel.updateArtistArtwork(artist, uri) {
+                // The new URI is updated in ViewModel, which will trigger a reload.
+                // We also update the local state to show it instantly.
+                currentArtworkUri = uri
+            }
+        }
+    }
+
+    if (showCustomizeImageDialog) {
+        CustomizeArtistImageDialog(
+            artistName = artist.name,
+            onDismiss = { showCustomizeImageDialog = false },
+            onSelectImage = { imagePickerLauncher.launch("image/*") },
+            onResetImage = {
+                viewModel.updateArtistArtwork(artist, null) {
+                    currentArtworkUri = null
+                }
+            }
+        )
+    }
     val appSettings = remember { AppSettings.getInstance(context) }
     val groupByAlbumArtist by appSettings.groupByAlbumArtist.collectAsState()
     val artistSeparatorEnabled by appSettings.artistSeparatorEnabled.collectAsState()
@@ -202,20 +235,57 @@ fun ArtistBottomSheet(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            Card(
-                                modifier = Modifier.size(240.dp),
-                                shape = RoundedCornerShape(32.dp),
-                                elevation = CardDefaults.cardElevation(8.dp)
+                            Box(
+                                contentAlignment = Alignment.BottomEnd,
+                                modifier = Modifier.size(240.dp)
                             ) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(context)
-                                        .apply(ImageUtils.buildImageRequest(artist.artworkUri, artist.name, context.cacheDir, M3PlaceholderType.ARTIST))
-                                        .build(),
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            showCustomizeImageDialog = true
+                                        },
+                                    shape = RoundedCornerShape(32.dp),
+                                    elevation = CardDefaults.cardElevation(8.dp)
+                                ) {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(context)
+                                            .apply(ImageUtils.buildImageRequest(currentArtworkUri, artist.name, context.cacheDir, M3PlaceholderType.ARTIST))
+                                            .build(),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+
+                                Surface(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .padding(8.dp)
+                                        .clickable {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            showCustomizeImageDialog = true
+                                        },
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.surface),
+                                    shadowElevation = 4.dp
+                                ) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Edit,
+                                            contentDescription = "Edit Image",
+                                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
                             }
+
 
                             Spacer(modifier = Modifier.height(32.dp))
 
@@ -507,11 +577,11 @@ fun ArtistBottomSheet(
                             .height(390.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (artist.artworkUri != null) {
+                        if (currentArtworkUri != null) {
                             AsyncImage(
                                 model = ImageRequest.Builder(context)
                                     .apply(ImageUtils.buildImageRequest(
-                                        artist.artworkUri,
+                                        currentArtworkUri,
                                         artist.name,
                                         context.cacheDir,
                                         M3PlaceholderType.ARTIST
@@ -567,28 +637,64 @@ fun ArtistBottomSheet(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            Surface(
-                                modifier = Modifier.size(130.dp),
-                                shape = artistArtworkShape,
-                                border = BorderStroke(
-                                    width = 3.dp,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                ),
-                                shadowElevation = 12.dp
+                            Box(
+                                contentAlignment = Alignment.BottomEnd,
+                                modifier = Modifier.size(130.dp)
                             ) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(context)
-                                        .apply(ImageUtils.buildImageRequest(
-                                            artist.artworkUri,
-                                            artist.name,
-                                            context.cacheDir,
-                                            M3PlaceholderType.ARTIST
-                                        ))
-                                        .build(),
-                                    contentDescription = artist.name,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            showCustomizeImageDialog = true
+                                        },
+                                    shape = artistArtworkShape,
+                                    border = BorderStroke(
+                                        width = 3.dp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                    ),
+                                    shadowElevation = 12.dp
+                                ) {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(context)
+                                            .apply(ImageUtils.buildImageRequest(
+                                                currentArtworkUri,
+                                                artist.name,
+                                                context.cacheDir,
+                                                M3PlaceholderType.ARTIST
+                                            ))
+                                            .build(),
+                                        contentDescription = artist.name,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+
+                                Surface(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .padding(2.dp)
+                                        .clickable {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            showCustomizeImageDialog = true
+                                        },
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.surface),
+                                    shadowElevation = 4.dp
+                                ) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Edit,
+                                            contentDescription = "Edit Image",
+                                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))

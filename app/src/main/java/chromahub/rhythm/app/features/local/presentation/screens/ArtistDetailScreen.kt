@@ -4,6 +4,9 @@ package chromahub.rhythm.app.features.local.presentation.screens
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import chromahub.rhythm.app.shared.presentation.components.dialogs.CustomizeArtistImageDialog
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -139,10 +142,38 @@ fun ArtistDetailScreen(
     val allAlbums by viewModel.albums.collectAsState()
     val allArtists by viewModel.artists.collectAsState()
     
-    // Find the artist
     val artist = remember(allArtists, artistName, artistOverride) {
         artistOverride ?: allArtists.find { it.name == artistName }
     }
+
+    var currentArtworkUri by remember(artist?.id, artist?.artworkUri) {
+        mutableStateOf(artist?.artworkUri)
+    }
+    var showCustomizeImageDialog by remember { mutableStateOf(false) }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null && artist != null) {
+            viewModel.updateArtistArtwork(artist, uri) {
+                currentArtworkUri = uri
+            }
+        }
+    }
+
+    if (showCustomizeImageDialog && artist != null) {
+        CustomizeArtistImageDialog(
+            artistName = artist.name,
+            onDismiss = { showCustomizeImageDialog = false },
+            onSelectImage = { imagePickerLauncher.launch("image/*") },
+            onResetImage = {
+                viewModel.updateArtistArtwork(artist, null) {
+                    currentArtworkUri = null
+                }
+            }
+        )
+    }
+
 
     val artistContent by produceState<ArtistDetailContent?>(
         initialValue = if (songsOverride != null && albumsOverride != null) {
@@ -251,7 +282,7 @@ fun ArtistDetailScreen(
 
     val totalDuration = remember(rawArtistSongs) { rawArtistSongs.sumOf { it.duration } }
     val artistArtworkSource by appSettings.artistArtworkSource.collectAsState()
-    val displayArtworkUri = if (artistArtworkSource == ArtistArtworkSource.DISABLED) null else artist?.artworkUri
+    val displayArtworkUri = if (artistArtworkSource == ArtistArtworkSource.DISABLED) null else currentArtworkUri
     val backgroundColor = MaterialTheme.colorScheme.background
 
     if (isLandscapeTablet) {
@@ -393,26 +424,62 @@ fun ArtistDetailScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                Surface(
-                                    modifier = Modifier.size(280.dp),
-                                    shape = RoundedCornerShape(32.dp),
-                                    shadowElevation = 12.dp
+                                Box(
+                                    contentAlignment = Alignment.BottomEnd,
+                                    modifier = Modifier.size(280.dp)
                                 ) {
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(context)
-                                            .apply(
-                                                ImageUtils.buildImageRequest(
-                                                    artist?.artworkUri,
-                                                    artistName,
-                                                    context.cacheDir,
-                                                    M3PlaceholderType.ARTIST
+                                    Surface(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clickable {
+                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                                showCustomizeImageDialog = true
+                                            },
+                                        shape = RoundedCornerShape(32.dp),
+                                        shadowElevation = 12.dp
+                                    ) {
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(context)
+                                                .apply(
+                                                    ImageUtils.buildImageRequest(
+                                                        displayArtworkUri,
+                                                        artistName,
+                                                        context.cacheDir,
+                                                        M3PlaceholderType.ARTIST
+                                                    )
                                                 )
+                                                .build(),
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+
+                                    Surface(
+                                        modifier = Modifier
+                                            .size(44.dp)
+                                            .padding(8.dp)
+                                            .clickable {
+                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                                showCustomizeImageDialog = true
+                                            },
+                                        shape = CircleShape,
+                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.surface),
+                                        shadowElevation = 4.dp
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier.fillMaxSize()
+                                        ) {
+                                            Icon(
+                                                imageVector = RhythmIcons.Edit,
+                                                contentDescription = "Edit Image",
+                                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                modifier = Modifier.size(18.dp)
                                             )
-                                            .build(),
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
+                                        }
+                                    }
                                 }
 
                                 Spacer(modifier = Modifier.height(28.dp))
@@ -778,6 +845,26 @@ fun ArtistDetailScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(end = 12.dp)
                                 ) {
+                                    FilledIconButton(
+                                        onClick = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                            showCustomizeImageDialog = true
+                                        },
+                                        modifier = Modifier.size(40.dp),
+                                        colors = IconButtonDefaults.filledIconButtonColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                            contentColor = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Edit,
+                                            contentDescription = "Customize Artwork",
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
                                     Box {
                                         FilledIconButton(
                                             onClick = { showSortMenu = true },
