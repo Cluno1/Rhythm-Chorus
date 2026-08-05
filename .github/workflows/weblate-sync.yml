@@ -54,7 +54,7 @@ jobs:
           done
           echo "No open Weblate PR found."
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Lock Weblate — Strings component
         env:
