@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm 音樂</string>
     <string name="media3_notification_channel_description">媒體播放控制</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm 音樂小工具 - 使用支援 2x1 至 5x5 網格尺寸的響應式佈局控制播放</string>
     <string name="widget_description_glance">Rhythm 音樂 - 透過 9 種響應式版面、Material 3 設計與即時狀態更新控制播放</string>
     <string name="widget_name_glance">Rhythm 音樂</string>
     <string name="no_song_playing">沒有播放歌曲</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">小工具</string>
     <string name="settings_widget_desc">主螢幕小工具</string>
     <string name="widget_show_album_art">顯示專輯封面</string>
-    <string name="widget_show_album_art_desc">在小工具中顯示專輯封面</string>
     <string name="widget_show_artist">顯示藝人名</string>
     <string name="widget_show_artist_desc">顯示藝人資訊</string>
     <string name="widget_show_album">顯示專輯名稱</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">動態色彩（Material You）</string>
-    <string name="onboarding_dynamic_colors_desc">應用從裝置桌布中提取的顏色，打造統一的外觀。</string>
     <string name="onboarding_player_theme_title">播放與迷你播放器主題</string>
     <string name="onboarding_player_theme_desc">個人化您的播放介面。在乾淨、現代的 Rhythm 設計或充滿活力、流暢、富有表現力的設計之間切換。</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">啟動器小工具</string>
     <string name="onboarding_widgets_desc">將 Rhythm 小工具新增至您的啟動器以快速控制音樂。自訂顯示的資訊以及小工具的外觀。</string>
-    <string name="onboarding_widget_album_art">顯示專輯封面</string>
-    <string name="onboarding_widget_album_art_desc">在小工具中顯示專輯封面</string>
     <string name="onboarding_widget_artist">顯示藝人名</string>
     <string name="onboarding_widget_artist_desc">在小部件中顯示目前藝人</string>
     <string name="onboarding_widget_album">顯示專輯名稱</string>
     <string name="onboarding_widget_album_desc">在小工具中顯示專輯標題</string>
     <string name="onboarding_widgets_tips_title">小工具提示</string>
-    <string name="onboarding_widget_tip_1">點擊小工具以開啟應用程式</string>
-    <string name="onboarding_widget_tip_2">調整不同版面的小工具大小（2x1 到 5x5）</string>
-    <string name="onboarding_widget_tip_3">播放時小工具即時更新</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">連結您的服務</string>
     <string name="onboarding_integrations_desc">透過連結外部服務來增強您的聆聽體驗。取得專輯封面、歌詞，記錄您的戲劇，並分享您正在聽的內容。</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">探索您的音樂習慣。透過精美的視覺化效果追蹤您的收聽時間、最常播放歌曲、最喜歡的藝人等。</string>
     <string name="onboarding_stats_show_home">顯示主頁統計資料</string>
     <string name="onboarding_stats_show_home_desc">在主畫面上顯示聆聽統計小工具</string>
-    <string name="onboarding_stats_rating">啟用歌曲評級</string>
-    <string name="onboarding_stats_rating_desc">對您的歌曲進行評分以追蹤收藏並建立智慧播放清單</string>
     <string name="onboarding_stats_features_title">統計特徵</string>
     <string name="onboarding_stats_feature_1">按天、週或月追蹤總收聽時間</string>
     <string name="onboarding_stats_feature_2">看看您最常播放的歌曲</string>
@@ -2092,8 +2081,8 @@
     <string name="streamingsettingsscreen_streaming_restricted">串流媒體限制</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">無法播放下一個：無法解析 URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">新增到佇列失敗：無法解析 URL</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">1×2 垂直小工具</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">3×2 中型小工具</string>
+    <string name="rhythmwidgetpreview_str_12_vertical_widget">1×2 垂直小工具</string>
+    <string name="rhythmwidgetpreview_str_32_medium_widget">3×2 中型小工具</string>
     <string name="rhythmmusicwidget_album_art_placeholder">專輯封面圖佔位符</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance 小工具預覽</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 緊湊小部件</string>
@@ -2254,9 +2243,6 @@
     <string name="widgetsettingsscreen_widget_settings">小工具設定</string>
     <string name="widgetsettingsscreen_show_favorite_button">顯示收藏匣按鈕</string>
     <string name="widgetsettingsscreen_widget_theme">小工具主題</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm 使用 Material 3 Expressive 設計和動態色彩設計</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">小至 1x1 的播放鍵，大至 5x5+ 大版面，小工具的版面彈性十足</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">長按並調整大小以改變佈局</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">僅 Glance 小工具</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">個人化主螢幕小工具</string>
     <string name="festivesplashgreeting_merry_christmas">聖誕快樂！</string>

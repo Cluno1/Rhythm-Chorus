@@ -466,35 +466,16 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 return
             }
 
-            // Identify all song IDs currently in the Liked playlist
-            val likedPlaylist = _playlists.value.find { it.id == "1" }
-            val playlistSongIds = likedPlaylist?.songs?.map { it.id }?.toSet() ?: emptySet()
-
-            // Any song in the Liked playlist that is not in favoriteIds should be marked as liked
-            val unlikedSongsInPlaylist = playlistSongIds.filter { !favoriteIds.contains(it) }
-
-            val finalFavoriteIds = if (unlikedSongsInPlaylist.isNotEmpty()) {
-                val updatedFavorites = favoriteIds + unlikedSongsInPlaylist
-                withContext(Dispatchers.Main) {
-                    _favoriteSongs.value = updatedFavorites
-                    _currentSong.value?.let { song ->
-                        if (updatedFavorites.contains(song.id)) {
-                            _isFavorite.value = true
-                        }
-                    }
-                }
-                saveFavoriteSongs()
-                notifyMediaServiceFavoriteChange()
-                updatedFavorites
-            } else {
-                favoriteIds
-            }
+            // Sync direction is favorites -> playlist only. Songs that were unliked (disliked)
+            // must never be re-added to favorites just because they are still listed in the
+            // Liked playlist — that would make the like reappear right after disliking.
+            val finalFavoriteIds = favoriteIds
 
             // Update the Liked playlist directory without losing existing custom song order
             _playlists.value = _playlists.value.map { playlist ->
                 if (playlist.id == "1") {
-                    // 1. Keep all existing songs
-                    val existingSongsToKeep = playlist.songs
+                    // 1. Keep existing songs that are still favorites (preserves custom order)
+                    val existingSongsToKeep = playlist.songs.filter { it.id in favoriteIds }
                     
                     // 2. Find any new favorites that are NOT in the playlist yet
                     val existingIds = existingSongsToKeep.map { it.id }.toSet()
@@ -6360,9 +6341,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             _currentSongRating.value = rating
         }
         
-        // If rating is set to >0, automatically add to favorites
-        // If rating is 0, this could mean unrating or just setting no favorite level
+        // Rating 1-5 means "liked": automatically add to favorites.
+        // Rating 0 means "disliked"/unrated: remove from favorites so the like doesn't linger.
         if (rating > 0 && !_favoriteSongs.value.contains(songId)) {
+            toggleFavorite(song)
+        } else if (rating == 0 && _favoriteSongs.value.contains(songId)) {
             toggleFavorite(song)
         }
         

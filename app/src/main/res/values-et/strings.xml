@@ -18,7 +18,6 @@
     <string name="settings_widget">Vidin</string>
     <string name="settings_widget_desc">Avalehe vidinad</string>
     <string name="widget_show_album_art">Näita kaanepilte</string>
-    <string name="widget_show_album_art_desc">Näita vidinas albumi kaanepilti</string>
     <string name="widget_show_artist">Näita esitaja nime</string>
     <string name="widget_show_artist_desc">Kuva esitaja teavet</string>
     <string name="widget_show_album">Näita albumi nime</string>

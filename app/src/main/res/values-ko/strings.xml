@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm 음악</string>
     <string name="media3_notification_channel_description">미디어 재생 컨트롤</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm 음악 위젯 - 2x1~5x5 그리드 크기를 지원하는 반응형 레이아웃으로 재생 제어</string>
     <string name="widget_description_glance">Rhythm 음악 - 9개의 반응형 레이아웃, Material 3개의 디자인 및 실시간 상태 업데이트로 재생 제어</string>
     <string name="widget_name_glance">Rhythm 음악</string>
     <string name="no_song_playing">노래가 재생되지 않습니다</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">위젯</string>
     <string name="settings_widget_desc">홈 화면 위젯</string>
     <string name="widget_show_album_art">앨범 아트 표시</string>
-    <string name="widget_show_album_art_desc">위젯에 앨범 아트 표시</string>
     <string name="widget_show_artist">아티스트 이름 표시</string>
     <string name="widget_show_artist_desc">아티스트 정보 표시</string>
     <string name="widget_show_album">앨범 이름 표시</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">동적 색상 (Material 귀하)</string>
-    <string name="onboarding_dynamic_colors_desc">응집력 있는 모습을 위해 기기의 배경화면에서 추출한 색상을 적용하세요.</string>
     <string name="onboarding_player_theme_title">재생 및 미니 플레이어 테마</string>
     <string name="onboarding_player_theme_desc">재생 인터페이스를 개인화하십시오. 깨끗하고 현대적인 Rhythm 디자인과 생동감 있고 유동적인 표현 디자인 사이를 전환하세요.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">런처 위젯</string>
     <string name="onboarding_widgets_desc">빠른 음악 제어를 위해 실행기에 Rhythm 위젯을 추가하세요. 표시되는 정보와 위젯 모양을 사용자 정의합니다.</string>
-    <string name="onboarding_widget_album_art">앨범 아트 표시</string>
-    <string name="onboarding_widget_album_art_desc">위젯에 앨범 아트 표시</string>
     <string name="onboarding_widget_artist">아티스트 이름 표시</string>
     <string name="onboarding_widget_artist_desc">위젯에 현재 아티스트 표시</string>
     <string name="onboarding_widget_album">앨범 이름 표시</string>
     <string name="onboarding_widget_album_desc">위젯에 앨범 제목 표시</string>
     <string name="onboarding_widgets_tips_title">위젯 팁</string>
-    <string name="onboarding_widget_tip_1">위젯을 탭하여 앱을 엽니다.</string>
-    <string name="onboarding_widget_tip_2">다양한 레이아웃에 맞게 위젯 크기 조정(2x1 ~ 5x5)</string>
-    <string name="onboarding_widget_tip_3">재생 중 위젯이 실시간으로 업데이트됩니다.</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">서비스 연결</string>
     <string name="onboarding_integrations_desc">외부 서비스에 연결하여 청취 경험을 향상하세요. 앨범 아트, 가사를 확인하고, 플레이 내용을 스크러블하고, 듣고 있는 내용을 공유하세요.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">당신의 음악 습관에 대한 통찰력을 발견하세요. 아름다운 시각화를 통해 청취 시간, 가장 많이 재생한 노래, 좋아하는 아티스트 등을 추적하세요.</string>
     <string name="onboarding_stats_show_home">홈에 통계 표시</string>
     <string name="onboarding_stats_show_home_desc">홈 화면에 청취 통계 위젯 표시</string>
-    <string name="onboarding_stats_rating">노래 평가 활성화</string>
-    <string name="onboarding_stats_rating_desc">노래를 평가하여 즐겨찾기를 추적하고 스마트 재생 목록을 만드세요.</string>
     <string name="onboarding_stats_features_title">통계 기능</string>
     <string name="onboarding_stats_feature_1">일별, 주별, 월별 총 청취 시간 추적</string>
     <string name="onboarding_stats_feature_2">가장 많이 재생된 노래 보기</string>
@@ -2092,8 +2081,8 @@
     <string name="streamingsettingsscreen_streaming_restricted">스트리밍 제한됨</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">다음 재생 실패: URL을 확인할 수 없습니다.</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">대기열에 추가하지 못했습니다. URL을 확인할 수 없습니다.</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">1×2 수직 위젯</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">3×2 중형 위젯</string>
+    <string name="rhythmwidgetpreview_str_12_vertical_widget">1×2 수직 위젯</string>
+    <string name="rhythmwidgetpreview_str_32_medium_widget">3×2 중형 위젯</string>
     <string name="rhythmmusicwidget_album_art_placeholder">앨범 아트 자리 표시자</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance 위젯 미리보기</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 컴팩트 위젯</string>
@@ -2254,9 +2243,6 @@
     <string name="widgetsettingsscreen_widget_settings">위젯 설정</string>
     <string name="widgetsettingsscreen_show_favorite_button">즐겨찾기 버튼 표시</string>
     <string name="widgetsettingsscreen_widget_theme">위젯 테마</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm은 Material 3 동적 색상이 포함된 표현적인 디자인을 사용합니다.</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">위젯은 1x1 재생 버튼에서 5x5+ 전체 레이아웃으로 조정됩니다.</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">다양한 표현 레이아웃을 위한 길게 누르기 및 크기 조정</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Glance 위젯에만 적용됩니다.</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">홈 화면 위젯을 개인화하세요</string>
     <string name="festivesplashgreeting_merry_christmas">메리 크리스마스!</string>

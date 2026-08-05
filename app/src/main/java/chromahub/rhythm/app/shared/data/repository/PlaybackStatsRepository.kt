@@ -229,6 +229,7 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
         val timeline: List<TimelineEntry>,
         val activeDays: Int,
         val longestStreakDays: Int,
+        val currentStreakDays: Int,
         val totalSessions: Int,
         val averageSessionDurationMs: Long,
         val longestSessionDurationMs: Long,
@@ -531,6 +532,11 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
             timeline = timeline,
             activeDays = activeDays,
             longestStreakDays = longestStreak,
+            currentStreakDays = run {
+                val today = LocalDate.now(zoneId)
+                val yesterday = today.minusDays(1)
+                if (lastDay == today || lastDay == yesterday) currentStreak else 0
+            },
             totalSessions = totalSessions,
             averageSessionDurationMs = averageSessionDuration,
             longestSessionDurationMs = longestSessionDuration,

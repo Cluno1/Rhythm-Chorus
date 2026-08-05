@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm Müzik</string>
     <string name="media3_notification_channel_description">Medya oynatma kontrolleri</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm Müzik Widget\'ı - 2x1 ila 5x5 ızgara boyutlarını destekleyen duyarlı düzenlerle Oynatmayı Kontrol Edin</string>
     <string name="widget_description_glance">Rhythm Müzik - 9 duyarlı düzen, Material 3 tasarım ve gerçek zamanlı durum güncellemeleriyle Oynatmayı Kontrol Edin</string>
     <string name="widget_name_glance">Rhythm Müzik</string>
     <string name="no_song_playing">Şarkı çalmıyor</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">Widget</string>
     <string name="settings_widget_desc">Ana ekran widget\'ları</string>
     <string name="widget_show_album_art">Albüm Kapağını Göster</string>
-    <string name="widget_show_album_art_desc">Widget\'ta albüm resmini görüntüle</string>
     <string name="widget_show_artist">Sanatçı Adını Göster</string>
     <string name="widget_show_artist_desc">Sanatçı bilgilerini görüntüle</string>
     <string name="widget_show_album">Albüm Adını Göster</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">Dinamik Renkler (Material Siz)</string>
-    <string name="onboarding_dynamic_colors_desc">Uyumlu bir görünüm için cihazınızın duvar kağıdından alınan renkleri uygulayın.</string>
     <string name="onboarding_player_theme_title">Oynatma ve Mini Oynatıcı Temaları</string>
     <string name="onboarding_player_theme_desc">Oynatma arayüzlerinizi kişiselleştirin. Temiz, modern Rhythm tasarımı ile canlı, akıcı Etkileyici tasarım arasında geçiş yapın.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">Başlatıcı Widget\'ları</string>
     <string name="onboarding_widgets_desc">Hızlı müzik kontrolü için başlatıcınıza Rhythm widget\'larını ekleyin. Hangi bilgilerin görüntüleneceğini ve widget\'ın nasıl görüneceğini özelleştirin.</string>
-    <string name="onboarding_widget_album_art">Albüm Kapağını Göster</string>
-    <string name="onboarding_widget_album_art_desc">Widget\'ta albüm resmini görüntüle</string>
     <string name="onboarding_widget_artist">Sanatçı Adını Göster</string>
     <string name="onboarding_widget_artist_desc">Widget\'ta mevcut sanatçıyı görüntüle</string>
     <string name="onboarding_widget_album">Albüm Adını Göster</string>
     <string name="onboarding_widget_album_desc">Widget\'ta albüm başlığını görüntüleyin</string>
     <string name="onboarding_widgets_tips_title">Widget İpuçları</string>
-    <string name="onboarding_widget_tip_1">Uygulamayı açmak için widget\'a dokunun</string>
-    <string name="onboarding_widget_tip_2">Widget\'ları farklı düzenler için yeniden boyutlandırın (2x1 - 5x5)</string>
-    <string name="onboarding_widget_tip_3">Widget\'lar oynatma sırasında gerçek zamanlı olarak güncellenir</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">Hizmetlerinizi Bağlayın</string>
     <string name="onboarding_integrations_desc">Harici hizmetlere bağlanarak dinleme deneyiminizi geliştirin. Albüm resmini, şarkı sözlerini alın, oyunlarınızı scrobble yapın ve dinlediklerinizi paylaşın.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">Müzik alışkanlıklarınızla ilgili bilgileri keşfedin. Güzel görselleştirmelerle dinleme sürenizi, en çok çalınan şarkıları, favori sanatçıları ve daha fazlasını takip edin.</string>
     <string name="onboarding_stats_show_home">İstatistikleri Ana Sayfada Göster</string>
     <string name="onboarding_stats_show_home_desc">Ana ekranınızda bir dinleme istatistikleri widget\'ı görüntüleyin</string>
-    <string name="onboarding_stats_rating">Şarkı Derecelendirmelerini Etkinleştir</string>
-    <string name="onboarding_stats_rating_desc">Favorilerinizi takip etmek ve akıllı çalma listeleri oluşturmak için şarkılarınızı derecelendirin</string>
     <string name="onboarding_stats_features_title">İstatistik Özellikleri</string>
     <string name="onboarding_stats_feature_1">Toplam dinleme süresini güne, haftaya veya aya göre takip edin</string>
     <string name="onboarding_stats_feature_2">En çok çalınan şarkılarınızı görün</string>
@@ -2092,8 +2081,8 @@
     <string name="streamingsettingsscreen_streaming_restricted">Akış Kısıtlı</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">Sonraki oynatılamadı: URL çözümlenemiyor</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">Kuyruğa eklenemedi: URL çözümlenemiyor</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">1×2 Dikey Widget</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">3×2 Orta Widget</string>
+    <string name="rhythmwidgetpreview_str_12_vertical_widget">1×2 Dikey Widget</string>
+    <string name="rhythmwidgetpreview_str_32_medium_widget">3×2 Orta Widget</string>
     <string name="rhythmmusicwidget_album_art_placeholder">Albüm Kapağı Yer Tutucusu</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance Widget Önizlemeleri</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 Kompakt Widget</string>
@@ -2254,9 +2243,6 @@
     <string name="widgetsettingsscreen_widget_settings">Widget Ayarları</string>
     <string name="widgetsettingsscreen_show_favorite_button">Favori Düğmesini Göster</string>
     <string name="widgetsettingsscreen_widget_theme">Widget Teması</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm, dinamik renklere sahip Material 3 Etkileyici tasarımı kullanır</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">Widget, 1x1 oynatma düğmesinden 5x5+ tam düzene uyarlanır</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">Farklı ifade düzenleri için uzun basın ve yeniden boyutlandırın</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Yalnızca Glance widget\'ları için geçerlidir</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">Ana ekran widget\'larını kişiselleştirin</string>
     <string name="festivesplashgreeting_merry_christmas">Mutlu Noeller!</string>

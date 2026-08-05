@@ -116,6 +116,34 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/lyric_widget" />
         </receiver>
+
+        <!-- Rhythm Cookie Widget -->
+        <receiver
+            android:name=".infrastructure.widget.glance.RhythmCookieWidgetReceiver"
+            android:exported="true"
+            android:label="Rhythm Cookie"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/rhythm_cookie_widget_info" />
+        </receiver>
+
+        <!-- Rhythm Stats Widget -->
+        <receiver
+            android:name=".infrastructure.widget.glance.RhythmStatsWidgetReceiver"
+            android:exported="true"
+            android:label="Rhythm Stats"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/rhythm_stats_widget_info" />
+        </receiver>
         
         <service
             android:name=".infrastructure.service.MediaPlaybackService"

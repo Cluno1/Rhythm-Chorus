@@ -247,8 +247,8 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                 )
             }
 
-            // Player Controls Section
-            item {
+            // Player Controls Section — only shown for Rhythm (Material) theme; Expressive has no chips
+            if (!isExpressiveActive) item {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = context.getString(R.string.settings_player_controls),
@@ -273,7 +273,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                 )
             }
 
-            // Display Options Section
+
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
@@ -561,97 +561,17 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
     }
 
     if (showTextAlignmentSheet) {
-        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-
-        ModalBottomSheet(
-            onDismissRequest = { showTextAlignmentSheet = false },
-            sheetState = sheetState,
-            dragHandle = {
-                BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+        PlayerTextAlignmentBottomSheet(
+            currentAlignment = playerTextAlignment,
+            onAlignmentSelected = { value ->
+                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                appSettings.setPlayerTextAlignment(value)
+                showTextAlignmentSheet = false
             },
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_player_text_alignment),
-                    style = MaterialTheme.typography.displayMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                listOf(
-                    Triple("START", "Left", MaterialSymbolIcon("align_horizontal_left", filled = true)),
-                    Triple("CENTER", "Center", MaterialSymbolIcon("format_align_center")),
-                    Triple("END", "Right", MaterialSymbolIcon("align_horizontal_right", filled = true))
-                ).forEach { (value, label, icon) ->
-                    val isSelected = playerTextAlignment == value
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected)
-                                MaterialTheme.colorScheme.primaryContainer
-                            else
-                                MaterialTheme.colorScheme.surfaceContainerHigh
-                        ),
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                            appSettings.setPlayerTextAlignment(value)
-                            showTextAlignmentSheet = false
-                        }
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = label,
-                                tint = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                else
-                                    MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            if (isSelected) {
-                                Icon(
-                                    imageVector = RhythmIcons.Check,
-                                    contentDescription = stringResource(R.string.streaming_selected),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
+            onDismiss = { showTextAlignmentSheet = false },
+            context = context,
+            haptics = haptics
+        )
     }
 
     // Player Progress Style Bottom Sheet
@@ -1395,6 +1315,108 @@ fun ThumbStyleBottomSheet(
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+/**
+ * Bottom sheet for choosing player text alignment (shared with the onboarding tour).
+ */
+@Composable
+fun PlayerTextAlignmentBottomSheet(
+    currentAlignment: String,
+    onAlignmentSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
+    context: Context,
+    haptics: HapticFeedback
+) {
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        dragHandle = {
+            BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+        },
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.settings_player_text_alignment),
+                style = MaterialTheme.typography.displayMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            listOf(
+                Triple("START", "Left", MaterialSymbolIcon("align_horizontal_left", filled = true)),
+                Triple("CENTER", "Center", MaterialSymbolIcon("format_align_center")),
+                Triple("END", "Right", MaterialSymbolIcon("align_horizontal_right", filled = true))
+            ).forEach { (value, label, icon) ->
+                val isSelected = currentAlignment == value
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isSelected)
+                            MaterialTheme.colorScheme.primaryContainer
+                        else
+                            MaterialTheme.colorScheme.surfaceContainerHigh
+                    ),
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                        onAlignmentSelected(value)
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = label,
+                            tint = if (isSelected)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else
+                                MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (isSelected)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else
+                                MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        if (isSelected) {
+                            Icon(
+                                imageVector = RhythmIcons.Check,
+                                contentDescription = stringResource(R.string.streaming_selected),
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
                 }

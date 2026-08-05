@@ -9,9 +9,7 @@
     <string name="search">Search</string>
     <string name="settings">Settings</string>
 <string name="media3_notification_channel_name">Rhythm Now Playing</string>
-    <string name="media3_notification_channel_description">Foreground playback controls, seek actions, and album artwork</string>
-<string name="widget_description">Rhythm Music Widget - Control Playback with responsive layouts supporting 2x1 to 5x5 grid sizes</string>
-    <string name="widget_description_glance">Rhythm Music - Control Playback with 9 responsive layouts, Material 3 design, and real-time state updates</string>
+    <string name="media3_notification_channel_description">Foreground playback controls, seek actions, and album artwork</string>    <string name="widget_description_glance">See what\'s playing and control your music from your home screen — play, pause, skip, and more.</string>
     <string name="widget_name_glance">Rhythm Music</string>
     <string name="no_song_playing">No song playing</string>
     <string name="unknown_artist">Unknown artist</string>
@@ -23,7 +21,6 @@
 <string name="settings_widget">Widget</string>
     <string name="settings_widget_desc">Home screen widgets</string>
     <string name="widget_show_album_art">Show Album Art</string>
-    <string name="widget_show_album_art_desc">Display album artwork in widget</string>
     <string name="widget_show_artist">Show Artist Name</string>
     <string name="widget_show_artist_desc">Display artist information</string>
     <string name="widget_show_album">Show Album Name</string>
@@ -32,6 +29,9 @@
     <string name="widget_corner_radius">Corner Radius</string>
     <string name="widget_auto_update">Auto Update</string>
     <string name="widget_tip_controls">Tap the widget to open the app, buttons control playback</string>
+    <string name="widget_tip_cookie_corners">Pick what the cookie widget\'s bottom corners do — skip, shuffle, repeat, favorite, or hide them</string>
+    <string name="widget_tip_stats_widget">Choose the time range and bottom badge shown by the stats widget</string>
+    <string name="widget_tip_resize_settings">Long-press a widget to resize or open its settings</string>
 <string name="cd_navigate">Navigate</string>
 <string name="settings_notifications">Notifications</string>
     <string name="settings_notifications_playback_group">Media &amp; Playback</string>
@@ -467,7 +467,7 @@
     <string name="onboarding_library_3">Advanced display and sorting options available in Settings > Library Settings</string>
     <string name="onboarding_library_4">Default playlists (Recently Added, Most Played) can be toggled in Settings > Playlists</string>
     <string name="onboarding_theme_title">Make Rhythm Yours</string>
-    <string name="onboarding_theme_desc">Personalize Rhythm\'s appearance to match your style. Choose your system theme, font, or Material You dynamic colors (Android 12+).</string>
+    <string name="onboarding_theme_desc">Personalize Rhythm\'s appearance to match your style. Pick where colors come from, choose a color scheme, or switch the font.</string>
     <string name="onboarding_live_preview">Live Preview</string>
     <string name="onboarding_more_tuner">More Customization in Settings</string>
     <string name="onboarding_tuner_1">Custom color schemes and album art color extraction</string>
@@ -541,10 +541,8 @@
     <string name="onboarding_lyrics_source_title">Lyrics Source Priority</string>
     <string name="onboarding_lyrics_source_desc">Choose which lyrics source to try first (with automatic fallback to others)</string>
 
-<string name="onboarding_dynamic_colors_title">Dynamic Colors (Material You)</string>
-    <string name="onboarding_dynamic_colors_desc">Apply colors extracted from your device\'s wallpaper for a cohesive look.</string>
     <string name="onboarding_player_theme_title">Playback &amp; Mini Player Themes</string>
-    <string name="onboarding_player_theme_desc">Personalize your playback interfaces. Toggle between the clean, modern Rhythm design or the vibrant, fluid Expressive design.</string>
+    <string name="onboarding_player_theme_desc">Personalize playback and the mini player. Pick the clean Rhythm design or the vibrant Expressive design, then fine-tune controls, layout, and progress styling.</string>
 <string name="onboarding_update_check_failed">Update Check Failed</string>
     <string name="onboarding_ready_to_install">Ready to Install</string>
     <string name="onboarding_downloading_update">Downloading Update</string>
@@ -600,17 +598,12 @@
     <string name="onboarding_gesture_tip_1">Swipe gestures work in both directions</string>
     <string name="onboarding_gesture_tip_2">Quick swipes respond faster than slow ones</string>
 <string name="onboarding_widgets_title">Launcher Widgets</string>
-    <string name="onboarding_widgets_desc">Add Rhythm widgets to your launcher for quick music control. Customize what information is displayed and how the widget looks.</string>
-    <string name="onboarding_widget_album_art">Show Album Art</string>
-    <string name="onboarding_widget_album_art_desc">Display album artwork in the widget</string>
+    <string name="onboarding_widgets_desc">Add the Rhythm Cookie and Stats widgets to your launcher for music control at a glance. Pick what the cookie\'s corners do and which stats the widget shows.</string>
     <string name="onboarding_widget_artist">Show Artist Name</string>
     <string name="onboarding_widget_artist_desc">Display the current artist in the widget</string>
     <string name="onboarding_widget_album">Show Album Name</string>
     <string name="onboarding_widget_album_desc">Display the album title in the widget</string>
     <string name="onboarding_widgets_tips_title">Widget Tips</string>
-    <string name="onboarding_widget_tip_1">Tap the widget to open the app</string>
-    <string name="onboarding_widget_tip_2">Resize widgets for different layouts (2x1 to 5x5)</string>
-    <string name="onboarding_widget_tip_3">Widgets update in real-time during playback</string>
 <string name="onboarding_integrations_title">Connect Your Services</string>
     <string name="onboarding_integrations_desc">Enhance your listening experience by connecting to external services. Get album art, lyrics, scrobble your plays, and share what you\'re listening to.</string>
     <string name="onboarding_integrations_apis">API Services</string>
@@ -630,8 +623,6 @@
     <string name="onboarding_stats_desc">Discover insights about your music habits. Track your listening time, most played songs, favorite artists, and more with beautiful visualizations.</string>
     <string name="onboarding_stats_show_home">Show Stats on Home</string>
     <string name="onboarding_stats_show_home_desc">Display a listening stats widget on your home screen</string>
-    <string name="onboarding_stats_rating">Enable Song Ratings</string>
-    <string name="onboarding_stats_rating_desc">Rate your songs to track favorites and build smart playlists</string>
     <string name="onboarding_stats_features_title">Stats Features</string>
     <string name="onboarding_stats_feature_1">Track total listening time by day, week, or month</string>
     <string name="onboarding_stats_feature_2">See your most played songs</string>
@@ -1918,8 +1909,8 @@
     <string name="streamingsettingsscreen_streaming_restricted">Streaming Restricted</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">Failed to play next: Unable to resolve URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">Failed to add to queue: Unable to resolve URL</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">1×2 Vertical Widget</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">3×2 Medium Widget</string>
+    <string name="rhythmwidgetpreview_str_12_vertical_widget">1×2 Vertical Widget</string>
+    <string name="rhythmwidgetpreview_str_32_medium_widget">3×2 Medium Widget</string>
     <string name="rhythmmusicwidget_album_art_placeholder">Album Art Placeholder</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance Widget Previews</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 Compact Widget</string>
@@ -2083,9 +2074,6 @@
     <string name="widgetsettingsscreen_widget_settings">Widget Settings</string>
     <string name="widgetsettingsscreen_show_favorite_button">Show Favorite Button</string>
     <string name="widgetsettingsscreen_widget_theme">Widget Theme</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm uses Material 3 Expressive design with dynamic colors</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">Widget adapts from 1x1 play button to 5x5+ full layout</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">Long-press and resize for different expressive layouts</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Applies to Glance widgets only</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">Personalize home screen widgets</string>
     <string name="festivesplashgreeting_merry_christmas">Merry Christmas!</string>
@@ -2570,7 +2558,7 @@
     <string name="shape_target_playlist_art">Playlist Artwork</string>
     <string name="shape_target_artist_art">Artist Artwork</string>
     <string name="settings_shape_for">Shape for %1$s</string>
-    <string name="lyric_widget_description">Widget that shows lyrics of currently playing media</string>
+    <string name="lyric_widget_description">Read the lyrics of the song that\'s currently playing.</string>
     <string name="edit_album_title">Edit Album</string>
     <string name="edit_album_desc">Edit tags and artwork for all songs in this album.</string>
     <string name="edit_album_saving">Updating album metadata...</string>
@@ -2739,5 +2727,40 @@
     <string name="settings_search_api_lyrically_desc">Fetch lyrics from the Lyrically service</string>
     <string name="settings_search_api_ytmusic_desc">Use YouTube Music for online search results</string>
     <string name="player_expressive_only">Expressive player only</string>
+    <string name="widget_cookie_description">A cookie-shaped mini player showing your album art with play, previous, and next buttons.</string>
+    <string name="widget_stats_description">See how many days in a row you\'ve listened to music — plus your best streak ever.</string>
+    <string name="widget_cookie_section_title">Rhythm Cookie Widget</string>
+    <string name="widget_cookie_bottom_left">Bottom Left Action</string>
+    <string name="widget_cookie_bottom_right">Bottom Right Action</string>
+    <string name="widget_cookie_action_skip">Skip Track</string>
+    <string name="widget_cookie_action_skip_left_desc">Shows the previous-track button</string>
+    <string name="widget_cookie_action_skip_right_desc">Shows the next-track button</string>
+    <string name="widget_cookie_action_shuffle">Shuffle</string>
+    <string name="widget_cookie_action_shuffle_desc">Toggles shuffle playback</string>
+    <string name="widget_cookie_action_repeat">Repeat</string>
+    <string name="widget_cookie_action_repeat_desc">Cycles repeat off / all / one</string>
+    <string name="widget_cookie_action_favorite">Favorite</string>
+    <string name="widget_cookie_action_favorite_desc">Toggles the current song favorite state</string>
+    <string name="widget_cookie_action_none">None</string>
+    <string name="widget_cookie_action_none_desc">Hides this corner button</string>
+    <string name="widget_stats_section_title">Rhythm Stats Widget</string>
+    <string name="widget_stats_time_range">Listening Time Range</string>
+    <string name="widget_stats_range_all_time">All Time</string>
+    <string name="widget_stats_range_all_time_desc">Total listening time since you started</string>
+    <string name="widget_stats_range_today">Today</string>
+    <string name="widget_stats_range_today_desc">Listening time for today</string>
+    <string name="widget_stats_range_week">This Week</string>
+    <string name="widget_stats_range_week_desc">Listening time for the last 7 days</string>
+    <string name="widget_stats_range_month">This Month</string>
+    <string name="widget_stats_range_month_desc">Listening time for the last 30 days</string>
+    <string name="widget_stats_gem">Bottom Circle Shows</string>
+    <string name="widget_stats_gem_longest_streak">Longest Streak</string>
+    <string name="widget_stats_gem_longest_streak_desc">Your best listening streak in days</string>
+    <string name="widget_stats_gem_current_streak">Current Streak</string>
+    <string name="widget_stats_gem_current_streak_desc">Your active listening streak in days</string>
+    <string name="widget_stats_gem_active_days">Active Days</string>
+    <string name="widget_stats_gem_active_days_desc">Total days you listened</string>
+    <string name="widget_stats_gem_sessions">Total Sessions</string>
+    <string name="widget_stats_gem_sessions_desc">Total listening sessions in this period</string>
 </resources>
 

@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm Musik</string>
     <string name="media3_notification_channel_description">Kontrol pemutaran media</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm Widget Musik - Kontrol Pemutaran dengan tata letak responsif yang mendukung ukuran kisi 2x1 hingga 5x5</string>
     <string name="widget_description_glance">Rhythm Musik - Kontrol Pemutaran dengan 9 tata letak responsif, desain Material 3, dan pembaruan status waktu nyata</string>
     <string name="widget_name_glance">Rhythm Musik</string>
     <string name="no_song_playing">Tidak ada lagu yang diputar</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">Widgetnya</string>
     <string name="settings_widget_desc">Widget layar beranda</string>
     <string name="widget_show_album_art">Tampilkan Seni Album</string>
-    <string name="widget_show_album_art_desc">Tampilkan sampul album di widget</string>
     <string name="widget_show_artist">Tampilkan Nama Artis</string>
     <string name="widget_show_artist_desc">Menampilkan informasi artis</string>
     <string name="widget_show_album">Tampilkan Nama Album</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">Warna Dinamis (Material Anda)</string>
-    <string name="onboarding_dynamic_colors_desc">Terapkan warna yang diekstrak dari wallpaper perangkat Anda untuk tampilan yang kohesif.</string>
     <string name="onboarding_player_theme_title">Pemutaran &amp; Tema Pemutar Mini</string>
     <string name="onboarding_player_theme_desc">Personalisasikan antarmuka pemutaran Anda. Beralih antara desain Rhythm yang bersih dan modern atau desain Ekspresif yang dinamis dan dinamis.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">Widget Peluncur</string>
     <string name="onboarding_widgets_desc">Tambahkan widget Rhythm ke peluncur Anda untuk kontrol musik cepat. Sesuaikan informasi apa yang ditampilkan dan tampilan widget.</string>
-    <string name="onboarding_widget_album_art">Tampilkan Seni Album</string>
-    <string name="onboarding_widget_album_art_desc">Tampilkan sampul album di widget</string>
     <string name="onboarding_widget_artist">Tampilkan Nama Artis</string>
     <string name="onboarding_widget_artist_desc">Tampilkan artis saat ini di widget</string>
     <string name="onboarding_widget_album">Tampilkan Nama Album</string>
     <string name="onboarding_widget_album_desc">Tampilkan judul album di widget</string>
     <string name="onboarding_widgets_tips_title">Tip Widget</string>
-    <string name="onboarding_widget_tip_1">Ketuk widget untuk membuka aplikasi</string>
-    <string name="onboarding_widget_tip_2">Ubah ukuran widget untuk tata letak berbeda (2x1 hingga 5x5)</string>
-    <string name="onboarding_widget_tip_3">Widget diperbarui secara real-time selama pemutaran</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">Hubungkan Layanan Anda</string>
     <string name="onboarding_integrations_desc">Tingkatkan pengalaman mendengarkan Anda dengan menghubungkan ke layanan eksternal. Dapatkan sampul album, lirik, putar lagu Anda, dan bagikan apa yang sedang Anda dengarkan.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">Temukan wawasan tentang kebiasaan musik Anda. Lacak waktu mendengarkan Anda, lagu yang paling sering diputar, artis favorit, dan banyak lagi dengan visualisasi yang indah.</string>
     <string name="onboarding_stats_show_home">Tampilkan Statistik di Beranda</string>
     <string name="onboarding_stats_show_home_desc">Tampilkan widget statistik mendengarkan di layar beranda Anda</string>
-    <string name="onboarding_stats_rating">Aktifkan Peringkat Lagu</string>
-    <string name="onboarding_stats_rating_desc">Nilai lagu Anda untuk melacak favorit dan membuat daftar putar cerdas</string>
     <string name="onboarding_stats_features_title">Fitur Statistik</string>
     <string name="onboarding_stats_feature_1">Lacak total waktu mendengarkan berdasarkan hari, minggu, atau bulan</string>
     <string name="onboarding_stats_feature_2">Lihat lagu yang paling sering Anda putar</string>
@@ -2092,8 +2081,8 @@
     <string name="streamingsettingsscreen_streaming_restricted">Streaming Dibatasi</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">Gagal memutar berikutnya: Tidak dapat menyelesaikan URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">Gagal menambahkan ke antrian: Tidak dapat menyelesaikan URL</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">Widget Vertikal 1×2</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">Widget Sedang 3×2</string>
+    <string name="rhythmwidgetpreview_str_12_vertical_widget">Widget Vertikal 1×2</string>
+    <string name="rhythmwidgetpreview_str_32_medium_widget">Widget Sedang 3×2</string>
     <string name="rhythmmusicwidget_album_art_placeholder">Penampung Seni Album</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Pratinjau Widget Rhythm Glance</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">Widget Ringkas 1×1</string>
@@ -2254,9 +2243,6 @@
     <string name="widgetsettingsscreen_widget_settings">Pengaturan Widget</string>
     <string name="widgetsettingsscreen_show_favorite_button">Tampilkan Tombol Favorit</string>
     <string name="widgetsettingsscreen_widget_theme">Tema Widget</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm menggunakan Material 3 Desain ekspresif dengan warna dinamis</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">Widget beradaptasi dari tombol putar 1x1 hingga tata letak penuh 5x5+</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">Tekan lama dan ubah ukuran untuk tata letak ekspresif yang berbeda</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Hanya berlaku untuk widget Glance</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">Personalisasi widget layar beranda</string>
     <string name="festivesplashgreeting_merry_christmas">Selamat Natal!</string>

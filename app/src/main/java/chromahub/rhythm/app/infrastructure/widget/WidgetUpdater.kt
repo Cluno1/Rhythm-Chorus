@@ -33,9 +33,20 @@ object WidgetUpdater {
         isPlaying: Boolean,
         hasPrevious: Boolean = false,
         hasNext: Boolean = false,
-        isFavorite: Boolean = false
+        isFavorite: Boolean = false,
+        isShuffleEnabled: Boolean = false,
+        repeatMode: Int = 0
     ) {
-        GlanceWidgetUpdater.updateWidget(context, song, isPlaying, hasPrevious, hasNext, isFavorite)
+        GlanceWidgetUpdater.updateWidget(
+            context = context,
+            song = song,
+            isPlaying = isPlaying,
+            hasPrevious = hasPrevious,
+            hasNext = hasNext,
+            isFavorite = isFavorite,
+            isShuffleEnabled = isShuffleEnabled,
+            repeatMode = repeatMode
+        )
     }
 
     fun clearWidget(context: Context) {

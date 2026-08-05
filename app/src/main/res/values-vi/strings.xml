@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm Âm nhạc</string>
     <string name="media3_notification_channel_description">Điều khiển phát lại phương tiện</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm Tiện ích âm nhạc - Điều khiển phát lại với bố cục đáp ứng hỗ trợ kích thước lưới 2x1 đến 5x5</string>
     <string name="widget_description_glance">Âm nhạc Rhythm - Điều khiển phát lại với 9 bố cục phản hồi, thiết kế Material 3 và cập nhật trạng thái theo thời gian thực</string>
     <string name="widget_name_glance">Rhythm Âm nhạc</string>
     <string name="no_song_playing">Không phát bài hát</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">Tiện ích</string>
     <string name="settings_widget_desc">Tiện ích màn hình chính</string>
     <string name="widget_show_album_art">Hiển thị ảnh bìa album</string>
-    <string name="widget_show_album_art_desc">Hiển thị ảnh bìa album trong widget</string>
     <string name="widget_show_artist">Hiển thị tên nghệ sĩ</string>
     <string name="widget_show_artist_desc">Hiển thị thông tin nghệ sĩ</string>
     <string name="widget_show_album">Hiển thị tên album</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">Màu sắc sống động (Material Bạn)</string>
-    <string name="onboarding_dynamic_colors_desc">Áp dụng các màu được trích từ hình nền thiết bị của bạn để có giao diện gắn kết.</string>
     <string name="onboarding_player_theme_title">Chủ đề phát lại và trình phát mini</string>
     <string name="onboarding_player_theme_desc">Cá nhân hóa giao diện phát lại của bạn. Chuyển đổi giữa thiết kế Rhythm gọn gàng, hiện đại hoặc thiết kế Biểu cảm sống động, linh hoạt.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">Tiện ích Trình khởi chạy</string>
     <string name="onboarding_widgets_desc">Thêm tiện ích Rhythm vào trình khởi chạy của bạn để điều khiển nhạc nhanh chóng. Tùy chỉnh thông tin nào được hiển thị và giao diện của tiện ích.</string>
-    <string name="onboarding_widget_album_art">Hiển thị ảnh bìa album</string>
-    <string name="onboarding_widget_album_art_desc">Hiển thị ảnh bìa album trong tiện ích</string>
     <string name="onboarding_widget_artist">Hiển thị tên nghệ sĩ</string>
     <string name="onboarding_widget_artist_desc">Hiển thị nghệ sĩ hiện tại trong widget</string>
     <string name="onboarding_widget_album">Hiển thị tên album</string>
     <string name="onboarding_widget_album_desc">Hiển thị tiêu đề album trong widget</string>
     <string name="onboarding_widgets_tips_title">Mẹo về tiện ích</string>
-    <string name="onboarding_widget_tip_1">Nhấn vào tiện ích để mở ứng dụng</string>
-    <string name="onboarding_widget_tip_2">Thay đổi kích thước tiện ích cho các bố cục khác nhau (2x1 đến 5x5)</string>
-    <string name="onboarding_widget_tip_3">Widget cập nhật theo thời gian thực trong khi phát lại</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">Kết nối dịch vụ của bạn</string>
     <string name="onboarding_integrations_desc">Nâng cao trải nghiệm nghe của bạn bằng cách kết nối với các dịch vụ bên ngoài. Nhận ảnh bìa album, lời bài hát, ghi lại các vở kịch của bạn và chia sẻ những gì bạn đang nghe.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">Khám phá những hiểu biết sâu sắc về thói quen âm nhạc của bạn. Theo dõi thời gian nghe của bạn, các bài hát được phát nhiều nhất, nghệ sĩ yêu thích và hơn thế nữa bằng hình ảnh trực quan đẹp mắt.</string>
     <string name="onboarding_stats_show_home">Hiển thị số liệu thống kê trên trang chủ</string>
     <string name="onboarding_stats_show_home_desc">Hiển thị tiện ích thống kê lượt nghe trên màn hình chính của bạn</string>
-    <string name="onboarding_stats_rating">Bật xếp hạng bài hát</string>
-    <string name="onboarding_stats_rating_desc">Xếp hạng các bài hát của bạn để theo dõi các bài hát yêu thích và xây dựng danh sách phát thông minh</string>
     <string name="onboarding_stats_features_title">Tính năng thống kê</string>
     <string name="onboarding_stats_feature_1">Theo dõi tổng thời gian nghe theo ngày, tuần, tháng</string>
     <string name="onboarding_stats_feature_2">Xem các bài hát bạn phát nhiều nhất</string>
@@ -2092,8 +2081,8 @@
     <string name="streamingsettingsscreen_streaming_restricted">Hạn chế phát trực tuyến</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">Không thể phát tiếp theo: Không thể phân giải URL</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">Không thể thêm vào hàng đợi: Không thể phân giải URL</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">Tiện ích dọc 1×2</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">Tiện ích trung bình 3×2</string>
+    <string name="rhythmwidgetpreview_str_12_vertical_widget">Tiện ích dọc 1×2</string>
+    <string name="rhythmwidgetpreview_str_32_medium_widget">Tiện ích trung bình 3×2</string>
     <string name="rhythmmusicwidget_album_art_placeholder">Trình giữ chỗ ảnh bìa album</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Bản xem trước tiện ích Rhythm Glance</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">Tiện ích nhỏ gọn 1×1</string>
@@ -2254,9 +2243,6 @@
     <string name="widgetsettingsscreen_widget_settings">Cài đặt tiện ích</string>
     <string name="widgetsettingsscreen_show_favorite_button">Hiển thị nút yêu thích</string>
     <string name="widgetsettingsscreen_widget_theme">Chủ đề tiện ích</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm sử dụng Material 3 Thiết kế biểu cảm với màu sắc năng động</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">Tiện ích điều chỉnh từ nút phát 1x1 sang bố cục đầy đủ 5x5+</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">Nhấn và thay đổi kích thước để có các bố cục biểu đạt khác nhau</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Chỉ áp dụng cho tiện ích Glance</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">Cá nhân hóa widget màn hình chính</string>
     <string name="festivesplashgreeting_merry_christmas">Giáng sinh vui vẻ!</string>

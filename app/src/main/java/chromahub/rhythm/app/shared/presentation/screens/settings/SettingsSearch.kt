@@ -179,16 +179,6 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             settingKey = "widgetTheme"
         ))
         add(SearchableSettingItem(
-            id = "widget_show_album_art",
-            title = context.getString(R.string.onboarding_widget_album_art),
-            description = context.getString(R.string.widget_show_album_art_desc),
-            keywords = listOf("widget", "album art", "cover", "show", "image"),
-            icon = RhythmIcons.Album,
-            route = SettingsRoutes.WIDGET,
-            parentScreen = context.getString(R.string.settings_widget),
-            settingKey = "widgetShowAlbumArt"
-        ))
-        add(SearchableSettingItem(
             id = "widget_show_album",
             title = context.getString(R.string.onboarding_widget_album),
             description = context.getString(R.string.widget_show_album_desc),
@@ -227,6 +217,46 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             route = SettingsRoutes.WIDGET,
             parentScreen = context.getString(R.string.settings_widget),
             settingKey = "widgetCornerRadius"
+        ))
+        add(SearchableSettingItem(
+            id = "widget_cookie_bottom_left",
+            title = context.getString(R.string.widget_cookie_bottom_left),
+            description = context.getString(R.string.widget_cookie_section_title),
+            keywords = listOf("widget", "cookie", "bottom", "left", "action", "shuffle", "repeat", "favorite"),
+            icon = MaterialSymbolIcon("widgets"),
+            route = SettingsRoutes.WIDGET,
+            parentScreen = context.getString(R.string.settings_widget),
+            settingKey = "widgetCookieBottomLeft"
+        ))
+        add(SearchableSettingItem(
+            id = "widget_cookie_bottom_right",
+            title = context.getString(R.string.widget_cookie_bottom_right),
+            description = context.getString(R.string.widget_cookie_section_title),
+            keywords = listOf("widget", "cookie", "bottom", "right", "action", "shuffle", "repeat", "favorite"),
+            icon = MaterialSymbolIcon("widgets"),
+            route = SettingsRoutes.WIDGET,
+            parentScreen = context.getString(R.string.settings_widget),
+            settingKey = "widgetCookieBottomRight"
+        ))
+        add(SearchableSettingItem(
+            id = "widget_stats_range",
+            title = context.getString(R.string.widget_stats_time_range),
+            description = context.getString(R.string.widget_stats_section_title),
+            keywords = listOf("widget", "stats", "range", "time", "today", "week", "month"),
+            icon = MaterialSymbolIcon("calendar_today"),
+            route = SettingsRoutes.WIDGET,
+            parentScreen = context.getString(R.string.settings_widget),
+            settingKey = "widgetStatsRange"
+        ))
+        add(SearchableSettingItem(
+            id = "widget_stats_gem",
+            title = context.getString(R.string.widget_stats_gem),
+            description = context.getString(R.string.widget_stats_section_title),
+            keywords = listOf("widget", "stats", "gem", "streak", "days", "sessions"),
+            icon = MaterialSymbolIcon("auto_graph"),
+            route = SettingsRoutes.WIDGET,
+            parentScreen = context.getString(R.string.settings_widget),
+            settingKey = "widgetStatsGem"
         ))
         
         // Navigation & Interaction Section

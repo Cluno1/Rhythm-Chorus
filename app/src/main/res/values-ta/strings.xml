@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm இசை</string>
     <string name="media3_notification_channel_description">மீடியா பிளேபேக் கட்டுப்பாடுகள்</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm மியூசிக் விட்ஜெட் - 2x1 முதல் 5x5 கிரிட் அளவுகளை ஆதரிக்கும் ரெஸ்பான்சிவ் லேஅவுட்களுடன் பிளேபேக்கைக் கட்டுப்படுத்தவும்</string>
     <string name="widget_description_glance">Rhythm மியூசிக் - 9 ரெஸ்பான்சிவ் லேஅவுட்கள், Material 3 டிசைன் மற்றும் நிகழ்நேர நிலை புதுப்பிப்புகளுடன் பிளேபேக்கைக் கட்டுப்படுத்தவும்</string>
     <string name="widget_name_glance">Rhythm இசை</string>
     <string name="no_song_playing">பாடல் இல்லை</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">விட்ஜெட்</string>
     <string name="settings_widget_desc">முகப்புத் திரை விட்ஜெட்டுகள்</string>
     <string name="widget_show_album_art">ஆல்பம் கலையைக் காட்டு</string>
-    <string name="widget_show_album_art_desc">ஆல்பம் கலைப்படைப்புகளை விட்ஜெட்டில் காட்டவும்</string>
     <string name="widget_show_artist">கலைஞர் பெயரைக் காட்டு</string>
     <string name="widget_show_artist_desc">கலைஞர் தகவலைக் காண்பி</string>
     <string name="widget_show_album">ஆல்பத்தின் பெயரைக் காட்டு</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">டைனமிக் நிறங்கள் (Material நீங்கள்)</string>
-    <string name="onboarding_dynamic_colors_desc">ஒத்திசைவான தோற்றத்திற்காக உங்கள் சாதனத்தின் வால்பேப்பரிலிருந்து பிரித்தெடுக்கப்பட்ட வண்ணங்களைப் பயன்படுத்துங்கள்.</string>
     <string name="onboarding_player_theme_title">பின்னணி மற்றும் மினி பிளேயர் தீம்கள்</string>
     <string name="onboarding_player_theme_desc">உங்கள் பின்னணி இடைமுகங்களைத் தனிப்பயனாக்குங்கள். சுத்தமான, நவீன Rhythm வடிவமைப்பு அல்லது துடிப்பான, திரவ வெளிப்படுத்தும் வடிவமைப்பிற்கு இடையில் மாறவும்.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">துவக்கி விட்ஜெட்டுகள்</string>
     <string name="onboarding_widgets_desc">விரைவான இசைக் கட்டுப்பாட்டிற்காக உங்கள் துவக்கியில் Rhythm விட்ஜெட்களைச் சேர்க்கவும். என்ன தகவல் காட்டப்படும் மற்றும் விட்ஜெட் எப்படி இருக்கும் என்பதைத் தனிப்பயனாக்கவும்.</string>
-    <string name="onboarding_widget_album_art">ஆல்பம் கலையைக் காட்டு</string>
-    <string name="onboarding_widget_album_art_desc">விட்ஜெட்டில் ஆல்பம் கலைப்படைப்பைக் காண்பி</string>
     <string name="onboarding_widget_artist">கலைஞர் பெயரைக் காட்டு</string>
     <string name="onboarding_widget_artist_desc">விட்ஜெட்டில் தற்போதைய கலைஞரைக் காண்பி</string>
     <string name="onboarding_widget_album">ஆல்பத்தின் பெயரைக் காட்டு</string>
     <string name="onboarding_widget_album_desc">ஆல்பத்தின் தலைப்பை விட்ஜெட்டில் காட்டவும்</string>
     <string name="onboarding_widgets_tips_title">விட்ஜெட் குறிப்புகள்</string>
-    <string name="onboarding_widget_tip_1">பயன்பாட்டைத் திறக்க விட்ஜெட்டைத் தட்டவும்</string>
-    <string name="onboarding_widget_tip_2">வெவ்வேறு தளவமைப்புகளுக்கான விட்ஜெட்களின் அளவை மாற்றவும் (2x1 முதல் 5x5 வரை)</string>
-    <string name="onboarding_widget_tip_3">பிளேபேக்கின் போது விட்ஜெட்டுகள் நிகழ்நேரத்தில் புதுப்பிக்கப்படும்</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">உங்கள் சேவைகளை இணைக்கவும்</string>
     <string name="onboarding_integrations_desc">வெளிப்புற சேவைகளுடன் இணைப்பதன் மூலம் உங்கள் கேட்கும் அனுபவத்தை மேம்படுத்தவும். ஆல்பம் கலை, பாடல் வரிகள், உங்கள் நாடகங்களை ஸ்க்ரோபிள் செய்து, நீங்கள் கேட்பதைப் பகிரவும்.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">உங்கள் இசைப் பழக்கங்களைப் பற்றிய நுண்ணறிவுகளைக் கண்டறியவும். நீங்கள் கேட்கும் நேரம், அதிகம் இசைக்கப்பட்ட பாடல்கள், பிடித்த கலைஞர்கள் மற்றும் பலவற்றை அழகான காட்சிப்படுத்தல்களுடன் கண்காணிக்கவும்.</string>
     <string name="onboarding_stats_show_home">முகப்பு பற்றிய புள்ளிவிவரங்களைக் காட்டு</string>
     <string name="onboarding_stats_show_home_desc">உங்கள் முகப்புத் திரையில் கேட்கும் புள்ளிவிவர விட்ஜெட்டைக் காண்பிக்கவும்</string>
-    <string name="onboarding_stats_rating">பாடல் மதிப்பீடுகளை இயக்கவும்</string>
-    <string name="onboarding_stats_rating_desc">பிடித்தவற்றைக் கண்காணிக்க மற்றும் ஸ்மார்ட் பிளேலிஸ்ட்களை உருவாக்க உங்கள் பாடல்களை மதிப்பிடுங்கள்</string>
     <string name="onboarding_stats_features_title">புள்ளிவிவர அம்சங்கள்</string>
     <string name="onboarding_stats_feature_1">நாள், வாரம் அல்லது மாதத்தின் அடிப்படையில் கேட்கும் நேரத்தைக் கண்காணிக்கவும்</string>
     <string name="onboarding_stats_feature_2">நீங்கள் அதிகம் விளையாடிய பாடல்களைப் பார்க்கவும்</string>
@@ -2092,8 +2081,8 @@
     <string name="streamingsettingsscreen_streaming_restricted">ஸ்ட்ரீமிங் தடைசெய்யப்பட்டுள்ளது</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">அடுத்து விளையாடுவதில் தோல்வி: URL ஐத் தீர்க்க முடியவில்லை</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">வரிசையில் சேர்க்க முடியவில்லை: URL ஐத் தீர்க்க முடியவில்லை</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">1×2 செங்குத்து விட்ஜெட்</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">3×2 மீடியம் விட்ஜெட்</string>
+    <string name="rhythmwidgetpreview_str_12_vertical_widget">1×2 செங்குத்து விட்ஜெட்</string>
+    <string name="rhythmwidgetpreview_str_32_medium_widget">3×2 மீடியம் விட்ஜெட்</string>
     <string name="rhythmmusicwidget_album_art_placeholder">ஆல்பம் ஆர்ட் பிளேஸ்ஹோல்டர்</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance விட்ஜெட் முன்னோட்டங்கள்</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 காம்பாக்ட் விட்ஜெட்</string>
@@ -2254,9 +2243,6 @@
     <string name="widgetsettingsscreen_widget_settings">விட்ஜெட் அமைப்புகள்</string>
     <string name="widgetsettingsscreen_show_favorite_button">பிடித்த பொத்தானைக் காட்டு</string>
     <string name="widgetsettingsscreen_widget_theme">விட்ஜெட் தீம்</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm மாறும் வண்ணங்களுடன் Material 3 வெளிப்படையான வடிவமைப்பைப் பயன்படுத்துகிறது</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">விட்ஜெட் 1x1 பிளே பொத்தானில் இருந்து 5x5+ முழு தளவமைப்பிற்கு மாற்றியமைக்கிறது</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">வெவ்வேறு வெளிப்படையான தளவமைப்புகளுக்கு நீண்ட நேரம் அழுத்தி அளவை மாற்றவும்</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Glance விட்ஜெட்டுகளுக்கு மட்டுமே பொருந்தும்</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">முகப்புத் திரை விட்ஜெட்களைத் தனிப்பயனாக்குங்கள்</string>
     <string name="festivesplashgreeting_merry_christmas">இனிய கிறிஸ்துமஸ்!</string>

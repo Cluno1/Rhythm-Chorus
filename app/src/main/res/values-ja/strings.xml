@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm 音楽</string>
     <string name="media3_notification_channel_description">メディア再生コントロール</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm 音楽ウィジェット - 2x1 ～ 5x5 のグリッド サイズをサポートするレスポンシブ レイアウトで再生を制御</string>
     <string name="widget_description_glance">Rhythm 音楽 - 9 つのレスポンシブ レイアウト、Material 3 つのデザイン、およびリアルタイムの状態更新による再生の制御</string>
     <string name="widget_name_glance">Rhythm 音楽</string>
     <string name="no_song_playing">曲が再生されていません</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">ウィジェット</string>
     <string name="settings_widget_desc">ホーム画面ウィジェット</string>
     <string name="widget_show_album_art">アルバムアートを表示</string>
-    <string name="widget_show_album_art_desc">アルバムアートワークをウィジェットに表示</string>
     <string name="widget_show_artist">アーティスト名を表示</string>
     <string name="widget_show_artist_desc">アーティスト情報を表示する</string>
     <string name="widget_show_album">アルバム名を表示</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">ダイナミックカラー (Material あなた)</string>
-    <string name="onboarding_dynamic_colors_desc">デバイスの壁紙から抽出した色を適用して、統一感のある外観を実現します。</string>
     <string name="onboarding_player_theme_title">再生およびミニプレーヤーのテーマ</string>
     <string name="onboarding_player_theme_desc">再生インターフェイスをパーソナライズします。クリーンでモダンな Rhythm デザインと、鮮やかで流動的な表現力豊かなデザインを切り替えます。</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">ランチャーウィジェット</string>
     <string name="onboarding_widgets_desc">素早い音楽コントロールのために、ランチャーに Rhythm ウィジェットを追加します。表示される情報とウィジェットの外観をカスタマイズします。</string>
-    <string name="onboarding_widget_album_art">アルバムアートを表示</string>
-    <string name="onboarding_widget_album_art_desc">ウィジェットにアルバムアートワークを表示</string>
     <string name="onboarding_widget_artist">アーティスト名を表示</string>
     <string name="onboarding_widget_artist_desc">現在のアーティストをウィジェットに表示</string>
     <string name="onboarding_widget_album">アルバム名を表示</string>
     <string name="onboarding_widget_album_desc">ウィジェットにアルバムタイトルを表示</string>
     <string name="onboarding_widgets_tips_title">ウィジェットのヒント</string>
-    <string name="onboarding_widget_tip_1">ウィジェットをタップしてアプリを開きます</string>
-    <string name="onboarding_widget_tip_2">さまざまなレイアウトに合わせてウィジェットのサイズを変更します (2x1 から 5x5)</string>
-    <string name="onboarding_widget_tip_3">ウィジェットは再生中にリアルタイムで更新されます</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">サービスを接続する</string>
     <string name="onboarding_integrations_desc">外部サービスに接続してリスニング体験を強化します。アルバム アート、歌詞を取得し、プレイをスクロブルし、聴いているものを共有します。</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">自分の音楽習慣についての洞察を発見します。再生時間、最も再生された曲、お気に入りのアーティストなどを美しい視覚化で追跡します。</string>
     <string name="onboarding_stats_show_home">ホームで統計を表示</string>
     <string name="onboarding_stats_show_home_desc">ホーム画面にリスニング統計ウィジェットを表示する</string>
-    <string name="onboarding_stats_rating">曲の評価を有効にする</string>
-    <string name="onboarding_stats_rating_desc">曲を評価してお気に入りを追跡し、スマートなプレイリストを作成します</string>
     <string name="onboarding_stats_features_title">統計機能</string>
     <string name="onboarding_stats_feature_1">日、週、または月ごとに合計リスニング時間を追跡する</string>
     <string name="onboarding_stats_feature_2">最も再生された曲を確認する</string>
@@ -2092,8 +2081,8 @@
     <string name="streamingsettingsscreen_streaming_restricted">ストリーミング制限あり</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">次の再生に失敗しました: URL を解決できません</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">キューに追加できませんでした: URL を解決できません</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">1×2 縦型ウィジェット</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">3×2 中型ウィジェット</string>
+    <string name="rhythmwidgetpreview_str_12_vertical_widget">1×2 縦型ウィジェット</string>
+    <string name="rhythmwidgetpreview_str_32_medium_widget">3×2 中型ウィジェット</string>
     <string name="rhythmmusicwidget_album_art_placeholder">アルバム アート プレースホルダー</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance ウィジェットのプレビュー</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1コンパクトウィジェット</string>
@@ -2254,9 +2243,6 @@
     <string name="widgetsettingsscreen_widget_settings">ウィジェットの設定</string>
     <string name="widgetsettingsscreen_show_favorite_button">お気に入りボタンを表示</string>
     <string name="widgetsettingsscreen_widget_theme">ウィジェットテーマ</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm は Material を使用しています。 3 ダイナミックな色を使用した表現力豊かなデザイン</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">ウィジェットは 1x1 の再生ボタンから 5x5+ のフル レイアウトに適応します</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">長押ししてサイズを変更すると、さまざまな表現力豊かなレイアウトが可能</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Glance ウィジェットのみに適用されます</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">ホーム画面ウィジェットをカスタマイズする</string>
     <string name="festivesplashgreeting_merry_christmas">メリークリスマス！</string>

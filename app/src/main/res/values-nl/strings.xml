@@ -10,7 +10,6 @@
     <string name="media3_notification_channel_name">Rhythm Muziek</string>
     <string name="media3_notification_channel_description">Bedieningselementen voor het afspelen van media</string>
     <!-- Widget strings -->
-    <string name="widget_description">Rhythm Muziekwidget - Regel het afspelen met responsieve lay-outs die rastergroottes van 2x1 tot 5x5 ondersteunen</string>
     <string name="widget_description_glance">Rhythm Muziek - Regel het afspelen met 9 responsieve lay-outs, Material 3 ontwerp en realtime statusupdates</string>
     <string name="widget_name_glance">Rhythm Muziek</string>
     <string name="no_song_playing">Er wordt geen nummer afgespeeld</string>
@@ -24,7 +23,6 @@
     <string name="settings_widget">Widget</string>
     <string name="settings_widget_desc">Widgets op het startscherm</string>
     <string name="widget_show_album_art">Albumhoezen tonen</string>
-    <string name="widget_show_album_art_desc">Geef albumillustraties weer in de widget</string>
     <string name="widget_show_artist">Naam artiest tonen</string>
     <string name="widget_show_artist_desc">Artiestinformatie weergeven</string>
     <string name="widget_show_album">Albumnaam tonen</string>
@@ -565,8 +563,6 @@
     <!-- Onboarding Library Setup -->
     
     <!-- Onboarding Theming -->
-    <string name="onboarding_dynamic_colors_title">Dynamische kleuren (Material jij)</string>
-    <string name="onboarding_dynamic_colors_desc">Pas kleuren toe die uit de achtergrond van je apparaat zijn gehaald voor een samenhangend uiterlijk.</string>
     <string name="onboarding_player_theme_title">Thema\'s voor afspelen en minispelers</string>
     <string name="onboarding_player_theme_desc">Personaliseer uw afspeelinterfaces. Schakel tussen het strakke, moderne Rhythm-ontwerp of het levendige, vloeiende, expressieve ontwerp.</string>
     <!-- Onboarding Updater -->
@@ -633,16 +629,11 @@
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">Launcher-widgets</string>
     <string name="onboarding_widgets_desc">Voeg Rhythm widgets toe aan je opstartprogramma voor snelle muziekbediening. Pas aan welke informatie wordt weergegeven en hoe de widget eruitziet.</string>
-    <string name="onboarding_widget_album_art">Albumhoezen tonen</string>
-    <string name="onboarding_widget_album_art_desc">Geef albumillustraties weer in de widget</string>
     <string name="onboarding_widget_artist">Naam artiest tonen</string>
     <string name="onboarding_widget_artist_desc">Geef de huidige artiest weer in de widget</string>
     <string name="onboarding_widget_album">Albumnaam tonen</string>
     <string name="onboarding_widget_album_desc">Geef de albumtitel weer in de widget</string>
     <string name="onboarding_widgets_tips_title">Widgettips</string>
-    <string name="onboarding_widget_tip_1">Tik op de widget om de app te openen</string>
-    <string name="onboarding_widget_tip_2">Formaat van widgets wijzigen voor verschillende lay-outs (2x1 tot 5x5)</string>
-    <string name="onboarding_widget_tip_3">Widgets worden tijdens het afspelen in realtime bijgewerkt</string>
     <!-- Onboarding: Integrations Step -->
     <string name="onboarding_integrations_title">Verbind uw services</string>
     <string name="onboarding_integrations_desc">Verbeter uw luisterervaring door verbinding te maken met externe services. Ontvang albumhoezen en songteksten, scrobble je toneelstukken en deel waar je naar luistert.</string>
@@ -662,8 +653,6 @@
     <string name="onboarding_stats_desc">Ontdek inzichten over je muziekgewoonten. Houd uw luistertijd, meest gespeelde nummers, favoriete artiesten en meer bij met prachtige visualisaties.</string>
     <string name="onboarding_stats_show_home">Statistieken op Home weergeven</string>
     <string name="onboarding_stats_show_home_desc">Geef een luisterstatistiekenwidget weer op uw startscherm</string>
-    <string name="onboarding_stats_rating">Nummerbeoordelingen inschakelen</string>
-    <string name="onboarding_stats_rating_desc">Beoordeel uw nummers om favorieten bij te houden en slimme afspeellijsten samen te stellen</string>
     <string name="onboarding_stats_features_title">Statistische functies</string>
     <string name="onboarding_stats_feature_1">Houd de totale luistertijd bij per dag, week of maand</string>
     <string name="onboarding_stats_feature_2">Bekijk je meest gespeelde nummers</string>
@@ -2092,8 +2081,8 @@
     <string name="streamingsettingsscreen_streaming_restricted">Streaming beperkt</string>
     <string name="streamingmusicviewmodel_failed_to_play_next">Kan volgende niet afspelen: kan URL niet omzetten</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">Kan niet toevoegen aan wachtrij: kan URL niet omzetten</string>
-    <string name="legacywidgetpreview_str_12_vertical_widget">1×2 verticale widget</string>
-    <string name="legacywidgetpreview_str_32_medium_widget">3×2 middelgrote widget</string>
+    <string name="rhythmwidgetpreview_str_12_vertical_widget">1×2 verticale widget</string>
+    <string name="rhythmwidgetpreview_str_32_medium_widget">3×2 middelgrote widget</string>
     <string name="rhythmmusicwidget_album_art_placeholder">Tijdelijke aanduiding voor albumhoezen</string>
     <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance Widgetvoorbeelden</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 compacte widget</string>
@@ -2254,9 +2243,6 @@
     <string name="widgetsettingsscreen_widget_settings">Widgetinstellingen</string>
     <string name="widgetsettingsscreen_show_favorite_button">Knop Favorieten tonen</string>
     <string name="widgetsettingsscreen_widget_theme">Widgetthema</string>
-    <string name="widgetsettingsscreen_rhythm_uses_material_3">Rhythm gebruikt Material 3 Expressief ontwerp met dynamische kleuren</string>
-    <string name="widgetsettingsscreen_widget_adapts_from_1x1">Widget past zich aan van een afspeelknop van 1x1 tot een volledige lay-out van 5x5+</string>
-    <string name="widgetsettingsscreen_longpress_and_resize_for">Houd ingedrukt en wijzig het formaat voor verschillende expressieve lay-outs</string>
     <string name="widgetsettingsscreen_applies_to_glance_widgets">Geldt alleen voor Glance widgets</string>
     <string name="widgetsettingsscreen_personalize_home_screen_widgets">Personaliseer startschermwidgets</string>
     <string name="festivesplashgreeting_merry_christmas">Vrolijk kerstfeest!</string>

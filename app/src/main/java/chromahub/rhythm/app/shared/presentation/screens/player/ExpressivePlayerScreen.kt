@@ -311,11 +311,16 @@ fun ExpressivePlayerScreen(
     val context = LocalContext.current
 
     val hasValidArtwork = rememberArtworkValidation(debouncedSong.value?.artworkUri, context)
-    val isBackdropEnabled = playerAmbientBackdropEnabled || (canvasArtwork?.preferredAnimationUrl != null && hasValidArtwork)
+    val isBackdropEnabled = playerAmbientBackdropEnabled
     val showCanvasArtBg = isBackdropEnabled && hasValidArtwork && !lyricsVisible
     val showDarkBg = isBackdropEnabled
     val showBg = true
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    // Normal (non-ambient) mode palette: strict black & white, theme-aware
+    val monoBg = if (isDarkTheme) Color(0xFF000000) else Color(0xFFFFFFFF)
+    val monoSurface = if (isDarkTheme) Color(0xFF1C1C1E) else Color(0xFFF2F2F7)
+    val monoFg = if (isDarkTheme) Color(0xFFFFFFFF) else Color(0xFF000000)
+    val monoVariant = monoFg.copy(alpha = 0.72f)
     val useLightModeOnDarkBg = lyricsVisible && showDarkBg && !isDarkTheme
     val lyricsTextAlign = when (playerLyricsAlignment) {
         "START" -> TextAlign.Start; "END" -> TextAlign.End; else -> TextAlign.Center
@@ -439,26 +444,25 @@ fun ExpressivePlayerScreen(
                 alpha = ambientAlpha
             )
             needsDarkSurfaces -> darkSurfaceHigh.copy(alpha = ambientAlpha)
-            else -> MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = ambientAlpha)
+            else -> monoBg
         },
         animationSpec = tween(600), label = "controlsContainerColor"
     )
-    val isAmbientOrNoArt = playerAmbientBackdropEnabled || !hasValidArtwork
     val outerBoxBgColor by animateColorAsState(
         targetValue = when {
             useLightModeOnDarkBg -> Color.White
             showDarkBg && hasValidArtwork -> Color.Black
-            !hasValidArtwork -> Color.Transparent
+            showDarkBg && !hasValidArtwork -> Color.Transparent
             else -> MaterialTheme.colorScheme.surface
         },
         animationSpec = tween(600), label = "outerBoxBgColor"
     )
     val onSurfaceColor by animateColorAsState(
-        targetValue = if (useLightModeOnDarkBg) Color.Black else if (isAmbientOrNoArt) Color.White else MaterialTheme.colorScheme.onSurface,
+        targetValue = if (useLightModeOnDarkBg) Color.Black else if (isBackdropEnabled) Color.White else MaterialTheme.colorScheme.onSurface,
         animationSpec = tween(400), label = "onSurfaceColor"
     )
     val onSurfaceVariantColor by animateColorAsState(
-        targetValue = if (useLightModeOnDarkBg) Color.Black.copy(alpha = 0.65f) else if (isAmbientOrNoArt) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (useLightModeOnDarkBg) Color.Black.copy(alpha = 0.65f) else if (isBackdropEnabled) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(400), label = "onSurfaceVariantColor"
     )
     val surfaceContainerColor by animateColorAsState(
@@ -470,12 +474,12 @@ fun ExpressivePlayerScreen(
                 alpha = ambientAlpha
             )
             needsDarkSurfaces -> darkSurface.copy(alpha = ambientAlpha)
-            else -> MaterialTheme.colorScheme.surfaceContainer.copy(alpha = ambientAlpha)
+            else -> MaterialTheme.colorScheme.surfaceContainerLow
         },
         animationSpec = tween(400), label = "surfaceContainerColor"
     )
     val primaryColor by animateColorAsState(
-        targetValue = if (useLightModeOnDarkBg) MaterialTheme.colorScheme.primary else if (isAmbientOrNoArt) Color.White else MaterialTheme.colorScheme.primary,
+        targetValue = if (useLightModeOnDarkBg) MaterialTheme.colorScheme.primary else if (isBackdropEnabled) Color.White else MaterialTheme.colorScheme.primary,
         animationSpec = tween(400), label = "canvasPrimaryColor"
     )
     val clearArtworkAlpha by animateFloatAsState(
@@ -628,7 +632,10 @@ fun ExpressivePlayerScreen(
             transitionSpec = { fadeIn(tween(800)).togetherWith(fadeOut(tween(600))) },
             label = "artworkValidTransition"
         ) { validArtwork ->
-            if (validArtwork) {
+            if (!isBackdropEnabled) {
+                // Normal (non-ambient) mode: themed surface background
+                Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface))
+            } else if (validArtwork) {
                 // Smooth crossfade when track artwork changes (1200ms motion canvas style)
                 AnimatedContent(
                     targetState = currentArtworkUri,
@@ -823,7 +830,7 @@ fun ExpressivePlayerScreen(
                                                         imageVector = RhythmIcons.MusicNote,
                                                         contentDescription = null,
                                                         modifier = Modifier.size(144.dp),
-                                                        tint = if (showDarkBg) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.primary
+                                                        tint = if (showDarkBg) Color.White.copy(alpha = 0.85f) else monoFg
                                                     )
                                                 }
                                             }
@@ -885,10 +892,10 @@ fun ExpressivePlayerScreen(
                                         }.copy(fontWeight = FontWeight.Black, letterSpacing = targetLetterSpacing)
                                         Column(verticalArrangement = Arrangement.Center) {
                                             AutoScrollingTextOnDemand(text = targetTitle, style = targetTextStyle.copy(color = onSurfaceColor),
-                                                gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> MaterialTheme.colorScheme.surface },
+                                                gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> outerBoxBgColor },
                                                 modifier = Modifier.fillMaxWidth().clickable { onSongInfoClick() }, respectGlobalSetting = true)
                                             AutoScrollingTextOnDemand(text = targetArtist, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium, color = onSurfaceVariantColor),
-                                                gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> MaterialTheme.colorScheme.surface },
+                                                gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> outerBoxBgColor },
                                                 modifier = Modifier.fillMaxWidth().clickable { onShowArtistBottomSheet() }, respectGlobalSetting = true)
                                         }
                                     }
@@ -906,7 +913,7 @@ fun ExpressivePlayerScreen(
                                         isFirst = true,
                                         isLast = false,
                                         containerColor = controlsContainerColor,
-                                        contentColor = primaryColor,
+                                        contentColor = if (needsDarkSurfaces) ambientControlContent else monoFg,
                                         icon = RhythmIcons.Player.Lyrics
                                     )
                                     RhythmButtonWeighted(
@@ -915,7 +922,7 @@ fun ExpressivePlayerScreen(
                                         isFirst = false,
                                         isLast = true,
                                         containerColor = controlsContainerColor,
-                                        contentColor = primaryColor,
+                                        contentColor = if (needsDarkSurfaces) ambientControlContent else monoFg,
                                         icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite
                                     )
                                 }
@@ -932,9 +939,9 @@ fun ExpressivePlayerScreen(
                                             showBuffering = showBuffering,
                                             onClick = onPlayPause,
                                             containerColor = if (needsDarkSurfaces) ambientPlayContainer
-                                                else MaterialTheme.colorScheme.primaryContainer.copy(alpha = ambientAlpha),
+                                                else MaterialTheme.colorScheme.primary,
                                             contentColor = if (needsDarkSurfaces) ambientPlayContent
-                                                else MaterialTheme.colorScheme.onPrimaryContainer,
+                                                else MaterialTheme.colorScheme.onPrimary,
                                             size = controlButtonSize,
                                             modifier = Modifier.weight(1f)
                                         )
@@ -942,7 +949,7 @@ fun ExpressivePlayerScreen(
                                             onClick = onSkipNext,
                                             shape = playerControlShape,
                                             containerColor = if (needsDarkSurfaces) ambientControlContainer
-                                                else MaterialTheme.colorScheme.secondaryContainer.copy(alpha = ambientAlpha),
+                                                else MaterialTheme.colorScheme.secondaryContainer,
                                             contentColor = if (needsDarkSurfaces) ambientControlContent
                                                 else MaterialTheme.colorScheme.onSecondaryContainer,
                                             size = controlButtonSize
@@ -958,7 +965,7 @@ fun ExpressivePlayerScreen(
                                             onClick = onSkipPrevious,
                                             shape = playerControlShape,
                                             containerColor = if (needsDarkSurfaces) ambientControlContainer
-                                                else MaterialTheme.colorScheme.secondaryContainer.copy(alpha = ambientAlpha),
+                                                else MaterialTheme.colorScheme.secondaryContainer,
                                             contentColor = if (needsDarkSurfaces) ambientControlContent
                                                 else MaterialTheme.colorScheme.onSecondaryContainer,
                                             size = controlButtonSize
@@ -1033,11 +1040,11 @@ fun ExpressivePlayerScreen(
                                     iconSize = 20.dp,
                                     text = deviceName,
                                     textStyle = deviceTextStyle,
-                                    gradientEdgeColor = surfaceContainerColor,
+                                    gradientEdgeColor = if (needsDarkSurfaces) surfaceContainerColor else monoBg,
                                     respectMarqueeGlobalSetting = false,
                                     contentDescription = stringResource(R.string.expressiveplayerscreen_device),
-                                    containerColor = surfaceContainerColor,
-                                    contentColor = primaryColor
+                                    containerColor = controlsContainerColor,
+                                    contentColor = if (needsDarkSurfaces) ambientControlContent else monoFg
                                 )
                                 RhythmDetailActionButton(
                                     onClick = onQueueClick,
@@ -1050,20 +1057,18 @@ fun ExpressivePlayerScreen(
                                     iconSize = 20.dp,
                                     text = null,
                                     textContent = {
-                                        // Queue counter rolls its digits like the Rhythm Guard dashboard
-                                        // countdown: only the digits that change animate (vertical rollover).
                                         val queueText = if (queueTotal > 0) stringResource(R.string.player_queue_format, debouncedQueuePosition.coerceIn(1, queueTotal), queueTotal) else stringResource(R.string.player_queue)
                                         AnimatedDigitTickerText(
                                             text = queueText,
                                             style = MaterialTheme.typography.titleSmall,
-                                            color = primaryColor,
+                                            color = if (needsDarkSurfaces) ambientControlContent else monoFg,
                                             fontWeight = FontWeight.Bold,
                                             prefix = "queueCounter"
                                         )
                                     },
                                     contentDescription = stringResource(R.string.bottomsheet_queue),
-                                    containerColor = surfaceContainerColor,
-                                    contentColor = primaryColor
+                                    containerColor = controlsContainerColor,
+                                    contentColor = if (needsDarkSurfaces) ambientControlContent else monoFg
                                 )
                                 RhythmDetailActionButton(
                                     onClick = onMoreClick,
@@ -1075,8 +1080,8 @@ fun ExpressivePlayerScreen(
                                     icon = RhythmIcons.More,
                                     iconSize = 22.dp,
                                     contentDescription = stringResource(R.string.expressiveplayerscreen_more),
-                                    containerColor = surfaceContainerColor,
-                                    contentColor = primaryColor
+                                    containerColor = controlsContainerColor,
+                                    contentColor = if (needsDarkSurfaces) ambientControlContent else monoFg
                                 )
                             }
                         }
