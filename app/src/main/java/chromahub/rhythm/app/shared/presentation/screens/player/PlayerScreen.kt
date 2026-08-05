@@ -245,12 +245,16 @@ fun PlayerScreen(
         val totalSeconds = totalTimeMs / 1000
         val remainingSeconds = (totalSeconds - currentSeconds).coerceAtLeast(0L)
         
-        val currentTimeStr = formatDuration(currentSeconds * 1000, useHoursFormat)
+        val currentTimeStr = remember(currentSeconds, useHoursFormat) {
+            formatDuration(currentSeconds * 1000, useHoursFormat)
+        }
         val totalTimeFormatted = remember(totalTimeMs, useHoursFormat) {
             formatDuration(totalSeconds * 1000, useHoursFormat)
         }
         val totalTimeStr = if (showRemainingTime) {
-            "-" + formatDuration(remainingSeconds * 1000, useHoursFormat)
+            remember(remainingSeconds, useHoursFormat) {
+                "-" + formatDuration(remainingSeconds * 1000, useHoursFormat)
+            }
         } else {
             totalTimeFormatted
         }

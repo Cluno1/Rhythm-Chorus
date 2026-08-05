@@ -799,9 +799,13 @@ fun MaterialPlayerScreen(
     val totalSeconds = totalTimeMs / 1000
     val remainingSeconds = (totalSeconds - currentSeconds).coerceAtLeast(0L)
 
-    val currentTimeFormatted = formatDuration(currentSeconds * 1000, useHoursFormat)
+    val currentTimeFormatted = remember(currentSeconds, useHoursFormat) {
+        formatDuration(currentSeconds * 1000, useHoursFormat)
+    }
     val totalTimeFormatted = if (showRemainingTime) {
-        "-" + formatDuration(remainingSeconds * 1000, useHoursFormat)
+        remember(remainingSeconds, useHoursFormat) {
+            "-" + formatDuration(remainingSeconds * 1000, useHoursFormat)
+        }
     } else {
         remember(totalTimeMs, useHoursFormat) {
             formatDuration(totalSeconds * 1000, useHoursFormat)

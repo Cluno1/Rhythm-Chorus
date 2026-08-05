@@ -846,7 +846,6 @@ fun ExpressivePlayerScreen(
                                                 M3CircularLoader(modifier = Modifier.size(16.dp), color = primaryColor, strokeWidth = 2.5f)
                                             }
                                         }
-                                        }
                                     }
                                 }
                             }
@@ -1004,8 +1003,8 @@ fun ExpressivePlayerScreen(
                                                     style = MaterialTheme.typography.labelMedium,
                                                     color = onSurfaceVariantColor,
                                                     modifier = Modifier
-                                                        .padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
                                                         .clickable { onTotalTimeClick() }
+                                                        .padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
                                                 )
                                             }
                                         }
