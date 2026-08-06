@@ -108,6 +108,8 @@ import chromahub.rhythm.app.shared.presentation.screens.player.PlayerScreen
 import chromahub.rhythm.app.shared.presentation.screens.settings.RhythmGuardSettingsScreen
 import chromahub.rhythm.app.shared.presentation.screens.settings.QueueSettingsScreen
 import chromahub.rhythm.app.shared.presentation.screens.settings.PlaybackSettingsScreen
+import chromahub.rhythm.app.shared.presentation.screens.settings.ReplayGainSettingsScreen
+import chromahub.rhythm.app.shared.presentation.screens.settings.SettingsRoutes
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel as LocalMusicViewModel
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingArtist
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum
@@ -227,7 +229,9 @@ fun StreamingNavigation(
     val isServiceSetupRoute = currentRoute.startsWith("streaming_service_setup")
     val isPlayerRoute = currentRoute == StreamingScreen.Player.route
     val isEqualizerRoute = currentRoute == Screen.Equalizer.route
-    val isQueuePlaybackRoute = currentRoute == Screen.TunerQueue.route || currentRoute == Screen.TunerPlayback.route
+    val isQueuePlaybackRoute = currentRoute == Screen.TunerQueue.route ||
+            currentRoute == Screen.TunerPlayback.route ||
+            currentRoute == Screen.TunerReplayGain.route
     val isSettingsRoute = currentRoute.contains("settings")
 
     val isHomeRoute = currentRoute == StreamingScreen.Home.route
@@ -2105,12 +2109,49 @@ fun StreamingNavigation(
                         )
                 }
             ) {
-                PlaybackSettingsScreen(onBackClick = {
-                    val popped = navController.popBackStack()
-                    if (!popped) {
-                        // Entry already popped
+                PlaybackSettingsScreen(
+                    onBackClick = {
+                        val popped = navController.popBackStack()
+                        if (!popped) {
+                            // Entry already popped
+                        }
+                    },
+                    onNavigateTo = { route ->
+                        if (route == SettingsRoutes.REPLAY_GAIN) {
+                            navController.navigate(Screen.TunerReplayGain.route)
+                        }
                     }
-                })
+                )
+            }
+
+            composable(
+                route = Screen.TunerReplayGain.route,
+                enterTransition = {
+                    fadeIn(animationSpec = tween(300)) +
+                        slideInVertically(
+                            initialOffsetY = { it / 4 },
+                            animationSpec = tween(350, easing = EaseInOutQuart)
+                        )
+                },
+                exitTransition = {
+                    fadeOut(animationSpec = tween(300))
+                },
+                popExitTransition = {
+                    fadeOut(animationSpec = tween(300)) +
+                        slideOutVertically(
+                            targetOffsetY = { it / 4 },
+                            animationSpec = tween(350, easing = EaseInOutQuart)
+                        )
+                }
+            ) {
+                ReplayGainSettingsScreen(
+                    onBackClick = {
+                        val popped = navController.popBackStack()
+                        if (!popped) {
+                            // Entry already popped
+                        }
+                    }
+                )
             }
 
             composable(

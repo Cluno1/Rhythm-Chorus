@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Launcher picker preview for the Rhythm Stats widget.
      Mirrors the widget design: cookie background, sunny music note + total
-     listening time + "listening", gem (circle) badge with crown + longest streak. -->
+     listening time + "listening", gem (circle) badge with crown + longest streak.
+     Framework-safe only (android:* attributes, no app: namespace). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="UseAppTint,UseCompoundDrawables"
     android:layout_width="110dp"
     android:layout_height="110dp">
 
@@ -12,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@drawable/widget_preview_cookie"
-        app:tint="@color/widget_preview_surface" />
+        android:tint="@color/widget_preview_surface" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -26,19 +28,19 @@
             android:layout_height="44dp">
 
             <ImageView
-        android:importantForAccessibility="no"
+                android:importantForAccessibility="no"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/widget_preview_sunny"
-                app:tint="@color/widget_preview_primary" />
+                android:tint="@color/widget_preview_primary" />
 
             <ImageView
-        android:importantForAccessibility="no"
+                android:importantForAccessibility="no"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_stats"
-                app:tint="@color/widget_preview_primary_container" />
+                android:tint="@color/widget_preview_primary_container" />
         </FrameLayout>
 
         <TextView
@@ -61,6 +63,7 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+    <!-- Gem badge: crown + longest streak -->
     <FrameLayout
         android:layout_width="28dp"
         android:layout_height="28dp"
@@ -69,24 +72,34 @@
         android:layout_marginBottom="8dp">
 
         <ImageView
-        android:importantForAccessibility="no"
+            android:importantForAccessibility="no"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/widget_preview_circle"
-            app:tint="@color/widget_preview_tertiary" />
+            android:tint="@color/widget_preview_tertiary" />
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="@string/widget_preview_stats_streak"
-            android:textColor="@color/widget_preview_on_tertiary"
-            android:textSize="11sp"
-            android:includeFontPadding="false"
-            android:textStyle="bold"
-            app:drawableTopCompat="@drawable/ic_crown"
-            app:drawableTint="@color/widget_preview_on_tertiary"
-            android:drawablePadding="2dp" />
+            android:orientation="vertical">
+
+            <ImageView
+                android:importantForAccessibility="no"
+                android:layout_width="11dp"
+                android:layout_height="11dp"
+                android:src="@drawable/ic_crown"
+                android:tint="@color/widget_preview_on_tertiary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/widget_preview_stats_streak"
+                android:textColor="@color/widget_preview_on_tertiary"
+                android:textSize="11sp"
+                android:includeFontPadding="false"
+                android:textStyle="bold" />
+        </LinearLayout>
     </FrameLayout>
 </FrameLayout>

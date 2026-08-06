@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Launcher picker preview for the Rhythm Music widget.
-     Uses only framework-safe views with margins/gravity (no Space, weights,
-     or ellipsize) so launchers can inflate it reliably. -->
+     Framework-safe only (android:* attributes, no app: namespace) so launchers
+     can inflate it reliably and render it dark. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="UseAppTint,UseCompoundDrawables"
     android:layout_width="250dp"
     android:layout_height="140dp">
 
@@ -30,18 +31,18 @@
                 android:layout_height="56dp">
 
                 <ImageView
-        android:importantForAccessibility="no"
+                    android:importantForAccessibility="no"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/widget_preview_art" />
 
                 <ImageView
-        android:importantForAccessibility="no"
+                    android:importantForAccessibility="no"
                     android:layout_width="34dp"
                     android:layout_height="34dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_notification"
-                    app:tint="@color/widget_preview_on_primary_container" />
+                    android:tint="@color/widget_preview_on_primary_container" />
             </FrameLayout>
 
             <LinearLayout
@@ -80,19 +81,19 @@
                 android:layout_height="38dp">
 
                 <ImageView
-        android:importantForAccessibility="no"
+                    android:importantForAccessibility="no"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/widget_preview_circle"
-                    app:tint="@color/widget_preview_tertiary" />
+                    android:tint="@color/widget_preview_tertiary" />
 
                 <ImageView
-        android:importantForAccessibility="no"
+                    android:importantForAccessibility="no"
                     android:layout_width="19dp"
                     android:layout_height="19dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_skip_previous"
-                    app:tint="@color/widget_preview_on_tertiary" />
+                    android:tint="@color/widget_preview_on_tertiary" />
             </FrameLayout>
 
             <FrameLayout
@@ -101,19 +102,19 @@
                 android:layout_marginStart="14dp">
 
                 <ImageView
-        android:importantForAccessibility="no"
+                    android:importantForAccessibility="no"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/widget_preview_pill"
-                    app:tint="@color/widget_preview_primary" />
+                    android:tint="@color/widget_preview_primary" />
 
                 <ImageView
-        android:importantForAccessibility="no"
+                    android:importantForAccessibility="no"
                     android:layout_width="21dp"
                     android:layout_height="21dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_play_arrow"
-                    app:tint="@color/widget_preview_on_primary" />
+                    android:tint="@color/widget_preview_on_primary" />
             </FrameLayout>
 
             <FrameLayout
@@ -122,19 +123,19 @@
                 android:layout_marginStart="14dp">
 
                 <ImageView
-        android:importantForAccessibility="no"
+                    android:importantForAccessibility="no"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/widget_preview_circle"
-                    app:tint="@color/widget_preview_tertiary" />
+                    android:tint="@color/widget_preview_tertiary" />
 
                 <ImageView
-        android:importantForAccessibility="no"
+                    android:importantForAccessibility="no"
                     android:layout_width="19dp"
                     android:layout_height="19dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_skip_next"
-                    app:tint="@color/widget_preview_on_tertiary" />
+                    android:tint="@color/widget_preview_on_tertiary" />
             </FrameLayout>
         </LinearLayout>
     </LinearLayout>

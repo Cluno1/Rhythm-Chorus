@@ -135,16 +135,12 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType // Import HapticFeedbackType
 import androidx.compose.material3.ButtonDefaults
 import chromahub.rhythm.app.shared.presentation.components.common.InitializationLoader
-import chromahub.rhythm.app.shared.presentation.components.common.SplashBackgroundOrbs
-import chromahub.rhythm.app.shared.presentation.components.common.buildSplashBackdropShapes
 import chromahub.rhythm.app.shared.presentation.components.PermissionHandler
 import chromahub.rhythm.app.shared.presentation.components.dialogs.BetaProgramPopup
 import chromahub.rhythm.app.shared.presentation.components.dialogs.TrackCorruptionDialog
 import chromahub.rhythm.app.features.local.presentation.screens.OnboardingScreen
 import chromahub.rhythm.app.features.local.presentation.screens.onboarding.OnboardingStep
 import chromahub.rhythm.app.features.local.presentation.screens.onboarding.PermissionScreenState
-import chromahub.rhythm.app.util.windowScreenHeightDp
-import chromahub.rhythm.app.util.windowScreenWidthDp
 import androidx.core.content.pm.ShortcutManagerCompat
 
 class MainActivity : AppCompatActivity() {
@@ -301,89 +297,6 @@ class MainActivity : AppCompatActivity() {
                     }
                     val scanProgress by musicViewModel.scanProgress.collectAsState()
 
-                    // Background shapes matching the splash screen (uses the user's expressive shape settings)
-                    val primaryBackdropColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
-                    val secondaryBackdropColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f)
-                    val tertiaryBackdropColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.16f)
-                    val neutralBackdropColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-
-                    val expressiveShapesEnabled by appSettings.expressiveShapesEnabled.collectAsState()
-                    val expressiveShapePreset by appSettings.expressiveShapePreset.collectAsState()
-                    val expressiveShapeAlbumArt by appSettings.expressiveShapeAlbumArt.collectAsState()
-                    val expressiveShapePlayerArt by appSettings.expressiveShapePlayerArt.collectAsState()
-                    val expressiveShapeSongArt by appSettings.expressiveShapeSongArt.collectAsState()
-                    val expressiveShapePlaylistArt by appSettings.expressiveShapePlaylistArt.collectAsState()
-                    val expressiveShapeArtistArt by appSettings.expressiveShapeArtistArt.collectAsState()
-                    val expressiveShapePlayerControls by appSettings.expressiveShapePlayerControls.collectAsState()
-                    val expressiveShapeMiniPlayer by appSettings.expressiveShapeMiniPlayer.collectAsState()
-
-                    val expressiveShapePalette = remember(
-                        expressiveShapesEnabled,
-                        expressiveShapePreset,
-                        expressiveShapeAlbumArt,
-                        expressiveShapePlayerArt,
-                        expressiveShapeSongArt,
-                        expressiveShapePlaylistArt,
-                        expressiveShapeArtistArt,
-                        expressiveShapePlayerControls,
-                        expressiveShapeMiniPlayer
-                    ) {
-                        buildList {
-                            if (expressiveShapesEnabled) {
-                                addAll(
-                                    listOf(
-                                        expressiveShapeAlbumArt,
-                                        expressiveShapePlayerArt,
-                                        expressiveShapeSongArt,
-                                        expressiveShapePlaylistArt,
-                                        expressiveShapeArtistArt,
-                                        expressiveShapePlayerControls,
-                                        expressiveShapeMiniPlayer
-                                    )
-                                )
-                            } else {
-                                addAll(
-                                    when (expressiveShapePreset) {
-                                        "FRIENDLY" -> listOf("CLOVER_8_LEAF", "HEART", "OVAL", "CIRCLE")
-                                        "MODERN" -> listOf("SLANTED", "DIAMOND", "PENTAGON", "SQUARE")
-                                        "PLAYFUL" -> listOf("FLOWER", "SOFT_BURST", "SUNNY", "COOKIE_6")
-                                        "ORGANIC" -> listOf("CLOVER_4_LEAF", "FLOWER", "BUN", "OVAL")
-                                        "GEOMETRIC" -> listOf("SQUARE", "DIAMOND", "PENTAGON", "CIRCLE")
-                                        "RETRO" -> listOf("PIXEL_CIRCLE", "PIXEL_TRIANGLE", "SQUARE")
-                                        "CHEERFUL" -> listOf("FLOWER", "SUNNY", "PUFFY", "HEART")
-                                        else -> listOf("GHOSTISH", "BUN", "CLOVER_8_LEAF", "COOKIE_12")
-                                    }
-                                )
-                            }
-                        }.distinct().filter { it.isNotBlank() }
-                    }
-
-                    val splashBackdropWidth = windowScreenWidthDp()
-                    val splashBackdropHeight = windowScreenHeightDp()
-                    val splashBackdropShapes = remember(
-                        splashBackdropWidth,
-                        splashBackdropHeight,
-                        expressiveShapePalette,
-                        expressiveShapePreset,
-                        primaryBackdropColor,
-                        secondaryBackdropColor,
-                        tertiaryBackdropColor,
-                        neutralBackdropColor
-                    ) {
-                        buildSplashBackdropShapes(
-                            seed = System.nanoTime().toInt(),
-                            shapeIds = expressiveShapePalette,
-                            preset = expressiveShapePreset,
-                            screenWidthDp = splashBackdropWidth,
-                            screenHeightDp = splashBackdropHeight,
-                            primaryColor = primaryBackdropColor,
-                            secondaryColor = secondaryBackdropColor,
-                            tertiaryColor = tertiaryBackdropColor,
-                            neutralColor = neutralBackdropColor,
-                            sizeScale = 2.0f
-                        )
-                    }
-
                     Box(modifier = Modifier.fillMaxSize()) {
                         AnimatedVisibility(
                             visible = isInitialized,
@@ -415,9 +328,6 @@ class MainActivity : AppCompatActivity() {
                             exit = fadeOut(animationSpec = tween(600, easing = androidx.compose.animation.core.EaseInCubic))
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {
-                                SplashBackgroundOrbs(
-                                    shapes = splashBackdropShapes
-                                )
 
                                 Row(
                                     modifier = Modifier.align(Alignment.Center),
@@ -439,7 +349,7 @@ class MainActivity : AppCompatActivity() {
                                 Column(
                                     modifier = Modifier
                                         .align(Alignment.BottomCenter)
-                                        .padding(bottom = 48.dp),
+                                        .padding(bottom = 96.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
@@ -450,11 +360,11 @@ class MainActivity : AppCompatActivity() {
                                         Image(
                                             painter = painterResource(id = R.drawable.rhythm_splash_logo),
                                             contentDescription = stringResource(R.string.cd_rhythm_logo),
-                                            modifier = Modifier.size(40.dp)
+                                            modifier = Modifier.size(56.dp)
                                         )
                                         Text(
                                             text = stringResource(R.string.common_rhythm),
-                                            style = MaterialTheme.typography.titleLarge,
+                                            style = MaterialTheme.typography.headlineSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -462,7 +372,7 @@ class MainActivity : AppCompatActivity() {
 
                                     Text(
                                         text = stringResource(R.string.splash_tagline),
-                                        style = MaterialTheme.typography.labelMedium,
+                                        style = MaterialTheme.typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
                                 }

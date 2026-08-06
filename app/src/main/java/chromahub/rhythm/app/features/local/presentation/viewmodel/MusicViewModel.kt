@@ -2253,7 +2253,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
             _isMediaScanning.value = showMediaScanLoader // Only show full-screen loader when requested
             _isLibraryRefreshing.value = true // Always set for pull-to-refresh tracking
-            _isInitialized.value = false // Indicate that data is being refreshed
+            if (showMediaScanLoader) {
+                // Only a full-screen scan should hide the app behind the initialization
+                // loader; pull-to-refresh and background rescans keep the app visible.
+                _isInitialized.value = false
+            }
             _isGenreDetectionComplete.value = false // Reset genre detection state
             appSettings.setEmbeddedArtworkExtractionCompleted(false)
             // Don't reset _isGenreDetectionRunning to allow proper concurrency check

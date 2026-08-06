@@ -126,28 +126,33 @@ fun GoSettingsScreen(
         },
         headerContent = {
             Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                shape = RoundedCornerShape(40.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (appMode == "STREAMING")
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    else
+                        MaterialTheme.colorScheme.surfaceContainer
+                ),
+                shape = RoundedCornerShape(28.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 24.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp)
+                        .padding(horizontal = 20.dp, vertical = 12.dp)
                 ) {
                     Icon(
                         imageVector = MaterialSymbolIcon("cloud_queue"),
                         contentDescription = null,
                         tint = if (appMode == "STREAMING") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(35.dp)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = if (appMode == "STREAMING") "Active" else "Disabled",
+                            text = if (appMode == "STREAMING") stringResource(R.string.status_active) else stringResource(R.string.status_disabled),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
