@@ -4,14 +4,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
-import android.os.Build
-import android.util.Log
-import androidx.annotation.RequiresApi
 import android.os.Handler
 import android.os.Looper
-import java.lang.reflect.Method
+import android.util.Log
 
 /**
  * Monitor audio device changes
@@ -54,68 +52,31 @@ class AudioCapabilitiesMonitor(private val context: Context) {
         }
     }
 
-    private var audioDeviceCallback: Any? = null
-    private var registerMethod: Method? = null
-    private var unregisterMethod: Method? = null
+    private var audioDeviceCallback: AudioDeviceCallback? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
     
     init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            try {
-                // Use reflection to create callback and get methods
-                val callbackClass = Class.forName("android.media.AudioManager\$AudioDeviceCallback")
-                val audioManagerClass = AudioManager::class.java
-                
-                registerMethod = audioManagerClass.getMethod("registerAudioDeviceCallback", callbackClass, Handler::class.java)
-                unregisterMethod = audioManagerClass.getMethod("unregisterAudioDeviceCallback", callbackClass)
-                
-                audioDeviceCallback = createAudioDeviceCallbackViaReflection()
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to initialize audio device callback via reflection", e)
-            }
-        }
-    }
-    
-    private fun createAudioDeviceCallbackViaReflection(): Any? {
-        return try {
-            val callbackClass = Class.forName("android.media.AudioManager\$AudioDeviceCallback")
-            
-            // Create proxy using reflection
-            val proxy = java.lang.reflect.Proxy.newProxyInstance(
-                callbackClass.classLoader,
-                arrayOf(callbackClass)
-            ) { _, method, args ->
-                when (method.name) {
-                    "onAudioDevicesAdded" -> {
-                        val devices = args?.get(0) as? Array<*> ?: return@newProxyInstance null
-                        devices.forEach { device ->
-                            if (device is AudioDeviceInfo) {
-                                val deviceName = getDeviceNameViaReflection(device)
-                                Log.d(TAG, "Audio device added: $deviceName")
-                                listener?.onAudioDeviceChanged("$deviceName connected")
-                            }
-                        }
-                    }
-                    "onAudioDevicesRemoved" -> {
-                        val devices = args?.get(0) as? Array<*> ?: return@newProxyInstance null
-                        devices.forEach { device ->
-                            if (device is AudioDeviceInfo) {
-                                val deviceName = getDeviceNameViaReflection(device)
-                                Log.d(TAG, "Audio device removed: $deviceName")
-                                listener?.onAudioDeviceChanged("$deviceName disconnected")
-                            }
-                        }
-                    }
+        // AudioDeviceCallback is a public API since API 23
+        audioDeviceCallback = object : AudioDeviceCallback() {
+            override fun onAudioDevicesAdded(devices: Array<out AudioDeviceInfo>) {
+                devices.forEach { device ->
+                    val deviceName = getDeviceName(device)
+                    Log.d(TAG, "Audio device added: $deviceName")
+                    listener?.onAudioDeviceChanged("$deviceName connected")
                 }
-                null
             }
-            proxy
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to create audio device callback via reflection", e)
-            null
+
+            override fun onAudioDevicesRemoved(devices: Array<out AudioDeviceInfo>) {
+                devices.forEach { device ->
+                    val deviceName = getDeviceName(device)
+                    Log.d(TAG, "Audio device removed: $deviceName")
+                    listener?.onAudioDeviceChanged("$deviceName disconnected")
+                }
+            }
         }
     }
     
-    private fun getDeviceNameViaReflection(device: AudioDeviceInfo): String {
+    private fun getDeviceName(device: AudioDeviceInfo): String {
         return when (device.type) {
             AudioDeviceInfo.TYPE_BLUETOOTH_A2DP -> "Bluetooth"
             AudioDeviceInfo.TYPE_BLUETOOTH_SCO -> "Bluetooth SCO"
@@ -142,16 +103,13 @@ class AudioCapabilitiesMonitor(private val context: Context) {
         }
         context.registerReceiver(headsetReceiver, filter)
         
-        // Register audio device callback for API 23+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            registerAudioDeviceCallbackCompat()
-        }
+        // Register audio device callback (public API since API 23)
+        registerAudioDeviceCallbackCompat()
     }
     
-    @Suppress("NewApi")
     private fun registerAudioDeviceCallbackCompat() {
         try {
-            registerMethod?.invoke(audioManager, audioDeviceCallback, null)
+            audioDeviceCallback?.let { audioManager.registerAudioDeviceCallback(it, mainHandler) }
         } catch (e: Exception) {
             Log.w(TAG, "Failed to register audio device callback", e)
         }
@@ -169,17 +127,14 @@ class AudioCapabilitiesMonitor(private val context: Context) {
             Log.e(TAG, "Error unregistering headset receiver", e)
         }
         
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            unregisterAudioDeviceCallbackCompat()
-        }
+        unregisterAudioDeviceCallbackCompat()
         
         listener = null
     }
     
-    @Suppress("NewApi")
     private fun unregisterAudioDeviceCallbackCompat() {
         try {
-            unregisterMethod?.invoke(audioManager, audioDeviceCallback)
+            audioDeviceCallback?.let { audioManager.unregisterAudioDeviceCallback(it) }
         } catch (e: Exception) {
             Log.w(TAG, "Failed to unregister audio device callback", e)
         }

@@ -60,6 +60,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -71,7 +72,7 @@ import chromahub.rhythm.app.ui.theme.RhythmTheme
 import chromahub.rhythm.app.ui.theme.festive.FestiveOverlayFromSettings
 import chromahub.rhythm.app.shared.presentation.viewmodel.ThemeViewModel
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
-import chromahub.rhythm.app.util.CrashReporter // Import CrashReporter
+import chromahub.rhythm.app.util.CrashReporter
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -85,7 +86,7 @@ import chromahub.rhythm.app.util.MediaUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.LocalLifecycleOwner // Corrected import for LocalLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -107,7 +108,6 @@ import chromahub.rhythm.app.shared.data.model.ScanPhase
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmWavyProgressLoader
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon as RhythmIcon
 import kotlin.math.abs
-//import chromahub.rhythm.app.ui.annotations.RhythmAnimation
 import android.provider.Settings
 import chromahub.rhythm.app.util.ServiceStartUtils
 import androidx.compose.material3.Card
@@ -124,23 +124,28 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
-import chromahub.rhythm.app.shared.data.model.AppSettings // Import AppSettings
-import java.util.Locale // Import Locale
+import chromahub.rhythm.app.shared.data.model.AppSettings
+import java.util.Locale
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.rememberCoroutineScope
-import chromahub.rhythm.app.shared.presentation.components.common.M3LinearLoader // Import M3LinearLoader
-import chromahub.rhythm.app.shared.presentation.components.common.M3FourColorCircularLoader // Import M3FourColorCircularLoader
-import androidx.compose.ui.platform.LocalHapticFeedback // Import LocalHapticFeedback
+import chromahub.rhythm.app.shared.presentation.components.common.M3LinearLoader
+import chromahub.rhythm.app.shared.presentation.components.common.M3FourColorCircularLoader
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType // Import HapticFeedbackType
-import androidx.compose.material3.ButtonDefaults // Import ButtonDefaults
-import chromahub.rhythm.app.features.local.presentation.screens.SplashScreen
+import androidx.compose.material3.ButtonDefaults
+import chromahub.rhythm.app.shared.presentation.components.common.InitializationLoader
+import chromahub.rhythm.app.shared.presentation.components.common.SplashBackgroundOrbs
+import chromahub.rhythm.app.shared.presentation.components.common.buildSplashBackdropShapes
 import chromahub.rhythm.app.shared.presentation.components.PermissionHandler
 import chromahub.rhythm.app.shared.presentation.components.dialogs.BetaProgramPopup
 import chromahub.rhythm.app.shared.presentation.components.dialogs.TrackCorruptionDialog
 import chromahub.rhythm.app.features.local.presentation.screens.OnboardingScreen
 import chromahub.rhythm.app.features.local.presentation.screens.onboarding.OnboardingStep
 import chromahub.rhythm.app.features.local.presentation.screens.onboarding.PermissionScreenState
+import chromahub.rhythm.app.util.windowScreenHeightDp
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import androidx.core.content.pm.ShortcutManagerCompat
 
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
@@ -206,8 +211,7 @@ class MainActivity : AppCompatActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     FestiveOverlayFromSettings {
-                        // Show splash screen first, then transition to the app
-                        var showSplash by rememberSaveable { mutableStateOf(true) }
+                        // Show the initialization loader first, then transition to the app
                         val hasShownBetaPopup by appSettings.hasShownBetaPopup.collectAsState()
                         var showBetaPopup by remember { mutableStateOf(false) }
                         val currentAppVersion by appUpdaterViewModel.currentVersion.collectAsState() // Observe current version
@@ -216,7 +220,7 @@ class MainActivity : AppCompatActivity() {
 
                     // State for permission handling and app initialization.
                     // rememberSaveable so these survive configuration changes (e.g. system theme toggle)
-                    // which recreate the Activity but must not re-show the splash or re-enter loading.
+                    // which recreate the Activity but must not re-show the loader or re-enter loading.
                     var shouldShowSettingsRedirect by remember { mutableStateOf(false) }
                     var isLoading by rememberSaveable { mutableStateOf(true) }
                     var isInitializingApp by rememberSaveable { mutableStateOf(false) }
@@ -250,19 +254,10 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                    // If the Activity was recreated (config change) after the splash was already
-                    // dismissed, isLoading must be cleared immediately — onSplashComplete() will
-                    // never fire again because showSplash is already false.
-                    LaunchedEffect(showSplash) {
-                        if (!showSplash && isLoading) {
-                            isLoading = false
-                        }
-                    }
-
-                    // Function to handle splash completion
-                    fun onSplashComplete() {
-                        showSplash = false
-                        isLoading = false // Stop initial loading after splash
+                    // Runs once the music library has finished initializing.
+                    var hasHandledStartupIntents by rememberSaveable { mutableStateOf(false) }
+                    fun onInitializationComplete() {
+                        isLoading = false // Stop initial loading after initialization
 
                         // Show beta popup if it hasn't been shown before AND the current version is a pre-release
                         if (!hasShownBetaPopup && currentAppVersion.isPreRelease) {
@@ -274,29 +269,124 @@ class MainActivity : AppCompatActivity() {
                             // CrashActivity is now responsible for showing the dialog
                         }
                         
-                        // Handle startup intents after splash to ensure view models are ready.
-                        val shouldHandleStartupIntent = startupIntent?.let {
-                            (it.action == Intent.ACTION_VIEW && it.data != null) ||
-                                it.action == "chromahub.rhythm.app.action.SHORTCUT_PLAY_PAUSE" ||
-                                it.action == "chromahub.rhythm.app.action.SHORTCUT_SKIP_NEXT" ||
-                                it.action == "chromahub.rhythm.app.action.SHORTCUT_SKIP_PREVIOUS" ||
-                                it.getBooleanExtra(EXTRA_OPEN_PLAYER, false) ||
-                                it.getBooleanExtra(EXTRA_OPEN_QUEUE, false)
-                        } == true
+                        // Handle startup intents once, after the library is ready.
+                        if (!hasHandledStartupIntents) {
+                            hasHandledStartupIntents = true
+                            val shouldHandleStartupIntent = startupIntent?.let {
+                                (it.action == Intent.ACTION_VIEW && it.data != null) ||
+                                    it.action == "chromahub.rhythm.app.action.SHORTCUT_PLAY_PAUSE" ||
+                                    it.action == "chromahub.rhythm.app.action.SHORTCUT_SKIP_NEXT" ||
+                                    it.action == "chromahub.rhythm.app.action.SHORTCUT_SKIP_PREVIOUS" ||
+                                    it.getBooleanExtra(EXTRA_OPEN_PLAYER, false) ||
+                                    it.getBooleanExtra(EXTRA_OPEN_QUEUE, false)
+                            } == true
 
-                        if (shouldHandleStartupIntent) {
-                            // Small delay to ensure view models are ready, then handle intent
-                            val startupIntentJob = lifecycleScope.launch {
-                                kotlinx.coroutines.delay(500)
-                                handleIntent(startupIntent)
+                            if (shouldHandleStartupIntent) {
+                                // Small delay to ensure view models are ready, then handle intent
+                                val startupIntentJob = lifecycleScope.launch {
+                                    kotlinx.coroutines.delay(500)
+                                    handleIntent(startupIntent)
+                                }
+                                lifecycleScopeJobs.add(startupIntentJob)
                             }
-                            lifecycleScopeJobs.add(startupIntentJob)
                         }
                     }
-                    
+
+                    // Show the initialization loader until the music library is ready.
+                    val isInitialized by musicViewModel.isInitialized.collectAsState()
+                    LaunchedEffect(isInitialized) {
+                        if (isInitialized) {
+                            onInitializationComplete()
+                        }
+                    }
+                    val scanProgress by musicViewModel.scanProgress.collectAsState()
+
+                    // Background shapes matching the splash screen (uses the user's expressive shape settings)
+                    val primaryBackdropColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
+                    val secondaryBackdropColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f)
+                    val tertiaryBackdropColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.16f)
+                    val neutralBackdropColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+
+                    val expressiveShapesEnabled by appSettings.expressiveShapesEnabled.collectAsState()
+                    val expressiveShapePreset by appSettings.expressiveShapePreset.collectAsState()
+                    val expressiveShapeAlbumArt by appSettings.expressiveShapeAlbumArt.collectAsState()
+                    val expressiveShapePlayerArt by appSettings.expressiveShapePlayerArt.collectAsState()
+                    val expressiveShapeSongArt by appSettings.expressiveShapeSongArt.collectAsState()
+                    val expressiveShapePlaylistArt by appSettings.expressiveShapePlaylistArt.collectAsState()
+                    val expressiveShapeArtistArt by appSettings.expressiveShapeArtistArt.collectAsState()
+                    val expressiveShapePlayerControls by appSettings.expressiveShapePlayerControls.collectAsState()
+                    val expressiveShapeMiniPlayer by appSettings.expressiveShapeMiniPlayer.collectAsState()
+
+                    val expressiveShapePalette = remember(
+                        expressiveShapesEnabled,
+                        expressiveShapePreset,
+                        expressiveShapeAlbumArt,
+                        expressiveShapePlayerArt,
+                        expressiveShapeSongArt,
+                        expressiveShapePlaylistArt,
+                        expressiveShapeArtistArt,
+                        expressiveShapePlayerControls,
+                        expressiveShapeMiniPlayer
+                    ) {
+                        buildList {
+                            if (expressiveShapesEnabled) {
+                                addAll(
+                                    listOf(
+                                        expressiveShapeAlbumArt,
+                                        expressiveShapePlayerArt,
+                                        expressiveShapeSongArt,
+                                        expressiveShapePlaylistArt,
+                                        expressiveShapeArtistArt,
+                                        expressiveShapePlayerControls,
+                                        expressiveShapeMiniPlayer
+                                    )
+                                )
+                            } else {
+                                addAll(
+                                    when (expressiveShapePreset) {
+                                        "FRIENDLY" -> listOf("CLOVER_8_LEAF", "HEART", "OVAL", "CIRCLE")
+                                        "MODERN" -> listOf("SLANTED", "DIAMOND", "PENTAGON", "SQUARE")
+                                        "PLAYFUL" -> listOf("FLOWER", "SOFT_BURST", "SUNNY", "COOKIE_6")
+                                        "ORGANIC" -> listOf("CLOVER_4_LEAF", "FLOWER", "BUN", "OVAL")
+                                        "GEOMETRIC" -> listOf("SQUARE", "DIAMOND", "PENTAGON", "CIRCLE")
+                                        "RETRO" -> listOf("PIXEL_CIRCLE", "PIXEL_TRIANGLE", "SQUARE")
+                                        "CHEERFUL" -> listOf("FLOWER", "SUNNY", "PUFFY", "HEART")
+                                        else -> listOf("GHOSTISH", "BUN", "CLOVER_8_LEAF", "COOKIE_12")
+                                    }
+                                )
+                            }
+                        }.distinct().filter { it.isNotBlank() }
+                    }
+
+                    val splashBackdropWidth = windowScreenWidthDp()
+                    val splashBackdropHeight = windowScreenHeightDp()
+                    val splashBackdropShapes = remember(
+                        splashBackdropWidth,
+                        splashBackdropHeight,
+                        expressiveShapePalette,
+                        expressiveShapePreset,
+                        primaryBackdropColor,
+                        secondaryBackdropColor,
+                        tertiaryBackdropColor,
+                        neutralBackdropColor
+                    ) {
+                        buildSplashBackdropShapes(
+                            seed = System.nanoTime().toInt(),
+                            shapeIds = expressiveShapePalette,
+                            preset = expressiveShapePreset,
+                            screenWidthDp = splashBackdropWidth,
+                            screenHeightDp = splashBackdropHeight,
+                            primaryColor = primaryBackdropColor,
+                            secondaryColor = secondaryBackdropColor,
+                            tertiaryColor = tertiaryBackdropColor,
+                            neutralColor = neutralBackdropColor,
+                            sizeScale = 2.0f
+                        )
+                    }
+
                     Box(modifier = Modifier.fillMaxSize()) {
                         AnimatedVisibility(
-                            visible = !showSplash,
+                            visible = isInitialized,
                             enter = fadeIn(animationSpec = tween(1000, easing = androidx.compose.animation.core.EaseOutCubic)) + 
                                    scaleIn(initialScale = 0.92f, animationSpec = tween(1000, easing = androidx.compose.animation.core.EaseOutCubic)),
                         ) {
@@ -321,13 +411,62 @@ class MainActivity : AppCompatActivity() {
                         }
                         
                         AnimatedVisibility(
-                            visible = showSplash,
-                            exit = fadeOut(animationSpec = tween(1000, easing = androidx.compose.animation.core.EaseInCubic))
+                            visible = !isInitialized,
+                            exit = fadeOut(animationSpec = tween(600, easing = androidx.compose.animation.core.EaseInCubic))
                         ) {
-                            SplashScreen(
-                                musicViewModel = musicViewModel,
-                                onMediaScanComplete = { onSplashComplete() }
-                            )
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                SplashBackgroundOrbs(
+                                    shapes = splashBackdropShapes
+                                )
+
+                                Row(
+                                    modifier = Modifier.align(Alignment.Center),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    InitializationLoader(modifier = Modifier.size(64.dp))
+
+                                    Text(
+                                        text = "Preparing...",
+                                        style = MaterialTheme.typography.headlineMedium.copy(
+                                            fontWeight = FontWeight.Medium
+                                        ),
+                                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                                    )
+                                }
+
+                                // App logo, name and tagline at the bottom (matches splash branding)
+                                Column(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .padding(bottom = 48.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.rhythm_splash_logo),
+                                            contentDescription = stringResource(R.string.cd_rhythm_logo),
+                                            modifier = Modifier.size(40.dp)
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.common_rhythm),
+                                            style = MaterialTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+
+                                    Text(
+                                        text = stringResource(R.string.splash_tagline),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
                         }
 
                         // Beta Program Popup
@@ -354,7 +493,6 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         // Show media scan loader as a small floating chip with swipe-to-dismiss at the top Center
-                        val scanProgress by musicViewModel.scanProgress.collectAsState()
                         val coroutineScope = rememberCoroutineScope()
                         val swipeOffsetX = remember { Animatable(0f) }
                         val swipeOffsetY = remember { Animatable(0f) }
@@ -382,7 +520,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         AnimatedVisibility(
-                            visible = showMediaScanLoader && !showSplash,
+                            visible = showMediaScanLoader,
                             enter = fadeIn(animationSpec = tween(500)) + slideInVertically(initialOffsetY = { -it }),
                             exit = exitTransition,
                             modifier = Modifier
@@ -551,6 +689,7 @@ class MainActivity : AppCompatActivity() {
 
             // OPEN_PLAYER/OPEN_QUEUE are navigation hints, not content intents.
             if (shouldOpenPlayer) {
+                ShortcutManagerCompat.reportShortcutUsed(this, "shortcut_open_player")
                 Log.d(TAG, "Opening player from external shortcut intent")
                 // The player should automatically show since the song is already playing
                 // No additional action needed as the navigation will handle it
@@ -559,6 +698,7 @@ class MainActivity : AppCompatActivity() {
             
             when (intent.action) {
                 "chromahub.rhythm.app.action.SHORTCUT_PLAY_PAUSE" -> {
+                    ShortcutManagerCompat.reportShortcutUsed(this, "shortcut_play_pause")
                     Log.d(TAG, "Received Play/Pause shortcut action")
                     val playPauseIntent = Intent(this, chromahub.rhythm.app.infrastructure.service.MediaPlaybackService::class.java).apply {
                         action = chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_PLAY_PAUSE
@@ -570,6 +710,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 "chromahub.rhythm.app.action.SHORTCUT_SKIP_NEXT" -> {
+                    ShortcutManagerCompat.reportShortcutUsed(this, "shortcut_next")
                     Log.d(TAG, "Received Skip Next shortcut action")
                     val nextIntent = Intent(this, chromahub.rhythm.app.infrastructure.service.MediaPlaybackService::class.java).apply {
                         action = chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_SKIP_NEXT
@@ -581,6 +722,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 "chromahub.rhythm.app.action.SHORTCUT_SKIP_PREVIOUS" -> {
+                    ShortcutManagerCompat.reportShortcutUsed(this, "shortcut_previous")
                     Log.d(TAG, "Received Skip Previous shortcut action")
                     val prevIntent = Intent(this, chromahub.rhythm.app.infrastructure.service.MediaPlaybackService::class.java).apply {
                         action = chromahub.rhythm.app.infrastructure.service.MediaPlaybackService.ACTION_SKIP_PREVIOUS

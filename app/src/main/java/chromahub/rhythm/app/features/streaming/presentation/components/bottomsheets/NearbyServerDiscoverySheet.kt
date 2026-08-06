@@ -35,6 +35,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -85,7 +86,7 @@ fun NearbyServerDiscoverySheet(
     
     val discoveredServers = remember { mutableStateListOf<DiscoveredServer>() }
     var isScanning by remember { mutableStateOf(false) }
-    var scanTrigger by remember { mutableStateOf(0) }
+    var scanTrigger by remember { mutableIntStateOf(0) }
 
     DisposableEffect(upperServiceId, scanTrigger) {
         val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager

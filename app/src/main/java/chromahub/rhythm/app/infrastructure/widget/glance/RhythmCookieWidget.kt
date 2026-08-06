@@ -47,6 +47,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import chromahub.rhythm.app.activities.MainActivity
 import chromahub.rhythm.app.R
+import androidx.core.net.toUri
 
 /**
  * Rhythm Cookie widget — minimalist 2x2 music controls.
@@ -288,7 +289,7 @@ class RhythmCookieWidget : GlanceAppWidget() {
                 isPlaying = prefs[booleanPreferencesKey(RhythmMusicWidget.KEY_IS_PLAYING)] ?: false,
                 artworkUri = prefs[stringPreferencesKey(RhythmMusicWidget.KEY_ARTWORK_URI)]?.takeIf { it.isNotBlank() }?.let {
                     try {
-                        android.net.Uri.parse(it)
+                        (it).toUri()
                     } catch (e: Exception) {
                         null
                     }

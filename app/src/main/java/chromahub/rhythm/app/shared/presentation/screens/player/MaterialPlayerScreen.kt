@@ -139,7 +139,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -209,6 +208,9 @@ import chromahub.rhythm.app.shared.presentation.components.player.PlayerChipOrde
 import chromahub.rhythm.app.shared.presentation.components.lyrics.LyricsEditorBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.AudioQualityBadges
 import chromahub.rhythm.app.util.MediaUtils
+import chromahub.rhythm.app.util.windowScreenHeightDp
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import java.util.Locale
 import chromahub.rhythm.app.shared.data.model.Album
 import chromahub.rhythm.app.shared.data.model.Artist
 import chromahub.rhythm.app.shared.data.model.findAlbumForSong
@@ -230,20 +232,24 @@ import androidx.compose.ui.res.stringResource
 fun MaterialPlayerScreen(
     song: Song?,
     isPlaying: Boolean,
-    canvasArtwork: CanvasArtwork? = null,
-    canvasLoading: Boolean = false,
     progress: () -> Float,
     location: PlaybackLocation?,
-    queuePosition: Int = 1,
-    queueTotal: Int = 1,
     onPlayPause: () -> Unit,
     onSkipNext: () -> Unit,
     onSkipPrevious: () -> Unit,
     onSeek: (Float) -> Unit,
-    onLyricsSeek: ((Long) -> Unit)? = null,
     onBack: () -> Unit,
     onLocationClick: () -> Unit,
     onQueueClick: () -> Unit,
+    appSettings: chromahub.rhythm.app.shared.data.model.AppSettings,
+    musicViewModel: chromahub.rhythm.app.viewmodel.MusicViewModel,
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    canvasArtwork: CanvasArtwork? = null,
+    canvasLoading: Boolean = false,
+    queuePosition: Int = 1,
+    queueTotal: Int = 1,
+    onLyricsSeek: ((Long) -> Unit)? = null,
     locations: List<PlaybackLocation> = emptyList(),
     onLocationSelect: (PlaybackLocation) -> Unit = {},
     volume: Float = 0.7f,
@@ -267,11 +273,13 @@ fun MaterialPlayerScreen(
     onRetryLyrics: () -> Unit = {},
     onEditLyrics: (String) -> Unit = {},
     onPickLyricsFile: () -> Unit = {},
-    onSaveLyrics: (String, String) -> Unit = { _, _ -> }, // (lyrics, saveLocation)
+    onSaveLyrics: (String, String) -> Unit = { _, _ -> },
+    // (lyrics, saveLocation)
     playlists: List<Playlist> = emptyList(),
     queue: List<Song> = emptyList(),
     onSongClick: (Song) -> Unit = {},
-    onSongClickAtIndex: (Int) -> Unit = { _ -> }, // New parameter for index-based queue clicks
+    onSongClickAtIndex: (Int) -> Unit = { _ -> },
+    // New parameter for index-based queue clicks
     onRemoveFromQueueAtIndex: (Int) -> Unit = { _ -> },
     onMoveQueueItem: (Int, Int) -> Unit = { _, _ -> },
     onAddSongsToQueue: () -> Unit = {},
@@ -280,7 +288,7 @@ fun MaterialPlayerScreen(
     onAddToPlaylistSheetDismiss: () -> Unit = {},
     onAddSongToPlaylist: (Song, String) -> Unit = { _, _ -> },
     onCreatePlaylist: (String) -> Unit = { _ -> },
-    onShowCreatePlaylistDialog: (Song?) -> Unit = {} ,
+    onShowCreatePlaylistDialog: (Song?) -> Unit = {},
     onClearQueue: () -> Unit = {},
     // New parameters for loader control and bottom sheets
     isMediaLoading: Boolean = false,
@@ -295,17 +303,12 @@ fun MaterialPlayerScreen(
     onShuffleAlbumSongs: (List<Song>) -> Unit = {},
     onPlayArtistSongs: (List<Song>) -> Unit = {},
     onShuffleArtistSongs: (List<Song>) -> Unit = {},
-    appSettings: chromahub.rhythm.app.shared.data.model.AppSettings,
-    musicViewModel: chromahub.rhythm.app.viewmodel.MusicViewModel,
-    navController: NavController,
     isStreamingMode: Boolean = false,
     onOpenFullScreenLyrics: () -> Unit = {},
     swipeToDismissEnabled: Boolean = true,
-    expansionFraction: Float = 1f,
-    modifier: Modifier = Modifier
+    expansionFraction: Float = 1f
 ) {
     val context = LocalContext.current
-    val configuration = LocalConfiguration.current
     val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
@@ -442,17 +445,17 @@ fun MaterialPlayerScreen(
     }
 
     // Calculate screen dimensions
-    val screenHeight = with(density) { configuration.screenHeightDp.dp.toPx() }
-    val screenWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
+    val screenHeight = with(density) { windowScreenHeightDp().dp.toPx() }
+    val screenWidth = with(density) { windowScreenWidthDp().dp.toPx() }
 
     // Enhanced screen size detection for better responsiveness
-    val isCompactHeight = forcePlayerCompactMode || configuration.screenHeightDp < 600
-    val isLargeHeight = configuration.screenHeightDp > 800
-    val isTablet = configuration.screenWidthDp >= 600 // Tablet detection
-    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
-    val isExtraSmallWidth = configuration.screenWidthDp < 360 // Extra small width (< 360dp)
-    val isCompactWidth = forcePlayerCompactMode || configuration.screenWidthDp < 400 // Compact width (< 400dp)
-    val isMidWidth = configuration.screenWidthDp in 400..499 // Mid-range width (400-499dp)
+    val isCompactHeight = forcePlayerCompactMode || windowScreenHeightDp() < 600
+    val isLargeHeight = windowScreenHeightDp() > 800
+    val isTablet = windowScreenWidthDp() >= 600 // Tablet detection
+    val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
+    val isExtraSmallWidth = windowScreenWidthDp() < 360 // Extra small width (< 360dp)
+    val isCompactWidth = forcePlayerCompactMode || windowScreenWidthDp() < 400 // Compact width (< 400dp)
+    val isMidWidth = windowScreenWidthDp() in 400..499 // Mid-range width (400-499dp)
     
     // Bottom sheet states
     var showSleepTimerBottomSheet by remember { mutableStateOf(false) }
@@ -755,7 +758,7 @@ fun MaterialPlayerScreen(
     val line6Alpha = line6Fraction
     
     // Swipe to dismiss gesture state - enhanced for mini player-like transition
-    var swipeOffsetY by remember { mutableStateOf(0f) }
+    var swipeOffsetY by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
     var isSwipeDismissing by remember { mutableStateOf(false) }
     val dismissTargetOffset = screenHeight * 1.18f
@@ -1247,7 +1250,7 @@ fun MaterialPlayerScreen(
             HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
             onBack()
         },
-        screenModifier = if (swipeToDismissEnabled) {
+        modifier = if (swipeToDismissEnabled) {
             Modifier
                 .graphicsLayer {
                     val swipeProgress = (animatedSwipeOffset / screenHeight).coerceIn(0f, 1f)
@@ -1603,7 +1606,7 @@ fun MaterialPlayerScreen(
                         modifier = Modifier.weight(1f, fill = false)
                     ) {
                         // State for artwork swipe gestures
-                        var artworkOffsetX by remember { mutableStateOf(0f) }
+                        var artworkOffsetX by remember { mutableFloatStateOf(0f) }
                         val artworkSwipeThreshold = 150f
                         
                         val artworkTranslationX by animateFloatAsState(
@@ -3081,7 +3084,7 @@ fun MaterialPlayerScreen(
                                                     label = {
                                                         Text(
                                                             if (playbackSpeed != 1.0f)
-                                                                "${String.format("%.2f", playbackSpeed)}x"
+                                                                "${String.format(Locale.US, "%.2f", playbackSpeed)}x"
                                                             else
                                                                 "Speed",
                                                             style = MaterialTheme.typography.labelLarge.copy(
@@ -3153,7 +3156,7 @@ fun MaterialPlayerScreen(
                                                     label = {
                                                         Text(
                                                             if (playbackPitch != 1.0f)
-                                                                "${String.format("%.2f", playbackPitch)}x"
+                                                                "${String.format(Locale.US, "%.2f", playbackPitch)}x"
                                                             else
                                                                 "Pitch",
                                                             style = MaterialTheme.typography.labelLarge.copy(

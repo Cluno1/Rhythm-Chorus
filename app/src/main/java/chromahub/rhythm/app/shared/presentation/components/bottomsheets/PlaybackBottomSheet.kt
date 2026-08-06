@@ -103,6 +103,7 @@ import chromahub.rhythm.app.shared.presentation.components.dialogs.AppRestartDia
 import chromahub.rhythm.app.util.AppRestarter
 import chromahub.rhythm.app.core.domain.model.StreamingQuality
 import chromahub.rhythm.app.shared.presentation.components.player.VolumeSlider
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,7 +130,7 @@ fun PlaybackBottomSheet(
     
     // System volume state
     var systemVolume by remember { mutableFloatStateOf(0.5f) }
-    var systemMaxVolume by remember { mutableStateOf(15) }
+    var systemMaxVolume by remember { mutableIntStateOf(15) }
     
     // Collect settings
     val playbackSpeed by musicViewModel.playbackSpeed.collectAsState()
@@ -824,11 +825,11 @@ private fun PlaybackQuickSettingsCard(
     onShowPlayedQueueSongsChange: (Boolean) -> Unit,
     onCrossfadeEnabledChange: (Boolean) -> Unit,
     onCrossfadeDurationChange: (Float) -> Unit,
-    onNavigateToSettings: (() -> Unit)? = null,
-    onNavigateToGoMode: (() -> Unit)? = null,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
     context: Context,
     modifier: Modifier = Modifier,
+    onNavigateToSettings: (() -> Unit)? = null,
+    onNavigateToGoMode: (() -> Unit)? = null,
     isAudioOffloadActive: Boolean = false,
     isOffloadEnforced: Boolean = false
 ) {
@@ -1157,7 +1158,7 @@ private fun PlaybackPitchCard(
                 
                 // Current pitch display
                 Text(
-                    text = "${String.format("%.2f", selectedPitch)}x",
+                    text = "${String.format(Locale.ROOT, "%.2f", selectedPitch)}x",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -1269,7 +1270,7 @@ private fun PlaybackPitchCard(
                         },
                         label = {
                             Text(
-                                text = "${String.format("%.2f", presetPitch)}x",
+                                text = "${String.format(Locale.ROOT, "%.2f", presetPitch)}x",
                                 style = MaterialTheme.typography.labelMedium
                             )
                         },
@@ -1297,8 +1298,8 @@ private fun PlaybackPitchCard(
 private fun AnimatedAudioSwitch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch(
         checked = checked,
@@ -1319,8 +1320,8 @@ private fun getDeviceIcon(location: PlaybackLocation) = when {
 
 @Composable
 private fun AnimateIn(
-    delay: Int = 50,
     modifier: Modifier = Modifier,
+    delay: Int = 50,
     content: @Composable () -> Unit
 ) {
     var visible by remember { mutableStateOf(false) }

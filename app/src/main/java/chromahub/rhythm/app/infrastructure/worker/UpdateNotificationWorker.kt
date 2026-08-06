@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import java.text.SimpleDateFormat
 import java.util.Locale
+import androidx.core.content.edit
 
 /**
  * Background worker that checks for app updates using smart polling techniques
@@ -228,11 +229,11 @@ class UpdateNotificationWorker(
                         Log.d(TAG, "Latest nightly version: $newVersionTag, Last known: $lastVersionTag")
                         Log.d(TAG, "Current version: ${BuildConfig.VERSION_NAME}, Is newer: $hasNewVersion")
                         
-                        prefs.edit()
-                            .putString(KEY_LAST_VERSION_TAG, newVersionTag)
-                            .putLong(KEY_LAST_CHECK_TIME, System.currentTimeMillis())
-                            .putInt(KEY_CONSECUTIVE_NOT_MODIFIED, 0)
-                            .apply()
+                        prefs.edit {
+    putString(KEY_LAST_VERSION_TAG, newVersionTag)
+    putLong(KEY_LAST_CHECK_TIME, System.currentTimeMillis())
+    putInt(KEY_CONSECUTIVE_NOT_MODIFIED, 0)
+}
                         
                         return if (hasNewVersion) {
                             UpdateCheckResult.UPDATE_AVAILABLE
@@ -280,10 +281,10 @@ class UpdateNotificationWorker(
                 304 -> {
                     // Not Modified - no changes since last check
                     Log.d(TAG, "304 Not Modified - no changes detected")
-                    prefs.edit()
-                        .putInt(KEY_CONSECUTIVE_NOT_MODIFIED, consecutiveNotModified + 1)
-                        .putLong(KEY_LAST_CHECK_TIME, System.currentTimeMillis())
-                        .apply()
+                    prefs.edit {
+                        putInt(KEY_CONSECUTIVE_NOT_MODIFIED, consecutiveNotModified + 1)
+                        putLong(KEY_LAST_CHECK_TIME, System.currentTimeMillis())
+                    }
                     return UpdateCheckResult.UP_TO_DATE
                 }
                 
@@ -307,13 +308,13 @@ class UpdateNotificationWorker(
                             Log.d(TAG, "Current version: ${BuildConfig.VERSION_NAME}, Is newer: $hasNewVersion")
                             
                             // Update cache
-                            prefs.edit()
-                                .putString(KEY_LAST_ETAG, newETag)
-                                .putString(KEY_LAST_MODIFIED, newLastModified)
-                                .putString(KEY_LAST_VERSION_TAG, newVersionTag)
-                                .putLong(KEY_LAST_CHECK_TIME, System.currentTimeMillis())
-                                .putInt(KEY_CONSECUTIVE_NOT_MODIFIED, 0) // Reset counter
-                                .apply()
+                            prefs.edit {
+                                putString(KEY_LAST_ETAG, newETag)
+                                putString(KEY_LAST_MODIFIED, newLastModified)
+                                putString(KEY_LAST_VERSION_TAG, newVersionTag)
+                                putLong(KEY_LAST_CHECK_TIME, System.currentTimeMillis())
+                                putInt(KEY_CONSECUTIVE_NOT_MODIFIED, 0) // Reset counter
+                            }
                             
                             return if (hasNewVersion) {
                                 UpdateCheckResult.UPDATE_AVAILABLE
@@ -360,10 +361,10 @@ class UpdateNotificationWorker(
         }
 
         sendUpdateStatusNotification(title, text)
-        prefs.edit()
-            .putString(KEY_LAST_STATUS_NOTIFICATION_TYPE, type)
-            .putLong(KEY_LAST_STATUS_NOTIFICATION_AT, System.currentTimeMillis())
-            .apply()
+        prefs.edit {
+    putString(KEY_LAST_STATUS_NOTIFICATION_TYPE, type)
+    putLong(KEY_LAST_STATUS_NOTIFICATION_AT, System.currentTimeMillis())
+}
     }
 
     private fun shouldSendStatusNotification(type: String): Boolean {
@@ -545,7 +546,6 @@ class UpdateNotificationWorker(
     }
 
     private fun ensureUpdateAvailableChannel(notificationManager: NotificationManager) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
         val channel = NotificationChannel(
             UPDATE_AVAILABLE_CHANNEL_ID,
@@ -559,7 +559,6 @@ class UpdateNotificationWorker(
     }
 
     private fun ensureUpdateStatusChannel(notificationManager: NotificationManager) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
         val channel = NotificationChannel(
             UPDATE_STATUS_CHANNEL_ID,
@@ -592,7 +591,7 @@ class UpdateNotificationWorker(
      * Clear cached webhook data (useful for testing or reset)
      */
     fun clearCache() {
-        prefs.edit().clear().apply()
+        prefs.edit { clear() }
         Log.d(TAG, "Webhook cache cleared")
     }
 }

@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 
 import androidx.compose.ui.unit.Dp
+import androidx.core.net.toUri
 
 /**
  * Quality level for badge styling
@@ -71,7 +72,7 @@ fun AudioQualityIcon(
 
         withContext(Dispatchers.IO) {
             try {
-                val uri = Uri.parse(playbackUri)
+                val uri = (playbackUri).toUri()
                 val formatInfo = AudioFormatDetector.detectFormat(context, uri)
 
                 val bitrateKbps = if (formatInfo.bitrateKbps > 0) formatInfo.bitrateKbps else 0

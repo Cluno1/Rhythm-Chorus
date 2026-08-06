@@ -169,7 +169,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import chromahub.rhythm.app.util.performIfEnabled
+import chromahub.rhythm.app.util.PerformIfEnabled
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.R
@@ -190,6 +190,8 @@ import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveElev
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapes
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
+import chromahub.rhythm.app.shared.presentation.theme.ExpressiveMaterialShape
+import chromahub.rhythm.app.shared.presentation.theme.rememberExpressiveShape
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonWeighted
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonSize
@@ -219,6 +221,8 @@ import java.util.Calendar
 import kotlin.random.Random
 import androidx.core.text.HtmlCompat
 import androidx.compose.ui.res.stringResource
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -760,7 +764,7 @@ private fun ModernScrollableContent(
                                                 icon = RhythmIcons.AlbumFilled,
                                                 title = context.getString(R.string.home_no_featured_albums),
                                                 subtitle = context.getString(R.string.home_no_featured_albums_desc),
-                                                iconSize = 48.dp
+                                                iconSize = 32.dp
                                             )
                                         }
                                     }
@@ -793,7 +797,7 @@ private fun ModernScrollableContent(
                                                 icon = RhythmIcons.ArtistFilled,
                                                 title = context.getString(R.string.home_no_artists),
                                                 subtitle = context.getString(R.string.home_no_artists_desc),
-                                                iconSize = 48.dp
+                                                iconSize = 32.dp
                                             )
                                         }
                                     }
@@ -895,7 +899,7 @@ private fun ModernScrollableContent(
                                                 icon = MaterialSymbolIcon("new_releases", filled = true),
                                                 title = context.getString(R.string.home_no_new_releases),
                                                 subtitle = context.getString(R.string.home_no_new_releases_desc),
-                                                iconSize = 48.dp
+                                                iconSize = 32.dp
                                             )
                                         }
                                     }
@@ -987,7 +991,7 @@ private fun ModernScrollableContent(
                                                 icon = MaterialSymbolIcon("library_add", filled = true),
                                                 title = context.getString(R.string.home_no_recently_added),
                                                 subtitle = context.getString(R.string.home_no_recently_added_desc),
-                                                iconSize = 48.dp
+                                                iconSize = 32.dp
                                             )
                                         }
                                     }
@@ -1347,7 +1351,7 @@ private fun ModernRecentlyPlayedSection(
                 icon = MaterialSymbolIcon("history", filled = true),
                 title = context.getString(R.string.home_no_recent_activity),
                 subtitle = context.getString(R.string.home_no_recent_activity_desc),
-                iconSize = 48.dp
+                iconSize = 32.dp
             )
         }
     }
@@ -1563,8 +1567,7 @@ private fun ModernFeaturedSection(
     val haptic = LocalHapticFeedback.current
     val viewModel = viewModel<chromahub.rhythm.app.viewmodel.MusicViewModel>()
 
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
+    val screenWidth = windowScreenWidthDp().dp
 
     // Perfect fit for any display size
     val headerHeight = when (heightSizeClass) {
@@ -2446,7 +2449,7 @@ private fun ModernRecommendedSection(
                 icon = MaterialSymbolIcon("tips_and_updates", filled = true),
                 title = context.getString(R.string.home_no_recommendations),
                 subtitle = context.getString(R.string.home_no_recommendations_desc),
-                iconSize = 48.dp
+                iconSize = 32.dp
             )
         }
     }
@@ -2585,29 +2588,29 @@ private fun ModernEmptyState(
     icon: MaterialSymbolIcon,
     title: String,
     subtitle: String,
-    iconSize: Dp = 64.dp
+    iconSize: Dp = 32.dp
 ) {
+    val cookieShape = rememberExpressiveShape(ExpressiveMaterialShape.COOKIE_12)
     ExpressiveCard(
         modifier = Modifier
             .fillMaxWidth()
-            .height(220.dp)
             .padding(horizontal = 8.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
         shape = ExpressiveShapes.SquircleLarge
     ) {
-        Column(
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Surface(
-                shape = ExpressiveShapes.SquircleMedium,
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-                modifier = Modifier.size(iconSize + 24.dp)
+                shape = cookieShape,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(iconSize + 16.dp)
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -2616,29 +2619,30 @@ private fun ModernEmptyState(
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(iconSize)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+                Spacer(modifier = Modifier.height(4.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }

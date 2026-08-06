@@ -39,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -133,7 +134,7 @@ fun CollapsibleHeaderScreen(
     }
 
     val lazyListState = rememberLazyListState()
-    var expandedHeaderHeight by remember { mutableStateOf(0) }
+    var expandedHeaderHeight by remember { mutableIntStateOf(0) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -347,7 +348,7 @@ fun ArtistCollapsibleHeaderScreen(
         canScroll = { true }
     )
 
-    var expandedHeaderHeight by remember { mutableStateOf(0) }
+    var expandedHeaderHeight by remember { mutableIntStateOf(0) }
 
     // Apply global collapse behavior or screen-specific override
     val shouldStartCollapsed = alwaysCollapsed || globalCollapseBehavior == 1
@@ -625,10 +626,10 @@ fun ArtistCollapsibleHeaderScreen(
 @Composable
 fun FixedHeaderScreen(
     title: String,
+    modifier: Modifier = Modifier,
     showBackButton: Boolean = false,
     onBackClick: () -> Unit = {},
     actions: @Composable () -> Unit = {},
-    screenModifier: Modifier = Modifier,
     containerColor: Color = Color.Transparent,
     backButtonContainerColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     backButtonContentColor: Color = MaterialTheme.colorScheme.onSurface,
@@ -655,7 +656,7 @@ fun FixedHeaderScreen(
     )
 
     Scaffold(
-        modifier = screenModifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         containerColor = containerColor,
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         topBar = {

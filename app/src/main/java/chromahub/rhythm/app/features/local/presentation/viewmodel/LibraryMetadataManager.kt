@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import androidx.core.content.edit
 
 class LibraryMetadataManager(
     private val context: Application,
@@ -174,7 +175,7 @@ class LibraryMetadataManager(
                 if (genre.isNotBlank()) {
                     try {
                         val genrePrefs = appContext.getSharedPreferences("genre_cache", Context.MODE_PRIVATE)
-                        genrePrefs.edit().putString("genre_${song.id}", genre).apply()
+                        genrePrefs.edit { putString("genre_${song.id}", genre) }
                     } catch (e: Exception) {
                         Log.w(TAG, "Failed to update genre cache for song ${song.id}", e)
                     }
@@ -588,7 +589,7 @@ class LibraryMetadataManager(
                         if (newGenre.isNotBlank()) {
                             try {
                                 val genrePrefs = appContext.getSharedPreferences("genre_cache", Context.MODE_PRIVATE)
-                                genrePrefs.edit().putString("genre_${song.id}", newGenre).apply()
+                                genrePrefs.edit { putString("genre_${song.id}", newGenre) }
                             } catch (_: Exception) {}
                         }
 
@@ -730,7 +731,7 @@ class LibraryMetadataManager(
                         if (newGenre.isNotBlank()) {
                             try {
                                 val genrePrefs = appContext.getSharedPreferences("genre_cache", Context.MODE_PRIVATE)
-                                genrePrefs.edit().putString("genre_${song.id}", newGenre).apply()
+                                genrePrefs.edit { putString("genre_${song.id}", newGenre) }
                             } catch (_: Exception) {}
                         }
 
@@ -796,10 +797,10 @@ class LibraryMetadataManager(
     private fun persistArtworkOverrideRemoved(context: Context, songId: String) {
         try {
             context.getSharedPreferences("artwork_overrides", Context.MODE_PRIVATE)
-                .edit()
-                .putBoolean("removed_$songId", true)
-                .remove("uri_$songId")
-                .apply()
+                .edit {
+                    putBoolean("removed_$songId", true)
+                    remove("uri_$songId")
+                }
         } catch (e: Exception) {
             Log.w(TAG, "Failed to persist removed artwork override for song $songId", e)
         }
@@ -809,10 +810,10 @@ class LibraryMetadataManager(
         if (artworkUri == null) return
         try {
             context.getSharedPreferences("artwork_overrides", Context.MODE_PRIVATE)
-                .edit()
-                .putBoolean("removed_$songId", false)
-                .putString("uri_$songId", artworkUri.toString())
-                .apply()
+                .edit {
+                    putBoolean("removed_$songId", false)
+                    putString("uri_$songId", artworkUri.toString())
+                }
         } catch (e: Exception) {
             Log.w(TAG, "Failed to persist artwork override URI for song $songId", e)
         }

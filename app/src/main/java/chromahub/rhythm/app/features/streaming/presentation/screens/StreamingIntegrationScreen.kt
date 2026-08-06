@@ -30,8 +30,8 @@ import chromahub.rhythm.app.features.streaming.presentation.model.StreamingServi
  */
 @Composable
 fun StreamingIntegrationScreen(
-    integrationServices: List<String> = emptyList(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    integrationServices: List<String> = emptyList()
 ) {
     val defaultServices = StreamingServiceOptions.defaults.map { option ->
         stringResource(id = option.nameRes)

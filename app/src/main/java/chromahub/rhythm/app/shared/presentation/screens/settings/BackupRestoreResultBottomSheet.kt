@@ -216,7 +216,7 @@ fun BackupRestoreResultBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = if (state.isError) {
                         MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.55f)

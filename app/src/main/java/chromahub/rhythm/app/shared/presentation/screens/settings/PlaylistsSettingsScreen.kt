@@ -135,6 +135,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.text.HtmlCompat
 import chromahub.rhythm.app.shared.presentation.components.common.M3FourColorCircularLoader
@@ -221,7 +222,7 @@ fun PlaylistsSettingsScreen(onBackClick: () -> Unit) {
                 SettingItem(
                     RhythmIcons.Delete,
                     context.getString(R.string.settings_cleanup_empty_playlists),
-                    context.getString(R.string.settings_cleanup_empty_playlists_desc, emptyPlaylists.size, if (emptyPlaylists.size > 1) "s" else ""),
+                    pluralStringResource(R.plurals.settings_cleanup_empty_playlists_desc, emptyPlaylists.size, emptyPlaylists.size),
                     onClick = {
                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                         showCleanupConfirmDialog = true
@@ -325,7 +326,7 @@ fun PlaylistsSettingsScreen(onBackClick: () -> Unit) {
                 )
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
@@ -538,7 +539,7 @@ fun PlaylistsSettingsScreen(onBackClick: () -> Unit) {
                 )
             },
             text = {
-                Text(context.getString(R.string.dialog_cleanup_empty_playlists_message, emptyPlaylists.size, if (emptyPlaylists.size > 1) "s" else ""))
+                Text(pluralStringResource(R.plurals.dialog_cleanup_empty_playlists_message, emptyPlaylists.size, emptyPlaylists.size))
             },
             confirmButton = {
                 Button(

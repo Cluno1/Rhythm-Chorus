@@ -71,6 +71,7 @@ import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.M3ImageUtils
 import chromahub.rhythm.app.R
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 
 private data class MultiOptionItem(
     val icon: MaterialSymbolIcon,
@@ -437,7 +438,7 @@ private fun MultiSelectionHeader(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = stringResource(R.string.ui_songs_count, selectedSongs.size),
+                        text = pluralStringResource(R.plurals.ui_songs_count, selectedSongs.size, selectedSongs.size),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold

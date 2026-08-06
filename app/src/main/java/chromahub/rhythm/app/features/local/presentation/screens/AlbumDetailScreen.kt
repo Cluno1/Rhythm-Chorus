@@ -81,6 +81,8 @@ import kotlinx.coroutines.withContext
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.sp
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 private enum class AlbumSortOrder {
     TRACK_NUMBER,
@@ -198,9 +200,8 @@ fun AlbumDetailScreen(
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val density = LocalDensity.current
-    val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
-    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
+    val isTablet = windowScreenWidthDp() >= 600
+    val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
 
     val appSettings = remember { AppSettings.getInstance(context) }
     val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
@@ -1396,14 +1397,14 @@ private fun AboutAlbumSection(
 private fun AlbumSongItem(
     song: Song,
     onClick: () -> Unit,
+    onMoreClick: () -> Unit,
+    modifier: Modifier = Modifier,
     currentSong: Song? = null,
     isPlaying: Boolean = false,
     useHoursFormat: Boolean = false,
     index: Int = 0,
     totalCount: Int = 0,
-    itemShape: RoundedCornerShape? = null,
-    onMoreClick: () -> Unit,
-    modifier: Modifier = Modifier
+    itemShape: RoundedCornerShape? = null
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current

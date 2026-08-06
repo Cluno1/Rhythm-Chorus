@@ -140,13 +140,13 @@ fun FestiveOverlayFromSettings(
 @Composable
 fun FestiveOverlayWithParams(
     config: FestiveConfig,
+    modifier: Modifier = Modifier,
     snowflakeSize: Float = 1.0f,
     snowflakeArea: SnowflakeArea = SnowflakeArea.FULL_SCREEN,
     showTopLights: Boolean = true,
     showSideGarland: Boolean = true,
     showBottomSnow: Boolean = true,
     showSnowfall: Boolean = true,
-    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     val activeFestiveTheme = FestiveThemeEngine.getActiveFestiveTheme(config)
@@ -230,9 +230,9 @@ fun FestiveOverlayWithParams(
  */
 @Composable
 fun ChristmasSnowfallOverlay(
+    modifier: Modifier = Modifier,
     intensity: Float = 0.5f,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     Box(modifier = modifier.fillMaxSize()) {

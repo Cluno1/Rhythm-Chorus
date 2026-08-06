@@ -28,10 +28,10 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun StandardBottomSheetHeader(
     title: String,
-    subtitle: String = "",
-    icon: ImageVector? = null,
     visible: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    subtitle: String = "",
+    icon: ImageVector? = null
 ) {
     AnimatedVisibility(
         visible = visible,

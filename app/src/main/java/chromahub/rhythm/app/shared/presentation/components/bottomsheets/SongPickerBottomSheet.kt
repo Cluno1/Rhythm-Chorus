@@ -34,6 +34,7 @@ import coil.request.ImageRequest
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
+import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveScrollBar
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.ImageUtils
@@ -58,6 +59,15 @@ fun SongPickerBottomSheet(
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val listState = rememberLazyListState()
+
+    val canScroll by remember(listState) {
+        derivedStateOf { listState.canScrollForward || listState.canScrollBackward }
+    }
+    val animatedEndPadding by animateDpAsState(
+        targetValue = if (canScroll) 36.dp else 16.dp,
+        animationSpec = tween(durationMillis = 200),
+        label = "PickerEndPadding"
+    )
 
     var isSelectionMode by remember { mutableStateOf(false) }
     var selectedSongs by remember { mutableStateOf<Set<String>>(emptySet()) }
@@ -123,40 +133,60 @@ fun SongPickerBottomSheet(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Column(verticalArrangement = Arrangement.Center) {
-                            AnimatedVisibility(visible = isSelectionMode && selectedSongs.isNotEmpty()) {
+                            AnimatedVisibility(visible = isSelectionMode) {
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     FilledTonalIconButton(
                                         onClick = {
                                             HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                            if (selectedSongs.size == filteredSongs.size) selectedSongs = emptySet()
-                                            else selectedSongs = filteredSongs.map { it.id }.toSet()
+                                            isSelectionMode = false
+                                            selectedSongs = emptySet()
                                         },
                                         colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                         )
                                     ) {
                                         Icon(
-                                            imageVector = if (selectedSongs.size == filteredSongs.size) MaterialSymbolIcon("deselect", filled = true) else RhythmIcons.SelectAll,
-                                            contentDescription = null,
+                                            imageVector = RhythmIcons.Close,
+                                            contentDescription = stringResource(R.string.addtoplaylistscreen_exit_selection),
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
 
-                                    FilledIconButton(
-                                        onClick = {
-                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                            val songsToAdd = filteredSongs.filter { selectedSongs.contains(it.id) }
-                                            onAddSongsToPlaylist(songsToAdd)
-                                            isSelectionMode = false
-                                            selectedSongs = emptySet()
-                                        },
-                                        colors = IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                        )
-                                    ) {
-                                        Icon(imageVector = RhythmIcons.Check, contentDescription = null, modifier = Modifier.size(20.dp))
+                                    if (selectedSongs.isNotEmpty()) {
+                                        FilledTonalIconButton(
+                                            onClick = {
+                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                                if (selectedSongs.size == filteredSongs.size) selectedSongs = emptySet()
+                                                else selectedSongs = filteredSongs.map { it.id }.toSet()
+                                            },
+                                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                            )
+                                        ) {
+                                            Icon(
+                                                imageVector = if (selectedSongs.size == filteredSongs.size) MaterialSymbolIcon("deselect", filled = true) else RhythmIcons.SelectAll,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+
+                                        FilledIconButton(
+                                            onClick = {
+                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                val songsToAdd = filteredSongs.filter { selectedSongs.contains(it.id) }
+                                                onAddSongsToPlaylist(songsToAdd)
+                                                isSelectionMode = false
+                                                selectedSongs = emptySet()
+                                            },
+                                            colors = IconButtonDefaults.filledIconButtonColors(
+                                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                            )
+                                        ) {
+                                            Icon(imageVector = RhythmIcons.Check, contentDescription = null, modifier = Modifier.size(20.dp))
+                                        }
                                     }
                                 }
                             }
@@ -217,45 +247,54 @@ fun SongPickerBottomSheet(
             }
 
             // Body: song list
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                if (filteredSongs.isEmpty()) {
-                    item {
-                        EmptySongsState(hasSearch = searchQuery.isNotEmpty(), modifier = Modifier.padding(vertical = 48.dp))
-                    }
-                } else {
-                    itemsIndexed(items = filteredSongs, key = { index, song -> "addsong_${song.id}_$index" }) { index, song ->
-                        SongSelectionItem(
-                            song = song,
-                            isSelectionMode = isSelectionMode,
-                            isSelected = selectedSongs.contains(song.id),
-                            index = index,
-                            totalCount = filteredSongs.size,
-                            onSongClick = {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                if (isSelectionMode) {
-                                    selectedSongs = if (selectedSongs.contains(song.id)) selectedSongs - song.id else selectedSongs + song.id
-                                } else {
-                                    onAddSongsToPlaylist(listOf(song))
-                                }
-                            },
-                            onLongClick = {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                if (!isSelectionMode) {
-                                    isSelectionMode = true
-                                    selectedSongs = setOf(song.id)
-                                }
-                            },
-                            modifier = Modifier.animateItem()
-                        )
+            Box(modifier = Modifier.fillMaxWidth()) {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = animatedEndPadding),
+                    contentPadding = PaddingValues(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (filteredSongs.isEmpty()) {
+                        item {
+                            EmptySongsState(hasSearch = searchQuery.isNotEmpty(), modifier = Modifier.padding(vertical = 48.dp))
+                        }
+                    } else {
+                        itemsIndexed(items = filteredSongs, key = { index, song -> "addsong_${song.id}_$index" }) { index, song ->
+                            SongSelectionItem(
+                                song = song,
+                                isSelectionMode = isSelectionMode,
+                                isSelected = selectedSongs.contains(song.id),
+                                index = index,
+                                totalCount = filteredSongs.size,
+                                onSongClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                    if (isSelectionMode) {
+                                        selectedSongs = if (selectedSongs.contains(song.id)) selectedSongs - song.id else selectedSongs + song.id
+                                    } else {
+                                        onAddSongsToPlaylist(listOf(song))
+                                    }
+                                },
+                                onLongClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    if (!isSelectionMode) {
+                                        isSelectionMode = true
+                                        selectedSongs = setOf(song.id)
+                                    }
+                                },
+                                modifier = Modifier.animateItem()
+                            )
+                        }
                     }
                 }
+
+                ExpressiveScrollBar(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 4.dp),
+                    listState = listState
+                )
             }
         }
     }

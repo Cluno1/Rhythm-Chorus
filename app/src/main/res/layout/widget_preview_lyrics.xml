@@ -8,6 +8,7 @@
     android:layout_height="150dp">
 
     <ImageView
+        android:importantForAccessibility="no"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@drawable/widget_preview_bg" />
@@ -19,32 +20,21 @@
         android:padding="12dp">
 
         <!-- Brand row -->
-        <LinearLayout
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:src="@drawable/ic_notification"
-                app:tint="@color/widget_preview_primary" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Rhythm"
-                android:textColor="@color/widget_preview_primary"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:layout_marginStart="5dp" />
-        </LinearLayout>
+            android:text="@string/widget_preview_brand"
+            android:textColor="@color/widget_preview_primary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/ic_notification"
+            app:drawableTint="@color/widget_preview_primary"
+            android:drawablePadding="5dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Midnight Drive"
+            android:text="@string/widget_preview_title"
             android:textColor="@color/widget_preview_text"
             android:textSize="15sp"
             android:textStyle="bold"
@@ -53,7 +43,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Neon Waves"
+            android:text="@string/widget_preview_subtitle"
             android:textColor="@color/widget_preview_subtext"
             android:textSize="12sp"
             android:layout_marginTop="1dp" />
@@ -62,7 +52,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Forever running through the night"
+            android:text="@string/widget_preview_lyric_active"
             android:textColor="@color/widget_preview_primary"
             android:textSize="13sp"
             android:textStyle="bold"
@@ -72,7 +62,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="With every heartbeat close to you"
+            android:text="@string/widget_preview_lyric_next"
             android:textColor="@color/widget_preview_surface_variant"
             android:textSize="12sp"
             android:layout_marginTop="1dp" />
@@ -90,12 +80,14 @@
                 android:layout_height="32dp">
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/widget_preview_circle"
                     app:tint="@color/widget_preview_tertiary" />
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_gravity="center"
@@ -109,12 +101,14 @@
                 android:layout_marginStart="10dp">
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/widget_preview_pill"
                     app:tint="@color/widget_preview_primary" />
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_gravity="center"
@@ -128,12 +122,14 @@
                 android:layout_marginStart="10dp">
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/widget_preview_circle"
                     app:tint="@color/widget_preview_tertiary" />
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_gravity="center"

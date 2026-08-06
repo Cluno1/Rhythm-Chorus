@@ -7,6 +7,7 @@ import android.util.LruCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.scale
 import com.google.android.material.color.utilities.Hct
 import com.google.android.material.color.utilities.QuantizerCelebi
 import com.google.android.material.color.utilities.SchemeExpressive
@@ -299,7 +300,7 @@ object ColorExtractor {
         val scale = maxDimension.toFloat() / max(bitmap.width, bitmap.height).toFloat()
         val newWidth = (bitmap.width * scale).roundToInt().coerceAtLeast(1)
         val newHeight = (bitmap.height * scale).roundToInt().coerceAtLeast(1)
-        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
+        return bitmap.scale(newWidth, newHeight, true)
     }
 
     /**

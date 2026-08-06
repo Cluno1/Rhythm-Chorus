@@ -74,6 +74,7 @@ import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import kotlinx.coroutines.delay
 import chromahub.rhythm.app.R
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 
 @Composable
@@ -209,7 +210,7 @@ fun AutoEQProfileSelector(
                         Text(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                             style = MaterialTheme.typography.labelLarge,
-                            text = context.getString(R.string.autoeq_profiles_available, filteredProfiles.size),
+                            text = pluralStringResource(R.plurals.autoeq_profiles_available, filteredProfiles.size, filteredProfiles.size),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }

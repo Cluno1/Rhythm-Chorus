@@ -620,7 +620,7 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
         add(SearchableSettingItem(
             id = "playlists_cleanup_empty",
             title = context.getString(R.string.settings_cleanup_empty_playlists),
-            description = context.getString(R.string.settings_cleanup_empty_playlists_desc),
+            description = context.resources.getQuantityString(R.plurals.settings_cleanup_empty_playlists_desc, 1, 1),
             keywords = listOf("playlist", "cleanup", "empty", "remove", "delete"),
             icon = MaterialSymbolIcon("delete_sweep"),
             route = SettingsRoutes.PLAYLISTS,
@@ -730,7 +730,7 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             id = "api_deezer",
             title = context.getString(R.string.onboarding_integration_deezer),
             description = context.getString(R.string.settings_search_api_deezer_desc),
-            keywords = listOf("deezer", "api", "integration", "lyrics", "artwork", "online"),
+            keywords = listOf("deezer", "api", "integration", "artwork", "artist images", "online"),
             icon = MaterialSymbolIcon("cloud"),
             route = SettingsRoutes.API_MANAGEMENT,
             parentScreen = context.getString(R.string.settings_api_management),

@@ -568,7 +568,6 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
                         context.getString(R.string.settings_theme_mode),
                         context.getString(R.string.settings_theme_mode_desc),
                         onClick = {
-                            // This will be replaced with button group below
                         }
                     ),
                     // AMOLED Theme - always in list, rendered conditionally via AnimatedVisibility
@@ -843,7 +842,7 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
@@ -1192,64 +1191,6 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
     }
 }
 
-
-//                                    modifier = Modifier.size(40.dp)
-//                                ) {
-//                                    Box(
-//                                        contentAlignment = Alignment.Center,
-//                                        modifier = Modifier.fillMaxSize()
-//                                    ) {
-//                                        Icon(
-//                                            imageVector = source.icon,
-//                                            contentDescription = null,
-//                                            tint = if (isSelected)
-//                                                MaterialTheme.colorScheme.onPrimary
-//                                            else
-//                                                MaterialTheme.colorScheme.onSurfaceVariant,
-//                                            modifier = Modifier.size(20.dp)
-//                                        )
-//                                    }
-//                                }
-//
-//                                Spacer(modifier = Modifier.width(16.dp))
-//
-//                                Column(modifier = Modifier.weight(1f)) {
-//                                    Text(
-//                                        text = source.displayName,
-//                                        style = MaterialTheme.typography.titleMedium,
-//                                        fontWeight = FontWeight.SemiBold,
-//                                        color = if (isSelected)
-//                                            MaterialTheme.colorScheme.onPrimaryContainer
-//                                        else
-//                                            MaterialTheme.colorScheme.onSurface
-//                                    )
-//                                    Spacer(modifier = Modifier.height(4.dp))
-//                                    Text(
-//                                        text = source.description,
-//                                        style = MaterialTheme.typography.bodySmall,
-//                                        color = if (isSelected)
-//                                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-//                                        else
-//                                            MaterialTheme.colorScheme.onSurfaceVariant
-//                                    )
-//                                }
-//
-//                                if (isSelected) {
-//                                    Icon(
-//                                        imageVector = RhythmIcons.CheckCircle,
-//                                        contentDescription = "Selected",
-//                                        
-//                                        modifier = Modifier.size(24.dp)
-//                                    )
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
 
 @Composable
 fun ColorSchemePaletteRow(

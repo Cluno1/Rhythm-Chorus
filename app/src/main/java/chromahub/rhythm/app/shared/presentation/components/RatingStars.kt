@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import chromahub.rhythm.app.R
 import android.content.Context
 import androidx.compose.ui.platform.LocalContext
@@ -42,10 +43,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 fun RatingStars(
     rating: Int,
     onRatingChanged: (Int) -> Unit,
-    enabled: Boolean = true,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     size: androidx.compose.ui.unit.Dp = 20.dp,
-    filledColor: Color = Color(0xFFFFD700), // Gold
+    filledColor: Color = Color(0xFFFFD700),
+    // Gold
     emptyColor: Color = MaterialTheme.colorScheme.surfaceVariant
 ) {
     val ratingLabels = listOf(
@@ -59,7 +61,7 @@ fun RatingStars(
     
     val unknownRatingLabel = stringResource(R.string.rating_unknown)
     val label = ratingLabels.getOrNull(rating) ?: unknownRatingLabel
-    val accessibilityDescription = stringResource(R.string.rating_stars_desc, label, rating)
+    val accessibilityDescription = pluralStringResource(R.plurals.rating_stars_desc, rating, label, rating)
 
     Row(
         modifier = modifier.semantics {
@@ -91,7 +93,7 @@ fun RatingStars(
             
             Icon(
                 imageVector = if (isFilled) MaterialSymbolIcon("star", filled = true) else MaterialSymbolIcon("star"),
-                contentDescription = stringResource(R.string.rating_stars_count, starRating),
+                contentDescription = pluralStringResource(R.plurals.rating_stars_count, starRating, starRating),
                 tint = starColor,
                 modifier = Modifier
                     .size(starSize)

@@ -18,6 +18,7 @@ import chromahub.rhythm.app.features.streaming.di.StreamingMusicModule
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ConcurrentHashMap
+import androidx.core.net.toUri
 
 @OptIn(UnstableApi::class)
 class PreloadController(
@@ -50,7 +51,7 @@ class PreloadController(
                                 val repository = StreamingMusicModule.provideStreamingMusicRepository(context)
                                 val freshUrl = runBlocking { repository.getStreamingUrl(trackId) }
                                 if (!freshUrl.isNullOrBlank()) {
-                                    return dataSpec.withUri(Uri.parse(freshUrl))
+                                    return dataSpec.withUri((freshUrl).toUri())
                                 }
                             }
                         }

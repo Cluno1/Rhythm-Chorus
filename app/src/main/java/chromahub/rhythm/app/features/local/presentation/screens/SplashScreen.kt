@@ -65,6 +65,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 import androidx.compose.ui.res.stringResource
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 @Composable
 fun SplashScreen(
@@ -88,9 +90,8 @@ fun SplashScreen(
     val expressiveShapeArtistArt by appSettings.expressiveShapeArtistArt.collectAsState()
     val expressiveShapePlayerControls by appSettings.expressiveShapePlayerControls.collectAsState()
     val expressiveShapeMiniPlayer by appSettings.expressiveShapeMiniPlayer.collectAsState()
-    val configuration = LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp
-    val screenHeightDp = configuration.screenHeightDp
+    val screenWidthDp = windowScreenWidthDp()
+    val screenHeightDp = windowScreenHeightDp()
 
     val festiveConfig = remember(festiveEnabled, festiveTypeString, festiveAutoDetect) {
         FestiveConfig(

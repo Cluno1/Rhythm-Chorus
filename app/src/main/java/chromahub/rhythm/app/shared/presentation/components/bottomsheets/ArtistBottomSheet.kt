@@ -64,6 +64,8 @@ import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonTy
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -136,10 +138,9 @@ fun ArtistBottomSheet(
         target = ExpressiveShapeTarget.SONG_ART,
         fallbackShape = RoundedCornerShape(12.dp)
     )
-    val configuration = LocalConfiguration.current
 
-    val isTablet = configuration.screenWidthDp >= 600
-    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
+    val isTablet = windowScreenWidthDp() >= 600
+    val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
 
     val allSongs by viewModel.filteredSongs.collectAsState()
     val allAlbums by viewModel.albums.collectAsState()

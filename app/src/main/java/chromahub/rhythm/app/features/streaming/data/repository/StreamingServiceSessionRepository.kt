@@ -5,6 +5,7 @@ import chromahub.rhythm.app.features.streaming.domain.model.StreamingServiceId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import androidx.core.content.edit
 
 data class StreamingServiceSession(
     val serviceId: String,
@@ -30,22 +31,22 @@ class StreamingServiceSessionRepository(context: Context) {
 
     fun connect(serviceId: String, serverUrl: String, username: String) {
         val now = System.currentTimeMillis()
-        prefs.edit()
-            .putBoolean(keyConnected(serviceId), true)
-            .putString(keyServerUrl(serviceId), serverUrl)
-            .putString(keyUsername(serviceId), username)
-            .putLong(keyConnectedAt(serviceId), now)
-            .apply()
+        prefs.edit {
+    putBoolean(keyConnected(serviceId), true)
+    putString(keyServerUrl(serviceId), serverUrl)
+    putString(keyUsername(serviceId), username)
+    putLong(keyConnectedAt(serviceId), now)
+}
         _sessions.value = loadSessions()
     }
 
     fun disconnect(serviceId: String) {
-        prefs.edit()
-            .putBoolean(keyConnected(serviceId), false)
-            .remove(keyServerUrl(serviceId))
-            .remove(keyUsername(serviceId))
-            .remove(keyConnectedAt(serviceId))
-            .apply()
+        prefs.edit {
+    putBoolean(keyConnected(serviceId), false)
+    remove(keyServerUrl(serviceId))
+    remove(keyUsername(serviceId))
+    remove(keyConnectedAt(serviceId))
+}
         _sessions.value = loadSessions()
     }
 

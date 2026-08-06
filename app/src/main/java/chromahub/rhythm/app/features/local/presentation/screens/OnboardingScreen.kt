@@ -87,11 +87,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.ui.Alignment
@@ -366,7 +368,9 @@ fun OnboardingScreen(
                     key = { page -> page } // Add key to preserve page state
                 ) { page ->
                     val step = visibleSteps.getOrNull(page) ?: OnboardingStep.COMPLETE
-                    val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction)
+                    val pageOffset by remember(page) {
+                        derivedStateOf { (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction }
+                    }
                     // Container for step-specific content - positioned at top within pager page
                     Box(
                         modifier = Modifier
@@ -8522,7 +8526,7 @@ fun EnhancedPlayerThemeChoiceContent(
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
-    var selectedViewIndex by remember { mutableStateOf(0) } // 0 = Player, 1 = Mini Player
+    var selectedViewIndex by remember { mutableIntStateOf(0) } // 0 = Player, 1 = Mini Player
 
     if (isTablet) {
         Row(
@@ -10747,8 +10751,8 @@ private fun StatsFeaturesAndInfoCard() {
 fun OnboardingAnimatedSwitch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch(
         checked = checked,

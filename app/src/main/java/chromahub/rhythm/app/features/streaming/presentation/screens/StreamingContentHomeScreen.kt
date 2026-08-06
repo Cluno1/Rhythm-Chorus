@@ -133,6 +133,8 @@ import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.M3ImageUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 private const val STREAMING_SECTION_RHYTHM_GUARD = "RHYTHM_GUARD"
 private const val STREAMING_SECTION_RHYTHM_STATS = "RHYTHM_STATS"
@@ -202,7 +204,7 @@ fun StreamingContentHomeScreen(
     val rhythmGuardAge by appSettings.rhythmGuardAge.collectAsState()
     val rhythmGuardAlertThresholdMinutes by appSettings.rhythmGuardAlertThresholdMinutes.collectAsState()
     val rhythmGuardTimeoutUntilMs by appSettings.rhythmGuardTimeoutUntilMs.collectAsState()
-    val loadingSectionHeight = LocalConfiguration.current.screenHeightDp.dp
+    val loadingSectionHeight = windowScreenHeightDp().dp
 
     var showSectionOrderBottomSheet by remember { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -790,10 +792,10 @@ private fun StreamingHomeStateCard(
     icon: MaterialSymbolIcon,
     iconContainerColor: Color,
     iconTint: Color,
+    modifier: Modifier = Modifier,
     showProgressIndicator: Boolean = false,
     actionText: String? = null,
-    onAction: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onAction: (() -> Unit)? = null
 ) {
     ExpressiveElevatedCard(
         modifier = modifier,
@@ -1229,8 +1231,7 @@ private fun StreamingRecommendationsCarousel(
     val widthSizeClass = windowSizeClass.widthSizeClass
     val heightSizeClass = windowSizeClass.heightSizeClass
 
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
+    val screenWidth = windowScreenWidthDp().dp
 
     val headerHeight = when (heightSizeClass) {
         WindowHeightSizeClass.Compact -> 280.dp
@@ -1662,11 +1663,10 @@ private fun StreamingArtistsSection(
     artists: List<StreamingArtist>,
     onArtistClick: (StreamingArtist) -> Unit
 ) {
-    val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
+    val isTablet = windowScreenWidthDp() >= 600
 
     if (isTablet) {
-        val gridColumns = if (configuration.screenWidthDp >= 840) 6 else 4
+        val gridColumns = if (windowScreenWidthDp() >= 840) 6 else 4
         val gridState = rememberLazyGridState()
         LazyVerticalGrid(
             columns = GridCells.Fixed(gridColumns),

@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun M3LinearLoader(
-    progress: Float? = null,
     modifier: Modifier = Modifier,
+    progress: Float? = null,
     color: Color = MaterialTheme.colorScheme.primary,
     trackColor: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
     showTrackGap: Boolean = true,
@@ -58,8 +58,8 @@ fun M3LinearLoader(
  */
 @Composable
 fun M3CircularLoader(
-    progress: Float? = null,
     modifier: Modifier = Modifier,
+    progress: Float? = null,
     color: Color = MaterialTheme.colorScheme.primary,
     trackColor: Color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.4f),
     strokeWidth: Float = 4f,
@@ -202,8 +202,8 @@ fun M3DotLoader(
  */
 @Composable
 fun M3BrandedLoader(
-    progress: Float? = null,
     modifier: Modifier = Modifier,
+    progress: Float? = null,
     color: Color = MaterialTheme.colorScheme.primary,
     trackColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
     surfaceColor: Color = MaterialTheme.colorScheme.surface,

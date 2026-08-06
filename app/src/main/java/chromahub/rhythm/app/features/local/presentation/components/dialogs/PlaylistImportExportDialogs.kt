@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import chromahub.rhythm.app.shared.presentation.components.common.FileOperationLoader
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 
 /**
@@ -317,7 +318,7 @@ fun BulkPlaylistExportDialog(
             LazyColumn {
                 item {
                     Text(
-                        text = context.getString(R.string.dialog_export_playlists_to, playlistCount),
+                        text = pluralStringResource(R.plurals.dialog_export_playlists_to, playlistCount, playlistCount),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

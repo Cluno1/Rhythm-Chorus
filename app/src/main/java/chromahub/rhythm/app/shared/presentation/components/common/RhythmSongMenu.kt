@@ -38,6 +38,7 @@ private data class SongMenuItem(
 
 @Composable
 fun RhythmSongMenuContent(
+    modifier: Modifier = Modifier,
     song: Song? = null,
     onPlay: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
@@ -52,8 +53,7 @@ fun RhythmSongMenuContent(
     onGoToArtist: (() -> Unit)? = null,
     onAddToBlacklist: (() -> Unit)? = null,
     onDeleteSong: (() -> Unit)? = null,
-    onShare: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onShare: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val finalOnShare = onShare ?: song?.let { s ->

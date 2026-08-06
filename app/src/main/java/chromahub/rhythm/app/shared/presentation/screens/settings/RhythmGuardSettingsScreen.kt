@@ -134,6 +134,7 @@ import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.core.text.HtmlCompat
 import chromahub.rhythm.app.shared.presentation.components.common.M3FourColorCircularLoader
 import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
@@ -509,10 +510,11 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                         fontWeight = FontWeight.SemiBold
                                     )
                                     Text(
-                                        text = context.getString(
-                                            R.string.settings_rhythm_guard_age_desc,
-                                            recommendedThresholdPercent,
-                                            recommendedDailyMinutes
+                                        text = pluralStringResource(
+                                            R.plurals.settings_rhythm_guard_age_desc,
+                                            recommendedDailyMinutes,
+                                            recommendedDailyMinutes,
+                                            recommendedThresholdPercent
                                         ),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1269,9 +1271,9 @@ fun rhythmGuardFormatCountdownFromSeconds(seconds: Long, useHoursFormat: Boolean
     return if (useHoursFormat && totalMinutes >= 60L) {
         val hours = totalMinutes / 60L
         val minutes = totalMinutes % 60L
-        String.format("%d:%02d:%02d", hours, minutes, secs)
+        String.format(Locale.ROOT, "%d:%02d:%02d", hours, minutes, secs)
     } else {
-        String.format("%02d:%02d", totalMinutes, secs)
+        String.format(Locale.ROOT, "%02d:%02d", totalMinutes, secs)
     }
 }
 
@@ -1533,7 +1535,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                                         fontWeight = FontWeight.SemiBold
                                     )
                                     Text(
-                                        text = stringResource(R.string.backup_restore_sections_enabled, selectedSectionCount, 3),
+                                        text = pluralStringResource(R.plurals.backup_restore_sections_enabled, selectedSectionCount, selectedSectionCount, 3),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -1879,8 +1881,8 @@ fun RhythmGuardTrendsRow(
     volumeSubtitle: String,
     volumeProgress: Float,
     volumeWarning: Boolean,
-    isLast: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isLast: Boolean = false
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -1922,8 +1924,8 @@ private fun RhythmGuardTrendCard(
     subtitle: String,
     progress: Float,
     isWarning: Boolean,
-    shape: Shape = RoundedCornerShape(8.dp),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    shape: Shape = RoundedCornerShape(8.dp)
 ) {
     val tint = if (isWarning) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
     val animatedProgress by animateFloatAsState(

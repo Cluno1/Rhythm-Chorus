@@ -36,11 +36,14 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import androidx.core.net.toUri
 
 /**
  * Manages two ExoPlayer instances (A and B) to enable seamless crossfade transitions.
@@ -60,7 +63,7 @@ class RhythmPlayerEngine(
         private const val TAG = "RhythmPlayerEngine"
     }
 
-    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var transitionJob: Job? = null
     @Volatile
     private var transitionRunning = false
@@ -160,6 +163,11 @@ class RhythmPlayerEngine(
 
     fun initialize() {
         if (!isReleased && ::playerA.isInitialized && playerA.applicationLooper.thread.isAlive) return
+
+        // Recreate the scope if it was cancelled by a previous release()
+        if (!scope.isActive) {
+            scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+        }
 
         if (::playerA.isInitialized) {
             try { playerA.release() } catch (_: Exception) {}
@@ -304,7 +312,7 @@ class RhythmPlayerEngine(
                             // Run blocking is safe here as ExoPlayer calls resolveDataSpec on a background thread
                             val freshUrl = runBlocking { repository.getStreamingUrl(trackId) }
                             if (!freshUrl.isNullOrBlank()) {
-                                return dataSpec.withUri(Uri.parse(freshUrl))
+                                return dataSpec.withUri((freshUrl).toUri())
                             }
                         }
                     }
@@ -710,6 +718,10 @@ class RhythmPlayerEngine(
     fun release() {
         setPauseAtEndOfMediaItems(false)
         transitionJob?.cancel()
+        // Cancel the engine scope so long-running StateFlow collections
+        // (e.g. appSettings.bassBoostEnabled) don't keep this engine and its
+        // service context alive after the service is destroyed.
+        scope.cancel()
         abandonAudioFocus()
         if (::playerA.isInitialized) {
             playerA.removeListener(masterPlayerListener)

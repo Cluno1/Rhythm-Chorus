@@ -46,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -95,7 +96,7 @@ fun MediaScanLoader(
     val artistsFound = artists.size
     
     // Track scanning progress
-    var displayProgress by remember { mutableStateOf(0f) }
+    var displayProgress by remember { mutableFloatStateOf(0f) }
     var currentStep by remember { mutableStateOf("Initializing...") }
     var isComplete by remember { mutableStateOf(false) }
     

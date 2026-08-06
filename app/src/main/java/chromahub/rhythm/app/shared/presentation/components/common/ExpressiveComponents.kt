@@ -1676,12 +1676,12 @@ private fun ExpressiveMorphingPlayPauseButton(
     onClick: () -> Unit,
     isExtraSmallWidth: Boolean,
     isCompactWidth: Boolean,
+    modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     showSeekButtons: Boolean = true,
     cornerRadius: Dp = 26.dp,
     useGlassEffect: Boolean = false,
-    isDark: Boolean = false,
-    modifier: Modifier = Modifier
+    isDark: Boolean = false
 ) {
     // Show PAUSE text after 2 seconds when paused
     var showPauseText by remember { mutableStateOf(false) }
@@ -1892,9 +1892,9 @@ private fun ExpressiveMorphingToggleButton(
     icon: chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon,
     label: String,
     isDarkTheme: Boolean,
+    modifier: Modifier = Modifier,
     isCompactHeight: Boolean = false,
     isCompactWidth: Boolean = false,
-    modifier: Modifier = Modifier,
     onLongClick: (() -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }

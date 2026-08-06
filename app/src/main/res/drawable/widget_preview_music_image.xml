@@ -3,8 +3,8 @@
      Rounded surface, album art, title/artist, controls row. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
-    android:width="250dp"
-    android:height="140dp"
+    android:width="200dp"
+    android:height="112dp"
     android:viewportWidth="250"
     android:viewportHeight="140">
 

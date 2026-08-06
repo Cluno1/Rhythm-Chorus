@@ -55,6 +55,8 @@ import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.M3ImageUtils
 import kotlinx.coroutines.delay
 import kotlin.math.abs
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 @Composable
 fun ExpressiveMiniPlayer(
@@ -64,11 +66,11 @@ fun ExpressiveMiniPlayer(
     onPlayPause: () -> Unit,
     onPlayerClick: () -> Unit,
     onSkipNext: () -> Unit,
+    modifier: Modifier = Modifier,
     onSkipPrevious: () -> Unit = {},
     onDismiss: () -> Unit = {},
     isMediaLoading: Boolean = false,
-    verticalDragEnabled: Boolean = true,
-    modifier: Modifier = Modifier
+    verticalDragEnabled: Boolean = true
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -77,12 +79,11 @@ fun ExpressiveMiniPlayer(
     val miniPlayerSwipeGestures by appSettings.miniPlayerSwipeGestures.collectAsState()
     val miniPlayerCornerRadius by appSettings.miniPlayerCornerRadius.collectAsState()
 
-    val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
-    val isCompactHeight = configuration.screenHeightDp < 500
-    val isLargeHeight = configuration.screenHeightDp >= 700
+    val isTablet = windowScreenWidthDp() >= 600
+    val isCompactHeight = windowScreenHeightDp() < 500
+    val isLargeHeight = windowScreenHeightDp() >= 700
     val alwaysShowTabletLayout by appSettings.miniPlayerAlwaysShowTablet.collectAsState()
-    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
+    val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
     val useTabletLayout = isTablet || (alwaysShowTabletLayout && !isTablet)
 
     val miniPlayerShowArtwork by appSettings.miniPlayerShowArtwork.collectAsState()
@@ -138,14 +139,14 @@ fun ExpressiveMiniPlayer(
     }
 
     
-    var offsetY by remember { mutableStateOf(0f) }
-    var offsetX by remember { mutableStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
     val swipeUpThreshold = 100f
     val swipeDownThreshold = 100f
     val swipeHorizontalThreshold = 120f
 
-    var lastHapticOffset by remember { mutableStateOf(0f) }
-    var lastHapticOffsetX by remember { mutableStateOf(0f) }
+    var lastHapticOffset by remember { mutableFloatStateOf(0f) }
+    var lastHapticOffsetX by remember { mutableFloatStateOf(0f) }
     var isDismissingPlayer by remember { mutableStateOf(false) }
 
     

@@ -65,6 +65,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import chromahub.rhythm.app.activities.MainActivity
 import chromahub.rhythm.app.R
 import androidx.glance.appwidget.state.getAppWidgetState
+import androidx.core.net.toUri
 
 /**
  * Modern Glance-based Music Widget with Material 3 Expressive Design
@@ -1287,7 +1288,7 @@ class RhythmMusicWidget : GlanceAppWidget() {
                 isPlaying = prefs[booleanPreferencesKey(KEY_IS_PLAYING)] ?: false,
                 artworkUri = prefs[stringPreferencesKey(KEY_ARTWORK_URI)]?.takeIf { it.isNotBlank() }?.let { 
                     try { 
-                        android.net.Uri.parse(it) 
+                        (it).toUri() 
                     } catch (e: Exception) { 
                         null 
                     } 

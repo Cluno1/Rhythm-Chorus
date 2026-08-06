@@ -89,6 +89,9 @@ import chromahub.rhythm.app.ui.theme.RhythmTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
+import java.util.Locale
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 class RhythmGuardTimeoutActivity : AppCompatActivity() {
 
@@ -236,8 +239,7 @@ private fun RhythmGuardTimeoutScreen(
     BackHandler(enabled = true) {}
 
     // Responsive sizing
-    val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
+    val isTablet = windowScreenWidthDp() >= 600
     val contentMaxWidth = if (isTablet) 1000.dp else 600.dp
     val startPadding = if (isTablet) 60.dp else 30.dp
     val endPadding = if (isTablet) 60.dp else 30.dp
@@ -815,9 +817,9 @@ private fun formatCountdown(seconds: Long, useHoursFormat: Boolean): String {
     return if (useHoursFormat && totalMinutes >= 60L) {
         val hours = totalMinutes / 60L
         val minutes = totalMinutes % 60L
-        String.format("%d:%02d:%02d", hours, minutes, secs)
+        String.format(Locale.ROOT, "%d:%02d:%02d", hours, minutes, secs)
     } else {
-        String.format("%02d:%02d", totalMinutes, secs)
+        String.format(Locale.ROOT, "%02d:%02d", totalMinutes, secs)
     }
 }
 

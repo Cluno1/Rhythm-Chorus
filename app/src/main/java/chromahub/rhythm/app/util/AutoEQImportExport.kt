@@ -68,8 +68,8 @@ object AutoEQImportExport {
      */
     fun parseParametricEQ(text: String, name: String = "Imported Profile"): AutoEQProfile? {
         return try {
-            val bandSums = FloatArray(10) { 0f }
-            val bandCounts = IntArray(10) { 0 }
+            val bandSums = FloatArray(10) 
+            val bandCounts = IntArray(10) 
             val lines = text.lines()
             
             for (line in lines) {

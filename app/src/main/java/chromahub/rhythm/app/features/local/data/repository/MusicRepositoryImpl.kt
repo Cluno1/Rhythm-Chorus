@@ -96,6 +96,8 @@ import chromahub.rhythm.app.features.local.data.database.entity.ArtistEntity
 import chromahub.rhythm.app.features.local.data.database.entity.SongEntity
 import chromahub.rhythm.app.features.local.data.database.entity.toEntity
 import chromahub.rhythm.app.features.local.data.database.entity.SongArtistEntity
+import androidx.core.content.edit
+import androidx.core.net.toUri
 
 /**
  * Scan progress data class for real-time updates
@@ -263,12 +265,12 @@ class MusicRepository(context: Context) {
                 val incomingArtworkUriStr = song.artworkUri?.toString()
                 
                 val finalArtworkUriStr = if (existingArtworkUriStr != null && incomingArtworkUriStr != null) {
-                    val existingIsEmbedded = isEmbeddedArtworkCacheUri(Uri.parse(existingArtworkUriStr))
-                    val incomingIsEmbedded = isEmbeddedArtworkCacheUri(Uri.parse(incomingArtworkUriStr))
+                    val existingIsEmbedded = isEmbeddedArtworkCacheUri((existingArtworkUriStr).toUri())
+                    val incomingIsEmbedded = isEmbeddedArtworkCacheUri(incomingArtworkUriStr.toUri())
                     
                     if (existingIsEmbedded && incomingIsEmbedded) {
-                        val existingKey = getArtworkCacheKeyFromUri(Uri.parse(existingArtworkUriStr))
-                        val incomingKey = getArtworkCacheKeyFromUri(Uri.parse(incomingArtworkUriStr))
+                        val existingKey = getArtworkCacheKeyFromUri((existingArtworkUriStr).toUri())
+                        val incomingKey = getArtworkCacheKeyFromUri(incomingArtworkUriStr.toUri())
                         
                         if (existingKey != null && existingKey == incomingKey) {
                             val existingIsLossless = existingArtworkUriStr.contains("embedded_art_lossless_")
@@ -471,19 +473,19 @@ class MusicRepository(context: Context) {
                     key.startsWith("removed_") -> removedOverrides[key.removePrefix("removed_")] = value as? Boolean ?: false
                     key.startsWith("uri_") -> {
                         val id = key.removePrefix("uri_")
-                        uriOverrides[id] = (value as? String)?.let { runCatching { Uri.parse(it) }.getOrNull() }
+                        uriOverrides[id] = (value as? String)?.let { runCatching { it.toUri() }.getOrNull() }
                     }
                 }
             }
 
             val songs = entities.mapNotNull { entity ->
                 try {
-                    val songUri = Uri.parse(entity.uri)
+                    val songUri = entity.uri.toUri()
                     
                     val artworkRemovedOverride = removedOverrides[entity.id] ?: false
                     val artworkUriOverride = uriOverrides[entity.id]
 
-                    val savedArtworkUri = entity.artworkUri?.let { Uri.parse(it) }
+                    val savedArtworkUri = entity.artworkUri?.let { it.toUri() }
                     val savedArtworkUsable = when (savedArtworkUri?.scheme) {
                         "file", null -> savedArtworkUri?.path?.let { File(it).exists() } == true
                         else -> true
@@ -538,7 +540,7 @@ class MusicRepository(context: Context) {
 
                     val fallbackAlbumArt = entity.albumId.toLongOrNull()?.let { albumId ->
                         ContentUris.withAppendedId(
-                            Uri.parse("content://media/external/audio/albumart"),
+                            "content://media/external/audio/albumart".toUri(),
                             albumId
                         )
                     }
@@ -560,7 +562,7 @@ class MusicRepository(context: Context) {
                             if (isUsable) {
                                 artworkUriOverride
                             } else {
-                                artworkPrefs.edit().remove("uri_${entity.id}").apply()
+                                artworkPrefs.edit { remove("uri_${entity.id}") }
                                 effectiveArtUri
                             }
                         }
@@ -709,7 +711,7 @@ class MusicRepository(context: Context) {
             audioObserver
         )
         context.contentResolver.registerContentObserver(
-            Uri.parse("content://media/external/audio/playlists"),
+            "content://media/external/audio/playlists".toUri(),
             true,
             playlistObserver
         )
@@ -815,11 +817,15 @@ class MusicRepository(context: Context) {
         if (normalized.length > 1 && normalized.endsWith('/')) {
             normalized = normalized.substring(0, normalized.length - 1)
         }
-        val symlinks = listOf("/sdcard", "/storage/self/primary")
-        for (symlink in symlinks) {
-            if (normalized.startsWith(symlink, ignoreCase = true)) {
-                normalized = "/storage/emulated/0" + normalized.substring(symlink.length)
-                break
+        // Resolve legacy symlink aliases (e.g. /sdcard, /storage/self/primary) to the
+        // canonical external storage path using OS-level symlink resolution
+        val externalStorage = android.os.Environment.getExternalStorageDirectory().absolutePath
+        if (normalized.startsWith("/") && !normalized.startsWith(externalStorage)) {
+            normalized = try {
+                val candidate = File(normalized).canonicalPath
+                if (candidate.startsWith(externalStorage)) candidate else normalized
+            } catch (_: java.io.IOException) {
+                normalized
             }
         }
         return normalized
@@ -1056,11 +1062,11 @@ class MusicRepository(context: Context) {
         if (updates.isEmpty()) return
         Log.d(TAG, "Flushing ${updates.size} stable date-added values to SharedPreferences")
         try {
-            val editor = dateAddedPrefs.edit()
+            dateAddedPrefs.edit {
             for ((key, value) in updates) {
-                editor.putLong(key, value)
+                putLong(key, value)
             }
-            editor.apply()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to flush stable date-added values to SharedPreferences", e)
         }
@@ -1493,12 +1499,12 @@ class MusicRepository(context: Context) {
             // When preferSongArtwork is enabled, use previously cached embedded art so
             // songs can show unique per-track artwork instead of shared album art.
             val albumArtUri = ContentUris.withAppendedId(
-                Uri.parse("content://media/external/audio/albumart"),
+                "content://media/external/audio/albumart".toUri(),
                 albumId
             )
             val artworkRemovedOverride = artworkPrefs.getBoolean("removed_${id}", false)
             val artworkUriOverride = artworkPrefs.getString("uri_${id}", null)
-                ?.let { runCatching { Uri.parse(it) }.getOrNull() }
+                ?.let { runCatching { it.toUri() }.getOrNull() }
 
             val useEmbeddedArt = appSettings.preferSongArtwork.value
             val effectiveArtUri = if (useEmbeddedArt) {
@@ -1522,7 +1528,7 @@ class MusicRepository(context: Context) {
                     if (isUsable) {
                         artworkUriOverride
                     } else {
-                        artworkPrefs.edit().remove("uri_${id}").apply()
+                        artworkPrefs.edit { remove("uri_${id}") }
                         effectiveArtUri
                     }
                 }
@@ -1600,8 +1606,11 @@ class MusicRepository(context: Context) {
             val bitrate = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_BITRATE)
                 ?.toIntOrNull()
             
-            val sampleRateStr = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)
-            val sampleRate = sampleRateStr?.toIntOrNull()
+            val sampleRate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)?.toIntOrNull()
+            } else {
+                null
+            }
             
             // Extract number of channels using MediaExtractor (correct way)
             var channels: Int? = null
@@ -2225,7 +2234,7 @@ class MusicRepository(context: Context) {
                 Artist(
                     id = entity.id,
                     name = entity.name,
-                    artworkUri = entity.artworkUri?.let { Uri.parse(it) },
+                    artworkUri = entity.artworkUri?.let { it.toUri() },
                     numberOfAlbums = entity.numberOfAlbums,
                     numberOfTracks = entity.numberOfTracks
                 )
@@ -2712,7 +2721,7 @@ class MusicRepository(context: Context) {
                                 }
                                 
                                 if (!imageUrl.isNullOrEmpty()) {
-                                    val imageUri = Uri.parse(imageUrl)
+                                    val imageUri = imageUrl.toUri()
                                     Log.d(TAG, "Found image URL for ${artist.name}: $imageUrl")
                                     artistImageCache[artist.name] = imageUri
                                     saveLocalArtistImage(artist.name, imageUrl)
@@ -2748,7 +2757,7 @@ class MusicRepository(context: Context) {
                         if (searchResponse.isSuccessful) {
                             val imageUrl = searchResponse.body()?.extractArtistImageUrl()
                             if (!imageUrl.isNullOrEmpty()) {
-                                val imageUri = Uri.parse(imageUrl)
+                                val imageUri = imageUrl.toUri()
                                 artistImageCache[artist.name] = imageUri
                                 saveLocalArtistImage(artist.name, imageUrl)
                                 updatedArtists.add(artist.copy(artworkUri = imageUri))
@@ -2767,7 +2776,7 @@ class MusicRepository(context: Context) {
                                 if (artistResponse.isSuccessful) {
                                     val detailedImageUrl = artistResponse.body()?.extractArtistThumbnail()
                                     if (!detailedImageUrl.isNullOrEmpty()) {
-                                        val imageUri = Uri.parse(detailedImageUrl)
+                                        val imageUri = detailedImageUrl.toUri()
                                         artistImageCache[artist.name] = imageUri
                                         saveLocalArtistImage(artist.name, detailedImageUrl)
                                         updatedArtists.add(artist.copy(artworkUri = imageUri))
@@ -4366,7 +4375,7 @@ class MusicRepository(context: Context) {
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         val millis = (milliseconds % 1000) / 10
-        return String.format("%02d:%02d.%02d", minutes, seconds, millis)
+        return String.format(Locale.ROOT, "%02d:%02d.%02d", minutes, seconds, millis)
     }
     
     // TODO: Implement export functionality for Enhanced LRC format
@@ -5248,7 +5257,7 @@ class MusicRepository(context: Context) {
                         val min = (line.start / 60000uL)
                         val sec = (line.start % 60000uL) / 1000uL
                         val ms = (line.start % 1000uL) / 10uL // 2 digits
-                        val timestamp = java.lang.String.format("%02d:%02d.%02d", min.toInt(), sec.toInt(), ms.toInt())
+                        val timestamp = java.lang.String.format(Locale.ROOT, "%02d:%02d.%02d", min.toInt(), sec.toInt(), ms.toInt())
                         "[$timestamp]${line.text}"
                     }
                     
@@ -5492,7 +5501,7 @@ class MusicRepository(context: Context) {
                             }
 
                             if (!imageUrl.isNullOrEmpty() && imageUrl.startsWith("http")) {
-                                val imageUri = Uri.parse(imageUrl)
+                                val imageUri = imageUrl.toUri()
                                 albumImageCache[cacheKey] = imageUri
                                 updatedAlbums.add(album.copy(artworkUri = imageUri))
                                 Log.d(TAG, "Found Deezer album artwork for: ${album.title}, URL: $imageUrl")
@@ -5525,7 +5534,7 @@ class MusicRepository(context: Context) {
                     if (searchResponse.isSuccessful) {
                         val imageUrl = searchResponse.body()?.extractAlbumImageUrl()
                         if (!imageUrl.isNullOrEmpty()) {
-                            val imageUri = Uri.parse(imageUrl)
+                            val imageUri = imageUrl.toUri()
                             albumImageCache[cacheKey] = imageUri
                             updatedAlbums.add(album.copy(artworkUri = imageUri))
                             Log.d(TAG, "Found YTMusic album art for ${album.title}: $imageUrl")
@@ -5542,7 +5551,7 @@ class MusicRepository(context: Context) {
                                 if (albumResponse.isSuccessful) {
                                     val detailedImageUrl = albumResponse.body()?.extractAlbumCover()
                                     if (!detailedImageUrl.isNullOrEmpty()) {
-                                        val imageUri = Uri.parse(detailedImageUrl)
+                                        val imageUri = detailedImageUrl.toUri()
                                         albumImageCache[cacheKey] = imageUri
                                         updatedAlbums.add(album.copy(artworkUri = imageUri))
                                         Log.d(TAG, "Found detailed YTMusic album art for ${album.title}: $detailedImageUrl")
@@ -5686,7 +5695,7 @@ class MusicRepository(context: Context) {
                     val bestMatch = findBestAlbumMatch(response.data, song.album.ifBlank { song.title }, song.artist)
                     val imgUrl = bestMatch?.coverXl ?: bestMatch?.coverBig ?: bestMatch?.coverMedium ?: response.data.firstOrNull()?.coverXl ?: response.data.firstOrNull()?.coverBig
                     if (!imgUrl.isNullOrEmpty() && imgUrl.startsWith("http")) {
-                        fetchedUri = Uri.parse(imgUrl)
+                        fetchedUri = imgUrl.toUri()
                         Log.d(TAG, "Found Deezer artwork for track: ${song.title}, URL: $imgUrl")
                     }
                 } catch (e: Exception) {
@@ -5707,7 +5716,7 @@ class MusicRepository(context: Context) {
                     if (searchResponse.isSuccessful) {
                         val imageUrl = searchResponse.body()?.extractAlbumImageUrl()
                         if (!imageUrl.isNullOrEmpty()) {
-                            fetchedUri = Uri.parse(imageUrl)
+                            fetchedUri = imageUrl.toUri()
                             Log.d(TAG, "Found YTMusic track image for ${song.title}: $imageUrl")
                         }
                     }
@@ -5849,17 +5858,9 @@ class MusicRepository(context: Context) {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val network = connectivityManager.activeNetwork ?: return false
-            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-
-            return capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        } else {
-            @Suppress("DEPRECATION")
-            val networkInfo = connectivityManager.activeNetworkInfo ?: return false
-            @Suppress("DEPRECATION")
-            return networkInfo.isConnected
-        }
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     /**
@@ -6088,8 +6089,8 @@ class MusicRepository(context: Context) {
                 roomDb.songArtistDao().deleteAll()
                 roomDb.artistDao().deleteAll()
             }
-            genrePrefs.edit().clear().apply()
-            libraryScanPrefs.edit().clear().apply()
+            genrePrefs.edit { clear() }
+            libraryScanPrefs.edit { clear() }
             clearInMemoryCaches()
             Log.i(TAG, "Invalidated Room + metadata caches for forced full media rescan")
         } catch (e: Exception) {
@@ -6122,7 +6123,7 @@ class MusicRepository(context: Context) {
             val lastScanCount = libraryScanPrefs.getInt("last_scan_mediastore_count", -1)
             if (lastScanCount == -1) {
                 // If we do not have the stored count, persist current mediaStoreCount to avoid repeating fallback
-                libraryScanPrefs.edit().putInt("last_scan_mediastore_count", mediaStoreCount).apply()
+                libraryScanPrefs.edit { putInt("last_scan_mediastore_count", mediaStoreCount) }
                 if (cachedCount <= 0) {
                     Log.d(TAG, "Staleness check: no lastScanCount and cached count is 0")
                     return true
@@ -6199,9 +6200,9 @@ class MusicRepository(context: Context) {
                         roomDb.songArtistDao().deleteAll()
                         roomDb.artistDao().deleteAll()
                     }
-                    genrePrefs.edit().clear().apply()
-                    artworkPrefs.edit().clear().apply()
-                    libraryScanPrefs.edit().clear().apply()
+                    genrePrefs.edit { clear() }
+                    artworkPrefs.edit { clear() }
+                    libraryScanPrefs.edit { clear() }
                     clearEmbeddedArtworkFileCaches()
                     clearInMemoryCaches()
                     Log.d(TAG, "Cleared Room song/artist/link tables and metadata caches")
@@ -6455,7 +6456,7 @@ class MusicRepository(context: Context) {
                             updatedSongs.add(updatedSong)
                             // Cache the detected genre using async apply() to prevent blocking
                             try {
-                                genrePrefs.edit().putString(cacheKey, genre).apply()
+                                genrePrefs.edit { putString(cacheKey, genre) }
                                 Log.d(TAG, "Detected and cached genre '$genre' for song ID $songId: ${song.title}")
                             } catch (e: Exception) {
                                 Log.e(TAG, "Failed to cache genre for song ID $songId", e)
@@ -6466,7 +6467,7 @@ class MusicRepository(context: Context) {
                             val updatedSong = song.copy(genre = "-")
                             updatedSongs.add(updatedSong)
                             try {
-                                genrePrefs.edit().putString(cacheKey, "-").apply()
+                                genrePrefs.edit { putString(cacheKey, "-") }
                             } catch (e: Exception) {
                                 Log.e(TAG, "Failed to cache negative genre sentinel", e)
                             }

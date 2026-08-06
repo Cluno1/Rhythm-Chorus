@@ -1,6 +1,7 @@
 package chromahub.rhythm.app.shared.presentation.screens.player
 
 import androidx.activity.compose.BackHandler
+import androidx.core.graphics.get
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -163,6 +164,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import androidx.core.net.toUri
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 private val artworkValidationCache = java.util.concurrent.ConcurrentHashMap<android.net.Uri, Boolean>()
 
@@ -209,12 +213,9 @@ fun ExpressivePlayerScreen(
     song: Song?,
     isPlaying: Boolean,
     isFavorite: Boolean,
-    canvasArtwork: CanvasArtwork? = null,
-    canvasLoading: Boolean = false,
     progress: () -> Float,
     currentTimeStr: String,
     totalTimeStr: String,
-    onTotalTimeClick: () -> Unit = {},
     queuePosition: Int,
     queueTotal: Int,
     isShuffleEnabled: Boolean,
@@ -247,11 +248,14 @@ fun ExpressivePlayerScreen(
     onBack: () -> Unit,
     location: PlaybackLocation?,
     appSettings: AppSettings,
+    modifier: Modifier = Modifier,
+    canvasArtwork: CanvasArtwork? = null,
+    canvasLoading: Boolean = false,
+    onTotalTimeClick: () -> Unit = {},
     musicViewModel: MusicViewModel? = null,
     onOpenFullScreenLyrics: () -> Unit = {},
     swipeToDismissEnabled: Boolean = true,
-    expansionFraction: Float = 1f,
-    modifier: Modifier = Modifier
+    expansionFraction: Float = 1f
 ) {
     val artworkScale by animateFloatAsState(
         targetValue = if (isPlaying) 1.0f else 0.85f,
@@ -409,7 +413,7 @@ fun ExpressivePlayerScreen(
                     val count = bitmap.width * bitmap.height
                     for (x in 0 until bitmap.width) {
                         for (y in 0 until bitmap.height) {
-                            val p = bitmap.getPixel(x, y)
+                            val p = bitmap[x, y]
                             r += android.graphics.Color.red(p)
                             g += android.graphics.Color.green(p)
                             b += android.graphics.Color.blue(p)
@@ -493,15 +497,14 @@ fun ExpressivePlayerScreen(
 
     // showAlbumArt is now a derived val (computed above) — no LaunchedEffect needed.
 
-    val configuration = LocalConfiguration.current
-    val isCompactWidth = configuration.screenWidthDp < 360
-    val isCompactHeight = configuration.screenHeightDp < 640
-    val isTablet = configuration.screenWidthDp >= 600
-    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
+    val isCompactWidth = windowScreenWidthDp() < 360
+    val isCompactHeight = windowScreenHeightDp() < 640
+    val isTablet = windowScreenWidthDp() >= 600
+    val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
     val coroutineScope = rememberCoroutineScope()
-    val screenHeightPx = with(LocalDensity.current) { configuration.screenHeightDp.dp.toPx() }
+    val screenHeightPx = with(LocalDensity.current) { windowScreenHeightDp().dp.toPx() }
 
-    var swipeOffsetY by remember { mutableStateOf(0f) }
+    var swipeOffsetY by remember { mutableFloatStateOf(0f) }
     var isDraggingSwipe by remember { mutableStateOf(false) }
     var isSwipeMinimizing by remember { mutableStateOf(false) }
     val swipeDismissThreshold = screenHeightPx * 0.16f
@@ -587,7 +590,7 @@ fun ExpressivePlayerScreen(
                     onClick = {
                         showAutoFetchEmbedDialog = false
                         debouncedSong.value?.let { currentSong ->
-                            val artUri = fetchedAutoArtworkUriStr?.let { android.net.Uri.parse(it) }
+                            val artUri = fetchedAutoArtworkUriStr?.let { (it).toUri() }
                             musicViewModel?.saveMetadataChanges(
                                 song = currentSong,
                                 title = currentSong.title,
@@ -674,7 +677,7 @@ fun ExpressivePlayerScreen(
                                 contentDescription = null, contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize())
                             if (canvasArtwork?.preferredAnimationUrl != null) {
-                                CanvasArtworkPlayer(canvasArtwork.animated, canvasArtwork.videoUrl, isPlaying, alwaysPlay = true, modifier = Modifier.fillMaxSize())
+                                CanvasArtworkPlayer(primaryUrl = canvasArtwork.animated, fallbackUrl = canvasArtwork.videoUrl, isPlaying = isPlaying, alwaysPlay = true, modifier = Modifier.fillMaxSize())
                             }
                         }
                         // Layer 3: Dynamic overlay for depth
@@ -747,7 +750,7 @@ fun ExpressivePlayerScreen(
                     val base = (containerMaxWidth * 0.14f)
                     if (isCompactHeight) base.coerceIn(32.dp, 42.dp) else base.coerceIn(36.dp, 56.dp)
                 } else { if (isCompactHeight) 36.dp else 48.dp }
-                var artworkOffsetX by remember { mutableStateOf(0f) }
+                var artworkOffsetX by remember { mutableFloatStateOf(0f) }
                 val artworkSwipeThreshold = 140f
                 val artworkTranslationX by animateFloatAsState(
                     targetValue = artworkOffsetX.coerceIn(-200f, 200f),
@@ -838,7 +841,7 @@ fun ExpressivePlayerScreen(
                                         }
 
                                         if (canvasArtwork?.preferredAnimationUrl != null) {
-                                            CanvasArtworkPlayer(canvasArtwork.animated, canvasArtwork.videoUrl, isPlaying, alwaysPlay = true, modifier = Modifier.fillMaxSize().clip(artworkClipShape))
+                                            CanvasArtworkPlayer(primaryUrl = canvasArtwork.animated, fallbackUrl = canvasArtwork.videoUrl, isPlaying = isPlaying, alwaysPlay = true, modifier = Modifier.fillMaxSize().clip(artworkClipShape))
                                         }
                                         if (canvasLoading && canvasArtwork == null) {
                                             Box(Modifier.align(Alignment.TopEnd).padding(10.dp),
@@ -1160,12 +1163,22 @@ fun ExpressivePlayerScreen(
 
 @Composable
 private fun RhythmPlayerLyricsPanel(
-    lyrics: LyricsData?, isLoadingLyrics: Boolean, onlineOnlyLyrics: Boolean,
-    currentTimeMs: Long, onLyricsSeek: ((Long) -> Unit)?, onTapLyricsView: (() -> Unit)? = null,
-    textSizeMultiplier: Float, onRetryLyrics: () -> Unit, onShowLyricsEditor: () -> Unit, onPickLyricsFile: () -> Unit,
-    showTranslation: Boolean, showRomanization: Boolean, textAlignment: TextAlign,
-    textColor: Color = MaterialTheme.colorScheme.onSurface, subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    modifier: Modifier = Modifier
+    lyrics: LyricsData?,
+    isLoadingLyrics: Boolean,
+    onlineOnlyLyrics: Boolean,
+    currentTimeMs: Long,
+    onLyricsSeek: ((Long) -> Unit)?,
+    textSizeMultiplier: Float,
+    onRetryLyrics: () -> Unit,
+    onShowLyricsEditor: () -> Unit,
+    onPickLyricsFile: () -> Unit,
+    showTranslation: Boolean,
+    showRomanization: Boolean,
+    textAlignment: TextAlign,
+    modifier: Modifier = Modifier,
+    onTapLyricsView: (() -> Unit)? = null,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current

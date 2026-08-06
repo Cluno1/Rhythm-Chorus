@@ -134,6 +134,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.text.HtmlCompat
 import chromahub.rhythm.app.shared.presentation.components.common.M3FourColorCircularLoader
@@ -246,7 +247,7 @@ fun CacheManagementSettingsScreen(onBackClick: () -> Unit) {
 
 
     // Local states
-    var currentCacheSize by remember { mutableStateOf(0L) }
+    var currentCacheSize by remember { mutableLongStateOf(0L) }
     var isCalculatingSize by remember { mutableStateOf(false) }
     var isClearingCache by remember { mutableStateOf(false) }
     var showCacheSizeDialog by remember { mutableStateOf(false) }
@@ -255,7 +256,7 @@ fun CacheManagementSettingsScreen(onBackClick: () -> Unit) {
     var restartDialogMessage by remember { mutableStateOf("") }
     var cacheDetails by remember { mutableStateOf<Map<String, Long>>(emptyMap()) }
     var isRebuildingRoom by remember { mutableStateOf(false) }
-    var roomSongCount by remember { mutableStateOf(-1) }
+    var roomSongCount by remember { mutableIntStateOf(-1) }
 
     val refreshCacheStats: suspend () -> Unit = {
         isCalculatingSize = true
@@ -423,7 +424,7 @@ fun CacheManagementSettingsScreen(onBackClick: () -> Unit) {
                             } else {
                                 // Fallback empty state
                                 Surface(
-                                    shape = RoundedCornerShape(18.dp),
+                                    shape = RoundedCornerShape(24.dp),
                                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
                                     modifier = Modifier.fillMaxSize()
                                 ) {}
@@ -514,7 +515,7 @@ fun CacheManagementSettingsScreen(onBackClick: () -> Unit) {
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("data_usage", filled = true),
                                 title = context.getString(R.string.cache_max_size),
-                                description = context.getString(R.string.settings_cache_size_mb, String.format("%.1f", maxCacheSize / (1024f * 1024f))),
+                                description = context.getString(R.string.settings_cache_size_mb, String.format(Locale.ROOT, "%.1f", maxCacheSize / (1024f * 1024f))),
                                 onClick = { showCacheSizeDialog = true }
                             )
                         ),
@@ -634,7 +635,7 @@ fun CacheManagementSettingsScreen(onBackClick: () -> Unit) {
                             description = {
                                 Text(
                                     if (roomSongCount >= 0) {
-                                        context.getString(R.string.settings_storage_song_count, roomSongCount)
+                                        pluralStringResource(R.plurals.settings_storage_song_count, roomSongCount, roomSongCount)
                                     } else {
                                         context.getString(R.string.settings_storage_not_available)
                                     }
@@ -689,9 +690,9 @@ fun CacheManagementSettingsScreen(onBackClick: () -> Unit) {
             item {
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
                     ),
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedCornerShape(24.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -702,7 +703,8 @@ fun CacheManagementSettingsScreen(onBackClick: () -> Unit) {
                             modifier = Modifier.padding(bottom = 12.dp)
                         ) {
                             Icon(
-                                imageVector = RhythmIcons.Info,
+                                imageVector = MaterialSymbolIcon("lightbulb", filled = true),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                 contentDescription = null,
                                 modifier = Modifier.size(24.dp)
                             )

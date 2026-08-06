@@ -616,7 +616,8 @@ object PlaylistImportExportUtils {
             val commonPrefixes = listOf(
                 "/storage/emulated/0",
                 "/storage/sdcard0",
-                "/sdcard",
+                // /sdcard is a legacy symlink to the primary external storage dir
+                // (resolved below via Environment), so it is not listed explicitly
                 android.os.Environment.getExternalStorageDirectory().absolutePath
             )
             

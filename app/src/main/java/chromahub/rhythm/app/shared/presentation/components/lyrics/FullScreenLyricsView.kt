@@ -62,6 +62,9 @@ import androidx.compose.ui.graphics.luminance
 import kotlinx.coroutines.delay
 import chromahub.rhythm.app.R
 import androidx.compose.ui.res.stringResource
+import java.util.Locale
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 @Composable
 fun FullScreenLyricsView(
@@ -79,9 +82,9 @@ fun FullScreenLyricsView(
     onClose: () -> Unit,
     onShowLyricsEditor: () -> Unit,
     onNavigateToLyricsSettings: () -> Unit,
+    modifier: Modifier = Modifier,
     canvasArtwork: CanvasArtwork? = null,
-    canvasLoading: Boolean = false,
-    modifier: Modifier = Modifier
+    canvasLoading: Boolean = false
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -353,7 +356,7 @@ fun FullScreenLyricsView(
 
         // 2. MAIN LAYOUT CONTAINER
         // 2. MAIN LAYOUT CONTAINER (Adaptive Tablet Split or Phone Stack)
-        val isTablet = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp >= 600
+        val isTablet = windowScreenWidthDp() >= 600
 
         if (isTablet) {
             Row(
@@ -521,7 +524,7 @@ fun FullScreenLyricsView(
                                     // Display Current Offset
                                     val offsetSeconds = manualSyncOffsetMs / 1000f
                                     Text(
-                                        text = String.format("%+.1fs", offsetSeconds),
+                                        text = String.format(Locale.ROOT, "%+.1fs", offsetSeconds),
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             fontWeight = FontWeight.ExtraBold,
                                             color = MaterialTheme.colorScheme.primary
@@ -1171,7 +1174,7 @@ fun FullScreenLyricsView(
                                     // Display Current Offset
                                     val offsetSeconds = manualSyncOffsetMs / 1000f
                                     Text(
-                                        text = String.format("%+.1fs", offsetSeconds),
+                                        text = String.format(Locale.ROOT, "%+.1fs", offsetSeconds),
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             fontWeight = FontWeight.ExtraBold,
                                             color = MaterialTheme.colorScheme.primary

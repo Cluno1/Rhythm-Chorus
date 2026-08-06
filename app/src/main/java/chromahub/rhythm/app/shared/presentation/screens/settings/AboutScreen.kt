@@ -159,6 +159,9 @@ import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSw
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerSettingCard
 import chromahub.rhythm.app.shared.presentation.screens.settings.SettingItem
 import chromahub.rhythm.app.shared.presentation.screens.settings.SettingGroup
+import androidx.core.net.toUri
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 
 // SpotifyApiConfigDialog removed - Canvas API has been removed
@@ -176,7 +179,7 @@ fun AboutScreen(
     var showLicensesSheet by remember { mutableStateOf(false) }
 
     val openUrl: (String) -> Unit = { url ->
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+        val intent = Intent(Intent.ACTION_VIEW, (url).toUri()).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(intent)
@@ -230,9 +233,8 @@ fun AboutScreen(
                     contentAlignment = Alignment.Center
                 ) {
                         if (expressiveShapesEnabled) {
-                            val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-                            val screenWidthDp = configuration.screenWidthDp
-                            val screenHeightDp = configuration.screenHeightDp
+                            val screenWidthDp = windowScreenWidthDp()
+                            val screenHeightDp = windowScreenHeightDp()
                             val expressivePreset by appSettings.expressiveShapePreset.collectAsState()
                             val seed = System.nanoTime().toInt()
                             val primaryBackdropColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
@@ -876,7 +878,7 @@ private fun createCommunityMemberItem(
         },
         onClick = {
             HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/$githubUsername")).apply {
+            val intent = Intent(Intent.ACTION_VIEW, ("https://github.com/$githubUsername").toUri()).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)

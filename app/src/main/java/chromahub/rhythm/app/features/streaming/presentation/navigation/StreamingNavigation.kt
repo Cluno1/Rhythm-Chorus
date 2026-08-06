@@ -142,6 +142,7 @@ import chromahub.rhythm.app.shared.presentation.screens.settings.SettingsScreenW
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.core.net.toUri
 
 private sealed class StreamingScreen(val route: String, val titleRes: Int? = null) {
     data object Integration : StreamingScreen("streaming_integration")
@@ -175,12 +176,12 @@ private sealed class StreamingScreen(val route: String, val titleRes: Int? = nul
 @Composable
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 fun StreamingNavigation(
+    modifier: Modifier = Modifier,
     localMusicViewModel: LocalMusicViewModel = viewModel(),
     streamingMusicViewModel: StreamingMusicViewModel = viewModel(),
     onNavigateToSettings: () -> Unit = {},
     onNavigateToPlayer: () -> Unit = {},
-    onSwitchToLocalMode: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onSwitchToLocalMode: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -2309,9 +2310,9 @@ fun StreamingNavigation(
 
 private fun StreamingSong.toLocalSong(): Song? {
     val playbackUri = when {
-        !streamingUrl.isNullOrBlank() -> Uri.parse(streamingUrl)
-        !previewUrl.isNullOrBlank() -> Uri.parse(previewUrl)
-        else -> Uri.parse("streaming://track/$id")
+        !streamingUrl.isNullOrBlank() -> (streamingUrl).toUri()
+        !previewUrl.isNullOrBlank() -> (previewUrl).toUri()
+        else -> ("streaming://track/$id").toUri()
     }
 
     return Song(
@@ -2336,9 +2337,9 @@ private fun StreamingSong.toLocalSong(): Song? {
 
 private fun StreamingSong.toDisplaySong(): Song {
     val playbackUri = when {
-        !streamingUrl.isNullOrBlank() -> Uri.parse(streamingUrl)
-        !previewUrl.isNullOrBlank() -> Uri.parse(previewUrl)
-        else -> Uri.parse("streaming://track/$id")
+        !streamingUrl.isNullOrBlank() -> (streamingUrl).toUri()
+        !previewUrl.isNullOrBlank() -> (previewUrl).toUri()
+        else -> ("streaming://track/$id").toUri()
     }
 
     return Song(

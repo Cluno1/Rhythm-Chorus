@@ -116,6 +116,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.WindowInsetsSides
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import java.util.Locale
 
 
 
@@ -125,9 +126,9 @@ import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
  */
 @Composable
 fun RhythmNavigation(
+    modifier: Modifier = Modifier,
     musicViewModel: MusicViewModel = viewModel(),
     themeViewModel: ThemeViewModel = viewModel(),
-    modifier: Modifier = Modifier,
     navigateToSettingsTrigger: Boolean = false,
     onSettingsNavigationComplete: (() -> Unit)? = null
 ) {
@@ -461,7 +462,7 @@ private fun RhythmGuardWarningHost(
     var pendingBreakDurationMinutes by remember {
         mutableIntStateOf(configuredBreakResumeMinutes.coerceIn(1, 180))
     }
-    var bubbleHorizontalPos by rememberSaveable { mutableStateOf(2) } // 0: Left, 1: Middle, 2: Right (Default: 2)
+    var bubbleHorizontalPos by rememberSaveable { mutableIntStateOf(2) } // 0: Left, 1: Middle, 2: Right (Default: 2)
     var isBubbleCollapsed by rememberSaveable { mutableStateOf(false) }
     var rawDragXDp by remember { mutableFloatStateOf(0f) }
 
@@ -1425,7 +1426,7 @@ private fun RhythmGuardWarningHost(
                             else -> Alignment.TopEnd
                         }
                     )
-                    .offset(x = rawDragXDp.dp, y = with(density) { animatableY.value.toDp() })
+                    .offset { IntOffset(rawDragXDp.dp.roundToPx(), animatableY.value.toDp().roundToPx()) }
                     .pointerInput(timeoutReason, timeoutUntilMs, timeoutStartedAtMs, isTimeoutBubbleActive, isBubbleCollapsed) {
                         detectTapGestures(onTap = {
                             if (isBubbleCollapsed) {
@@ -1568,9 +1569,9 @@ private fun rhythmGuardFormatCountdown(seconds: Long): String {
     val secs = safeSeconds % 60
 
     return if (hours > 0) {
-        String.format("%d:%02d:%02d", hours, minutes, secs)
+        String.format(Locale.ROOT, "%d:%02d:%02d", hours, minutes, secs)
     } else {
-        String.format("%02d:%02d", minutes, secs)
+        String.format(Locale.ROOT, "%02d:%02d", minutes, secs)
     }
 }
 
@@ -1682,7 +1683,6 @@ private fun ensureRhythmGuardNotificationChannels(
     context: android.content.Context,
     notificationManager: NotificationManager
 ) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
     val alertChannel = NotificationChannel(
         RHYTHM_GUARD_ALERT_CHANNEL_ID,

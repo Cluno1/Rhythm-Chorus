@@ -59,8 +59,8 @@ fun MediaScanningLoader(
  */
 @Composable
 fun DataProcessingLoader(
-    progress: Float? = null,
     modifier: Modifier = Modifier,
+    progress: Float? = null,
     color: Color = MaterialTheme.colorScheme.primary,
     isExpressive: Boolean = true
 ) {
@@ -194,8 +194,8 @@ fun InitializationLoader(
  */
 @Composable
 fun FileOperationLoader(
-    progress: Float? = null,
     modifier: Modifier = Modifier,
+    progress: Float? = null,
     color: Color = MaterialTheme.colorScheme.primary,
     isExpressive: Boolean = true
 ) {
@@ -299,8 +299,8 @@ fun SearchingLoader(
  */
 @Composable
 fun MultiStageOperationLoader(
-    progress: Float? = null,
     modifier: Modifier = Modifier,
+    progress: Float? = null,
     isExpressive: Boolean = true
 ) {
     if (isExpressive) {

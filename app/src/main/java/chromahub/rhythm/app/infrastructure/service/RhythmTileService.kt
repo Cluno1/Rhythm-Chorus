@@ -11,7 +11,6 @@ import androidx.core.content.ContextCompat
 import chromahub.rhythm.app.activities.MainActivity
 import chromahub.rhythm.app.infrastructure.widget.glance.RhythmMusicWidget
 
-@RequiresApi(Build.VERSION_CODES.N)
 class RhythmTileService : TileService() {
 
     private val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->

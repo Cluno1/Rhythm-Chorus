@@ -102,16 +102,20 @@ fun PlayerScreen(
     isPlaying: Boolean,
     progress: () -> Float,
     location: PlaybackLocation?,
-    queuePosition: Int = 1,
-    queueTotal: Int = 1,
     onPlayPause: () -> Unit,
     onSkipNext: () -> Unit,
     onSkipPrevious: () -> Unit,
     onSeek: (Float) -> Unit,
-    onLyricsSeek: ((Long) -> Unit)? = null,
     onBack: () -> Unit,
     onLocationClick: () -> Unit,
     onQueueClick: () -> Unit,
+    appSettings: AppSettings,
+    musicViewModel: MusicViewModel,
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    queuePosition: Int = 1,
+    queueTotal: Int = 1,
+    onLyricsSeek: ((Long) -> Unit)? = null,
     locations: List<PlaybackLocation> = emptyList(),
     onLocationSelect: (PlaybackLocation) -> Unit = {},
     volume: Float = 0.7f,
@@ -161,13 +165,9 @@ fun PlayerScreen(
     onShuffleAlbumSongs: (List<Song>) -> Unit = {},
     onPlayArtistSongs: (List<Song>) -> Unit = {},
     onShuffleArtistSongs: (List<Song>) -> Unit = {},
-    appSettings: AppSettings,
-    musicViewModel: MusicViewModel,
-    navController: NavController,
     isStreamingMode: Boolean = false,
     swipeToDismissEnabled: Boolean = true,
-    expansionFraction: Float = 1f,
-    modifier: Modifier = Modifier
+    expansionFraction: Float = 1f
 ) {
     val playerThemeId by appSettings.playerThemeId.collectAsState()
     var showFullScreenLyrics by remember { mutableStateOf(false) }

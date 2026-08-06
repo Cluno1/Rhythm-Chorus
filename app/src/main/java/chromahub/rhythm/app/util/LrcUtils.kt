@@ -16,7 +16,6 @@
  */
 package chromahub.rhythm.app.util
 
-import androidx.annotation.VisibleForTesting
 import androidx.media3.common.Metadata
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.ParsableByteArray
@@ -45,7 +44,6 @@ object LrcUtils {
         val autoWordSync: Boolean = false
     )
 
-    @VisibleForTesting
     fun parseLyrics(
         lyrics: String,
         audioMimeType: String?,

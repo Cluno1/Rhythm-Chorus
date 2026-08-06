@@ -120,7 +120,7 @@ object HapticUtils {
  * Composable extension function for easier haptic feedback in Compose
  */
 @Composable
-fun HapticFeedback.performIfEnabled(type: HapticType) {
+fun HapticFeedback.PerformIfEnabled(type: HapticType) {
     val context = LocalContext.current
     HapticUtils.performHapticFeedback(context, this, type)
 }
@@ -129,7 +129,7 @@ fun HapticFeedback.performIfEnabled(type: HapticType) {
  * Backward compatibility extension for Compose's standard HapticFeedbackType
  */
 @Composable
-fun HapticFeedback.performIfEnabled(type: HapticFeedbackType) {
+fun HapticFeedback.PerformIfEnabled(type: HapticFeedbackType) {
     val context = LocalContext.current
     HapticUtils.performHapticFeedback(context, this, type)
 }

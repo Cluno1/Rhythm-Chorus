@@ -56,6 +56,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import androidx.compose.ui.res.stringResource
+import java.util.Locale
 
 /**
  * Compact bottom sheet activity for playing external audio files.
@@ -243,7 +244,7 @@ fun ExternalPlaybackBottomSheet(
     var showContent by remember { mutableStateOf(false) }
     var awaitingSong by remember { mutableStateOf(true) }
     var isScrubbing by remember { mutableStateOf(false) }
-    var scrubProgress by remember { mutableStateOf(0f) }
+    var scrubProgress by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(Unit) {
         delay(100)
@@ -685,5 +686,5 @@ private fun formatTime(milliseconds: Long): String {
     val totalSeconds = milliseconds / 1000
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
-    return String.format("%02d:%02d", minutes, seconds)
+    return String.format(Locale.ROOT, "%02d:%02d", minutes, seconds)
 }

@@ -2,6 +2,7 @@ package chromahub.rhythm.app.features.local.data.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.core.net.toUri
 
 @Entity(tableName = "songs")
 data class SongEntity(
@@ -35,8 +36,8 @@ fun SongEntity.toSong(): chromahub.rhythm.app.shared.data.model.Song {
         album = album,
         albumId = albumId,
         duration = duration,
-        uri = android.net.Uri.parse(uri),
-        artworkUri = artworkUri?.let { android.net.Uri.parse(it) },
+        uri = (uri).toUri(),
+        artworkUri = artworkUri?.let { (it).toUri() },
         trackNumber = trackNumber,
         year = year,
         genre = genre,

@@ -13,6 +13,7 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
+import androidx.core.content.edit
 
 /**
  * Jellyfin API client for authentication, search and stream URL generation.
@@ -74,14 +75,14 @@ class JellyfinApiClient(context: Context) {
             )
             credentials = cred
             if (saveCredentials) {
-                prefs.edit()
-                    .putString(KEY_SERVER_URL, normalizedUrl)
-                    .putString(KEY_USERNAME, username.trim())
-                    .putString(KEY_ACCESS_TOKEN, token)
-                    .putString(KEY_USER_ID, userId)
-                    .apply()
+                prefs.edit {
+    putString(KEY_SERVER_URL, normalizedUrl)
+    putString(KEY_USERNAME, username.trim())
+    putString(KEY_ACCESS_TOKEN, token)
+    putString(KEY_USER_ID, userId)
+}
             } else {
-                prefs.edit().clear().apply()
+                prefs.edit { clear() }
             }
             ProviderConnectionResult(displayName = username.trim(), serverUrl = normalizedUrl)
         }
@@ -89,7 +90,7 @@ class JellyfinApiClient(context: Context) {
 
     fun logout() {
         credentials = null
-        prefs.edit().clear().apply()
+        prefs.edit { clear() }
     }
 
     suspend fun ping(): Result<Boolean> {

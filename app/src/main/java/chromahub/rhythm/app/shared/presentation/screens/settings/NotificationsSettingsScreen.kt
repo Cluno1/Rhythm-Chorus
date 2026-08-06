@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -86,18 +87,12 @@ fun NotificationsSettingsScreen(onBackClick: () -> Unit) {
         24 -> context.getString(R.string.settings_interval_once_a_day)
         48 -> context.getString(R.string.settings_interval_every_48_hours)
         72 -> context.getString(R.string.settings_interval_every_72_hours)
-        else -> context.getString(R.string.settings_check_interval_value, rhythmPulseNotificationIntervalHours)
+        else -> pluralStringResource(R.plurals.settings_check_interval_value, rhythmPulseNotificationIntervalHours, rhythmPulseNotificationIntervalHours)
     }
 
     fun openSystemNotificationSettings() {
-        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-            }
-        } else {
-            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", context.packageName, null)
-            }
+        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
         }
         context.startActivity(intent)
     }

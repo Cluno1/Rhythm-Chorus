@@ -712,11 +712,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         if (normalized.length > 1 && normalized.endsWith('/')) {
             normalized = normalized.substring(0, normalized.length - 1)
         }
-        val symlinks = listOf("/sdcard", "/storage/self/primary")
-        for (symlink in symlinks) {
-            if (normalized.startsWith(symlink, ignoreCase = true)) {
-                normalized = "/storage/emulated/0" + normalized.substring(symlink.length)
-                break
+        // Resolve legacy symlink aliases (e.g. /sdcard, /storage/self/primary) to the
+        // canonical external storage path using OS-level symlink resolution
+        val externalStorage = android.os.Environment.getExternalStorageDirectory().absolutePath
+        if (normalized.startsWith("/") && !normalized.startsWith(externalStorage)) {
+            normalized = try {
+                val candidate = File(normalized).canonicalPath
+                if (candidate.startsWith(externalStorage)) candidate else normalized
+            } catch (_: java.io.IOException) {
+                normalized
             }
         }
         return normalized
@@ -1892,7 +1896,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val hasMissingPhysicalFiles = _songs.value.any { song ->
                     val uriStr = song.artworkUri?.toString() ?: ""
                     (uriStr.startsWith("file:") || uriStr.startsWith("/")) &&
-                    !java.io.File(if (uriStr.startsWith("file:")) android.net.Uri.parse(uriStr).path ?: "" else uriStr).exists()
+                    !java.io.File(if (uriStr.startsWith("file:")) (uriStr).toUri().path ?: "" else uriStr).exists()
                 }
                 val needsRun = !isCompleted || lastLosslessStatus != losslessArtwork || hasMissingPhysicalFiles
 
@@ -3123,8 +3127,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                                         album = songEntity.album,
                                         albumId = songEntity.albumId,
                                         duration = songEntity.duration,
-                                        uri = Uri.parse(songEntity.uri),
-                                        artworkUri = songEntity.artworkUri?.let { Uri.parse(it) },
+                                        uri = (songEntity.uri).toUri(),
+                                        artworkUri = songEntity.artworkUri?.let { (it).toUri() },
                                         trackNumber = songEntity.trackNumber,
                                         year = songEntity.year,
                                         genre = songEntity.genre,
@@ -3179,7 +3183,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             songs = playlistSongs,
                             dateCreated = entity.dateCreated,
                             dateModified = entity.dateModified,
-                            artworkUri = entity.artworkUri?.let { Uri.parse(it) }
+                            artworkUri = entity.artworkUri?.let { (it).toUri() }
                         )
                     }
                 } else {
@@ -3224,8 +3228,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                                                 album = songEntity.album,
                                                 albumId = songEntity.albumId,
                                                 duration = songEntity.duration,
-                                                uri = Uri.parse(songEntity.uri),
-                                                artworkUri = songEntity.artworkUri?.let { Uri.parse(it) },
+                                                uri = (songEntity.uri).toUri(),
+                                                artworkUri = songEntity.artworkUri?.let { (it).toUri() },
                                                 trackNumber = songEntity.trackNumber,
                                                 year = songEntity.year,
                                                 genre = songEntity.genre,
@@ -3271,7 +3275,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                                     songs = playlistSongs,
                                     dateCreated = entity.dateCreated,
                                     dateModified = entity.dateModified,
-                                    artworkUri = entity.artworkUri?.let { Uri.parse(it) }
+                                    artworkUri = entity.artworkUri?.let { (it).toUri() }
                                 )
                             }
                         } catch (migrationError: Exception) {
@@ -7103,8 +7107,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         showOperationResultNotification(
                             notificationId = PLAYLIST_EXPORT_NOTIFICATION_ID,
                             title = context.getString(R.string.notification_playlist_export_title),
-                            content = context.getString(
-                                R.string.notification_playlist_export_all_complete,
+                            content = context.resources.getQuantityString(
+                                R.plurals.notification_playlist_export_all_complete,
+                                playlistsToExport.size,
                                 playlistsToExport.size
                             ),
                             isError = false
@@ -7222,8 +7227,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         showOperationResultNotification(
                             notificationId = PLAYLIST_IMPORT_NOTIFICATION_ID,
                             title = context.getString(R.string.notification_playlist_import_title),
-                            content = context.getString(
-                                R.string.notification_playlist_import_complete,
+                            content = context.resources.getQuantityString(
+                                R.plurals.notification_playlist_import_complete,
+                                matchedCount,
                                 finalPlaylist.name,
                                 matchedCount
                             ),
@@ -7661,7 +7667,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     _lyricsTimeOffset.value = 0
                     
                     // Refetch from sources with force refresh
-                    val songUri = Uri.parse("content://media/external/audio/media/${song.id}")
+                    val songUri = ("content://media/external/audio/media/${song.id}").toUri()
                     val lyrics = repository.fetchLyrics(
                         artist = artist,
                         title = title,
@@ -9789,7 +9795,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     // Sleep timer state is synchronized from service status broadcasts.
     
     override fun onCleared() {
-        super.onCleared()
+
         Log.d(TAG, "ViewModel clearing, cleaning up resources")
         
         // Unregister broadcast receiver

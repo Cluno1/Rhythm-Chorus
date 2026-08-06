@@ -8,6 +8,7 @@
     android:layout_height="110dp">
 
     <ImageView
+        android:importantForAccessibility="no"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@drawable/widget_preview_cookie"
@@ -25,12 +26,14 @@
             android:layout_height="44dp">
 
             <ImageView
+        android:importantForAccessibility="no"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/widget_preview_sunny"
                 app:tint="@color/widget_preview_primary" />
 
             <ImageView
+        android:importantForAccessibility="no"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_gravity="center"
@@ -41,7 +44,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="12h 30m"
+            android:text="@string/widget_preview_stats_time"
             android:textColor="@color/widget_preview_primary"
             android:textSize="16sp"
             android:includeFontPadding="false"
@@ -50,9 +53,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="listening"
+            android:text="@string/widget_preview_stats_label"
             android:textColor="@color/widget_preview_primary_container"
-            android:textSize="9sp"
+            android:textSize="11sp"
             android:letterSpacing="0.2"
             android:includeFontPadding="false"
             android:textStyle="bold" />
@@ -66,32 +69,24 @@
         android:layout_marginBottom="8dp">
 
         <ImageView
+        android:importantForAccessibility="no"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/widget_preview_circle"
             app:tint="@color/widget_preview_tertiary" />
 
-        <LinearLayout
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:orientation="vertical">
-
-            <ImageView
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:src="@drawable/ic_crown"
-                app:tint="@color/widget_preview_on_tertiary" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="30"
-                android:textColor="@color/widget_preview_on_tertiary"
-                android:textSize="10sp"
-                android:includeFontPadding="false"
-                android:textStyle="bold" />
-        </LinearLayout>
+            android:text="@string/widget_preview_stats_streak"
+            android:textColor="@color/widget_preview_on_tertiary"
+            android:textSize="11sp"
+            android:includeFontPadding="false"
+            android:textStyle="bold"
+            app:drawableTopCompat="@drawable/ic_crown"
+            app:drawableTint="@color/widget_preview_on_tertiary"
+            android:drawablePadding="2dp" />
     </FrameLayout>
 </FrameLayout>

@@ -7,6 +7,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.xmlpull.v1.XmlPullParser
 import java.io.StringReader
+import java.util.Locale
 import kotlin.math.abs
 
 object RhythmLyricsParser {
@@ -399,7 +400,7 @@ object RhythmLyricsParser {
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         val millis = (milliseconds % 1000) / 10
-        return String.format("%02d:%02d.%02d", minutes, seconds, millis)
+        return String.format(Locale.ROOT, "%02d:%02d.%02d", minutes, seconds, millis)
     }
 
     /**

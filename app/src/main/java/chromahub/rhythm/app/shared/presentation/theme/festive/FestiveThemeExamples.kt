@@ -114,7 +114,7 @@ fun ExampleAutoDetection() {
 // Example 4: Interactive intensity control
 @Composable
 fun ExampleInteractiveIntensity() {
-    var intensity by remember { mutableStateOf(0.5f) }
+    var intensity by remember { mutableFloatStateOf(0.5f) }
     
     ChristmasSnowfallOverlay(
         enabled = true,
@@ -324,7 +324,7 @@ fun ExampleWithAppSettings() {
  */
 @Composable
 fun FestiveThemeExamples() {
-    var selectedExample by remember { mutableStateOf(0) }
+    var selectedExample by remember { mutableIntStateOf(0) }
     
     when (selectedExample) {
         0 -> ExampleBasicChristmasSnowfall()

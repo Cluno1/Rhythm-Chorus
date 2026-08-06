@@ -55,6 +55,8 @@ import chromahub.rhythm.app.BuildConfig
 import java.security.MessageDigest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import androidx.core.content.edit
+import androidx.core.net.toUri
 
 /**
  * App version data model
@@ -339,22 +341,22 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
      */
     private fun saveDownloadState() {
         try {
-            val editor = downloadPrefs.edit()
+            downloadPrefs.edit {
             
             if (activeDownload != null) {
-                editor.putString("active_download", gson.toJson(activeDownload))
+                putString("active_download", gson.toJson(activeDownload))
             } else {
-                editor.remove("active_download")
+                remove("active_download")
             }
             
-            editor.putFloat("download_progress", _downloadProgress.value)
-            editor.putBoolean("is_downloading", _isDownloading.value)
+            putFloat("download_progress", _downloadProgress.value)
+            putBoolean("is_downloading", _isDownloading.value)
             
             _downloadedFile.value?.let { file ->
-                editor.putString("downloaded_file", file.absolutePath)
-            } ?: editor.remove("downloaded_file")
+                putString("downloaded_file", file.absolutePath)
+            } ?: remove("downloaded_file")
             
-            editor.apply()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to save download state", e)
         }
@@ -364,7 +366,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
      * Clear persisted download state
      */
     private fun clearDownloadState() {
-        downloadPrefs.edit().clear().apply()
+        downloadPrefs.edit { clear() }
         activeDownload = null
         pendingMismatchedDownload = null
         _canProceedWithMismatchedDownload.value = false
@@ -875,7 +877,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
         val digitGroups = (Math.log10(size.toDouble()) / Math.log10(1024.0)).toInt()
         
-        return String.format(
+        return String.format(Locale.ROOT, 
             "%.1f %s", 
             size / Math.pow(1024.0, digitGroups.toDouble()), 
             units[digitGroups]
@@ -930,7 +932,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
      */
     private fun openInBrowser(url: String) {
         try {
-            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val browserIntent = Intent(Intent.ACTION_VIEW, url.toUri())
             browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             getApplication<Application>().startActivity(browserIntent)
         } catch (e: Exception) {
@@ -1684,24 +1686,22 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
             }
             
             // For Android 8.0 and later, check if install from unknown sources is allowed
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                if (!context.packageManager.canRequestPackageInstalls()) {
-                    // Automatically open settings to allow install from unknown sources
-                    try {
-                        val intent = Intent(
-                            android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                            android.net.Uri.parse("package:${context.packageName}")
-                        ).apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-                        context.startActivity(intent)
-                    } catch (e: Exception) {
-                        _error.value = "Could not open settings. Please enable 'Install unknown apps' manually in Settings."
-                        Log.e(TAG, "Error opening unknown sources settings", e)
-                    }
-                    return
-                }
-            }
+if (!context.packageManager.canRequestPackageInstalls()) {
+    // Automatically open settings to allow install from unknown sources
+    try {
+        val intent = Intent(
+            android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+            "package:${context.packageName}".toUri()
+        ).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        _error.value = "Could not open settings. Please enable 'Install unknown apps' manually in Settings."
+        Log.e(TAG, "Error opening unknown sources settings", e)
+    }
+    return
+}
             
             val authority = "${context.packageName}.provider"
             val uri = FileProvider.getUriForFile(context, authority, file)
@@ -1852,7 +1852,7 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     override fun onCleared() {
-        super.onCleared()
+
         Log.d(TAG, "ViewModel cleared")
         // Note: Active downloads will be cancelled when ViewModel is cleared
         // Download state is persisted and can be resumed later
@@ -1860,7 +1860,6 @@ class AppUpdaterViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun ensureDownloadNotificationChannel() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
         val context = getApplication<Application>()
 

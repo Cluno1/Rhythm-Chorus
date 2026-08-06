@@ -78,7 +78,7 @@ private object RhythmIconFontCache {
                 manufacturer.contains("redmi") ||
                 manufacturer.contains("poco")
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || isXiaomiDevice) {
+        if (isXiaomiDevice) {
             return getFallbackFontFamily(context)
         }
 

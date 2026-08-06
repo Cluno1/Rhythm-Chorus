@@ -85,6 +85,9 @@ import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,8 +123,7 @@ fun UniversalSearchScreen(
     val focusManager = LocalFocusManager.current
     val haptics = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
-    val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
+    val isTablet = windowScreenWidthDp() >= 600
     val horizontalPadding = if (isTablet) 32.dp else 24.dp
 
     var query by remember { mutableStateOf("") }
@@ -1606,8 +1608,8 @@ private fun StreamingSong.toLocalSong(): Song {
         album = this.album,
         albumId = this.albumId ?: "",
         duration = this.duration,
-        uri = Uri.parse(this.streamingUrl ?: this.previewUrl ?: ""),
-        artworkUri = this.artworkUri?.let { Uri.parse(it) },
+        uri = (this.streamingUrl ?: this.previewUrl ?: "").toUri(),
+        artworkUri = this.artworkUri?.let { (it).toUri() },
         trackNumber = 0,
         year = 0,
         genre = null,
@@ -1950,8 +1952,7 @@ fun UniversalAllSongsPage(
 
     val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val contentBottomPadding = (miniPlayerBottomPadding + 20.dp).coerceAtLeast(96.dp)
-    val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
+    val isTablet = windowScreenWidthDp() >= 600
     val horizontalPadding = if (isTablet) 32.dp else 24.dp
 
     CollapsibleHeaderScreen(
@@ -2496,8 +2497,7 @@ private fun UniversalGenreBrowseSection(
                 WavyLoader(color = MaterialTheme.colorScheme.tertiary)
             }
         } else if (genres.isNotEmpty()) {
-            val configuration = LocalConfiguration.current
-            val isTablet = configuration.screenWidthDp >= 600
+            val isTablet = windowScreenWidthDp() >= 600
             val columnsCount = if (isTablet) 3 else 2
             val rows = remember(genres, columnsCount) { genres.chunked(columnsCount) }
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

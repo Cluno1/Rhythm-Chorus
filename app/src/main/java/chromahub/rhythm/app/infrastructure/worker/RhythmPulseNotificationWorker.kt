@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 import kotlin.random.Random
+import androidx.core.content.edit
 
 /**
  * Periodic worker that sends concise Rhythm Tips reminders and listening tips.
@@ -79,7 +80,7 @@ class RhythmPulseNotificationWorker(
             index = (index + 1) % candidates.size
         }
 
-        prefs.edit().putInt(KEY_LAST_MESSAGE_INDEX, index).apply()
+        prefs.edit { putInt(KEY_LAST_MESSAGE_INDEX, index) }
         return candidates[index]
     }
 
@@ -87,18 +88,16 @@ class RhythmPulseNotificationWorker(
         val notificationManager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                applicationContext.getString(R.string.service_rhythm_pulse),
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = applicationContext.getString(R.string.service_rhythm_pulse_desc)
-                enableVibration(false)
-                setShowBadge(false)
-            }
-            notificationManager.createNotificationChannel(channel)
-        }
+val channel = NotificationChannel(
+    CHANNEL_ID,
+    applicationContext.getString(R.string.service_rhythm_pulse),
+    NotificationManager.IMPORTANCE_LOW
+).apply {
+    description = applicationContext.getString(R.string.service_rhythm_pulse_desc)
+    enableVibration(false)
+    setShowBadge(false)
+}
+notificationManager.createNotificationChannel(channel)
 
         val intent = Intent(applicationContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP

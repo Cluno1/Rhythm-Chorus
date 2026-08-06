@@ -215,6 +215,9 @@ import chromahub.rhythm.app.shared.presentation.components.player.MiniPlayer
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
+import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveFilledButton
+import chromahub.rhythm.app.shared.presentation.theme.ExpressiveMaterialShape
+import chromahub.rhythm.app.shared.presentation.theme.rememberExpressiveShape
 import chromahub.rhythm.app.shared.presentation.components.dialogs.BulkPlaylistExportDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistImportDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOperationProgressDialog
@@ -263,6 +266,9 @@ import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveGrou
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveFilledIconButton
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapes
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 private fun LazyListState.shouldShowScrollbar(): Boolean {
     val layoutInfo = this.layoutInfo
@@ -366,8 +372,8 @@ fun LibraryScreen(
         visibleTabIds.indexOf(tabId).takeIf { it >= 0 } ?: 0
     }
     
-    var selectedTabIndex by rememberSaveable { mutableStateOf(initialTabIndex) }
-    var expandedHeaderHeight by remember { mutableStateOf(0) }
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(initialTabIndex) }
+    var expandedHeaderHeight by remember { mutableIntStateOf(0) }
     val pagerState = rememberPagerState(initialPage = selectedTabIndex) { tabs.size }
     val tabRowState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -457,7 +463,7 @@ fun LibraryScreen(
     var showErrorDialog by remember { mutableStateOf(false) }
     var showRestartDialog by remember { mutableStateOf(false) }
     
-    var explorerReloadTrigger by remember { mutableStateOf(0) }
+    var explorerReloadTrigger by remember { mutableIntStateOf(0) }
     var explorerPath by rememberSaveable { mutableStateOf<String?>(null) }
     var explorerFolderSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
     var selectedSong by remember { mutableStateOf<Song?>(null) }
@@ -771,7 +777,7 @@ fun LibraryScreen(
             }
         }
     }
-    val isTabletLayout = LocalConfiguration.current.screenWidthDp >= 600
+    val isTabletLayout = windowScreenWidthDp() >= 600
     val baseLibraryBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val fabBottomPadding = if (isTabletLayout) {
         (baseLibraryBottomPadding + 12.dp).coerceAtLeast(12.dp)
@@ -2098,7 +2104,7 @@ fun LibraryScreen(
             title = { Text(stringResource(R.string.import_complete_title)) },
             text = {
                 val (count, message) = importResult!!
-                Text(stringResource(R.string.playlist_import_success, count, message))
+                Text(pluralStringResource(R.plurals.playlist_import_success, count, count, message))
             },
             confirmButton = {
                 Button(onClick = {
@@ -2286,6 +2292,7 @@ fun SingleCardSongsContent(
     if (preparedSongs.isEmpty()) {
         EmptyState(
             message = context.getString(R.string.library_no_songs),
+            subtitle = context.getString(R.string.library_start_collection),
             icon = RhythmIcons.Music.Song,
             onRefresh = onRefreshClick
         )
@@ -2467,6 +2474,7 @@ fun SingleCardPlaylistsContent(
     if (preparedPlaylists.isEmpty()) {
         EmptyState(
             message = context.getString(R.string.library_no_playlists_yet),
+            subtitle = context.getString(R.string.library_no_playlists_yet_desc),
             icon = RhythmIcons.Music.Playlist,
             onRefresh = onRefreshClick
         )
@@ -2493,9 +2501,9 @@ fun SingleCardPlaylistsContent(
             }
 
             if (playlistViewType == PlaylistViewType.GRID) {
-                val configuration = LocalConfiguration.current
-                val columnsCount = remember(configuration.screenWidthDp) {
-                    val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
+                val gridWidthDp = windowScreenWidthDp()
+                val columnsCount = remember(gridWidthDp) {
+                    val cols = (gridWidthDp - 32 + 12) / (160 + 12)
                     maxOf(cols, 1)
                 }
                 LazyVerticalGrid(
@@ -2633,6 +2641,7 @@ fun SingleCardAlbumsContent(
     if (preparedAlbums.isEmpty()) {
         EmptyState(
             message = context.getString(R.string.library_no_albums_yet),
+            subtitle = context.getString(R.string.library_no_albums_yet_desc),
             icon = RhythmIcons.Music.Album,
             onRefresh = onRefreshClick
         )
@@ -2659,9 +2668,9 @@ fun SingleCardAlbumsContent(
             }
 
             if (albumViewType == AlbumViewType.GRID) {
-                val configuration = LocalConfiguration.current
-                val columnsCount = remember(configuration.screenWidthDp) {
-                    val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
+                val gridWidthDp = windowScreenWidthDp()
+                val columnsCount = remember(gridWidthDp) {
+                    val cols = (gridWidthDp - 32 + 12) / (160 + 12)
                     maxOf(cols, 1)
                 }
                 LazyVerticalGrid(
@@ -2758,6 +2767,7 @@ fun PlaylistsTab(
     if (playlists.isEmpty()) {
         EmptyState(
             message = context.getString(R.string.library_no_playlists_yet),
+            subtitle = context.getString(R.string.library_no_playlists_yet_desc),
             icon = RhythmIcons.Music.Playlist
         )
     } else {
@@ -2872,6 +2882,7 @@ fun AlbumsTab(
     if (albums.isEmpty()) {
         EmptyState(
             message = context.getString(R.string.library_no_albums_yet),
+            subtitle = context.getString(R.string.library_no_albums_yet_desc),
             icon = RhythmIcons.Music.Album
         )
     } else {
@@ -3035,7 +3046,7 @@ fun LibrarySongItem(
     val context = LocalContext.current
     var showDropdown by remember { mutableStateOf(false) }
     val appSettings = remember { chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context) }
-    var currentRating by remember(song.id) { mutableStateOf(appSettings.getSongRating(song.id)) }
+    var currentRating by remember(song.id) { mutableIntStateOf(appSettings.getSongRating(song.id)) }
     val isCurrentSong = currentSong?.id == song.id
 
     val titleColor by animateColorAsState(
@@ -3880,100 +3891,100 @@ fun LibraryAlbumItem(
 fun EmptyState(
     message: String,
     icon: MaterialSymbolIcon,
+    subtitle: String? = null,
     onRefresh: (() -> Unit)? = null
 ) {
+    val context = LocalContext.current
+    val haptics = LocalHapticFeedback.current
+    val animatedScale by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = spring(
+            dampingRatio = 0.6f,
+            stiffness = 100f
+        ),
+        label = "iconScale"
+    )
+    val animatedAlpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(
+            durationMillis = 500,
+            delayMillis = 100
+        ),
+        label = "alphaAnimation"
+    )
+    val cookieShape = rememberExpressiveShape(ExpressiveMaterialShape.COOKIE_12)
+
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 40.dp),
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            tonalElevation = 0.dp
+                .graphicsLayer {
+                    scaleX = animatedScale
+                    scaleY = animatedScale
+                    alpha = animatedAlpha
+                },
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            )
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(48.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 28.dp, vertical = 32.dp)
             ) {
-                val context = LocalContext.current
-                val haptics = LocalHapticFeedback.current
-                val animatedSize by animateFloatAsState(
-                    targetValue = 1f,
-                    animationSpec = spring(
-                        dampingRatio = 0.6f,
-                        stiffness = 100f
-                    ),
-                    label = "iconAnimation"
-                )
-                
-                val animatedAlpha by animateFloatAsState(
-                    targetValue = 1f,
-                    animationSpec = tween(
-                        durationMillis = 800,
-                        delayMillis = 200
-                    ),
-                    label = "alphaAnimation"
-                )
-                
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            shape = RoundedCornerShape(20.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
+                Surface(
+                    shape = cookieShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(72.dp)
+                ) {
                     Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            
-                            modifier = Modifier
-                                .size(64.dp)
-                                .graphicsLayer { alpha = animatedAlpha }
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(34.dp)
                         )
                     }
                 }
-                
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     text = message,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center,
-                    lineHeight = MaterialTheme.typography.headlineSmall.lineHeight * 1.2,
-                    modifier = Modifier.graphicsLayer { alpha = animatedAlpha }
+                    textAlign = TextAlign.Center
                 )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
+
+                Spacer(modifier = Modifier.height(6.dp))
+
                 Text(
-                    text = context.getString(R.string.library_start_collection),
-                    style = MaterialTheme.typography.bodyLarge,
+                    text = subtitle ?: context.getString(R.string.library_start_collection),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.graphicsLayer { alpha = animatedAlpha * 0.8f }
+                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.3
                 )
 
                 if (onRefresh != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    FilledTonalButton(
+                    Spacer(modifier = Modifier.height(20.dp))
+                    ExpressiveFilledButton(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                             onRefresh()
                         },
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
+                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
                     ) {
                         Icon(
                             imageVector = RhythmIcons.Refresh,
@@ -4051,9 +4062,9 @@ fun AlbumsGrid(
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback
 ) {
     val uniqueAlbums = remember(albums) { albums.distinctBy { it.id } }
-    val configuration = LocalConfiguration.current
-    val columnsCount = remember(configuration.screenWidthDp) {
-        val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
+    val gridWidthDp = windowScreenWidthDp()
+    val columnsCount = remember(gridWidthDp) {
+        val cols = (gridWidthDp - 32 + 12) / (160 + 12)
         maxOf(cols, 1)
     }
     LazyVerticalGrid(
@@ -4203,9 +4214,9 @@ fun PlaylistGridItem(
 fun AlbumGridItem(
     album: Album,
     onClick: () -> Unit,
-    onPlayClick: () -> Unit = {},
-    modifier: Modifier = Modifier,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
+    modifier: Modifier = Modifier,
+    onPlayClick: () -> Unit = {},
     shape: Shape = RoundedCornerShape(20.dp)
 ) {
     val context = LocalContext.current
@@ -4458,6 +4469,7 @@ fun SingleCardArtistsContent(
     if (sortedArtists.isEmpty()) {
         EmptyState(
             message = context.getString(R.string.library_no_artists_yet),
+            subtitle = context.getString(R.string.library_no_artists_yet_desc),
             icon = RhythmIcons.Artist,
             onRefresh = onRefreshClick
         )
@@ -4486,9 +4498,9 @@ fun SingleCardArtistsContent(
         }
 
         if (isGridView) {
-            val configuration = LocalConfiguration.current
-            val columnsCount = remember(configuration.screenWidthDp) {
-                val cols = (configuration.screenWidthDp - 32 + 12) / (160 + 12)
+            val gridWidthDp = windowScreenWidthDp()
+            val columnsCount = remember(gridWidthDp) {
+                val cols = (gridWidthDp - 32 + 12) / (160 + 12)
                 maxOf(cols, 1)
             }
             LazyVerticalGrid(
@@ -5174,9 +5186,9 @@ fun FabMenuItem(
     containerColor: Color,
     contentColor: Color,
     onClick: () -> Unit,
-    animationDelay: Int = 0,
+    haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
     modifier: Modifier = Modifier,
-    haptics: androidx.compose.ui.hapticfeedback.HapticFeedback
+    animationDelay: Int = 0
 ) {
     val context = LocalContext.current
     var isPressed by remember { mutableStateOf(false) }
@@ -5501,11 +5513,11 @@ fun ExpressiveSelectionHeader(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = stringResource(R.string.library_selected_count_format, selectedCount),
+                        text = pluralStringResource(R.plurals.library_selected_count_format, selectedCount, selectedCount),
                         style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold)
                     )
                     Text(
-                        text = stringResource(R.string.library_from_tracks_format, totalCount),
+                        text = pluralStringResource(R.plurals.library_from_tracks_format, totalCount, totalCount),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
                     )
@@ -5676,7 +5688,7 @@ private fun LibraryBottomBar(
         ) + fadeOut(animationSpec = tween(200)),
         modifier = modifier
     ) {
-        val isTablet = LocalConfiguration.current.screenWidthDp >= 600
+        val isTablet = windowScreenWidthDp() >= 600
         val baseBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
         val bottomBarContext = LocalContext.current
         val localAppSettings = remember { AppSettings.getInstance(bottomBarContext) }
@@ -6322,7 +6334,8 @@ fun YearGroupedSongsContent(
 
     if (songsByYear.isEmpty()) {
         EmptyState(
-            message = "No dated songs found",
+            message = context.getString(R.string.library_no_dated_songs),
+            subtitle = context.getString(R.string.library_no_dated_songs_desc),
             icon = RhythmIcons.CalendarMonth,
             onRefresh = onRefreshClick
         )

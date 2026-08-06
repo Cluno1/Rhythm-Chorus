@@ -104,6 +104,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import chromahub.rhythm.app.R
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.core.net.toUri
 
 @Composable
 fun DeviceConfigurationBottomSheet(
@@ -229,7 +231,7 @@ fun DeviceConfigurationBottomSheet(
                         Text(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                             style = MaterialTheme.typography.labelLarge,
-                            text = stringResource(R.string.device_configuration_devices_configured, userDevices.size),
+                            text = pluralStringResource(R.plurals.device_configuration_devices_configured, userDevices.size, userDevices.size),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -603,7 +605,7 @@ fun DeviceConfigurationBottomSheet(
                     
                     FilledTonalButton(
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://autoeq.app"))
+                            val intent = Intent(Intent.ACTION_VIEW, ("https://autoeq.app").toUri())
                             context.startActivity(intent)
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -1266,89 +1268,13 @@ private fun DeviceAutoEQSelector(
                     singleLine = true
                 )
                 
-                // Filter Chips
-//                if (brands.isNotEmpty() || types.isNotEmpty()) {
-//                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-//                        if (brands.isNotEmpty()) {
-//                            Text(
-//                                text = "Brand",
-//                                style = MaterialTheme.typography.labelSmall,
-//                                color = MaterialTheme.colorScheme.onSurfaceVariant
-//                            )
-//                            LazyRow(
-//                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-//                                modifier = Modifier.fillMaxWidth()
-//                            ) {
-//                                item {
-//                                    FilterChip(
-//                                        selected = selectedBrand == null,
-//                                        onClick = { selectedBrand = null },
-//                                        label = { Text("All") },
-//                                        colors = FilterChipDefaults.filterChipColors(
-//                                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-//                                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-//                                        )
-//                                    )
-//                                }
-//                                items(brands) { brand ->
-//                                    FilterChip(
-//                                        selected = selectedBrand == brand,
-//                                        onClick = { selectedBrand = brand },
-//                                        label = { Text(brand) },
-//                                        colors = FilterChipDefaults.filterChipColors(
-//                                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-//                                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-//                                        )
-//                                    )
-//                                }
-//                            }
-//                        }
-//
-//                        if (types.isNotEmpty()) {
-//                            Text(
-//                                text = "Type",
-//                                style = MaterialTheme.typography.labelSmall,
-//                                color = MaterialTheme.colorScheme.onSurfaceVariant
-//                            )
-//                            LazyRow(
-//                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-//                                modifier = Modifier.fillMaxWidth()
-//                            ) {
-//                                item {
-//                                    FilterChip(
-//                                        selected = selectedType == null,
-//                                        onClick = { selectedType = null },
-//                                        label = { Text("All") },
-//                                        colors = FilterChipDefaults.filterChipColors(
-//                                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-//                                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-//                                        )
-//                                    )
-//                                }
-//                                items(types) { type ->
-//                                    FilterChip(
-//                                        selected = selectedType == type,
-//                                        onClick = { selectedType = type },
-//                                        label = { Text(type) },
-//                                        colors = FilterChipDefaults.filterChipColors(
-//                                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-//                                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-//                                        )
-//                                    )
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-                
-                // Results Count
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = stringResource(R.string.device_configuration_profiles_available, filteredProfiles.size),
+                        text = pluralStringResource(R.plurals.device_configuration_profiles_available, filteredProfiles.size, filteredProfiles.size),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)

@@ -180,7 +180,7 @@ fun CacheSizeDialog(
     // Helper function to format size display
     fun formatSizeDisplay(sizeMB: Float): String {
         return when {
-            sizeMB >= 1024f -> "${String.format("%.1f", sizeMB / 1024f)} GB"
+            sizeMB >= 1024f -> "${String.format(Locale.ROOT, "%.1f", sizeMB / 1024f)} GB"
             else -> "${sizeMB.toInt()} MB"
         }
     }

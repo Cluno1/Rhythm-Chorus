@@ -78,7 +78,7 @@ fun SleepTimerBottomSheetNew(
     var statusMessage by remember { mutableStateOf("") }
     var sheetState by remember { mutableStateOf(SheetContentState.Presets) }
     // Track session original total — only updated when a brand new timer session starts (not on +/- adjustments)
-    var originalTotalSeconds by remember { mutableStateOf(0L) }
+    var originalTotalSeconds by remember { mutableLongStateOf(0L) }
 
     val timerOptions = listOf(
         SleepTimerOption(5, "5 min", MaterialSymbolIcon("coffee", filled = true)),

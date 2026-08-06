@@ -144,7 +144,8 @@ fun buildSplashBackdropShapes(
     primaryColor: androidx.compose.ui.graphics.Color,
     secondaryColor: androidx.compose.ui.graphics.Color,
     tertiaryColor: androidx.compose.ui.graphics.Color,
-    neutralColor: androidx.compose.ui.graphics.Color
+    neutralColor: androidx.compose.ui.graphics.Color,
+    sizeScale: Float = 1f
 ): List<SplashBackdropShape> {
     val random = Random(seed)
     val colors = listOf(primaryColor, secondaryColor, tertiaryColor, neutralColor)
@@ -199,7 +200,7 @@ fun buildSplashBackdropShapes(
     val selectedAnchors = anchors.shuffled(random).take(count)
     val selectedShapeIds = shapePool.shuffled(random).take(count)
 
-    val virtualScale = 420f
+    val virtualScale = 420f * sizeScale
     val offsetLimitX = if (isCompact) 12 else 20
     val offsetLimitY = if (isCompact) 14 else 24
     val centerClearMin = if (isCompact) 0.24f else 0.28f
@@ -220,7 +221,7 @@ fun buildSplashBackdropShapes(
             continue
         }
 
-        val sizeDp = (sizeMin + random.nextInt(0, sizeRange)).dp
+        val sizeDp = ((sizeMin + random.nextInt(0, sizeRange)) * sizeScale).dp
         val sizeVal = sizeDp.value
         val radiusNorm = (sizeVal / virtualScale) / 2f
 

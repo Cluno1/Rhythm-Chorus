@@ -52,6 +52,9 @@ import chromahub.rhythm.app.shared.presentation.components.common.ContentLoading
 import chromahub.rhythm.app.shared.presentation.components.common.DataProcessingLoader
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
+import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveOutlinedButton
+import chromahub.rhythm.app.shared.presentation.theme.ExpressiveMaterialShape
+import chromahub.rhythm.app.shared.presentation.theme.rememberExpressiveShape
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import kotlinx.coroutines.Dispatchers
@@ -60,6 +63,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
 
 // Data classes for explorer functionality
 data class ExplorerItem(
@@ -315,7 +319,7 @@ fun SingleCardExplorerContent(
 
     var songPathMap by remember { mutableStateOf<Map<String, Song>>(emptyMap()) }
     var isPathMapLoading by remember { mutableStateOf(true) }
-    var songPathMapVersion by remember { mutableStateOf(0) }
+    var songPathMapVersion by remember { mutableIntStateOf(0) }
     
     LaunchedEffect(songs) {
         isPathMapLoading = true
@@ -351,7 +355,7 @@ fun SingleCardExplorerContent(
     }
 
     val directoryCache = remember { mutableMapOf<String?, List<ExplorerItem>>() }
-    var lastCacheVersion by remember { mutableStateOf(-1) }
+    var lastCacheVersion by remember { mutableIntStateOf(-1) }
     var debounceJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
 
     LaunchedEffect(reloadTrigger) {
@@ -796,82 +800,75 @@ fun SingleCardExplorerContent(
 
             if (!isInitialLoading && currentItems.isEmpty() && !isLoadingDirectory) {
                 item {
+                    val cookieShape = rememberExpressiveShape(ExpressiveMaterialShape.COOKIE_12)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 64.dp),
+                            .padding(horizontal = 20.dp, vertical = 40.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(20.dp)
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(28.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                            )
                         ) {
-                            Box(
-                                modifier = Modifier.size(120.dp),
-                                contentAlignment = Alignment.Center
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 28.dp, vertical = 32.dp)
                             ) {
                                 Surface(
-                                    modifier = Modifier.fillMaxSize(),
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                                    shadowElevation = 0.dp
-                                ) {}
+                                    shape = cookieShape,
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    modifier = Modifier.size(72.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = MaterialSymbolIcon("folder_off"),
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            modifier = Modifier.size(34.dp)
+                                        )
+                                    }
+                                }
 
-                                Icon(
-                                    imageVector = MaterialSymbolIcon("folder_off"),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                    modifier = Modifier.size(48.dp)
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Text(
+                                    text = if (currentPath == null)
+                                        context.getString(R.string.explorer_no_storage)
+                                    else
+                                        context.getString(R.string.explorer_empty_folder),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    textAlign = TextAlign.Center
                                 )
 
-                                Icon(
-                                    imageVector = RhythmIcons.MusicNote,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .align(Alignment.TopEnd)
-                                        .offset(x = 16.dp, y = (-8).dp)
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                Text(
+                                    text = if (currentPath == null)
+                                        context.getString(R.string.explorer_no_storage_desc)
+                                    else
+                                        context.getString(R.string.explorer_empty_folder_desc),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.3
                                 )
 
-                                Icon(
-                                    imageVector = RhythmIcons.Library,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .align(Alignment.BottomStart)
-                                        .offset(x = (-12).dp, y = 12.dp)
-                                )
-                            }
-
-                            Text(
-                                text = if (currentPath == null) "No storage found" else "Empty folder",
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Text(
-                                text = if (currentPath == null)
-                                    "Connect storage devices or check permissions to explore your music files"
-                                else
-                                    "This folder doesn't contain any audio files",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.3
-                            )
-
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
-                                horizontalAlignment = Alignment.Start
-                            ) {
                                 Surface(
                                     color = MaterialTheme.colorScheme.surfaceContainerHighest,
                                     shape = RoundedCornerShape(12.dp),
-                                    tonalElevation = 0.dp
+                                    tonalElevation = 0.dp,
+                                    modifier = Modifier.padding(top = 20.dp)
                                 ) {
                                     Row(
                                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -891,30 +888,27 @@ fun SingleCardExplorerContent(
                                         )
                                     }
                                 }
-                            }
 
-                            if (currentPath != null) {
-                                OutlinedButton(
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                        onPathChanged(getParentPath(currentPath))
-                                    },
-                                    shape = RoundedCornerShape(12.dp),
-                                    border = BorderStroke(
-                                        1.dp,
-                                        MaterialTheme.colorScheme.outline
-                                    )
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Back,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = context.getString(R.string.library_go_back),
-                                        style = MaterialTheme.typography.labelMedium
-                                    )
+                                if (currentPath != null) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    ExpressiveOutlinedButton(
+                                        onClick = {
+                                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                            onPathChanged(getParentPath(currentPath))
+                                        },
+                                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Back,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = context.getString(R.string.library_go_back),
+                                            style = MaterialTheme.typography.labelMedium
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -967,7 +961,7 @@ fun SingleCardExplorerContent(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = context.getString(R.string.library_creating_playlist, folderSongsForPlaylist.size),
+                                text = context.resources.getQuantityString(R.plurals.library_creating_playlist, folderSongsForPlaylist.size, folderSongsForPlaylist.size),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1222,7 +1216,7 @@ fun getStorageRoots(context: android.content.Context): List<ExplorerItem> {
 
 fun getParentDirectory(uriString: String): String {
     return try {
-        val uri = android.net.Uri.parse(uriString)
+        val uri = (uriString).toUri()
         val path = uri.path ?: ""
         val lastSlashIndex = path.lastIndexOf('/')
         if (lastSlashIndex > 0) {
@@ -1249,7 +1243,7 @@ fun getRootDirectories(songs: List<Song>): List<ExplorerItem> {
 
     songs.forEach { song ->
         try {
-            val uri = android.net.Uri.parse(song.uri.toString())
+            val uri = (song.uri.toString()).toUri()
             val path = uri.path ?: ""
             val dirPath = path.substringBeforeLast('/', "")
 
@@ -1267,7 +1261,7 @@ fun getRootDirectories(songs: List<Song>): List<ExplorerItem> {
     return directories.map { dirPath ->
         val itemCount = songs.count { song ->
             try {
-                val songPath = android.net.Uri.parse(song.uri.toString()).path ?: ""
+                val songPath = (song.uri.toString()).toUri().path ?: ""
                 val songDir = songPath.substringBeforeLast('/', "")
                 songDir == dirPath
             } catch (e: Exception) {
@@ -1295,7 +1289,7 @@ fun getAudioFileCountSongsInDirectory(
 ): Int {
     return songs.count { song ->
         try {
-            val songPath = android.net.Uri.parse(song.uri.toString()).path ?: ""
+            val songPath = (song.uri.toString()).toUri().path ?: ""
             val normalizedSongPath = songPath.replace("//", "/")
             val normalizedDirPath = directoryPath.replace("//", "/")
 

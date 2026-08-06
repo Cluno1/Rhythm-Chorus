@@ -60,6 +60,8 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.res.stringResource
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 class CrashActivity : AppCompatActivity() {
 
@@ -82,8 +84,7 @@ class CrashActivity : AppCompatActivity() {
         val scope = rememberCoroutineScope()
 
         // Responsive sizing
-        val configuration = LocalConfiguration.current
-        val isTablet = configuration.screenWidthDp >= 600
+        val isTablet = windowScreenWidthDp() >= 600
         val contentMaxWidth = if (isTablet) 1000.dp else 600.dp
         val startPadding = if (isTablet) 60.dp else 30.dp
         val endPadding = if (isTablet) 60.dp else 30.dp

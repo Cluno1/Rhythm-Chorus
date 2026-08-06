@@ -112,11 +112,14 @@ import chromahub.rhythm.app.shared.presentation.components.common.ProgressStyle
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.platform.LocalConfiguration
 
 
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapes
 import androidx.compose.ui.res.stringResource
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 
 /**
@@ -134,21 +137,20 @@ fun MaterialMiniPlayer(
     onPlayPause: () -> Unit,
     onPlayerClick: () -> Unit,
     onSkipNext: () -> Unit,
+    modifier: Modifier = Modifier,
     onSkipPrevious: () -> Unit = {},
     onDismiss: () -> Unit = {},
     isMediaLoading: Boolean = false,
-    verticalDragEnabled: Boolean = true,
-    modifier: Modifier = Modifier
+    verticalDragEnabled: Boolean = true
 ) {
     val context = LocalContext.current
     val appSettings = remember { AppSettings.getInstance(context) }
     val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
-    val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
-    val isCompactHeight = configuration.screenHeightDp < 500
-    val isLargeHeight = configuration.screenHeightDp >= 700
+    val isTablet = windowScreenWidthDp() >= 600
+    val isCompactHeight = windowScreenHeightDp() < 500
+    val isLargeHeight = windowScreenHeightDp() >= 700
     val alwaysShowTabletLayout by appSettings.miniPlayerAlwaysShowTablet.collectAsState()
-    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
+    val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
     val useTabletLayout = isTablet || (alwaysShowTabletLayout && !isTablet)
     
     // MiniPlayer customization settings
@@ -221,15 +223,15 @@ fun MaterialMiniPlayer(
     }
     
     // For swipe gesture detection
-    var offsetY by remember { mutableStateOf(0f) }
-    var offsetX by remember { mutableStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
     val swipeUpThreshold = 100f // Minimum distance to trigger player open
     val swipeDownThreshold = 100f // Minimum distance to trigger dismissal
     val swipeHorizontalThreshold = 120f // Minimum distance to trigger prev/next
     
     // Track last offset for haptic feedback at intervals
-    var lastHapticOffset by remember { mutableStateOf(0f) }
-    var lastHapticOffsetX by remember { mutableStateOf(0f) }
+    var lastHapticOffset by remember { mutableFloatStateOf(0f) }
+    var lastHapticOffsetX by remember { mutableFloatStateOf(0f) }
     
     // Animation for translation during swipe
     val translationOffsetY by animateFloatAsState(

@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.yield
 import kotlinx.coroutines.withContext
 import java.io.File
+import androidx.core.net.toUri
+import androidx.core.content.edit
 
 /**
  * Centralized, High-Performance Media Scanning Engine for Rhythm.
@@ -121,7 +123,7 @@ class MediaScanEngine(
                 val colDateAdded = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
                 val colDateModified = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
                 val colData = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-                val colGenre = cursor.getColumnIndex(MediaStore.Audio.Media.GENRE)
+                val colGenre = cursor.getColumnIndex("genre") // MediaStore.Audio.AudioColumns.GENRE (API 30+)
                 val colAlbumArtist = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ARTIST)
 
             var processed = 0
@@ -170,7 +172,7 @@ class MediaScanEngine(
                         val isLosslessArt = existingArt.contains("embedded_art_lossless_")
                         val isFileExist = if (existingArt.startsWith("file:") || existingArt.startsWith("/")) {
                             try {
-                                val artPath = if (existingArt.startsWith("file:")) Uri.parse(existingArt).path else existingArt
+                                val artPath = if (existingArt.startsWith("file:")) (existingArt).toUri().path else existingArt
                                 artPath?.let { File(it).exists() && File(it).length() > 0L } == true
                             } catch (e: Exception) {
                                 false
@@ -180,7 +182,7 @@ class MediaScanEngine(
                         val needsArtUpgrade = preferSongArtwork && (existingArt.isEmpty() || !isFileExist || (losslessArtwork && !isLosslessArt))
 
                         if (needsArtUpgrade) {
-                            val parsedUri = Uri.parse(existing.uri)
+                            val parsedUri = (existing.uri).toUri()
                             val embeddedUri = try {
                                 chromahub.rhythm.app.util.MediaUtils.extractEmbeddedAlbumArt(
                                     context, parsedUri, context.filesDir, losslessArtwork
@@ -210,13 +212,13 @@ class MediaScanEngine(
 
                         val contentUri = Uri.withAppendedPath(collection, id).toString()
                         val defaultArtworkUri = Uri.withAppendedPath(
-                            Uri.parse("content://media/external/audio/albumart"),
+                            ("content://media/external/audio/albumart").toUri(),
                             albumId
                         ).toString()
 
                         val finalArtworkUri = if (preferSongArtwork) {
                             try {
-                                val parsedUri = Uri.parse(contentUri)
+                                val parsedUri = (contentUri).toUri()
                                 val embeddedUri = chromahub.rhythm.app.util.MediaUtils.extractEmbeddedAlbumArt(
                                     context, parsedUri, context.filesDir, losslessArtwork
                                 )
@@ -282,9 +284,7 @@ class MediaScanEngine(
             appSettings.setEmbeddedArtworkExtractionLosslessStatus(appSettings.isLosslessArtworkActive.value)
             try {
                 context.getSharedPreferences("library_scan_metadata", Context.MODE_PRIVATE)
-                    .edit()
-                    .putInt("last_scan_mediastore_count", rawMediaStoreCount)
-                    .apply()
+                    .edit { putInt("last_scan_mediastore_count", rawMediaStoreCount) }
                 Log.d(TAG, "Saved MediaStore count ($rawMediaStoreCount) to library_scan_metadata")
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to save MediaStore count", e)
@@ -302,8 +302,8 @@ class MediaScanEngine(
                     album = entity.album,
                     albumId = entity.albumId,
                     duration = entity.duration,
-                    uri = Uri.parse(entity.uri),
-                    artworkUri = entity.artworkUri?.let { Uri.parse(it) },
+                    uri = (entity.uri).toUri(),
+                    artworkUri = entity.artworkUri?.let { (it).toUri() },
                     trackNumber = entity.trackNumber,
                     year = entity.year,
                     genre = entity.genre,

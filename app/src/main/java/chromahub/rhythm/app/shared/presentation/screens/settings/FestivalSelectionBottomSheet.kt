@@ -314,9 +314,9 @@ fun FestivalSelectionBottomSheet(
 
             // Info card
             Card(
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -327,16 +327,16 @@ fun FestivalSelectionBottomSheet(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Icon(
-                        imageVector = RhythmIcons.Info,
+                        imageVector = MaterialSymbolIcon("lightbulb", filled = true),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         contentDescription = null,
-                        
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = context.getString(R.string.settings_more_festivals),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }

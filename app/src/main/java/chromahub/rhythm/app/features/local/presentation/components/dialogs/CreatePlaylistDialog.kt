@@ -43,6 +43,7 @@ import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 
 @Composable
@@ -188,7 +189,7 @@ fun QueueActionDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = context.getString(R.string.dialog_songs_in_queue, queueSize),
+                    text = pluralStringResource(R.plurals.dialog_songs_in_queue, queueSize, queueSize),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
@@ -344,8 +345,9 @@ fun QueueListActionDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = context.getString(
-                        R.string.list_queue_action_dialog_body,
+                    text = pluralStringResource(
+                        R.plurals.list_queue_action_dialog_body,
+                        queueSize,
                         queueSize,
                         incomingCount
                     ),

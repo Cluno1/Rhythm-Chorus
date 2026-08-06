@@ -29,6 +29,8 @@ import kotlin.math.PI
 import kotlin.math.sin
 import kotlin.math.cos
 import kotlin.random.Random
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 /**
  * Complete Christmas decorations including lights, garland, and snow collection
@@ -36,11 +38,11 @@ import kotlin.random.Random
  */
 @Composable
 fun ChristmasDecorations(
+    modifier: Modifier = Modifier,
     intensity: Float = 0.5f,
     showTopLights: Boolean = true,
     showSideGarland: Boolean = true,
-    showBottomSnow: Boolean = true,
-    modifier: Modifier = Modifier
+    showBottomSnow: Boolean = true
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         // Top Christmas lights - below status bar
@@ -75,12 +77,11 @@ fun ChristmasDecorations(
  */
 @Composable
 fun ChristmasLights(
-    intensity: Float = 0.5f,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    intensity: Float = 0.5f
 ) {
-    val configuration = LocalConfiguration.current
     val density = LocalDensity.current
-    val screenWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
+    val screenWidth = with(density) { windowScreenWidthDp().dp.toPx() }
     
     // Blinking animation for lights
     val infiniteTransition = rememberInfiniteTransition(label = "lights")
@@ -167,12 +168,11 @@ fun ChristmasLights(
  */
 @Composable
 fun SideDecorations(
-    intensity: Float = 0.5f,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    intensity: Float = 0.5f
 ) {
-    val configuration = LocalConfiguration.current
     val density = LocalDensity.current
-    val screenHeight = with(density) { configuration.screenHeightDp.dp.toPx() }
+    val screenHeight = with(density) { windowScreenHeightDp().dp.toPx() }
     
     // Gentle sway animation
     val infiniteTransition = rememberInfiniteTransition(label = "sideDecorations")
@@ -547,12 +547,11 @@ private fun DrawScope.drawSimpleOrnament(center: Offset, color: Color, scale: Fl
  */
 @Composable
 fun SnowCollection(
-    intensity: Float = 0.5f,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    intensity: Float = 0.5f
 ) {
-    val configuration = LocalConfiguration.current
     val density = LocalDensity.current
-    val screenWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
+    val screenWidth = with(density) { windowScreenWidthDp().dp.toPx() }
     
     // Generate snow pile pattern
     val snowPile = remember(screenWidth, intensity) {

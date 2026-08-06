@@ -59,10 +59,9 @@ enum class StatsTimeRange(val displayName: String, val daysBack: Int) {
  * Repository for tracking and analyzing playback statistics
  * Provides comprehensive stats tracking for songs and listening habits
  */
-class PlaybackStatsRepository private constructor(private val context: Context) {
-    
+class PlaybackStatsRepository private constructor(context: Context) {
     private val gson = Gson()
-    private val historyFile = File(context.filesDir, "playback_history.json")
+    private val historyFile = File(context.applicationContext.filesDir, "playback_history.json")
     private val fileLock = Any()
     private val eventsType = object : TypeToken<MutableList<PlaybackEvent>>() {}.type
     

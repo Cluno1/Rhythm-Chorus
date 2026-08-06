@@ -8,6 +8,7 @@
     android:layout_height="140dp">
 
     <ImageView
+        android:importantForAccessibility="no"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@drawable/widget_preview_bg" />
@@ -29,11 +30,13 @@
                 android:layout_height="56dp">
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/widget_preview_art" />
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="34dp"
                     android:layout_height="34dp"
                     android:layout_gravity="center"
@@ -50,7 +53,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Midnight Drive"
+                    android:text="@string/widget_preview_title"
                     android:textColor="@color/widget_preview_text"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -58,7 +61,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Neon Waves"
+                    android:text="@string/widget_preview_subtitle"
                     android:textColor="@color/widget_preview_subtext"
                     android:textSize="13sp"
                     android:layout_marginTop="4dp" />
@@ -77,12 +80,14 @@
                 android:layout_height="38dp">
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/widget_preview_circle"
                     app:tint="@color/widget_preview_tertiary" />
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="19dp"
                     android:layout_height="19dp"
                     android:layout_gravity="center"
@@ -96,12 +101,14 @@
                 android:layout_marginStart="14dp">
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/widget_preview_pill"
                     app:tint="@color/widget_preview_primary" />
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="21dp"
                     android:layout_height="21dp"
                     android:layout_gravity="center"
@@ -115,12 +122,14 @@
                 android:layout_marginStart="14dp">
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/widget_preview_circle"
                     app:tint="@color/widget_preview_tertiary" />
 
                 <ImageView
+        android:importantForAccessibility="no"
                     android:layout_width="19dp"
                     android:layout_height="19dp"
                     android:layout_gravity="center"

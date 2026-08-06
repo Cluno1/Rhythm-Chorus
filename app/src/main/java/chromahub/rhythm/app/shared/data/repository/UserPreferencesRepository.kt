@@ -9,6 +9,7 @@ import chromahub.rhythm.app.core.domain.model.StreamingQuality
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import androidx.core.content.edit
 
 /**
  * Repository for managing user preferences related to app mode and settings.
@@ -34,7 +35,7 @@ class UserPreferencesRepository(context: Context) {
      * Set the app mode.
      */
     fun setAppMode(mode: AppMode) {
-        prefs.edit().putString(KEY_APP_MODE, mode.name).apply()
+        prefs.edit { putString(KEY_APP_MODE, mode.name) }
         _appMode.value = mode
     }
     
@@ -42,13 +43,13 @@ class UserPreferencesRepository(context: Context) {
      * Update the streaming configuration.
      */
     fun updateStreamingConfig(config: StreamingConfig) {
-        prefs.edit().apply {
+        prefs.edit {
             putString(KEY_ACTIVE_SERVICE, config.activeService.name)
             putBoolean(KEY_IS_AUTHENTICATED, config.isAuthenticated)
             putString(KEY_STREAMING_QUALITY, config.streamingQuality.name)
             putBoolean(KEY_ALLOW_CELLULAR, config.allowCellularStreaming)
             putBoolean(KEY_OFFLINE_MODE, config.offlineMode)
-        }.apply()
+        }
         _streamingConfig.value = config
     }
     

@@ -1,7 +1,6 @@
 package chromahub.rhythm.app.features.streaming.presentation.viewmodel
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import chromahub.rhythm.app.core.domain.model.SourceType
@@ -33,6 +32,7 @@ import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.R
 import android.util.Log
+import androidx.core.net.toUri
 
 /**
  * ViewModel for managing streaming music playback and library.
@@ -40,7 +40,6 @@ import android.util.Log
  */
 class StreamingMusicViewModel(application: Application) : AndroidViewModel(application) {
     private val appSettings = AppSettings.getInstance(application)
-    private val context: Context = application
     private val serviceSessionRepository = StreamingServiceSessionRepository(application)
     val repository = StreamingMusicModule.provideStreamingMusicRepository(application)
     private val providerRepository = repository as? StreamingMusicRepositoryImpl
@@ -338,7 +337,7 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
                 }
                 
                 // Check network constraints
-                if (!NetworkUtils.canStream(context, appSettings.allowCellularStreaming.value)) {
+                if (!NetworkUtils.canStream(getApplication(), appSettings.allowCellularStreaming.value)) {
                     clearContent()
                     _error.value = "Streaming not allowed on current network"
                     return@launch
@@ -615,7 +614,7 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
                 }
                 
                 // Check network and offline constraints
-                if (!NetworkUtils.canStream(context, appSettings.allowCellularStreaming.value)) {
+                if (!NetworkUtils.canStream(getApplication(), appSettings.allowCellularStreaming.value)) {
                     _searchResults.value = StreamingSearchResults()
                     _error.value = "Streaming not allowed on current network"
                     return@launch
@@ -735,7 +734,7 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
             if (selectedResolvedSong.streamingUrl.isNullOrBlank()) {
                 _error.value = when {
                     appSettings.offlineMode.value -> "Offline mode: Song not in cache"
-                    !NetworkUtils.canStream(context, appSettings.allowCellularStreaming.value) -> "Streaming not allowed on current network"
+                    !NetworkUtils.canStream(getApplication(), appSettings.allowCellularStreaming.value) -> "Streaming not allowed on current network"
                     else -> "Unable to resolve stream URL for this song"
                 }
                 return@launch
@@ -1472,7 +1471,7 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
 
                 if (updatedSong.streamingUrl.isNullOrBlank()) {
                     _error.value = "Unable to resolve stream URL for this song"
-                    android.widget.Toast.makeText(context, R.string.streamingmusicviewmodel_failed_to_play_next, android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(getApplication(), R.string.streamingmusicviewmodel_failed_to_play_next, android.widget.Toast.LENGTH_SHORT).show()
                     return@launch
                 }
 
@@ -1520,7 +1519,7 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
 
                 if (updatedSong.streamingUrl.isNullOrBlank()) {
                     _error.value = "Unable to resolve stream URL for this song"
-                    android.widget.Toast.makeText(context, R.string.streamingmusicviewmodel_failed_to_add_to, android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(getApplication(), R.string.streamingmusicviewmodel_failed_to_add_to, android.widget.Toast.LENGTH_SHORT).show()
                     return@launch
                 }
 
@@ -1541,9 +1540,9 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
 
     private fun StreamingSong.toLocalSong(): Song {
         val playbackUri = when {
-            !streamingUrl.isNullOrBlank() -> Uri.parse(streamingUrl)
-            !previewUrl.isNullOrBlank() -> Uri.parse(previewUrl)
-            else -> Uri.parse("streaming://track/$id")
+            !streamingUrl.isNullOrBlank() -> (streamingUrl).toUri()
+            !previewUrl.isNullOrBlank() -> (previewUrl).toUri()
+            else -> ("streaming://track/$id").toUri()
         }
 
         return Song(

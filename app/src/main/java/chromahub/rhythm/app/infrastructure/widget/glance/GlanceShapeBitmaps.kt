@@ -10,6 +10,7 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.util.LruCache
+import androidx.core.graphics.createBitmap
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.toPath
 
@@ -61,7 +62,7 @@ internal object GlanceShapeBitmaps {
         val density = context.resources.displayMetrics.density
         val widthPx = (widthDp * density).toInt().coerceAtLeast(1)
         val heightPx = (heightDp * density).toInt().coerceAtLeast(1)
-        val bitmap = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         val path = shape.toPath()
         val matrix = Matrix()

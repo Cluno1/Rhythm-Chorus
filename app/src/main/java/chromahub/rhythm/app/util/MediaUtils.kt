@@ -220,7 +220,7 @@ object MediaUtils {
                             id
                         )
                         val albumArtUri = ContentUris.withAppendedId(
-                            android.net.Uri.parse("content://media/external/audio/albumart"),
+                            ("content://media/external/audio/albumart").toUri(),
                             cursor.getLong(albumIdIndex)
                         )
 
@@ -601,8 +601,12 @@ object MediaUtils {
                     }
                 }
 
-                // Get sample rate - METADATA_KEY_SAMPLERATE is available since API 10, works on Android 8+
-                val sampleRateStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)
+                // Get sample rate - METADATA_KEY_SAMPLERATE is available since API 31
+                val sampleRateStr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)
+                } else {
+                    null
+                }
 
                 if (sampleRateStr != null) {
                     val sampleRateValue = sampleRateStr.toIntOrNull()

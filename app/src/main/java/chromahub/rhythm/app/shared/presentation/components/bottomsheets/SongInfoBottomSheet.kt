@@ -87,6 +87,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.Locale
 import chromahub.rhythm.app.network.NetworkClient
 import chromahub.rhythm.app.network.YTMusicSearchRequest
 import chromahub.rhythm.app.network.YTMusicContext
@@ -94,6 +95,8 @@ import chromahub.rhythm.app.network.YTMusicClient
 import chromahub.rhythm.app.network.extractAlbumImageUrl
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 // Data class to hold additional song metadata
 // 
@@ -202,15 +205,14 @@ fun SongInfoBottomSheet(
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
-    val configuration = LocalConfiguration.current
     val density = LocalDensity.current
     var extendedInfo by remember { mutableStateOf<ExtendedSongInfo?>(null) }
     var isLoadingMetadata by remember { mutableStateOf(true) }
     var showEditSheet by remember { mutableStateOf(false) }
     
     // Detect tablet mode
-    val isTablet = configuration.screenWidthDp >= 600
-    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
+    val isTablet = windowScreenWidthDp() >= 600
+    val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
     
     // Time format setting
     val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
@@ -242,7 +244,7 @@ fun SongInfoBottomSheet(
     
     // Rhythm stats and rating states
     var songPlaybackStats by remember { mutableStateOf<chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository.SongPlaybackSummary?>(null) }
-    var songRating by remember(song?.id) { mutableStateOf(0) }
+    var songRating by remember(song?.id) { mutableIntStateOf(0) }
     
     // Expressive shape for artwork
     val songArtShape = rememberExpressiveShapeFor(ExpressiveShapeTarget.SONG_ART)
@@ -976,98 +978,6 @@ fun SongInfoBottomSheet(
                 }
             }
             
-            // item {
-            //     // Action buttons (Bottom Row)
-            //     Row(
-            //         modifier = Modifier.fillMaxWidth(),
-            //         horizontalArrangement = Arrangement.spacedBy(8.dp)
-            //     ) {
-            //         // Share Song Info
-            //         FilledTonalButton(
-            //             onClick = {
-            //                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-            //                 val shareIntent = Intent().apply {
-            //                     action = Intent.ACTION_SEND
-            //                     putExtra(Intent.EXTRA_TEXT, "Now playing: ${song.title} by ${song.artist}")
-            //                     type = "text/plain"
-            //                 }
-            //                 context.startActivity(Intent.createChooser(shareIntent, "Share song"))
-            //             },
-            //             modifier = Modifier.weight(1f),
-            //             colors = ButtonDefaults.filledTonalButtonColors(
-            //                 containerColor = MaterialTheme.colorScheme.primaryContainer
-            //             )
-            //         ) {
-            //             Icon(
-            //                 imageVector = RhythmIcons.Share,
-            //                 contentDescription = null,
-            //                 modifier = Modifier.size(16.dp)
-            //             )
-            //             Spacer(modifier = Modifier.width(8.dp))
-            //             Text("Share Info")
-            //         }
-                    
-            //         // Share Original File
-            //         FilledTonalButton(
-            //             onClick = {
-            //                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-            //                 try {
-            //                     val shareIntent = Intent().apply {
-            //                         action = Intent.ACTION_SEND
-            //                         type = "audio/*"
-            //                         putExtra(Intent.EXTRA_STREAM, song.uri)
-            //                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            //                     }
-            //                     context.startActivity(Intent.createChooser(shareIntent, "Share original file"))
-            //                 } catch (e: Exception) {
-            //                     Toast.makeText(context, "Unable to share file", Toast.LENGTH_SHORT).show()
-            //                 }
-            //             },
-            //             modifier = Modifier.weight(1f),
-            //             colors = ButtonDefaults.filledTonalButtonColors(
-            //                 containerColor = MaterialTheme.colorScheme.secondaryContainer
-            //             )
-            //         ) {
-            //             Icon(
-            //                 imageVector = MaterialSymbolIcon("audio_file", filled = true),
-            //                 contentDescription = null,
-            //                 modifier = Modifier.size(16.dp)
-            //             )
-            //             Spacer(modifier = Modifier.width(8.dp))
-            //             Text("Share File")
-            //         }
-                    
-            //         // Open in external player
-            //         FilledTonalButton(
-            //             onClick = {
-            //                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-            //                 val intent = Intent().apply {
-            //                     action = Intent.ACTION_VIEW
-            //                     setDataAndType(song.uri, "audio/*")
-            //                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            //                 }
-            //                 try {
-            //                     context.startActivity(intent)
-            //                 } catch (_: Exception) {
-            //                     Toast.makeText(context, "No app found to open file", Toast.LENGTH_SHORT).show()
-            //                 }
-            //             },
-            //             modifier = Modifier.weight(1f),
-            //             colors = ButtonDefaults.filledTonalButtonColors(
-            //                 containerColor = MaterialTheme.colorScheme.tertiaryContainer
-            //             )
-            //         ) {
-            //             Icon(
-            //                 imageVector = RhythmIcons.Play,
-            //                 contentDescription = null,
-            //                 modifier = Modifier.size(16.dp)
-            //             )
-            //             Spacer(modifier = Modifier.width(8.dp))
-            //             Text("Open")
-            //         }
-            //     }
-            // }
-
             item {
                 // Song Info card
                 AnimatedVisibility(
@@ -1793,12 +1703,11 @@ private fun EditSongSheet(
     songArtShape: androidx.compose.ui.graphics.Shape
 ) {
     val context = LocalContext.current
-    val configuration = LocalConfiguration.current
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     
     // Detect tablet mode
-    val isTablet = configuration.screenWidthDp >= 600
-    val isLandscapeTablet = isTablet && configuration.screenWidthDp > configuration.screenHeightDp
+    val isTablet = windowScreenWidthDp() >= 600
+    val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
     
     // Store original values for undo functionality
     val originalTitle by remember(song.id) { mutableStateOf(song.title) }
@@ -3136,9 +3045,9 @@ private fun formatFileSize(bytes: Long): String {
     val gb = mb / 1024.0
     
     return when {
-        gb >= 1 -> String.format("%.2f GB", gb)
-        mb >= 1 -> String.format("%.2f MB", mb)
-        kb >= 1 -> String.format("%.2f KB", kb)
+        gb >= 1 -> String.format(Locale.ROOT, "%.2f GB", gb)
+        mb >= 1 -> String.format(Locale.ROOT, "%.2f MB", mb)
+        kb >= 1 -> String.format(Locale.ROOT, "%.2f KB", kb)
         else -> "$bytes B"
     }
 }

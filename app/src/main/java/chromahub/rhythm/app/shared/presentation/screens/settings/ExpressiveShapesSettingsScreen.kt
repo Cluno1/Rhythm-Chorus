@@ -504,7 +504,7 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
                             appSettings.randomizeExpressiveShapes()
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(18.dp),
+                        shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.tertiaryContainer
                         ),
@@ -584,7 +584,7 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
             item(key = "expressive_info_card") {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     )

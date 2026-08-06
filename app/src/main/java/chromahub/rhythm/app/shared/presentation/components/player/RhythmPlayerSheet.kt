@@ -12,12 +12,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import chromahub.rhythm.app.util.windowScreenWidthDp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.zIndex
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -42,12 +42,16 @@ fun RhythmPlayerSheet(
     isPlaying: Boolean,
     progress: () -> Float,
     location: PlaybackLocation?,
-    queuePosition: Int = 1,
-    queueTotal: Int = 1,
     onPlayPause: () -> Unit,
     onSkipNext: () -> Unit,
     onSkipPrevious: () -> Unit,
     onSeek: (Float) -> Unit,
+    appSettings: AppSettings,
+    musicViewModel: MusicViewModel,
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    queuePosition: Int = 1,
+    queueTotal: Int = 1,
     onLyricsSeek: ((Long) -> Unit)? = null,
     onLocationClick: () -> Unit = {},
     onQueueClick: () -> Unit = {},
@@ -100,12 +104,8 @@ fun RhythmPlayerSheet(
     onShuffleAlbumSongs: (List<Song>) -> Unit = {},
     onPlayArtistSongs: (List<Song>) -> Unit = {},
     onShuffleArtistSongs: (List<Song>) -> Unit = {},
-    appSettings: AppSettings,
-    musicViewModel: MusicViewModel,
-    navController: NavController,
     isStreamingMode: Boolean = false,
-    miniPlayerBottomOffset: Dp = 8.dp,
-    modifier: Modifier = Modifier
+    miniPlayerBottomOffset: Dp = 8.dp
 ) {
     if (song == null) return
 
@@ -119,7 +119,7 @@ fun RhythmPlayerSheet(
         
         val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 84.dp else 110.dp
         
-        var dragOffset by remember { mutableStateOf(0f) }
+        var dragOffset by remember { mutableFloatStateOf(0f) }
         
         val collapsedOffset = screenHeightPx - with(density) { (miniPlayerBottomOffset + miniPlayerHeight).toPx() }
         val expandedOffset = 0f
@@ -187,8 +187,7 @@ fun RhythmPlayerSheet(
         }
         val sheetBackgroundColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = sheetBackgroundAlpha)
 
-        val configuration = LocalConfiguration.current
-        val isTablet = configuration.screenWidthDp >= 600
+        val isTablet = windowScreenWidthDp() >= 600
 
         Box(
             modifier = Modifier

@@ -9,6 +9,7 @@
 
     <!-- Cookie background -->
     <ImageView
+        android:importantForAccessibility="no"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@drawable/widget_preview_cookie"
@@ -16,6 +17,7 @@
 
     <!-- Rhythm app logo mark (notification icon) -->
     <ImageView
+        android:importantForAccessibility="no"
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:layout_gravity="center"
@@ -31,12 +33,14 @@
         android:layout_marginEnd="4dp">
 
         <ImageView
+        android:importantForAccessibility="no"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/widget_preview_sunny"
             app:tint="@color/widget_preview_primary" />
 
         <ImageView
+        android:importantForAccessibility="no"
             android:layout_width="18dp"
             android:layout_height="18dp"
             android:layout_gravity="center"
@@ -53,12 +57,14 @@
         android:layout_marginBottom="6dp">
 
         <ImageView
+        android:importantForAccessibility="no"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/widget_preview_circle"
             app:tint="@color/widget_preview_tertiary" />
 
         <ImageView
+        android:importantForAccessibility="no"
             android:layout_width="14dp"
             android:layout_height="14dp"
             android:layout_gravity="center"
@@ -75,12 +81,14 @@
         android:layout_marginBottom="6dp">
 
         <ImageView
+        android:importantForAccessibility="no"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/widget_preview_circle"
             app:tint="@color/widget_preview_tertiary" />
 
         <ImageView
+        android:importantForAccessibility="no"
             android:layout_width="14dp"
             android:layout_height="14dp"
             android:layout_gravity="center"

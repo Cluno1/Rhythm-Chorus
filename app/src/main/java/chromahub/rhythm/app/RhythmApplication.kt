@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.ComponentCallbacks2
 import android.os.Build
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.util.ANRWatchdog
 import chromahub.rhythm.app.util.CrashReporter
@@ -21,11 +22,7 @@ class RhythmApplication : Application() {
     
     companion object {
         private const val TAG = "RhythmApplication"
-        private const val TRIM_MEMORY_RUNNING_MODERATE_LEVEL = 5
-        private const val TRIM_MEMORY_RUNNING_LOW_LEVEL = 10
-        private const val TRIM_MEMORY_RUNNING_CRITICAL_LEVEL = 15
-        private const val TRIM_MEMORY_MODERATE_LEVEL = 60
-        private const val TRIM_MEMORY_COMPLETE_LEVEL = 80
+
         
         // Static reference to the application instance
         // Using a static reference is safe for Application class
@@ -47,8 +44,21 @@ class RhythmApplication : Application() {
         Log.d(TAG, "═══════════════════════════════════════════════════")
         
         // Initialize AppSettings early (singleton, uses application context)
-        AppSettings.getInstance(applicationContext)
+        val settings = AppSettings.getInstance(applicationContext)
         Log.d(TAG, "✓ AppSettings initialized")
+
+        // Apply the user's theme preference to the system configuration so the
+        // system splash screen and window background match the app theme
+        // (light in light mode, dark in dark mode) instead of always being dark.
+        val nightMode = if (settings.useSystemTheme.value) {
+            AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        } else if (settings.darkMode.value) {
+            AppCompatDelegate.MODE_NIGHT_YES
+        } else {
+            AppCompatDelegate.MODE_NIGHT_NO
+        }
+        AppCompatDelegate.setDefaultNightMode(nightMode)
+        Log.d(TAG, "✓ Applied night mode: $nightMode")
         
         // Initialize CrashReporter
         CrashReporter.init(this)
@@ -128,13 +138,13 @@ class RhythmApplication : Application() {
         super.onTrimMemory(level)
         
         val levelName = when (level) {
-            TRIM_MEMORY_RUNNING_MODERATE_LEVEL -> "RUNNING_MODERATE"
-            TRIM_MEMORY_RUNNING_LOW_LEVEL -> "RUNNING_LOW"
-            TRIM_MEMORY_RUNNING_CRITICAL_LEVEL -> "RUNNING_CRITICAL"
+            ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE -> "RUNNING_MODERATE"
+            ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW -> "RUNNING_LOW"
+            ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> "RUNNING_CRITICAL"
             ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> "UI_HIDDEN"
             ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> "BACKGROUND"
-            TRIM_MEMORY_MODERATE_LEVEL -> "MODERATE"
-            TRIM_MEMORY_COMPLETE_LEVEL -> "COMPLETE"
+            ComponentCallbacks2.TRIM_MEMORY_MODERATE -> "MODERATE"
+            ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> "COMPLETE"
             else -> "UNKNOWN($level)"
         }
         
@@ -142,16 +152,22 @@ class RhythmApplication : Application() {
         
         // Perform cleanup based on memory pressure level
         when (level) {
-            TRIM_MEMORY_RUNNING_CRITICAL_LEVEL,
-            TRIM_MEMORY_COMPLETE_LEVEL -> {
+            ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
+            ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
                 Log.w(TAG, "Critical memory pressure - performing aggressive cleanup")
                 // Trigger aggressive cleanup
                 // You can broadcast an event here for repositories to clear caches
             }
-            TRIM_MEMORY_RUNNING_LOW_LEVEL,
-            TRIM_MEMORY_MODERATE_LEVEL -> {
+            ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW,
+            ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE,
+            ComponentCallbacks2.TRIM_MEMORY_MODERATE -> {
                 Log.w(TAG, "Moderate memory pressure - performing standard cleanup")
                 // Trigger standard cleanup
+            }
+            ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN,
+            ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> {
+                Log.w(TAG, "App backgrounded - clearing caches")
+                // Light cleanup when the app moves to the background
             }
         }
     }

@@ -306,7 +306,7 @@ fun PermissionHandler(
     Box(modifier = Modifier.fillMaxSize()) {
         // Show the main app as soon as onboarding is complete, not initializing
         AnimatedVisibility(
-            visible = currentOnboardingStep == OnboardingStep.COMPLETE && !isInitializingApp, // Show app immediately when complete
+            visible = currentOnboardingStep == OnboardingStep.COMPLETE, // Show app as soon as onboarding is complete (service starts in the background)
             enter = fadeIn(animationSpec = tween(1000, easing = androidx.compose.animation.core.EaseOutCubic)) +
                    slideInVertically(
                        initialOffsetY = { it / 3 },
@@ -318,7 +318,9 @@ fun PermissionHandler(
 
 
         AnimatedVisibility(
-            visible = isInitializingApp || (isLoading && currentOnboardingStep != OnboardingStep.COMPLETE && currentOnboardingStep != OnboardingStep.PERMISSIONS), // Show loading if app initializing, or general loading not on permission screen
+            // Only the host startup loader covers library + service initialization now; here we
+            // just cover general startup/onboarding loading (never on the permission screen).
+            visible = isLoading && currentOnboardingStep != OnboardingStep.COMPLETE && currentOnboardingStep != OnboardingStep.PERMISSIONS,
             exit = fadeOut(animationSpec = tween(800, easing = androidx.compose.animation.core.EaseInCubic))
         ) {
             Box(

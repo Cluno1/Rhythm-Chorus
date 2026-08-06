@@ -37,9 +37,9 @@ import chromahub.rhythm.app.shared.data.model.AppSettings
 @Composable
 fun AutoScrollingTextOnDemand(
     text: String,
-    style: TextStyle = LocalTextStyle.current,
     gradientEdgeColor: Color,
     modifier: Modifier = Modifier,
+    style: TextStyle = LocalTextStyle.current,
     enabled: Boolean = true,
     textAlign: TextAlign = TextAlign.Start,
     respectGlobalSetting: Boolean = true

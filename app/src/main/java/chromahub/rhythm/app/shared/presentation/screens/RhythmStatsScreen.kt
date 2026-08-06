@@ -66,6 +66,8 @@ import chromahub.rhythm.app.util.HapticType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -197,8 +199,7 @@ private fun StatsPageContent(
                 EmptyStatsView()
             } else {
                 val stats = statsSummary!!
-                val configuration = LocalConfiguration.current
-                val isTablet = configuration.screenWidthDp >= 600
+                val isTablet = windowScreenWidthDp() >= 600
                 if (isTablet) {
                     Row(
                         modifier = Modifier

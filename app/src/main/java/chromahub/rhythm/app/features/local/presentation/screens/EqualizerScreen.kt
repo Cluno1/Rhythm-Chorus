@@ -144,8 +144,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextGeometricTransform
-import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.text.capitalize
@@ -329,6 +327,7 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AutoEQPr
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.DeviceConfigurationBottomSheet
 import chromahub.rhythm.app.shared.data.model.AutoEQProfile
 import androidx.compose.ui.res.stringResource
+import java.util.Locale
 
 data class EqualizerPreset(
     val name: String,
@@ -980,7 +979,7 @@ fun EqualizerScreen(
                                         )
 
                                         Text(
-                                            text = if (level > 0) "+${String.format("%.1f", level)}" else String.format("%.1f", level),
+                                            text = if (level > 0) "+${String.format(Locale.ROOT, "%.1f", level)}" else String.format(Locale.ROOT, "%.1f", level),
                                             style = MaterialTheme.typography.labelMedium,
                                             fontWeight = FontWeight.Bold,
                                             color = bandColor,

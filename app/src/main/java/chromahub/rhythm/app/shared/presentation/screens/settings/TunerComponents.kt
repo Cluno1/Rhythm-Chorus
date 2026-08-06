@@ -318,8 +318,8 @@ fun TunerSettingRow(item: SettingItem) {
 fun TunerAnimatedSwitch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     Switch(
         checked = checked,

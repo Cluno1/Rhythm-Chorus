@@ -2,6 +2,7 @@ package chromahub.rhythm.app.util
 
 import android.util.Log
 import java.util.regex.Pattern
+import java.util.Locale
 import chromahub.rhythm.app.shared.data.model.AppSettings
 
 object LyricsParser {
@@ -575,7 +576,7 @@ object LyricsParser {
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         val millis = (milliseconds % 1000) / 10
-        return String.format("%02d:%02d.%02d", minutes, seconds, millis)
+        return String.format(Locale.ROOT, "%02d:%02d.%02d", minutes, seconds, millis)
     }
 }
 

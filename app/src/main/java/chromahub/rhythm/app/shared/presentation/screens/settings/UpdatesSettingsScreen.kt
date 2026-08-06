@@ -137,6 +137,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.text.HtmlCompat
 import chromahub.rhythm.app.shared.presentation.components.common.M3FourColorCircularLoader
@@ -160,6 +161,7 @@ import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSw
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerSettingCard
 import chromahub.rhythm.app.shared.presentation.screens.settings.SettingItem
 import chromahub.rhythm.app.shared.presentation.screens.settings.SettingGroup
+import androidx.core.net.toUri
 
 
 @Composable
@@ -193,7 +195,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     var simIsChecking by remember { mutableStateOf(false) }
     var simUpdateAvailable by remember { mutableStateOf(false) }
     var simIsDownloading by remember { mutableStateOf(false) }
-    var simDownloadProgress by remember { mutableStateOf(0f) }
+    var simDownloadProgress by remember { mutableFloatStateOf(0f) }
     var simDownloadedFile by remember { mutableStateOf<File?>(null) }
     var simError by remember { mutableStateOf<String?>(null) }
 
@@ -251,7 +253,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     )
     val updateIntervalLabel = intervalOptions.firstOrNull { (hours, _) ->
         hours == updateCheckIntervalHours
-    }?.second ?: context.getString(R.string.settings_check_interval_value, updateCheckIntervalHours)
+    }?.second ?: pluralStringResource(R.plurals.settings_check_interval_value, updateCheckIntervalHours, updateCheckIntervalHours)
 
     // Check for updates when the screen is first shown and updates are enabled
     LaunchedEffect(updatesEnabled) {
@@ -590,7 +592,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                                                 if (error?.contains("unknown sources", ignoreCase = true) == true ||
                                                     error?.contains("install from unknown", ignoreCase = true) == true) {
                                                     val intent = Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
-                                                        data = Uri.parse("package:${context.packageName}")
+                                                        data = ("package:${context.packageName}").toUri()
                                                     }
                                                     try {
                                                         context.startActivity(intent)
@@ -893,7 +895,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                                 "https://github.com/cromaguy/Rhythm/releases/tag/v$displayVersionName"
                             }
                             try {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(releaseUrl))
+                                val intent = Intent(Intent.ACTION_VIEW, (releaseUrl).toUri())
                                 context.startActivity(intent)
                             } catch (e: Exception) {
                                 Toast.makeText(context, R.string.updatessettingsscreen_unable_to_open_release, Toast.LENGTH_SHORT).show()
@@ -940,7 +942,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(18.dp),
+                            shape = RoundedCornerShape(24.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                         ) {
@@ -1012,7 +1014,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(18.dp),
+                            shape = RoundedCornerShape(24.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                         ) {
@@ -1145,7 +1147,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                 ) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(18.dp),
+                        shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
                         ),
@@ -1181,348 +1183,6 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                 }
             }
 
-            // 7. Developer UI Test Sandbox Card
-//            item {
-//                Card(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    shape = RoundedCornerShape(18.dp),
-//                    colors = CardDefaults.cardColors(
-//                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
-//                    ),
-//                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f)),
-//                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-//                ) {
-//                    Column(
-//                        modifier = Modifier.padding(16.dp),
-//                        verticalArrangement = Arrangement.spacedBy(12.dp)
-//                    ) {
-//                        Row(
-//                            modifier = Modifier.fillMaxWidth(),
-//                            horizontalArrangement = Arrangement.SpaceBetween,
-//                            verticalAlignment = Alignment.CenterVertically
-//                        ) {
-//                            Row(
-//                                verticalAlignment = Alignment.CenterVertically,
-//                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-//                            ) {
-//                                Icon(
-//                                    imageVector = MaterialSymbolIcon("science"),
-//                                    contentDescription = null,
-//                                    tint = MaterialTheme.colorScheme.secondary,
-//                                    modifier = Modifier.size(24.dp)
-//                                )
-//                                Text(
-//                                    text = "UI Test Sandbox",
-//                                    style = MaterialTheme.typography.titleMedium,
-//                                    fontWeight = FontWeight.Bold,
-//                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-//                                )
-//                            }
-//                            TunerAnimatedSwitch(
-//                                checked = simulateEnabled,
-//                                onCheckedChange = {
-//                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-//                                    simulateEnabled = it
-//                                    if (!it) {
-//                                        // Reset simulated states when disabled
-//                                        simIsChecking = false
-//                                        simUpdateAvailable = false
-//                                        simIsDownloading = false
-//                                        simDownloadProgress = 0f
-//                                        simDownloadedFile = null
-//                                        simError = null
-//                                    }
-//                                }
-//                            )
-//                        }
-//
-//                        Text(
-//                            text = "Enable to simulate different update states and progress bars for UI testing.",
-//                            style = MaterialTheme.typography.bodySmall,
-//                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
-//                        )
-//
-//                        AnimatedVisibility(
-//                            visible = simulateEnabled,
-//                            enter = fadeIn() + expandVertically(),
-//                            exit = fadeOut() + shrinkVertically()
-//                        ) {
-//                            Column(
-//                                verticalArrangement = Arrangement.spacedBy(8.dp)
-//                            ) {
-//                                HorizontalDivider(color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
-//
-//                                Text(
-//                                    text = "Simulate State:",
-//                                    style = MaterialTheme.typography.titleSmall,
-//                                    fontWeight = FontWeight.SemiBold,
-//                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-//                                )
-//
-//                                // Row 1 of presets: Checking & Update Available
-//                                Row(
-//                                    modifier = Modifier.fillMaxWidth(),
-//                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-//                                ) {
-//                                    val isCheckingSelected = simIsChecking && !simUpdateAvailable && !simIsDownloading && simDownloadedFile == null && simError == null
-//                                    if (isCheckingSelected) {
-//                                        Button(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = true
-//                                                simUpdateAvailable = false
-//                                                simIsDownloading = false
-//                                                simDownloadedFile = null
-//                                                simError = null
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Checking", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
-//                                        }
-//                                    } else {
-//                                        OutlinedButton(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = true
-//                                                simUpdateAvailable = false
-//                                                simIsDownloading = false
-//                                                simDownloadedFile = null
-//                                                simError = null
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Checking", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-//                                        }
-//                                    }
-//
-//                                    val isAvailableSelected = !simIsChecking && simUpdateAvailable && !simIsDownloading && simDownloadedFile == null && simError == null
-//                                    if (isAvailableSelected) {
-//                                        Button(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = false
-//                                                simUpdateAvailable = true
-//                                                simIsDownloading = false
-//                                                simDownloadedFile = null
-//                                                simError = null
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Update Available", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
-//                                        }
-//                                    } else {
-//                                        OutlinedButton(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = false
-//                                                simUpdateAvailable = true
-//                                                simIsDownloading = false
-//                                                simDownloadedFile = null
-//                                                simError = null
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Update Available", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-//                                        }
-//                                    }
-//                                }
-//
-//                                // Row 2 of presets: Downloading & Downloaded
-//                                Row(
-//                                    modifier = Modifier.fillMaxWidth(),
-//                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-//                                ) {
-//                                    val isDownloadingSelected = simIsDownloading
-//                                    if (isDownloadingSelected) {
-//                                        Button(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = false
-//                                                simUpdateAvailable = true
-//                                                simIsDownloading = true
-//                                                simDownloadedFile = null
-//                                                simError = null
-//
-//                                                // Start simulating a progress cycle
-//                                                scope.launch {
-//                                                    simDownloadProgress = 0f
-//                                                    while (simDownloadProgress < 100f && simIsDownloading) {
-//                                                        delay(100)
-//                                                        simDownloadProgress += 4f
-//                                                    }
-//                                                    if (simIsDownloading) {
-//                                                        simIsDownloading = false
-//                                                        simDownloadedFile = File(context.cacheDir, "simulated_update.apk")
-//                                                    }
-//                                                }
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Downloading", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
-//                                        }
-//                                    } else {
-//                                        OutlinedButton(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = false
-//                                                simUpdateAvailable = true
-//                                                simIsDownloading = true
-//                                                simDownloadedFile = null
-//                                                simError = null
-//
-//                                                // Start simulating a progress cycle
-//                                                scope.launch {
-//                                                    simDownloadProgress = 0f
-//                                                    while (simDownloadProgress < 100f && simIsDownloading) {
-//                                                        delay(100)
-//                                                        simDownloadProgress += 4f
-//                                                    }
-//                                                    if (simIsDownloading) {
-//                                                        simIsDownloading = false
-//                                                        simDownloadedFile = File(context.cacheDir, "simulated_update.apk")
-//                                                    }
-//                                                }
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Downloading", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-//                                        }
-//                                    }
-//
-//                                    val isDownloadedSelected = simDownloadedFile != null && !simIsDownloading
-//                                    if (isDownloadedSelected) {
-//                                        Button(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = false
-//                                                simUpdateAvailable = true
-//                                                simIsDownloading = false
-//                                                simDownloadedFile = File(context.cacheDir, "simulated_update.apk")
-//                                                simError = null
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Downloaded", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
-//                                        }
-//                                    } else {
-//                                        OutlinedButton(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = false
-//                                                simUpdateAvailable = true
-//                                                simIsDownloading = false
-//                                                simDownloadedFile = File(context.cacheDir, "simulated_update.apk")
-//                                                simError = null
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Downloaded", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-//                                        }
-//                                    }
-//                                }
-//
-//                                // Row 3 of presets: Error & Reset
-//                                Row(
-//                                    modifier = Modifier.fillMaxWidth(),
-//                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-//                                ) {
-//                                    val isErrorSelected = simError != null
-//                                    if (isErrorSelected) {
-//                                        Button(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = false
-//                                                simUpdateAvailable = false
-//                                                simIsDownloading = false
-//                                                simDownloadedFile = null
-//                                                simError = "Simulated network timeout error. Please check connection and try again."
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Error", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
-//                                        }
-//                                    } else {
-//                                        OutlinedButton(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = false
-//                                                simUpdateAvailable = false
-//                                                simIsDownloading = false
-//                                                simDownloadedFile = null
-//                                                simError = "Simulated network timeout error. Please check connection and try again."
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Error", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-//                                        }
-//                                    }
-//
-//                                    val isResetSelected = !simIsChecking && !simUpdateAvailable && !simIsDownloading && simDownloadedFile == null && simError == null
-//                                    if (isResetSelected) {
-//                                        Button(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = false
-//                                                simUpdateAvailable = false
-//                                                simIsDownloading = false
-//                                                simDownloadedFile = null
-//                                                simError = null
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Reset", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
-//                                        }
-//                                    } else {
-//                                        OutlinedButton(
-//                                            onClick = {
-//                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-//                                                simIsChecking = false
-//                                                simUpdateAvailable = false
-//                                                simIsDownloading = false
-//                                                simDownloadedFile = null
-//                                                simError = null
-//                                            },
-//                                            modifier = Modifier.weight(1f).height(36.dp),
-//                                            shape = RoundedCornerShape(12.dp),
-//                                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
-//                                            contentPadding = PaddingValues(0.dp)
-//                                        ) {
-//                                            Text("Reset", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
         }
     }
 

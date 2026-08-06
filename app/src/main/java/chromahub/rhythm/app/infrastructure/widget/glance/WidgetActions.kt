@@ -16,6 +16,7 @@ import kotlinx.coroutines.delay
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.glance.appwidget.state.updateAppWidgetState
+import androidx.core.content.edit
 
 
 private fun hasActiveSongSnapshot(context: Context): Boolean {
@@ -135,7 +136,7 @@ class ToggleFavoriteAction : ActionCallback {
             val newFavorite = !currentFavorite
             
             // 1. SharedPreferences
-            prefs.edit().putBoolean(RhythmMusicWidget.KEY_IS_FAVORITE, newFavorite).apply()
+            prefs.edit { putBoolean(RhythmMusicWidget.KEY_IS_FAVORITE, newFavorite) }
             
             // 2. Glance Datastore
             updateAppWidgetState(context, glanceId) { glancePrefs ->
@@ -174,7 +175,7 @@ class ToggleShuffleAction : ActionCallback {
             val currentShuffle = prefs.getBoolean("is_shuffle", false)
             val newShuffle = !currentShuffle
 
-            prefs.edit().putBoolean("is_shuffle", newShuffle).apply()
+            prefs.edit { putBoolean("is_shuffle", newShuffle) }
 
             updateAppWidgetState(context, glanceId) { glancePrefs ->
                 glancePrefs[booleanPreferencesKey("is_shuffle")] = newShuffle
@@ -215,7 +216,7 @@ class ToggleRepeatAction : ActionCallback {
                 else -> 0
             }
 
-            prefs.edit().putInt("repeat_mode", newRepeat).apply()
+            prefs.edit { putInt("repeat_mode", newRepeat) }
 
             updateAppWidgetState(context, glanceId) { glancePrefs ->
                 glancePrefs[intPreferencesKey("repeat_mode")] = newRepeat

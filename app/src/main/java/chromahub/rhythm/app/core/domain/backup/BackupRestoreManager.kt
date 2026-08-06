@@ -16,6 +16,8 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import androidx.core.net.toUri
+import androidx.core.content.edit
 
 /**
  * Centralized, atomic Backup and Restore Manager.
@@ -83,8 +85,8 @@ class BackupRestoreManager(
                                 album = songEntity.album,
                                 albumId = songEntity.albumId,
                                 duration = songEntity.duration,
-                                uri = android.net.Uri.parse(songEntity.uri),
-                                artworkUri = songEntity.artworkUri?.let { android.net.Uri.parse(it) },
+                                uri = (songEntity.uri).toUri(),
+                                artworkUri = songEntity.artworkUri?.let { (it).toUri() },
                                 trackNumber = songEntity.trackNumber,
                                 year = songEntity.year,
                                 genre = songEntity.genre,
@@ -129,7 +131,7 @@ class BackupRestoreManager(
                         songs = songs,
                         dateCreated = entity.dateCreated,
                         dateModified = entity.dateModified,
-                        artworkUri = entity.artworkUri?.let { android.net.Uri.parse(it) }
+                        artworkUri = entity.artworkUri?.let { (it).toUri() }
                     )
                 }
                 backupData["playlists_data"] = GsonUtils.gson.toJson(playlistModels)
@@ -233,14 +235,14 @@ class BackupRestoreManager(
                 return@withContext false
             }
 
-            val editor = appSettings.prefs.edit()
+            appSettings.prefs.edit {
 
             preferences.forEach { (key, value) ->
                 if (!appSettings.shouldIncludeKeyInBackupSections(key, sections) || appSettings.isRhythmGuardTransientRuntimeKey(key)) {
                     return@forEach
                 }
                 val originalType = preferencesTypes[key]
-                appSettings.applyBackupPreferenceValue(editor, key, value, originalType)
+                appSettings.applyBackupPreferenceValue(this, key, value, originalType)
             }
 
             if (sections.includeStatsAndRhythmGuard) {
@@ -253,7 +255,7 @@ class BackupRestoreManager(
 
                 statsData.forEach { (key, value) ->
                     if (appSettings.isStatsAndRhythmGuardBackupKey(key) && !appSettings.isRhythmGuardTransientRuntimeKey(key)) {
-                        appSettings.applyBackupPreferenceValue(editor, key, value, statsTypes[key] ?: preferencesTypes[key])
+                        appSettings.applyBackupPreferenceValue(this, key, value, statsTypes[key] ?: preferencesTypes[key])
                     }
                 }
 
@@ -268,7 +270,7 @@ class BackupRestoreManager(
                 }
             }
 
-            editor.apply()
+            }
 
             if (sections.includeLibraryData) {
                 val playlistsData = backupData["playlists_data"] as? String

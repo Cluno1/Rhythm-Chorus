@@ -44,6 +44,7 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.Locale
 import kotlinx.coroutines.*
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -60,6 +61,7 @@ import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository
 import chromahub.rhythm.app.shared.data.repository.StatsTimeRange
 import chromahub.rhythm.app.shared.presentation.screens.settings.rhythmGuardFormatDurationFromMinutes
 import chromahub.rhythm.app.activities.RhythmGuardTimeoutActivity
+import androidx.core.net.toUri
 
 @OptIn(UnstableApi::class)
 class MediaPlaybackService : MediaLibraryService(), Player.Listener {
@@ -291,20 +293,15 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     }
 
     private fun isSpeakerOutputActive(audioManager: AudioManager): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-            devices.any { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER } &&
-                    !devices.any {
-                        (it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
-                         it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO ||
-                         it.type == AudioDeviceInfo.TYPE_WIRED_HEADSET ||
-                         it.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES) &&
-                        it.isSink
-                    }
-        } else {
-            @Suppress("DEPRECATION")
-            !audioManager.isBluetoothA2dpOn && !audioManager.isWiredHeadsetOn
-        }
+        val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+        return devices.any { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER } &&
+                !devices.any {
+                    (it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+                     it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO ||
+                     it.type == AudioDeviceInfo.TYPE_WIRED_HEADSET ||
+                     it.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES) &&
+                    it.isSink
+                }
     }
 
     private fun showRhythmGuardAlertNotification(title: String, text: String, riskLevel: String) {
@@ -386,7 +383,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     }
 
     private fun ensureRhythmGuardNotificationChannels(notificationManager: NotificationManager) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
         val alertChannel = NotificationChannel(
             "rhythm_guard_alerts",
@@ -620,14 +616,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 androidx.core.content.ContextCompat.RECEIVER_EXPORTED
             )
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                btProxy = chromahub.rhythm.app.util.BtCodecInfo.getCodec(this) { info ->
-                    if (info != null) {
-                        btInfo = info
-                        Log.d(TAG, "First Bluetooth codec config: $btInfo")
-                    }
-                }
-            }
+btProxy = chromahub.rhythm.app.util.BtCodecInfo.getCodec(this) { info ->
+    if (info != null) {
+        btInfo = info
+        Log.d(TAG, "First Bluetooth codec config: $btInfo")
+    }
+}
         } catch (e: Exception) {
             Log.e(TAG, "Error setting up Bluetooth codec monitoring", e)
         }
@@ -821,30 +815,28 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     }
     
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                getString(chromahub.rhythm.app.R.string.media3_notification_channel_name),
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = getString(chromahub.rhythm.app.R.string.media3_notification_channel_description)
-                setShowBadge(false)
-            }
+val channel = NotificationChannel(
+    CHANNEL_ID,
+    getString(chromahub.rhythm.app.R.string.media3_notification_channel_name),
+    NotificationManager.IMPORTANCE_LOW
+).apply {
+    description = getString(chromahub.rhythm.app.R.string.media3_notification_channel_description)
+    setShowBadge(false)
+}
 
-            val sleepTimerChannel = NotificationChannel(
-                SLEEP_TIMER_CHANNEL_ID,
-                getString(chromahub.rhythm.app.R.string.notification_sleep_timer_channel_name),
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = getString(chromahub.rhythm.app.R.string.notification_sleep_timer_channel_desc)
-                setShowBadge(false)
-                enableVibration(false)
-            }
-            
-            val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
-            notificationManager.createNotificationChannel(sleepTimerChannel)
-        }
+val sleepTimerChannel = NotificationChannel(
+    SLEEP_TIMER_CHANNEL_ID,
+    getString(chromahub.rhythm.app.R.string.notification_sleep_timer_channel_name),
+    NotificationManager.IMPORTANCE_DEFAULT
+).apply {
+    description = getString(chromahub.rhythm.app.R.string.notification_sleep_timer_channel_desc)
+    setShowBadge(false)
+    enableVibration(false)
+}
+
+val notificationManager = getSystemService(NotificationManager::class.java)
+notificationManager.createNotificationChannel(channel)
+notificationManager.createNotificationChannel(sleepTimerChannel)
     }
     
     private fun startForegroundWithNotification(title: String = "Rhythm Music", content: String = "Rhythm is starting.") {
@@ -1489,7 +1481,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         album = prefs.getString("album_name", "") ?: "",
                         uri = Uri.EMPTY,
                         artworkUri = prefs.getString("artwork_uri", null)?.let { 
-                            try { Uri.parse(it) } catch (_: Exception) { null } 
+                            try { (it).toUri() } catch (_: Exception) { null } 
                         },
                         duration = 0L,
                         trackNumber = 0,
@@ -1907,7 +1899,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                             album = prefs.getString("album_name", "") ?: "",
                             uri = Uri.EMPTY,
                             artworkUri = prefs.getString("artwork_uri", null)?.let { 
-                                try { Uri.parse(it) } catch (_: Exception) { null }
+                                try { (it).toUri() } catch (_: Exception) { null }
                             },
                             duration = 0L,
                             trackNumber = 0,
@@ -2905,9 +2897,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         val seconds = totalSeconds % 60L
 
         return if (hours > 0L) {
-            String.format("%d:%02d:%02d", hours, minutes, seconds)
+            String.format(Locale.ROOT, "%d:%02d:%02d", hours, minutes, seconds)
         } else {
-            String.format("%02d:%02d", minutes, seconds)
+            String.format(Locale.ROOT, "%02d:%02d", minutes, seconds)
         }
     }
     

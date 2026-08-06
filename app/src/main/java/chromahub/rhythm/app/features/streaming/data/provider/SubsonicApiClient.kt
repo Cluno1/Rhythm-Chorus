@@ -11,6 +11,7 @@ import org.json.JSONObject
 import java.security.MessageDigest
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import androidx.core.content.edit
 
 class SubsonicErrorException(val code: Int, message: String) : Exception(message)
 
@@ -71,14 +72,14 @@ class SubsonicApiClient(context: Context) {
 
         return ping().map {
             if (saveCredentials) {
-                prefs.edit()
-                    .putString(KEY_SERVER_URL, normalizedUrl)
-                    .putString(KEY_USERNAME, username.trim())
-                    .putString(KEY_PASSWORD, password)
-                    .putBoolean(KEY_USE_PASSWORD_AUTH, usePasswordAuth)
-                    .apply()
+                prefs.edit {
+    putString(KEY_SERVER_URL, normalizedUrl)
+    putString(KEY_USERNAME, username.trim())
+    putString(KEY_PASSWORD, password)
+    putBoolean(KEY_USE_PASSWORD_AUTH, usePasswordAuth)
+}
             } else {
-                prefs.edit().clear().apply()
+                prefs.edit { clear() }
             }
             ProviderConnectionResult(displayName = username.trim(), serverUrl = normalizedUrl)
         }.onFailure {
@@ -89,7 +90,7 @@ class SubsonicApiClient(context: Context) {
     fun logout() {
         credentials = null
         usePasswordAuth = false
-        prefs.edit().clear().apply()
+        prefs.edit { clear() }
     }
 
     suspend fun ping(): Result<Boolean> {
@@ -600,7 +601,7 @@ class SubsonicApiClient(context: Context) {
             if (exception is SubsonicErrorException && exception.code == 41 && !usePasswordAuth) {
                 usePasswordAuth = true
                 if (isConnected()) {
-                    prefs.edit().putBoolean(KEY_USE_PASSWORD_AUTH, true).apply()
+                    prefs.edit { putBoolean(KEY_USE_PASSWORD_AUTH, true) }
                 }
                 return request(endpoint, params, listParams).fold(
                     onSuccess = { parseSubsonicResponse(it) },

@@ -7,6 +7,7 @@ import chromahub.rhythm.app.shared.data.model.LyricsData
 import java.io.File
 import java.io.ByteArrayOutputStream
 import java.io.RandomAccessFile
+import java.util.Locale
 
 object MetadataHeuristics {
     private const val TAG = "MetadataHeuristics"
@@ -724,7 +725,7 @@ object MetadataHeuristics {
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         val millis = (milliseconds % 1000) / 10
-        return String.format("%02d:%02d.%02d", minutes, seconds, millis)
+        return String.format(Locale.ROOT, "%02d:%02d.%02d", minutes, seconds, millis)
     }
 
     fun exportToEnhancedLRC(lyricsData: LyricsData): String? {

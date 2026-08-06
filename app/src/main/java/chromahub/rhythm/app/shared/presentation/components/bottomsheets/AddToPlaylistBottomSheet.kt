@@ -76,6 +76,7 @@ import chromahub.rhythm.app.shared.presentation.components.common.rememberExpres
 import chromahub.rhythm.app.util.ImageUtils
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 
 private fun groupedPlaylistItemShape(index: Int, totalCount: Int): RoundedCornerShape {
@@ -255,7 +256,7 @@ private fun AddToPlaylistHeader(
             )
             if (totalPlaylists > 0) {
                 Text(
-                    text = context.getString(R.string.playlist_count_format, totalPlaylists),
+                    text = pluralStringResource(R.plurals.playlist_count_format, totalPlaylists, totalPlaylists),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
@@ -423,9 +424,9 @@ private fun CreateNewPlaylistCard(
 @Composable
 private fun PlaylistCard(
     playlist: Playlist,
-    itemShape: RoundedCornerShape = RoundedCornerShape(16.dp),
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    itemShape: RoundedCornerShape = RoundedCornerShape(16.dp)
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
@@ -516,7 +517,7 @@ private fun PlaylistCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (playlist.songs.size == 1) context.getString(R.string.ui_song_count) else context.getString(R.string.ui_songs_count, playlist.songs.size),
+                        text = pluralStringResource(R.plurals.ui_songs_count, playlist.songs.size, playlist.songs.size),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

@@ -506,10 +506,10 @@ private fun QueueHeader(
     isShuffleEnabled: Boolean,
     repeatMode: Int,
     onAddSongsClick: () -> Unit,
+    modifier: Modifier = Modifier,
     onClearQueue: (() -> Unit)? = null,
     onToggleShuffle: () -> Unit = {},
-    onToggleRepeat: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onToggleRepeat: () -> Unit = {}
 ) {
     val context = LocalContext.current
     
@@ -1009,8 +1009,8 @@ private fun QueueSettingsInfo(
 
 @Composable
 private fun AnimateIn(
-    delay: Int = 50,
     modifier: Modifier = Modifier,
+    delay: Int = 50,
     content: @Composable () -> Unit
 ) {
     var visible by remember { mutableStateOf(false) }

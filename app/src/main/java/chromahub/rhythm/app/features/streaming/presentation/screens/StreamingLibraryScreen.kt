@@ -122,6 +122,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -163,6 +164,9 @@ import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import androidx.compose.ui.platform.LocalConfiguration
 import chromahub.rhythm.app.ui.theme.MusicDimensions
 import kotlin.random.Random
+import androidx.core.net.toUri
+import chromahub.rhythm.app.util.windowScreenWidthDp
+import chromahub.rhythm.app.util.windowScreenHeightDp
 
 private enum class StreamingLibraryTab(@param:StringRes val titleRes: Int, val icon: chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon) {
     SONGS(R.string.library_tab_songs, MaterialSymbolIcon("history", filled = true)),
@@ -230,15 +234,15 @@ private enum class StreamingPlaylistSortOrder(
 @Composable
 fun StreamingLibraryScreen(
     viewModel: StreamingMusicViewModel,
-    localMusicViewModel: chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel? = null,
     onConfigureService: (String) -> Unit,
     onNavigateToArtist: (StreamingArtist) -> Unit,
     onNavigateToPlaylist: (StreamingPlaylist) -> Unit,
     onNavigateToAlbum: (StreamingAlbum) -> Unit,
+    modifier: Modifier = Modifier,
+    localMusicViewModel: chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel? = null,
     onAddSongToPlaylist: (StreamingSong) -> Unit = {},
     activeSongId: String? = null,
-    isPlayerPlaying: Boolean = false,
-    modifier: Modifier = Modifier
+    isPlayerPlaying: Boolean = false
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
@@ -313,7 +317,7 @@ fun StreamingLibraryScreen(
 
     // Get miniplayer padding for bottom content alignment
     val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
-    val isTabletLayout = LocalConfiguration.current.screenWidthDp >= 600
+    val isTabletLayout = windowScreenWidthDp() >= 600
     val baseLibraryBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val fabBottomPaddingVal = if (isTabletLayout) {
         (baseLibraryBottomPadding + 12.dp).coerceAtLeast(12.dp)
@@ -1818,8 +1822,9 @@ private fun StreamingSongsTabPage(
         item {
             StreamingLibrarySectionHeader(
                 title = stringResource(id = R.string.library_your_music),
-                subtitle = stringResource(
-                    id = R.string.streaming_home_widget_playlist_track_count,
+                subtitle = pluralStringResource(
+                    id = R.plurals.streaming_home_widget_playlist_track_count,
+                    uniqueSongs.size,
                     uniqueSongs.size
                 ),
                 onPlayAll = if (uniqueSongs.isNotEmpty()) onPlayAll else null,
@@ -1877,8 +1882,9 @@ private fun StreamingAlbumsTabPage(
         item {
             StreamingLibrarySectionHeader(
                 title = stringResource(id = R.string.library_your_albums),
-                subtitle = stringResource(
-                    id = R.string.library_albums_count,
+                subtitle = pluralStringResource(
+                    id = R.plurals.library_albums_count,
+                    uniqueAlbums.size,
                     uniqueAlbums.size
                 )
             )
@@ -1978,8 +1984,9 @@ private fun StreamingPlaylistsTabPage(
         item {
             StreamingLibrarySectionHeader(
                 title = stringResource(id = R.string.library_your_playlists),
-                subtitle = stringResource(
-                    id = R.string.library_playlists_count,
+                subtitle = pluralStringResource(
+                    id = R.plurals.library_playlists_count,
+                    uniquePlaylists.size,
                     uniquePlaylists.size
                 )
             )
@@ -2136,11 +2143,11 @@ private fun StreamingLibraryStateCard(
     icon: MaterialSymbolIcon,
     iconContainerColor: Color,
     iconTint: Color,
+    modifier: Modifier = Modifier,
     showProgressIndicator: Boolean = false,
     centeredContent: Boolean = false,
     actionText: String? = null,
-    onAction: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onAction: (() -> Unit)? = null
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -2401,7 +2408,7 @@ private fun StreamingLibraryPlaylistRow(
                 )
                 Text(
                     text = playlist.description.orEmpty().ifBlank {
-                        stringResource(id = R.string.streaming_home_widget_playlist_track_count, playlist.songCount)
+                        pluralStringResource(id = R.plurals.streaming_home_widget_playlist_track_count, playlist.songCount, playlist.songCount)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2489,9 +2496,9 @@ private fun deriveAlbumsFromSongs(songs: List<StreamingSong>): List<StreamingAlb
 
 fun StreamingSong.toLibrarySong(): Song {
     val playbackUri = when {
-        !streamingUrl.isNullOrBlank() -> Uri.parse(streamingUrl)
-        !previewUrl.isNullOrBlank() -> Uri.parse(previewUrl)
-        else -> Uri.parse("streaming://track/$id")
+        !streamingUrl.isNullOrBlank() -> (streamingUrl).toUri()
+        !previewUrl.isNullOrBlank() -> (previewUrl).toUri()
+        else -> ("streaming://track/$id").toUri()
     }
 
     return Song(
@@ -2527,7 +2534,7 @@ fun StreamingPlaylist.toLibraryPlaylist(): Playlist {
                 artist = "",
                 album = name,
                 duration = 0L,
-                uri = Uri.parse("streaming://playlist/$id/track/$i")
+                uri = ("streaming://playlist/$id/track/$i").toUri()
             )
         }
     } else {
@@ -2771,7 +2778,7 @@ private fun LibraryBottomBar(
         ) + fadeOut(animationSpec = tween(200)),
         modifier = modifier
     ) {
-        val isTablet = LocalConfiguration.current.screenWidthDp >= 600
+        val isTablet = windowScreenWidthDp() >= 600
         val baseBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
         val bottomBarContext = LocalContext.current
         val localAppSettings = remember { AppSettings.getInstance(bottomBarContext) }

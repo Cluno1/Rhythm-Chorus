@@ -43,7 +43,6 @@ data class BtCodecInfo(
     companion object {
         private const val TAG = "BtCodecInfo"
 
-        @RequiresApi(Build.VERSION_CODES.O)
         fun fromCodecConfig(codecConfig: BluetoothCodecConfig?): BtCodecInfo? {
             if (codecConfig == null) return null
             try {
@@ -146,7 +145,6 @@ data class BtCodecInfo(
             }.takeIf { !it.startsWith("UNKNOWN CODEC") }
         }
 
-        @RequiresApi(Build.VERSION_CODES.O)
         fun getCodec(context: Context, callback: (BtCodecInfo?) -> Unit): Proxy? {
             val adapter =
                 ContextCompat.getSystemService(context, BluetoothManager::class.java)?.adapter
