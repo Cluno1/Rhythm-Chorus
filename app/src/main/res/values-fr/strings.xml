@@ -134,7 +134,7 @@
     <string name="notification_playlist_export_title">Sauvegarde de la playlist</string>
     <string name="notification_playlist_import_title">Importation d\'une playlist</string>
     <string name="notification_library_setup_title">Optimisation de la bibliothèque</string>
-    <string name="notification_library_setup_complete_summary">La bibliothèque est prête : %1$d titres, %2$d albums, %3$d artistes</string>
+    <string name="notification_library_setup_complete_summary">La bibliothèque est prête : %1$d titres, %2$d albums, %3$d artistes</string>
     <string name="notification_playlist_not_found">Exportation interrompue : la liste de lecture cible n\'a pas été trouvée.</string>
     <string name="notification_no_playlists_to_export">Exportation interrompue : aucune liste de lecture à sauvegarder trouvée.</string>
     <string name="notification_operation_timed_out">L\'opération a dépassé le délai d\'attente. Veuillez réessayer.</string>
@@ -146,7 +146,7 @@
     <string name="notification_updater_channel_name">Mises à jour du système Rhythm</string>
     <string name="notification_updater_channel_desc">Suivi du téléchargement et alertes de disponibilité pour les mises à jour des applications</string>
     <string name="notification_updater_title">Mise à jour du logiciel Rhythm</string>
-    <string name="notification_updater_downloading">Téléchargement de la mise à jour : %1$d%%</string>
+    <string name="notification_updater_downloading">Téléchargement de la mise à jour : %1$d%%</string>
     <string name="notification_updater_download_complete">La mise à jour est prête à être installée. Appuyez pour continuer.</string>
     <string name="notification_updater_available_title">Nouvelle mise à jour disponible</string>
     <string name="notification_updater_available_text">Une nouvelle version de Rhythm est disponible.</string>
@@ -166,7 +166,7 @@
     <!-- Streaming Library Sync -->
     <string name="notification_streaming_sync_title">Synchronisation de la bibliothèque dans le cloud</string>
     <string name="notification_streaming_sync_started">Synchronisation de la bibliothèque avec %1$s…</string>
-    <string name="notification_streaming_sync_progress">Synchronisation : %1$d titres, %2$d albums, %3$d artistes</string>
+    <string name="notification_streaming_sync_progress">Synchronisation : %1$d titres, %2$d albums, %3$d artistes</string>
     <string name="notification_streaming_sync_complete">%1$d titres synchronisés à partir de %2$s.</string>
     <string name="notification_streaming_sync_failed">Échec de la synchronisation. Vérifiez votre connexion réseau.</string>
     <!-- Streaming Liked Songs -->
@@ -2877,7 +2877,7 @@
     <string name="exp_track_error_checker">Vérificateur d\'erreurs de piste</string>
     <string name="exp_track_error_checker_desc">Intercepter les pistes audio corrompues ou illisibles pour éviter les chargements infinis et les boucles de saut automatique</string>
     <string name="settings_rhythm_guard_hero_title">L\'exposition du jour</string>
-    <string name="settings_rhythm_guard_hero_limit_exceeded">Limite dépassée ! Il est temps de laisser vos oreilles se reposer.</string>
+    <string name="settings_rhythm_guard_hero_limit_exceeded">Limite dépassée ! Il est temps de laisser vos oreilles se reposer.</string>
     <string name="settings_rhythm_guard_hero_exposure_of">de %1$s</string>
     <string name="settings_rhythm_guard_hero_volume_limit">limite %1$s</string>
     <string name="settings_thumb_rotate">Faites pivoter votre pouce en jouant</string>
