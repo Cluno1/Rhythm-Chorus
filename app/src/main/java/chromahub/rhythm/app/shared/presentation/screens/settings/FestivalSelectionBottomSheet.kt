@@ -233,11 +233,11 @@ fun FestivalSelectionBottomSheet(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
                             containerColor = if (isSelected)
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f)
                             else
                                 MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(24.dp),
                         onClick = {
                             if (isAvailable) {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
@@ -257,16 +257,31 @@ fun FestivalSelectionBottomSheet(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Icon(
-                                    imageVector = icon,
-                                    contentDescription = null,
-                                    tint = when {
-                                        !isAvailable -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                                Surface(
+                                    shape = CircleShape,
+                                    color = when {
+                                        !isAvailable -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                                         isSelected -> MaterialTheme.colorScheme.primary
-                                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                        else -> MaterialTheme.colorScheme.surfaceVariant
                                     },
-                                    modifier = Modifier.size(28.dp)
-                                )
+                                    modifier = Modifier.size(44.dp)
+                                ) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = null,
+                                            tint = when {
+                                                !isAvailable -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                                                isSelected -> MaterialTheme.colorScheme.onPrimary
+                                                else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                            },
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
                                 Column {
                                     Text(
                                         text = name,
@@ -275,7 +290,7 @@ fun FestivalSelectionBottomSheet(
                                         ),
                                         color = when {
                                             !isAvailable -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                            isSelected -> MaterialTheme.colorScheme.primary
+                                            isSelected -> MaterialTheme.colorScheme.primaryContainer
                                             else -> MaterialTheme.colorScheme.onSurface
                                         }
                                     )
@@ -286,7 +301,7 @@ fun FestivalSelectionBottomSheet(
                                 Icon(
                                     imageVector = RhythmIcons.CheckCircle,
                                     contentDescription = context.getString(R.string.ui_selected),
-                                    
+                                    tint = MaterialTheme.colorScheme.primaryContainer,
                                     modifier = Modifier.size(24.dp)
                                 )
                             }

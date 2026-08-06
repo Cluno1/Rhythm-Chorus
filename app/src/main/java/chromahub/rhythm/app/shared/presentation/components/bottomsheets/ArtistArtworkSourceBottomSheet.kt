@@ -127,11 +127,11 @@ fun ArtistArtworkSourceBottomSheet(
                     },
                     colors = CardDefaults.cardColors(
                         containerColor = if (isSelected)
-                            MaterialTheme.colorScheme.primaryContainer
+                            MaterialTheme.colorScheme.onPrimaryContainer
                         else
                             MaterialTheme.colorScheme.surfaceContainerHigh
                     ),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(24.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 6.dp)
@@ -142,15 +142,29 @@ fun ArtistArtworkSourceBottomSheet(
                             .padding(20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = if (isSelected)
-                                MaterialTheme.colorScheme.onPrimaryContainer
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isSelected)
+                                MaterialTheme.colorScheme.primary
                             else
-                                MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(24.dp)
-                        )
+                                MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = if (isSelected)
+                                        MaterialTheme.colorScheme.onPrimary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
@@ -158,7 +172,7 @@ fun ArtistArtworkSourceBottomSheet(
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                    MaterialTheme.colorScheme.primaryContainer
                                 else
                                     MaterialTheme.colorScheme.onSurface
                             )
@@ -167,7 +181,7 @@ fun ArtistArtworkSourceBottomSheet(
                                 text = description,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                                 else
                                     MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -177,7 +191,7 @@ fun ArtistArtworkSourceBottomSheet(
                             Icon(
                                 imageVector = MaterialSymbolIcon("check"),
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                tint = MaterialTheme.colorScheme.primaryContainer,
                                 modifier = Modifier.size(24.dp)
                             )
                         }

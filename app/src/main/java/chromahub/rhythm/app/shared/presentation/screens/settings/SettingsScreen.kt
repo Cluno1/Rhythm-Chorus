@@ -646,11 +646,11 @@ fun SettingsScreen(
                         },
                         colors = CardDefaults.cardColors(
                             containerColor = if (defaultScreen == "home") 
-                                MaterialTheme.colorScheme.primaryContainer 
+                                MaterialTheme.colorScheme.onPrimaryContainer 
                             else 
                                 MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(24.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
@@ -665,7 +665,7 @@ fun SettingsScreen(
                                 imageVector = RhythmIcons.Home,
                                 contentDescription = null,
                                 tint = if (defaultScreen == "home") 
-                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                    MaterialTheme.colorScheme.primaryContainer
                                 else
                                     MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(32.dp)
@@ -679,7 +679,7 @@ fun SettingsScreen(
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = if (defaultScreen == "home") 
-                                        MaterialTheme.colorScheme.onPrimaryContainer 
+                                        MaterialTheme.colorScheme.primaryContainer 
                                     else 
                                         MaterialTheme.colorScheme.onSurface
                                 )
@@ -687,7 +687,7 @@ fun SettingsScreen(
                                     text = context.getString(R.string.settings_home_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (defaultScreen == "home") 
-                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
                                     else 
                                         MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -697,7 +697,7 @@ fun SettingsScreen(
                                 Icon(
                                     imageVector = RhythmIcons.CheckCircle,
                                     contentDescription = stringResource(R.string.streaming_selected),
-                                    
+                                    tint = MaterialTheme.colorScheme.primaryContainer,
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -713,11 +713,11 @@ fun SettingsScreen(
                         },
                         colors = CardDefaults.cardColors(
                             containerColor = if (defaultScreen == "library") 
-                                MaterialTheme.colorScheme.primaryContainer 
+                                MaterialTheme.colorScheme.onPrimaryContainer 
                             else 
                                 MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(24.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
@@ -732,7 +732,7 @@ fun SettingsScreen(
                                 imageVector = RhythmIcons.Library,
                                 contentDescription = null,
                                 tint = if (defaultScreen == "library")
-                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                    MaterialTheme.colorScheme.primaryContainer
                                 else
                                     MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(32.dp)
@@ -746,7 +746,7 @@ fun SettingsScreen(
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = if (defaultScreen == "library") 
-                                        MaterialTheme.colorScheme.onPrimaryContainer 
+                                        MaterialTheme.colorScheme.primaryContainer 
                                     else 
                                         MaterialTheme.colorScheme.onSurface
                                 )
@@ -754,7 +754,7 @@ fun SettingsScreen(
                                     text = context.getString(R.string.settings_library_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (defaultScreen == "library") 
-                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
                                     else 
                                         MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -764,7 +764,7 @@ fun SettingsScreen(
                                 Icon(
                                     imageVector = RhythmIcons.CheckCircle,
                                     contentDescription = stringResource(R.string.streaming_selected),
-                                    
+                                    tint = MaterialTheme.colorScheme.primaryContainer,
                                     modifier = Modifier.size(24.dp)
                                 )
                             }

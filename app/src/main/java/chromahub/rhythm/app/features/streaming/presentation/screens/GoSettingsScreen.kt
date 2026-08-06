@@ -37,6 +37,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.SheetValue
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -489,10 +490,10 @@ private fun ServiceSelectionBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = if (isSelected) {
-                            MaterialTheme.colorScheme.primaryContainer
+                            MaterialTheme.colorScheme.onPrimaryContainer
                         } else {
                             MaterialTheme.colorScheme.surfaceContainerHigh
                         }
@@ -506,16 +507,31 @@ private fun ServiceSelectionBottomSheet(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = MaterialSymbolIcon("cloud_queue"),
-                            contentDescription = null,
-                            tint = if (isSelected) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isSelected) {
+                                MaterialTheme.colorScheme.primary
                             } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                                MaterialTheme.colorScheme.surfaceVariant
                             },
-                            modifier = Modifier.size(24.dp)
-                        )
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    imageVector = MaterialSymbolIcon("cloud_queue"),
+                                    contentDescription = null,
+                                    tint = if (isSelected) {
+                                        MaterialTheme.colorScheme.onPrimary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
@@ -525,7 +541,7 @@ private fun ServiceSelectionBottomSheet(
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                 color = if (isSelected) {
-                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                    MaterialTheme.colorScheme.primaryContainer
                                 } else {
                                     MaterialTheme.colorScheme.onSurface
                                 }
@@ -538,7 +554,7 @@ private fun ServiceSelectionBottomSheet(
                                 },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (isSelected) {
-                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
                                 } else {
                                     MaterialTheme.colorScheme.onSurfaceVariant
                                 }
@@ -549,7 +565,7 @@ private fun ServiceSelectionBottomSheet(
                             Icon(
                                 imageVector = RhythmIcons.Check,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                tint = MaterialTheme.colorScheme.primaryContainer,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -606,10 +622,10 @@ private fun QualitySelectionBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = if (isSelected) {
-                            MaterialTheme.colorScheme.primaryContainer
+                            MaterialTheme.colorScheme.onPrimaryContainer
                         } else {
                             MaterialTheme.colorScheme.surfaceContainerHigh
                         }
@@ -623,16 +639,31 @@ private fun QualitySelectionBottomSheet(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = MaterialSymbolIcon("high_quality"),
-                            contentDescription = null,
-                            tint = if (isSelected) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isSelected) {
+                                MaterialTheme.colorScheme.primary
                             } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                                MaterialTheme.colorScheme.surfaceVariant
                             },
-                            modifier = Modifier.size(24.dp)
-                        )
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    imageVector = MaterialSymbolIcon("high_quality"),
+                                    contentDescription = null,
+                                    tint = if (isSelected) {
+                                        MaterialTheme.colorScheme.onPrimary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
@@ -642,7 +673,7 @@ private fun QualitySelectionBottomSheet(
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                 color = if (isSelected) {
-                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                    MaterialTheme.colorScheme.primaryContainer
                                 } else {
                                     MaterialTheme.colorScheme.onSurface
                                 }
@@ -653,7 +684,7 @@ private fun QualitySelectionBottomSheet(
                             Icon(
                                 imageVector = RhythmIcons.Check,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                tint = MaterialTheme.colorScheme.primaryContainer,
                                 modifier = Modifier.size(20.dp)
                             )
                         }

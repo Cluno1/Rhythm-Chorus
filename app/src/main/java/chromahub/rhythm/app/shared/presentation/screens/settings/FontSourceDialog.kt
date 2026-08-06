@@ -25,7 +25,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.animation.core.Spring
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import chromahub.rhythm.app.R
@@ -270,16 +269,11 @@ fun FontSourceDialog(
                             },
                             colors = CardDefaults.cardColors(
                                 containerColor = if (isSelected)
-                                    MaterialTheme.colorScheme.primaryContainer
+                                    MaterialTheme.colorScheme.onPrimaryContainer
                                 else
                                     MaterialTheme.colorScheme.surfaceContainerHigh
                             ),
-                            shape = RoundedCornerShape(16.dp),
-                            border = if (isSelected) {
-                                BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                            } else {
-                                null
-                            },
+                            shape = RoundedCornerShape(24.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -320,7 +314,7 @@ fun FontSourceDialog(
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold,
                                         color = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                            MaterialTheme.colorScheme.primaryContainer
                                         else
                                             MaterialTheme.colorScheme.onSurface
                                     )
@@ -329,7 +323,7 @@ fun FontSourceDialog(
                                         text = source.getDescription(context),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                                         else
                                             MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -339,7 +333,7 @@ fun FontSourceDialog(
                                     Icon(
                                         imageVector = RhythmIcons.CheckCircle,
                                         contentDescription = stringResource(R.string.streaming_selected),
-                                        
+                                        tint = MaterialTheme.colorScheme.primaryContainer,
                                         modifier = Modifier.size(28.dp)
                                     )
                                 }

@@ -25,7 +25,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.animation.core.Spring
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import chromahub.rhythm.app.R
@@ -1009,14 +1008,13 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                         appSettings.setFestiveThemeType(id)
                                     },
                                     modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(12.dp),
+                                    shape = RoundedCornerShape(20.dp),
                                     colors = CardDefaults.cardColors(
                                         containerColor = if (isSelected)
-                                            MaterialTheme.colorScheme.primaryContainer
+                                            MaterialTheme.colorScheme.onPrimaryContainer
                                         else
                                             MaterialTheme.colorScheme.surfaceContainerHigh
                                     ),
-                                    border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
                                 ) {
                                     Row(
                                         modifier = Modifier
@@ -1029,7 +1027,7 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                             color = if (isSelected)
-                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                                MaterialTheme.colorScheme.primaryContainer
                                             else
                                                 MaterialTheme.colorScheme.onSurface,
                                             modifier = Modifier.weight(1f)
@@ -1038,6 +1036,7 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                             Icon(
                                                 imageVector = RhythmIcons.CheckCircle,
                                                 contentDescription = context.getString(R.string.ui_selected),
+                                                tint = MaterialTheme.colorScheme.primaryContainer,
                                                 modifier = Modifier.size(24.dp)
                                             )
                                         }
@@ -1430,16 +1429,11 @@ fun FontCard(
         onClick = onSelect,
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer
+                MaterialTheme.colorScheme.onPrimaryContainer
             else
                 MaterialTheme.colorScheme.surfaceContainerHigh
         ),
-        shape = RoundedCornerShape(16.dp),
-        border = if (isSelected) {
-            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-        } else {
-            null
-        },
+        shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -1457,7 +1451,7 @@ fun FontCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = if (isSelected)
-                            MaterialTheme.colorScheme.onPrimaryContainer
+                            MaterialTheme.colorScheme.primaryContainer
                         else
                             MaterialTheme.colorScheme.onSurface
                     )
@@ -1466,7 +1460,7 @@ fun FontCard(
                         text = option.description,
                         style = MaterialTheme.typography.bodySmall,
                         color = if (isSelected)
-                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1476,7 +1470,7 @@ fun FontCard(
                     Icon(
                         imageVector = RhythmIcons.CheckCircle,
                         contentDescription = stringResource(R.string.streaming_selected),
-                        
+                        tint = MaterialTheme.colorScheme.primaryContainer,
                         modifier = Modifier.size(28.dp)
                     )
                 }
@@ -1487,9 +1481,9 @@ fun FontCard(
             // Font preview text
             Surface(
                 color = if (isSelected)
-                    MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
                 else
-                    MaterialTheme.colorScheme.surface,
+                    MaterialTheme.colorScheme.surfaceContainerHigh,
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -1497,7 +1491,7 @@ fun FontCard(
                     text = stringResource(R.string.settings_quick_brown_fox),
                     style = getFontPreviewStyle(option.name),
                     color = if (isSelected)
-                        MaterialTheme.colorScheme.onPrimaryContainer
+                        MaterialTheme.colorScheme.primaryContainer
                     else
                         MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(16.dp)

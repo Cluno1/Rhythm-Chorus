@@ -828,14 +828,14 @@ private fun DeviceCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = if (isActive)
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
             else
                 MaterialTheme.colorScheme.surfaceContainerHighest
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isActive) 0.dp else 0.dp
         ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp),
 //        border = if (isActive) {
 //            androidx.compose.foundation.BorderStroke(
 //                1.dp,
@@ -886,7 +886,7 @@ private fun DeviceCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = if (isActive)
-                            MaterialTheme.colorScheme.onPrimaryContainer
+                            MaterialTheme.colorScheme.primaryContainer
                         else
                             MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
@@ -933,8 +933,8 @@ private fun DeviceCard(
                     ) {
                         Icon(
                             imageVector = RhythmIcons.Check,
-                            contentDescription = stringResource(R.string.bottomsheet_active_device),
-                            tint = MaterialTheme.colorScheme.onPrimary,
+                        contentDescription = stringResource(R.string.bottomsheet_active_device),
+                        tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -1440,17 +1440,17 @@ private fun EQProfileCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp)),
+            .clip(RoundedCornerShape(20.dp)),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
+                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
             else
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isSelected) 0.dp else 0.dp
         ),
-        shape = RoundedCornerShape(14.dp)
+        shape = RoundedCornerShape(20.dp)
     ) {
         Row(
             modifier = Modifier
@@ -1493,7 +1493,7 @@ private fun EQProfileCard(
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                         color = if (isSelected)
-                            MaterialTheme.colorScheme.onPrimaryContainer
+                            MaterialTheme.colorScheme.primaryContainer
                         else
                             MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
@@ -1509,7 +1509,7 @@ private fun EQProfileCard(
                                 text = profile.brand,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
                                 else
                                     MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1526,7 +1526,7 @@ private fun EQProfileCard(
                                 text = profile.type,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
                                 else
                                     MaterialTheme.colorScheme.onSurfaceVariant
                             )

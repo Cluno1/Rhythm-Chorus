@@ -25,7 +25,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.animation.core.Spring
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import chromahub.rhythm.app.R
@@ -45,7 +44,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.border
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -82,7 +80,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.TextUnit
@@ -454,11 +451,10 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
                                 shape = RoundedCornerShape(16.dp),
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (isSelected)
-                                        MaterialTheme.colorScheme.primaryContainer
+                                        MaterialTheme.colorScheme.onPrimaryContainer
                                     else
                                         MaterialTheme.colorScheme.surfaceContainerHigh
-                                ),
-                                border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+                                )
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -470,11 +466,11 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
                                     Icon(
                                         imageVector = preset.icon,
                                         contentDescription = getLocalizedPresetName(preset.id),
-                                        modifier = Modifier.size(28.dp),
                                         tint = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                            MaterialTheme.colorScheme.primaryContainer
                                         else
-                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                            MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(28.dp)
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
@@ -482,7 +478,7 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                         color = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                            MaterialTheme.colorScheme.primaryContainer
                                         else
                                             MaterialTheme.colorScheme.onSurfaceVariant,
                                         maxLines = 1,
@@ -692,7 +688,7 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
 
                         val containerColor by animateColorAsState(
                             targetValue = if (isSelected)
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.colorScheme.onPrimaryContainer
                             else
                                 MaterialTheme.colorScheme.surfaceContainerHigh,
                             animationSpec = spring(
@@ -720,7 +716,6 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
                             colors = CardDefaults.cardColors(
                                 containerColor = containerColor
                             ),
-                            border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                         ) {
                             Row(
@@ -734,35 +729,22 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(44.dp)
-                                            .background(
-                                                color = if (isSelected)
-                                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                                else
-                                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                                                shape = RoundedCornerShape(12.dp)
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = preset.icon,
-                                            contentDescription = preset.displayName,
-                                            modifier = Modifier.size(24.dp),
-                                            tint = if (isSelected)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = preset.icon,
+                                        contentDescription = preset.displayName,
+                                        tint = if (isSelected)
+                                            MaterialTheme.colorScheme.primaryContainer
+                                        else
+                                            MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(32.dp)
+                                    )
                                     Column {
                                         Text(
                                             text = getLocalizedPresetName(preset.id),
                                             style = MaterialTheme.typography.bodyLarge,
                                             fontWeight = FontWeight.Medium,
                                             color = if (isSelected)
-                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                                MaterialTheme.colorScheme.primaryContainer
                                             else
                                                 MaterialTheme.colorScheme.onSurface
                                         )
@@ -770,7 +752,7 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
                                             text = getLocalizedPresetDesc(preset.id),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = if (isSelected)
-                                                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                                             else
                                                 MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -894,7 +876,7 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
 
                             val containerColor by animateColorAsState(
                                 targetValue = if (isSelected)
-                                    MaterialTheme.colorScheme.primaryContainer
+                                    MaterialTheme.colorScheme.onPrimaryContainer
                                 else
                                     MaterialTheme.colorScheme.surfaceContainerHigh,
                                 animationSpec = spring(
@@ -926,59 +908,56 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
                                         scaleX = scale
                                         scaleY = scale
                                     },
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(24.dp),
                                 colors = CardDefaults.cardColors(
                                     containerColor = containerColor
                                 ),
-                                border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
                                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                             ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(12.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
+                                Box(modifier = Modifier.fillMaxSize()) {
                                     // Shape Preview
                                     Surface(
-                                        modifier = Modifier.size(48.dp),
+                                        modifier = Modifier
+                                            .padding(start = 16.dp, top = 16.dp, end = 16.dp)
+                                            .size(48.dp),
                                         shape = rememberExpressiveShape(shape.id, CircleShape),
                                         color = if (isSelected)
-                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                                            MaterialTheme.colorScheme.primary
                                         else
                                             MaterialTheme.colorScheme.surfaceVariant
                                     ) {
                                         Box(modifier = Modifier.fillMaxSize())
                                     }
 
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    Text(
-                                        text = getLocalizedShapeName(shape.id),
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                        color = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer
-                                        else
-                                            MaterialTheme.colorScheme.onSurface,
-                                        textAlign = TextAlign.Center,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-
-                                    Text(
-                                        text = getLocalizedShapeDesc(shape.id),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant,
-                                        textAlign = TextAlign.Center,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                        lineHeight = MaterialTheme.typography.labelSmall.lineHeight * 1.1f
-                                    )
+                                    // Shape name — bottom-left, larger, clipped at the card shape (no ellipsis)
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomStart)
+                                            .fillMaxWidth()
+                                            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+                                    ) {
+                                        Text(
+                                            text = getLocalizedShapeName(shape.id),
+                                            style = MaterialTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isSelected)
+                                                MaterialTheme.colorScheme.primaryContainer
+                                            else
+                                                MaterialTheme.colorScheme.onSurface,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Clip,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(
+                                                    RoundedCornerShape(
+                                                        topStart = 0.dp,
+                                                        topEnd = 24.dp,
+                                                        bottomEnd = 24.dp,
+                                                        bottomStart = 0.dp
+                                                    )
+                                                )
+                                        )
+                                    }
                                 }
                             }
 
@@ -1038,49 +1017,6 @@ private fun getLocalizedShapeName(id: String): String {
         else -> null
     }
     return if (resId != null) stringResource(resId) else id
-}
-
-@Composable
-private fun getLocalizedShapeDesc(id: String): String {
-    val resId = when (id) {
-        "CIRCLE" -> R.string.shape_option_circle_desc
-        "SQUARE" -> R.string.shape_option_square_desc
-        "OVAL" -> R.string.shape_option_oval_desc
-        "PILL" -> R.string.shape_option_pill_desc
-        "DIAMOND" -> R.string.shape_option_diamond_desc
-        "TRIANGLE" -> R.string.shape_option_triangle_desc
-        "PENTAGON" -> R.string.shape_option_pentagon_desc
-        "FLOWER" -> R.string.shape_option_flower_desc
-        "CLOVER_4_LEAF" -> R.string.shape_option_clover_4_leaf_desc
-        "CLOVER_8_LEAF" -> R.string.shape_option_clover_8_leaf_desc
-        "HEART" -> R.string.shape_option_heart_desc
-        "BUN" -> R.string.shape_option_bun_desc
-        "BOOM" -> R.string.shape_option_boom_desc
-        "SOFT_BOOM" -> R.string.shape_option_soft_boom_desc
-        "BURST" -> R.string.shape_option_burst_desc
-        "SOFT_BURST" -> R.string.shape_option_soft_burst_desc
-        "SUNNY" -> R.string.shape_option_sunny_desc
-        "VERY_SUNNY" -> R.string.shape_option_very_sunny_desc
-        "COOKIE_4" -> R.string.shape_option_cookie4_desc
-        "COOKIE_6" -> R.string.shape_option_cookie6_desc
-        "COOKIE_7" -> R.string.shape_option_cookie7_desc
-        "COOKIE_9" -> R.string.shape_option_cookie9_desc
-        "COOKIE_12" -> R.string.shape_option_cookie12_desc
-        "GHOSTISH" -> R.string.shape_option_ghostish_desc
-        "PUFFY" -> R.string.shape_option_puffy_desc
-        "PUFFY_DIAMOND" -> R.string.shape_option_puffy_diamond_desc
-        "FAN" -> R.string.shape_option_fan_desc
-        "ARROW" -> R.string.shape_option_arrow_desc
-        "ARCH" -> R.string.shape_option_arch_desc
-        "CLAM_SHELL" -> R.string.shape_option_clam_shell_desc
-        "GEM" -> R.string.shape_option_gem_desc
-        "SEMI_CIRCLE" -> R.string.shape_option_semi_circle_desc
-        "SLANTED" -> R.string.shape_option_slanted_desc
-        "PIXEL_CIRCLE" -> R.string.shape_option_pixel_circle_desc
-        "PIXEL_TRIANGLE" -> R.string.shape_option_pixel_triangle_desc
-        else -> null
-    }
-    return if (resId != null) stringResource(resId) else ""
 }
 
 @Composable

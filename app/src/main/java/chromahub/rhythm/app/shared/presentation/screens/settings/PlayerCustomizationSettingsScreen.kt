@@ -25,7 +25,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.animation.core.Spring
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import chromahub.rhythm.app.R
@@ -82,7 +81,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.TextUnit
@@ -143,7 +141,6 @@ import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
 import chromahub.rhythm.app.shared.presentation.components.dialogs.CreatePlaylistDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.BulkPlaylistExportDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistImportDialog
-import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShape
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOperationProgressDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOperationResultDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.AppRestartDialog
@@ -1006,35 +1003,27 @@ fun ProgressStyleBottomSheet(
 
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(130.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        .fillMaxWidth()
+                        .height(150.dp),
+                        shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = if (isSelected)
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.colorScheme.onPrimaryContainer
                             else
                                 MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
-                        border = if (isSelected)
-                            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                        else null,
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                             onStyleSelected(styleOption.id)
                         }
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
                             // Preview of the style
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(32.dp)
-                                    .padding(horizontal = 8.dp),
+                                    .padding(start = 16.dp, top = 16.dp, end = 16.dp)
+                                    .height(32.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 StyledProgressBar(
@@ -1042,11 +1031,11 @@ fun ProgressStyleBottomSheet(
                                     style = progressStyleEnum,
                                     modifier = Modifier.fillMaxWidth(),
                                     progressColor = if (isSelected)
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        MaterialTheme.colorScheme.primaryContainer
                                     else
                                         MaterialTheme.colorScheme.primary,
                                     trackColor = if (isSelected)
-                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
                                     else
                                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
                                     height = 6.dp,
@@ -1054,52 +1043,33 @@ fun ProgressStyleBottomSheet(
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxWidth()
+                            // Style name — bottom-left, larger, clipped at the card shape (no ellipsis)
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
                             ) {
-                                Icon(
-                                    imageVector = styleOption.icon,
-                                    contentDescription = null,
-                                    tint = if (isSelected)
-                                        MaterialTheme.colorScheme.onPrimaryContainer
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = styleOption.label,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
                                     color = if (isSelected)
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        MaterialTheme.colorScheme.primaryContainer
                                     else
-                                        MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-
-                            Text(
-                                text = styleOption.description,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(top = 4.dp)
-                            )
-
-                            if (isSelected) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Icon(
-                                    imageVector = RhythmIcons.Check,
-                                    contentDescription = stringResource(R.string.streaming_selected),
-                                    
-                                    modifier = Modifier.size(16.dp)
+                                        MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Clip,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(
+                                            RoundedCornerShape(
+                                                topStart = 0.dp,
+                                                topEnd = 20.dp,
+                                                bottomEnd = 20.dp,
+                                                bottomStart = 0.dp
+                                            )
+                                        )
                                 )
                             }
                         }
@@ -1202,35 +1172,27 @@ fun ThumbStyleBottomSheet(
 
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(130.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        .fillMaxWidth()
+                        .height(150.dp),
+                        shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = if (isSelected)
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.colorScheme.onPrimaryContainer
                             else
                                 MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
-                        border = if (isSelected)
-                            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                        else null,
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                             onStyleSelected(styleOption.id)
                         }
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
                             // Preview of the thumb style
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(32.dp)
-                                    .padding(horizontal = 8.dp),
+                                    .padding(start = 16.dp, top = 16.dp, end = 16.dp)
+                                    .height(32.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 StyledProgressBar(
@@ -1238,11 +1200,11 @@ fun ThumbStyleBottomSheet(
                                     style = ProgressStyle.NORMAL,
                                     modifier = Modifier.fillMaxWidth(),
                                     progressColor = if (isSelected)
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        MaterialTheme.colorScheme.primaryContainer
                                     else
                                         MaterialTheme.colorScheme.primary,
                                     trackColor = if (isSelected)
-                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
                                     else
                                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
                                     height = 6.dp,
@@ -1253,66 +1215,33 @@ fun ThumbStyleBottomSheet(
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxWidth()
+                            // Style name — bottom-left, larger, clipped at the card shape (no ellipsis)
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
                             ) {
-                                if (thumbStyleEnum == ThumbStyle.NONE || thumbStyleEnum == ThumbStyle.DEFAULT) {
-                                    Icon(
-                                        imageVector = styleOption.icon,
-                                        contentDescription = null,
-                                        tint = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                } else {
-                                    // Render the M3 shape glyph
-                                    Surface(
-                                        modifier = Modifier.size(18.dp),
-                                        shape = rememberExpressiveShape(thumbStyleEnum.shapeId ?: "CIRCLE", CircleShape),
-                                        color = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer
-                                        else
-                                            MaterialTheme.colorScheme.primary
-                                    ) {
-                                        Box(modifier = Modifier.fillMaxSize())
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = styleOption.label,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
                                     color = if (isSelected)
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        MaterialTheme.colorScheme.primaryContainer
                                     else
-                                        MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-
-                            Text(
-                                text = styleOption.description,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(top = 4.dp)
-                            )
-
-                            if (isSelected) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Icon(
-                                    imageVector = RhythmIcons.Check,
-                                    contentDescription = stringResource(R.string.streaming_selected),
-                                    
-                                    modifier = Modifier.size(16.dp)
+                                        MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Clip,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(
+                                            RoundedCornerShape(
+                                                topStart = 0.dp,
+                                                topEnd = 20.dp,
+                                                bottomEnd = 20.dp,
+                                                bottomStart = 0.dp
+                                            )
+                                        )
                                 )
                             }
                         }
@@ -1373,10 +1302,10 @@ fun PlayerTextAlignmentBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = if (isSelected)
-                            MaterialTheme.colorScheme.primaryContainer
+                            MaterialTheme.colorScheme.onPrimaryContainer
                         else
                             MaterialTheme.colorScheme.surfaceContainerHigh
                     ),
@@ -1391,22 +1320,36 @@ fun PlayerTextAlignmentBottomSheet(
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = label,
-                            tint = if (isSelected)
-                                MaterialTheme.colorScheme.onPrimaryContainer
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isSelected)
+                                MaterialTheme.colorScheme.primary
                             else
-                                MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(24.dp)
-                        )
+                                MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = label,
+                                    tint = if (isSelected)
+                                        MaterialTheme.colorScheme.onPrimary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.width(16.dp))
                         Text(
                             text = label,
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                             color = if (isSelected)
-                                MaterialTheme.colorScheme.onPrimaryContainer
+                                MaterialTheme.colorScheme.primaryContainer
                             else
                                 MaterialTheme.colorScheme.onSurface
                         )
@@ -1415,6 +1358,7 @@ fun PlayerTextAlignmentBottomSheet(
                             Icon(
                                 imageVector = RhythmIcons.Check,
                                 contentDescription = stringResource(R.string.streaming_selected),
+                                tint = MaterialTheme.colorScheme.primaryContainer,
                                 modifier = Modifier.size(20.dp)
                             )
                         }

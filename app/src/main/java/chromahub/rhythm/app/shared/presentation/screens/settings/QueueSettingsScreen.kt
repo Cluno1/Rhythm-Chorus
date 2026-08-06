@@ -13,7 +13,6 @@ import android.content.Context
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.animation.core.Spring
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -402,16 +401,11 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                         },
                         colors = CardDefaults.cardColors(
                             containerColor = if (playlistClickBehavior == "ask")
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.colorScheme.onPrimaryContainer
                             else
                                 MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
-                        shape = RoundedCornerShape(16.dp),
-                        border = if (playlistClickBehavior == "ask") {
-                            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                        } else {
-                            null
-                        },
+                        shape = RoundedCornerShape(24.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -452,7 +446,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = if (playlistClickBehavior == "ask")
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        MaterialTheme.colorScheme.primaryContainer
                                     else
                                         MaterialTheme.colorScheme.onSurface
                                 )
@@ -461,7 +455,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     text = context.getString(R.string.playlist_ask_each_time_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (playlistClickBehavior == "ask")
-                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                                     else
                                         MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -471,6 +465,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                 Icon(
                                     imageVector = RhythmIcons.CheckCircle,
                                     contentDescription = context.getString(R.string.ui_selected),
+                                    tint = MaterialTheme.colorScheme.primaryContainer,
                                     modifier = Modifier.size(28.dp)
                                 )
                             }
@@ -488,16 +483,11 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                         },
                         colors = CardDefaults.cardColors(
                             containerColor = if (playlistClickBehavior == "play_all")
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.colorScheme.onPrimaryContainer
                             else
                                 MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
-                        shape = RoundedCornerShape(16.dp),
-                        border = if (playlistClickBehavior == "play_all") {
-                            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                        } else {
-                            null
-                        },
+                        shape = RoundedCornerShape(24.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -538,7 +528,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = if (playlistClickBehavior == "play_all")
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        MaterialTheme.colorScheme.primaryContainer
                                     else
                                         MaterialTheme.colorScheme.onSurface
                                 )
@@ -547,7 +537,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     text = context.getString(R.string.playlist_action_load_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (playlistClickBehavior == "play_all")
-                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                                     else
                                         MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -557,6 +547,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                 Icon(
                                     imageVector = RhythmIcons.CheckCircle,
                                     contentDescription = stringResource(R.string.streaming_selected),
+                                    tint = MaterialTheme.colorScheme.primaryContainer,
                                     modifier = Modifier.size(28.dp)
                                 )
                             }
@@ -574,16 +565,11 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                         },
                         colors = CardDefaults.cardColors(
                             containerColor = if (playlistClickBehavior == "play_one")
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.colorScheme.onPrimaryContainer
                             else
                                 MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
-                        shape = RoundedCornerShape(16.dp),
-                        border = if (playlistClickBehavior == "play_one") {
-                            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                        } else {
-                            null
-                        },
+                        shape = RoundedCornerShape(24.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -624,7 +610,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = if (playlistClickBehavior == "play_one")
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        MaterialTheme.colorScheme.primaryContainer
                                     else
                                         MaterialTheme.colorScheme.onSurface
                                 )
@@ -633,7 +619,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     text = context.getString(R.string.playlist_action_single_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (playlistClickBehavior == "play_one")
-                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                                     else
                                         MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -643,6 +629,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                 Icon(
                                     imageVector = RhythmIcons.CheckCircle,
                                     contentDescription = stringResource(R.string.streaming_selected),
+                                    tint = MaterialTheme.colorScheme.primaryContainer,
                                     modifier = Modifier.size(28.dp)
                                 )
                             }
@@ -766,16 +753,11 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                             },
                             colors = CardDefaults.cardColors(
                                 containerColor = if (isSelected)
-                                    MaterialTheme.colorScheme.primaryContainer
+                                    MaterialTheme.colorScheme.onPrimaryContainer
                                 else
                                     MaterialTheme.colorScheme.surfaceContainerHigh
                             ),
-                            shape = RoundedCornerShape(16.dp),
-                            border = if (isSelected) {
-                                BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                            } else {
-                                null
-                            },
+                            shape = RoundedCornerShape(24.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -786,10 +768,10 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                             ) {
                                 Surface(
                                     shape = CircleShape,
-                                    color = if (isSelected)
-                                        MaterialTheme.colorScheme.primary
-                                    else
-                                        MaterialTheme.colorScheme.surfaceVariant,
+                                color = if (isSelected)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.surfaceVariant,
                                     modifier = Modifier.size(44.dp)
                                 ) {
                                     Box(
@@ -799,10 +781,10 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                         Icon(
                                             imageVector = option.third,
                                             contentDescription = null,
-                                            tint = if (isSelected)
-                                                MaterialTheme.colorScheme.onPrimary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant,
+                                        tint = if (isSelected)
+                                            MaterialTheme.colorScheme.onPrimary
+                                        else
+                                            MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.size(22.dp)
                                         )
                                     }
@@ -816,7 +798,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold,
                                         color = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                            MaterialTheme.colorScheme.primaryContainer
                                         else
                                             MaterialTheme.colorScheme.onSurface
                                     )
@@ -825,7 +807,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                         text = option.second,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = if (isSelected)
-                                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                                         else
                                             MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -835,6 +817,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     Icon(
                                         imageVector = RhythmIcons.CheckCircle,
                                         contentDescription = context.getString(R.string.ui_selected),
+                                        tint = MaterialTheme.colorScheme.primaryContainer,
                                         modifier = Modifier.size(28.dp)
                                     )
                                 }
@@ -935,16 +918,11 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                         },
                         colors = CardDefaults.cardColors(
                             containerColor = if (showQueueDialog)
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.colorScheme.onPrimaryContainer
                             else
                                 MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
-                        shape = RoundedCornerShape(16.dp),
-                        border = if (showQueueDialog) {
-                            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                        } else {
-                            null
-                        },
+                        shape = RoundedCornerShape(24.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -985,7 +963,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = if (showQueueDialog)
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        MaterialTheme.colorScheme.primaryContainer
                                     else
                                         MaterialTheme.colorScheme.onSurface
                                 )
@@ -994,7 +972,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     text = context.getString(R.string.queue_action_ask_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (showQueueDialog)
-                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                                     else
                                         MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -1004,6 +982,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                 Icon(
                                     imageVector = RhythmIcons.CheckCircle,
                                     contentDescription = stringResource(R.string.streaming_selected),
+                                    tint = MaterialTheme.colorScheme.primaryContainer,
                                     modifier = Modifier.size(28.dp)
                                 )
                             }
@@ -1021,16 +1000,11 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                         },
                         colors = CardDefaults.cardColors(
                             containerColor = if (!showQueueDialog)
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.colorScheme.onPrimaryContainer
                             else
                                 MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
-                        shape = RoundedCornerShape(16.dp),
-                        border = if (!showQueueDialog) {
-                            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                        } else {
-                            null
-                        },
+                        shape = RoundedCornerShape(24.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -1071,7 +1045,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = if (!showQueueDialog)
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        MaterialTheme.colorScheme.primaryContainer
                                     else
                                         MaterialTheme.colorScheme.onSurface
                                 )
@@ -1080,7 +1054,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     text = context.getString(R.string.queue_action_always_add_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (!showQueueDialog)
-                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                                     else
                                         MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -1090,6 +1064,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                 Icon(
                                     imageVector = RhythmIcons.CheckCircle,
                                     contentDescription = stringResource(R.string.streaming_selected),
+                                    tint = MaterialTheme.colorScheme.primaryContainer,
                                     modifier = Modifier.size(28.dp)
                                 )
                             }

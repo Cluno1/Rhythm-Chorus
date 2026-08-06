@@ -112,11 +112,11 @@ fun CanvasNetworkModeDialog(
                     },
                     colors = CardDefaults.cardColors(
                         containerColor = if (isSelected)
-                            MaterialTheme.colorScheme.primaryContainer
+                            MaterialTheme.colorScheme.onPrimaryContainer
                         else
                             MaterialTheme.colorScheme.surfaceContainerHigh
                     ),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(24.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 6.dp)
@@ -127,15 +127,29 @@ fun CanvasNetworkModeDialog(
                             .padding(20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = if (isSelected)
-                                MaterialTheme.colorScheme.onPrimaryContainer
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isSelected)
+                                MaterialTheme.colorScheme.primary
                             else
-                                MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(32.dp)
-                        )
+                                MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = if (isSelected)
+                                        MaterialTheme.colorScheme.onPrimary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
 
                         Spacer(modifier = Modifier.width(16.dp))
 
@@ -145,7 +159,7 @@ fun CanvasNetworkModeDialog(
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                    MaterialTheme.colorScheme.primaryContainer
                                 else
                                     MaterialTheme.colorScheme.onSurface
                             )
@@ -153,7 +167,7 @@ fun CanvasNetworkModeDialog(
                                 text = description,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
                                 else
                                     MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -163,6 +177,7 @@ fun CanvasNetworkModeDialog(
                             Icon(
                                 imageVector = RhythmIcons.CheckCircle,
                                 contentDescription = context.getString(R.string.cd_selected),
+                                tint = MaterialTheme.colorScheme.primaryContainer,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
