@@ -522,7 +522,8 @@
     <string name="onboarding_library_3">Options avancées d\'affichage et de tri disponibles dans Paramètres &gt; Paramètres de la bibliothèque</string>
     <string name="onboarding_library_4">Les listes de lecture par défaut (récemment ajoutées, les plus jouées) peuvent être basculées dans Paramètres &gt; Listes de lecture</string>
     <string name="onboarding_theme_title">Faites vôtre Rhythm</string>
-    <string name="onboarding_theme_desc">Personnalisez l\'apparence de Rhythm en fonction de votre style. Choisissez le thème de votre système, la police ou Material vos couleurs dynamiques (Android 12+).</string>    <string name="onboarding_more_tuner">Plus de personnalisation dans les paramètres</string>
+    <string name="onboarding_theme_desc">Personnalisez l\'apparence de Rhythm en fonction de votre style. Choisissez le thème de votre système, la police ou Material vos couleurs dynamiques (Android 12+).</string>
+    <string name="onboarding_more_tuner">Plus de personnalisation dans les paramètres</string>
     <string name="onboarding_tuner_1">Schémas de couleurs personnalisés et extraction des couleurs des pochettes d\'album</string>
     <string name="onboarding_tuner_2">Paramètres de personnalisation des polices et de typographie</string>
     <string name="onboarding_tuner_3">Options de thème avancées disponibles dans Paramètres &gt; Personnalisation du thème</string>
@@ -2850,7 +2851,6 @@
     <string name="settings_artist_artwork_source_disabled_desc">Ne pas récupérer ni charger d\'images pour les artistes</string>
     <string name="exp_track_error_checker">Vérificateur d\'erreurs de piste</string>
     <string name="exp_track_error_checker_desc">Intercepter les pistes audio corrompues ou illisibles pour éviter les chargements infinis et les boucles de saut automatique</string>
-    <string name="settings_rhythm_guard_hero_title">L\'exposition du jour</string>
     <string name="settings_rhythm_guard_hero_limit_exceeded">Limite dépassée ! Il est temps de laisser vos oreilles se reposer.</string>
     <string name="settings_rhythm_guard_hero_exposure_of">de %1$s</string>
     <string name="settings_rhythm_guard_hero_volume_limit">limite %1$s</string>
