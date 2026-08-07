@@ -936,7 +936,7 @@ fun LibraryScreen(
                             ) {
                                 Icon(
                                     imageVector = RhythmIcons.Shuffle,
-                                    contentDescription = "Shuffle",
+                                    contentDescription = stringResource(R.string.cd_shuffle),
                                     modifier = Modifier.size(20.dp)
                                 )
                             }

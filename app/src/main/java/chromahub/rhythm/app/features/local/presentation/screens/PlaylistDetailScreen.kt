@@ -1416,7 +1416,7 @@ fun PlaylistDetailScreen(
                         isFirst = true,
                         isLast = false,
                         icon = RhythmIcons.Play,
-                        text = "Play All",
+                        text = stringResource(R.string.action_play_all),
                         fontWeight = FontWeight.Bold
                     )
                     
@@ -1526,7 +1526,7 @@ fun PlaylistDetailScreen(
                                 ) {
                                     Icon(
                                         imageVector = RhythmIcons.Edit,
-                                        contentDescription = "Edit Image",
+                                        contentDescription = stringResource(R.string.content_desc_edit_image),
                                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                         modifier = Modifier.size(16.dp)
                                     )
@@ -1557,7 +1557,7 @@ fun PlaylistDetailScreen(
                                         onPlayAll()
                                     },
                                     icon = RhythmIcons.Play,
-                                    text = "Play All",
+                                    text = stringResource(R.string.action_play_all),
                                     fontWeight = FontWeight.Normal
                                 )
 

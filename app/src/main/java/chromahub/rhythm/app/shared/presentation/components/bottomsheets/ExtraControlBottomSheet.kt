@@ -162,7 +162,7 @@ fun ExtraControlBottomSheet(
         // Add to Playlist (always shown)
         add(ControlAction(
             icon = RhythmIcons.AddToPlaylist,
-            label = "Add to Playlist",
+            label = context.getString(R.string.bottomsheet_add_to_playlist),
             description = null,
             containerColor = primary,
             iconColor = onPrimary,
@@ -175,8 +175,8 @@ fun ExtraControlBottomSheet(
         if ("FAVORITE" !in hiddenChips) {
             add(ControlAction(
                 icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
-                label = if (isFavorite) "Unfavorite" else "Favorite",
-                description = if (isFavorite) "Saved" else null,
+                label = if (isFavorite) context.getString(R.string.action_unfavorite) else context.getString(R.string.player_chip_favorite),
+                description = if (isFavorite) context.getString(R.string.extrasheet_saved) else null,
                 containerColor = if (isFavorite) errorContainer else primary,
                 iconColor = if (isFavorite) error else onPrimary,
                 onClick = {
@@ -189,8 +189,8 @@ fun ExtraControlBottomSheet(
         if ("SPEED" !in hiddenChips || "PITCH" !in hiddenChips) {
             add(ControlAction(
                 icon = MaterialSymbolIcon("tune", filled = true),
-                label = "Speed & Pitch",
-                description = "Tempo & Pitch",
+                label = context.getString(R.string.player_speed_and_pitch),
+                description = context.getString(R.string.extrasheet_tempo_pitch),
                 containerColor = secondary,
                 iconColor = onSecondary,
                 onClick = {
@@ -203,8 +203,8 @@ fun ExtraControlBottomSheet(
         if ("EQUALIZER" !in hiddenChips) {
             add(ControlAction(
                 icon = MaterialSymbolIcon("graphic_eq", filled = true),
-                label = "Equalizer",
-                description = if (equalizerEnabled) "Enabled" else "Disabled",
+                label = context.getString(R.string.equalizer),
+                description = if (equalizerEnabled) context.getString(R.string.status_enabled) else context.getString(R.string.status_disabled),
                 containerColor = if (equalizerEnabled) tertiary else secondary,
                 iconColor = if (equalizerEnabled) onTertiary else onSecondary,
                 onClick = {
@@ -214,15 +214,14 @@ fun ExtraControlBottomSheet(
             ))
         }
 
-        if ("SLEEP_TIMER" !in hiddenChips) {
-            val sleepLabel = if (sleepTimerActive) {
+        if ("SLEEP_TIMER" !in hiddenChips) {                val sleepLabel = if (sleepTimerActive) {
                 val m = sleepTimerRemainingSeconds / 60
                 val s = sleepTimerRemainingSeconds % 60
                 "${m}:${s.toString().padStart(2, '0')}"
-            } else "Disabled"
+            } else context.getString(R.string.status_disabled)
             add(ControlAction(
                 icon = RhythmIcons.AccessTime,
-                label = "Sleep Timer",
+                label = context.getString(R.string.sleep_timer),
                 description = sleepLabel,
                 containerColor = if (sleepTimerActive) tertiary else secondary,
                 iconColor = if (sleepTimerActive) onTertiary else onSecondary,
@@ -237,8 +236,8 @@ fun ExtraControlBottomSheet(
             val hasLyrics = lyrics != null && lyrics.hasLyrics() && !lyrics.isErrorMessage()
             add(ControlAction(
                 icon = if (hasLyrics) RhythmIcons.Edit else MaterialSymbolIcon("lyrics", filled = true),
-                label = if (hasLyrics) "Edit Lyrics" else "Add Lyrics",
-                description = if (hasLyrics) "Has Lyrics" else null,
+                label = if (hasLyrics) context.getString(R.string.action_edit_lyrics) else context.getString(R.string.action_add_lyrics),
+                description = if (hasLyrics) context.getString(R.string.extrasheet_has_lyrics) else null,
                 containerColor = secondary,
                 iconColor = onSecondary,
                 onClick = {
@@ -251,7 +250,7 @@ fun ExtraControlBottomSheet(
         if ("ALBUM" !in hiddenChips) {
             add(ControlAction(
                 icon = RhythmIcons.AlbumFilled,
-                label = "Go to Album",
+                label = context.getString(R.string.multiselectionbottomsheet_go_to_album),
                 description = null,
                 containerColor = secondary,
                 iconColor = onSecondary,
@@ -265,7 +264,7 @@ fun ExtraControlBottomSheet(
         if ("ARTIST" !in hiddenChips) {
             add(ControlAction(
                 icon = RhythmIcons.ArtistFilled,
-                label = "Go to Artist",
+                label = context.getString(R.string.multiselectionbottomsheet_go_to_artist),
                 description = null,
                 containerColor = secondary,
                 iconColor = onSecondary,
@@ -279,7 +278,7 @@ fun ExtraControlBottomSheet(
         // Song Info (always shown)
         add(ControlAction(
             icon = RhythmIcons.Info,
-            label = "Song Info",
+            label = context.getString(R.string.action_song_info),
             description = null,
             containerColor = secondary,
             iconColor = onSecondary,
@@ -292,7 +291,7 @@ fun ExtraControlBottomSheet(
         // Share File (always shown)
         add(ControlAction(
             icon = RhythmIcons.Share,
-            label = "Share File",
+            label = context.getString(R.string.extrasheet_share_file),
             description = null,
             containerColor = secondary,
             iconColor = onSecondary,

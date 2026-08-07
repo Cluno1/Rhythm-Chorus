@@ -119,7 +119,7 @@ fun PlaybackSpeedAndPitchBottomSheet(
             ) {
                 item {
                     Text(
-                        text = "Speed & Pitch",
+                        text = stringResource(R.string.player_speed_and_pitch),
                         style = MaterialTheme.typography.displayMedium,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -165,13 +165,13 @@ fun PlaybackSpeedAndPitchBottomSheet(
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Sync Speed & Pitch",
+                                    text = stringResource(R.string.player_sync_speed_pitch),
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = "Mirror changes across both",
+                                    text = stringResource(R.string.mirror_changes_across_both),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -229,7 +229,7 @@ fun PlaybackSpeedAndPitchBottomSheet(
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Text(
-                                        text = "Current speed: ${formatValueWithX(selectedSpeed)}",
+                                        text = stringResource(R.string.current_speed_value, formatValueWithX(selectedSpeed)),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

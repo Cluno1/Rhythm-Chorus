@@ -411,7 +411,7 @@ fun ArtistDetailScreen(
                                 ) {
                                     Icon(
                                         imageVector = RhythmIcons.Back,
-                                        contentDescription = "Back",
+                                        contentDescription = stringResource(R.string.cd_back),
                                         tint = MaterialTheme.colorScheme.onSurface,
                                         modifier = Modifier.size(25.dp)
                                     )
@@ -475,7 +475,7 @@ fun ArtistDetailScreen(
                                         ) {
                                             Icon(
                                                 imageVector = RhythmIcons.Edit,
-                                                contentDescription = "Edit Image",
+                                                contentDescription = stringResource(R.string.content_desc_edit_image),
                                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                                 modifier = Modifier.size(18.dp)
                                             )
@@ -859,7 +859,7 @@ fun ArtistDetailScreen(
                                     ) {
                                         Icon(
                                             imageVector = RhythmIcons.Edit,
-                                            contentDescription = "Customize Artwork",
+                                            contentDescription = stringResource(R.string.content_desc_customize_artwork),
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
@@ -1077,7 +1077,7 @@ private fun AboutArtistSection(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "About Artist",
+                text = stringResource(R.string.artistdetail_about_artist),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

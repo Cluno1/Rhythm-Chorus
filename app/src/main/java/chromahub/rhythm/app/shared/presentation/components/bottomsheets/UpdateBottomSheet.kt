@@ -140,7 +140,7 @@ fun UpdateBottomSheet(
 
                         // Release date
                         Text(
-                            text = "Released: ${version.releaseDate}",
+                            text = stringResource(R.string.released_on, version.releaseDate),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

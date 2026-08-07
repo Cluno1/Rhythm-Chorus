@@ -2142,7 +2142,7 @@ private fun EditSongSheet(
                                         OutlinedTextField(
                                             value = albumArtist,
                                             onValueChange = { albumArtist = it },
-                                            label = { Text("Album Artist") },
+                                            label = { Text(stringResource(R.string.metadata_album_artist)) },
                                             leadingIcon = {
                                                 Icon(
                                                     imageVector = RhythmIcons.ArtistFilled,
@@ -2158,7 +2158,7 @@ private fun EditSongSheet(
                                         OutlinedTextField(
                                             value = composer,
                                             onValueChange = { composer = it },
-                                            label = { Text("Composer") },
+                                            label = { Text(stringResource(R.string.metadata_composer)) },
                                             leadingIcon = {
                                                 Icon(
                                                     imageVector = RhythmIcons.Edit,
@@ -2226,7 +2226,7 @@ private fun EditSongSheet(
                                             OutlinedTextField(
                                                 value = discNumber,
                                                 onValueChange = { discNumber = it },
-                                                label = { Text("Disc") },
+                                                label = { Text(stringResource(R.string.metadata_disc)) },
                                                 leadingIcon = {
                                                     Icon(
                                                         imageVector = RhythmIcons.FormatListNumbered,
@@ -2787,7 +2787,7 @@ private fun EditSongSheet(
                             OutlinedTextField(
                                 value = albumArtist,
                                 onValueChange = { albumArtist = it },
-                                label = { Text("Album Artist") },
+                                label = { Text(stringResource(R.string.metadata_album_artist)) },
                                 leadingIcon = {
                                     Icon(
                                         imageVector = RhythmIcons.ArtistFilled,
@@ -2803,7 +2803,7 @@ private fun EditSongSheet(
                             OutlinedTextField(
                                 value = composer,
                                 onValueChange = { composer = it },
-                                label = { Text("Composer") },
+                                label = { Text(stringResource(R.string.metadata_composer)) },
                                 leadingIcon = {
                                     Icon(
                                         imageVector = RhythmIcons.Edit,
@@ -2879,7 +2879,7 @@ private fun EditSongSheet(
                                             discNumber = input
                                         }
                                     },
-                                    label = { Text("Disc") },
+                                    label = { Text(stringResource(R.string.metadata_disc)) },
                                     leadingIcon = {
                                         Icon(
                                             imageVector = RhythmIcons.FormatListNumbered,

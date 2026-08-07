@@ -279,7 +279,7 @@ fun ArtistBottomSheet(
                                     ) {
                                         Icon(
                                             imageVector = RhythmIcons.Edit,
-                                            contentDescription = "Edit Image",
+                                            contentDescription = stringResource(R.string.content_desc_edit_image),
                                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                             modifier = Modifier.size(18.dp)
                                         )
@@ -340,7 +340,7 @@ fun ArtistBottomSheet(
                                     ) {
                                         Icon(
                                             imageVector = RhythmIcons.Close,
-                                            contentDescription = "Close"
+                                            contentDescription = stringResource(R.string.ui_close)
                                         )
                                     }
                                 }
@@ -366,7 +366,7 @@ fun ArtistBottomSheet(
                                             weight = 1f,
                                             isFirst = true,
                                             icon = RhythmIcons.Play,
-                                            text = "Play All"
+                                            text = stringResource(R.string.action_play_all)
                                         )
                                         RhythmButtonWeighted(
                                             onClick = {
@@ -402,7 +402,7 @@ fun ArtistBottomSheet(
                                                 isLast = true,
                                                 type = RhythmButtonType.Tonal,
                                                 icon = RhythmIcons.Queue,
-                                                text = "Add to queue"
+                                                text = stringResource(R.string.action_add_to_queue)
                                             )
                                         }
                                     }
@@ -690,7 +690,7 @@ fun ArtistBottomSheet(
                                     ) {
                                         Icon(
                                             imageVector = RhythmIcons.Edit,
-                                            contentDescription = "Edit Image",
+                                            contentDescription = stringResource(R.string.content_desc_edit_image),
                                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                             modifier = Modifier.size(16.dp)
                                         )
@@ -764,7 +764,7 @@ fun ArtistBottomSheet(
                                         weight = 1f,
                                         isFirst = true,
                                         icon = RhythmIcons.Play,
-                                        text = "Play All"
+                                        text = stringResource(R.string.action_play_all)
                                     )
                                     RhythmButtonWeighted(
                                         onClick = {
@@ -804,7 +804,7 @@ fun ArtistBottomSheet(
                                             isLast = true,
                                             type = RhythmButtonType.Tonal,
                                             icon = RhythmIcons.Queue,
-                                            text = "Add to queue"
+                                            text = stringResource(R.string.action_add_to_queue)
                                         )
                                     }
                                 }

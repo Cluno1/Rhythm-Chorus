@@ -140,6 +140,7 @@ import chromahub.rhythm.app.shared.presentation.components.player.CanvasArtworkP
 import chromahub.rhythm.app.util.SemanticLyrics
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
@@ -210,6 +211,7 @@ private fun rememberArtworkValidation(uri: android.net.Uri?, context: android.co
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("RestrictedApi")
 @Composable
 fun ExpressivePlayerScreen(
     song: Song?,
@@ -647,8 +649,8 @@ fun ExpressivePlayerScreen(
         AlertDialog(
             onDismissRequest = { showAutoFetchEmbedDialog = false },
             icon = { Icon(imageVector = MaterialSymbolIcon("cloud_download"), contentDescription = null) },
-            title = { Text("Artwork Auto-Fetched") },
-            text = { Text("Online artwork has been automatically applied to your library for '${debouncedSong.value?.title}'. Would you like to embed this artwork into the audio file on disk?") },
+            title = { Text(stringResource(R.string.expressiveplayerscreen_artwork_auto_fetched)) },
+            text = { Text(stringResource(R.string.expressiveplayerscreen_artwork_auto_fetched_msg, debouncedSong.value?.title ?: "")) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -666,9 +668,9 @@ fun ExpressivePlayerScreen(
                                 artworkUri = artUri,
                                 onSuccess = { fileWritten ->
                                     if (fileWritten) {
-                                        Toast.makeText(context, "Artwork embedded into file on disk!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.expressiveplayerscreen_artwork_embedded_toast), Toast.LENGTH_SHORT).show()
                                     } else {
-                                        Toast.makeText(context, "Artwork applied to library!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.expressiveplayerscreen_artwork_applied_toast), Toast.LENGTH_SHORT).show()
                                     }
                                 },
                                 onError = { err ->
@@ -678,12 +680,12 @@ fun ExpressivePlayerScreen(
                         }
                     }
                 ) {
-                    Text("Embed in File")
+                    Text(stringResource(R.string.expressiveplayerscreen_embed_in_file))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAutoFetchEmbedDialog = false }) {
-                    Text("Keep Library Only")
+                    Text(stringResource(R.string.expressiveplayerscreen_keep_library_only))
                 }
             }
         )

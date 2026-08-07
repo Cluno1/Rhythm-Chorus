@@ -557,7 +557,7 @@ fun AlbumDetailScreen(
                                     isFirst = true,
                                     isLast = false,
                                     icon = RhythmIcons.Play,
-                                    text = "Play All",
+                                    text = stringResource(R.string.action_play_all),
                                     fontWeight = FontWeight.Bold
                                 )
 
@@ -1000,7 +1000,7 @@ fun AlbumDetailScreen(
                                                 isFirst = true,
                                                 isLast = false,
                                                 icon = RhythmIcons.Play,
-                                                text = "Play All",
+                                                text = stringResource(R.string.action_play_all),
                                                 fontWeight = FontWeight.Bold
                                             )
 
@@ -1362,7 +1362,7 @@ private fun AboutAlbumSection(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "About Album",
+                text = stringResource(R.string.albumdetail_about_album),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

@@ -107,7 +107,7 @@ fun SongPickerBottomSheet(
                     // Centered title
                     Box(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 6.dp), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "Add to ${targetPlaylist.name}",
+                            text = stringResource(R.string.add_to_playlist_named, targetPlaylist.name),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface

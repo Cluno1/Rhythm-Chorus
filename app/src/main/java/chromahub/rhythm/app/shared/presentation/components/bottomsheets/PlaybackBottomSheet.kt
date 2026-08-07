@@ -750,13 +750,13 @@ private fun PlaybackSpeedAndPitchCard(
             .padding(horizontal = 24.dp)
     ) {
         Material3SettingsGroup(
-            title = "Speed & Pitch",
+            title = context.getString(R.string.player_speed_and_pitch),
             containerColor = MaterialTheme.colorScheme.surface,
             items = listOf(
                 Material3SettingsItem(
                     icon = MaterialSymbolIcon("sync_alt", filled = true),
-                    title = { Text(text = "Sync Speed & Pitch") },
-                    description = { Text(text = "Synchronize playback tempo and pitch") },
+                    title = { Text(text = context.getString(R.string.player_sync_speed_pitch)) },
+                    description = { Text(text = context.getString(R.string.player_sync_speed_pitch_desc)) },
                     trailingContent = {
                         chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch(
                             checked = syncEnabled,
@@ -773,8 +773,8 @@ private fun PlaybackSpeedAndPitchCard(
                 ),
                 Material3SettingsItem(
                     icon = MaterialSymbolIcon("speed", filled = true),
-                    title = { Text(text = "Playback Speed") },
-                    description = { Text(text = "Current: ${formatClean(currentSpeed)}x") },
+                    title = { Text(text = context.getString(R.string.player_playback_speed)) },
+                    description = { Text(text = context.getString(R.string.player_current_rate, formatClean(currentSpeed))) },
                     trailingContent = {
                         Icon(
                             imageVector = RhythmIcons.Forward,
@@ -789,8 +789,8 @@ private fun PlaybackSpeedAndPitchCard(
                 ),
                 Material3SettingsItem(
                     icon = MaterialSymbolIcon("graphic_eq", filled = true),
-                    title = { Text(text = "Playback Pitch") },
-                    description = { Text(text = "Current: ${formatClean(currentPitch)}x") },
+                    title = { Text(text = context.getString(R.string.settings_playback_pitch)) },
+                    description = { Text(text = context.getString(R.string.player_current_rate, formatClean(currentPitch))) },
                     trailingContent = {
                         Icon(
                             imageVector = RhythmIcons.Forward,

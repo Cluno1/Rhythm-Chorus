@@ -273,7 +273,7 @@ fun EditAlbumSheet(
                                             )
                                             .crossfade(true)
                                             .build(),
-                                        contentDescription = "Artwork Preview",
+                                        contentDescription = stringResource(R.string.content_desc_artwork_preview),
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop
                                     )
@@ -698,7 +698,7 @@ fun EditAlbumSheet(
                                             )
                                             .crossfade(true)
                                             .build(),
-                                        contentDescription = "Artwork Preview",
+                                        contentDescription = stringResource(R.string.content_desc_artwork_preview),
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop
                                     )

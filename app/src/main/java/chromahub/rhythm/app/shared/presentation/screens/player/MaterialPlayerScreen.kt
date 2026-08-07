@@ -1758,7 +1758,7 @@ fun MaterialPlayerScreen(
                                                             strokeWidth = 2f
                                                         )
                                                         Text(
-                                                            text = "Canvas",
+                                                            text = stringResource(R.string.materialplayerscreen_canvas),
                                                             style = MaterialTheme.typography.labelSmall,
                                                             color = MaterialTheme.colorScheme.onSurface
                                                         )
@@ -3592,7 +3592,7 @@ fun MaterialPlayerScreen(
                                                     leadingIcon = {
                                                         Icon(
                                                             imageVector = RhythmIcons.Share,
-                                                            contentDescription = "Share song",
+                                                            contentDescription = stringResource(R.string.materialplayerscreen_share_song_cd),
                                                             modifier = Modifier.size(if (isExtraSmallWidth) 14.dp else 16.dp)
                                                         )
                                                     },
