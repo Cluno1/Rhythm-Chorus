@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -116,7 +117,10 @@ fun WordByWordLyricsView(
     textAlignment: TextAlign = TextAlign.Center, // Alignment of lyrics text
     showTranslation: Boolean = true,
     showRomanization: Boolean = true,
-    onTapLyricsView: (() -> Unit)? = null
+    onTapLyricsView: (() -> Unit)? = null,
+    textColor: Color? = null,
+    activeColor: Color? = null,
+    subtitleColor: Color? = null
 ) {
     val context = LocalContext.current
     // TODO: Apply syncOffset to all timestamp comparisons for manual sync adjustment
@@ -246,7 +250,9 @@ fun WordByWordLyricsView(
         InstrumentalPlaceholder(
             modifier = modifier,
             titleText = "Instrumental",
-            subtitleText = "No vocals detected in this song"
+            subtitleText = "No vocals detected in this song",
+            textColor = textColor,
+            activeColor = activeColor
         )
     } else if (visibleLyricsLines.isEmpty()) {
         Box(
@@ -256,7 +262,7 @@ fun WordByWordLyricsView(
             Text(
                 text = context.getString(R.string.word_by_word_unavailable),
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(alpha = 0.7f),
                 textAlign = TextAlign.Center
             )
         }
@@ -315,7 +321,10 @@ fun WordByWordLyricsView(
                             onSeek = onSeek,
                             onTapLyricsView = onTapLyricsView,
                             lyricBold = lyricBoldVal,
-                            noAnimation = lyricNoAnimationVal
+                            noAnimation = lyricNoAnimationVal,
+                            textColor = textColor,
+                            activeColor = activeColor,
+                            subtitleColor = subtitleColor
                         )
                     }
                     is LyricsItem.Gap -> {
@@ -356,7 +365,7 @@ fun WordByWordLyricsView(
                             Text(
                                 text = "♪",
                                 style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = iconAlpha),
+                                color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(alpha = iconAlpha),
                                 modifier = Modifier.graphicsLayer {
                                     scaleX = iconScale
                                     scaleY = iconScale
@@ -365,7 +374,7 @@ fun WordByWordLyricsView(
                             Text(
                                 text = "Instrumental",
                                 style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurface.copy(
+                                color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(
                                     alpha = if (isCurrentGap) 0.6f else 0.25f
                                 )
                             )
@@ -388,7 +397,7 @@ fun WordByWordLyricsView(
                     Text(
                         text = stringResource(R.string.lyrics_source_attribution, lyricsSource),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(alpha = 0.5f),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
@@ -415,7 +424,10 @@ private fun WordByWordLyricLineItem(
     onSeek: ((Long) -> Unit)?,
     onTapLyricsView: (() -> Unit)?,
     lyricBold: Boolean,
-    noAnimation: Boolean
+    noAnimation: Boolean,
+    textColor: Color? = null,
+    activeColor: Color? = null,
+    subtitleColor: Color? = null
 ) {
     val scale by animateFloatAsState(
         targetValue = when {
@@ -513,15 +525,15 @@ private fun WordByWordLyricLineItem(
             }
 
             val baseColor = when (line.voiceTag) {
-                "v2" -> MaterialTheme.colorScheme.secondary
-                "v3" -> MaterialTheme.colorScheme.tertiary
-                else -> MaterialTheme.colorScheme.primary
+                "v2" -> activeColor ?: MaterialTheme.colorScheme.secondary
+                "v3" -> activeColor ?: MaterialTheme.colorScheme.tertiary
+                else -> activeColor ?: MaterialTheme.colorScheme.primary
             }
 
             val inactiveWordColor = when (line.voiceTag) {
-                "v2" -> if (isCurrentLine) MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.secondary
-                "v3" -> if (isCurrentLine) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.tertiary
-                else -> if (isCurrentLine) baseColor.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface
+                "v2" -> if (isCurrentLine) baseColor.copy(alpha = 0.5f) else baseColor
+                "v3" -> if (isCurrentLine) baseColor.copy(alpha = 0.5f) else baseColor
+                else -> if (isCurrentLine) baseColor.copy(alpha = 0.5f) else (textColor ?: MaterialTheme.colorScheme.onSurface)
             }
 
             val isWordPassed = isCurrentLine && wordIndex < activeWordIndex
@@ -628,7 +640,7 @@ private fun WordByWordLyricLineItem(
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize * (0.92f * textSizeMultiplier),
                     lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.32f * textSizeMultiplier
                 ),
-                color = MaterialTheme.colorScheme.tertiary.copy(
+                color = (subtitleColor ?: MaterialTheme.colorScheme.tertiary).copy(
                     alpha = if (isCurrentLine) 0.86f else 0.62f
                 ),
                 textAlign = textAlignment,
@@ -648,7 +660,7 @@ private fun WordByWordLyricLineItem(
                     lineHeight = MaterialTheme.typography.bodySmall.lineHeight * 1.3f * textSizeMultiplier,
                     letterSpacing = 0.02.sp
                 ),
-                color = MaterialTheme.colorScheme.onSurface.copy(
+                color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(
                     alpha = if (isCurrentLine) 0.68f else 0.5f
                 ),
                 textAlign = textAlignment,
@@ -694,7 +706,9 @@ private fun isWordByWordInstrumental(lines: List<WordByWordLyricLine>, rawLyrics
 private fun InstrumentalPlaceholder(
     modifier: Modifier = Modifier,
     titleText: String = "Instrumental",
-    subtitleText: String = "Enjoy the music"
+    subtitleText: String = "Enjoy the music",
+    textColor: Color? = null,
+    activeColor: Color? = null
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "instrumentalPulse")
     val pulseScale by infiniteTransition.animateFloat(
@@ -742,7 +756,7 @@ private fun InstrumentalPlaceholder(
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 4.sp
                     ),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = activeColor ?: MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center
                 )
             }
@@ -755,7 +769,7 @@ private fun InstrumentalPlaceholder(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp
                 ),
-                color = MaterialTheme.colorScheme.onSurface,
+                color = textColor ?: MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
             
@@ -764,7 +778,7 @@ private fun InstrumentalPlaceholder(
             Text(
                 text = subtitleText,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(alpha = 0.5f),
                 textAlign = TextAlign.Center
             )
         }

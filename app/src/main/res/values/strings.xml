@@ -1270,6 +1270,7 @@
     <string name="settings_discover_carousel">Discover Carousel</string>
     <string name="settings_discover_carousel_info">Discover carousel showcases featured albums</string>
     <string name="settings_display_options">Display Options</string>
+    <string name="settings_expressive_player">Expressive Player</string>
     <string name="settings_examples">Examples</string>
     <string name="settings_intensity">Intensity</string>
     <string name="settings_more_festivals">More festivals will be added in future updates</string>
@@ -2662,10 +2663,17 @@
     <string name="performancesettingsscreen_disable_text_marquee_desc">Pause title sliding animations to save screen power</string>
     <string name="performancesettingsscreen_disable_lossless_artwork_desc">Use standard artwork instead of lossless under Performance</string>
     <string name="performancesettingsscreen_disable_auto_fetch_artwork_desc">Disable auto-fetching artwork to reduce lag and network overhead</string>
-    <string name="player_ambient_backdrop">Ambient backdrop</string>
-    <string name="player_ambient_intensity">Ambient intensity</string>
-    <string name="player_ambient_desc">Show artwork-derived ambient background behind controls</string>
-    <string name="player_ambient_intensity_desc">Controls the transparency of the controls card. Higher values make it more opaque against the ambient backdrop.</string>
+    <string name="player_ambient_backdrop">Ambient Background</string>
+    <string name="player_ambient_intensity">Ambient Intensity</string>
+    <string name="player_ambient_desc">Blurred album art behind the controls</string>
+    <string name="player_accent_background">Accent Background</string>
+    <string name="player_accent_background_desc">Exact album art color as the background</string>
+    <string name="player_merge_controls">Merge Lyrics &amp; Favorite into Bottom Bar</string>
+    <string name="player_merge_controls_desc">Move lyrics &amp; favorite to the bottom bar</string>
+    <string name="expressiveplayerscreen_lyrics">Toggle lyrics</string>
+    <string name="expressiveplayerscreen_favorite">Favorite</string>
+    <string name="player_ambient_intensity_desc">Controls card transparency</string>
+    <string name="player_ambient_intensity_requires_ambient">Enable the ambient background first</string>
     <string name="settings_value_dp">%1$ddp</string>
     <string name="settings_value_percent">%1$d%%</string>
     <string name="cd_selected">Selected</string>
@@ -2699,7 +2707,6 @@
     <string name="settings_search_api_lrclib_desc">Fetch synced lyrics from LRCLib</string>
     <string name="settings_search_api_lyrically_desc">Fetch lyrics from the Lyrically service</string>
     <string name="settings_search_api_ytmusic_desc">Fallback for artist images and album artwork</string>
-    <string name="player_expressive_only">Expressive player only</string>
     <string name="widget_cookie_description">A cookie-shaped mini player showing your album art with play, previous, and next buttons.</string>
     <string name="widget_stats_description">See how many days in a row you\'ve listened to music — plus your best streak ever.</string>
     <string name="widget_cookie_section_title">Rhythm Cookie Widget</string>

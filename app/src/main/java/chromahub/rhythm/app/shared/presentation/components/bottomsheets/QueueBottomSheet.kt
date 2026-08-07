@@ -21,7 +21,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +30,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -82,6 +82,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import coil.compose.AsyncImage
@@ -101,6 +102,7 @@ import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveClic
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveFilledTonalIconButton
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
+import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShape
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveScrollBar
 import chromahub.rhythm.app.util.ImageUtils
 import androidx.compose.ui.res.stringResource
@@ -254,9 +256,7 @@ fun QueueBottomSheet(
                     enter = fadeIn() + slideInVertically { it },
                     exit = fadeOut() + slideOutVertically { it }
                 ) {
-                    EmptyQueueContent(
-                        onAddSongsClick = onAddSongsClick
-                    )
+                    EmptyQueueContent()
                 }
             } else {
                 // Now Playing section - show current song separately
@@ -491,9 +491,7 @@ fun QueueBottomSheet(
                     // Add more spacing before empty state
                     Spacer(modifier = Modifier.height(8.dp))
                     
-                    EmptyUpNextContent(
-                        onAddSongsClick = onAddSongsClick
-                    )
+                    EmptyUpNextContent()
                 }
             }
         }
@@ -1057,176 +1055,128 @@ private fun AnimateIn(
 
 @Composable
 private fun EmptyQueueContent(
-    onAddSongsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
+    QueueEmptyState(
+        title = stringResource(R.string.queue_empty),
+        subtitle = stringResource(R.string.queue_add_songs),
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun EmptyUpNextContent(
+    modifier: Modifier = Modifier
+) {
+    QueueEmptyState(
+        title = stringResource(R.string.queue_no_more),
+        subtitle = stringResource(R.string.queue_add_more),
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        modifier = modifier,
+        height = 260.dp
+    )
+}
+
+@Composable
+private fun QueueEmptyState(
+    title: String,
+    subtitle: String,
+    containerColor: Color,
+    contentColor: Color,
+    modifier: Modifier = Modifier,
+    height: Dp = 300.dp
+) {
+    val cookieShape = rememberExpressiveShape("COOKIE_12")
+    val smallCookieShape = rememberExpressiveShape("COOKIE_6")
+
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(280.dp),
+            .height(height),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Animated empty state with better design
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.size(80.dp)
+            Box(
+                modifier = Modifier.size(132.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
+                Surface(
+                    shape = smallCookieShape,
+                    color = containerColor.copy(alpha = 0.45f),
+                    modifier = Modifier
+                        .size(42.dp)
+                        .align(Alignment.TopStart)
+                        .offset(x = (-6).dp, y = 10.dp)
                 ) {
-                    Icon(
-                        imageVector = RhythmIcons.Queue,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.size(40.dp)
-                    )
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Icon(
+                            imageVector = RhythmIcons.MusicNote,
+                            contentDescription = null,
+                            tint = contentColor.copy(alpha = 0.55f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+                Surface(
+                    shape = smallCookieShape,
+                    color = containerColor.copy(alpha = 0.45f),
+                    modifier = Modifier
+                        .size(34.dp)
+                        .align(Alignment.BottomEnd)
+                        .offset(x = 8.dp, y = (-6).dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Icon(
+                            imageVector = RhythmIcons.MusicNote,
+                            contentDescription = null,
+                            tint = contentColor.copy(alpha = 0.55f),
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+                Surface(
+                    shape = cookieShape,
+                    color = containerColor,
+                    shadowElevation = 6.dp,
+                    modifier = Modifier.size(96.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Icon(
+                            imageVector = RhythmIcons.Queue,
+                            contentDescription = null,
+                            tint = contentColor,
+                            modifier = Modifier.size(44.dp)
+                        )
+                    }
                 }
             }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
+
+            Spacer(modifier = Modifier.height(20.dp))
+
             Text(
-                text = context.getString(R.string.queue_empty),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Medium,
+                text = title,
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
+
+            Spacer(modifier = Modifier.height(6.dp))
+
             Text(
-                text = context.getString(R.string.queue_add_songs),
+                text = subtitle,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 32.dp)
             )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Better styled button
-            Surface(
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier
-                    .clickable { onAddSongsClick() }
-                    .padding(horizontal = 24.dp, vertical = 12.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = context.getString(R.string.browse_library),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-        }
-    }
-}
 
-@Composable
-private fun EmptyUpNextContent(
-    onAddSongsClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(200.dp), // Increased height for better spacing
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Enhanced empty state design
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                modifier = Modifier.size(72.dp) // Increased size
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.Queue,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(36.dp) // Increased size
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            // Enhanced text styling
-            Text(
-                text = context.getString(R.string.queue_no_more),
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = context.getString(R.string.queue_add_more),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
-            
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Enhanced button styling
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.tertiaryContainer,
-                modifier = Modifier.clickable { onAddSongsClick() }
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.Add,
-                        contentDescription = null,
-                        
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = context.getString(R.string.add_more_songs),
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.Medium
-                        ),
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
-                    )
-                }
-            }
         }
     }
 }

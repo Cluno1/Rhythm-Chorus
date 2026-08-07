@@ -9606,6 +9606,8 @@ private fun PlayerThemeSettingsSection(
     val playerThumbStyle by appSettings.playerProgressThumbStyle.collectAsState()
     val thumbRotate by appSettings.playerProgressThumbRotate.collectAsState()
     val ambientBackdrop by appSettings.playerAmbientBackdropEnabled.collectAsState()
+    val accentBackground by appSettings.playerAccentBackgroundEnabled.collectAsState()
+    val mergeControls by appSettings.playerMergeControlsToBottom.collectAsState()
 
     // Mini player settings
     val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
@@ -9676,24 +9678,47 @@ private fun PlayerThemeSettingsSection(
                 tourToggleItem(
                     icon = MaterialSymbolIcon("high_quality"),
                     title = context.getString(R.string.settings_audio_quality_badges),
-                    description = if (playerIsExpressive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_audio_quality_badges_desc),
+                    description = context.getString(R.string.settings_audio_quality_badges_desc),
                     checked = showQualityBadges,
                     context = context,
-                    enabled = !playerIsExpressive,
                     onCheckedChange = { appSettings.setPlayerShowAudioQualityBadges(it) }
-                ),
-                tourToggleItem(
-                    icon = MaterialSymbolIcon("blur_on"),
-                    title = context.getString(R.string.player_ambient_backdrop),
-                    description = if (playerIsExpressive) context.getString(R.string.player_ambient_desc) else context.getString(R.string.player_expressive_only),
-                    checked = ambientBackdrop,
-                    context = context,
-                    enabled = playerIsExpressive,
-                    onCheckedChange = { appSettings.setPlayerAmbientBackdropEnabled(it) }
                 )
             ),
             containerColor = MaterialTheme.colorScheme.surface
         )
+
+        if (playerIsExpressive) {
+            TourSectionTitle(context.getString(R.string.settings_expressive_player))
+            Material3SettingsGroup(
+                items = listOf(
+                    tourToggleItem(
+                        icon = MaterialSymbolIcon("blur_on"),
+                        title = context.getString(R.string.player_ambient_backdrop),
+                        description = context.getString(R.string.player_ambient_desc),
+                        checked = ambientBackdrop,
+                        context = context,
+                        onCheckedChange = { appSettings.setPlayerAmbientBackdropEnabled(it) }
+                    ),
+                    tourToggleItem(
+                        icon = MaterialSymbolIcon("colorize"),
+                        title = context.getString(R.string.player_accent_background),
+                        description = context.getString(R.string.player_accent_background_desc),
+                        checked = accentBackground,
+                        context = context,
+                        onCheckedChange = { appSettings.setPlayerAccentBackgroundEnabled(it) }
+                    ),
+                    tourToggleItem(
+                        icon = MaterialSymbolIcon("merge_type"),
+                        title = context.getString(R.string.player_merge_controls),
+                        description = context.getString(R.string.player_merge_controls_desc),
+                        checked = mergeControls,
+                        context = context,
+                        onCheckedChange = { appSettings.setPlayerMergeControlsToBottom(it) }
+                    )
+                ),
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        }
 
         TourSectionTitle(context.getString(R.string.settings_layout_options))
         Material3SettingsGroup(

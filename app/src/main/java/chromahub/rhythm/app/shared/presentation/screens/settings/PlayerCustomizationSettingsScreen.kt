@@ -176,6 +176,8 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
     val expressiveShapesEnabled by appSettings.expressiveShapesEnabled.collectAsState()
     val playerAmbientBackdropEnabled by appSettings.playerAmbientBackdropEnabled.collectAsState()
     val playerAmbientBackdropIntensity by appSettings.playerAmbientBackdropIntensity.collectAsState()
+    val playerAccentBackgroundEnabled by appSettings.playerAccentBackgroundEnabled.collectAsState()
+    val playerMergeControlsToBottom by appSettings.playerMergeControlsToBottom.collectAsState()
     val playerGlassIntensity by appSettings.playerGlassIntensity.collectAsState()
 
     // Progress bar settings
@@ -287,7 +289,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("gradient"),
                                 title = context.getString(R.string.settings_artwork_overlay),
-                                description = if (isExpressiveActive) "Not supported by Expressive theme" else context.getString(R.string.settings_artwork_overlay_desc),
+                                description = if (isExpressiveActive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_artwork_overlay_desc),
                                 toggleState = playerShowGradientOverlay,
                                 onToggleChange = { appSettings.setPlayerShowGradientOverlay(it) },
                                 enabled = !isExpressiveActive
@@ -299,7 +301,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             item = SettingItem(
                                 icon = RhythmIcons.Info,
                                 title = context.getString(R.string.settings_song_info_artwork),
-                                description = if (isExpressiveActive) "Not supported by Expressive theme" else context.getString(R.string.settings_song_info_artwork_desc),
+                                description = if (isExpressiveActive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_song_info_artwork_desc),
                                 toggleState = playerShowSongInfoOnArtwork,
                                 onToggleChange = { appSettings.setPlayerShowSongInfoOnArtwork(it) },
                                 enabled = !isExpressiveActive
@@ -311,22 +313,57 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("high_quality"),
                                 title = context.getString(R.string.settings_audio_quality_badges),
-                                description = if (isExpressiveActive) "Not supported by Expressive theme" else context.getString(R.string.settings_audio_quality_badges_desc),
+                                description = context.getString(R.string.settings_audio_quality_badges_desc),
                                 toggleState = playerShowAudioQualityBadges,
-                                onToggleChange = { appSettings.setPlayerShowAudioQualityBadges(it) },
-                                enabled = !isExpressiveActive
+                                onToggleChange = { appSettings.setPlayerShowAudioQualityBadges(it) }
                             )
-                        ),
+                        )
+                    ),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+            }
+
+            if (isExpressiveActive) item {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = stringResource(R.string.settings_expressive_player),
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                )
+                Material3SettingsGroup(
+                    items = listOf(
                         toMaterial3SettingsItem(
                             context = context,
                             hapticFeedback = haptics,
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("blur_on"),
                                 title = context.getString(R.string.player_ambient_backdrop),
-                                description = if (isExpressiveActive) context.getString(R.string.player_ambient_desc) else context.getString(R.string.player_expressive_only),
+                                description = context.getString(R.string.player_ambient_desc),
                                 toggleState = playerAmbientBackdropEnabled,
-                                onToggleChange = { appSettings.setPlayerAmbientBackdropEnabled(it) },
-                                enabled = isExpressiveActive
+                                onToggleChange = { appSettings.setPlayerAmbientBackdropEnabled(it) }
+                            )
+                        ),
+                        toMaterial3SettingsItem(
+                            context = context,
+                            hapticFeedback = haptics,
+                            item = SettingItem(
+                                icon = MaterialSymbolIcon("colorize"),
+                                title = context.getString(R.string.player_accent_background),
+                                description = context.getString(R.string.player_accent_background_desc),
+                                toggleState = playerAccentBackgroundEnabled,
+                                onToggleChange = { appSettings.setPlayerAccentBackgroundEnabled(it) }
+                            )
+                        ),
+                        toMaterial3SettingsItem(
+                            context = context,
+                            hapticFeedback = haptics,
+                            item = SettingItem(
+                                icon = MaterialSymbolIcon("merge_type"),
+                                title = context.getString(R.string.player_merge_controls),
+                                description = context.getString(R.string.player_merge_controls_desc),
+                                toggleState = playerMergeControlsToBottom,
+                                onToggleChange = { appSettings.setPlayerMergeControlsToBottom(it) }
                             )
                         ),
                         toMaterial3SettingsItem(
@@ -335,9 +372,9 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("opacity"),
                                 title = context.getString(R.string.player_ambient_intensity),
-                                description = if (isExpressiveActive) context.getString(R.string.settings_value_percent, (playerAmbientBackdropIntensity * 100).toInt()) else context.getString(R.string.player_expressive_only),
-                                onClick = { if (isExpressiveActive) showAmbientIntensitySheet = true },
-                                enabled = isExpressiveActive
+                                description = if (playerAmbientBackdropEnabled) context.getString(R.string.settings_value_percent, (playerAmbientBackdropIntensity * 100).toInt()) else context.getString(R.string.player_ambient_intensity_requires_ambient),
+                                onClick = { if (playerAmbientBackdropEnabled) showAmbientIntensitySheet = true },
+                                enabled = playerAmbientBackdropEnabled
                             )
                         )
                     ),
@@ -361,7 +398,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             item = SettingItem(
                                 icon = RhythmIcons.Forward10,
                                 title = context.getString(R.string.settings_seek_buttons),
-                                description = if (isExpressiveActive) "Not supported by Expressive theme" else context.getString(R.string.settings_seek_buttons_desc),
+                                description = if (isExpressiveActive) context.getString(R.string.lyrics_settings_not_supported_expressive) else context.getString(R.string.settings_seek_buttons_desc),
                                 toggleState = playerShowSeekButtons,
                                 onToggleChange = { appSettings.setPlayerShowSeekButtons(it) },
                                 enabled = !isExpressiveActive
@@ -373,7 +410,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("format_align_center"),
                                 title = context.getString(R.string.settings_text_alignment),
-                                description = if (isExpressiveActive) "Not supported by Expressive theme" else when(playerTextAlignment) {
+                                description = if (isExpressiveActive) context.getString(R.string.lyrics_settings_not_supported_expressive) else when(playerTextAlignment) {
                                     "START" -> context.getString(R.string.settings_left_aligned)
                                     "END" -> context.getString(R.string.settings_right_aligned)
                                     else -> context.getString(R.string.settings_center_aligned)

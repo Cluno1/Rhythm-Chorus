@@ -132,6 +132,8 @@ import chromahub.rhythm.app.shared.presentation.components.AudioQualityIcon
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.M3ImageUtils
+import chromahub.rhythm.app.util.ColorExtractor
+import com.google.android.material.color.utilities.Hct
 import chromahub.rhythm.app.util.LrcUtils
 import chromahub.rhythm.app.network.CanvasArtwork
 import chromahub.rhythm.app.shared.presentation.components.player.CanvasArtworkPlayer
@@ -278,6 +280,9 @@ fun ExpressivePlayerScreen(
     val enhancedSeekingEnabled by appSettings.enhancedSeekingEnabled.collectAsState()
     val playerAmbientBackdropEnabled by appSettings.playerAmbientBackdropEnabled.collectAsState()
     val playerAmbientBackdropIntensity by appSettings.playerAmbientBackdropIntensity.collectAsState()
+    val playerAccentBackgroundEnabled by appSettings.playerAccentBackgroundEnabled.collectAsState()
+    val playerMergeControlsToBottom by appSettings.playerMergeControlsToBottom.collectAsState()
+    val playerShowAudioQualityBadges by appSettings.playerShowAudioQualityBadges.collectAsState()
     val playerLyricsTextSize by appSettings.playerLyricsTextSize.collectAsState()
     val showLyricsTranslation by appSettings.showLyricsTranslation.collectAsState()
     val showLyricsRomanization by appSettings.showLyricsRomanization.collectAsState()
@@ -326,6 +331,41 @@ fun ExpressivePlayerScreen(
     val monoSurface = if (isDarkTheme) Color(0xFF1C1C1E) else Color(0xFFF2F2F7)
     val monoFg = if (isDarkTheme) Color(0xFFFFFFFF) else Color(0xFF000000)
     val monoVariant = monoFg.copy(alpha = 0.72f)
+    val useAccentBackground = !isBackdropEnabled && playerAccentBackgroundEnabled
+    val accentArtScheme = produceState<Pair<Color, Color>?>(
+        null, debouncedSong.value?.artworkUri, useAccentBackground, isDarkTheme
+    ) {
+        if (!useAccentBackground) return@produceState
+        val artworkUri = debouncedSong.value?.artworkUri ?: return@produceState
+        value = withContext(Dispatchers.IO) {
+            try {
+                val opts = BitmapFactory.Options().apply { inSampleSize = 16 }
+                val bitmap = context.contentResolver.openInputStream(artworkUri)?.use { stream ->
+                    BitmapFactory.decodeStream(stream, null, opts)
+                }
+                val extracted = if (bitmap != null) {
+                    val result = ColorExtractor.extractColorsFromBitmap(bitmap)
+                    bitmap.recycle()
+                    result
+                } else null
+                val seedArgb = extracted?.seedColor?.takeIf { it != 0 }
+                    ?: if (isDarkTheme) extracted?.darkPrimary else extracted?.primary
+                if (seedArgb == null) null
+                else {
+                    val sourceHct = Hct.fromInt(seedArgb)
+                    val schemeType = if (sourceHct.chroma > 12.0) "CONTENT" else "TONAL_SPOT"
+                    val scheme = ColorExtractor.createDynamicScheme(sourceHct, schemeType, isDarkTheme)
+                    scheme.primary to scheme.onPrimary
+                }
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+    val accentBg = accentArtScheme.value?.first ?: MaterialTheme.colorScheme.primary
+    val accentFg = accentArtScheme.value?.second ?: MaterialTheme.colorScheme.onPrimary
+    val accentGlass = accentFg.copy(alpha = 0.15f)
+    val accentGlassStrong = accentFg.copy(alpha = 0.28f)
     val useLightModeOnDarkBg = lyricsVisible && showDarkBg && !isDarkTheme
     val lyricsTextAlign = when (playerLyricsAlignment) {
         "START" -> TextAlign.Start; "END" -> TextAlign.End; else -> TextAlign.Center
@@ -445,6 +485,11 @@ fun ExpressivePlayerScreen(
         } else null
     }
     val artColor = artworkColor.value ?: defaultSongColor
+    // Adaptive text color over the artwork backdrop: dark art → white text, bright art →
+    // black text, so the title/artist marquee never disappears on light album covers.
+    // Threshold 0.65 accounts for the black overlay gradient darkening the area behind
+    // the text (effective backdrop luminance ≈ 70% of the raw artwork luminance).
+    val ambientTextColor = if ((artColor?.luminance() ?: 0f) > 0.65f) Color.Black else Color.White
 
     // Animated colors — derived from artwork when backdrop is active, solid M3 surfaces otherwise
     val ambientAlpha = if (isBackdropEnabled) playerAmbientBackdropIntensity else 1f
@@ -454,6 +499,7 @@ fun ExpressivePlayerScreen(
     val ambientControlContent = Color.White
     val controlsContainerColor by animateColorAsState(
         targetValue = when {
+            useAccentBackground -> accentGlass
             needsDarkSurfaces && artColor != null -> Color(
                 red = artColor.red * 0.18f + 0.08f,
                 green = artColor.green * 0.18f + 0.08f,
@@ -467,6 +513,7 @@ fun ExpressivePlayerScreen(
     )
     val outerBoxBgColor by animateColorAsState(
         targetValue = when {
+            useAccentBackground -> accentBg
             useLightModeOnDarkBg -> Color.White
             showDarkBg && hasValidArtwork -> Color.Black
             showDarkBg && !hasValidArtwork -> Color.Transparent
@@ -474,16 +521,21 @@ fun ExpressivePlayerScreen(
         },
         animationSpec = tween(600), label = "outerBoxBgColor"
     )
+    val lyricsScrimColor by animateColorAsState(
+        targetValue = if (useAccentBackground) accentBg else MaterialTheme.colorScheme.surface,
+        animationSpec = tween(600), label = "lyricsScrimColor"
+    )
     val onSurfaceColor by animateColorAsState(
-        targetValue = if (useLightModeOnDarkBg) Color.Black else if (isBackdropEnabled) Color.White else MaterialTheme.colorScheme.onSurface,
+        targetValue = if (useAccentBackground) accentFg else if (useLightModeOnDarkBg) Color.Black else if (isBackdropEnabled) ambientTextColor else MaterialTheme.colorScheme.onSurface,
         animationSpec = tween(400), label = "onSurfaceColor"
     )
     val onSurfaceVariantColor by animateColorAsState(
-        targetValue = if (useLightModeOnDarkBg) Color.Black.copy(alpha = 0.65f) else if (isBackdropEnabled) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (useAccentBackground) accentFg.copy(alpha = 0.8f) else if (useLightModeOnDarkBg) Color.Black.copy(alpha = 0.65f) else if (isBackdropEnabled) ambientTextColor.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(400), label = "onSurfaceVariantColor"
     )
     val surfaceContainerColor by animateColorAsState(
         targetValue = when {
+            useAccentBackground -> accentGlass
             needsDarkSurfaces && artColor != null -> Color(
                 red = artColor.red * 0.14f + 0.05f,
                 green = artColor.green * 0.14f + 0.05f,
@@ -496,7 +548,7 @@ fun ExpressivePlayerScreen(
         animationSpec = tween(400), label = "surfaceContainerColor"
     )
     val primaryColor by animateColorAsState(
-        targetValue = if (useLightModeOnDarkBg) MaterialTheme.colorScheme.primary else if (isBackdropEnabled) Color.White else MaterialTheme.colorScheme.primary,
+        targetValue = if (useAccentBackground) accentFg else if (useLightModeOnDarkBg) MaterialTheme.colorScheme.primary else if (isBackdropEnabled) Color.White else MaterialTheme.colorScheme.primary,
         animationSpec = tween(400), label = "canvasPrimaryColor"
     )
     val clearArtworkAlpha by animateFloatAsState(
@@ -649,8 +701,8 @@ fun ExpressivePlayerScreen(
             label = "artworkValidTransition"
         ) { validArtwork ->
             if (!isBackdropEnabled) {
-                // Normal (non-ambient) mode: themed surface background
-                Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface))
+                // Normal (non-ambient) mode: themed surface or accent background
+                Box(modifier = modifier.fillMaxSize().background(if (useAccentBackground) accentBg else MaterialTheme.colorScheme.surface))
             } else if (validArtwork) {
                 // Smooth crossfade when track artwork changes (1200ms motion canvas style)
                 AnimatedContent(
@@ -759,10 +811,6 @@ fun ExpressivePlayerScreen(
                     val base = (containerMaxWidth * 0.18f)
                     if (isCompactHeight) base.coerceIn(44.dp, 52.dp) else base.coerceIn(44.dp, 72.dp)
                 } else { if (isCompactHeight) 44.dp else 64.dp }
-                val smallControlSize = if (isPortraitLocal) {
-                    val base = (containerMaxWidth * 0.14f)
-                    if (isCompactHeight) base.coerceIn(32.dp, 42.dp) else base.coerceIn(36.dp, 56.dp)
-                } else { if (isCompactHeight) 36.dp else 48.dp }
                 var artworkOffsetX by remember { mutableFloatStateOf(0f) }
                 val artworkSwipeThreshold = 140f
                 val artworkTranslationX by animateFloatAsState(
@@ -799,6 +847,10 @@ fun ExpressivePlayerScreen(
                                         onShowLyricsEditor = onShowLyricsEditor, onPickLyricsFile = onPickLyricsFile,
                                         showTranslation = showLyricsTranslation, showRomanization = showLyricsRomanization,
                                         textAlignment = lyricsTextAlign, textColor = onSurfaceColor, subtitleColor = onSurfaceVariantColor,
+                                        activeColor = if (isBackdropEnabled) ambientTextColor else primaryColor,
+                                        buttonContainerColor = if (useAccentBackground) accentFg else null,
+                                        buttonContentColor = if (useAccentBackground) accentBg else null,
+                                        fadeColor = if (isBackdropEnabled) null else lyricsScrimColor,
                                         modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(horizontal = if (isCompactWidth) 16.dp else 24.dp))
                                 } else {
                                     Box(Modifier.padding(horizontal = if (isCompactWidth) 12.dp else 24.dp)
@@ -847,7 +899,11 @@ fun ExpressivePlayerScreen(
                                                         imageVector = RhythmIcons.MusicNote,
                                                         contentDescription = null,
                                                         modifier = Modifier.size(144.dp),
-                                                        tint = if (showDarkBg) Color.White.copy(alpha = 0.85f) else monoFg
+                                                        tint = when {
+                                                            showDarkBg -> Color.White.copy(alpha = 0.85f)
+                                                            useAccentBackground -> accentFg
+                                                            else -> monoFg
+                                                        }
                                                     )
                                                 }
                                             }
@@ -873,7 +929,7 @@ fun ExpressivePlayerScreen(
                     androidx.compose.animation.AnimatedVisibility(visible = showPlayerControls, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) {
                         Column(Modifier.fillMaxWidth().padding(start = if (isCompactWidth) 12.dp else 24.dp, end = if (isCompactWidth) 12.dp else 24.dp, bottom = if (isCompactHeight) 8.dp else 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally) {
-                            Row(Modifier.fillMaxWidth().graphicsLayer { alpha = line3Alpha; translationY = line3TranslationY; scaleX = line3Pop; scaleY = line3Pop }.padding(bottom = if (isCompactHeight) 8.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.fillMaxWidth().graphicsLayer { alpha = line3Alpha; translationY = line3TranslationY; scaleX = line3Pop; scaleY = line3Pop }.padding(bottom = if (isCompactHeight) 16.dp else 28.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                                     // Track title & artist slide horizontally based on queue direction.
                                     // Driven by the debounced song so they stay stable during crossfade,
@@ -907,72 +963,98 @@ fun ExpressivePlayerScreen(
                                             targetTitleLength > 24 -> MaterialTheme.typography.headlineMedium
                                             else -> MaterialTheme.typography.displaySmall
                                         }.copy(fontWeight = FontWeight.Black, letterSpacing = targetLetterSpacing)
-                                        Column(verticalArrangement = Arrangement.Center) {
+                                        Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth(),
+                                            horizontalAlignment = if (playerMergeControlsToBottom) Alignment.CenterHorizontally else Alignment.Start) {
                                             AutoScrollingTextOnDemand(text = targetTitle, style = targetTextStyle.copy(color = onSurfaceColor),
                                                 gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> outerBoxBgColor },
-                                                modifier = Modifier.fillMaxWidth().clickable { onSongInfoClick() }, respectGlobalSetting = true)
+                                                modifier = Modifier.fillMaxWidth().clickable { onSongInfoClick() }, respectGlobalSetting = true,
+                                                textAlign = if (playerMergeControlsToBottom) TextAlign.Center else TextAlign.Start)
                                             AutoScrollingTextOnDemand(text = targetArtist, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium, color = onSurfaceVariantColor),
                                                 gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> outerBoxBgColor },
-                                                modifier = Modifier.fillMaxWidth().clickable { onShowArtistBottomSheet() }, respectGlobalSetting = true)
+                                                modifier = Modifier.fillMaxWidth().clickable { onShowArtistBottomSheet() }, respectGlobalSetting = true,
+                                                textAlign = if (playerMergeControlsToBottom) TextAlign.Center else TextAlign.Start)
                                         }
                                     }
                                 }
                                 Spacer(Modifier.width(16.dp))
 
-                                RhythmGroupedButton(
-                                    size = RhythmButtonSize.Small,
-                                    isFillMaxWidth = false,
-                                    modifier = Modifier.widthIn(max = 100.dp)
-                                ) {
-                                    RhythmButtonWeighted(
-                                        onClick = onToggleLyrics,
-                                        weight = 1f,
-                                        isFirst = true,
-                                        isLast = false,
-                                        containerColor = controlsContainerColor,
-                                        contentColor = if (needsDarkSurfaces) ambientControlContent else monoFg,
-                                        icon = RhythmIcons.Player.Lyrics
-                                    )
-                                    RhythmButtonWeighted(
-                                        onClick = onToggleFavorite,
-                                        weight = 1f,
-                                        isFirst = false,
-                                        isLast = true,
-                                        containerColor = controlsContainerColor,
-                                        contentColor = if (needsDarkSurfaces) ambientControlContent else monoFg,
-                                        icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite
-                                    )
+                                if (!playerMergeControlsToBottom) {
+                                    RhythmGroupedButton(
+                                        size = RhythmButtonSize.Small,
+                                        isFillMaxWidth = false,
+                                        modifier = Modifier.widthIn(max = 100.dp)
+                                    ) {
+                                        RhythmButtonWeighted(
+                                            onClick = onToggleLyrics,
+                                            weight = 1f,
+                                            isFirst = true,
+                                            isLast = false,
+                                            containerColor = controlsContainerColor,
+                                            contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
+                                            icon = RhythmIcons.Player.Lyrics
+                                        )
+                                        RhythmButtonWeighted(
+                                            onClick = onToggleFavorite,
+                                            weight = 1f,
+                                            isFirst = false,
+                                            isLast = true,
+                                            containerColor = controlsContainerColor,
+                                            contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
+                                            icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite
+                                        )
+                                    }
                                 }
                             }
 
                             // The whole controls card (play controls + progress) slides up as one unit.
-                            Surface(shape = RoundedCornerShape(32.dp), color = controlsContainerColor,
-                                modifier = Modifier.fillMaxWidth().graphicsLayer { alpha = line4Alpha; translationY = line4TranslationY; scaleX = line4Pop; scaleY = line4Pop }) {
-                                Column(Modifier.padding(if (isCompactWidth) 12.dp else 20.dp)) {
+                            // In accent-color mode the card is dropped and the controls spread directly.
+                            val controlsCardContent = @Composable {
+                                val controlsPadding = if (useAccentBackground) {
+                                    PaddingValues(start = if (isCompactWidth) 12.dp else 20.dp, end = if (isCompactWidth) 12.dp else 20.dp, top = 8.dp)
+                                } else {
+                                    PaddingValues(if (isCompactWidth) 12.dp else 20.dp)
+                                }
+                                Column(Modifier.padding(controlsPadding)) {
                                     Row(Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
                                         RhythmPlayButton(
                                             isPlaying = isPlaying,
                                             showBuffering = showBuffering,
                                             onClick = onPlayPause,
-                                            containerColor = if (needsDarkSurfaces) ambientPlayContainer
-                                                else MaterialTheme.colorScheme.primary,
-                                            contentColor = if (needsDarkSurfaces) ambientPlayContent
-                                                else MaterialTheme.colorScheme.onPrimary,
+                                            containerColor = when {
+                                                needsDarkSurfaces -> ambientPlayContainer
+                                                useAccentBackground -> accentFg
+                                                else -> MaterialTheme.colorScheme.primary
+                                            },
+                                            contentColor = when {
+                                                needsDarkSurfaces -> ambientPlayContent
+                                                useAccentBackground -> accentBg
+                                                else -> MaterialTheme.colorScheme.onPrimary
+                                            },
                                             size = controlButtonSize,
                                             modifier = Modifier.weight(1f)
                                         )
                                         RhythmControlButton(
                                             onClick = onSkipNext,
                                             shape = playerControlShape,
-                                            containerColor = if (needsDarkSurfaces) ambientControlContainer
-                                                else MaterialTheme.colorScheme.secondaryContainer,
-                                            contentColor = if (needsDarkSurfaces) ambientControlContent
-                                                else MaterialTheme.colorScheme.onSecondaryContainer,
+                                            containerColor = when {
+                                                needsDarkSurfaces -> ambientControlContainer
+                                                useAccentBackground -> accentGlassStrong
+                                                else -> MaterialTheme.colorScheme.secondaryContainer
+                                            },
+                                            contentColor = when {
+                                                needsDarkSurfaces -> ambientControlContent
+                                                useAccentBackground -> accentFg
+                                                else -> MaterialTheme.colorScheme.onSecondaryContainer
+                                            },
                                             size = controlButtonSize
                                         ) {
                                             Icon(RhythmIcons.Player.SkipNext, stringResource(R.string.cd_next_track), Modifier.size(controlButtonSize * 0.45f),
-                                                tint = if (needsDarkSurfaces) ambientControlContent else MaterialTheme.colorScheme.onSecondaryContainer)
+                                                tint = when {
+                                                    needsDarkSurfaces -> ambientControlContent
+                                                    useAccentBackground -> accentFg
+                                                    else -> MaterialTheme.colorScheme.onSecondaryContainer
+                                                })
                                         }
                                     }
                                     Spacer(Modifier.height(if (isCompactHeight) 8.dp else 16.dp))
@@ -981,14 +1063,24 @@ fun ExpressivePlayerScreen(
                                         RhythmControlButton(
                                             onClick = onSkipPrevious,
                                             shape = playerControlShape,
-                                            containerColor = if (needsDarkSurfaces) ambientControlContainer
-                                                else MaterialTheme.colorScheme.secondaryContainer,
-                                            contentColor = if (needsDarkSurfaces) ambientControlContent
-                                                else MaterialTheme.colorScheme.onSecondaryContainer,
+                                            containerColor = when {
+                                                needsDarkSurfaces -> ambientControlContainer
+                                                useAccentBackground -> accentGlassStrong
+                                                else -> MaterialTheme.colorScheme.secondaryContainer
+                                            },
+                                            contentColor = when {
+                                                needsDarkSurfaces -> ambientControlContent
+                                                useAccentBackground -> accentFg
+                                                else -> MaterialTheme.colorScheme.onSecondaryContainer
+                                            },
                                             size = controlButtonSize
                                         ) {
                                             Icon(RhythmIcons.Player.SkipPrevious, stringResource(R.string.cd_previous_track), Modifier.size(controlButtonSize * 0.45f),
-                                                tint = if (needsDarkSurfaces) ambientControlContent else MaterialTheme.colorScheme.onSecondaryContainer)
+                                                tint = when {
+                                                    needsDarkSurfaces -> ambientControlContent
+                                                    useAccentBackground -> accentFg
+                                                    else -> MaterialTheme.colorScheme.onSecondaryContainer
+                                                })
                                         }
                                         val canSeek = (song?.duration ?: 0L) > 0L
                                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
@@ -1031,6 +1123,17 @@ fun ExpressivePlayerScreen(
                                     }
                                 }
                             }
+
+                            if (useAccentBackground) {
+                                Box(Modifier.fillMaxWidth().graphicsLayer { alpha = line4Alpha; translationY = line4TranslationY; scaleX = line4Pop; scaleY = line4Pop }) {
+                                    controlsCardContent()
+                                }
+                            } else {
+                                Surface(shape = RoundedCornerShape(32.dp), color = controlsContainerColor,
+                                    modifier = Modifier.fillMaxWidth().graphicsLayer { alpha = line4Alpha; translationY = line4TranslationY; scaleX = line4Pop; scaleY = line4Pop }) {
+                                    controlsCardContent()
+                                }
+                            }
                         }
                     }
                 }
@@ -1041,76 +1144,170 @@ fun ExpressivePlayerScreen(
                             .padding(start = if (isCompactWidth) 12.dp else 24.dp, end = if (isCompactWidth) 12.dp else 24.dp, bottom = 24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally) {
                             Spacer(Modifier.height(if (isCompactHeight) 12.dp else 16.dp))
-                            RhythmGroupedButton(
-                                size = RhythmButtonSize.Small
-                            ) {
-                                val deviceIcon = when {
-                                    location?.id?.startsWith("bt_") == true -> RhythmIcons.BluetoothFilled
-                                    location?.id == "wired_headset" -> RhythmIcons.HeadphonesFilled
-                                    location?.id == "speaker" -> RhythmIcons.SpeakerFilled
-                                    else -> RhythmIcons.Location
+                            val deviceIcon = when {
+                                location?.id?.startsWith("bt_") == true -> RhythmIcons.BluetoothFilled
+                                location?.id == "wired_headset" -> RhythmIcons.HeadphonesFilled
+                                location?.id == "speaker" -> RhythmIcons.SpeakerFilled
+                                else -> RhythmIcons.Location
+                            }
+                            if (playerMergeControlsToBottom) {
+                                RhythmGroupedButton(
+                                    size = RhythmButtonSize.Small,
+                                    isFillMaxWidth = false,
+                                    modifier = Modifier.widthIn(max = 260.dp)
+                                ) {
+                                    RhythmDetailActionButton(
+                                        onClick = onToggleLyrics,
+                                        weight = 1f,
+                                        height = 44.dp,
+                                        isFirst = true,
+                                        isLast = false,
+                                        type = RhythmButtonType.Tonal,
+                                        icon = RhythmIcons.Player.Lyrics,
+                                        iconSize = 20.dp,
+                                        text = null,
+                                        contentDescription = stringResource(R.string.expressiveplayerscreen_lyrics),
+                                        containerColor = controlsContainerColor,
+                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
+                                    )
+                                    RhythmDetailActionButton(
+                                        onClick = onToggleFavorite,
+                                        weight = 1f,
+                                        height = 44.dp,
+                                        isFirst = false,
+                                        isLast = false,
+                                        type = RhythmButtonType.Tonal,
+                                        icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
+                                        iconSize = 20.dp,
+                                        text = null,
+                                        contentDescription = stringResource(R.string.expressiveplayerscreen_favorite),
+                                        containerColor = controlsContainerColor,
+                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
+                                    )
+                                    RhythmDetailActionButton(
+                                        onClick = onDeviceClick,
+                                        weight = 1f,
+                                        height = 44.dp,
+                                        isFirst = false,
+                                        isLast = false,
+                                        type = RhythmButtonType.Tonal,
+                                        icon = deviceIcon,
+                                        iconSize = 20.dp,
+                                        text = null,
+                                        contentDescription = stringResource(R.string.expressiveplayerscreen_device),
+                                        containerColor = controlsContainerColor,
+                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
+                                    )
+                                    RhythmDetailActionButton(
+                                        onClick = onQueueClick,
+                                        weight = 1f,
+                                        height = 44.dp,
+                                        isFirst = false,
+                                        isLast = false,
+                                        type = RhythmButtonType.Tonal,
+                                        icon = RhythmIcons.Queue,
+                                        iconSize = 20.dp,
+                                        text = null,
+                                        textContent = {
+                                            if (queueTotal > 1) {
+                                                Box(
+                                                    modifier = Modifier.size(18.dp).clip(CircleShape).background(primaryColor.copy(alpha = 0.22f)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(
+                                                        text = debouncedQueuePosition.coerceIn(1, queueTotal).toString(),
+                                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                                        fontSize = 9.sp,
+                                                        color = primaryColor
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        contentDescription = stringResource(R.string.bottomsheet_queue),
+                                        containerColor = controlsContainerColor,
+                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
+                                    )
+                                    RhythmDetailActionButton(
+                                        onClick = onMoreClick,
+                                        weight = 1f,
+                                        height = 44.dp,
+                                        isFirst = false,
+                                        isLast = true,
+                                        type = RhythmButtonType.Tonal,
+                                        icon = RhythmIcons.More,
+                                        iconSize = 22.dp,
+                                        text = null,
+                                        contentDescription = stringResource(R.string.expressiveplayerscreen_more),
+                                        containerColor = controlsContainerColor,
+                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
+                                    )
                                 }
-                                val deviceName = location?.name ?: "Output"
-                                val deviceTextStyle = when {
-                                    deviceName.length > 28 -> MaterialTheme.typography.labelLarge
-                                    deviceName.length > 18 -> MaterialTheme.typography.titleSmall
-                                    else -> MaterialTheme.typography.titleMedium
-                                }.copy(fontWeight = FontWeight.Bold)
+                            } else {
+                                RhythmGroupedButton(
+                                    size = RhythmButtonSize.Small
+                                ) {
+                                    val deviceName = location?.name ?: "Output"
+                                    val deviceTextStyle = when {
+                                        deviceName.length > 28 -> MaterialTheme.typography.labelLarge
+                                        deviceName.length > 18 -> MaterialTheme.typography.titleSmall
+                                        else -> MaterialTheme.typography.titleMedium
+                                    }.copy(fontWeight = FontWeight.Bold)
 
-                                RhythmDetailActionButton(
-                                    onClick = onDeviceClick,
-                                    weight = 1f,
-                                    height = 44.dp,
-                                    isFirst = true,
-                                    isLast = false,
-                                    type = RhythmButtonType.Tonal,
-                                    icon = deviceIcon,
-                                    iconSize = 20.dp,
-                                    text = deviceName,
-                                    textStyle = deviceTextStyle,
-                                    gradientEdgeColor = if (needsDarkSurfaces) surfaceContainerColor else monoBg,
-                                    respectMarqueeGlobalSetting = false,
-                                    contentDescription = stringResource(R.string.expressiveplayerscreen_device),
-                                    containerColor = controlsContainerColor,
-                                    contentColor = if (needsDarkSurfaces) ambientControlContent else monoFg
-                                )
-                                RhythmDetailActionButton(
-                                    onClick = onQueueClick,
-                                    weight = 1f,
-                                    height = 44.dp,
-                                    isFirst = false,
-                                    isLast = false,
-                                    type = RhythmButtonType.Tonal,
-                                    icon = RhythmIcons.Queue,
-                                    iconSize = 20.dp,
-                                    text = null,
-                                    textContent = {
-                                        val queueText = if (queueTotal > 0) stringResource(R.string.player_queue_format, debouncedQueuePosition.coerceIn(1, queueTotal), queueTotal) else stringResource(R.string.player_queue)
-                                        AnimatedDigitTickerText(
-                                            text = queueText,
-                                            style = MaterialTheme.typography.titleSmall,
-                                            color = if (needsDarkSurfaces) ambientControlContent else monoFg,
-                                            fontWeight = FontWeight.Bold,
-                                            prefix = "queueCounter"
-                                        )
-                                    },
-                                    contentDescription = stringResource(R.string.bottomsheet_queue),
-                                    containerColor = controlsContainerColor,
-                                    contentColor = if (needsDarkSurfaces) ambientControlContent else monoFg
-                                )
-                                RhythmDetailActionButton(
-                                    onClick = onMoreClick,
-                                    weight = 0.3f,
-                                    height = 44.dp,
-                                    isFirst = false,
-                                    isLast = true,
-                                    type = RhythmButtonType.Tonal,
-                                    icon = RhythmIcons.More,
-                                    iconSize = 22.dp,
-                                    contentDescription = stringResource(R.string.expressiveplayerscreen_more),
-                                    containerColor = controlsContainerColor,
-                                    contentColor = if (needsDarkSurfaces) ambientControlContent else monoFg
-                                )
+                                    RhythmDetailActionButton(
+                                        onClick = onDeviceClick,
+                                        weight = 1f,
+                                        height = 44.dp,
+                                        isFirst = true,
+                                        isLast = false,
+                                        type = RhythmButtonType.Tonal,
+                                        icon = deviceIcon,
+                                        iconSize = 20.dp,
+                                        text = deviceName,
+                                        textStyle = deviceTextStyle,
+                                        gradientEdgeColor = when { needsDarkSurfaces -> Color.Black; useAccentBackground -> accentFg; else -> monoBg },
+                                        respectMarqueeGlobalSetting = false,
+                                        contentDescription = stringResource(R.string.expressiveplayerscreen_device),
+                                        containerColor = controlsContainerColor,
+                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
+                                    )
+                                    RhythmDetailActionButton(
+                                        onClick = onQueueClick,
+                                        weight = 1f,
+                                        height = 44.dp,
+                                        isFirst = false,
+                                        isLast = false,
+                                        type = RhythmButtonType.Tonal,
+                                        icon = RhythmIcons.Queue,
+                                        iconSize = 20.dp,
+                                        text = null,
+                                        textContent = {
+                                            val queueText = if (queueTotal > 0) stringResource(R.string.player_queue_format, debouncedQueuePosition.coerceIn(1, queueTotal), queueTotal) else stringResource(R.string.player_queue)
+                                            AnimatedDigitTickerText(
+                                                text = queueText,
+                                                style = MaterialTheme.typography.titleSmall,
+                                                color = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
+                                                fontWeight = FontWeight.Bold,
+                                                prefix = "queueCounter"
+                                            )
+                                        },
+                                        contentDescription = stringResource(R.string.bottomsheet_queue),
+                                        containerColor = controlsContainerColor,
+                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
+                                    )
+                                    RhythmDetailActionButton(
+                                        onClick = onMoreClick,
+                                        weight = 0.3f,
+                                        height = 44.dp,
+                                        isFirst = false,
+                                        isLast = true,
+                                        type = RhythmButtonType.Tonal,
+                                        icon = RhythmIcons.More,
+                                        iconSize = 22.dp,
+                                        contentDescription = stringResource(R.string.expressiveplayerscreen_more),
+                                        containerColor = controlsContainerColor,
+                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
+                                    )
+                                }
                             }
                         }
                     }
@@ -1155,19 +1352,22 @@ fun ExpressivePlayerScreen(
 
                 // Audio quality icon at top-right — fades in once the (debounced) track settles
                 // and auto-hides after 5 seconds
-                debouncedSong.value?.let { displaySong ->
-                    AudioQualityIcon(
-                        song = displaySong,
-                        iconSize = 40.dp,
-                        padding = 6.dp,
-                        autoHideAfterMs = 5000,
-                        tint = when {
-                            useLightModeOnDarkBg -> Color.Black
-                            showDarkBg -> Color.White
-                            else -> null
-                        },
-                        modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 12.dp)
-                    )
+                if (playerShowAudioQualityBadges) {
+                    debouncedSong.value?.let { displaySong ->
+                        AudioQualityIcon(
+                            song = displaySong,
+                            iconSize = 40.dp,
+                            padding = 6.dp,
+                            autoHideAfterMs = 5000,
+                            tint = when {
+                                useLightModeOnDarkBg -> Color.Black
+                                showDarkBg -> Color.White
+                                useAccentBackground -> accentFg
+                                else -> null
+                            },
+                            modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 12.dp)
+                        )
+                    }
                 }
             }
         }
@@ -1191,7 +1391,11 @@ private fun RhythmPlayerLyricsPanel(
     modifier: Modifier = Modifier,
     onTapLyricsView: (() -> Unit)? = null,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
-    subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant
+    subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    activeColor: Color = MaterialTheme.colorScheme.primary,
+    buttonContainerColor: Color? = null,
+    buttonContentColor: Color? = null,
+    fadeColor: Color? = null
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -1223,7 +1427,9 @@ private fun RhythmPlayerLyricsPanel(
                                 isFirst = true,
                                 isLast = false,
                                 icon = RhythmIcons.Refresh,
-                                text = stringResource(R.string.updates_retry)
+                                text = stringResource(R.string.updates_retry),
+                                containerColor = buttonContainerColor,
+                                contentColor = buttonContentColor
                             )
                             RhythmButtonWeighted(
                                 onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onShowLyricsEditor() },
@@ -1231,7 +1437,9 @@ private fun RhythmPlayerLyricsPanel(
                                 isFirst = false,
                                 isLast = false,
                                 icon = RhythmIcons.Player.Lyrics,
-                                text = stringResource(R.string.button_add)
+                                text = stringResource(R.string.button_add),
+                                containerColor = buttonContainerColor,
+                                contentColor = buttonContentColor
                             )
                             RhythmButtonWeighted(
                                 onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onPickLyricsFile() },
@@ -1239,7 +1447,9 @@ private fun RhythmPlayerLyricsPanel(
                                 isFirst = false,
                                 isLast = true,
                                 icon = MaterialSymbolIcon("file_open", filled = true),
-                                text = stringResource(R.string.expressiveplayerscreen_load)
+                                text = stringResource(R.string.expressiveplayerscreen_load),
+                                containerColor = buttonContainerColor,
+                                contentColor = buttonContentColor
                             )
                         }
                     }
@@ -1261,7 +1471,8 @@ private fun RhythmPlayerLyricsPanel(
                 if (wordByWordLyrics != null) {
                     WordByWordLyricsView(wordByWordLyrics, currentTimeMs, Modifier.fillMaxSize(), onSeek = onLyricsSeek,
                         onTapLyricsView = onTapLyricsView, lyricsSource = lyrics.source, textSizeMultiplier = textSizeMultiplier,
-                        textAlignment = textAlignment, showTranslation = showTranslation, showRomanization = showRomanization)
+                        textAlignment = textAlignment, showTranslation = showTranslation, showRomanization = showRomanization,
+                        textColor = textColor, activeColor = activeColor, subtitleColor = subtitleColor)
                 } else {
                     val lyricsText = remember(lyrics) { lyrics.getBestLyrics() ?: "" }
                     val filteredText = remember(lyricsText, showTranslation, showRomanization) { filterPlainLyricsByPreference(lyricsText, showTranslation, showRomanization) }
@@ -1271,12 +1482,13 @@ private fun RhythmPlayerLyricsPanel(
                     }
                     if (parsedLyrics == null) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            M3CircularLoader(modifier = Modifier.size(28.dp), color = MaterialTheme.colorScheme.primary, trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), strokeWidth = 2f)
+                            M3CircularLoader(modifier = Modifier.size(28.dp), color = activeColor, trackColor = activeColor.copy(alpha = 0.2f), strokeWidth = 2f)
                         }
                     } else if (parsedLyrics?.isNotEmpty() == true) {
                         SyncedLyricsView(lyricsText, currentTimeMs, Modifier.fillMaxSize(), parsedLyricsInput = parsedLyrics,
                             onSeek = onLyricsSeek, onTapLyricsView = onTapLyricsView, showTranslation = showTranslation,
-                            showRomanization = showRomanization, lyricsSource = lyrics.source, textSizeMultiplier = textSizeMultiplier, textAlignment = textAlignment)
+                            showRomanization = showRomanization, lyricsSource = lyrics.source, textSizeMultiplier = textSizeMultiplier, textAlignment = textAlignment,
+                            textColor = textColor, activeColor = activeColor, subtitleColor = subtitleColor)
                     } else {
                         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
                             horizontalAlignment = when (textAlignment) { TextAlign.Start -> Alignment.Start; TextAlign.End -> Alignment.End; else -> Alignment.CenterHorizontally }) {
@@ -1292,6 +1504,22 @@ private fun RhythmPlayerLyricsPanel(
                     }
                 }
             }
+        }
+        if (fadeColor != null) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.14f)
+                    .align(Alignment.TopCenter)
+                    .background(Brush.verticalGradient(listOf(fadeColor, fadeColor.copy(alpha = 0f))))
+            )
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.14f)
+                    .align(Alignment.BottomCenter)
+                    .background(Brush.verticalGradient(listOf(fadeColor.copy(alpha = 0f), fadeColor)))
+            )
         }
     }
 }

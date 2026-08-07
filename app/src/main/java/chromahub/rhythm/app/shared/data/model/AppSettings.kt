@@ -553,6 +553,8 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_LYRICS_OVERLAY_INTENSITY = "player_lyrics_overlay_intensity" // Float 0.0-1.0
         private const val KEY_PLAYER_AMBIENT_BACKDROP_ENABLED = "player_ambient_backdrop_enabled" // Ambient backdrop from artwork
         private const val KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY = "player_ambient_backdrop_intensity" // Float 0.0-1.0, controls container transparency
+        private const val KEY_PLAYER_ACCENT_BACKGROUND_ENABLED = "player_accent_background_enabled" // Use accent color as player bg (normal mode)
+        private const val KEY_PLAYER_MERGE_CONTROLS_TO_BOTTOM = "player_merge_controls_to_bottom" // Merge lyrics/favorite into centered bottom icon controls
         private const val KEY_PLAYER_GLASS_INTENSITY = "player_glass_intensity" // Float 0.0-2.0, glass effect opacity multiplier
         private const val KEY_PLAYER_LYRICS_TRANSITION = "player_lyrics_transition" // 0=SlideVertical, 1=Fade, 2=Scale, 3=SlideHorizontal
         private const val KEY_PLAYER_LYRICS_TEXT_SIZE = "player_lyrics_text_size" // Float sp multiplier, default 1.0
@@ -5242,8 +5244,15 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _playerLyricsOverlayType.value = prefs.getInt(KEY_PLAYER_LYRICS_OVERLAY_TYPE, 0)
         _playerLyricsOverlayIntensity.value = prefs.getFloat(KEY_PLAYER_LYRICS_OVERLAY_INTENSITY, 0.1f)
         _playerLyricsTransition.value = prefs.getInt(KEY_PLAYER_LYRICS_TRANSITION, 2) // 2 = Scale
-        _playerAmbientBackdropEnabled.value = prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, true)
+        _playerAmbientBackdropEnabled.value = prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, false)
         _playerAmbientBackdropIntensity.value = prefs.getFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, 0.85f)
+        _playerAccentBackgroundEnabled.value = prefs.getBoolean(KEY_PLAYER_ACCENT_BACKGROUND_ENABLED, true)
+        // Normalize legacy state: ambient and accent cannot both be on — ambient wins.
+        if (_playerAmbientBackdropEnabled.value && _playerAccentBackgroundEnabled.value) {
+            _playerAccentBackgroundEnabled.value = false
+            prefs.edit { putBoolean(KEY_PLAYER_ACCENT_BACKGROUND_ENABLED, false) }
+        }
+        _playerMergeControlsToBottom.value = prefs.getBoolean(KEY_PLAYER_MERGE_CONTROLS_TO_BOTTOM, true)
         _playerGlassIntensity.value = prefs.getFloat(KEY_PLAYER_GLASS_INTENSITY, 1.0f)
         _playerLyricsTextSize.value = prefs.getFloat(KEY_PLAYER_LYRICS_TEXT_SIZE, 1.0f)
         _playerLyricsAlignment.value = prefs.getString(KEY_PLAYER_LYRICS_ALIGNMENT, "CENTER") ?: "CENTER"
@@ -5678,11 +5687,37 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         prefs.edit { putBoolean(KEY_PLAYER_SHOW_GRADIENT_OVERLAY, value) }
     }
 
-    private val _playerAmbientBackdropEnabled = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, true))
+    private val _playerAmbientBackdropEnabled = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, false))
     val playerAmbientBackdropEnabled: StateFlow<Boolean> = _playerAmbientBackdropEnabled.asStateFlow()
     fun setPlayerAmbientBackdropEnabled(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, enabled) }
+        val disableAccent = enabled && _playerAccentBackgroundEnabled.value
+        prefs.edit {
+            putBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, enabled)
+            if (disableAccent) putBoolean(KEY_PLAYER_ACCENT_BACKGROUND_ENABLED, false)
+        }
         _playerAmbientBackdropEnabled.value = enabled
+        // Ambient and accent backgrounds are mutually exclusive — enabling one disables the other.
+        if (disableAccent) _playerAccentBackgroundEnabled.value = false
+    }
+
+    private val _playerAccentBackgroundEnabled = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_ACCENT_BACKGROUND_ENABLED, true))
+    val playerAccentBackgroundEnabled: StateFlow<Boolean> = _playerAccentBackgroundEnabled.asStateFlow()
+    fun setPlayerAccentBackgroundEnabled(enabled: Boolean) {
+        val disableAmbient = enabled && _playerAmbientBackdropEnabled.value
+        prefs.edit {
+            putBoolean(KEY_PLAYER_ACCENT_BACKGROUND_ENABLED, enabled)
+            if (disableAmbient) putBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, false)
+        }
+        _playerAccentBackgroundEnabled.value = enabled
+        // Ambient and accent backgrounds are mutually exclusive — enabling one disables the other.
+        if (disableAmbient) _playerAmbientBackdropEnabled.value = false
+    }
+
+    private val _playerMergeControlsToBottom = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_MERGE_CONTROLS_TO_BOTTOM, true))
+    val playerMergeControlsToBottom: StateFlow<Boolean> = _playerMergeControlsToBottom.asStateFlow()
+    fun setPlayerMergeControlsToBottom(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_PLAYER_MERGE_CONTROLS_TO_BOTTOM, enabled) }
+        _playerMergeControlsToBottom.value = enabled
     }
 
     private val _playerAmbientBackdropIntensity = MutableStateFlow(prefs.getFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, 0.85f))
