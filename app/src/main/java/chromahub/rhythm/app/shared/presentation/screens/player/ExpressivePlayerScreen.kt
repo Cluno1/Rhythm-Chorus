@@ -375,12 +375,24 @@ fun ExpressivePlayerScreen(
         entranceValue
     }
 
-    val line2Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.1f) / 0.5f).coerceIn(0f, 1f))
-    // Staggered entrance: texts lead, then the controls card, then the bottom buttons.
-    // All slide up from below with FastOutSlowIn so they decelerate into place smoothly.
-    val line3Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.00f) / 0.5f).coerceIn(0f, 1f))
-    val line4Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.20f) / 0.5f).coerceIn(0f, 1f))
-    val line6Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(((localEntranceFraction - 0.40f) / 0.5f).coerceIn(0f, 1f))
+    val line3Raw = ((localEntranceFraction - 0.00f) / 0.45f).coerceIn(0f, 1f)
+    val line2Raw = ((localEntranceFraction - 0.08f) / 0.45f).coerceIn(0f, 1f)
+    val line4Raw = ((localEntranceFraction - 0.22f) / 0.48f).coerceIn(0f, 1f)
+    val line6Raw = ((localEntranceFraction - 0.46f) / 0.54f).coerceIn(0f, 1f)
+
+    val line2Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(line2Raw)
+    val line3Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(line3Raw)
+    val line4Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(line4Raw)
+    val line6Fraction = androidx.compose.animation.core.FastOutSlowInEasing.transform(line6Raw)
+
+    val entrancePopEasing = androidx.compose.animation.core.CubicBezierEasing(0.34f, 1.56f, 0.64f, 1f)
+    val popScale: (Float) -> Float = { eased ->
+        0.88f + 0.12f * eased.coerceIn(0f, 1f) + 0.45f * (eased - 1f).coerceAtLeast(0f)
+    }
+    val line2Pop = popScale(entrancePopEasing.transform(line2Raw))
+    val line3Pop = popScale(entrancePopEasing.transform(line3Raw))
+    val line4Pop = popScale(entrancePopEasing.transform(line4Raw))
+    val line6Pop = popScale(entrancePopEasing.transform(line6Raw))
 
     val line2Alpha = line2Fraction
     val line2TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line2Fraction) }
@@ -727,7 +739,8 @@ fun ExpressivePlayerScreen(
     ) {
         // Background
         AnimatedVisibility(visible = showBg, enter = fadeIn(tween(600)), exit = fadeOut(tween(600))) {
-            unifiedBackground(Modifier.fillMaxSize())
+            val bgZoom = 1f + 0.04f * (1f - localEntranceFraction)
+            unifiedBackground(Modifier.fillMaxSize().graphicsLayer { scaleX = bgZoom; scaleY = bgZoom })
         }
 
         // Content Column with swipe dismiss
@@ -762,7 +775,7 @@ fun ExpressivePlayerScreen(
                 val artworkContent = @Composable { modifier: Modifier ->
                     androidx.compose.animation.AnimatedVisibility(visible = showAlbumArt || lyricsVisible,
                         enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }, modifier = modifier) {
-                        Box(Modifier.fillMaxSize().graphicsLayer { alpha = line2Alpha; translationY = line2TranslationY }, contentAlignment = Alignment.Center) {
+                        Box(Modifier.fillMaxSize().graphicsLayer { alpha = line2Alpha; translationY = line2TranslationY; scaleX = line2Pop; scaleY = line2Pop }, contentAlignment = Alignment.Center) {
                             AnimatedContent(targetState = lyricsVisible, transitionSpec = {
                                 val e = when (playerLyricsTransition) {
                                     1 -> fadeIn(tween(400, easing = EaseInOut))
@@ -860,7 +873,7 @@ fun ExpressivePlayerScreen(
                     androidx.compose.animation.AnimatedVisibility(visible = showPlayerControls, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) {
                         Column(Modifier.fillMaxWidth().padding(start = if (isCompactWidth) 12.dp else 24.dp, end = if (isCompactWidth) 12.dp else 24.dp, bottom = if (isCompactHeight) 8.dp else 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally) {
-                            Row(Modifier.fillMaxWidth().graphicsLayer { alpha = line3Alpha; translationY = line3TranslationY }.padding(bottom = if (isCompactHeight) 8.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.fillMaxWidth().graphicsLayer { alpha = line3Alpha; translationY = line3TranslationY; scaleX = line3Pop; scaleY = line3Pop }.padding(bottom = if (isCompactHeight) 8.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                                     // Track title & artist slide horizontally based on queue direction.
                                     // Driven by the debounced song so they stay stable during crossfade,
@@ -934,7 +947,7 @@ fun ExpressivePlayerScreen(
 
                             // The whole controls card (play controls + progress) slides up as one unit.
                             Surface(shape = RoundedCornerShape(32.dp), color = controlsContainerColor,
-                                modifier = Modifier.fillMaxWidth().graphicsLayer { alpha = line4Alpha; translationY = line4TranslationY }) {
+                                modifier = Modifier.fillMaxWidth().graphicsLayer { alpha = line4Alpha; translationY = line4TranslationY; scaleX = line4Pop; scaleY = line4Pop }) {
                                 Column(Modifier.padding(if (isCompactWidth) 12.dp else 20.dp)) {
                                     Row(Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -1024,7 +1037,7 @@ fun ExpressivePlayerScreen(
 
                 val bottomButtonsContent = @Composable {
                     androidx.compose.animation.AnimatedVisibility(visible = showBottomButtons, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) {
-                        Column(Modifier.fillMaxWidth().graphicsLayer { alpha = line6Alpha; translationY = line6TranslationY }
+                        Column(Modifier.fillMaxWidth().graphicsLayer { alpha = line6Alpha; translationY = line6TranslationY; scaleX = line6Pop; scaleY = line6Pop }
                             .padding(start = if (isCompactWidth) 12.dp else 24.dp, end = if (isCompactWidth) 12.dp else 24.dp, bottom = 24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally) {
                             Spacer(Modifier.height(if (isCompactHeight) 12.dp else 16.dp))
