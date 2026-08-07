@@ -96,7 +96,7 @@
     <string name="settings_export_all_playlists_desc">將所有播放清單備份到文件</string>
     <string name="settings_cleanup_empty_playlists">清理空播放清單</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="other">刪除%1$d空白播放清單%2$s</item>
+        <item quantity="other">刪除%1$d空白播放清單</item>
     </plurals>
     <string name="settings_default_playlists">預設播放清單</string>
     <string name="settings_no_default_playlists">無預設播放清單</string>
@@ -199,7 +199,7 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">清理空白播放清單？</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="other">這將永久刪除%1$d空白播放清單%2$s。此操作無法撤銷。</item>
+        <item quantity="other">這將永久刪除%1$d空白播放清單。此操作無法撤銷。</item>
     </plurals>
     <string name="dialog_delete_playlist_title">刪除播放清單？</string>
     <string name="dialog_delete_playlist_message">您確定要刪除「%1$s」嗎？此操作無法撤銷。</string>

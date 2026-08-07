@@ -96,8 +96,8 @@
     <string name="settings_export_all_playlists_desc">ফাইলে সমস্ত প্লেলিস্ট ব্যাকআপ করুন</string>
     <string name="settings_cleanup_empty_playlists">ক্লিনআপ খালি প্লেলিস্ট</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">%1$d খালি প্লেলিস্ট%2$s সরান</item>
-        <item quantity="other">%1$d খালি প্লেলিস্ট%2$s সরান</item>
+        <item quantity="one">%1$d খালি প্লেলিস্ট সরান</item>
+        <item quantity="other">%1$d খালি প্লেলিস্ট সরান</item>
     </plurals>
     <string name="settings_default_playlists">ডিফল্ট প্লেলিস্ট</string>
     <string name="settings_no_default_playlists">কোনো ডিফল্ট প্লেলিস্ট নেই</string>
@@ -206,8 +206,8 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">ক্লিনআপ খালি প্লেলিস্ট?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">এটি স্থায়ীভাবে মুছে ফেলবে %1$d খালি প্লেলিস্ট%2$s৷ এই ক্রিয়াটি পূর্বাবস্থায় ফেরানো যাবে না৷</item>
-        <item quantity="other">এটি স্থায়ীভাবে মুছে ফেলবে %1$d খালি প্লেলিস্ট%2$s৷ এই ক্রিয়াটি পূর্বাবস্থায় ফেরানো যাবে না৷</item>
+        <item quantity="one">এটি স্থায়ীভাবে মুছে ফেলবে %1$d খালি প্লেলিস্ট৷ এই ক্রিয়াটি পূর্বাবস্থায় ফেরানো যাবে না৷</item>
+        <item quantity="other">এটি স্থায়ীভাবে মুছে ফেলবে %1$d খালি প্লেলিস্ট৷ এই ক্রিয়াটি পূর্বাবস্থায় ফেরানো যাবে না৷</item>
     </plurals>
     <string name="dialog_delete_playlist_title">প্লেলিস্ট মুছবেন?</string>
     <string name="dialog_delete_playlist_message">আপনি কি \"%1$s\" মুছতে চান? এই ক্রিয়াটি পূর্বাবস্থায় ফেরানো যাবে না৷</string>

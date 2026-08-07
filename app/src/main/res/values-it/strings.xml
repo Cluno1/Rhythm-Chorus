@@ -96,9 +96,9 @@
     <string name="settings_export_all_playlists_desc">Eseguire il backup di tutte le playlist su file</string>
     <string name="settings_cleanup_empty_playlists">Pulisci le playlist vuote</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">Rimuovi %1$d playlist vuota%2$s</item>
-        <item quantity="many">Rimuovi %1$d playlist vuota%2$s</item>
-        <item quantity="other">Rimuovi %1$d playlist vuota%2$s</item>
+        <item quantity="one">Rimuovi %1$d playlist vuota</item>
+        <item quantity="many">Rimuovi %1$d playlist vuota</item>
+        <item quantity="other">Rimuovi %1$d playlist vuota</item>
     </plurals>
     <string name="settings_default_playlists">Playlist predefinite</string>
     <string name="settings_no_default_playlists">Nessuna playlist predefinita</string>
@@ -213,9 +213,9 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Pulire le playlist vuote?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">Questa operazione eliminerà definitivamente %1$d playlist vuota%2$s. Questa azione non può essere annullata.</item>
-        <item quantity="many">Questa operazione eliminerà definitivamente %1$d playlist vuota%2$s. Questa azione non può essere annullata.</item>
-        <item quantity="other">Questa operazione eliminerà definitivamente %1$d playlist vuota%2$s. Questa azione non può essere annullata.</item>
+        <item quantity="one">Questa operazione eliminerà definitivamente %1$d playlist vuota. Questa azione non può essere annullata.</item>
+        <item quantity="many">Questa operazione eliminerà definitivamente %1$d playlist vuota. Questa azione non può essere annullata.</item>
+        <item quantity="other">Questa operazione eliminerà definitivamente %1$d playlist vuota. Questa azione non può essere annullata.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">Eliminare la playlist?</string>
     <string name="dialog_delete_playlist_message">Sei sicuro di voler eliminare \"%1$s\"? Questa azione non può essere annullata.</string>

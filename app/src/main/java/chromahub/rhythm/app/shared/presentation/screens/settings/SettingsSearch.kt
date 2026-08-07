@@ -67,6 +67,7 @@ import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGrou
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
+import chromahub.rhythm.app.util.safeGetQuantityString
 import androidx.compose.ui.res.stringResource
 
 /**
@@ -620,7 +621,7 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
         add(SearchableSettingItem(
             id = "playlists_cleanup_empty",
             title = context.getString(R.string.settings_cleanup_empty_playlists),
-            description = context.resources.getQuantityString(R.plurals.settings_cleanup_empty_playlists_desc, 1, 1),
+            description = context.resources.safeGetQuantityString(R.plurals.settings_cleanup_empty_playlists_desc, 1, 1),
             keywords = listOf("playlist", "cleanup", "empty", "remove", "delete"),
             icon = MaterialSymbolIcon("delete_sweep"),
             route = SettingsRoutes.PLAYLISTS,

@@ -96,8 +96,8 @@
     <string name="settings_export_all_playlists_desc">அனைத்து பிளேலிஸ்ட்களையும் கோப்புக்கு காப்புப்பிரதி எடுக்கவும்</string>
     <string name="settings_cleanup_empty_playlists">காலியான பிளேலிஸ்ட்களை சுத்தம் செய்யவும்</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">%1$d வெற்று பிளேலிஸ்ட்டை%2$s அகற்று</item>
-        <item quantity="other">%1$d வெற்று பிளேலிஸ்ட்டை%2$s அகற்று</item>
+        <item quantity="one">%1$d வெற்று பிளேலிஸ்ட்டை அகற்று</item>
+        <item quantity="other">%1$d வெற்று பிளேலிஸ்ட்டை அகற்று</item>
     </plurals>
     <string name="settings_default_playlists">இயல்புநிலை பிளேலிஸ்ட்கள்</string>
     <string name="settings_no_default_playlists">இயல்புநிலை பிளேலிஸ்ட்கள் இல்லை</string>
@@ -206,8 +206,8 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">காலியான பிளேலிஸ்ட்களை சுத்தம் செய்யவா?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">இது %1$d வெற்று பிளேலிஸ்ட்டை%2$s நிரந்தரமாக நீக்கும். இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.</item>
-        <item quantity="other">இது %1$d வெற்று பிளேலிஸ்ட்டை%2$s நிரந்தரமாக நீக்கும். இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.</item>
+        <item quantity="one">இது %1$d வெற்று பிளேலிஸ்ட்டை நிரந்தரமாக நீக்கும். இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.</item>
+        <item quantity="other">இது %1$d வெற்று பிளேலிஸ்ட்டை நிரந்தரமாக நீக்கும். இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">பிளேலிஸ்ட்டை நீக்கவா?</string>
     <string name="dialog_delete_playlist_message">\"%1$s\" ஐ நிச்சயமாக நீக்க விரும்புகிறீர்களா? இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.</string>

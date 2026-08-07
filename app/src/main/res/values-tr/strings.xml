@@ -96,8 +96,8 @@
     <string name="settings_export_all_playlists_desc">Tüm çalma listelerini dosyaya yedekle</string>
     <string name="settings_cleanup_empty_playlists">Boş Çalma Listelerini Temizleme</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">%1$d boş oynatma listesini%2$s kaldır</item>
-        <item quantity="other">%1$d boş oynatma listesini%2$s kaldır</item>
+        <item quantity="one">%1$d boş oynatma listesini kaldır</item>
+        <item quantity="other">%1$d boş oynatma listesini kaldır</item>
     </plurals>
     <string name="settings_default_playlists">Varsayılan Çalma Listeleri</string>
     <string name="settings_no_default_playlists">Varsayılan Çalma Listesi Yok</string>
@@ -206,8 +206,8 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Boş Çalma Listeleri Temizlensin mi?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">Bu, %1$d boş oynatma listesini%2$s kalıcı olarak silecektir. Bu eylem geri alınamaz.</item>
-        <item quantity="other">Bu, %1$d boş oynatma listesini%2$s kalıcı olarak silecektir. Bu eylem geri alınamaz.</item>
+        <item quantity="one">Bu, %1$d boş oynatma listesini kalıcı olarak silecektir. Bu eylem geri alınamaz.</item>
+        <item quantity="other">Bu, %1$d boş oynatma listesini kalıcı olarak silecektir. Bu eylem geri alınamaz.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">Çalma Listesi Silinsin mi?</string>
     <string name="dialog_delete_playlist_message">\"%1$s\" dosyasını silmek istediğinizden emin misiniz? Bu eylem geri alınamaz.</string>

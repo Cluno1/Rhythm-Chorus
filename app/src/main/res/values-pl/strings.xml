@@ -96,10 +96,10 @@
     <string name="settings_export_all_playlists_desc">Wykonaj kopię zapasową wszystkich list odtwarzania do pliku</string>
     <string name="settings_cleanup_empty_playlists">Oczyść puste listy odtwarzania</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">Usuń %1$d pustą playlistę%2$s</item>
-        <item quantity="few">Usuń %1$d pustą playlistę%2$s</item>
-        <item quantity="many">Usuń %1$d pustą playlistę%2$s</item>
-        <item quantity="other">Usuń %1$d pustą playlistę%2$s</item>
+        <item quantity="one">Usuń %1$d pustą playlistę</item>
+        <item quantity="few">Usuń %1$d pustą playlistę</item>
+        <item quantity="many">Usuń %1$d pustą playlistę</item>
+        <item quantity="other">Usuń %1$d pustą playlistę</item>
     </plurals>
     <string name="settings_default_playlists">Domyślne listy odtwarzania</string>
     <string name="settings_no_default_playlists">Brak domyślnych list odtwarzania</string>
@@ -220,10 +220,10 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Czyszczenie pustych list odtwarzania?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">Spowoduje to trwałe usunięcie %1$d pustej listy odtwarzania%2$s. Tej akcji nie można cofnąć.</item>
-        <item quantity="few">Spowoduje to trwałe usunięcie %1$d pustej listy odtwarzania%2$s. Tej akcji nie można cofnąć.</item>
-        <item quantity="many">Spowoduje to trwałe usunięcie %1$d pustej listy odtwarzania%2$s. Tej akcji nie można cofnąć.</item>
-        <item quantity="other">Spowoduje to trwałe usunięcie %1$d pustej listy odtwarzania%2$s. Tej akcji nie można cofnąć.</item>
+        <item quantity="one">Spowoduje to trwałe usunięcie %1$d pustej listy odtwarzania. Tej akcji nie można cofnąć.</item>
+        <item quantity="few">Spowoduje to trwałe usunięcie %1$d pustej listy odtwarzania. Tej akcji nie można cofnąć.</item>
+        <item quantity="many">Spowoduje to trwałe usunięcie %1$d pustej listy odtwarzania. Tej akcji nie można cofnąć.</item>
+        <item quantity="other">Spowoduje to trwałe usunięcie %1$d pustej listy odtwarzania. Tej akcji nie można cofnąć.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">Usunąć playlistę?</string>
     <string name="dialog_delete_playlist_message">Czy na pewno chcesz usunąć „%1$s”? Tej akcji nie można cofnąć.</string>

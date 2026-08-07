@@ -96,8 +96,8 @@
     <string name="settings_export_all_playlists_desc">Maak een back-up van alle afspeellijsten naar een bestand</string>
     <string name="settings_cleanup_empty_playlists">Lege afspeellijsten opruimen</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">Verwijder %1$d lege afspeellijst%2$s</item>
-        <item quantity="other">Verwijder %1$d lege afspeellijst%2$s</item>
+        <item quantity="one">Verwijder %1$d lege afspeellijst</item>
+        <item quantity="other">Verwijder %1$d lege afspeellijst</item>
     </plurals>
     <string name="settings_default_playlists">Standaardafspeellijsten</string>
     <string name="settings_no_default_playlists">Geen standaardafspeellijsten</string>
@@ -206,8 +206,8 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Lege afspeellijsten opruimen?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">Hiermee wordt %1$d lege afspeellijst%2$s definitief verwijderd. Deze actie kan niet ongedaan worden gemaakt.</item>
-        <item quantity="other">Hiermee wordt %1$d lege afspeellijst%2$s definitief verwijderd. Deze actie kan niet ongedaan worden gemaakt.</item>
+        <item quantity="one">Hiermee wordt %1$d lege afspeellijst definitief verwijderd. Deze actie kan niet ongedaan worden gemaakt.</item>
+        <item quantity="other">Hiermee wordt %1$d lege afspeellijst definitief verwijderd. Deze actie kan niet ongedaan worden gemaakt.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">Afspeellijst verwijderen?</string>
     <string name="dialog_delete_playlist_message">Weet u zeker dat u \"%1$s\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.</string>

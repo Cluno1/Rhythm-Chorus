@@ -96,7 +96,7 @@
     <string name="settings_export_all_playlists_desc">สำรองเพลย์ลิสต์ทั้งหมดเป็นไฟล์</string>
     <string name="settings_cleanup_empty_playlists">การล้างข้อมูลเพลย์ลิสต์ที่ว่างเปล่า</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="other">ลบ %1$d เพลย์ลิสต์ว่าง%2$s</item>
+        <item quantity="other">ลบ %1$d เพลย์ลิสต์ว่าง</item>
     </plurals>
     <string name="settings_default_playlists">เพลย์ลิสต์เริ่มต้น</string>
     <string name="settings_no_default_playlists">ไม่มีเพลย์ลิสต์เริ่มต้น</string>
@@ -199,7 +199,7 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">การล้างข้อมูลเพลย์ลิสต์ว่างเปล่า?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="other">การดำเนินการนี้จะลบ %1$d เพลย์ลิสต์ว่าง %2$s อย่างถาวร การดำเนินการนี้ไม่สามารถยกเลิกได้</item>
+        <item quantity="other">การดำเนินการนี้จะลบ %1$d เพลย์ลิสต์ว่าง  อย่างถาวร การดำเนินการนี้ไม่สามารถยกเลิกได้</item>
     </plurals>
     <string name="dialog_delete_playlist_title">ลบเพลย์ลิสต์ใช่ไหม</string>
     <string name="dialog_delete_playlist_message">คุณแน่ใจหรือไม่ว่าต้องการลบ \"%1$s\"? การดำเนินการนี้ไม่สามารถยกเลิกได้</string>

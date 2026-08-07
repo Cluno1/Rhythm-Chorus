@@ -96,8 +96,8 @@
     <string name="settings_export_all_playlists_desc">Alle Wiedergabelisten in einer Datei sichern</string>
     <string name="settings_cleanup_empty_playlists">Leere Wiedergabelisten bereinigen</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">%1$d leere Playlist%2$s entfernen</item>
-        <item quantity="other">%1$d leere Playlist%2$s entfernen</item>
+        <item quantity="one">%1$d leere Playlist entfernen</item>
+        <item quantity="other">%1$d leere Playlist entfernen</item>
     </plurals>
     <string name="settings_default_playlists">Standard-Wiedergabelisten</string>
     <string name="settings_no_default_playlists">Keine Standard-Wiedergabelisten</string>
@@ -206,8 +206,8 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Leere Playlists bereinigen?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">Dadurch wird %1$dleere Playlist%2$s dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</item>
-        <item quantity="other">Dadurch wird %1$dleere Playlist%2$s dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</item>
+        <item quantity="one">Dadurch wird %1$dleere Playlist dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</item>
+        <item quantity="other">Dadurch wird %1$dleere Playlist dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">Playlist löschen?</string>
     <string name="dialog_delete_playlist_message">Sind Sie sicher, dass Sie „%1$s“ löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.</string>

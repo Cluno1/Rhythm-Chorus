@@ -96,8 +96,8 @@
     <string name="settings_export_all_playlists_desc">फाइल करने के लिए सभी प्लेलिस्ट का बैकअप लें</string>
     <string name="settings_cleanup_empty_playlists">खाली प्लेलिस्ट साफ़ करें</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">%1$d खाली प्लेलिस्ट हटाएं%2$s</item>
-        <item quantity="other">%1$d खाली प्लेलिस्ट हटाएं%2$s</item>
+        <item quantity="one">%1$d खाली प्लेलिस्ट हटाएं</item>
+        <item quantity="other">%1$d खाली प्लेलिस्ट हटाएं</item>
     </plurals>
     <string name="settings_default_playlists">डिफ़ॉल्ट प्लेलिस्ट</string>
     <string name="settings_no_default_playlists">कोई डिफ़ॉल्ट प्लेलिस्ट नहीं</string>
@@ -206,8 +206,8 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">खाली प्लेलिस्ट साफ़ करें?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">इससे %1$d खाली प्लेलिस्ट %2$s स्थायी रूप से हट जाएगी। इस एक्शन को वापस नहीं किया जा सकता।</item>
-        <item quantity="other">इससे %1$d खाली प्लेलिस्ट %2$s स्थायी रूप से हट जाएगी। इस एक्शन को वापस नहीं किया जा सकता।</item>
+        <item quantity="one">इससे %1$d खाली प्लेलिस्ट  स्थायी रूप से हट जाएगी। इस एक्शन को वापस नहीं किया जा सकता।</item>
+        <item quantity="other">इससे %1$d खाली प्लेलिस्ट  स्थायी रूप से हट जाएगी। इस एक्शन को वापस नहीं किया जा सकता।</item>
     </plurals>
     <string name="dialog_delete_playlist_title">प्लेलिस्ट हटाएं?</string>
     <string name="dialog_delete_playlist_message">क्या आप वाकई \"%1$s\" को हटाना चाहते हैं? इस एक्शन को वापस नहीं किया जा सकता।</string>

@@ -96,9 +96,9 @@
     <string name="settings_export_all_playlists_desc">Faça backup de todas as listas de reprodução em um arquivo</string>
     <string name="settings_cleanup_empty_playlists">Limpar listas de reprodução vazias</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">Remover %1$d playlist vazia%2$s</item>
-        <item quantity="many">Remover %1$d playlist vazia%2$s</item>
-        <item quantity="other">Remover %1$d playlist vazia%2$s</item>
+        <item quantity="one">Remover %1$d playlist vazia</item>
+        <item quantity="many">Remover %1$d playlist vazia</item>
+        <item quantity="other">Remover %1$d playlist vazia</item>
     </plurals>
     <string name="settings_default_playlists">Listas de reprodução padrão</string>
     <string name="settings_no_default_playlists">Sem listas de reprodução padrão</string>
@@ -213,9 +213,9 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Limpar listas de reprodução vazias?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">Isso excluirá permanentemente %1$dlista de reprodução vazia%2$s. Esta ação não pode ser desfeita.</item>
-        <item quantity="many">Isso excluirá permanentemente %1$dlista de reprodução vazia%2$s. Esta ação não pode ser desfeita.</item>
-        <item quantity="other">Isso excluirá permanentemente %1$dlista de reprodução vazia%2$s. Esta ação não pode ser desfeita.</item>
+        <item quantity="one">Isso excluirá permanentemente %1$dlista de reprodução vazia. Esta ação não pode ser desfeita.</item>
+        <item quantity="many">Isso excluirá permanentemente %1$dlista de reprodução vazia. Esta ação não pode ser desfeita.</item>
+        <item quantity="other">Isso excluirá permanentemente %1$dlista de reprodução vazia. Esta ação não pode ser desfeita.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">Excluir lista de reprodução?</string>
     <string name="dialog_delete_playlist_message">Tem certeza de que deseja excluir \"%1$s\"? Esta ação não pode ser desfeita.</string>

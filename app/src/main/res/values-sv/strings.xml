@@ -96,8 +96,8 @@
     <string name="settings_export_all_playlists_desc">Säkerhetskopiera alla spellistor till fil</string>
     <string name="settings_cleanup_empty_playlists">Rensa tomma spellistor</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">Ta bort %1$d tom spellista%2$s</item>
-        <item quantity="other">Ta bort %1$d tom spellista%2$s</item>
+        <item quantity="one">Ta bort %1$d tom spellista</item>
+        <item quantity="other">Ta bort %1$d tom spellista</item>
     </plurals>
     <string name="settings_default_playlists">Standardspellistor</string>
     <string name="settings_no_default_playlists">Inga standardspellistor</string>
@@ -206,8 +206,8 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Rensa tomma spellistor?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">Detta tar permanent bort %1$d tom spellista%2$s. Denna åtgärd kan inte ångras.</item>
-        <item quantity="other">Detta tar permanent bort %1$d tom spellista%2$s. Denna åtgärd kan inte ångras.</item>
+        <item quantity="one">Detta tar permanent bort %1$d tom spellista. Denna åtgärd kan inte ångras.</item>
+        <item quantity="other">Detta tar permanent bort %1$d tom spellista. Denna åtgärd kan inte ångras.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">Ta bort spellista?</string>
     <string name="dialog_delete_playlist_message">Är du säker på att du vill ta bort \"%1$s\"? Denna åtgärd kan inte ångras.</string>

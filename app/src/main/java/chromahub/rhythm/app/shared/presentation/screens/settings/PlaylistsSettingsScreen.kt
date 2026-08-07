@@ -97,6 +97,7 @@ import chromahub.rhythm.app.shared.data.repository.StatsTimeRange
 import chromahub.rhythm.app.util.GsonUtils
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
+import chromahub.rhythm.app.util.safeGetQuantityString
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -135,7 +136,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.text.HtmlCompat
 import chromahub.rhythm.app.shared.presentation.components.common.M3FourColorCircularLoader
@@ -222,7 +222,7 @@ fun PlaylistsSettingsScreen(onBackClick: () -> Unit) {
                 SettingItem(
                     RhythmIcons.Delete,
                     context.getString(R.string.settings_cleanup_empty_playlists),
-                    pluralStringResource(R.plurals.settings_cleanup_empty_playlists_desc, emptyPlaylists.size, emptyPlaylists.size),
+                    context.resources.safeGetQuantityString(R.plurals.settings_cleanup_empty_playlists_desc, emptyPlaylists.size, emptyPlaylists.size),
                     onClick = {
                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                         showCleanupConfirmDialog = true
@@ -539,7 +539,7 @@ fun PlaylistsSettingsScreen(onBackClick: () -> Unit) {
                 )
             },
             text = {
-                Text(pluralStringResource(R.plurals.dialog_cleanup_empty_playlists_message, emptyPlaylists.size, emptyPlaylists.size))
+                Text(context.resources.safeGetQuantityString(R.plurals.dialog_cleanup_empty_playlists_message, emptyPlaylists.size, emptyPlaylists.size))
             },
             confirmButton = {
                 Button(

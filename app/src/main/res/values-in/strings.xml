@@ -96,7 +96,7 @@
     <string name="settings_export_all_playlists_desc">Cadangkan semua daftar putar ke file</string>
     <string name="settings_cleanup_empty_playlists">Bersihkan Daftar Putar yang Kosong</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="other">Hapus %1$d daftar putar kosong%2$s</item>
+        <item quantity="other">Hapus %1$d daftar putar kosong</item>
     </plurals>
     <string name="settings_default_playlists">Daftar Putar Default</string>
     <string name="settings_no_default_playlists">Tidak Ada Daftar Putar Default</string>
@@ -199,7 +199,7 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Bersihkan Daftar Putar yang Kosong?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="other">Tindakan ini akan menghapus %1$d daftar putar kosong%2$s secara permanen. Tindakan ini tidak dapat dibatalkan.</item>
+        <item quantity="other">Tindakan ini akan menghapus %1$d daftar putar kosong secara permanen. Tindakan ini tidak dapat dibatalkan.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">Hapus Daftar Putar?</string>
     <string name="dialog_delete_playlist_message">Apakah Anda yakin ingin menghapus \"%1$s\"? Tindakan ini tidak dapat dibatalkan.</string>

@@ -96,10 +96,10 @@
     <string name="settings_export_all_playlists_desc">Резервное копирование всех плейлистов в файл</string>
     <string name="settings_cleanup_empty_playlists">Очистка пустых плейлистов</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">Удалить %1$d пустой плейлист%2$s</item>
-        <item quantity="few">Удалить %1$d пустой плейлист%2$s</item>
-        <item quantity="many">Удалить %1$d пустой плейлист%2$s</item>
-        <item quantity="other">Удалить %1$d пустой плейлист%2$s</item>
+        <item quantity="one">Удалить %1$d пустой плейлист</item>
+        <item quantity="few">Удалить %1$d пустой плейлист</item>
+        <item quantity="many">Удалить %1$d пустой плейлист</item>
+        <item quantity="other">Удалить %1$d пустой плейлист</item>
     </plurals>
     <string name="settings_default_playlists">Плейлисты по умолчанию</string>
     <string name="settings_no_default_playlists">Нет плейлистов по умолчанию</string>
@@ -220,10 +220,10 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Очистить пустые плейлисты?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">Это приведет к безвозвратному удалению %1$d пустого плейлиста%2$s. Это действие невозможно отменить.</item>
-        <item quantity="few">Это приведет к безвозвратному удалению %1$d пустого плейлиста%2$s. Это действие невозможно отменить.</item>
-        <item quantity="many">Это приведет к безвозвратному удалению %1$d пустого плейлиста%2$s. Это действие невозможно отменить.</item>
-        <item quantity="other">Это приведет к безвозвратному удалению %1$d пустого плейлиста%2$s. Это действие невозможно отменить.</item>
+        <item quantity="one">Это приведет к безвозвратному удалению %1$d пустого плейлиста. Это действие невозможно отменить.</item>
+        <item quantity="few">Это приведет к безвозвратному удалению %1$d пустого плейлиста. Это действие невозможно отменить.</item>
+        <item quantity="many">Это приведет к безвозвратному удалению %1$d пустого плейлиста. Это действие невозможно отменить.</item>
+        <item quantity="other">Это приведет к безвозвратному удалению %1$d пустого плейлиста. Это действие невозможно отменить.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">Удалить плейлист?</string>
     <string name="dialog_delete_playlist_message">Вы уверены, что хотите удалить «%1$s»? Это действие невозможно отменить.</string>

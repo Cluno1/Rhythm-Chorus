@@ -96,7 +96,7 @@
     <string name="settings_export_all_playlists_desc">모든 재생 목록을 파일로 백업</string>
     <string name="settings_cleanup_empty_playlists">빈 재생 목록 정리</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="other">%1$d 빈 재생 목록 삭제%2$s</item>
+        <item quantity="other">%1$d 빈 재생 목록 삭제</item>
     </plurals>
     <string name="settings_default_playlists">기본 재생 목록</string>
     <string name="settings_no_default_playlists">기본 재생 목록 없음</string>
@@ -199,7 +199,7 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">빈 재생 목록을 정리하시겠습니까?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="other">이렇게 하면 %1$d 빈 재생 목록%2$s이 영구적으로 삭제됩니다. 이 작업은 취소할 수 없습니다.</item>
+        <item quantity="other">이렇게 하면 %1$d 빈 재생 목록이 영구적으로 삭제됩니다. 이 작업은 취소할 수 없습니다.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">재생목록을 삭제하시겠습니까?</string>
     <string name="dialog_delete_playlist_message">\"%1$s\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.</string>

@@ -96,9 +96,9 @@
     <string name="settings_export_all_playlists_desc">Copia de seguridad de todas las listas de reproducción en un archivo</string>
     <string name="settings_cleanup_empty_playlists">Limpiar listas de reproducción vacías</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">Eliminar %1$d lista de reproducción vacía%2$s</item>
-        <item quantity="many">Eliminar %1$d lista de reproducción vacía%2$s</item>
-        <item quantity="other">Eliminar %1$d lista de reproducción vacía%2$s</item>
+        <item quantity="one">Eliminar %1$d lista de reproducción vacía</item>
+        <item quantity="many">Eliminar %1$d lista de reproducción vacía</item>
+        <item quantity="other">Eliminar %1$d lista de reproducción vacía</item>
     </plurals>
     <string name="settings_default_playlists">Listas de reproducción predeterminadas</string>
     <string name="settings_no_default_playlists">Sin listas de reproducción predeterminadas</string>
@@ -213,9 +213,9 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">¿Limpiar listas de reproducción vacías?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">Esto eliminará permanentemente %1$d lista de reproducción vacía%2$s. Esta acción no se puede deshacer.</item>
-        <item quantity="many">Esto eliminará permanentemente %1$d lista de reproducción vacía%2$s. Esta acción no se puede deshacer.</item>
-        <item quantity="other">Esto eliminará permanentemente %1$d lista de reproducción vacía%2$s. Esta acción no se puede deshacer.</item>
+        <item quantity="one">Esto eliminará permanentemente %1$d lista de reproducción vacía. Esta acción no se puede deshacer.</item>
+        <item quantity="many">Esto eliminará permanentemente %1$d lista de reproducción vacía. Esta acción no se puede deshacer.</item>
+        <item quantity="other">Esto eliminará permanentemente %1$d lista de reproducción vacía. Esta acción no se puede deshacer.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">¿Eliminar lista de reproducción?</string>
     <string name="dialog_delete_playlist_message">¿Está seguro de que desea eliminar \"%1$s\"? Esta acción no se puede deshacer.</string>

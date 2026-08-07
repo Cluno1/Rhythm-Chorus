@@ -96,9 +96,9 @@
     <string name="settings_export_all_playlists_desc">Sauvegardez toutes les listes de lecture dans un fichier</string>
     <string name="settings_cleanup_empty_playlists">Nettoyer les listes de lecture vides</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="one">Supprimer %1$d playlist vide%2$s</item>
-        <item quantity="many">Supprimer %1$d playlist vide%2$s</item>
-        <item quantity="other">Supprimer %1$d playlist vide%2$s</item>
+        <item quantity="one">Supprimer %1$d playlist vide</item>
+        <item quantity="many">Supprimer %1$d playlist vide</item>
+        <item quantity="other">Supprimer %1$d playlist vide</item>
     </plurals>
     <string name="settings_default_playlists">Listes de lecture par défaut</string>
     <string name="settings_no_default_playlists">Aucune liste de lecture par défaut</string>
@@ -213,9 +213,9 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Nettoyer les listes de lecture vides ?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="one">Cela supprimera définitivement %1$d playlist vide%2$s. Cette action ne peut pas être annulée.</item>
-        <item quantity="many">Cela supprimera définitivement %1$d playlist vide%2$s. Cette action ne peut pas être annulée.</item>
-        <item quantity="other">Cela supprimera définitivement %1$d playlist vide%2$s. Cette action ne peut pas être annulée.</item>
+        <item quantity="one">Cela supprimera définitivement %1$d playlist vide. Cette action ne peut pas être annulée.</item>
+        <item quantity="many">Cela supprimera définitivement %1$d playlist vide. Cette action ne peut pas être annulée.</item>
+        <item quantity="other">Cela supprimera définitivement %1$d playlist vide. Cette action ne peut pas être annulée.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">Supprimer la liste de lecture ?</string>
     <string name="dialog_delete_playlist_message">Êtes-vous sûr de vouloir supprimer « %1$s » ? Cette action ne peut pas être annulée.</string>

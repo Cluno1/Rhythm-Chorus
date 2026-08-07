@@ -96,7 +96,7 @@
     <string name="settings_export_all_playlists_desc">Sao lưu tất cả danh sách phát vào tập tin</string>
     <string name="settings_cleanup_empty_playlists">Dọn dẹp danh sách phát trống</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="other">Xóa %1$d danh sách phát trống%2$s</item>
+        <item quantity="other">Xóa %1$d danh sách phát trống</item>
     </plurals>
     <string name="settings_default_playlists">Danh sách phát mặc định</string>
     <string name="settings_no_default_playlists">Không có danh sách phát mặc định</string>
@@ -199,7 +199,7 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">Dọn dẹp danh sách phát trống?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="other">Thao tác này sẽ xóa vĩnh viễn %1$d danh sách phát trống%2$s. Không thể hoàn tác hành động này.</item>
+        <item quantity="other">Thao tác này sẽ xóa vĩnh viễn %1$d danh sách phát trống. Không thể hoàn tác hành động này.</item>
     </plurals>
     <string name="dialog_delete_playlist_title">Xóa danh sách phát?</string>
     <string name="dialog_delete_playlist_message">Bạn có chắc chắn muốn xóa \"%1$s\" không? Không thể hoàn tác hành động này.</string>

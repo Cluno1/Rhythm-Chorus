@@ -96,7 +96,7 @@
     <string name="settings_export_all_playlists_desc">すべてのプレイリストをファイルにバックアップする</string>
     <string name="settings_cleanup_empty_playlists">空のプレイリストをクリーンアップする</string>
     <plurals name="settings_cleanup_empty_playlists_desc">
-        <item quantity="other">%1$d の空のプレイリスト%2$s を削除します</item>
+        <item quantity="other">%1$d の空のプレイリスト を削除します</item>
     </plurals>
     <string name="settings_default_playlists">デフォルトのプレイリスト</string>
     <string name="settings_no_default_playlists">デフォルトのプレイリストなし</string>
@@ -199,7 +199,7 @@
     <!-- Dialogs -->
     <string name="dialog_cleanup_empty_playlists_title">空のプレイリストをクリーンアップしますか?</string>
     <plurals name="dialog_cleanup_empty_playlists_message">
-        <item quantity="other">これにより、%1$d の空のプレイリスト %2$s が完全に削除されます。この操作は元に戻すことができません。</item>
+        <item quantity="other">これにより、%1$d の空のプレイリスト  が完全に削除されます。この操作は元に戻すことができません。</item>
     </plurals>
     <string name="dialog_delete_playlist_title">プレイリストを削除しますか?</string>
     <string name="dialog_delete_playlist_message">「%1$s」を削除してもよろしいですか?この操作は元に戻すことができません。</string>
