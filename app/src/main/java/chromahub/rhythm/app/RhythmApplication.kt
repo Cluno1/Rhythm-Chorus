@@ -123,28 +123,12 @@ class RhythmApplication : Application() {
         super.onTerminate()
     }
     
-    override fun onLowMemory() {
-        super.onLowMemory()
-        Log.w(TAG, "═══════════════════════════════════════════════════")
-        Log.w(TAG, "LOW MEMORY WARNING!")
-        Log.w(TAG, "═══════════════════════════════════════════════════")
-        
-        // Notify app components to clear caches
-        // This could trigger cleanup in repositories, caches, etc.
-        // You can add a broadcast or event here to notify components
-    }
-    
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         
         val levelName = when (level) {
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE -> "RUNNING_MODERATE"
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW -> "RUNNING_LOW"
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> "RUNNING_CRITICAL"
             ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> "UI_HIDDEN"
             ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> "BACKGROUND"
-            ComponentCallbacks2.TRIM_MEMORY_MODERATE -> "MODERATE"
-            ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> "COMPLETE"
             else -> "UNKNOWN($level)"
         }
         
@@ -152,18 +136,6 @@ class RhythmApplication : Application() {
         
         // Perform cleanup based on memory pressure level
         when (level) {
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
-            ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
-                Log.w(TAG, "Critical memory pressure - performing aggressive cleanup")
-                // Trigger aggressive cleanup
-                // You can broadcast an event here for repositories to clear caches
-            }
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW,
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE,
-            ComponentCallbacks2.TRIM_MEMORY_MODERATE -> {
-                Log.w(TAG, "Moderate memory pressure - performing standard cleanup")
-                // Trigger standard cleanup
-            }
             ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN,
             ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> {
                 Log.w(TAG, "App backgrounded - clearing caches")
