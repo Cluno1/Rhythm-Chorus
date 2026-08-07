@@ -2850,7 +2850,6 @@
     <string name="settings_artist_artwork_source_disabled_desc">Ne pas récupérer ni charger d\'images pour les artistes</string>
     <string name="exp_track_error_checker">Vérificateur d\'erreurs de piste</string>
     <string name="exp_track_error_checker_desc">Intercepter les pistes audio corrompues ou illisibles pour éviter les chargements infinis et les boucles de saut automatique</string>
-    <string name="settings_rhythm_guard_hero_title">L\'exposition du jour</string>
     <string name="settings_rhythm_guard_hero_limit_exceeded">Limite dépassée ! Il est temps de laisser vos oreilles se reposer.</string>
     <string name="settings_rhythm_guard_hero_exposure_of">de %1$s</string>
     <string name="settings_rhythm_guard_hero_volume_limit">limite %1$s</string>
