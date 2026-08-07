@@ -50,8 +50,10 @@ jobs:
       # Merge every open Weblate PR that is mergeable and placeholder-clean.
       # PRs with merge conflicts or bad placeholders are NOT silently skipped:
       # they get a comment on the PR and fail this run so they can't be missed.
+      # Runs on push AND manual runs, so a manual flush that just created a PR
+      # can be merged by re-running the workflow instead of leaving it open.
       - name: Merge open Weblate PRs
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
