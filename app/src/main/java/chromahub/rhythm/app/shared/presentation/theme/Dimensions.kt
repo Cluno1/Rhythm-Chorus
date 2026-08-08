@@ -52,7 +52,14 @@ object MusicDimensions {
     // Cards and containers
     val cardElevation = 2.dp
     val cardElevationPressed = 8.dp
-    
+
+    // Song info sheet metadata tiles
+    val infoTileHeight = 80.dp
+    val infoTileIconSize = 60.dp
+    val infoTileInset = 12.dp
+    val infoTileWatermarkAlpha = 0.14f
+    val infoTileBackdropCut = 12.dp
+
     // Buttons and interactive elements
     val buttonHeight = 40.dp
     val buttonHeightLarge = 48.dp

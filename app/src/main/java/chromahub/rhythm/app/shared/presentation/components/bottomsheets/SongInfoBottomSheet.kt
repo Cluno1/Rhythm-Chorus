@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
@@ -60,6 +61,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import chromahub.rhythm.app.R
@@ -70,7 +72,6 @@ import chromahub.rhythm.app.shared.presentation.components.common.ActionProgress
 import chromahub.rhythm.app.shared.presentation.components.common.ContentLoadingIndicator
 import chromahub.rhythm.app.shared.presentation.components.player.formatDuration
 import chromahub.rhythm.app.shared.presentation.components.common.MarqueeText
-import chromahub.rhythm.app.shared.presentation.components.common.rhythmMarquee
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmDetailActionButton
@@ -98,17 +99,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import chromahub.rhythm.app.util.windowScreenWidthDp
 import chromahub.rhythm.app.util.windowScreenHeightDp
+import chromahub.rhythm.app.ui.theme.MusicDimensions
 
-// Data class to hold additional song metadata
-// 
-// AUDIO QUALITY NOTES:
-// - Lossless formats (ALAC, FLAC, WAV) preserve all original audio data bit-perfectly
-// - Lossy formats (MP3, AAC, OGG) discard data to reduce file size - NOT lossless!
-// - Bit depth alone does NOT determine lossless vs lossy:
-//   * Lossy MP3/AAC decode to 16-bit but are still lossy (data was discarded during encoding)
-//   * Lossless can be 16-bit (CD quality) or 24-bit (Hi-Res)
-// - Standard Lossless (CD Quality): 16-bit/44.1kHz, ~96 dB dynamic range
-// - High-Resolution Lossless: 24-bit/96kHz+, ~144 dB dynamic range
 data class ExtendedSongInfo(
     val fileSize: Long = 0,
     val bitrate: String = "Unknown",
@@ -124,20 +116,18 @@ data class ExtendedSongInfo(
     val mimeType: String = "",
     val channels: String = "Unknown",
     val hasLyrics: Boolean = false,
-    val genre: String = "", // Add genre field
-    // Audio quality indicators
+    val genre: String = "",
     val isLossless: Boolean = false,
     val isDolby: Boolean = false,
     val isDTS: Boolean = false,
     val isHiRes: Boolean = false,
     val audioCodec: String = "Unknown",
     val formatName: String = "Unknown",
-    // Enhanced quality information
-    val qualityType: String = "Unknown",       // e.g., "Hi-Res Lossless", "CD Quality"
-    val qualityLabel: String = "Unknown",       // e.g., "Hi-Res Lossless"
-    val qualityDescription: String = "",        // e.g., "24-bit / 96 kHz Lossless"
-    val bitDepth: Int = 0,                      // Actual or estimated bit depth (16, 24, etc.)
-    val qualityCategory: String = "Unknown"     // "Lossless", "Lossy", "Surround"
+    val qualityType: String = "Unknown",
+    val qualityLabel: String = "Unknown",
+    val qualityDescription: String = "",
+    val bitDepth: Int = 0,
+    val qualityCategory: String = "Unknown"
 )
 
 private fun resolveSongInfoArtworkUri(context: android.content.Context, song: Song): Uri? {
@@ -701,7 +691,6 @@ fun SongInfoBottomSheet(
                                         topStart = 28.dp,
                                         topEnd = 28.dp
                                     ),
-//                                    color = MaterialTheme.colorScheme.surfaceContainer,
                                     tonalElevation = 1.dp
                                 ) {
                                     LazyColumn(
@@ -895,8 +884,6 @@ fun SongInfoBottomSheet(
                                 )
                             }
                         }
-                        
-                        // No edit button here - moved to actions section
                     }
                 }
             }
@@ -1182,6 +1169,67 @@ private fun MetadataSection(
 }
 
 @Composable
+private fun MetadataGridCard(
+    title: String,
+    icon: MaterialSymbolIcon,
+    items: List<MetadataItem>,
+    isLoading: Boolean
+) {
+    val visibleItems = items.filter { it.value.isNotBlank() && !it.value.equals("Unknown", ignoreCase = true) }
+    if (isLoading || visibleItems.isNotEmpty()) {
+        MetadataSection(
+            title = title,
+            icon = icon,
+            isLoading = isLoading
+        ) {
+            if (visibleItems.isNotEmpty()) {
+                val regularCount = visibleItems.count { !it.isWide }
+                val lastRegularIndex = visibleItems.indexOfLast { !it.isWide }
+                val isFullWidth: (Int) -> Boolean = { index ->
+                    visibleItems[index].isWide ||
+                        (index == lastRegularIndex && regularCount % 2 == 1)
+                }
+                val (cells, totalRows) = computeGridCellInfo(visibleItems.size, isFullWidth)
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    userScrollEnabled = false,
+                    modifier = Modifier.height(
+                        MusicDimensions.infoTileHeight * totalRows.coerceAtLeast(1) +
+                            4.dp * (totalRows.coerceAtLeast(1) - 1)
+                    )
+                ) {
+                    itemsIndexed(
+                        items = visibleItems,
+                        span = { index, _ -> if (isFullWidth(index)) GridItemSpan(2) else GridItemSpan(1) }
+                    ) { index, item ->
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    delayMillis = 400 + (index * 100)
+                                )
+                            ) + slideInVertically(
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    delayMillis = 400 + (index * 100)
+                                ),
+                                initialOffsetY = { it / 5 }
+                            )
+                        ) {
+                            val (row, col) = cells[index]
+                            InfoGridItem(item = item, shape = connectedGridItemShape(row, col, totalRows))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun SongInfoCard(
     song: Song,
     extendedInfo: ExtendedSongInfo?,
@@ -1219,74 +1267,25 @@ private fun SongInfoCard(
 
         // Album
         if (!song.album.isNullOrEmpty()) {
-            add(MetadataItem(context.getString(R.string.metadata_album), song.album, RhythmIcons.AlbumFilled))
+            add(MetadataItem(context.getString(R.string.metadata_album), song.album, RhythmIcons.AlbumFilled, isWide = true))
         }
 
-        // Composer (moved from FileInfoCard)
         extendedInfo?.let { info ->
             if (info.composer.isNotEmpty() && info.composer != song.artist) {
-                add(MetadataItem(context.getString(R.string.metadata_composer), info.composer, MaterialSymbolIcon("edit_note", filled = true)))
+                add(MetadataItem(context.getString(R.string.metadata_composer), info.composer, MaterialSymbolIcon("edit_note", filled = true), isWide = true))
             }
             if (info.albumArtist.isNotEmpty() && info.albumArtist != song.artist) {
-                add(MetadataItem(context.getString(R.string.metadata_album_artist), info.albumArtist, RhythmIcons.ArtistFilled))
+                add(MetadataItem(context.getString(R.string.metadata_album_artist), info.albumArtist, RhythmIcons.ArtistFilled, isWide = true))
             }
         }
     }
 
-    if (isLoading || songInfoItems.isNotEmpty()) {
-        val wideLabels = listOf("Album", "Composer", "Album Artist")
-        val isFullWidth: (Int) -> Boolean = { index ->
-            val item = songInfoItems[index]
-            when {
-                item.label in wideLabels -> true
-                else -> {
-                    val regularItems = songInfoItems.filter { it.label !in wideLabels }
-                    val itemIndexInRegular = regularItems.indexOf(item)
-                    itemIndexInRegular == regularItems.lastIndex && regularItems.size % 2 == 1
-                }
-            }
-        }
-        val (cells, totalRows) = computeGridCellInfo(songInfoItems.size, isFullWidth)
-        MetadataSection(
-            title = context.getString(R.string.cd_song_info),
-            icon = RhythmIcons.Info,
-            isLoading = isLoading
-        ) {
-            if (songInfoItems.isNotEmpty()) {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    userScrollEnabled = false,
-                    modifier = Modifier.height((totalRows.coerceAtLeast(1) * 68 + (totalRows.coerceAtLeast(1) - 1) * 4).dp)
-                ) {
-                    itemsIndexed(
-                        items = songInfoItems,
-                        span = { index, _ -> if (isFullWidth(index)) GridItemSpan(2) else GridItemSpan(1) }
-                    ) { index, item ->
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn(
-                                animationSpec = tween(
-                                    durationMillis = 500,
-                                    delayMillis = 400 + (index * 100)
-                                )
-                            ) + slideInVertically(
-                                animationSpec = tween(
-                                    durationMillis = 500,
-                                    delayMillis = 400 + (index * 100)
-                                ),
-                                initialOffsetY = { it / 5 }
-                            )
-                        ) {
-                            val (row, col) = cells[index]
-                            SongInfoGridItem(item = item, shape = connectedGridItemShape(row, col, totalRows))
-                        }
-                    }
-                }
-            }
-        }
-    }
+    MetadataGridCard(
+        title = context.getString(R.string.cd_song_info),
+        icon = RhythmIcons.Info,
+        items = songInfoItems,
+        isLoading = isLoading
+    )
 }
 
 @Composable
@@ -1314,51 +1313,12 @@ private fun RhythmStatsCard(
         }
     }
 
-    if (isLoading || rhythmStatsItems.isNotEmpty()) {
-        val isFullWidth: (Int) -> Boolean = { index ->
-            index == rhythmStatsItems.lastIndex && rhythmStatsItems.size % 2 == 1
-        }
-        val (cells, totalRows) = computeGridCellInfo(rhythmStatsItems.size, isFullWidth)
-        MetadataSection(
-            title = context.getString(R.string.rhythm_stats),
-            icon = RhythmIcons.BarChart,
-            isLoading = isLoading
-        ) {
-            if (rhythmStatsItems.isNotEmpty()) {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    userScrollEnabled = false,
-                    modifier = Modifier.height((totalRows.coerceAtLeast(1) * 68 + (totalRows.coerceAtLeast(1) - 1) * 4).dp)
-                ) {
-                    itemsIndexed(
-                        items = rhythmStatsItems,
-                        span = { index, _ -> if (isFullWidth(index)) GridItemSpan(2) else GridItemSpan(1) }
-                    ) { index, item ->
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn(
-                                animationSpec = tween(
-                                    durationMillis = 500,
-                                    delayMillis = 400 + (index * 100)
-                                )
-                            ) + slideInVertically(
-                                animationSpec = tween(
-                                    durationMillis = 500,
-                                    delayMillis = 400 + (index * 100)
-                                ),
-                                initialOffsetY = { it / 5 }
-                            )
-                        ) {
-                            val (row, col) = cells[index]
-                            RhythmStatsGridItem(item = item, shape = connectedGridItemShape(row, col, totalRows))
-                        }
-                    }
-                }
-            }
-        }
-    }
+    MetadataGridCard(
+        title = context.getString(R.string.rhythm_stats),
+        icon = RhythmIcons.BarChart,
+        items = rhythmStatsItems,
+        isLoading = isLoading
+    )
 }
 
 @Composable
@@ -1427,7 +1387,7 @@ private fun FileInfoCard(
 
             // File info
             folderPath?.let {
-                add(MetadataItem(context.getString(R.string.metadata_location), it, RhythmIcons.FolderOpen))
+                add(MetadataItem(context.getString(R.string.metadata_location), it, RhythmIcons.FolderOpen, isWide = true))
             }
 
             // Additional metadata (non-duplicating)
@@ -1448,275 +1408,90 @@ private fun FileInfoCard(
         }
     }
 
-    if (isLoading || fileInfoItems.isNotEmpty()) {
-        val wideLabels = listOf("Location")
-        val isFullWidth: (Int) -> Boolean = { index ->
-            val item = fileInfoItems[index]
-            when {
-                item.label in wideLabels -> true
-                else -> {
-                    val regularItems = fileInfoItems.filter { it.label !in wideLabels }
-                    val itemIndexInRegular = regularItems.indexOf(item)
-                    itemIndexInRegular == regularItems.lastIndex && regularItems.size % 2 == 1
-                }
-            }
-        }
-        val (cells, totalRows) = computeGridCellInfo(fileInfoItems.size, isFullWidth)
-        MetadataSection(
-            title = context.getString(R.string.file_info),
-            icon = RhythmIcons.Folder,
-            isLoading = isLoading
-        ) {
-            if (fileInfoItems.isNotEmpty()) {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    userScrollEnabled = false,
-                    modifier = Modifier.height((totalRows.coerceAtLeast(1) * 68 + (totalRows.coerceAtLeast(1) - 1) * 4).dp)
-                ) {
-                    itemsIndexed(
-                        items = fileInfoItems,
-                        span = { index, _ -> if (isFullWidth(index)) GridItemSpan(2) else GridItemSpan(1) }
-                    ) { index, item ->
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn(
-                                animationSpec = tween(
-                                    durationMillis = 500,
-                                    delayMillis = 400 + (index * 100)
-                                )
-                            ) + slideInVertically(
-                                animationSpec = tween(
-                                    durationMillis = 500,
-                                    delayMillis = 400 + (index * 100)
-                                ),
-                                initialOffsetY = { it / 5 }
-                            )
-                        ) {
-                            val (row, col) = cells[index]
-                            FileInfoGridItem(item = item, shape = connectedGridItemShape(row, col, totalRows))
-                        }
-                    }
-                }
-            }
-        }
-    }
+    MetadataGridCard(
+        title = context.getString(R.string.file_info),
+        icon = RhythmIcons.Folder,
+        items = fileInfoItems,
+        isLoading = isLoading
+    )
 }
 
 @Composable
-private fun SongInfoGridItem(
+private fun InfoGridItem(
     item: MetadataItem,
     shape: RoundedCornerShape
 ) {
-    val context = LocalContext.current
+    val tileColor = lerp(
+        MaterialTheme.colorScheme.surfaceContainer,
+        MaterialTheme.colorScheme.primaryContainer,
+        0.6f
+    )
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(68.dp),
+            .height(MusicDimensions.infoTileHeight)
+            .clip(shape),
         shape = shape,
-        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
+        color = tileColor
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                when (val icon = item.icon) {
-                    is MaterialSymbolIcon -> {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    is Int -> {
-                        Icon(
-                            painter = painterResource(id = icon),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-                Text(
-                    text = item.label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            if (item.label in listOf("Album", "Composer", "Album Artist")) {
-                Text(
-                    text = item.value,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    maxLines = 1,
+        Box(modifier = Modifier.fillMaxSize()) {
+            when (val icon = item.icon) {
+                is MaterialSymbolIcon -> Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = MusicDimensions.infoTileWatermarkAlpha),
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .rhythmMarquee()
+                        .align(Alignment.BottomEnd)
+                        .offset(
+                            x = MusicDimensions.infoTileBackdropCut,
+                            y = MusicDimensions.infoTileBackdropCut
+                        )
+                        .size(MusicDimensions.infoTileIconSize)
                 )
-            } else {
-                Text(
-                    text = item.value,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                is Int -> Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = MusicDimensions.infoTileWatermarkAlpha),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset(
+                            x = MusicDimensions.infoTileBackdropCut,
+                            y = MusicDimensions.infoTileBackdropCut
+                        )
+                        .size(MusicDimensions.infoTileIconSize)
                 )
             }
-        }
-    }
-}
 
-@Composable
-private fun RhythmStatsGridItem(
-    item: MetadataItem,
-    shape: RoundedCornerShape
-) {
-    val context = LocalContext.current
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(68.dp),
-        shape = shape,
-        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                when (val icon = item.icon) {
-                    is MaterialSymbolIcon -> {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    is Int -> {
-                        Icon(
-                            painter = painterResource(id = icon),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-                Text(
-                    text = item.label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+            MarqueeText(
+                text = item.value,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontWeight = FontWeight.Bold
+                ),
+                gradientEdgeColor = tileColor,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .padding(
+                        start = MusicDimensions.infoTileInset,
+                        end = MusicDimensions.infoTileInset,
+                        bottom = MusicDimensions.infoTileInset
+                    )
+            )
 
             Text(
-                text = item.value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.SemiBold,
+                text = item.label,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = MusicDimensions.infoTileWatermarkAlpha),
+                    fontWeight = FontWeight.Bold
+                ),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(top = MusicDimensions.infoTileInset, start = MusicDimensions.infoTileInset)
             )
-        }
-    }
-}
-
-@Composable
-private fun FileInfoGridItem(
-    item: MetadataItem,
-    shape: RoundedCornerShape
-) {
-    val context = LocalContext.current
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(68.dp),
-        shape = shape,
-        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                when (val icon = item.icon) {
-                    is MaterialSymbolIcon -> {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    is Int -> {
-                        Icon(
-                            painter = painterResource(id = icon),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-                Text(
-                    text = item.label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            if (item.label in listOf("Location")) {
-                Text(
-                    text = item.value,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    maxLines = 1,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .rhythmMarquee()
-                )
-            } else {
-                Text(
-                    text = item.value,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
         }
     }
 }
@@ -3077,7 +2852,8 @@ private fun EditSongSheet(
 data class MetadataItem(
     val label: String,
     val value: String,
-    val icon: Any
+    val icon: Any,
+    val isWide: Boolean = false
 )
 
 // Helper functions
