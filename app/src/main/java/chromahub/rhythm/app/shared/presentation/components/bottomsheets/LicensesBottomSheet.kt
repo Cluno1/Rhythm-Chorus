@@ -56,7 +56,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Better Lyrics",
             description = context.getString(R.string.licenses_desc_better_lyrics),
-            license = "GPL v3.0 License",
+            license = "GPL License",
             url = "https://github.com/better-lyrics/api",
             icon = RhythmIcons.Connectivity.OpenInNew,
             context = context,
@@ -65,7 +65,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Gramophone",
             description = context.getString(R.string.licenses_desc_gramophone),
-            license = "GPL v3.0 License",
+            license = "GPL License",
             url = "https://github.com/FoedusProgramme/Gramophone",
             icon = RhythmIcons.Connectivity.OpenInNew,
             context = context,
@@ -74,7 +74,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "PixelPlayer",
             description = context.getString(R.string.licenses_desc_pixelplayer),
-            license = "GPL v3.0 License",
+            license = "GPL License",
             url = "https://github.com/theovilardo/PixelPlayer",
             icon = RhythmIcons.Connectivity.OpenInNew,
             context = context,
@@ -83,7 +83,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "VIVI Music",
             description = context.getString(R.string.licenses_desc_vivi_music),
-            license = "GPL v3.0 License",
+            license = "GPL License",
             url = "https://github.com/vivizzz007/vivi-music",
             icon = RhythmIcons.Connectivity.OpenInNew,
             context = context,
@@ -92,7 +92,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Zenith",
             description = context.getString(R.string.licenses_desc_zenith),
-            license = "GPL v3.0 License",
+            license = "GPL License",
             url = "https://github.com/1372Slash/Zenith",
             icon = RhythmIcons.Connectivity.OpenInNew,
             context = context,
@@ -110,7 +110,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Jetpack Compose",
             description = context.getString(R.string.licenses_desc_jetpack_compose),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://developer.android.com/jetpack/compose",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -119,7 +119,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Material 3 Components",
             description = context.getString(R.string.licenses_desc_material3_components),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://m3.material.io/",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -128,7 +128,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Media3 ExoPlayer",
             description = context.getString(R.string.licenses_desc_media3_exoplayer),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://github.com/androidx/media",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -137,7 +137,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Kotlin Coroutines",
             description = context.getString(R.string.licenses_desc_kotlin_coroutines),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://github.com/Kotlin/kotlinx.coroutines",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -146,7 +146,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Coil",
             description = context.getString(R.string.licenses_desc_coil),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://coil-kt.github.io/coil/",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -155,7 +155,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Retrofit",
             description = context.getString(R.string.licenses_desc_retrofit),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://square.github.io/retrofit/",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -164,7 +164,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "OkHttp",
             description = context.getString(R.string.licenses_desc_okhttp),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://square.github.io/okhttp/",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -173,7 +173,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Gson",
             description = context.getString(R.string.licenses_desc_gson),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://github.com/google/gson",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -182,7 +182,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "AndroidX Navigation",
             description = context.getString(R.string.licenses_desc_androidx_navigation),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://developer.android.com/guide/navigation",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -191,7 +191,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Accompanist Permissions",
             description = context.getString(R.string.licenses_desc_accompanist_permissions),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://google.github.io/accompanist/permissions/",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -200,7 +200,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "AndroidX Palette",
             description = context.getString(R.string.licenses_desc_androidx_palette),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://developer.android.com/jetpack/androidx/releases/palette",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -209,7 +209,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "JAudioTagger",
             description = context.getString(R.string.licenses_desc_jaudiotagger),
-            license = "LGPL v2.1",
+            license = "LGPL License",
             url = "https://github.com/Borewit/jaudiotagger",
             icon = RhythmIcons.Connectivity.OpenInNew,
             context = context,
@@ -218,7 +218,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "AndroidX Fragment",
             description = context.getString(R.string.licenses_desc_androidx_fragment),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://developer.android.com/jetpack/androidx/releases/fragment",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -227,7 +227,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "AndroidX MediaRouter",
             description = context.getString(R.string.licenses_desc_androidx_mediarouter),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://developer.android.com/jetpack/androidx/releases/mediarouter",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -236,7 +236,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Glance AppWidget",
             description = context.getString(R.string.licenses_desc_glance_appwidget),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://developer.android.com/jetpack/androidx/releases/glance",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -245,7 +245,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "WorkManager",
             description = context.getString(R.string.licenses_desc_workmanager),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://developer.android.com/jetpack/androidx/releases/work",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -254,7 +254,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Material Icons Extended",
             description = context.getString(R.string.licenses_desc_material_icons_extended),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://developer.android.com/jetpack/compose/resources/material-icons",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -263,7 +263,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "LeakCanary",
             description = context.getString(R.string.licenses_desc_leakcanary),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://square.github.io/leakcanary/",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -272,7 +272,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Desugar JDK Libs",
             description = context.getString(R.string.licenses_desc_desugar_jdk_libs),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://github.com/google/desugar_jdk_libs",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -281,7 +281,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Media3 FFmpeg Decoder",
             description = context.getString(R.string.licenses_desc_media3_ffmpeg_decoder),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://github.com/androidx/media",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -290,7 +290,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Room",
             description = context.getString(R.string.licenses_desc_room),
-            license = "Apache License 2.0",
+            license = "Apache License",
             url = "https://developer.android.com/jetpack/androidx/releases/room",
             icon = RhythmIcons.Actions.Info,
             context = context,
@@ -299,7 +299,7 @@ fun LicensesBottomSheet(
         licenseItem(
             name = "Geom Font",
             description = context.getString(R.string.licenses_desc_geom_font),
-            license = "SIL Open Font License 1.1",
+            license = "SIL Open Font License",
             url = "https://fonts.google.com/specimen/Geom",
             icon = RhythmIcons.Actions.Info,
             context = context,

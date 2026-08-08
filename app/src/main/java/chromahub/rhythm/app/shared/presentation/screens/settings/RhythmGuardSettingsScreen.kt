@@ -1820,7 +1820,7 @@ fun RhythmGuardHeroCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Rhythm Guard Status",
+                text = stringResource(R.string.rhythmguardsettingsscreen_status),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium

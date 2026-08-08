@@ -1946,7 +1946,7 @@ private fun LocalNavigationContent(
                                         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                     },
                                     onFailure = { error ->
-                                        Toast.makeText(context, "Export failed: ${error.message}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.backup_export_failed, error.message), Toast.LENGTH_SHORT).show()
                                     }
                                 )
                                 resultCallback(result)
@@ -1960,7 +1960,7 @@ private fun LocalNavigationContent(
                                         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                     },
                                     onFailure = { error ->
-                                        Toast.makeText(context, "Import failed: ${error.message}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.backup_import_failed, error.message), Toast.LENGTH_SHORT).show()
                                     }
                                 )
                                 resultCallback(result)

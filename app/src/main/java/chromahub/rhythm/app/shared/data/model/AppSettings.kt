@@ -6,6 +6,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import chromahub.rhythm.app.R
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -4445,9 +4446,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                                     )
                                 } ?: Song(
                                     id = songId,
-                                    title = "Unresolved Track",
-                                    artist = "Unknown Artist",
-                                    album = "Unknown Album",
+                                    title = context.getString(R.string.unresolved_track),
+                                    artist = context.getString(R.string.unknown_artist_name),
+                                    album = context.getString(R.string.unknown_album_name),
                                     albumId = "",
                                     duration = 0L,
                                     uri = Uri.EMPTY,

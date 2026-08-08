@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -165,7 +166,7 @@ fun RhythmSongMenuContent(
         onGoToAlbum?.let { action ->
             add(
                 SongMenuItem(
-                    title = "Go to album",
+                    title = stringResource(R.string.multiselectionbottomsheet_go_to_album),
                     icon = RhythmIcons.AlbumFilled,
                     iconBgColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
                     iconTint = MaterialTheme.colorScheme.onSecondaryContainer,

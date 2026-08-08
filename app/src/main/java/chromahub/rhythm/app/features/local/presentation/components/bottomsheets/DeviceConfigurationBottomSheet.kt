@@ -765,7 +765,7 @@ fun DeviceConfigurationBottomSheet(
                         ) {
                             FilledTonalButton(
                                 onClick = {
-                                    clipboardManager.setPrimaryClip(ClipData.newPlainText("exported text", exportText))
+                                    clipboardManager.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.deviceconfiguration_clip_label), exportText))
                                     Toast.makeText(context, R.string.deviceconfigurationbottomsheet_copied_to_clipboard, Toast.LENGTH_SHORT).show()
                                 },
                                 modifier = Modifier.weight(1f),

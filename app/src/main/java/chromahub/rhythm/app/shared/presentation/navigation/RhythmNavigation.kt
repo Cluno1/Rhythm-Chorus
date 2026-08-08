@@ -1947,7 +1947,7 @@ fun ModeSelectorScreen(
             // Local Mode Card
             ModeCard(
                 title = stringResource(R.string.rhythmnavigation_local),
-                description = "Play music stored on your device",
+                description = stringResource(R.string.rhythmnavigation_local_desc),
                 icon = if (currentMode == AppMode.LOCAL) RhythmIcons.MusicNote else RhythmIcons.MusicNote,
                 isSelected = currentMode == AppMode.LOCAL,
                 onClick = { onModeSelected(AppMode.LOCAL) },
@@ -1957,7 +1957,7 @@ fun ModeSelectorScreen(
             // Streaming Mode Card
             ModeCard(
                 title = stringResource(R.string.rhythmnavigation_streaming),
-                description = "Stream from Spotify and more",
+                description = stringResource(R.string.rhythmnavigation_streaming_desc),
                 icon = if (currentMode == AppMode.STREAMING) MaterialSymbolIcon("cloud_queue", filled = true) else MaterialSymbolIcon("cloud_queue"),
                 isSelected = currentMode == AppMode.STREAMING,
                 onClick = { onModeSelected(AppMode.STREAMING) },

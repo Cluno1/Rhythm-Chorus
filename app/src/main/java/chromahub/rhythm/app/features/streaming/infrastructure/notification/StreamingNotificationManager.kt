@@ -60,7 +60,7 @@ class StreamingNotificationManager(private val context: Context) {
             context.getString(R.string.notification_streaming_channel_name),
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
-            description = "Authentication and connection status"
+            description = context.getString(R.string.notification_streaming_auth_channel_desc)
             enableVibration(true)
             setShowBadge(true)
         }

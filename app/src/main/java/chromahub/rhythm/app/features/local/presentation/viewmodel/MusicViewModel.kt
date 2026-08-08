@@ -2868,7 +2868,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     repository.deleteSong(song)
                     refreshLibrary(showMediaScanLoader = false)
                     withContext(Dispatchers.Main) {
-                        android.widget.Toast.makeText(context, "Song deleted successfully", android.widget.Toast.LENGTH_SHORT).show()
+                        android.widget.Toast.makeText(context, context.getString(R.string.song_deleted_successfully), android.widget.Toast.LENGTH_SHORT).show()
                     }
                 } else if (deletedStatus == 0) {
                     Log.e(TAG, "Failed to delete song: ${song.title}")
@@ -2898,7 +2898,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 refreshLibrary(showMediaScanLoader = false)
                 _pendingDeleteRequest.value = null
                 withContext(Dispatchers.Main) {
-                    android.widget.Toast.makeText(getApplication(), "Song deleted successfully", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(getApplication(), getApplication<Application>().getString(R.string.song_deleted_successfully), android.widget.Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error completing song deletion", e)
@@ -3158,9 +3158,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                                     // Stub song to preserve unresolved entries temporarily (e.g. unmounted SD card)
                                     Song(
                                         id = songId,
-                                        title = "Unresolved Song",
-                                        artist = "Unknown Artist",
-                                        album = "Unknown Album",
+                                        title = getApplication<Application>().getString(R.string.unresolved_song),
+                                        artist = getApplication<Application>().getString(R.string.unknown_artist_name),
+                                        album = getApplication<Application>().getString(R.string.unknown_album_name),
                                         albumId = "",
                                         duration = 0L,
                                         uri = Uri.EMPTY,
@@ -3250,9 +3250,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                                         } else {
                                             Song(
                                                 id = songId,
-                                                title = "Unresolved Song",
-                                                artist = "Unknown Artist",
-                                                album = "Unknown Album",
+                                                title = getApplication<Application>().getString(R.string.unresolved_song),
+                                                artist = getApplication<Application>().getString(R.string.unknown_artist_name),
+                                                album = getApplication<Application>().getString(R.string.unknown_album_name),
                                                 albumId = "",
                                                 duration = 0L,
                                                 uri = Uri.EMPTY,

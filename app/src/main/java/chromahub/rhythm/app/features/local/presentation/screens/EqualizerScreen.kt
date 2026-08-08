@@ -679,13 +679,13 @@ fun EqualizerScreen(
                         }
                         if (isOffloadEnforced) {
                             Text(
-                                text = "Disabled to conserve battery.",
+                                text = stringResource(R.string.replay_gain_disabled_battery),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         } else if (isAudioOffloadActive && !isEqualizerEnabled) {
                             Text(
-                                text = "Enabling will disable hardware Audio Offload",
+                                text = stringResource(R.string.replay_gain_offload_warning),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

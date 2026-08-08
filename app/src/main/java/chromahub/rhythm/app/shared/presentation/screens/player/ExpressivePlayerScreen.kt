@@ -45,7 +45,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -1407,7 +1406,7 @@ private fun RhythmPlayerLyricsPanel(
         when {
             isLoadingLyrics -> {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp)) {
-                    ContainedLoadingIndicator()
+                    M3CircularLoader(modifier = Modifier.size(48.dp), color = activeColor, trackColor = activeColor.copy(alpha = 0.15f), strokeWidth = 4f)
                     Spacer(Modifier.height(16.dp))
                     Text(context.getString(R.string.player_loading_lyrics), style = MaterialTheme.typography.bodyMedium, color = textColor.copy(alpha = 0.7f), textAlign = TextAlign.Center)
                 }

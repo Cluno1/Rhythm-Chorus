@@ -314,7 +314,7 @@ fun AudioQualityBadges(
 
                     AudioQualityDetector.QualityType.HI_RES_STUDIO_MASTER -> {
                         QualityBadge(
-                            text = "STUDIO MASTER",
+                            text = stringResource(R.string.audioquality_studio_master),
                             icon = R.drawable.ic_high_res,
                             qualityLevel = QualityLevel.EXCELLENT
                         )
@@ -368,7 +368,7 @@ fun AudioQualityBadges(
 
                     AudioQualityDetector.QualityType.HI_RES_LOSSLESS -> {
                         QualityBadge(
-                            text = "HI-RES LOSSLESS",
+                            text = stringResource(R.string.audioquality_hi_res_lossless),
                             icon = R.drawable.ic_high_res,
                             qualityLevel = QualityLevel.GOOD
                         )
@@ -376,7 +376,7 @@ fun AudioQualityBadges(
 
                     AudioQualityDetector.QualityType.CD_QUALITY_LOSSLESS -> {
                         QualityBadge(
-                            text = "LOSSLESS",
+                            text = stringResource(R.string.audioquality_lossless),
                             icon = R.drawable.ic_cd,
                             qualityLevel = QualityLevel.GOOD
                         )

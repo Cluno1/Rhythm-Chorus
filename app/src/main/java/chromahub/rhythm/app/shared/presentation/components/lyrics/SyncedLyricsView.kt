@@ -358,7 +358,7 @@ private fun SyncedVocalGapItem(
             }
         )
         Text(
-            text = "Instrumental",
+            text = stringResource(R.string.lyrics_instrumental),
             style = MaterialTheme.typography.labelLarge,
             color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(
                 alpha = if (isCurrentGap) 0.6f else 0.25f

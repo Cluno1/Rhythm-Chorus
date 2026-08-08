@@ -557,13 +557,14 @@ fun StreamingNavigation(
                 // Global RhythmPlayerSheet
                 val showPlayerSheet = currentSong != null && (showMiniPlayer || currentRoute == StreamingScreen.Player.route)
                 if (showPlayerSheet) {
+                    val context = LocalContext.current
                     val bottomBarHeightPx = with(LocalDensity.current) { MusicDimensions.bottomNavigationHeight.roundToPx() }
                     val followedArtists by streamingMusicViewModel.followedArtists.collectAsState()
                     val savedAlbums by streamingMusicViewModel.savedAlbums.collectAsState()
                     val currentService by streamingMusicViewModel.currentService.collectAsState()
                     val savedPlaylists by streamingMusicViewModel.savedPlaylists.collectAsState()
                     val mappedPlaylists = remember(savedPlaylists) {
-                        savedPlaylists.map { it.toLibraryPlaylist() }
+                        savedPlaylists.map { it.toLibraryPlaylist(context) }
                     }
                     val playerSongs = remember(currentSong, queueState.songs) {
                         val queueSongs = queueState.songs
@@ -2219,11 +2220,12 @@ fun StreamingNavigation(
 
         // Streaming Add to Playlist Bottom Sheet
         if (showStreamingAddToPlaylist && selectedStreamingSongForPlaylist != null) {
+            val context = LocalContext.current
             val displaySong = remember(selectedStreamingSongForPlaylist) {
                 selectedStreamingSongForPlaylist!!.toDisplaySong()
             }
             val displayPlaylists = remember(streamingPlaylists) {
-                streamingPlaylists.map { it.toLibraryPlaylist() }
+                streamingPlaylists.map { it.toLibraryPlaylist(context) }
             }
             var showCreatePlaylistDialog by remember { mutableStateOf(false) }
 

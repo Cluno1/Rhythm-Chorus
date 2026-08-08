@@ -63,17 +63,17 @@ fun BetaProgramPopup(
             BetaFeature(
                 icon = MaterialSymbolIcon("flight_takeoff", filled = true),
                 title = stringResource(R.string.betaprogrampopup_early_access),
-                description = "Try new features before official release"
+                description = stringResource(R.string.betaprogrampopup_early_access_desc)
             ),
             BetaFeature(
                 icon = MaterialSymbolIcon("edit_note", filled = true),
                 title = stringResource(R.string.betaprogrampopup_shape_the_future),
-                description = "Your feedback directly influences development"
+                description = stringResource(R.string.betaprogrampopup_shape_the_future_desc)
             ),
             BetaFeature(
                 icon = MaterialSymbolIcon("message", filled = true),
                 title = stringResource(R.string.betaprogrampopup_direct_feedback),
-                description = "Communicate directly with the development team"
+                description = stringResource(R.string.betaprogrampopup_direct_feedback_desc)
             ),
         )
 

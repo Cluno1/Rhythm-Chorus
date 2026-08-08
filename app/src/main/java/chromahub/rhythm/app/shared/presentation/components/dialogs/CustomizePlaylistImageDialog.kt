@@ -7,7 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import chromahub.rhythm.app.R
 import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
@@ -33,14 +35,14 @@ fun CustomizePlaylistImageDialog(
         },
         title = {
             Text(
-                text = "Customize Playlist Image",
+                text = stringResource(R.string.customizeplaylistimage_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
             Text(
-                text = "Choose a custom image for $playlistName or reset it to default.",
+                text = stringResource(R.string.customizeplaylistimage_body_format, playlistName),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -68,7 +70,7 @@ fun CustomizePlaylistImageDialog(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Choose Image")
+                    Text(stringResource(R.string.customizeartistimage_choose_image))
                 }
 
                 OutlinedButton(
@@ -89,7 +91,7 @@ fun CustomizePlaylistImageDialog(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Reset to Default")
+                    Text(stringResource(R.string.customizeartistimage_reset_to_default))
                 }
                 
                 FilledTonalButton(
@@ -98,7 +100,7 @@ fun CustomizePlaylistImageDialog(
                         .fillMaxWidth()
                         .height(52.dp)
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.dialog_cancel))
                 }
             }
         },

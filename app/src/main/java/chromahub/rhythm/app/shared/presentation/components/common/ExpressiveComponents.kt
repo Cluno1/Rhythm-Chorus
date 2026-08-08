@@ -1858,7 +1858,7 @@ fun ExpressiveToggleButtonGroup(
                 onClick = onToggleLyrics,
                 onLongClick = onLongClickLyrics,
                 icon = RhythmIcons.Player.Lyrics,
-                label = "Lyrics",
+                label = stringResource(R.string.player_chip_lyrics),
                 isDarkTheme = isDarkTheme,
                 isCompactHeight = isCompactHeight,
                 isCompactWidth = isCompactWidth
@@ -1874,7 +1874,7 @@ fun ExpressiveToggleButtonGroup(
                 2 -> RhythmIcons.Repeat
                 else -> RhythmIcons.Repeat
             },
-            label = "Repeat",
+            label = stringResource(R.string.player_chip_repeat),
             isDarkTheme = isDarkTheme,
             isCompactHeight = isCompactHeight,
             isCompactWidth = isCompactWidth

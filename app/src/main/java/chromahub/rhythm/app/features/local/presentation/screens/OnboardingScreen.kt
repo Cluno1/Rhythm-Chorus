@@ -2117,7 +2117,7 @@ fun EnhancedWelcomeContent(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Rhythm",
+                    text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.displayLarge.copy(
                         fontSize = if (isTablet) 72.sp else 56.sp,
                         fontWeight = FontWeight.Bold,
@@ -2831,7 +2831,7 @@ fun EnhancedBackupRestoreContent(
     LaunchedEffect(restoreResult) {
         when (val result = restoreResult) {
             is MusicViewModel.RestoreResult.Queued -> {
-                Toast.makeText(context, "Media scan is in progress. Restore has been queued and will apply automatically when the scan finishes.", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.onboarding_restore_queued_scan), Toast.LENGTH_LONG).show()
                 musicViewModel.clearRestoreResult()
             }
             is MusicViewModel.RestoreResult.Success -> {
@@ -2871,7 +2871,7 @@ fun EnhancedBackupRestoreContent(
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
                 if (isLibraryRefreshing) {
-                    Toast.makeText(context, "Cannot create backup while a media scan is in progress. Please wait for the scan to finish.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.onboarding_cannot_backup_scanning), Toast.LENGTH_LONG).show()
                     isCreatingBackup = false
                     return@let
                 }
@@ -2893,7 +2893,7 @@ fun EnhancedBackupRestoreContent(
                         appSettings.setBackupLocation(uri.toString())
 
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("Rhythm Backup", backupJson)
+                        val clip = ClipData.newPlainText(context.getString(R.string.backup_clip_label), backupJson)
                         clipboard.setPrimaryClip(clip)
 
                         backupStatusIsError = false
@@ -4778,145 +4778,6 @@ fun EnhancedThemingContent(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                /* // Enhanced live theme preview card
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn(animationSpec = tween(600)) + expandVertically(animationSpec = tween(600))
-                ) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(18.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = context.getString(R.string.onboarding_live_preview),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-
-                            // Theme preview sample UI
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(MaterialTheme.colorScheme.background)
-                                    .padding(12.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                // Primary button preview
-                                Button(
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(40.dp),
-                                    shape = RoundedCornerShape(12.dp),
-                                    enabled = false
-                                ) {
-                                    Text(
-                                        "Sample Button",
-                                        style = MaterialTheme.typography.labelMedium
-                                    )
-                                }
-
-                                // Color swatches
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    // Primary color
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(56.dp)
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .background(MaterialTheme.colorScheme.primary),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = RhythmIcons.MusicNote,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onPrimary,
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            "Primary",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-
-                                    // Secondary color
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(56.dp)
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .background(MaterialTheme.colorScheme.secondary),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = RhythmIcons.AlbumFilled,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onSecondary,
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            "Secondary",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-
-                                    // Tertiary color
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(56.dp)
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .background(MaterialTheme.colorScheme.tertiary),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = RhythmIcons.Palette,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onTertiary,
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            "Tertiary",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } */
 
                 ThemeSettingsCard(
                     useSystemTheme = useSystemTheme,
@@ -4937,47 +4798,6 @@ fun EnhancedThemingContent(
                     appSettings = appSettings,
                     context = context
                 )
-
-//                // Font selection card
-//                Card(
-//                    onClick = { showFontSelectionDialog = true },
-//                    colors = CardDefaults.cardColors(
-//                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-//                    ),
-//                    modifier = Modifier.fillMaxWidth(),
-//                    shape = RoundedCornerShape(18.dp)
-//                ) {
-//                    Row(
-//                        modifier = Modifier.padding(16.dp),
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        Icon(
-//                            imageVector = MaterialSymbolIcon("font_download", filled = true),
-//                            contentDescription = null,
-//                            modifier = Modifier.size(24.dp)
-//                        )
-//                        Spacer(modifier = Modifier.width(12.dp))
-//                        Column(modifier = Modifier.weight(1f)) {
-//                            Text(
-//                                text = context.getString(R.string.theme_font_selection),
-//                                style = MaterialTheme.typography.labelLarge,
-//                                fontWeight = FontWeight.SemiBold,
-//                                color = MaterialTheme.colorScheme.onPrimaryContainer
-//                            )
-//                            Text(
-//                                text = context.getString(R.string.theme_font_selection_desc),
-//                                style = MaterialTheme.typography.bodySmall,
-//                                color = MaterialTheme.colorScheme.onPrimaryContainer
-//                            )
-//                        }
-//                        Icon(
-//                            imageVector = RhythmIcons.Forward,
-//                            contentDescription = null,
-//                            tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
-//                            modifier = Modifier.size(20.dp)
-//                        )
-//                    }
-//                }
 
                 // Default Landing Screen dropdown
                 SettingsDropdownItem(
@@ -5034,142 +4854,6 @@ fun EnhancedThemingContent(
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            /* // Live theme preview card
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = context.getString(R.string.onboarding_live_preview),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    // Theme preview sample UI
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.background)
-                            .padding(12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Primary button preview
-                        Button(
-                            onClick = {},
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(40.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            enabled = false
-                        ) {
-                            Text(
-                                "Sample Button",
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
-
-                        // Color swatches
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            // Primary color
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(56.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.primary),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.MusicNote,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    "Primary",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            // Secondary color
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(56.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.secondary),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.AlbumFilled,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSecondary,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    "Secondary",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            // Tertiary color
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(56.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.tertiary),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Palette,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onTertiary,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    "Tertiary",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp)) */
 
             // Theme options - consolidated settings card
             ThemeSettingsCard(
@@ -5213,46 +4897,6 @@ fun EnhancedThemingContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            /* // Font selection card - commented out
-            Card(
-                onClick = { showFontSelectionDialog = true },
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                ),
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = MaterialSymbolIcon("font_download", filled = true),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = context.getString(R.string.theme_font_selection),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Text(
-                            text = context.getString(R.string.theme_font_selection_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                    Icon(
-                        imageVector = RhythmIcons.Forward,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            } */
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -7163,7 +6807,7 @@ fun OnboardingProgressIndicator(
             label = "progressText"
         ) { step ->
             Text(
-                text = "Step ${step + 1} of $totalSteps",
+                text = stringResource(R.string.onboarding_step_counter, step + 1, totalSteps),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Medium,
                     letterSpacing = 0.5.sp
@@ -10736,34 +10380,6 @@ private fun StatsFeaturesAndInfoCard() {
             )
             
             Spacer(modifier = Modifier.height(12.dp))
-//            HorizontalDivider(
-//                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
-//            )
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            // How it works section
-//            Row(verticalAlignment = Alignment.CenterVertically) {
-//                Icon(
-//                    imageVector = RhythmIcons.Info,
-//                    contentDescription = null,
-//                    modifier = Modifier.size(24.dp)
-//                )
-//                Spacer(modifier = Modifier.width(12.dp))
-//                Text(
-//                    text = context.getString(R.string.onboarding_stats_info_title),
-//                    style = MaterialTheme.typography.titleMedium,
-//                    fontWeight = FontWeight.Bold,
-//                    color = MaterialTheme.colorScheme.onPrimaryContainer
-//                )
-//            }
-//            Spacer(modifier = Modifier.height(12.dp))
-//
-//            Text(
-//                text = context.getString(R.string.onboarding_stats_info_desc),
-//                style = MaterialTheme.typography.bodyMedium,
-//                color = MaterialTheme.colorScheme.onPrimaryContainer,
-//                lineHeight = 20.sp
-//            )
         }
     }
 }
@@ -10889,7 +10505,7 @@ fun EnhancedAppModeChoiceContent(
                 )
 
                 Text(
-                    text = "Configure Rhythm as a local offline music player for audio files stored on your device, or connect to your self-hosted streaming services.",
+                    text = stringResource(R.string.onboarding_configure_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -11690,7 +11306,7 @@ private fun StreamingSetupSelectionAndForm(
                             color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                         Text(
-                            text = "Connected to $selectedProviderName as $username",
+                            text = stringResource(R.string.onboarding_connected_to_format, selectedProviderName, username),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
                         )

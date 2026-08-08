@@ -602,7 +602,7 @@ fun UniversalSearchScreen(
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = "We couldn't find anything matching \"$query\".",
+                                    text = stringResource(R.string.search_no_results_query_format, query),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center,
@@ -719,7 +719,7 @@ fun UniversalSearchScreen(
                                                                 color = MaterialTheme.colorScheme.onSecondaryContainer
                                                             )
                                                             Text(
-                                                                text = "See all $totalSongs songs",
+                                                                text = stringResource(R.string.search_view_all_count_format, totalSongs),
                                                                 style = MaterialTheme.typography.bodyMedium,
                                                                 color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
                                                             )
@@ -953,7 +953,7 @@ fun UniversalSearchScreen(
                                                             color = MaterialTheme.colorScheme.onSecondaryContainer
                                                         )
                                                         Text(
-                                                            text = "See all $totalSongs songs",
+                                                            text = stringResource(R.string.search_view_all_count_format, totalSongs),
                                                             style = MaterialTheme.typography.bodyMedium,
                                                             color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
                                                         )

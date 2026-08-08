@@ -14,6 +14,7 @@ import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
 import androidx.glance.LocalSize
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
@@ -208,7 +209,7 @@ class RhythmStatsWidget : GlanceAppWidget() {
 
                         // "listening" unit label - like the stats screen's total listening time
                         Text(
-                            text = "listening",
+                            text = LocalContext.current.getString(R.string.rhythmstatswidget_listening),
                             style = TextStyle(
                                 fontSize = unitFontSize,
                                 fontWeight = FontWeight.Medium,

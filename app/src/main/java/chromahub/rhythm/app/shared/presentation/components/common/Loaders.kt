@@ -42,11 +42,13 @@ fun M3LinearLoader(
         LinearWavyProgressIndicator(
             progress = { animatedProgress },
             modifier = modifier,
+            color = color,
             trackColor = trackColor
         )
     } else {
         LinearWavyProgressIndicator(
             modifier = modifier,
+            color = color,
             trackColor = trackColor
         )
     }

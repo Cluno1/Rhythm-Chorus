@@ -298,7 +298,7 @@ fun CrashLogHistorySettingsScreen(onBackClick: () -> Unit, appSettings: AppSetti
                 Button(
                     onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("Rhythm Crash Log", selectedLog)
+                        val clip = ClipData.newPlainText(context.getString(R.string.crashlog_clip_label), selectedLog)
                         clipboard.setPrimaryClip(clip)
                         showLogDetailDialog = false
                         Toast.makeText(context, context.getString(R.string.settings_log_copied), Toast.LENGTH_SHORT).show()

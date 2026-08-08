@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
@@ -473,7 +474,7 @@ fun ExpressiveMiniPlayer(
                         ) {
                             Icon(
                                 imageVector = RhythmIcons.SkipPrevious,
-                                contentDescription = "Previous",
+                                contentDescription = stringResource(R.string.animatedplaybackcontrols_previous),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -500,7 +501,7 @@ fun ExpressiveMiniPlayer(
                         ) {
                             Icon(
                                 imageVector = RhythmIcons.SkipNext,
-                                contentDescription = "Next",
+                                contentDescription = stringResource(R.string.onboarding_next),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(20.dp)
                             )

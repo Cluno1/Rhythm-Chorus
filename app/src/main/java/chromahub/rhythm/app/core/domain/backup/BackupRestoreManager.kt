@@ -3,6 +3,7 @@ package chromahub.rhythm.app.core.domain.backup
 import android.content.Context
 import android.util.Log
 import androidx.room.withTransaction
+import chromahub.rhythm.app.R
 import chromahub.rhythm.app.features.local.data.database.RhythmDatabase
 import chromahub.rhythm.app.features.local.data.database.entity.PlaylistEntity
 import chromahub.rhythm.app.features.local.data.database.entity.PlaylistSongEntity
@@ -103,7 +104,7 @@ class BackupRestoreManager(
                         } else {
                             chromahub.rhythm.app.shared.data.model.Song(
                                 id = songId,
-                                title = "Unknown Song",
+                                title = context.getString(R.string.unknown_song),
                                 artist = "<unknown>",
                                 album = "<unknown>",
                                 albumId = "",

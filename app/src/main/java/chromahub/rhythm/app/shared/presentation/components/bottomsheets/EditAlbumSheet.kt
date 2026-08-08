@@ -169,11 +169,11 @@ fun EditAlbumSheet(
 
     fun handleSave() {
         if (albumTitle.trim().isBlank()) {
-            Toast.makeText(context, "Album Title cannot be empty", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.editalbumsheet_title_empty), Toast.LENGTH_SHORT).show()
             return
         }
         if (albumArtist.trim().isBlank()) {
-            Toast.makeText(context, "Album Artist cannot be empty", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.editalbumsheet_artist_empty), Toast.LENGTH_SHORT).show()
             return
         }
         showWarningDialog = true

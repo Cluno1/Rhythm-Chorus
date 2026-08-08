@@ -31,6 +31,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -208,6 +209,7 @@ fun SongInfoBottomSheet(
     val density = LocalDensity.current
     var extendedInfo by remember { mutableStateOf<ExtendedSongInfo?>(null) }
     var isLoadingMetadata by remember { mutableStateOf(true) }
+    var isLoadingStats by remember { mutableStateOf(true) }
     var showEditSheet by remember { mutableStateOf(false) }
     
     // Detect tablet mode
@@ -315,6 +317,7 @@ fun SongInfoBottomSheet(
     
     // Load rhythm stats and rating
     LaunchedEffect(song.id) {
+        isLoadingStats = true
         song.let { currentSong ->
             // Load playback stats
             songPlaybackStats = withContext(Dispatchers.IO) {
@@ -327,6 +330,7 @@ fun SongInfoBottomSheet(
             // Load rating
             songRating = appSettings.getSongRating(currentSong.id)
         }
+        isLoadingStats = false
     }
 
     // Animation trigger
@@ -708,28 +712,31 @@ fun SongInfoBottomSheet(
                                             start = 16.dp,
                                             end = 16.dp
                                         ),
-                                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(24.dp),
                                         userScrollEnabled = true
                                     ) {
                                         item {
                                             SongInfoCard(
                                                 song = currentSong ?: song,
                                                 extendedInfo = extendedInfo,
-                                                useHoursFormat = useHoursFormat
+                                                useHoursFormat = useHoursFormat,
+                                                isLoading = isLoadingMetadata
                                             )
                                         }
                                         item {
                                             RhythmStatsCard(
                                                 songPlaybackStats = songPlaybackStats,
                                                 songRating = songRating,
-                                                useHoursFormat = useHoursFormat
+                                                useHoursFormat = useHoursFormat,
+                                                isLoading = isLoadingStats
                                             )
                                         }
                                         item {
                                             FileInfoCard(
                                                 song = currentSong ?: song,
                                                 extendedInfo = extendedInfo,
-                                                folderPath = folderPath
+                                                folderPath = folderPath,
+                                                isLoading = isLoadingMetadata
                                             )
                                         }
                                     }
@@ -804,7 +811,7 @@ fun SongInfoBottomSheet(
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(28.dp)
         ) {
             item {
                 // Header with album art and track info
@@ -988,13 +995,13 @@ fun SongInfoBottomSheet(
                     SongInfoCard(
                         song = displaySong,
                         extendedInfo = extendedInfo,
-                        useHoursFormat = useHoursFormat
+                        useHoursFormat = useHoursFormat,
+                        isLoading = isLoadingMetadata
                     )
                 }
             }
 
             item {
-                // Rhythm Stats card
                 AnimatedVisibility(
                     visible = showContent,
                     enter = fadeIn() + slideInVertically { it },
@@ -1003,13 +1010,13 @@ fun SongInfoBottomSheet(
                     RhythmStatsCard(
                         songPlaybackStats = songPlaybackStats,
                         songRating = songRating,
-                        useHoursFormat = useHoursFormat
+                        useHoursFormat = useHoursFormat,
+                        isLoading = isLoadingStats
                     )
                 }
             }
 
             item {
-                // File Info card
                 AnimatedVisibility(
                     visible = showContent,
                     enter = fadeIn() + slideInVertically { it },
@@ -1018,7 +1025,8 @@ fun SongInfoBottomSheet(
                     FileInfoCard(
                         song = displaySong,
                         extendedInfo = extendedInfo,
-                        folderPath = folderPath
+                        folderPath = folderPath,
+                        isLoading = isLoadingMetadata
                     )
                 }
             }
@@ -1073,11 +1081,112 @@ fun SongInfoBottomSheet(
     }
 }
 
+// Connected-grid helpers: compute each item's (row, col) cell (col 2 = full-width
+// span) and derive a shared-edge shape so items visually fuse like a single card.
+private fun computeGridCellInfo(
+    itemCount: Int,
+    isFullWidth: (Int) -> Boolean
+): Pair<List<Pair<Int, Int>>, Int> {
+    val cells = mutableListOf<Pair<Int, Int>>()
+    var row = 0
+    var col = 0
+    for (i in 0 until itemCount) {
+        if (isFullWidth(i)) {
+            cells.add(Pair(row, 2))
+            row++
+            col = 0
+        } else {
+            cells.add(Pair(row, col))
+            col++
+            if (col == 2) {
+                col = 0
+                row++
+            }
+        }
+    }
+    val totalRows = if (col > 0) row + 1 else row
+    return Pair(cells, totalRows)
+}
+
+private fun connectedGridItemShape(row: Int, col: Int, totalRows: Int): RoundedCornerShape {
+    val isFirstRow = row == 0
+    val isLastRow = row == totalRows - 1
+    return when {
+        col == 2 -> when {
+            isFirstRow && isLastRow -> RoundedCornerShape(24.dp)
+            isFirstRow -> RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 8.dp)
+            isLastRow -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
+            else -> RoundedCornerShape(8.dp)
+        }
+        col == 0 -> when {
+            isFirstRow && isLastRow -> RoundedCornerShape(topStart = 24.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 8.dp)
+            isFirstRow -> RoundedCornerShape(topStart = 24.dp, topEnd = 8.dp, bottomStart = 8.dp, bottomEnd = 8.dp)
+            isLastRow -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 8.dp)
+            else -> RoundedCornerShape(8.dp)
+        }
+        else -> when {
+            isFirstRow && isLastRow -> RoundedCornerShape(topStart = 8.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 24.dp)
+            isFirstRow -> RoundedCornerShape(topStart = 8.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 8.dp)
+            isLastRow -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 8.dp, bottomEnd = 24.dp)
+            else -> RoundedCornerShape(8.dp)
+        }
+    }
+}
+
+@Composable
+private fun MetadataSection(
+    title: String,
+    icon: MaterialSymbolIcon,
+    isLoading: Boolean,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(96.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                ContentLoadingIndicator()
+            }
+        } else {
+            content()
+        }
+    }
+}
+
 @Composable
 private fun SongInfoCard(
     song: Song,
     extendedInfo: ExtendedSongInfo?,
-    useHoursFormat: Boolean = false
+    useHoursFormat: Boolean = false,
+    isLoading: Boolean = false
 ) {
     val context = LocalContext.current
     val songInfoItems = buildList {
@@ -1124,63 +1233,36 @@ private fun SongInfoCard(
         }
     }
 
-    if (songInfoItems.isNotEmpty()) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = context.getString(R.string.cd_song_info),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+    if (isLoading || songInfoItems.isNotEmpty()) {
+        val wideLabels = listOf("Album", "Composer", "Album Artist")
+        val isFullWidth: (Int) -> Boolean = { index ->
+            val item = songInfoItems[index]
+            when {
+                item.label in wideLabels -> true
+                else -> {
+                    val regularItems = songInfoItems.filter { it.label !in wideLabels }
+                    val itemIndexInRegular = regularItems.indexOf(item)
+                    itemIndexInRegular == regularItems.lastIndex && regularItems.size % 2 == 1
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
+            }
+        }
+        val (cells, totalRows) = computeGridCellInfo(songInfoItems.size, isFullWidth)
+        MetadataSection(
+            title = context.getString(R.string.cd_song_info),
+            icon = RhythmIcons.Info,
+            isLoading = isLoading
+        ) {
+            if (songInfoItems.isNotEmpty()) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.height(
-                        songInfoItems.count { it.label == "Album" || it.label == "Composer" || it.label == "Album Artist" }.let { wideCount ->
-                            val regularCount = songInfoItems.size - wideCount
-                            val regularRows = (regularCount + 1) / 2 // Ceiling division
-                            (wideCount + regularRows) * 80
-                        }.dp
-                    )
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    userScrollEnabled = false,
+                    modifier = Modifier.height((totalRows.coerceAtLeast(1) * 68 + (totalRows.coerceAtLeast(1) - 1) * 4).dp)
                 ) {
                     itemsIndexed(
                         items = songInfoItems,
-                        span = { index, item -> 
-                            when {
-                                item.label == "Album" || item.label == "Composer" || item.label == "Album Artist" -> GridItemSpan(2)
-                                else -> {
-                                    val regularItems = songInfoItems.filter { it.label != "Album" && it.label != "Composer" && it.label != "Album Artist" }
-                                    val itemIndexInRegular = regularItems.indexOf(item)
-                                    if (itemIndexInRegular == regularItems.lastIndex && regularItems.size % 2 == 1) GridItemSpan(2) else GridItemSpan(1)
-                                }
-                            }
-                        }
+                        span = { index, _ -> if (isFullWidth(index)) GridItemSpan(2) else GridItemSpan(1) }
                     ) { index, item ->
                         AnimatedVisibility(
                             visible = true,
@@ -1197,7 +1279,8 @@ private fun SongInfoCard(
                                 initialOffsetY = { it / 5 }
                             )
                         ) {
-                            SongInfoGridItem(item = item)
+                            val (row, col) = cells[index]
+                            SongInfoGridItem(item = item, shape = connectedGridItemShape(row, col, totalRows))
                         }
                     }
                 }
@@ -1210,7 +1293,8 @@ private fun SongInfoCard(
 private fun RhythmStatsCard(
     songPlaybackStats: chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository.SongPlaybackSummary?,
     songRating: Int,
-    useHoursFormat: Boolean = false
+    useHoursFormat: Boolean = false,
+    isLoading: Boolean = false
 ) {
     val context = LocalContext.current
     val rhythmStatsItems = buildList {
@@ -1230,48 +1314,27 @@ private fun RhythmStatsCard(
         }
     }
 
-    if (rhythmStatsItems.isNotEmpty()) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    if (isLoading || rhythmStatsItems.isNotEmpty()) {
+        val isFullWidth: (Int) -> Boolean = { index ->
+            index == rhythmStatsItems.lastIndex && rhythmStatsItems.size % 2 == 1
+        }
+        val (cells, totalRows) = computeGridCellInfo(rhythmStatsItems.size, isFullWidth)
+        MetadataSection(
+            title = context.getString(R.string.rhythm_stats),
+            icon = RhythmIcons.BarChart,
+            isLoading = isLoading
         ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.BarChart,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = context.getString(R.string.rhythm_stats),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
+            if (rhythmStatsItems.isNotEmpty()) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.height(((rhythmStatsItems.size / 2 + rhythmStatsItems.size % 2) * 80).dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    userScrollEnabled = false,
+                    modifier = Modifier.height((totalRows.coerceAtLeast(1) * 68 + (totalRows.coerceAtLeast(1) - 1) * 4).dp)
                 ) {
                     itemsIndexed(
                         items = rhythmStatsItems,
-                        span = { index, item -> if (index == rhythmStatsItems.lastIndex && rhythmStatsItems.size % 2 == 1) GridItemSpan(2) else GridItemSpan(1) }
+                        span = { index, _ -> if (isFullWidth(index)) GridItemSpan(2) else GridItemSpan(1) }
                     ) { index, item ->
                         AnimatedVisibility(
                             visible = true,
@@ -1288,7 +1351,8 @@ private fun RhythmStatsCard(
                                 initialOffsetY = { it / 5 }
                             )
                         ) {
-                            RhythmStatsGridItem(item = item)
+                            val (row, col) = cells[index]
+                            RhythmStatsGridItem(item = item, shape = connectedGridItemShape(row, col, totalRows))
                         }
                     }
                 }
@@ -1301,7 +1365,8 @@ private fun RhythmStatsCard(
 private fun FileInfoCard(
     song: Song,
     extendedInfo: ExtendedSongInfo?,
-    folderPath: String?
+    folderPath: String?,
+    isLoading: Boolean = false
 ) {
     val context = LocalContext.current
     val fileInfoItems = buildList {
@@ -1383,63 +1448,36 @@ private fun FileInfoCard(
         }
     }
 
-    if (fileInfoItems.isNotEmpty()) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.Folder,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = context.getString(R.string.file_info),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+    if (isLoading || fileInfoItems.isNotEmpty()) {
+        val wideLabels = listOf("Location")
+        val isFullWidth: (Int) -> Boolean = { index ->
+            val item = fileInfoItems[index]
+            when {
+                item.label in wideLabels -> true
+                else -> {
+                    val regularItems = fileInfoItems.filter { it.label !in wideLabels }
+                    val itemIndexInRegular = regularItems.indexOf(item)
+                    itemIndexInRegular == regularItems.lastIndex && regularItems.size % 2 == 1
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
+            }
+        }
+        val (cells, totalRows) = computeGridCellInfo(fileInfoItems.size, isFullWidth)
+        MetadataSection(
+            title = context.getString(R.string.file_info),
+            icon = RhythmIcons.Folder,
+            isLoading = isLoading
+        ) {
+            if (fileInfoItems.isNotEmpty()) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.height(
-                        fileInfoItems.count { it.label == "Location" }.let { wideCount ->
-                            val regularCount = fileInfoItems.size - wideCount
-                            val regularRows = (regularCount + 1) / 2 // Ceiling division
-                            (wideCount + regularRows) * 80
-                        }.dp
-                    )
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    userScrollEnabled = false,
+                    modifier = Modifier.height((totalRows.coerceAtLeast(1) * 68 + (totalRows.coerceAtLeast(1) - 1) * 4).dp)
                 ) {
                     itemsIndexed(
                         items = fileInfoItems,
-                        span = { index, item -> 
-                            when {
-                                item.label == "Location" -> GridItemSpan(2)
-                                else -> {
-                                    val regularItems = fileInfoItems.filter { it.label != "Location" }
-                                    val itemIndexInRegular = regularItems.indexOf(item)
-                                    if (itemIndexInRegular == regularItems.lastIndex && regularItems.size % 2 == 1) GridItemSpan(2) else GridItemSpan(1)
-                                }
-                            }
-                        }
+                        span = { index, _ -> if (isFullWidth(index)) GridItemSpan(2) else GridItemSpan(1) }
                     ) { index, item ->
                         AnimatedVisibility(
                             visible = true,
@@ -1456,7 +1494,8 @@ private fun FileInfoCard(
                                 initialOffsetY = { it / 5 }
                             )
                         ) {
-                            FileInfoGridItem(item = item)
+                            val (row, col) = cells[index]
+                            FileInfoGridItem(item = item, shape = connectedGridItemShape(row, col, totalRows))
                         }
                     }
                 }
@@ -1467,14 +1506,15 @@ private fun FileInfoCard(
 
 @Composable
 private fun SongInfoGridItem(
-    item: MetadataItem
+    item: MetadataItem,
+    shape: RoundedCornerShape
 ) {
     val context = LocalContext.current
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .height(68.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = shape,
         color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
     ) {
         Column(
@@ -1543,14 +1583,15 @@ private fun SongInfoGridItem(
 
 @Composable
 private fun RhythmStatsGridItem(
-    item: MetadataItem
+    item: MetadataItem,
+    shape: RoundedCornerShape
 ) {
     val context = LocalContext.current
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .height(68.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = shape,
         color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
     ) {
         Column(
@@ -1605,14 +1646,15 @@ private fun RhythmStatsGridItem(
 
 @Composable
 private fun FileInfoGridItem(
-    item: MetadataItem
+    item: MetadataItem,
+    shape: RoundedCornerShape
 ) {
     val context = LocalContext.current
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .height(68.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = shape,
         color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
     ) {
         Column(

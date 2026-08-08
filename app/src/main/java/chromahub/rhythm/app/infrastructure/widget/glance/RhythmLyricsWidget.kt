@@ -187,7 +187,7 @@ class RhythmLyricsWidget : GlanceAppWidget() {
         ) {
             Image(
                 provider = ImageProvider(R.drawable.ic_skip_next),
-                contentDescription = "Next",
+                contentDescription = LocalContext.current.getString(R.string.onboarding_next),
                 modifier = GlanceModifier.size(iconSize),
                 colorFilter = ColorFilter.tint(iconColor)
             )
@@ -211,7 +211,7 @@ class RhythmLyricsWidget : GlanceAppWidget() {
         ) {
             Image(
                 provider = ImageProvider(R.drawable.ic_skip_previous),
-                contentDescription = "Previous",
+                contentDescription = LocalContext.current.getString(R.string.animatedplaybackcontrols_previous),
                 modifier = GlanceModifier.size(iconSize),
                 colorFilter = ColorFilter.tint(iconColor)
             )
@@ -231,7 +231,7 @@ class RhythmLyricsWidget : GlanceAppWidget() {
         val prevLine = if (activeIndex > 0) lines.getOrNull(activeIndex - 1) else null
         val activeLine = lines.getOrNull(activeIndex)
         val nextLine = lines.getOrNull(activeIndex + 1)
-        val hasSong = songTitle.isNotBlank() && songTitle != "Rhythm"
+        val hasSong = songTitle.isNotBlank() && songTitle != LocalContext.current.getString(R.string.app_name)
         val isCompact = size.height < 120.dp
 
         Box(
@@ -255,13 +255,13 @@ class RhythmLyricsWidget : GlanceAppWidget() {
                 ) {
                     Image(
                         provider = ImageProvider(R.drawable.ic_notification),
-                        contentDescription = "Rhythm",
+                        contentDescription = LocalContext.current.getString(R.string.app_name),
                         modifier = GlanceModifier.size(14.dp),
                         colorFilter = ColorFilter.tint(GlanceTheme.colors.primary)
                     )
                     Spacer(GlanceModifier.width(5.dp))
                     Text(
-                        text = "Rhythm",
+                        text = LocalContext.current.getString(R.string.app_name),
                         style = TextStyle(
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
@@ -354,7 +354,7 @@ class RhythmLyricsWidget : GlanceAppWidget() {
                             }
                         } else {
                             Text(
-                                text = "No lyrics available",
+                                text = LocalContext.current.getString(R.string.rhythmlyricswidget_no_lyrics_available),
                                 style = TextStyle(
                                     fontSize = 12.sp,
                                     color = GlanceTheme.colors.onSurfaceVariant
@@ -364,7 +364,7 @@ class RhythmLyricsWidget : GlanceAppWidget() {
                         }
                     } else {
                         Text(
-                            text = "Your Music, Your Rhythm",
+                            text = LocalContext.current.getString(R.string.rhythmlyricswidget_tagline),
                             style = TextStyle(
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
@@ -374,7 +374,7 @@ class RhythmLyricsWidget : GlanceAppWidget() {
                         )
                         Spacer(GlanceModifier.height(3.dp))
                         Text(
-                            text = "Open Rhythm to play some music",
+                            text = LocalContext.current.getString(R.string.rhythmlyricswidget_open_to_play),
                             style = TextStyle(
                                 fontSize = 11.sp,
                                 color = GlanceTheme.colors.onSurfaceVariant

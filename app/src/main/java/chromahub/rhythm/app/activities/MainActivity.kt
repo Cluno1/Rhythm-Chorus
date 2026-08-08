@@ -337,7 +337,7 @@ class MainActivity : AppCompatActivity() {
                                     InitializationLoader(modifier = Modifier.size(64.dp))
 
                                     Text(
-                                        text = "Preparing...",
+                                        text = stringResource(R.string.mainactivity_preparing),
                                         style = MaterialTheme.typography.headlineMedium.copy(
                                             fontWeight = FontWeight.Medium
                                         ),

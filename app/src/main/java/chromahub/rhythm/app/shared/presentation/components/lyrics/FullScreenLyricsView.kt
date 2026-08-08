@@ -514,7 +514,7 @@ fun FullScreenLyricsView(
                                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                                             Icon(
                                                 imageVector = MaterialSymbolIcon("chevron_left"),
-                                                contentDescription = "Nudge backward",
+                                                contentDescription = stringResource(R.string.lyrics_nudge_backward),
                                                 tint = textPrimaryColor,
                                                 modifier = Modifier.size(20.dp)
                                             )
@@ -561,7 +561,7 @@ fun FullScreenLyricsView(
                                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                                             Icon(
                                                 imageVector = MaterialSymbolIcon("chevron_right"),
-                                                contentDescription = "Nudge forward",
+                                                contentDescription = stringResource(R.string.lyrics_nudge_forward),
                                                 tint = textPrimaryColor,
                                                 modifier = Modifier.size(20.dp)
                                             )
@@ -1164,7 +1164,7 @@ fun FullScreenLyricsView(
                                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                                             Icon(
                                                 imageVector = MaterialSymbolIcon("chevron_left"),
-                                                contentDescription = "Nudge backward",
+                                                contentDescription = stringResource(R.string.lyrics_nudge_backward),
                                                 tint = textPrimaryColor,
                                                 modifier = Modifier.size(20.dp)
                                             )
@@ -1211,7 +1211,7 @@ fun FullScreenLyricsView(
                                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                                             Icon(
                                                 imageVector = MaterialSymbolIcon("chevron_right"),
-                                                contentDescription = "Nudge forward",
+                                                contentDescription = stringResource(R.string.lyrics_nudge_forward),
                                                 tint = textPrimaryColor,
                                                 modifier = Modifier.size(20.dp)
                                             )

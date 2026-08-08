@@ -470,9 +470,9 @@ fun LyricsEditorBottomSheet(
                                         val success = performRename(context, selectedUri, songFile.parentFile, expectedLrcName, loadedLyrics)
                                         if (!success) {
                                             appSettings.setSongCustomLrcFile(song.id, loadedFileName)
-                                            Toast.makeText(context, "Could not rename (permission denied). Tagged custom file instead.", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, context.getString(R.string.lyrics_rename_permission_denied), Toast.LENGTH_LONG).show()
                                         } else {
-                                            Toast.makeText(context, "File renamed to $expectedLrcName successfully.", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, context.getString(R.string.lyrics_renamed_to_format, expectedLrcName), Toast.LENGTH_SHORT).show()
                                         }
                                         applyLoadedLyrics(loadedLyrics)
                                     }
@@ -607,7 +607,7 @@ fun LyricsEditorBottomSheet(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Source Preference",
+                                text = stringResource(R.string.lyrics_source_preference),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -628,7 +628,7 @@ fun LyricsEditorBottomSheet(
                                 onClick = { dropdownExpanded = true },
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("Change")
+                                Text(stringResource(R.string.lyrics_change))
                                 Icon(
                                     imageVector = MaterialSymbolIcon("arrow_drop_down", filled = true),
                                     contentDescription = null,
@@ -762,7 +762,7 @@ fun LyricsEditorBottomSheet(
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
-                                Text("Clear", style = MaterialTheme.typography.labelMedium)
+                                Text(stringResource(R.string.lyrics_clear), style = MaterialTheme.typography.labelMedium)
                             }
                         }
                     }
@@ -783,9 +783,9 @@ fun LyricsEditorBottomSheet(
                 ) {
                     RhythmToggleButtonGroup(
                         options = listOf(
-                            RhythmToggleOption(text = "Source"),
-                            RhythmToggleOption(text = "Line-by-line"),
-                            RhythmToggleOption(text = "Word-by-word")
+                            RhythmToggleOption(text = stringResource(R.string.lyrics_source)),
+                            RhythmToggleOption(text = stringResource(R.string.lyrics_line_by_line)),
+                            RhythmToggleOption(text = stringResource(R.string.lyrics_word_by_word))
                         ),
                         selectedIndices = setOf(
                             when (selectedFormat) {
@@ -1210,7 +1210,7 @@ fun LyricsEditorBottomSheet(
                             modifier = Modifier.size(28.dp)
                         )
                         Text(
-                            text = "Rename LRC File?",
+                            text = stringResource(R.string.lyrics_rename_lrc_title),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
@@ -1219,7 +1219,7 @@ fun LyricsEditorBottomSheet(
                 text = {
                     Column {
                         Text(
-                            text = "The loaded LRC file name '$pendingFileName' is different from the song's file name. Would you like to rename it to match the song or associate it as a custom tagged file?",
+                            text = stringResource(R.string.lyrics_rename_lrc_body, pendingFileName),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1233,7 +1233,7 @@ fun LyricsEditorBottomSheet(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Remember my choice (Don't ask again)",
+                                text = stringResource(R.string.lyrics_remember_choice),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -1252,9 +1252,9 @@ fun LyricsEditorBottomSheet(
                                 val success = performRename(context, pendingUri!!, songFile.parentFile, pendingExpectedName, pendingLyrics)
                                 if (!success) {
                                     appSettings.setSongCustomLrcFile(song.id, pendingFileName)
-                                    Toast.makeText(context, "Could not rename (permission denied). Tagged custom file instead.", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, context.getString(R.string.lyrics_rename_permission_denied), Toast.LENGTH_LONG).show()
                                 } else {
-                                    Toast.makeText(context, "File renamed successfully.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.lyrics_renamed_success), Toast.LENGTH_SHORT).show()
                                 }
                                 applyLoadedLyrics(pendingLyrics)
                             }
@@ -1270,7 +1270,7 @@ fun LyricsEditorBottomSheet(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Rename")
+                        Text(stringResource(R.string.lyrics_rename))
                     }
                 },
                 dismissButton = {
@@ -1290,7 +1290,7 @@ fun LyricsEditorBottomSheet(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Tag / Keep custom")
+                        Text(stringResource(R.string.lyrics_tag_keep_custom))
                     }
                 }
             )

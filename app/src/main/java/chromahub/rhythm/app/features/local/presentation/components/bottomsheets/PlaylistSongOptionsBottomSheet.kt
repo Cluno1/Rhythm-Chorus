@@ -209,7 +209,7 @@ fun PlaylistSongOptionsBottomSheet(
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Text(
-                                    text = "Local Song",
+                                    text = stringResource(R.string.playlistsongoptions_local_song),
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold

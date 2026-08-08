@@ -436,7 +436,7 @@ private fun ListeningOverviewCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Most active at ${timeline.firstOrNull()?.label ?: "9:30 am"}",
+                    text = stringResource(R.string.stats_most_active_at, timeline.firstOrNull()?.label ?: "9:30 am"),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -708,7 +708,7 @@ private fun CategoryMetricsSection(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
-                            text = "Top ${targetDimension.displayName}",
+                            text = stringResource(R.string.stats_top_dimension, targetDimension.displayName),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -853,7 +853,7 @@ private fun ListeningHabitsCard(
                     },
                     title = {
                         Text(
-                            text = "Active Days",
+                            text = stringResource(R.string.stats_active_days),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -876,7 +876,7 @@ private fun ListeningHabitsCard(
                     },
                     title = {
                         Text(
-                            text = "Longest Streak",
+                            text = stringResource(R.string.stats_longest_streak),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -899,7 +899,7 @@ private fun ListeningHabitsCard(
                     },
                     title = {
                         Text(
-                            text = "Total Sessions",
+                            text = stringResource(R.string.stats_total_sessions),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -922,7 +922,7 @@ private fun ListeningHabitsCard(
                     },
                     title = {
                         Text(
-                            text = "Avg Session",
+                            text = stringResource(R.string.stats_avg_session),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -947,7 +947,7 @@ private fun ListeningHabitsCard(
                         },
                         title = {
                             Text(
-                                text = "Peak Day",
+                                text = stringResource(R.string.stats_peak_day),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

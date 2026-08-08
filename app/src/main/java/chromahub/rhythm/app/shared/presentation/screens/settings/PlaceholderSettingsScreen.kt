@@ -199,17 +199,6 @@ fun PlaceholderSettingsScreen() {
             fontWeight = FontWeight.SemiBold
         )
 
-//        Spacer(modifier = Modifier.height(16.dp))
-//
-//        // Description
-//        Text(
-//            text = context.getString(R.string.settings_select_option_desc),
-//            style = MaterialTheme.typography.bodyLarge,
-//            color = MaterialTheme.colorScheme.onSurfaceVariant,
-//            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-//            lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2f
-//        )
-
         Spacer(modifier = Modifier.height(48.dp))
 
         // Additional visual elements for tablet UI

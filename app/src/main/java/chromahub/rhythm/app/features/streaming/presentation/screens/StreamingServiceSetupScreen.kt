@@ -185,7 +185,7 @@ fun StreamingServiceSetupScreen(
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = "Establishing connection with the provider...",
+                                    text = stringResource(R.string.streamingservicesetup_establishing_connection),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center

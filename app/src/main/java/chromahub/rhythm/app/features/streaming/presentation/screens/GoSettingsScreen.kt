@@ -420,19 +420,25 @@ private fun StreamingStatusCard(
             }
 
             Text(
-                text = "Service: $selectedServiceName",
+                text = stringResource(R.string.gosettingsscreen_service_format, selectedServiceName),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
 
             Text(
-                text = "Account: ${if (username.isNotBlank()) username else "Not connected"}",
+                text = stringResource(
+                    R.string.gosettingsscreen_account_format,
+                    if (username.isNotBlank()) username else stringResource(R.string.gosettingsscreen_not_connected)
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
             )
 
             Text(
-                text = if (serverUrl.isNotBlank()) "Server: $serverUrl" else "Server: Not set",
+                text = stringResource(
+                    R.string.gosettingsscreen_server_format,
+                    if (serverUrl.isNotBlank()) serverUrl else stringResource(R.string.gosettingsscreen_not_set)
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f),
                 maxLines = 1,

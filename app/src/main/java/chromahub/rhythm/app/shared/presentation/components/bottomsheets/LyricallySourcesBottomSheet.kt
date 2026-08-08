@@ -301,7 +301,7 @@ fun LyricallySourcesBottomSheet(
                             appSettings.setDisabledLyricallySources(defaultDisabled)
                             reorderableList = appSettings.defaultLyricallySources
                             disabledSourcesSet = defaultDisabled
-                            Toast.makeText(context, "Reset to defaults.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.lyricallysources_reset_to_defaults), Toast.LENGTH_SHORT).show()
                         },
                         weight = 1f,
                         isFirst = true,
@@ -314,7 +314,7 @@ fun LyricallySourcesBottomSheet(
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             appSettings.setLyricallySourcesOrder(reorderableList)
                             appSettings.setDisabledLyricallySources(disabledSourcesSet)
-                            Toast.makeText(context, "Sources saved.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.lyricallysources_saved), Toast.LENGTH_SHORT).show()
                             scope.launch { sheetState.hide() }.invokeOnCompletion {
                                 if (!sheetState.isVisible) onDismiss()
                             }

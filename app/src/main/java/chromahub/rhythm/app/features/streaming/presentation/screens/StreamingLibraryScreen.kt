@@ -17,6 +17,7 @@ import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 
+import android.content.Context
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -470,7 +471,7 @@ fun StreamingLibraryScreen(
         }
     }
     val localPlaylists = remember(sortedPlaylists) {
-        sortedPlaylists.map { it.toLibraryPlaylist() }
+        sortedPlaylists.map { it.toLibraryPlaylist(context) }
     }
     val localPlaylistsById = remember(localPlaylists, sortedPlaylists) {
         sortedPlaylists.associateBy { it.id }
@@ -2521,7 +2522,7 @@ fun StreamingSong.toLibrarySong(): Song {
     )
 }
 
-fun StreamingPlaylist.toLibraryPlaylist(): Playlist {
+fun StreamingPlaylist.toLibraryPlaylist(context: Context): Playlist {
     val loadedTracks = getTracks()
     val displaySongs = if (loadedTracks.isNotEmpty()) {
         loadedTracks.map { it.toLibrarySong() }
@@ -2530,7 +2531,7 @@ fun StreamingPlaylist.toLibraryPlaylist(): Playlist {
         (1..songCount).map { i ->
             Song(
                 id = "${id}_placeholder_$i",
-                title = "Track $i",
+                title = context.getString(R.string.streaming_placeholder_track_format, i),
                 artist = "",
                 album = name,
                 duration = 0L,
@@ -2849,13 +2850,13 @@ private fun LibraryBottomBar(
                             if (selectionMode) {
                                 Icon(
                                     imageVector = RhythmIcons.Close,
-                                    contentDescription = "Cancel selection",
+                                    contentDescription = stringResource(R.string.cd_cancel_selection),
                                     modifier = Modifier.size(24.dp)
                                 )
                             } else {
                                 Icon(
                                     imageVector = if (activeTab == "EXPLORER") RhythmIcons.Back else MaterialSymbolIcon("check_box"),
-                                    contentDescription = if (activeTab == "EXPLORER") "Back" else "Select songs",
+                                    contentDescription = if (activeTab == "EXPLORER") stringResource(R.string.cd_back) else stringResource(R.string.cd_select_songs),
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -2978,7 +2979,7 @@ private fun LibraryBottomBar(
                         if (selectionMode) {
                             Icon(
                                 imageVector = RhythmIcons.More,
-                                contentDescription = "More actions",
+                                contentDescription = stringResource(R.string.cd_more_actions),
                                 modifier = Modifier.size(24.dp)
                             )
                         } else {

@@ -346,7 +346,7 @@ fun BatchEditTagsSheet(
                             )
 
                             BatchEditField(
-                                label = "Artist",
+                                label = stringResource(R.string.batchedit_field_artist),
                                 icon = RhythmIcons.ArtistFilled,
                                 enabled = editArtist,
                                 value = artist,
@@ -355,7 +355,7 @@ fun BatchEditTagsSheet(
                             )
 
                             BatchEditField(
-                                label = "Album",
+                                label = stringResource(R.string.batchedit_field_album),
                                 icon = RhythmIcons.AlbumFilled,
                                 enabled = editAlbum,
                                 value = album,
@@ -364,7 +364,7 @@ fun BatchEditTagsSheet(
                             )
 
                             BatchEditField(
-                                label = "Genre",
+                                label = stringResource(R.string.batchedit_field_genre),
                                 icon = RhythmIcons.Category,
                                 enabled = editGenre,
                                 value = genre,
@@ -373,7 +373,7 @@ fun BatchEditTagsSheet(
                             )
 
                             BatchEditField(
-                                label = "Year",
+                                label = stringResource(R.string.batchedit_field_year),
                                 icon = RhythmIcons.DateRange,
                                 enabled = editYear,
                                 value = year,

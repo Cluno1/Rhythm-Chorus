@@ -301,10 +301,10 @@ fun BackupRestoreSettingsScreen(onBackClick: () -> Unit) {
 
                         // Also copy to clipboard
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("Rhythm Backup", backupJson)
+                        val clip = ClipData.newPlainText(context.getString(R.string.backup_clip_label), backupJson)
                         clipboard.setPrimaryClip(clip)
                     } catch (e: Exception) {
-                        showError("Failed to create backup: ${e.message}")
+                        showError(context.getString(R.string.backup_failed_to_create, e.message))
                     } finally {
                         isCreatingBackup = false
                     }
@@ -336,10 +336,10 @@ fun BackupRestoreSettingsScreen(onBackClick: () -> Unit) {
                             restoreSections = AppSettings.BackupRestoreSections()
                             showRestoreSelectionSheet = true
                         } else {
-                            showError("Unable to read the backup file")
+                            showError(context.getString(R.string.backup_unable_to_read))
                         }
                     } catch (e: Exception) {
-                        showError("Failed to restore from file: ${e.message}")
+                        showError(context.getString(R.string.backup_failed_to_restore_file, e.message))
                     } finally {
                         isRestoringFromFile = false
                     }
@@ -368,13 +368,13 @@ fun BackupRestoreSettingsScreen(onBackClick: () -> Unit) {
                         restoreSections = AppSettings.BackupRestoreSections()
                         showRestoreSelectionSheet = true
                     } else {
-                        showError("Clipboard does not contain readable backup text")
+                        showError(context.getString(R.string.backup_clipboard_no_text))
                     }
                 } else {
-                    showError("No backup data found in clipboard. Please copy a backup first.")
+                    showError(context.getString(R.string.backup_clipboard_no_data))
                 }
             } catch (e: Exception) {
-                showError("Failed to restore backup: ${e.message}")
+                showError(context.getString(R.string.backup_restore_failed, e.message))
             } finally {
                 isRestoringFromClipboard = false
             }
@@ -742,7 +742,7 @@ fun BackupRestoreSettingsScreen(onBackClick: () -> Unit) {
             onDismiss = { showBackupSelectionSheet = false },
             onConfirm = { selectedSections ->
                 if (!selectedSections.hasAtLeastOneSectionSelected) {
-                    showError("Choose at least one section to create a backup")
+                    showError(context.getString(R.string.backup_select_section_create))
                     return@BackupRestoreSectionPickerBottomSheet
                 }
 
@@ -777,7 +777,7 @@ fun BackupRestoreSettingsScreen(onBackClick: () -> Unit) {
             },
             onConfirm = { selectedSections ->
                 if (!selectedSections.hasAtLeastOneSectionSelected) {
-                    showError("Choose at least one section to restore")
+                    showError(context.getString(R.string.backup_select_section_restore))
                     return@BackupRestoreSectionPickerBottomSheet
                 }
 

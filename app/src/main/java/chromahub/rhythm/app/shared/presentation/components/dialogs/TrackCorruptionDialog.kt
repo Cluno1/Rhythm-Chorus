@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.R
@@ -34,7 +35,7 @@ fun TrackCorruptionDialog(
         },
         title = {
             Text(
-                text = "Track Playback Error",
+                text = stringResource(R.string.trackcorruptiondialog_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -45,7 +46,7 @@ fun TrackCorruptionDialog(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "The song \"$trackName\" encountered a playback issue.",
+                    text = stringResource(R.string.trackcorruptiondialog_body, trackName),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -83,7 +84,7 @@ fun TrackCorruptionDialog(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Skip Song")
+                    Text(stringResource(R.string.trackcorruptiondialog_skip_song))
                 }
 
                 OutlinedButton(
@@ -98,7 +99,7 @@ fun TrackCorruptionDialog(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Close")
+                    Text(stringResource(R.string.dialog_close))
                 }
             }
         },

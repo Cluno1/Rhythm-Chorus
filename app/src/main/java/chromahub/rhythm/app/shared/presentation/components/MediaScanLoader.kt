@@ -379,21 +379,21 @@ private fun MediaScanStats(
         StatItem(
             icon = RhythmIcons.MusicNote,
             count = songsFound,
-            label = "Songs",
+            label = stringResource(R.string.bottomsheet_songs),
             color = MaterialTheme.colorScheme.primary
         )
         
         StatItem(
             icon = RhythmIcons.Album,
             count = albumsFound,
-            label = "Albums",
+            label = stringResource(R.string.bottomsheet_albums),
             color = MaterialTheme.colorScheme.secondary
         )
         
         StatItem(
             icon = RhythmIcons.Artist,
             count = artistsFound,
-            label = "Artists",
+            label = stringResource(R.string.artists_title),
             color = MaterialTheme.colorScheme.tertiary
         )
     }

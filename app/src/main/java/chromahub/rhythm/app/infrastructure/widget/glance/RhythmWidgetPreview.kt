@@ -617,7 +617,7 @@ fun GlanceWidgetPreviewsScreen() {
                 
                 // ── Lyrics Widget Previews ──
                 Text(
-                    text = "Lyrics Widget",
+                    text = stringResource(R.string.rhythmwidgetpreview_lyrics_widget),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -625,7 +625,7 @@ fun GlanceWidgetPreviewsScreen() {
 
                 // Lyrics 3×2
                 WidgetPreviewCard(
-                    title = "Lyrics Widget — 3×2",
+                    title = stringResource(R.string.rhythmwidgetpreview_lyrics_3x2),
                     size = "250 × 150 dp"
                 ) {
                     LyricsWidgetMockup(250, 150, "LyricsWidget3x2")
@@ -635,7 +635,7 @@ fun GlanceWidgetPreviewsScreen() {
 
                 // Lyrics 4×3
                 WidgetPreviewCard(
-                    title = "Lyrics Widget — 4×3",
+                    title = stringResource(R.string.rhythmwidgetpreview_lyrics_4x3),
                     size = "350 × 220 dp"
                 ) {
                     LyricsWidgetMockup(350, 220, "LyricsWidget4x3")
@@ -647,7 +647,7 @@ fun GlanceWidgetPreviewsScreen() {
                 
                 // ── Rhythm Cookie Widget Previews ──
                 Text(
-                    text = "Rhythm Cookie Widget",
+                    text = stringResource(R.string.rhythmwidgetpreview_cookie_widget),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -655,7 +655,7 @@ fun GlanceWidgetPreviewsScreen() {
 
                 // Cookie 2×2
                 WidgetPreviewCard(
-                    title = "Cookie Widget — 2×2",
+                    title = stringResource(R.string.rhythmwidgetpreview_cookie_2x2),
                     size = "180 × 180 dp"
                 ) {
                     CookieWidgetMockup(180, 180, isPlaying = true)
@@ -665,7 +665,7 @@ fun GlanceWidgetPreviewsScreen() {
 
                 // Cookie resized wide
                 WidgetPreviewCard(
-                    title = "Cookie Widget — resized wide",
+                    title = stringResource(R.string.rhythmwidgetpreview_cookie_resized_wide),
                     size = "180 × 90 dp"
                 ) {
                     CookieWidgetMockup(180, 90, isPlaying = false)

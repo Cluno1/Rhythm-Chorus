@@ -182,7 +182,7 @@ class RhythmCookieWidget : GlanceAppWidget() {
                 if (cookieArtBitmap != null) {
                     Image(
                         provider = ImageProvider(cookieArtBitmap),
-                        contentDescription = "Album Art",
+                        contentDescription = LocalContext.current.getString(R.string.settings_shapes_album_art),
                         modifier = GlanceModifier.fillMaxSize()
                     )
                 } else {
@@ -199,7 +199,7 @@ class RhythmCookieWidget : GlanceAppWidget() {
                         // App logo placeholder (notification icon mark)
                         Image(
                             provider = ImageProvider(R.drawable.ic_notification),
-                            contentDescription = "Rhythm Logo",
+                            contentDescription = LocalContext.current.getString(R.string.rhythmcookiewidget_rhythm_logo),
                             modifier = GlanceModifier.size(logoSize),
                             contentScale = ContentScale.Fit,
                             colorFilter = ColorFilter.tint(GlanceTheme.colors.onPrimaryContainer)
@@ -393,7 +393,7 @@ private fun CornerActionBadge(
                 )
                 Image(
                     provider = ImageProvider(R.drawable.ic_shuffle),
-                    contentDescription = "Shuffle",
+                    contentDescription = LocalContext.current.getString(R.string.widget_cookie_action_shuffle),
                     modifier = iconModifier,
                     colorFilter = ColorFilter.tint(
                         if (isShuffle) GlanceTheme.colors.onPrimary else GlanceTheme.colors.onTertiary
@@ -423,7 +423,7 @@ private fun CornerActionBadge(
                 )
                 Image(
                     provider = ImageProvider(repeatIcon),
-                    contentDescription = "Repeat",
+                    contentDescription = LocalContext.current.getString(R.string.widget_cookie_action_repeat),
                     modifier = iconModifier,
                     colorFilter = ColorFilter.tint(
                         if (isRepeatActive) GlanceTheme.colors.onPrimary else GlanceTheme.colors.onTertiary
@@ -450,7 +450,7 @@ private fun CornerActionBadge(
                     provider = ImageProvider(
                         if (isFavorite) R.drawable.ic_favorite_filled else R.drawable.ic_favorite_border
                     ),
-                    contentDescription = "Favorite",
+                    contentDescription = LocalContext.current.getString(R.string.widget_cookie_action_favorite),
                     modifier = iconModifier,
                     colorFilter = ColorFilter.tint(
                         if (isFavorite) GlanceTheme.colors.onPrimary else GlanceTheme.colors.onTertiary
