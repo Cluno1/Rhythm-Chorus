@@ -54,7 +54,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.size.Size
 import kotlinx.coroutines.Dispatchers
@@ -115,6 +114,7 @@ class RhythmMusicWidget : GlanceAppWidget() {
             fun get(key: String): Bitmap? = cache.get(key)
             fun put(key: String, bitmap: Bitmap) { if (get(key) == null) cache.put(key, bitmap) }
             fun keyFor(data: ByteArray): String = data.contentHashCode().toString()
+            fun clear() { cache.evictAll() }
         }
 
         fun cacheBitmap(uri: String, bitmap: Bitmap) {
@@ -123,6 +123,11 @@ class RhythmMusicWidget : GlanceAppWidget() {
 
         fun getCachedBitmap(uri: String): Bitmap? {
             return AlbumArtCache.get(uri)
+        }
+
+        /** Released on app onTrimMemory so background bitmap memory is freed. */
+        fun clearArtCache() {
+            AlbumArtCache.clear()
         }
     }
     
@@ -153,7 +158,7 @@ class RhythmMusicWidget : GlanceAppWidget() {
                 LaunchedEffect(artworkUriString) {
                     try {
                         val loaded = withContext(Dispatchers.IO) {
-                            val imageLoader = ImageLoader(glanceContext)
+                            val imageLoader = coil.Coil.imageLoader(glanceContext)
                             val request = ImageRequest.Builder(glanceContext)
                                 .data(artworkUriString)
                                 .size(Size(512, 512))

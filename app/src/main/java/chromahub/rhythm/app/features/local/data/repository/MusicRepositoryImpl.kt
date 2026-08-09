@@ -630,6 +630,37 @@ class MusicRepository(context: Context) {
         return false
     }
 
+    /**
+     * Cheap check used by the startup self-heal guard: returns true when no
+     * embedded artwork files exist in the primary extraction dir. This is a
+     * single directory listing, not a scan, so it is safe to run on every
+     * launch.
+     */
+    fun isEmbeddedArtworkCacheEmpty(): Boolean {
+        return try {
+            val filesDirArt = File(context.filesDir, "embedded_artwork")
+            !filesDirArt.exists() || filesDirArt.listFiles()?.isEmpty() == true
+        } catch (e: Exception) {
+            // Assume the cache is fine if we cannot inspect it.
+            false
+        }
+    }
+
+    /**
+     * Number of songs whose persisted artwork URI points at the embedded
+     * artwork cache. The DB retains the embedded URIs even when the cache
+     * files are missing (in-memory songs fall back to MediaStore covers),
+     * so this is the reliable signal for a wiped cache.
+     */
+    suspend fun countSongsWithEmbeddedArtworkUri(): Int {
+        return try {
+            songDao.countSongsWithEmbeddedArtworkUri()
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to count embedded artwork refs", e)
+            0
+        }
+    }
+
     fun getArtworkCacheKeyFromUri(uri: Uri): String? {
         val path = uri.path ?: return null
         val fileName = File(path).name

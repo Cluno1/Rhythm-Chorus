@@ -20,7 +20,7 @@ object AudioCacheManager {
     fun getCache(context: Context): SimpleCache {
         if (simpleCache == null) {
             val cacheDir = File(context.cacheDir, "audio_cache")
-            val maxCacheSize = 250 * 1024 * 1024L // 250MB Cache Size
+            val maxCacheSize = 150 * 1024 * 1024L // 150MB Cache Size
             val evictor = LeastRecentlyUsedCacheEvictor(maxCacheSize)
             val databaseProvider = StandaloneDatabaseProvider(context)
             simpleCache = SimpleCache(cacheDir, evictor, databaseProvider)

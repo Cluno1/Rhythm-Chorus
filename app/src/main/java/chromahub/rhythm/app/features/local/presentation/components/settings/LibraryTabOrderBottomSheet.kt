@@ -91,6 +91,7 @@ fun LibraryTabOrderBottomSheet(
     fun getTabInfo(tabId: String): Pair<String, MaterialSymbolIcon> {
         return when (tabId) {
             "SONGS" -> Pair(context.getString(R.string.settings_tab_songs), RhythmIcons.Relax)
+            "LIKED" -> Pair(context.getString(R.string.settings_tab_liked), RhythmIcons.FavoriteFilled)
             "PLAYLISTS" -> Pair(context.getString(R.string.settings_tab_playlists), RhythmIcons.PlaylistFilled)
             "ALBUMS" -> Pair(context.getString(R.string.settings_tab_albums), RhythmIcons.Music.Album)
             "ARTISTS" -> Pair(context.getString(R.string.settings_tab_artists), RhythmIcons.Artist)
@@ -297,7 +298,7 @@ fun LibraryTabOrderBottomSheet(
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             appSettings.resetLibraryTabOrder()
                             appSettings.setHiddenLibraryTabs(emptySet())
-                            reorderableList = listOf("SONGS", "PLAYLISTS", "ALBUMS", "ARTISTS", "EXPLORER")
+                            reorderableList = listOf("SONGS", "LIKED", "PLAYLISTS", "ALBUMS", "ARTISTS", "EXPLORER")
                             hiddenTabsSet = emptySet()
                             Toast.makeText(context, R.string.library_tab_order_reset, Toast.LENGTH_SHORT).show()
                         },

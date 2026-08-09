@@ -124,9 +124,9 @@ fun MultiSelectionBottomSheet(
     onDismiss: () -> Unit,
     onPlayAll: () -> Unit,
     onAddToQueue: () -> Unit,
-    onPlayNext: () -> Unit,
+    onPlayNext: (() -> Unit)? = null,
     onAddToPlaylist: () -> Unit,
-    onToggleLikeAll: (shouldLike: Boolean) -> Unit,
+    onToggleLikeAll: ((shouldLike: Boolean) -> Unit)? = null,
     onGoToAlbum: (() -> Unit)? = null,
     onGoToArtist: (() -> Unit)? = null,
     onAddToBlacklist: (() -> Unit)? = null,
@@ -199,6 +199,8 @@ fun MultiSelectionBottomSheet(
 
                     val gridItems = remember(
                         allAreLiked,
+                        onPlayNext,
+                        onToggleLikeAll,
                         onGoToAlbum,
                         onGoToArtist,
                         onAddToBlacklist,
@@ -222,15 +224,17 @@ fun MultiSelectionBottomSheet(
                                     onClick = { onPlayAll(); onDismiss() }
                                 )
                             )
-                            add(
-                                MultiOptionItem(
-                                    icon = RhythmIcons.SkipNext,
-                                    text = context.getString(R.string.action_play_next),
-                                    containerColor = primaryContainer,
-                                    iconColor = onPrimaryContainer,
-                                    onClick = { onPlayNext(); onDismiss() }
+                            if (onPlayNext != null) {
+                                add(
+                                    MultiOptionItem(
+                                        icon = RhythmIcons.SkipNext,
+                                        text = context.getString(R.string.action_play_next),
+                                        containerColor = primaryContainer,
+                                        iconColor = onPrimaryContainer,
+                                        onClick = { onPlayNext(); onDismiss() }
+                                    )
                                 )
-                            )
+                            }
                             add(
                                 MultiOptionItem(
                                     icon = RhythmIcons.Queue,
@@ -249,15 +253,17 @@ fun MultiSelectionBottomSheet(
                                     onClick = { onAddToPlaylist(); onDismiss() }
                                 )
                             )
-                            add(
-                                MultiOptionItem(
-                                    icon = if (allAreLiked) MaterialSymbolIcon("heart_broken", filled = true) else RhythmIcons.FavoriteFilled,
-                                    text = if (allAreLiked) context.getString(R.string.action_remove_from_favorites) else context.getString(R.string.action_add_to_favorites),
-                                    containerColor = tertiaryContainer,
-                                    iconColor = onTertiaryContainer,
-                                    onClick = { onToggleLikeAll(!allAreLiked); onDismiss() }
+                            if (onToggleLikeAll != null) {
+                                add(
+                                    MultiOptionItem(
+                                        icon = if (allAreLiked) MaterialSymbolIcon("heart_broken", filled = true) else RhythmIcons.FavoriteFilled,
+                                        text = if (allAreLiked) context.getString(R.string.action_remove_from_favorites) else context.getString(R.string.action_add_to_favorites),
+                                        containerColor = tertiaryContainer,
+                                        iconColor = onTertiaryContainer,
+                                        onClick = { onToggleLikeAll(!allAreLiked); onDismiss() }
+                                    )
                                 )
-                            )
+                            }
                             if (onGoToAlbum != null) {
                                 add(
                                     MultiOptionItem(

@@ -102,8 +102,8 @@ data class PendingDeleteRequest(
 object MediaUtils {
     private const val TAG = "MediaUtils"
     private const val EMBEDDED_ARTWORK_CACHE_DIR = "embedded_artwork"
-    private const val EMBEDDED_ART_CACHE_MAX_BYTES = 256L * 1024 * 1024
-    private const val EMBEDDED_ART_CACHE_MAX_FILES = 1200
+    private const val EMBEDDED_ART_CACHE_MAX_BYTES = 96L * 1024 * 1024
+    private const val EMBEDDED_ART_CACHE_MAX_FILES = 600
     private const val EMBEDDED_ART_CACHE_CLEANUP_INTERVAL_MS = 10 * 60 * 1000L
 
     @Volatile

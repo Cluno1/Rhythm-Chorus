@@ -93,7 +93,6 @@ import chromahub.rhythm.app.activities.RhythmGuardTimeoutActivity
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.core.domain.model.AppMode
 import chromahub.rhythm.app.features.local.presentation.navigation.LocalNavigation
-import chromahub.rhythm.app.features.streaming.presentation.navigation.StreamingNavigation
 import chromahub.rhythm.app.shared.data.repository.UserPreferencesRepository
 import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository
 import chromahub.rhythm.app.shared.data.repository.StatsTimeRange
@@ -190,15 +189,11 @@ fun RhythmNavigation(
                 ) { mode ->
                     when (mode) {
                         "STREAMING" -> {
-                            // Show streaming navigation with proper bottom nav
-                            StreamingNavigation(
-                                localMusicViewModel = musicViewModel,
-                                onNavigateToSettings = navigateToSettings,
-                                onNavigateToPlayer = { /* TODO */ },
-                                onSwitchToLocalMode = {
-                                    // Switch back to local mode
-                                    appSettings.setAppMode("LOCAL")
-                                }
+                            // Streaming (Go) content is hosted on the shared Home/Library screens
+                            LocalNavigation(
+                                viewModel = musicViewModel,
+                                themeViewModel = themeViewModel,
+                                appSettings = appSettings
                             )
                         }
 

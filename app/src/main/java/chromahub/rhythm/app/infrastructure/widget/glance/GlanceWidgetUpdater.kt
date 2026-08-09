@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
-import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.size.Size
 import kotlinx.coroutines.withContext
@@ -86,7 +85,7 @@ object GlanceWidgetUpdater {
                 if (!artworkUri.isNullOrBlank()) {
                     try {
                         withContext(Dispatchers.IO) {
-                            val imageLoader = ImageLoader(appContext)
+                            val imageLoader = coil.Coil.imageLoader(appContext)
                             val request = ImageRequest.Builder(appContext)
                                 .data(artworkUri)
                                 .size(Size(150, 150))

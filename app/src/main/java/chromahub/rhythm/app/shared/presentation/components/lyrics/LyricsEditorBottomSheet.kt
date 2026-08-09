@@ -168,6 +168,7 @@ fun LyricsEditorBottomSheet(
     songTitle: String,
     initialTimeOffset: Int = 0,
     song: Song? = null,
+    isStreamingMode: Boolean = false,
     onDismiss: () -> Unit,
     onSave: (String, Int, String) -> Unit,
     onRefresh: () -> Unit = {},
@@ -1164,30 +1165,32 @@ fun LyricsEditorBottomSheet(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    // Embed in File is local-only — streaming songs have no writable file.
+                    if (!isStreamingMode) {
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                    // Embed in File Button
-                    RhythmGroupedButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
-                        size = RhythmButtonSize.Large
-                    ) {
-                        RhythmButtonWeighted(
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                if (editedLyrics.isNotBlank()) {
-                                    onEmbedInFile(editedLyrics)
-                                }
-                            },
-                            weight = 1f,
-                            isFirst = true,
-                            isLast = true,
-                            enabled = editedLyrics.isNotBlank(),
-                            icon = RhythmIcons.MusicNote,
-                            text = context.getString(R.string.bottomsheet_lyrics_embed)
-                        )
-                }
+                        RhythmGroupedButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
+                            size = RhythmButtonSize.Large
+                        ) {
+                            RhythmButtonWeighted(
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    if (editedLyrics.isNotBlank()) {
+                                        onEmbedInFile(editedLyrics)
+                                    }
+                                },
+                                weight = 1f,
+                                isFirst = true,
+                                isLast = true,
+                                enabled = editedLyrics.isNotBlank(),
+                                icon = RhythmIcons.MusicNote,
+                                text = context.getString(R.string.bottomsheet_lyrics_embed)
+                            )
+                        }
+                    }
             }
         }
 

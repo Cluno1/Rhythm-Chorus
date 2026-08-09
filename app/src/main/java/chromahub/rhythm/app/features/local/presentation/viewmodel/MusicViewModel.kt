@@ -20,6 +20,8 @@ import chromahub.rhythm.app.shared.data.model.AutoEQProfile
 import chromahub.rhythm.app.util.AutoEQManager
 import android.util.LruCache
 import androidx.core.net.toUri
+import coil.Coil
+import coil.request.ImageRequest
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
@@ -1893,12 +1895,21 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val losslessArtwork = appSettings.isLosslessArtworkActive.value
                 val isCompleted = appSettings.embeddedArtworkExtractionCompleted.value
                 val lastLosslessStatus = appSettings.embeddedArtworkExtractionLosslessStatus.value
-                val hasMissingPhysicalFiles = _songs.value.any { song ->
-                    val uriStr = song.artworkUri?.toString() ?: ""
-                    (uriStr.startsWith("file:") || uriStr.startsWith("/")) &&
-                    !java.io.File(if (uriStr.startsWith("file:")) (uriStr).toUri().path ?: "" else uriStr).exists()
+                // Self-heal: if extraction is complete but the cache was wiped outside the
+                // normal flow, re-run extraction once (gated to once per 24h to avoid loops).
+                // Missing art is otherwise restored by the rescan scheduled after "Clear all cache".
+                val songsExpectingEmbeddedArt = repository.countSongsWithEmbeddedArtworkUri()
+                val needsSelfHeal = isCompleted &&
+                    appSettings.shouldRunEmbeddedArtSelfHeal() &&
+                    repository.isEmbeddedArtworkCacheEmpty() &&
+                    songsExpectingEmbeddedArt > 0
+
+                val needsRun = !isCompleted || lastLosslessStatus != losslessArtwork || needsSelfHeal
+
+                if (preferSongArtwork && needsSelfHeal) {
+                    Log.d(TAG, "Embedded artwork cache empty with $songsExpectingEmbeddedArt songs referencing it, running one-time self-heal re-extraction")
+                    appSettings.markEmbeddedArtSelfHealDone()
                 }
-                val needsRun = !isCompleted || lastLosslessStatus != losslessArtwork || hasMissingPhysicalFiles
 
                 if (preferSongArtwork && needsRun) {
                     val initialSongs = _songs.value
@@ -4592,7 +4603,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             artist = artist,
             album = album,
             albumId = "",
-            duration = mediaController?.duration?.takeIf { it > 0 } ?: 0L,
+            duration = mediaController?.duration?.takeIf { it > 0 }
+                ?: metadata.durationMs?.takeIf { it > 0 }
+                ?: 0L,
             uri = mediaItem.localConfiguration?.uri ?: Uri.EMPTY,
             artworkUri = metadata.artworkUri,
             trackNumber = 0,
@@ -5220,15 +5233,30 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     return@launch
                 }
                 
-                // Load bitmap from URI
+                // Load bitmap from URI (local via ContentResolver, streaming via Coil).
                 val context = getApplication<Application>().applicationContext
-                val bitmap = try {
-                    context.contentResolver.openInputStream(artworkUri)?.use { inputStream ->
-                        android.graphics.BitmapFactory.decodeStream(inputStream)
+                val isRemote = artworkUri.scheme == "http" || artworkUri.scheme == "https"
+                val bitmap = if (isRemote) {
+                    try {
+                        val request = coil.request.ImageRequest.Builder(context)
+                            .data(artworkUri.toString())
+                            .size(512)
+                            .build()
+                        val result = Coil.imageLoader(context).execute(request)
+                        (result.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to load remote artwork: $artworkUri", e)
+                        null
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to load bitmap from URI: $artworkUri", e)
-                    null
+                } else {
+                    try {
+                        context.contentResolver.openInputStream(artworkUri)?.use { inputStream ->
+                            android.graphics.BitmapFactory.decodeStream(inputStream)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to load bitmap from URI: $artworkUri", e)
+                        null
+                    }
                 }
                 
                 if (bitmap == null) {
@@ -9068,8 +9096,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
 
-                // Resolve songs via an id -> song map so this stays O(n) even for large queues.
-                val songsById = _songs.value.associateBy { it.id }
+                // Resolve songs via an id -> song map (O(n) even for large queues), including
+                // the current queue so streaming (Go-mode) songs keep their real duration/artwork.
+                val songsById = (_songs.value + _currentQueue.value.songs).associateBy { it.id }
                 val mediaItemSongs = mediaItems.mapNotNull { mediaItem ->
                     songsById[mediaItem.mediaId] ?: mediaItemToTransientSong(mediaItem)
                 }

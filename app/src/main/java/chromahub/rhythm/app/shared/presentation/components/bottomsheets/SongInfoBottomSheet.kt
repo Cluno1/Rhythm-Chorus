@@ -641,28 +641,30 @@ fun SongInfoBottomSheet(
                                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            // Edit button
-                                            onEditSong?.let {
-                                                FilledTonalIconButton(
-                                                    onClick = {
-                                                        HapticUtils.performHapticFeedback(
-                                                            context,
-                                                            haptics,
-                                                            HapticType.HEAVY
+                                            // Edit button — local files only (hidden for streaming songs)
+                                            if (!isStreamingMode) {
+                                                onEditSong?.let {
+                                                    FilledTonalIconButton(
+                                                        onClick = {
+                                                            HapticUtils.performHapticFeedback(
+                                                                context,
+                                                                haptics,
+                                                                HapticType.HEAVY
+                                                            )
+                                                            showEditSheet = true
+                                                        },
+                                                        modifier = Modifier.size(44.dp),
+                                                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                                         )
-                                                        showEditSheet = true
-                                                    },
-                                                    modifier = Modifier.size(44.dp),
-                                                    colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                                                    )
-                                                ) {
-                                                    Icon(
-                                                        imageVector = RhythmIcons.Edit,
-                                                        contentDescription = stringResource(R.string.bottomsheet_timer_edit),
-                                                        modifier = Modifier.size(20.dp)
-                                                    )
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.Edit,
+                                                            contentDescription = stringResource(R.string.bottomsheet_timer_edit),
+                                                            modifier = Modifier.size(20.dp)
+                                                        )
+                                                    }
                                                 }
                                             }
 

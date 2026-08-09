@@ -164,8 +164,8 @@ data class ArtworkCacheStats(
     val fileCount: Int
 )
 
-const val ARTWORK_CACHE_TRIM_MAX_BYTES = 256L * 1024 * 1024
-const val ARTWORK_CACHE_TRIM_MAX_FILES = 1200
+const val ARTWORK_CACHE_TRIM_MAX_BYTES = 96L * 1024 * 1024
+const val ARTWORK_CACHE_TRIM_MAX_FILES = 600
 
 fun collectArtworkCacheFiles(cacheDir: File): MutableList<File> {
     val artworkCacheDir = File(cacheDir, "embedded_artwork")
@@ -182,9 +182,19 @@ fun collectArtworkCacheFiles(cacheDir: File): MutableList<File> {
         ?.toList()
         .orEmpty()
 
+    // Scan-time artwork is also written to filesDir/embedded_artwork (counts as
+    // App data in Android settings) — include it so stats and trim cover it too.
+    val filesDir = cacheDir.parentFile?.let { File(it, "files") }
+    val filesDirArtwork = filesDir
+        ?.let { dir -> File(dir, "embedded_artwork") }
+        ?.listFiles { file -> file.isFile }
+        ?.toList()
+        .orEmpty()
+
     return mutableListOf<File>().apply {
         addAll(currentArtworkFiles)
         addAll(legacyArtworkFiles)
+        addAll(filesDirArtwork)
     }
 }
 
@@ -597,6 +607,11 @@ fun CacheManagementSettingsScreen(onBackClick: () -> Unit) {
                                         chromahub.rhythm.app.util.CacheManager.clearAllCache(context, null)
                                         musicViewModel.getMusicRepository().clearInMemoryCaches()
                                         musicViewModel.getMusicRepository().clearSongCacheData()
+                                        // Schedule a one-time full rescan on the next launch so embedded
+                                        // artwork (which lives in filesDir and was just cleared) is
+                                        // re-extracted from the audio files. This runs once after the
+                                        // explicit clear, not on every app start.
+                                        appSettings.requestFullMediaRescanOnNextLaunch(reason = "cache_cleared")
                                         refreshCacheStats()
                                         showClearCacheSuccess = true
                                         restartDialogMessage = context.getString(R.string.settings_cache_restart_required)

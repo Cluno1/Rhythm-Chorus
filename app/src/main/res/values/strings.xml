@@ -1352,7 +1352,7 @@
     <string name="settings_lyrics_cache_clear_failed">Failed to clear lyrics cache</string>
     <string name="settings_all_cache_cleared">All cache cleared</string>
     <string name="settings_cache_clear_failed">Failed to clear cache</string>
-    <string name="settings_cache_restart_required">Cache was cleared. Restart the app to refresh everything cleanly.</string>
+    <string name="settings_cache_restart_required">Cache was cleared. Restart the app to refresh everything cleanly. Album artwork will be restored on the next library rescan.</string>
     <string name="settings_clear_all_cache">Clear All Cache</string>
     <string name="settings_clear_all_cache_desc">Remove all cached data, including embedded artwork cache entries</string>
     <string name="settings_cache_info_1">Cache stores album art, lyrics, and temporary files</string>
@@ -1456,8 +1456,8 @@
     <string name="settings_restore_clipboard_desc">Import backup data from clipboard</string>
     <string name="settings_restore_file">Restore from File</string>
     <string name="settings_restore_file_desc">Import backup from a JSON file</string>
-    <string name="settings_restart_now">Restart Now</string>
-<string name="settings_tab_songs">Songs</string>
+    <string name="settings_restart_now">Restart Now</string>    <string name="settings_tab_songs">Songs</string>
+    <string name="settings_tab_liked">Liked</string>
     <string name="settings_tab_playlists">Playlists</string>
     <string name="settings_tab_albums">Albums</string>
     <string name="settings_tab_artists">Artists</string>
@@ -2697,6 +2697,7 @@
     <string name="expressiveplayerscreen_keep_library_only">Keep Library Only</string>
     <string name="expressiveplayerscreen_artwork_embedded_toast">Artwork embedded into file on disk!</string>
     <string name="expressiveplayerscreen_artwork_applied_toast">Artwork applied to library!</string>
+    <string name="expressiveplayerscreen_artwork_applied">Artwork applied!</string>
     <string name="albumdetail_about_album">About Album</string>
     <string name="artistdetail_about_artist">About Artist</string>
     <string name="content_desc_customize_artwork">Customize Artwork</string>
@@ -2858,6 +2859,7 @@
     <!-- Final sweep: remaining hardcoded strings -->
     <string name="mainactivity_preparing">Preparing...</string>
     <string name="playlistsongoptions_local_song">Local Song</string>
+    <string name="playlistsongoptions_streaming_song">Streaming Song</string>
     <string name="dialog_close">Close</string>
     <string name="trackcorruptiondialog_title">Track Playback Error</string>
     <string name="trackcorruptiondialog_body">The song "%1$s" encountered a playback issue.</string>

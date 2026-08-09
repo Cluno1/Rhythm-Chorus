@@ -69,7 +69,6 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.activities.MainActivity
-import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.size.Size
 import kotlinx.coroutines.Dispatchers
@@ -109,7 +108,7 @@ class RhythmLyricsWidget : GlanceAppWidget() {
                 LaunchedEffect(artworkUriString) {
                     try {
                         val loaded = withContext(Dispatchers.IO) {
-                            val imageLoader = ImageLoader(glanceContext)
+                            val imageLoader = coil.Coil.imageLoader(glanceContext)
                             val request = ImageRequest.Builder(glanceContext)
                                 .data(artworkUriString)
                                 .size(Size(120, 120))

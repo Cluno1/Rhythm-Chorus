@@ -40,7 +40,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
-import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.size.Size
 import kotlinx.coroutines.Dispatchers
@@ -66,6 +65,11 @@ class RhythmCookieWidget : GlanceAppWidget() {
         private const val GRID_ART_CACHE_MAX_BYTES = 16 * 1024 * 1024
         private val gridArtCache = object : LruCache<String, Bitmap>(GRID_ART_CACHE_MAX_BYTES) {
             override fun sizeOf(key: String, value: Bitmap) = value.byteCount
+        }
+
+        /** Released on app onTrimMemory so background bitmap memory is freed. */
+        fun clearArtCache() {
+            gridArtCache.evictAll()
         }
     }
 
@@ -100,8 +104,7 @@ class RhythmCookieWidget : GlanceAppWidget() {
                     return@LaunchedEffect
                 }
                 val loaded = withContext(Dispatchers.IO) {
-                    try {
-                        val imageLoader = ImageLoader(glanceContext)
+                    try {                            val imageLoader = coil.Coil.imageLoader(glanceContext)
                         val request = ImageRequest.Builder(glanceContext)
                             .data(artworkUriString)
                             .size(Size(1024, 1024))

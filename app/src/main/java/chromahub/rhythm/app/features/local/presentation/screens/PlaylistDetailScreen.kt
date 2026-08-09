@@ -740,7 +740,8 @@ fun PlaylistDetailScreen(
                 onGoToArtist(selectedSongForOptions!!)
                 showSongOptionsSheet = false
             },
-            showRemoveFromPlaylist = canEditPlaylist,
+            showRemoveFromPlaylist = canEditPlaylist || isStreamingPlaylist,
+            isStreamingMode = isStreamingPlaylist,
             onDeleteSong = {
                 musicViewModel.deleteSong(selectedSongForOptions!!)
                 showSongOptionsSheet = false
@@ -916,7 +917,7 @@ fun PlaylistDetailScreen(
                 }
             }
             
-            if (canEditPlaylist) {
+            if (canEditPlaylist || isStreamingPlaylist) {
                 FilledIconButton(
                     onClick = {
                         HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
@@ -1121,7 +1122,8 @@ fun PlaylistDetailScreen(
                         }
                     }
                     
-                    // Customize playlist image option
+                    // Customize playlist image option (local playlists only)
+                    if (canEditPlaylist) {
                     Surface(
                         color = MaterialTheme.colorScheme.surface,
                         shape = RoundedCornerShape(16.dp),
@@ -1160,6 +1162,7 @@ fun PlaylistDetailScreen(
                                 showCustomizeImageDialog = true
                             }
                         )
+                    }
                     }
 
                     // Rename playlist option

@@ -11,6 +11,12 @@ import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
+import chromahub.rhythm.app.features.streaming.presentation.components.StreamingServiceStateCard
+import chromahub.rhythm.app.features.streaming.domain.model.StreamingSong
+import chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum
+import chromahub.rhythm.app.features.streaming.domain.model.StreamingArtist
+import chromahub.rhythm.app.features.streaming.domain.model.StreamingPlaylist
+import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
 
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -34,10 +40,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -59,6 +61,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -131,7 +136,6 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import chromahub.rhythm.app.shared.presentation.components.common.CollapsibleHeaderScreen
 import chromahub.rhythm.app.ui.theme.festive.FestiveConfig
 import chromahub.rhythm.app.ui.theme.festive.FestiveThemeEngine
-import chromahub.rhythm.app.ui.theme.festive.FestiveThemeType
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -252,7 +256,24 @@ fun HomeScreen(
     onCreatePlaylist: (String) -> Unit = { _ -> },
     onNavigateToStats: () -> Unit = {},
     onNavigateToRhythmGuard: () -> Unit = {},
-    onNavigateToArtist: (Artist) -> Unit = {}
+    onNavigateToArtist: (Artist) -> Unit = {},
+    isStreamingMode: Boolean = false,
+    streamingViewModel: chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel? = null,
+    streamingSongs: List<Song> = emptyList(),
+    streamingAlbums: List<Album> = emptyList(),
+    streamingArtists: List<Artist> = emptyList(),
+    streamingPlaylists: List<chromahub.rhythm.app.shared.data.model.Playlist> = emptyList(),
+    streamingRecentlyPlayed: List<Song> = emptyList(),
+    streamingServiceName: String = "",
+    streamingServiceConnected: Boolean = false,
+    streamingIsLoading: Boolean = false,
+    streamingError: String? = null,
+    onConfigureService: (String) -> Unit = {},
+    onStreamingNavigateToArtist: (chromahub.rhythm.app.features.streaming.domain.model.StreamingArtist) -> Unit = {},
+    onStreamingNavigateToAlbum: (chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum) -> Unit = {},
+    onStreamingNavigateToPlaylist: (chromahub.rhythm.app.features.streaming.domain.model.StreamingPlaylist) -> Unit = {},
+    onStreamingPlayQueue: (List<chromahub.rhythm.app.features.streaming.domain.model.StreamingSong>, Int, Boolean) -> Unit = { _, _, _ -> },
+    onStreamingShuffleQueue: (List<chromahub.rhythm.app.features.streaming.domain.model.StreamingSong>) -> Unit = {}
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val coroutineScope = rememberCoroutineScope()
@@ -276,6 +297,12 @@ fun HomeScreen(
 
     // Home section order bottom sheet state
     var showHomeSectionOrderSheet by remember { mutableStateOf(false) }
+
+    val isLibraryRefreshing by musicViewModel.isLibraryRefreshing.collectAsState()
+    var streamingIsRefreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(streamingIsLoading) {
+        if (!streamingIsLoading) streamingIsRefreshing = false
+    }
 
     // Pending write request for metadata editing (Android 11+)
     val pendingWriteRequest by musicViewModel.pendingWriteRequest.collectAsState()
@@ -372,6 +399,7 @@ fun HomeScreen(
             song = selectedSongForPlaylist,
             onDismiss = { showSongInfoSheet = false },
             appSettings = AppSettings.getInstance(context),
+            isStreamingMode = isStreamingMode,
             onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                 pendingMetadataEditCompleteCallback = onComplete
                 musicViewModel.saveMetadataChanges(
@@ -486,7 +514,7 @@ fun HomeScreen(
     }
 
     CollapsibleHeaderScreen(
-        title = context.getString(R.string.home_title),
+        title = if (isStreamingMode) context.getString(R.string.streaming_integration_title) else context.getString(R.string.home_title),
         headerDisplayMode = headerDisplayMode,
         showAppIcon = showAppIcon,
         iconVisibilityMode = iconVisibilityMode,
@@ -527,35 +555,545 @@ fun HomeScreen(
             }
         }
     ) { modifier ->
-        ModernScrollableContent(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(bottom = if (currentSong != null) 0.dp else 0.dp),
-            featuredContent = featuredContent,
-            albums = albums,
-            topArtists = topArtists,
-            newReleases = currentYearReleases,
-            recentlyAddedSongs = recentlyAddedSongs,
-            recentlyAddedAlbums = recentlyAddedAlbums,
-            recentlyPlayed = recentlyPlayed,
-            songs = songs,
-            onSongClick = onSongClick,
-            onAlbumClick = onAlbumClick,
-            onArtistClick = { artist: Artist ->
-                onNavigateToArtist(artist)
-            },
-            onViewAllSongs = onViewAllSongs,
-            onViewAllAlbums = onViewAllAlbums,
-            onViewAllArtists = onViewAllArtists,
-            onSearchClick = onSearchClick,
-            onSettingsClick = onSettingsClick,
-            onNavigateToLibrary = onNavigateToLibrary,
-            onNavigateToPlaylist = onNavigateToPlaylist,
-            onNavigateToStats = onNavigateToStats,
-            onNavigateToRhythmGuard = onNavigateToRhythmGuard,
-            musicViewModel = musicViewModel,
-            coroutineScope = coroutineScope
+        if (isStreamingMode) {
+            StreamingHomeBody(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(bottom = if (currentSong != null) 0.dp else 0.dp),
+                streamingViewModel = streamingViewModel,
+                songs = streamingSongs,
+                albums = streamingAlbums,
+                artists = streamingArtists,
+                playlists = streamingPlaylists,
+                recentlyPlayed = streamingRecentlyPlayed.ifEmpty { recentlyPlayed },
+                serviceName = streamingServiceName,
+                serviceConnected = streamingServiceConnected,
+                isLoading = streamingIsLoading,
+                errorMessage = streamingError,
+                onConfigureService = onConfigureService,
+                onNavigateToArtist = onStreamingNavigateToArtist,
+                onNavigateToAlbum = onStreamingNavigateToAlbum,
+                onNavigateToPlaylist = onStreamingNavigateToPlaylist,
+                onPlayQueue = onStreamingPlayQueue,
+                onShuffleQueue = onStreamingShuffleQueue,
+                onViewAllArtists = onViewAllArtists,
+                onNavigateToLibrary = onNavigateToLibrary,
+                onSongClick = onSongClick,
+                onNavigateToStats = onNavigateToStats,
+                onNavigateToRhythmGuard = onNavigateToRhythmGuard,
+                musicViewModel = musicViewModel,
+                coroutineScope = coroutineScope,
+                isRefreshing = streamingIsRefreshing,
+                onRefresh = {
+                    streamingIsRefreshing = true
+                    streamingViewModel?.refreshHome()
+                }
+            )
+        } else {
+            ModernScrollableContent(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(bottom = if (currentSong != null) 0.dp else 0.dp),
+                featuredContent = featuredContent,
+                albums = albums,
+                topArtists = topArtists,
+                newReleases = currentYearReleases,
+                recentlyAddedSongs = recentlyAddedSongs,
+                recentlyAddedAlbums = recentlyAddedAlbums,
+                recentlyPlayed = recentlyPlayed,
+                songs = songs,
+                onSongClick = onSongClick,
+                onAlbumClick = onAlbumClick,
+                onArtistClick = { artist: Artist ->
+                    onNavigateToArtist(artist)
+                },
+                onViewAllSongs = onViewAllSongs,
+                onViewAllAlbums = onViewAllAlbums,
+                onViewAllArtists = onViewAllArtists,
+                onSearchClick = onSearchClick,
+                onSettingsClick = onSettingsClick,
+                onNavigateToLibrary = onNavigateToLibrary,
+                onNavigateToPlaylist = onNavigateToPlaylist,
+                onNavigateToStats = onNavigateToStats,
+                onNavigateToRhythmGuard = onNavigateToRhythmGuard,
+                musicViewModel = musicViewModel,
+                coroutineScope = coroutineScope,
+                isRefreshing = isLibraryRefreshing,
+                onRefresh = {
+                    musicViewModel.refreshLibrary(showMediaScanLoader = false)
+                }
+            )
+        }
+    }
+}
+
+/**
+ * Go-mode (streaming) home body.
+ *
+ * Renders streaming content through the exact same local Modern* card language:
+ * streaming models are converted to local model types by the caller, and play
+ * actions are routed back to the streaming view model (which hands off to the
+ * shared local player via the playback handler).
+ */
+@Composable
+private fun StreamingHomeBody(
+    modifier: Modifier = Modifier,
+    streamingViewModel: chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel?,
+    songs: List<Song>,
+    albums: List<Album>,
+    artists: List<Artist>,
+    playlists: List<chromahub.rhythm.app.shared.data.model.Playlist>,
+    recentlyPlayed: List<Song>,
+    serviceName: String,
+    serviceConnected: Boolean,
+    isLoading: Boolean,
+    errorMessage: String?,
+    onConfigureService: (String) -> Unit,
+    onNavigateToArtist: (chromahub.rhythm.app.features.streaming.domain.model.StreamingArtist) -> Unit,
+    onNavigateToAlbum: (chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum) -> Unit,
+    onNavigateToPlaylist: (chromahub.rhythm.app.features.streaming.domain.model.StreamingPlaylist) -> Unit,
+    onPlayQueue: (List<chromahub.rhythm.app.features.streaming.domain.model.StreamingSong>, Int, Boolean) -> Unit,
+    onShuffleQueue: (List<chromahub.rhythm.app.features.streaming.domain.model.StreamingSong>) -> Unit,
+    onViewAllArtists: () -> Unit,
+    onNavigateToLibrary: () -> Unit,
+    onSongClick: (Song) -> Unit,
+    onNavigateToStats: () -> Unit = {},
+    onNavigateToRhythmGuard: () -> Unit = {},
+    musicViewModel: chromahub.rhythm.app.viewmodel.MusicViewModel,
+    coroutineScope: CoroutineScope,
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val windowSizeClass = calculateWindowSizeClass(context as android.app.Activity)
+    val widthSizeClass = windowSizeClass.widthSizeClass
+    val heightSizeClass = windowSizeClass.heightSizeClass
+    val scrollState = rememberScrollState()
+
+    val appSettings = AppSettings.getInstance(context)
+    val showDiscoverCarousel by appSettings.homeShowDiscoverCarousel.collectAsState()
+    val discoverItemCount by appSettings.homeDiscoverItemCount.collectAsState()
+    val discoverShowAlbumName by appSettings.homeDiscoverShowAlbumName.collectAsState()
+    val discoverShowArtistName by appSettings.homeDiscoverShowArtistName.collectAsState()
+    val discoverShowYear by appSettings.homeDiscoverShowYear.collectAsState()
+    val discoverShowPlayButton by appSettings.homeDiscoverShowPlayButton.collectAsState()
+    val discoverShowGradient by appSettings.homeDiscoverShowGradient.collectAsState()
+    val showRhythmGuardSection by appSettings.streamingHomeShowRhythmGuard.collectAsState()
+    val showRhythmStatsSection by appSettings.streamingHomeShowRhythmStats.collectAsState()
+
+    val rhythmGuardMode by appSettings.rhythmGuardMode.collectAsState()
+    val rhythmGuardAge by appSettings.rhythmGuardAge.collectAsState()
+    val rhythmGuardAlertThresholdMinutes by appSettings.rhythmGuardAlertThresholdMinutes.collectAsState()
+    val rhythmGuardTimeoutUntilMs by appSettings.rhythmGuardTimeoutUntilMs.collectAsState()
+    val dailyListeningStats by appSettings.dailyListeningStats.collectAsState()
+    val persistedSongsPlayed by appSettings.songsPlayed.collectAsState()
+    val listeningTimeMs by appSettings.listeningTime.collectAsState()
+
+    val rhythmGuardPolicy = remember(rhythmGuardAge) { appSettings.getRhythmGuardPolicy(rhythmGuardAge) }
+    val rhythmGuardRecommendedMinutes = when (rhythmGuardMode) {
+        AppSettings.RHYTHM_GUARD_MODE_MANUAL -> rhythmGuardAlertThresholdMinutes
+            .takeIf { it > 0 }
+            ?: rhythmGuardPolicy.recommendedDailyMinutes
+        else -> rhythmGuardPolicy.recommendedDailyMinutes
+    }
+    val playbackStatsRepository = remember(context) { PlaybackStatsRepository.getInstance(context) }
+    var todayListeningMinutes by remember { mutableIntStateOf(0) }
+
+    val currentProgress by musicViewModel.progress.collectAsState()
+    val currentDurationMs by musicViewModel.duration.collectAsState()
+    val currentIsPlaying by musicViewModel.isPlaying.collectAsState()
+
+    LaunchedEffect(dailyListeningStats, persistedSongsPlayed, listeningTimeMs, currentProgress, currentDurationMs, currentIsPlaying) {
+        val todaySummary = runCatching {
+            playbackStatsRepository.loadSummary(StatsTimeRange.TODAY)
+        }.getOrNull()
+        val dbDurationMs = todaySummary?.totalDurationMs ?: 0L
+        val activeSessionDurationMs = if (currentIsPlaying && currentDurationMs > 0) {
+            (currentProgress * currentDurationMs).toLong()
+        } else {
+            0L
+        }
+        val totalMs = dbDurationMs + activeSessionDurationMs
+        todayListeningMinutes = (totalMs / 60000L).toInt().coerceAtLeast(0)
+    }
+
+    // Mirror the local home's responsive section inset and spacing so the
+    // streaming home adapts to the same layout on phones and tablets.
+    val horizontalPadding = when (widthSizeClass) {
+        WindowWidthSizeClass.Compact -> 20.dp
+        WindowWidthSizeClass.Medium -> 48.dp
+        WindowWidthSizeClass.Expanded -> 64.dp
+        else -> 20.dp
+    }
+    val sectionSpacing = when (widthSizeClass) {
+        WindowWidthSizeClass.Compact -> when (heightSizeClass) {
+            WindowHeightSizeClass.Compact -> 32.dp
+            else -> 40.dp
+        }
+        WindowWidthSizeClass.Medium -> when (heightSizeClass) {
+            WindowHeightSizeClass.Compact -> 48.dp
+            else -> 56.dp
+        }
+        WindowWidthSizeClass.Expanded -> when (heightSizeClass) {
+            WindowHeightSizeClass.Compact -> 52.dp
+            else -> 64.dp
+        }
+        else -> 40.dp
+    }
+
+    val vm = streamingViewModel
+    val rawAllSongs = vm?.allSongs?.collectAsState()?.value ?: emptyList()
+    val rawRecommendations = vm?.recommendations?.collectAsState()?.value ?: emptyList()
+    val rawNewReleases = vm?.newReleases?.collectAsState()?.value ?: emptyList()
+    val rawArtists = vm?.followedArtists?.collectAsState()?.value ?: emptyList()
+    val rawPlaylists = vm?.savedPlaylists?.collectAsState()?.value ?: emptyList()
+
+    val streamingSongById = remember(rawAllSongs, rawRecommendations, rawNewReleases) {
+        (rawAllSongs + rawRecommendations + rawNewReleases.flatMap { it.tracks })
+            .distinctBy { it.id }
+            .associateBy { it.id }
+    }
+    val streamingAlbumById = remember(rawNewReleases) { rawNewReleases.associateBy { it.id } }
+    val streamingArtistById = remember(rawArtists) { rawArtists.associateBy { it.id } }
+    val streamingPlaylistById = remember(rawPlaylists) { rawPlaylists.associateBy { it.id } }
+
+    // Load streaming home/library content once connected (the old standalone
+    // streaming screens owned this; the merged screen must trigger it too).
+    val hasLoadedHomeContent = vm?.hasLoadedHomeContent?.collectAsState()?.value ?: false
+    val hasLoadedLibrary = vm?.hasLoadedLibrary?.collectAsState()?.value ?: false
+    LaunchedEffect(vm, serviceConnected, hasLoadedHomeContent) {
+        if (serviceConnected && vm != null && !hasLoadedHomeContent) {
+            vm.loadHomeContent()
+        }
+    }
+    LaunchedEffect(vm, serviceConnected, hasLoadedLibrary) {
+        if (serviceConnected && vm != null && !hasLoadedLibrary) {
+            vm.loadLibrary()
+        }
+    }
+
+    val playQueueFromMapped: (List<Song>, Int, Boolean) -> Unit = { mappedSongs, startIndex, shuffle ->
+        val originals = mappedSongs.mapNotNull { streamingSongById[it.id] }
+        if (originals.isNotEmpty()) onPlayQueue(originals, startIndex, shuffle)
+    }
+
+    val pullToRefreshState = rememberPullToRefreshState()
+    val isListAtTop = scrollState.value == 0
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        state = pullToRefreshState,
+        enabled = isListAtTop,
+        modifier = modifier.fillMaxSize(),
+        indicator = {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullToRefreshState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
+    ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(sectionSpacing)
+    ) {
+        if (showDiscoverCarousel && albums.isNotEmpty()) {
+            ModernFeaturedSection(
+                albums = albums.take(discoverItemCount),
+                onAlbumClick = { album ->
+                    streamingAlbumById[album.id]?.let(onNavigateToAlbum)
+                },
+                showAlbumName = discoverShowAlbumName,
+                showArtistName = discoverShowArtistName,
+                showYear = discoverShowYear,
+                showPlayButton = discoverShowPlayButton,
+                showGradient = discoverShowGradient,
+                widthSizeClass = widthSizeClass,
+                heightSizeClass = heightSizeClass,
+                onPlayAlbum = { album ->
+                    playQueueFromMapped(album.songs, 0, false)
+                }
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = horizontalPadding),
+            verticalArrangement = Arrangement.spacedBy(sectionSpacing)
+        ) {
+        when {
+            !serviceConnected && !isLoading -> {
+                StreamingServiceStateCard(
+                    title = context.getString(R.string.streaming_home_selected_service_unavailable),
+                    subtitle = context.getString(
+                        R.string.streaming_home_connect_selected_service,
+                        serviceName.ifBlank { context.getString(R.string.streaming_not_selected) }
+                    ),
+                    actionText = context.getString(R.string.streaming_service_setup_reconnect),
+                    onAction = { onConfigureService(serviceName) }
+                )
+            }
+
+            isLoading && songs.isEmpty() -> {
+                StreamingServiceStateCard(
+                    title = context.getString(R.string.streaming_home_no_content_title),
+                    subtitle = context.getString(R.string.streaming_home_widget_empty_hint),
+                    showProgressIndicator = true
+                )
+            }
+
+            errorMessage != null && songs.isEmpty() -> {
+                StreamingServiceStateCard(
+                    title = errorMessage,
+                    subtitle = context.getString(R.string.streaming_home_widget_empty_hint),
+                    actionText = context.getString(R.string.streaming_service_setup_reconnect),
+                    onAction = { onConfigureService(serviceName) }
+                )
+            }
+        }
+
+        val sectionOrder by appSettings.homeSectionOrder.collectAsState()
+        sectionOrder.forEach { sectionId ->
+            when (sectionId) {
+                "RECENTLY_PLAYED" -> {
+                    if (recentlyPlayed.isNotEmpty()) {
+                        ModernRecentlyPlayedSection(
+                            recentlyPlayed = recentlyPlayed,
+                            onSongClick = onSongClick,
+                            musicViewModel = musicViewModel,
+                            coroutineScope = coroutineScope,
+                            widthSizeClass = widthSizeClass,
+                            heightSizeClass = heightSizeClass
+                        )
+                    }
+                }
+                "NEW_RELEASES" -> {
+                    if (albums.isNotEmpty()) {
+                        Column {
+                            ModernSectionTitle(
+                                title = context.getString(R.string.home_new_releases),
+                                subtitle = context.getString(
+                                    R.string.streaming_home_widget_new_releases_subtitle,
+                                    serviceName.ifBlank { context.getString(R.string.streaming_not_selected) }
+                                ),
+                                onPlayAll = {
+                                    playQueueFromMapped(albums.flatMap { it.songs }, 0, false)
+                                },
+                                onShufflePlay = {
+                                    onShuffleQueue(albums.flatMap { it.songs }.mapNotNull { streamingSongById[it.id] })
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(
+                                    items = albums,
+                                    key = { "streaming_album_${it.id}" }
+                                ) { album ->
+                                    ModernAlbumCard(
+                                        album = album,
+                                        onClick = { clickedAlbum ->
+                                            streamingAlbumById[clickedAlbum.id]?.let { raw ->
+                                                onNavigateToAlbum(raw)
+                                            }
+                                        },
+                                        widthSizeClass = widthSizeClass,
+                                        heightSizeClass = heightSizeClass,
+                                        onPlayClick = { clickedAlbum ->
+                                            playQueueFromMapped(clickedAlbum.songs, 0, false)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (playlists.isNotEmpty()) {
+                        Column {
+                            ModernSectionTitle(
+                                title = context.getString(R.string.settings_tab_playlists),
+                                viewAllAction = onNavigateToLibrary
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(
+                                    items = playlists,
+                                    key = { "streaming_playlist_${it.id}" }
+                                ) { playlist ->
+                                    StreamingHomePlaylistCard(
+                                        playlist = playlist,
+                                        onClick = {
+                                            streamingPlaylistById[playlist.id]?.let { raw ->
+                                                onNavigateToPlaylist(raw)
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                "ARTISTS" -> {
+                    if (artists.isNotEmpty()) {
+                        Column {
+                            ModernSectionTitle(
+                                title = context.getString(R.string.home_top_artists),
+                                subtitle = context.getString(R.string.home_top_artists_subtitle),
+                                viewAllAction = onViewAllArtists
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(
+                                    items = artists,
+                                    key = { "streaming_artist_${it.id}" }
+                                ) { artist ->
+                                    ModernArtistCard(
+                                        artist = artist,
+                                        songs = artist.songs,
+                                        onClick = {
+                                            streamingArtistById[artist.id]?.let { raw ->
+                                                onNavigateToArtist(raw)
+                                            }
+                                        },
+                                        widthSizeClass = widthSizeClass,
+                                        heightSizeClass = heightSizeClass,
+                                        onPlayClick = { clickedArtist ->
+                                            playQueueFromMapped(clickedArtist.songs, 0, false)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                "RECOMMENDED" -> {
+                    if (songs.isNotEmpty()) {
+                        ModernRecommendedSection(
+                            recommendedSongs = songs,
+                            artists = artists,
+                            onSongClick = { song ->
+                                val index = songs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
+                                playQueueFromMapped(songs, index, false)
+                            },
+                            onPlayClick = { songsToPlay ->
+                                playQueueFromMapped(songsToPlay, 0, false)
+                            }
+                        )
+                    }
+                }
+                "RHYTHM_GUARD" -> {
+                    if (showRhythmGuardSection && rhythmGuardMode != AppSettings.RHYTHM_GUARD_MODE_OFF) {
+                        val rhythmGuardTimeoutRemainingMs = (rhythmGuardTimeoutUntilMs - System.currentTimeMillis()).coerceAtLeast(0L)
+                        val isRhythmGuardTimeoutActive = rhythmGuardTimeoutRemainingMs > 0L
+
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            ModernSectionTitle(
+                                title = stringResource(id = R.string.settings_rhythm_guard),
+                                subtitle = stringResource(id = R.string.settings_rhythm_guard_list_desc)
+                            )
+                            RhythmGuardCard(
+                                rhythmGuardMode = rhythmGuardMode,
+                                rhythmGuardRecommendedMinutes = rhythmGuardRecommendedMinutes,
+                                todayListeningMinutes = todayListeningMinutes,
+                                isGuardTimeoutActive = isRhythmGuardTimeoutActive,
+                                guardTimeoutRemainingMs = rhythmGuardTimeoutRemainingMs,
+                                onCardClick = onNavigateToRhythmGuard
+                            )
+                        }
+                    }
+                }
+                "STATS" -> {
+                    if (showRhythmStatsSection) {
+                        ModernListeningStatsSection(onClick = onNavigateToStats)
+                    }
+                }
+            }
+        }
+
+        if (songs.isEmpty() && albums.isEmpty() && artists.isEmpty() && playlists.isEmpty() && serviceConnected) {
+            ModernEmptyState(
+                icon = MaterialSymbolIcon("cloud_sync", filled = true),
+                title = context.getString(R.string.streaming_home_no_content_title),
+                subtitle = context.getString(R.string.streaming_home_no_content_hint)
+            )
+        }
+
+        Spacer(
+            modifier = Modifier.height(24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding())
         )
+        }
+    }
+    }
+}
+
+@Composable
+private fun StreamingHomePlaylistCard(
+    playlist: chromahub.rhythm.app.shared.data.model.Playlist,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
+
+    ExpressiveCard(
+        onClick = {
+            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+            onClick()
+        },
+        modifier = Modifier
+            .width(150.dp)
+            .height(196.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        shape = ExpressiveShapes.SquircleLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            M3ImageUtils.TrackImage(
+                imageUrl = playlist.artworkUri,
+                trackName = playlist.name,
+                modifier = Modifier
+                    .size(126.dp)
+                    .fillMaxWidth(),
+                applyExpressiveShape = true
+            )
+
+            Text(
+                text = playlist.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Text(
+                text = context.resources.getQuantityString(
+                    R.plurals.streaming_home_widget_playlist_track_count,
+                    playlist.songs.size,
+                    playlist.songs.size
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 
@@ -584,7 +1122,9 @@ private fun ModernScrollableContent(
     onNavigateToStats: () -> Unit = {},
     onNavigateToRhythmGuard: () -> Unit = {},
     musicViewModel: chromahub.rhythm.app.viewmodel.MusicViewModel,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val windowSizeClass = calculateWindowSizeClass(context as android.app.Activity)
@@ -704,6 +1244,22 @@ private fun ModernScrollableContent(
         modifier = modifier,
         color = MaterialTheme.colorScheme.background
     ) {
+        val pullToRefreshState = rememberPullToRefreshState()
+        val isListAtTop = lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
+            state = pullToRefreshState,
+            enabled = isListAtTop,
+            modifier = Modifier.fillMaxSize(),
+            indicator = {
+                PullToRefreshDefaults.LoadingIndicator(
+                    state = pullToRefreshState,
+                    isRefreshing = isRefreshing,
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
+            }
+        ) {
         LazyColumn(
             state = lazyListState,
             modifier = Modifier.fillMaxSize(),
@@ -1092,170 +1648,6 @@ private fun ModernScrollableContent(
                 Spacer(modifier = Modifier.height(30.dp))
             }
         }
-    }
-}
-
-@Composable
-private fun ModernWelcomeSection(
-    greeting: String,
-    festiveTheme: FestiveThemeType = FestiveThemeType.NONE,
-    onSearchClick: () -> Unit
-) {
-    val context = LocalContext.current
-    val viewModel = viewModel<chromahub.rhythm.app.viewmodel.MusicViewModel>()
-    val recentlyPlayed by viewModel.recentlyPlayed.collectAsState()
-    val haptic = LocalHapticFeedback.current
-
-    val timeBasedQuote = remember {
-        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        when {
-            hour in 0..4 -> listOf(
-                context.getString(R.string.home_quote_late_night_1),
-                context.getString(R.string.home_quote_late_night_2),
-                context.getString(R.string.home_quote_late_night_3),
-                context.getString(R.string.home_quote_late_night_4)
-            )
-            hour in 5..11 -> listOf(
-                context.getString(R.string.home_quote_morning_1),
-                context.getString(R.string.home_quote_morning_2),
-                context.getString(R.string.home_quote_morning_3),
-                context.getString(R.string.home_quote_morning_4)
-            )
-            hour in 12..16 -> listOf(
-                context.getString(R.string.home_quote_afternoon_1),
-                context.getString(R.string.home_quote_afternoon_2),
-                context.getString(R.string.home_quote_afternoon_3),
-                context.getString(R.string.home_quote_afternoon_4)
-            )
-            hour in 17..20 -> listOf(
-                context.getString(R.string.home_quote_evening_1),
-                context.getString(R.string.home_quote_evening_2),
-                context.getString(R.string.home_quote_evening_3),
-                context.getString(R.string.home_quote_evening_4)
-            )
-            else -> listOf(
-                context.getString(R.string.home_quote_night_1),
-                context.getString(R.string.home_quote_night_2),
-                context.getString(R.string.home_quote_night_3),
-                context.getString(R.string.home_quote_night_4)
-            )
-        }.random()
-    }
-
-    val timeBasedTheme = remember(festiveTheme) {
-        when (festiveTheme) {
-            FestiveThemeType.CHRISTMAS -> Triple("🎄", "christmas", "🎅")
-            FestiveThemeType.NEW_YEAR -> Triple("🎉", "new_year", "🥳")
-            FestiveThemeType.HALLOWEEN -> Triple("🎃", "halloween", "👻")
-            FestiveThemeType.VALENTINES -> Triple("💝", "valentines", "💕")
-            else -> {
-                val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-                when {
-                    hour in 0..4 -> Triple("🌙", "late_night", "⭐")
-                    hour in 5..11 -> Triple("☀️", "morning", "🌻")
-                    hour in 12..16 -> Triple("🌤️", "afternoon", "⚡")
-                    hour in 17..20 -> Triple("🌅", "evening", "✨")
-                    else -> Triple("🌙", "night", "🌟")
-                }
-            }
-        }
-    }
-
-    ExpressiveCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                onSearchClick()
-            },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
-        shape = ExpressiveShapes.ExtraLarge
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(18.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                repeat(3) {
-                    Text(
-                        text = timeBasedTheme.third,
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.alpha(0.12f)
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 0.dp)
-                ) {
-                    val infiniteTransition = rememberInfiniteTransition(label = "emoji_pulse")
-                    val emojiScale by infiniteTransition.animateFloat(
-                        initialValue = 1f,
-                        targetValue = 1.1f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(2000),
-                            repeatMode = RepeatMode.Reverse
-                        ),
-                        label = "emoji_scale"
-                    )
-
-                    Text(
-                        text = timeBasedTheme.first,
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier
-                            .padding(end = 12.dp)
-                            .graphicsLayer {
-                                scaleX = emojiScale
-                                scaleY = emojiScale
-                            }
-                    )
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = greeting,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-
-                        Text(
-                            text = timeBasedQuote,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                            modifier = Modifier.padding(top = 5.dp)
-                        )
-                    }
-
-                    ExpressiveFilledIconButton(
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            onSearchClick()
-                        },
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.size(46.dp)
-                    ) {
-                        Icon(
-                            imageVector = RhythmIcons.SearchFilled,
-                            contentDescription = context.getString(R.string.cd_search),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
         }
     }
 }
@@ -1561,7 +1953,8 @@ private fun ModernFeaturedSection(
     showPlayButton: Boolean = true,
     showGradient: Boolean = true,
     widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
-    heightSizeClass: WindowHeightSizeClass = WindowHeightSizeClass.Medium
+    heightSizeClass: WindowHeightSizeClass = WindowHeightSizeClass.Medium,
+    onPlayAlbum: ((Album) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -1716,7 +2109,7 @@ private fun ModernFeaturedSection(
                             Button(
                                 onClick = {
                                     HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                    viewModel.playAlbum(album)
+                                    if (onPlayAlbum != null) onPlayAlbum(album) else viewModel.playAlbum(album)
                                 },
                                 shape = RoundedCornerShape(percent = 50),
                                 colors = ButtonDefaults.buttonColors(
@@ -1843,11 +2236,13 @@ private fun ModernArtistCard(
     songs: List<Song>,
     onClick: () -> Unit,
     widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
-    heightSizeClass: WindowHeightSizeClass = WindowHeightSizeClass.Medium
+    heightSizeClass: WindowHeightSizeClass = WindowHeightSizeClass.Medium,
+    onPlayClick: ((Artist) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val viewModel = viewModel<chromahub.rhythm.app.viewmodel.MusicViewModel>()
     val haptic = LocalHapticFeedback.current
+    val handleArtistPlayClick = onPlayClick ?: { artistToPlay -> viewModel.playArtist(artistToPlay) }
 
     val cardSize = when (widthSizeClass) {
         WindowWidthSizeClass.Compact -> when (heightSizeClass) {
@@ -1896,7 +2291,7 @@ private fun ModernArtistCard(
             ExpressiveFilledIconButton(
                 onClick = {
                     HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                    viewModel.playArtist(artist)
+                    handleArtistPlayClick(artist)
                     onClick()
                 },
                 colors = IconButtonDefaults.filledIconButtonColors(
@@ -1937,11 +2332,13 @@ private fun ModernAlbumCard(
     album: Album,
     onClick: (Album) -> Unit,
     widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
-    heightSizeClass: WindowHeightSizeClass = WindowHeightSizeClass.Medium
+    heightSizeClass: WindowHeightSizeClass = WindowHeightSizeClass.Medium,
+    onPlayClick: ((Album) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val viewModel = viewModel<chromahub.rhythm.app.viewmodel.MusicViewModel>()
     val haptic = LocalHapticFeedback.current
+    val handlePlayClick = onPlayClick ?: { albumToPlay -> viewModel.playAlbum(albumToPlay) }
 
     val (cardWidth, cardHeight) = when (widthSizeClass) {
         WindowWidthSizeClass.Compact -> when (heightSizeClass) {
@@ -2005,7 +2402,7 @@ private fun ModernAlbumCard(
                     ExpressiveFilledIconButton(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                            viewModel.playAlbum(album)
+                            handlePlayClick(album)
                         },
                         modifier = Modifier.size(
                             when (widthSizeClass) {
@@ -2085,76 +2482,6 @@ private fun ModernAlbumCard(
                         WindowWidthSizeClass.Expanded -> MaterialTheme.typography.bodyMedium
                         else -> MaterialTheme.typography.bodySmall
                     },
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ModernSongCard(
-    song: Song,
-    onClick: () -> Unit
-) {
-    val context = LocalContext.current
-    val haptic = LocalHapticFeedback.current
-
-    ExpressiveCard(
-        onClick = {
-            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-            onClick()
-        },
-        modifier = Modifier
-            .width(190.dp)
-            .height(270.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        shape = ExpressiveShapes.SquircleLarge
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Surface(
-                shape = ExpressiveShapes.SquircleMedium,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    M3ImageUtils.TrackImage(
-                        imageUrl = song.artworkUri,
-                        trackName = song.title,
-                        modifier = Modifier.fillMaxSize(),
-                        applyExpressiveShape = true
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier.height(60.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = song.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 16.sp
-                )
-
-                Text(
-                    text = song.artist,
-                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

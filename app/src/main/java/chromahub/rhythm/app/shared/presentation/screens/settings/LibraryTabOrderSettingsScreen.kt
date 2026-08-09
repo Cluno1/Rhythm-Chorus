@@ -174,6 +174,7 @@ fun LibraryTabOrderSettingsScreen(onBackClick: () -> Unit) {
     fun getTabInfo(tabId: String): Pair<String, MaterialSymbolIcon> {
         return when (tabId) {
             "SONGS" -> Pair(context.getString(R.string.settings_tab_songs), RhythmIcons.Relax)
+            "LIKED" -> Pair(context.getString(R.string.settings_tab_liked), RhythmIcons.FavoriteFilled)
             "PLAYLISTS" -> Pair(context.getString(R.string.settings_tab_playlists), RhythmIcons.PlaylistFilled)
             "ALBUMS" -> Pair(context.getString(R.string.settings_tab_albums), RhythmIcons.Music.Album)
             "ARTISTS" -> Pair(context.getString(R.string.settings_tab_artists), RhythmIcons.Artist)
@@ -341,7 +342,7 @@ fun LibraryTabOrderSettingsScreen(onBackClick: () -> Unit) {
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             appSettings.resetLibraryTabOrder()
-                            reorderableList = listOf("SONGS", "PLAYLISTS", "ALBUMS", "ARTISTS", "EXPLORER")
+                            reorderableList = listOf("SONGS", "LIKED", "PLAYLISTS", "ALBUMS", "ARTISTS", "EXPLORER")
                             Toast.makeText(context, context.getString(R.string.settings_tab_order_reset), Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier.weight(1f),

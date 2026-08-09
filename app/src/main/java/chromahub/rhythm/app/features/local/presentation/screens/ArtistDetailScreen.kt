@@ -64,6 +64,7 @@ import chromahub.rhythm.app.shared.data.model.ArtistArtworkSource
 import chromahub.rhythm.app.shared.data.model.Artist
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
+import chromahub.rhythm.app.shared.presentation.components.common.M3CircularLoader
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmSongMenuContent
@@ -537,7 +538,7 @@ fun ArtistDetailScreen(
                                             .padding(vertical = 24.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                                        M3CircularLoader(modifier = Modifier.size(48.dp), color = MaterialTheme.colorScheme.primary, strokeWidth = 4f)
                                     }
                                 } else {
                                     ArtistActionButtons(
@@ -746,7 +747,7 @@ fun ArtistDetailScreen(
 
             if (isArtistContentLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    M3CircularLoader(modifier = Modifier.size(56.dp), color = MaterialTheme.colorScheme.primary, strokeWidth = 5f)
                 }
                 FilledIconButton(
                     onClick = onBack,

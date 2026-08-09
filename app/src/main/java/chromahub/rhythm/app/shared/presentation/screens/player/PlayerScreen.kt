@@ -238,7 +238,8 @@ fun PlayerScreen(
         val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
         val showRemainingTime by appSettings.showRemainingTime.collectAsState()
         val progressValue = progress().coerceIn(0f, 1f)
-        val totalTimeMs = song?.duration ?: 0L
+        val vmDurationMs by musicViewModel.duration.collectAsState()
+        val totalTimeMs = song?.duration?.takeIf { it > 0 } ?: vmDurationMs.takeIf { it > 0 } ?: 0L
         val currentTimeMs = (progressValue * totalTimeMs).toLong()
         
         val currentSeconds = currentTimeMs / 1000
@@ -455,6 +456,8 @@ fun PlayerScreen(
             onBack = onBack,
             location = location,
             appSettings = appSettings,
+            musicViewModel = musicViewModel,
+            isStreamingMode = isStreamingMode,
             canvasArtwork = if (showFullScreenLyrics) null else canvasArtwork,
             canvasLoading = if (showFullScreenLyrics) false else canvasLoading,
             swipeToDismissEnabled = swipeToDismissEnabled,
@@ -868,7 +871,8 @@ fun PlayerScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         val progressValue = progress().coerceIn(0f, 1f)
-        val totalTimeMs = song?.duration ?: 0L
+        val vmDurationMs by musicViewModel.duration.collectAsState()
+        val totalTimeMs = song?.duration?.takeIf { it > 0 } ?: vmDurationMs.takeIf { it > 0 } ?: 0L
         val currentTimeMs = (progressValue * totalTimeMs).toLong()
 
         FullScreenLyricsView(
@@ -904,6 +908,7 @@ fun PlayerScreen(
             songTitle = song?.title ?: stringResource(R.string.rating_unknown),
             initialTimeOffset = lyricsTimeOffset,
             song = song,
+            isStreamingMode = isStreamingMode,
             onDismiss = { showLyricsEditorDialog = false },
             onSave = { editedLyrics, timeOffset, format ->
                 musicViewModel.saveEditedLyrics(editedLyrics, timeOffset, format)

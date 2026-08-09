@@ -42,6 +42,9 @@ interface SongDao {
     @Query("SELECT COUNT(*) FROM songs")
     suspend fun getCount(): Int
 
+    @Query("SELECT COUNT(*) FROM songs WHERE artworkUri LIKE '%embedded_artwork%'")
+    suspend fun countSongsWithEmbeddedArtworkUri(): Int
+
     @Transaction
     suspend fun replaceAll(songs: List<SongEntity>) {
         deleteAll()

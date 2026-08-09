@@ -417,6 +417,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_LAST_SCAN_TIMESTAMP = "last_scan_timestamp"
         private const val KEY_LAST_SCAN_DURATION = "last_scan_duration"
         private const val KEY_PENDING_FULL_MEDIA_RESCAN = "pending_full_media_rescan"
+        private const val KEY_LAST_EMBEDDED_ART_SELF_HEAL_MS = "last_embedded_art_self_heal_ms"
         
         // Media Scan Filtering
         private const val KEY_ALLOWED_FORMATS = "allowed_formats"
@@ -834,12 +835,20 @@ class AppSettings private constructor(context: Context) {
     val artistCollaborationMode: StateFlow<Boolean> = _artistCollaborationMode.asStateFlow()
     
     // Library Tab Order
-    private val defaultTabOrder = listOf("SONGS", "PLAYLISTS", "ALBUMS", "ARTISTS", "EXPLORER")
+    private val defaultTabOrder = listOf("SONGS", "LIKED", "PLAYLISTS", "ALBUMS", "ARTISTS", "EXPLORER")
     private val _libraryTabOrder = MutableStateFlow(
         prefs.getString(KEY_LIBRARY_TAB_ORDER, null)
             ?.split(",")
             ?.filter { it.isNotBlank() }
             ?.takeIf { it.isNotEmpty() }
+            ?.let { order ->
+                if ("LIKED" in order) order
+                else {
+                    val songsIndex = order.indexOf("SONGS")
+                    if (songsIndex >= 0) order.toMutableList().apply { add(songsIndex + 1, "LIKED") }
+                    else order + "LIKED"
+                }
+            }
             ?: defaultTabOrder
     )
     val libraryTabOrder: StateFlow<List<String>> = _libraryTabOrder.asStateFlow()
@@ -1150,7 +1159,7 @@ class AppSettings private constructor(context: Context) {
     val savedPlaybackPosition: StateFlow<Long> = _savedPlaybackPosition.asStateFlow()
     
     // Cache Settings
-    private val _maxCacheSize = MutableStateFlow(safeLong(KEY_MAX_CACHE_SIZE, 1024L * 1024L * 1024L)) // 1GB default
+    private val _maxCacheSize = MutableStateFlow(safeLong(KEY_MAX_CACHE_SIZE, 300L * 1024L * 1024L)) // 300MB default
     val maxCacheSize: StateFlow<Long> = _maxCacheSize.asStateFlow()
     
     // Search History
@@ -2545,6 +2554,21 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             Log.i("AppSettings", "Consuming pending full media rescan request")
         }
         return pending
+    }
+
+    /**
+     * Self-heal guard gate: allows the one-time embedded artwork re-extraction
+     * at most once per 24h, so a wiped artwork cache self-heals on the next
+     * launch without ever turning into a per-launch extraction loop.
+     */
+    fun shouldRunEmbeddedArtSelfHeal(): Boolean {
+        val lastRun = prefs.getLong(KEY_LAST_EMBEDDED_ART_SELF_HEAL_MS, 0L)
+        return System.currentTimeMillis() - lastRun >= 24L * 60 * 60 * 1000
+    }
+
+    fun markEmbeddedArtSelfHealDone() {
+        prefs.edit { putLong(KEY_LAST_EMBEDDED_ART_SELF_HEAL_MS, System.currentTimeMillis()) }
+        Log.i("AppSettings", "Marked embedded artwork self-heal as done")
     }
     
     fun setShowAlphabetBar(show: Boolean) {
@@ -5013,7 +5037,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _stopPlaybackOnZeroVolume.value = prefs.getBoolean(KEY_STOP_PLAYBACK_ON_ZERO_VOLUME, false)
         
         // Cache Settings
-        _maxCacheSize.value = safeLong(KEY_MAX_CACHE_SIZE, 1024L * 1024L * 1024L)
+        _maxCacheSize.value = safeLong(KEY_MAX_CACHE_SIZE, 300L * 1024L * 1024L)
         
         // Other settings
         _showLyrics.value = prefs.getBoolean(KEY_SHOW_LYRICS, true)

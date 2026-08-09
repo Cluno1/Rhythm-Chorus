@@ -279,20 +279,28 @@ fun SettingsScreen(
             SettingGroup(
                 title = context.getString(R.string.settings_section_user_interface),
                 items = buildList {
-                    add(SettingItem(
-                        RhythmIcons.Home,
-                        context.getString(R.string.settings_default_screen),
-                        if (defaultScreen == "library") context.getString(R.string.library) else context.getString(R.string.home),
-                        onClick = { showDefaultScreenDialog = true }
-                    ))
+                    // Default screen only applies to local navigation (streaming has its own start screen)
+                    if (appMode == "LOCAL") {
+                        add(SettingItem(
+                            RhythmIcons.Home,
+                            context.getString(R.string.settings_default_screen),
+                            if (defaultScreen == "library") context.getString(R.string.library) else context.getString(R.string.home),
+                            onClick = { showDefaultScreenDialog = true }
+                        ))
+                    }
                     add(SettingItem(
                         RhythmIcons.Public,
                         context.getString(R.string.settings_language),
                         context.getString(R.string.settings_language_desc),
                         onClick = { showLanguageSwitcher = true }
                     ))
-                    if (appMode == "LOCAL") {
-                        //add(SettingItem(MaterialSymbolIcon("reorder"), context.getString(R.string.settings_library_tab_order), context.getString(R.string.settings_library_tab_order_desc), onClick = { onNavigateTo(SettingsRoutes.LIBRARY_TAB_ORDER) }))
+                    if (appMode == "STREAMING") {
+                        add(SettingItem(
+                            MaterialSymbolIcon("reorder"),
+                            context.getString(R.string.settings_library_tab_order),
+                            context.getString(R.string.settings_library_tab_order_desc),
+                            onClick = { onNavigateTo(SettingsRoutes.LIBRARY_TAB_ORDER) }
+                        ))
                     }
                     add(SettingItem(
                         MaterialSymbolIcon("touch_app"), 

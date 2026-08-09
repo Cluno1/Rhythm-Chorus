@@ -127,6 +127,7 @@ fun PlaylistSongOptionsBottomSheet(
     onDeleteSong: () -> Unit,
     showRemoveFromPlaylist: Boolean = true,
     showGoToAlbum: Boolean = true,
+    isStreamingMode: Boolean = false,
     haptics: HapticFeedback
 ) {
     val context = LocalContext.current
@@ -209,7 +210,9 @@ fun PlaylistSongOptionsBottomSheet(
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Text(
-                                    text = stringResource(R.string.playlistsongoptions_local_song),
+                                    text = stringResource(
+                                        if (isStreamingMode) R.string.playlistsongoptions_streaming_song else R.string.playlistsongoptions_local_song
+                                    ),
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold
@@ -316,15 +319,17 @@ fun PlaylistSongOptionsBottomSheet(
                                     onClick = onShowSongInfo
                                 )
                             )
-                            add(
-                                OptionItem(
-                                    icon = RhythmIcons.Share,
-                                    text = context.getString(R.string.action_share),
-                                    containerColor = secondaryContainer,
-                                    iconColor = onSecondaryContainer,
-                                    onClick = onShare
+                            if (!isStreamingMode) {
+                                add(
+                                    OptionItem(
+                                        icon = RhythmIcons.Share,
+                                        text = context.getString(R.string.action_share),
+                                        containerColor = secondaryContainer,
+                                        iconColor = onSecondaryContainer,
+                                        onClick = onShare
+                                    )
                                 )
-                            )
+                            }
                             if (showRemoveFromPlaylist) {
                                 add(
                                     OptionItem(
@@ -336,15 +341,17 @@ fun PlaylistSongOptionsBottomSheet(
                                     )
                                 )
                             }
-                            add(
-                                OptionItem(
-                                    icon = RhythmIcons.Delete,
-                                    text = context.getString(R.string.action_delete_song),
-                                    containerColor = errorContainer,
-                                    iconColor = errorColor,
-                                    onClick = onDeleteSong
+                            if (!isStreamingMode) {
+                                add(
+                                    OptionItem(
+                                        icon = RhythmIcons.Delete,
+                                        text = context.getString(R.string.action_delete_song),
+                                        containerColor = errorContainer,
+                                        iconColor = errorColor,
+                                        onClick = onDeleteSong
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
 

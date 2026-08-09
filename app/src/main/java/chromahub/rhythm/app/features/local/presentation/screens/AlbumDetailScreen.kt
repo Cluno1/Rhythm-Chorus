@@ -53,6 +53,7 @@ import chromahub.rhythm.app.shared.data.model.findAlbumForRoute
 import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
 import chromahub.rhythm.app.shared.presentation.components.AudioQualityIcon
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
+import chromahub.rhythm.app.shared.presentation.components.common.M3CircularLoader
 import chromahub.rhythm.app.util.ImageUtils
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
@@ -195,6 +196,7 @@ fun AlbumDetailScreen(
         onProgress: (Int, Int) -> Unit,
         onComplete: (successCount: Int, failCount: Int) -> Unit
     ) -> Unit)? = null,
+    isStreamingMode: Boolean = false,
     viewModel: MusicViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -581,7 +583,7 @@ fun AlbumDetailScreen(
                     Surface(modifier = Modifier.weight(0.6f).fillMaxHeight(), color = Color.Transparent) {
                         if (isLoading) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                                M3CircularLoader(modifier = Modifier.size(56.dp), color = MaterialTheme.colorScheme.primary, strokeWidth = 5f)
                             }
                         } else {
                             Column(
@@ -794,7 +796,7 @@ fun AlbumDetailScreen(
             // Loading state
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    M3CircularLoader(modifier = Modifier.size(56.dp), color = MaterialTheme.colorScheme.primary, strokeWidth = 5f)
                 }
                 FilledIconButton(
                     onClick = onBack,
@@ -1167,6 +1169,7 @@ fun AlbumDetailScreen(
             },
             showRemoveFromPlaylist = false, // Always hide for albums
             showGoToAlbum = false,         // Already on the album screen
+            isStreamingMode = isStreamingMode,
             onDeleteSong = {
                 viewModel.deleteSong(selectedSongForOptions!!)
                 showSongOptionsSheet = false

@@ -38,6 +38,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -172,8 +173,35 @@ import chromahub.rhythm.app.util.windowScreenHeightDp
 
 private val artworkValidationCache = java.util.concurrent.ConcurrentHashMap<android.net.Uri, Boolean>()
 
+/**
+ * Decode a bitmap from a song's artwork URI.
+ *
+ * Local songs expose content:// URIs that only ContentResolver can open; streaming
+ * (Go-mode) songs expose http(s):// artwork URLs that ContentResolver rejects, so
+ * those are fetched through Coil instead.
+ */
+private suspend fun loadArtworkBitmap(context: android.content.Context, uri: android.net.Uri, maxSize: Int = 512): android.graphics.Bitmap? {
+    return try {
+        val isRemote = uri.scheme == "http" || uri.scheme == "https"
+        if (isRemote) {
+            val request = ImageRequest.Builder(context)
+                .data(uri.toString())
+                .size(maxSize)
+                .build()
+            (coil.Coil.imageLoader(context).execute(request).drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
+        } else {
+            val opts = BitmapFactory.Options().apply { inSampleSize = 16 }
+            context.contentResolver.openInputStream(uri)?.use { stream ->
+                BitmapFactory.decodeStream(stream, null, opts)
+            }
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
 @Composable
-private fun rememberArtworkValidation(uri: android.net.Uri?, context: android.content.Context): Boolean {
+private fun rememberArtworkValidation(uri: android.net.Uri?, context: android.content.Context): Boolean? {
     if (uri == null || uri == android.net.Uri.EMPTY) return false
     val str = uri.toString().trim()
     if (str.isEmpty() || str == "null" || str == "content://media/external/audio/albumart/0") return false
@@ -181,8 +209,8 @@ private fun rememberArtworkValidation(uri: android.net.Uri?, context: android.co
 
     artworkValidationCache[uri]?.let { return it }
 
-    // Default FALSE: show music icon immediately while real validation runs in background
-    val isValidState = remember(uri) { mutableStateOf(false) }
+    // null = still validating; false = confirmed no artwork; true = artwork exists
+    val isValidState = remember(uri) { mutableStateOf<Boolean?>(null) }
 
     LaunchedEffect(uri) {
         val valid = withContext(Dispatchers.IO) {
@@ -257,6 +285,7 @@ fun ExpressivePlayerScreen(
     onTotalTimeClick: () -> Unit = {},
     musicViewModel: MusicViewModel? = null,
     onOpenFullScreenLyrics: () -> Unit = {},
+    isStreamingMode: Boolean = false,
     swipeToDismissEnabled: Boolean = true,
     expansionFraction: Float = 1f
 ) {
@@ -296,7 +325,9 @@ fun ExpressivePlayerScreen(
     var isScrubbing by remember { mutableStateOf(false) }
     var scrubProgress by remember { mutableFloatStateOf(0f) }
     val progressValue = progress().coerceIn(0f, 1f)
-    val currentTimeMs = (progressValue * (song?.duration ?: 0L)).toLong()
+    val resolvedDurationMs = musicViewModel?.duration?.collectAsState()?.value ?: 0L
+    val totalTimeMs = song?.duration?.takeIf { it > 0 } ?: resolvedDurationMs.takeIf { it > 0 } ?: 0L
+    val currentTimeMs = (progressValue * totalTimeMs).toLong()
     val lyricsVisible = showLyricsView && showLyrics
     val showBuffering = isMediaLoading || isSeeking
 
@@ -304,16 +335,21 @@ fun ExpressivePlayerScreen(
     var previousQueuePosition by remember { mutableIntStateOf(queuePosition) }
     var debouncedQueuePosition by remember { mutableIntStateOf(queuePosition) }
     var queueDirection by remember { mutableIntStateOf(1) }
-    LaunchedEffect(song?.id) {
+    LaunchedEffect(song?.id, song?.artworkUri) {
         delay(250)
-        if (debouncedSong.value?.id != song?.id) {
-            queueDirection = if (queueTotal > 1) {
-                val fwd = ((queuePosition - previousQueuePosition) % queueTotal + queueTotal) % queueTotal
-                val bwd = queueTotal - fwd
-                if (fwd <= bwd) 1 else -1
-            } else if (queuePosition > previousQueuePosition) 1 else -1
-            previousQueuePosition = queuePosition
-            debouncedQueuePosition = queuePosition
+        val trackChanged = debouncedSong.value?.id != song?.id
+        // Also refresh when the same track's artwork is updated (e.g. Go-mode auto-fetch)
+        val artworkChanged = !trackChanged && debouncedSong.value?.artworkUri != song?.artworkUri
+        if (trackChanged || artworkChanged) {
+            if (trackChanged) {
+                queueDirection = if (queueTotal > 1) {
+                    val fwd = ((queuePosition - previousQueuePosition) % queueTotal + queueTotal) % queueTotal
+                    val bwd = queueTotal - fwd
+                    if (fwd <= bwd) 1 else -1
+                } else if (queuePosition > previousQueuePosition) 1 else -1
+                previousQueuePosition = queuePosition
+                debouncedQueuePosition = queuePosition
+            }
             debouncedSong.value = song
         }
     }
@@ -321,7 +357,8 @@ fun ExpressivePlayerScreen(
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
 
-    val hasValidArtwork = rememberArtworkValidation(debouncedSong.value?.artworkUri, context)
+    val artworkValidation = rememberArtworkValidation(debouncedSong.value?.artworkUri, context)
+    val hasValidArtwork = artworkValidation == true
     val isBackdropEnabled = playerAmbientBackdropEnabled
     val showCanvasArtBg = isBackdropEnabled && hasValidArtwork && !lyricsVisible
     val showDarkBg = isBackdropEnabled
@@ -340,10 +377,7 @@ fun ExpressivePlayerScreen(
         val artworkUri = debouncedSong.value?.artworkUri ?: return@produceState
         value = withContext(Dispatchers.IO) {
             try {
-                val opts = BitmapFactory.Options().apply { inSampleSize = 16 }
-                val bitmap = context.contentResolver.openInputStream(artworkUri)?.use { stream ->
-                    BitmapFactory.decodeStream(stream, null, opts)
-                }
+                val bitmap = loadArtworkBitmap(context, artworkUri, 512)
                 val extracted = if (bitmap != null) {
                     val result = ColorExtractor.extractColorsFromBitmap(bitmap)
                     bitmap.recycle()
@@ -457,10 +491,7 @@ fun ExpressivePlayerScreen(
         if (!isBackdropEnabled) return@produceState
         value = withContext(Dispatchers.IO) {
             try {
-                val inputStream = context.contentResolver.openInputStream(artworkUri)
-                val opts = BitmapFactory.Options().apply { inSampleSize = 32 }
-                val bitmap = BitmapFactory.decodeStream(inputStream, null, opts)
-                inputStream?.close()
+                val bitmap = loadArtworkBitmap(context, artworkUri, 256)
                 if (bitmap != null) {
                     var r = 0L; var g = 0L; var b = 0L
                     val count = bitmap.width * bitmap.height
@@ -629,64 +660,139 @@ fun ExpressivePlayerScreen(
     var isAutoFetchingMissingArtwork by remember { mutableStateOf(false) }
     var fetchedAutoArtworkUriStr by remember { mutableStateOf<String?>(null) }
     var showAutoFetchEmbedDialog by remember { mutableStateOf(false) }
+    var pendingAutoFetchSong by remember { mutableStateOf<Song?>(null) }
+    val autoFetchPromptedSongIds = remember { mutableStateOf<Set<String>>(emptySet()) }
 
-    LaunchedEffect(debouncedSong.value?.id, autoFetchArtwork) {
+    // Auto-fetch in both modes, but only after validation confirms the song has no
+    // artwork (null = still checking). Each song is prompted at most once per session.
+    LaunchedEffect(debouncedSong.value?.id, autoFetchArtwork, artworkValidation) {
         val currentSong = debouncedSong.value
-        if (autoFetchArtwork && currentSong != null && !hasValidArtwork && !isAutoFetchingMissingArtwork) {
+        val alreadyPrompted = currentSong != null && currentSong.id in autoFetchPromptedSongIds.value
+        if (autoFetchArtwork && currentSong != null && artworkValidation == false && !isAutoFetchingMissingArtwork && !alreadyPrompted) {
+            autoFetchPromptedSongIds.value = autoFetchPromptedSongIds.value + currentSong.id
             isAutoFetchingMissingArtwork = true
             musicViewModel?.autoFetchArtworkForSong(currentSong) { success, uriStr ->
                 isAutoFetchingMissingArtwork = false
                 if (success && uriStr != null) {
-                    fetchedAutoArtworkUriStr = uriStr
-                    showAutoFetchEmbedDialog = true
+                    if (isStreamingMode) {
+                        // Go mode: no file to embed — apply to the in-memory song (session-only).
+                        if (debouncedSong.value?.id == currentSong.id) {
+                            val artUri = uriStr.toUri()
+                            musicViewModel?.updateCurrentSongMetadata(currentSong.copy(artworkUri = artUri))
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.expressiveplayerscreen_artwork_applied),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } else {
+                        pendingAutoFetchSong = currentSong
+                        fetchedAutoArtworkUriStr = uriStr
+                        showAutoFetchEmbedDialog = true
+                    }
                 }
             }
         }
     }
 
     if (showAutoFetchEmbedDialog) {
+        val dialogSong = pendingAutoFetchSong ?: debouncedSong.value
         AlertDialog(
-            onDismissRequest = { showAutoFetchEmbedDialog = false },
-            icon = { Icon(imageVector = MaterialSymbolIcon("cloud_download"), contentDescription = null) },
-            title = { Text(stringResource(R.string.expressiveplayerscreen_artwork_auto_fetched)) },
-            text = { Text(stringResource(R.string.expressiveplayerscreen_artwork_auto_fetched_msg, debouncedSong.value?.title ?: "")) },
+            onDismissRequest = {
+                showAutoFetchEmbedDialog = false
+                pendingAutoFetchSong = null
+            },
+            icon = {
+                Icon(
+                    imageVector = MaterialSymbolIcon("cloud_download", filled = true),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(R.string.expressiveplayerscreen_artwork_auto_fetched),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.expressiveplayerscreen_artwork_auto_fetched_msg, dialogSong?.title ?: ""),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
             confirmButton = {
-                Button(
-                    onClick = {
-                        showAutoFetchEmbedDialog = false
-                        debouncedSong.value?.let { currentSong ->
-                            val artUri = fetchedAutoArtworkUriStr?.let { (it).toUri() }
-                            musicViewModel?.saveMetadataChanges(
-                                song = currentSong,
-                                title = currentSong.title,
-                                artist = currentSong.artist,
-                                album = currentSong.album,
-                                genre = currentSong.genre ?: "",
-                                year = currentSong.year,
-                                trackNumber = currentSong.trackNumber,
-                                artworkUri = artUri,
-                                onSuccess = { fileWritten ->
-                                    if (fileWritten) {
-                                        Toast.makeText(context, context.getString(R.string.expressiveplayerscreen_artwork_embedded_toast), Toast.LENGTH_SHORT).show()
-                                    } else {
-                                        Toast.makeText(context, context.getString(R.string.expressiveplayerscreen_artwork_applied_toast), Toast.LENGTH_SHORT).show()
-                                    }
-                                },
-                                onError = { err ->
-                                    Toast.makeText(context, err, Toast.LENGTH_SHORT).show()
-                                }
-                            )
-                        }
-                    }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text(stringResource(R.string.expressiveplayerscreen_embed_in_file))
+                    Button(
+                        onClick = {
+                            showAutoFetchEmbedDialog = false
+                            pendingAutoFetchSong = null
+                            dialogSong?.let { currentSong ->
+                                val artUri = fetchedAutoArtworkUriStr?.let { (it).toUri() }
+                                musicViewModel?.saveMetadataChanges(
+                                    song = currentSong,
+                                    title = currentSong.title,
+                                    artist = currentSong.artist,
+                                    album = currentSong.album,
+                                    genre = currentSong.genre ?: "",
+                                    year = currentSong.year,
+                                    trackNumber = currentSong.trackNumber,
+                                    artworkUri = artUri,
+                                    onSuccess = { fileWritten ->
+                                        if (fileWritten) {
+                                            Toast.makeText(context, context.getString(R.string.expressiveplayerscreen_artwork_embedded_toast), Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            Toast.makeText(context, context.getString(R.string.expressiveplayerscreen_artwork_applied_toast), Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    onError = { err ->
+                                        Toast.makeText(context, err, Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon("cloud_download", filled = true),
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.expressiveplayerscreen_embed_in_file))
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            showAutoFetchEmbedDialog = false
+                            pendingAutoFetchSong = null
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon("library_music", filled = true),
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.expressiveplayerscreen_keep_library_only))
+                    }
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { showAutoFetchEmbedDialog = false }) {
-                    Text(stringResource(R.string.expressiveplayerscreen_keep_library_only))
-                }
-            }
+            dismissButton = {}
         )
     }
 
@@ -1083,7 +1189,7 @@ fun ExpressivePlayerScreen(
                                                     else -> MaterialTheme.colorScheme.onSecondaryContainer
                                                 })
                                         }
-                                        val canSeek = (song?.duration ?: 0L) > 0L
+                                        val canSeek = totalTimeMs > 0L
                                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                                             if (showBuffering) {
                                                 M3LinearLoader(modifier = Modifier.fillMaxWidth().height(8.dp), color = primaryColor, trackColor = onSurfaceColor.copy(alpha = 0.18f))

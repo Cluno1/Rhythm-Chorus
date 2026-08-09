@@ -180,6 +180,7 @@ class MainActivity : AppCompatActivity() {
             val customFontPath by appSettings.customFontPath.collectAsState()
             val colorSource by appSettings.colorSource.collectAsState()
             val extractedAlbumColors by appSettings.extractedAlbumColors.collectAsState()
+            val appMode by appSettings.appMode.collectAsState()
             
             // Determine the theme based on settings
             val isDarkTheme = if (useSystemTheme) {
@@ -363,7 +364,9 @@ class MainActivity : AppCompatActivity() {
                                             modifier = Modifier.size(56.dp)
                                         )
                                         Text(
-                                            text = stringResource(R.string.common_rhythm),
+                                            text = stringResource(
+                                                if (appMode == "STREAMING") R.string.streaming_integration_title else R.string.common_rhythm
+                                            ),
                                             style = MaterialTheme.typography.headlineSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
