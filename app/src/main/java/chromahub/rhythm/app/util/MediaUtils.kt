@@ -185,7 +185,7 @@ object MediaUtils {
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
             }
 
-            val projection = arrayOf(
+            val projection = mutableListOf(
                 MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.ARTIST,
@@ -194,7 +194,11 @@ object MediaUtils {
                 MediaStore.Audio.Media.DURATION,
                 MediaStore.Audio.Media.TRACK,
                 MediaStore.Audio.Media.YEAR
-            )
+            ).apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    add(MediaStore.Audio.Media.DISC_NUMBER)
+                }
+            }.toTypedArray()
 
             val selection = "${MediaStore.Audio.Media.DATA} = ?"
             val selectionArgs = arrayOf(filePath)
@@ -229,12 +233,20 @@ object MediaUtils {
                         val rawAlbum = cursor.getString(albumIndex)
                         val rawTrack = cursor.getInt(trackIndex)
                         val rawYear = cursor.getInt(yearIndex)
+                        val discNumberIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DISC_NUMBER)
 
                         val parsedArtist = MetadataHeuristics.normalizeMetadataText(rawArtist) ?: "Unknown Artist"
                         val parsedTitle = MetadataHeuristics.normalizeMetadataText(rawTitle) ?: "Unknown Title"
                         val parsedAlbum = MetadataHeuristics.normalizeMetadataText(rawAlbum) ?: "Unknown Album"
                         val parsedTrack = if (rawTrack >= 1000) rawTrack % 1000 else rawTrack
-                        val parsedDisc = if (rawTrack >= 1000) rawTrack / 1000 else 1
+                        val parsedDisc = if (discNumberIndex >= 0 && !cursor.isNull(discNumberIndex)) {
+                            cursor.getInt(discNumberIndex).takeIf { it > 0 }
+                                ?: if (rawTrack >= 1000) rawTrack / 1000 else 1
+                        } else if (rawTrack >= 1000) {
+                            rawTrack / 1000
+                        } else {
+                            1
+                        }
                         var parsedYear = rawYear
 
                         if (parsedYear == 0 && filePath.lowercase().endsWith(".flac")) {
@@ -292,6 +304,8 @@ object MediaUtils {
         var artworkUri: Uri? = null
         var year: Int = 0
         var genre: String? = null
+        var trackNumber = 0
+        var discNumber = 1
 
         try {
             // First verify we can access the URI
@@ -385,6 +399,8 @@ object MediaUtils {
                 val rawTrackVal = extractedTrack?.substringBefore('/')?.toIntOrNull() ?: 0
                 val parsedTrack = if (rawTrackVal >= 1000) rawTrackVal % 1000 else rawTrackVal
                 val parsedDisc = if (rawTrackVal >= 1000) rawTrackVal / 1000 else (extractedDisc?.substringBefore('/')?.toIntOrNull() ?: 1)
+                trackNumber = parsedTrack
+                discNumber = parsedDisc
 
                 Log.d(
                     TAG,
@@ -444,7 +460,8 @@ object MediaUtils {
             duration = duration,
             uri = uri,
             artworkUri = artworkUri,
-            trackNumber = 0,
+            trackNumber = trackNumber,
+            discNumber = discNumber,
             year = year,
             genre = genre
         )
@@ -562,7 +579,7 @@ object MediaUtils {
                 MediaStore.Audio.Media._ID // Need song ID for genre lookup
             ).apply {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                    add(MediaStore.Audio.Media.CD_TRACK_NUMBER)
+                    add(MediaStore.Audio.Media.DISC_NUMBER)
                     add(MediaStore.Audio.Media.ALBUM_ARTIST)
                 }
             }.toTypedArray()
@@ -584,6 +601,7 @@ object MediaUtils {
                     val composerIndex =
                         cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.COMPOSER)
                     val trackIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK)
+                    val discNumberIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DISC_NUMBER)
                     val albumArtistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ARTIST)
                     val yearIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR)
                     val mimeTypeIndex =
@@ -622,6 +640,9 @@ object MediaUtils {
                         } else {
                             totalTracks = trackInfo
                         }
+                    }
+                    if (discNumberIndex >= 0 && !cursor.isNull(discNumberIndex)) {
+                        cursor.getInt(discNumberIndex).takeIf { it > 0 }?.let { discNumber = it }
                     }
                 }
             }
@@ -1295,7 +1316,7 @@ object MediaUtils {
                     put(MediaStore.Audio.Media.COMPOSER, newComposer)
                 }
                 if (newDiscNumber > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                    put(MediaStore.Audio.Media.CD_TRACK_NUMBER, newDiscNumber)
+                    put(MediaStore.Audio.Media.DISC_NUMBER, newDiscNumber)
                 }
             }
 
@@ -1989,7 +2010,7 @@ object MediaUtils {
                     put(MediaStore.Audio.Media.COMPOSER, pendingRequest.newComposer)
                 }
                 if (pendingRequest.newDiscNumber > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                    put(MediaStore.Audio.Media.CD_TRACK_NUMBER, pendingRequest.newDiscNumber)
+                    put(MediaStore.Audio.Media.DISC_NUMBER, pendingRequest.newDiscNumber)
                 }
             }
 

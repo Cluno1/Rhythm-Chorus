@@ -490,6 +490,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         const val ACTION_SET_EQUALIZER_BAND = "chromahub.rhythm.app.action.SET_EQUALIZER_BAND"
         const val ACTION_SET_BASS_BOOST = "chromahub.rhythm.app.action.SET_BASS_BOOST"
         const val ACTION_SET_VIRTUALIZER = "chromahub.rhythm.app.action.SET_VIRTUALIZER"
+        const val ACTION_SET_MONO_AUDIO = "chromahub.rhythm.app.action.SET_MONO_AUDIO"
         const val ACTION_APPLY_EQUALIZER_PRESET = "chromahub.rhythm.app.action.APPLY_EQUALIZER_PRESET"
         const val ACTION_GET_EQUALIZER_DIAGNOSTICS = "chromahub.rhythm.app.action.GET_EQUALIZER_DIAGNOSTICS"
         
@@ -1814,6 +1815,17 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                 setVirtualizerEnabled(enabled)
                 if (enabled) setVirtualizerStrength(strength)
             }
+            ACTION_SET_MONO_AUDIO -> {
+                val enabled = intent.getBooleanExtra("enabled", false)
+                Log.d(TAG, "Received intent to set mono audio - enabled: $enabled")
+                
+                if (rhythmMonoAudioProcessor == null) {
+                    Log.d(TAG, "Rhythm mono audio processor is null, attempting initialization")
+                    initializeRhythmProcessors()
+                }
+                
+                setMonoAudioEnabled(enabled)
+            }
             ACTION_APPLY_EQUALIZER_PRESET -> {
                 val preset = intent.getStringExtra("preset") ?: ""
                 val levels = intent.getFloatArrayExtra("levels")
@@ -2949,6 +2961,15 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                 Log.e(TAG, "Failed to create spatialization processor", e)
             }
         }
+        
+        if (rhythmMonoAudioProcessor == null) {
+            Log.w(TAG, "Rhythm mono audio processor is null, creating new instance")
+            try {
+                rhythmMonoAudioProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmMonoAudioProcessor()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to create mono audio processor", e)
+            }
+        }
     }
 
     fun initializeAudioEffects() {
@@ -3400,14 +3421,20 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
     }
 
     fun setMonoAudioEnabled(enabled: Boolean) {
-        try {
-            rhythmMonoAudioProcessor?.setEnabled(enabled)
-            Log.d(TAG, "Rhythm mono audio enabled set to $enabled")
-            if (::rhythmPlayerEngine.isInitialized) {
-                rhythmPlayerEngine.updateTrackSelectionParameters()
+        if (rhythmMonoAudioProcessor == null) {
+            Log.w(TAG, "Attempting to enable mono audio but Rhythm processor is null. Will reinitialize.")
+            if (getPlayerAudioSessionId() != 0) {
+                initializeAudioEffects()
+            } else {
+                Log.e(TAG, "Cannot enable mono audio: invalid audio session ID")
+                return
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error setting mono audio enabled", e)
+        }
+        
+        rhythmMonoAudioProcessor?.setEnabled(enabled)
+        Log.d(TAG, "Rhythm mono audio enabled: $enabled (applies to next audio buffer)")
+        if (::rhythmPlayerEngine.isInitialized) {
+            rhythmPlayerEngine.updateTrackSelectionParameters()
         }
     }
 

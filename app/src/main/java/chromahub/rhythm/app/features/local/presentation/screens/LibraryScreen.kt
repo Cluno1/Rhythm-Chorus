@@ -794,6 +794,7 @@ fun LibraryScreen(
     var isRefreshing by remember { mutableStateOf(false) }
 
     val songsListState = rememberLazyListState()
+    val likedSongsListState = rememberLazyListState()
     val datesListState = rememberLazyListState()
     val playlistsListState = rememberLazyListState()
     val playlistsGridState = rememberLazyGridState()
@@ -801,6 +802,8 @@ fun LibraryScreen(
     val albumsGridState = rememberLazyGridState()
     val artistsListState = rememberLazyListState()
     val artistsGridState = rememberLazyGridState()
+    val albumArtistsListState = rememberLazyListState()
+    val albumArtistsGridState = rememberLazyGridState()
     val explorerListState = rememberLazyListState()
 
     val playlistViewType by appSettings.playlistViewType.collectAsState()
@@ -814,7 +817,8 @@ fun LibraryScreen(
     ) {
         derivedStateOf {
             when (visibleTabIds.getOrNull(selectedTabIndex)) {
-                "SONGS", "LIKED" -> songsListState.firstVisibleItemIndex == 0 && songsListState.firstVisibleItemScrollOffset == 0
+                "SONGS" -> songsListState.firstVisibleItemIndex == 0 && songsListState.firstVisibleItemScrollOffset == 0
+                "LIKED" -> likedSongsListState.firstVisibleItemIndex == 0 && likedSongsListState.firstVisibleItemScrollOffset == 0
                 "DATES" -> datesListState.firstVisibleItemIndex == 0 && datesListState.firstVisibleItemScrollOffset == 0
                 "PLAYLISTS" -> {
                     if (playlistViewType == PlaylistViewType.GRID) {
@@ -839,9 +843,9 @@ fun LibraryScreen(
                 }
                 "ALBUM_ARTISTS" -> {
                     if (artistViewType == ArtistViewType.GRID) {
-                        artistsGridState.firstVisibleItemIndex == 0 && artistsGridState.firstVisibleItemScrollOffset == 0
+                        albumArtistsGridState.firstVisibleItemIndex == 0 && albumArtistsGridState.firstVisibleItemScrollOffset == 0
                     } else {
-                        artistsListState.firstVisibleItemIndex == 0 && artistsListState.firstVisibleItemScrollOffset == 0
+                        albumArtistsListState.firstVisibleItemIndex == 0 && albumArtistsListState.firstVisibleItemScrollOffset == 0
                     }
                 }
                 "EXPLORER" -> explorerListState.firstVisibleItemIndex == 0 && explorerListState.firstVisibleItemScrollOffset == 0
@@ -958,10 +962,11 @@ fun LibraryScreen(
     }
 
     val activeTabIdOuter = visibleTabIds.getOrNull(pagerState.currentPage) ?: ""
-    val bottomBarSongs = remember(activeTabIdOuter, filteredSongs, sortedAlbums, sortedArtists, explorerFolderSongs) {
+    val bottomBarSongs = remember(activeTabIdOuter, filteredSongs, likedSongs, sortedAlbums, sortedArtists, sortedAlbumArtists, explorerFolderSongs) {
         when (activeTabIdOuter) {
             "SONGS" -> filteredSongs
             "DATES" -> filteredSongs
+            "LIKED" -> likedSongs
             "ALBUMS" -> sortedAlbums.flatMap { it.songs }
             "ARTISTS" -> sortedArtists.flatMap { it.songs }
             "ALBUM_ARTISTS" -> sortedAlbumArtists.flatMap { it.songs }
@@ -1747,8 +1752,10 @@ fun LibraryScreen(
                         }
 
                         Box(modifier = Modifier.weight(1f).clipToBounds()) {
+                            val streamingContentEmpty = songs.isEmpty() && albums.isEmpty() && artists.isEmpty() && playlists.isEmpty()
                             when {
-                                isStreamingMode && !streamingServiceConnected && !streamingIsLoading -> {
+                                isStreamingMode && !streamingIsLoading && (!streamingServiceConnected ||
+                                    (streamingError != null && streamingContentEmpty)) -> {
                                     EmptyState(
                                         message = context.getString(R.string.streaming_home_selected_service_unavailable),
                                         icon = RhythmIcons.Connectivity.WifiOff,
@@ -1842,7 +1849,7 @@ fun LibraryScreen(
                                     "LIKED" -> SingleCardSongsContent(
                                         songs = likedSongs,
                                         paginatedSongs = musicViewModel.paginatedSongs,
-                                        listState = songsListState,
+                                        listState = likedSongsListState,
                                         albums = albums,
                                         artists = artists,
                                         onSongClick = onSongClick,
@@ -1938,8 +1945,8 @@ fun LibraryScreen(
                                         onArtistClick = { artist ->
                                             onNavigateToArtist(artist)
                                         },
-                                        listState = artistsListState,
-                                        gridState = artistsGridState,
+                                        listState = albumArtistsListState,
+                                        gridState = albumArtistsGridState,
                                         haptics = haptics,
                                         onPlayQueue = onPlayQueue,
                                         onShuffleQueue = onShuffleQueue,
@@ -2067,10 +2074,12 @@ fun LibraryScreen(
                             else -> false
                         }
                         val songsScrollingUp = songsListState.isScrollingUp()
+                        val likedSongsScrollingUp = likedSongsListState.isScrollingUp()
                         val albumsListScrollingUp = albumsListState.isScrollingUp()
                         val albumsGridScrollingUp = albumsGridState.isScrollingUp()
                         val explorerScrollingUp = explorerListState.isScrollingUp()
                         val songsScrollInProgress = songsListState.isScrollInProgress
+                        val likedSongsScrollInProgress = likedSongsListState.isScrollInProgress
                         val albumsListScrollInProgress = albumsListState.isScrollInProgress
                         val albumsGridScrollInProgress = albumsGridState.isScrollInProgress
                         val explorerScrollInProgress = explorerListState.isScrollInProgress
@@ -2079,6 +2088,7 @@ fun LibraryScreen(
                         } else {
                             showLibraryBottomBarAlways && hasContent && when (activeTabId) {
                                 "SONGS" -> !songsScrollInProgress || songsScrollingUp
+                                "LIKED" -> !likedSongsScrollInProgress || likedSongsScrollingUp
                                 "DATES" -> !songsScrollInProgress || songsScrollingUp
                                 "ALBUMS" -> {
                                     val isScrollingUp = if (albumViewType == AlbumViewType.GRID) albumsGridScrollingUp else albumsListScrollingUp
@@ -2110,6 +2120,10 @@ fun LibraryScreen(
                                                         val idx = filteredSongs.indexOfFirst { it.id == currentSong?.id }
                                                         songsListState.animateScrollToItem(if (idx >= 0) idx else 0)
                                                     }
+                                                    "LIKED" -> {
+                                                        val idx = likedSongs.indexOfFirst { it.id == currentSong?.id }
+                                                        likedSongsListState.animateScrollToItem(if (idx >= 0) idx else 0)
+                                                    }
                                                     "DATES" -> datesListState.animateScrollToItem(0)
                                                     "PLAYLISTS" -> {
                                                         if (playlistViewType == PlaylistViewType.GRID) playlistsGridState.animateScrollToItem(0)
@@ -2124,8 +2138,8 @@ fun LibraryScreen(
                                                         else artistsListState.animateScrollToItem(0)
                                                     }
                                                     "ALBUM_ARTISTS" -> {
-                                                        if (artistViewType == ArtistViewType.GRID) artistsGridState.animateScrollToItem(0)
-                                                        else artistsListState.animateScrollToItem(0)
+                                                        if (artistViewType == ArtistViewType.GRID) albumArtistsGridState.animateScrollToItem(0)
+                                                        else albumArtistsListState.animateScrollToItem(0)
                                                     }
                                                     "EXPLORER" -> explorerListState.animateScrollToItem(0)
                                                 }

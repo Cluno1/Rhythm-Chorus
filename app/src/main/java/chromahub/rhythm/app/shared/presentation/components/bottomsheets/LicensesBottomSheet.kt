@@ -216,6 +216,15 @@ fun LicensesBottomSheet(
             haptic = haptic
         ),
         licenseItem(
+            name = "TagLib",
+            description = context.getString(R.string.licenses_desc_taglib),
+            license = "Apache License",
+            url = "https://github.com/kyant0/taglib",
+            icon = RhythmIcons.Connectivity.OpenInNew,
+            context = context,
+            haptic = haptic
+        ),
+        licenseItem(
             name = "AndroidX Fragment",
             description = context.getString(R.string.licenses_desc_androidx_fragment),
             license = "Apache License",
@@ -229,6 +238,15 @@ fun LicensesBottomSheet(
             description = context.getString(R.string.licenses_desc_androidx_mediarouter),
             license = "Apache License",
             url = "https://developer.android.com/jetpack/androidx/releases/mediarouter",
+            icon = RhythmIcons.Actions.Info,
+            context = context,
+            haptic = haptic
+        ),
+        licenseItem(
+            name = "AndroidX Window",
+            description = context.getString(R.string.licenses_desc_androidx_window),
+            license = "Apache License",
+            url = "https://developer.android.com/jetpack/androidx/releases/window",
             icon = RhythmIcons.Actions.Info,
             context = context,
             haptic = haptic
@@ -252,10 +270,10 @@ fun LicensesBottomSheet(
             haptic = haptic
         ),
         licenseItem(
-            name = "Material Icons Extended",
-            description = context.getString(R.string.licenses_desc_material_icons_extended),
-            license = "Apache License",
-            url = "https://developer.android.com/jetpack/compose/resources/material-icons",
+            name = "Material Symbols",
+            description = context.getString(R.string.licenses_desc_material_symbols),
+            license = "SIL Open Font License",
+            url = "https://fonts.google.com/icons",
             icon = RhythmIcons.Actions.Info,
             context = context,
             haptic = haptic
@@ -282,7 +300,7 @@ fun LicensesBottomSheet(
             name = "Media3 FFmpeg Decoder",
             description = context.getString(R.string.licenses_desc_media3_ffmpeg_decoder),
             license = "Apache License",
-            url = "https://github.com/androidx/media",
+            url = "https://github.com/jellyfin/media3",
             icon = RhythmIcons.Actions.Info,
             context = context,
             haptic = haptic
@@ -292,6 +310,15 @@ fun LicensesBottomSheet(
             description = context.getString(R.string.licenses_desc_room),
             license = "Apache License",
             url = "https://developer.android.com/jetpack/androidx/releases/room",
+            icon = RhythmIcons.Actions.Info,
+            context = context,
+            haptic = haptic
+        ),
+        licenseItem(
+            name = "AndroidX Paging",
+            description = context.getString(R.string.licenses_desc_androidx_paging),
+            license = "Apache License",
+            url = "https://developer.android.com/jetpack/androidx/releases/paging",
             icon = RhythmIcons.Actions.Info,
             context = context,
             haptic = haptic

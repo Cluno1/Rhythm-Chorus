@@ -1033,7 +1033,7 @@ class MusicRepository(context: Context) {
         }
 
         return extension in setOf(
-            "mp3", "m4a", "mp4", "flac", "ogg", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka",
+            "mp3", "m4a", "flac", "ogg", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mka",
             "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1", "dts", "dtshd", "dtsx", "truehd",
             "ape", "wv", "tta", "tak", "dsf", "dff", "dsd"
         )
@@ -1153,7 +1153,13 @@ class MusicRepository(context: Context) {
                 ?.substringBefore("/")
                 ?.toIntOrNull() ?: 0
             trackNumber = if (trackRaw >= 1000) trackRaw % 1000 else trackRaw
-            fallbackDiscNumber = if (trackRaw >= 1000) trackRaw / 1000 else 1
+            fallbackDiscNumber = if (trackRaw >= 1000) {
+                trackRaw / 1000
+            } else {
+                retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DISC_NUMBER)
+                    ?.substringBefore("/")
+                    ?.toIntOrNull() ?: 1
+            }
         } catch (e: Exception) {
             Log.w(TAG, "MediaMetadataRetriever failed for ${file.absolutePath}, using fallback values", e)
             val artistFromVorbisComments = extractArtistFromVorbisCommentTags(file.absolutePath)
@@ -2022,7 +2028,7 @@ class MusicRepository(context: Context) {
             val dominantArtistEntry = artistCounts.maxByOrNull { it.value }
             if (dominantArtistEntry != null) {
                 val dominantCount = dominantArtistEntry.value
-                if (dominantCount >= (songs.size + 1) / 2 || artistCounts.size == 1) {
+                if (dominantCount * 2 > songs.size || artistCounts.size == 1) {
                     return dominantArtistEntry.key
                 }
             }
@@ -2046,7 +2052,7 @@ class MusicRepository(context: Context) {
                 val albumName = albumSongs.first().album.trim().ifBlank { "Unknown Album" }
                 val smartArtist = findBestAlbumArtist(albumSongs)
 
-                val albumId = "hash_${albumName.lowercase(Locale.ROOT)}|${smartArtist.lowercase(Locale.ROOT)}|${kotlin.math.abs(groupKey.hashCode())}"
+                val albumId = "hash_${albumName.lowercase(Locale.ROOT)}|${smartArtist.lowercase(Locale.ROOT)}|${(groupKey.hashCode().toLong() and 0x7FFFFFFF)}"
 
                 val year = albumSongs.maxOfOrNull { it.year } ?: 0
                 val dateModified = albumSongs.maxOfOrNull { it.dateModified } ?: System.currentTimeMillis()
@@ -6136,7 +6142,7 @@ class MusicRepository(context: Context) {
             }
 
             // 1. Get the current count of eligible audio files in MediaStore to check for additions/deletions
-            val selection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%') AND ${MediaStore.Audio.Media.DURATION} > 10000"
+            val selection = MediaScanEngine.mediaScanSelection()
             val countCursor = context.contentResolver.query(
                 collection,
                 arrayOf(MediaStore.Audio.Media._ID),

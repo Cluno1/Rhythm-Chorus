@@ -179,7 +179,7 @@ object AudioFormatDetector {
             mime.contains("ac3", ignoreCase = true) || mime.contains("ac-3", ignoreCase = true) -> "AC-3"
             // Enhanced DTS detection
             mime.contains("dts-x", ignoreCase = true) || mime.contains("dtsx", ignoreCase = true) -> "DTS:X"
-            mime.contains("dts-hd", ignoreCase = true) || mime.contains("dtshd", ignoreCase = true) -> "DTS-HD MA"
+            mime.contains("dts-hd", ignoreCase = true) || mime.contains("dts.hd", ignoreCase = true) || mime.contains("dtshd", ignoreCase = true) -> "DTS-HD MA"
             mime.contains("dts", ignoreCase = true) -> "DTS"
             // DSD support
             mime.contains("dsd", ignoreCase = true) || mime.contains("x-dsd", ignoreCase = true) -> "DSD"
@@ -332,7 +332,7 @@ object AudioFormatDetector {
                 mime?.contains("eac3", ignoreCase = true) == true || mime?.contains("ec-3", ignoreCase = true) == true || mime?.contains("eac", ignoreCase = true) == true -> "E-AC-3"
                 mime?.contains("ac3", ignoreCase = true) == true || mime?.contains("ac-3", ignoreCase = true) == true -> "AC-3"
                 mime?.contains("dts-x", ignoreCase = true) == true || mime?.contains("dtsx", ignoreCase = true) == true -> "DTS:X"
-                mime?.contains("dts-hd", ignoreCase = true) == true || mime?.contains("dtshd", ignoreCase = true) == true -> "DTS-HD MA"
+                mime?.contains("dts-hd", ignoreCase = true) == true || mime?.contains("dts.hd", ignoreCase = true) == true || mime?.contains("dtshd", ignoreCase = true) == true -> "DTS-HD MA"
                 mime?.contains("dts", ignoreCase = true) == true -> "DTS"
                 mime?.contains("dsd", ignoreCase = true) == true || mime?.contains("x-dsd", ignoreCase = true) == true -> "DSD"
                 mime?.contains("mp4", ignoreCase = true) == true || path.endsWith(".mp4") || path.endsWith(".m4a") -> "AAC"

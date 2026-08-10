@@ -128,6 +128,31 @@ jobs:
           echo "Computed Version Code: $NEW_VERSION_CODE"
           echo "Computed Version Name: $NEW_VERSION_NAME"
 
+      - name: Compute recent commits for notifications
+        if: steps.check_version.outputs.should_run == 'true'
+        id: notif_changelog
+        run: |
+          BASE_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          if [ -n "$BASE_TAG" ] && git rev-parse "$BASE_TAG" >/dev/null 2>&1; then
+            CHANGES=$(git log "$BASE_TAG"..HEAD --oneline --no-merges 2>/dev/null | sed -E 's/^[0-9a-f]+ //' | grep -viE '^Release |translation|l10n|localiz|^Minor |^Fix (warnings?|lint)|weblate|\.github|^bump ' | head -n 12)
+          else
+            CHANGES=$(git log HEAD --oneline -12 --no-merges 2>/dev/null | sed -E 's/^[0-9a-f]+ //')
+          fi
+          if [ -z "$CHANGES" ]; then
+            CHANGES="Minor bug fixes and performance improvements"
+          fi
+          # HTML-escape for Telegram rendering
+          CHANGES_HTML=$(printf '%s' "$CHANGES" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+          # JSON-escape for the Discord embed field
+          CHANGES_JSON=$(printf '%s' "$CHANGES" | sed 's/\\/\\\\/g; s/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+          # Short single-line version for the APK caption (1024-char limit)
+          CHANGES_SHORT=$(printf '%s' "$CHANGES" | head -n 5 | tr '\n' ' ' | cut -c1-200)
+          # Materialize to files; consumers read via $(cat ...) so commit-message
+          # content ($, backticks, quotes) can never break shell quoting
+          printf '%s\n' "$CHANGES_HTML" > /tmp/rhythm_changes_html.txt
+          printf '%s\n' "$CHANGES_JSON" > /tmp/rhythm_changes_json.txt
+          printf '%s\n' "$CHANGES_SHORT" > /tmp/rhythm_changes_short.txt
+
       - name: Send start notification to Telegram
         if: steps.check_version.outputs.should_run == 'true'
         env:
@@ -146,6 +171,10 @@ jobs:
           MESSAGE+="🔗 <b>Commit:</b> <code>${{ steps.version_info.outputs.short_sha }}</code>"
           MESSAGE+=$'\n\n'
           MESSAGE+="⏳ Build in progress... We will upload the APK upon completion."
+          MESSAGE+=$'\n\n'
+          MESSAGE+="📝 <b>Recent changes:</b>"
+          MESSAGE+=$'\n'
+          MESSAGE+="$(cat /tmp/rhythm_changes_html.txt)"
           MESSAGE+=$'\n\n'
           MESSAGE+="<a href=\"${RUN_URL}\">🔍 View Actions Run</a>"
           
@@ -175,7 +204,7 @@ jobs:
           path: |
             app/build/outputs/apk/github/release/Rhythm-*-githubRelease*.apk
             app/build/outputs/apk/fdroid/release/Rhythm-*-fdroidRelease*.apk
-          retention-days: 14
+          retention-days: 30
 
       # ── Notifications ────────────────────────────────────────────────────────
 
@@ -218,6 +247,10 @@ jobs:
           CAPTION+="📅 <b>Date:</b> <code>$(date +%Y-%m-%d)</code>"
           CAPTION+=$'\n\n'
           CAPTION+="⚠️ <i>This is a nightly build. Report issues on GitHub.</i>"
+          CAPTION+=$'\n\n'
+          CAPTION+="📝 <b>Recent changes:</b>"
+          CAPTION+=$'\n'
+          CAPTION+="$(cat /tmp/rhythm_changes_short.txt)"
           CAPTION+=$'\n\n'
           CAPTION+="<a href=\"${RUN_URL}\">🔍 View Actions Run</a>"
           if [ ! -f "${{ steps.find_apk.outputs.path }}" ]; then
@@ -286,6 +319,11 @@ jobs:
                   {
                     "name": "📥 Download APK",
                     "value": "[Open Actions Run](${RUN_URL}) → Download from the Artifacts section",
+                    "inline": false
+                  },
+                  {
+                    "name": "📝 Recent changes",
+                    "value": "$(cat /tmp/rhythm_changes_json.txt)",
                     "inline": false
                   },
                   {

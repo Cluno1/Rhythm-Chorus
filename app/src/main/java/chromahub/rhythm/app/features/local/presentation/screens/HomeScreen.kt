@@ -865,6 +865,12 @@ private fun StreamingHomeBody(
             }
         }
 
+        val hasStreamingContent = songs.isNotEmpty() ||
+            albums.isNotEmpty() ||
+            artists.isNotEmpty() ||
+            playlists.isNotEmpty() ||
+            recentlyPlayed.isNotEmpty()
+
         val sectionOrder by appSettings.homeSectionOrder.collectAsState()
         sectionOrder.forEach { sectionId ->
             when (sectionId) {
@@ -1003,7 +1009,7 @@ private fun StreamingHomeBody(
                     }
                 }
                 "RHYTHM_GUARD" -> {
-                    if (showRhythmGuardSection && rhythmGuardMode != AppSettings.RHYTHM_GUARD_MODE_OFF) {
+                    if (hasStreamingContent && showRhythmGuardSection && rhythmGuardMode != AppSettings.RHYTHM_GUARD_MODE_OFF) {
                         val rhythmGuardTimeoutRemainingMs = (rhythmGuardTimeoutUntilMs - System.currentTimeMillis()).coerceAtLeast(0L)
                         val isRhythmGuardTimeoutActive = rhythmGuardTimeoutRemainingMs > 0L
 
@@ -1024,7 +1030,7 @@ private fun StreamingHomeBody(
                     }
                 }
                 "STATS" -> {
-                    if (showRhythmStatsSection) {
+                    if (hasStreamingContent && showRhythmStatsSection) {
                         ModernListeningStatsSection(onClick = onNavigateToStats)
                     }
                 }

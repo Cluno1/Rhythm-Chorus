@@ -206,7 +206,9 @@ class UpdateNotificationWorker(
                     
                     if (latestRun != null) {
                         val shortSha = latestRun.head_sha.take(7)
-                        val cleanedBaseName = BuildConfig.VERSION_NAME.replace(" Beta", "")
+                        val cleanedBaseName = BuildConfig.VERSION_NAME
+                            .replace(" Beta", "")
+                            .replace(Regex("-nightly-r\\d+-[0-9a-f]+", RegexOption.IGNORE_CASE), "")
                         val newVersionTag = "$cleanedBaseName-nightly-r${latestRun.run_number}-$shortSha"
                         
                         val isNewerNightly = if (BuildConfig.IS_NIGHTLY) {

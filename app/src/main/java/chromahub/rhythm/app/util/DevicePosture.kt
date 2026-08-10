@@ -65,18 +65,16 @@ fun rememberDevicePosture(): State<DevicePosture> {
                 .firstOrNull()
 
             value = if (foldingFeature != null) {
-                val stateStr = foldingFeature.state.toString().uppercase()
-                val orientStr = foldingFeature.orientation.toString().uppercase()
-                val isHalfFolded = stateStr.contains("HALF_FOLDED")
-                val isHorizontal = orientStr.contains("HORIZONTAL")
-                val isVertical = orientStr.contains("VERTICAL")
+                val isHalfOpened = foldingFeature.state == FoldingFeature.State.HALF_OPENED
+                val isHorizontal = foldingFeature.orientation == FoldingFeature.Orientation.HORIZONTAL
+                val isVertical = foldingFeature.orientation == FoldingFeature.Orientation.VERTICAL
 
                 when {
-                    isHalfFolded && isHorizontal -> {
+                    isHalfOpened && isHorizontal -> {
                         DevicePosture.TableTop(foldingFeature.bounds)
                     }
 
-                    isHalfFolded && isVertical -> {
+                    isHalfOpened && isVertical -> {
                         DevicePosture.Book(foldingFeature.bounds)
                     }
 

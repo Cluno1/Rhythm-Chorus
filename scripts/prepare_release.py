@@ -45,7 +45,7 @@ def suggest_version_name(release_type):
         with open(BUILD_GRADLE_PATH, "r", encoding="utf-8") as f:
             gradle_content = f.read()
         curr_name_match = re.search(r"versionName\s*=\s*(?:overrideVersionName\s*\?:\s*)?\"(.*?)\"", gradle_content)
-        curr_name = curr_name_match.group(1) if curr_name_match else "5.1.412.1078 Beta"
+        curr_name = curr_name_match.group(1) if curr_name_match else "5.4.456.1196 Beta"
         
         match = re.search(r"(\d+)\.(\d+)", curr_name)
         if match:
@@ -60,7 +60,7 @@ def suggest_version_name(release_type):
     try:
         commit_count = int(subprocess.check_output(["git", "rev-list", "--count", "HEAD"]).decode("utf-8").strip())
     except Exception:
-        commit_count = 985
+        commit_count = 1297
         
     try:
         last_tag = subprocess.check_output(
@@ -69,15 +69,15 @@ def suggest_version_name(release_type):
         ).decode("utf-8").strip()
         
         tag_build_match = re.search(r"\.(\d+)(?:-|$)", last_tag)
-        tag_build = int(tag_build_match.group(1)) if tag_build_match else 1078
+        tag_build = int(tag_build_match.group(1)) if tag_build_match else 1160
         
         tag_commits = int(subprocess.check_output(["git", "rev-list", "--count", last_tag]).decode("utf-8").strip())
         offset = tag_build - tag_commits
     except Exception:
-        offset = 96
+        offset = -46
         
     build = commit_count + offset
-    suffix = " Beta" if release_type == "Beta" else ""
+    suffix = " Beta" if release_type in ("Beta", "Nightly") else ""
     return f"{major}.{minor}.{patch}.{build}{suffix}"
 
 def extract_unreleased_changelog():
@@ -94,6 +94,26 @@ def extract_unreleased_changelog():
     
     section = match.group(1).strip()
     return section
+
+# Commit messages that carry no user-facing value and are excluded from changelogs
+JUNK_PATTERNS = [
+    r"^minor\b.*$",
+    r"^fix\s+warnings?\s*$",
+    r"^fix\s+lint\s*$",
+    r"^fix\s+warnings?\s*[/\s-]?lint\s*$",
+    r"^update\s+[a-z0-9_.-]+\.(ya?ml|json|md|properties|txt)\s*$",
+    r"^update\s+.*\.github.*$",
+    r"^bump\s+(version|dependenc\w+).*$",
+    r"^cleanup\s*$",
+    r"^refactor\s*$",
+    r"^chore\s*\(\s*(deps|ci|build|config)\s*\).*$",
+    r"^(build|ci|chore|style|docs)\s*:.*$",
+]
+
+
+def is_junk_commit(msg):
+    return any(re.search(p, msg, re.IGNORECASE) for p in JUNK_PATTERNS)
+
 
 def get_commits_since_last_tag(previous_tag=None):
     try:
@@ -116,18 +136,25 @@ def get_commits_since_last_tag(previous_tag=None):
             return []
             
         commits = []
+        seen = set()
         has_translation = False
         for line in log_output.splitlines():
             parts = line.split(" ", 1)
             if len(parts) > 1:
                 msg = parts[1].strip()
-                # Skip merge and release utility commits to keep clean
+                # Skip merge, release, and junk commits so the word-limited
+                # changelog keeps the meaningful changes, not the noise
                 if msg.startswith("Merge branch") or msg.startswith("Merge pull request") or msg.startswith("Release "):
                     continue
-                # Collapse all translation/l10n commits into one line
-                if re.search(r"l10n|translation|chore\(l10n\)|update.*translation|localiz", msg, re.IGNORECASE):
+                if is_junk_commit(msg):
+                    continue
+                # Collapse all translation/localization commits into one line
+                if re.search(r"l10n|translation|chore\(l10n\)|localiz|hardcoded.*strings", msg, re.IGNORECASE):
                     has_translation = True
                     continue
+                if msg in seen:
+                    continue
+                seen.add(msg)
                 commits.append(msg)
         if has_translation:
             commits.append("Updated translations")
@@ -257,13 +284,16 @@ def main():
     print("=== Rhythm Release Preparation Tool ===")
     
     # Prompt release type
-    release_type = input("Enter release type [1: Stable, 2: Beta] (default: Stable): ").strip().replace("\ufeff", "")
+    release_type = input("Enter release type [1: Stable, 2: Beta, 3: Nightly] (default: Stable): ").strip().replace("\ufeff", "")
     if release_type == "2":
         release_type = "Beta"
+    elif release_type == "3":
+        release_type = "Nightly"
     else:
         release_type = "Stable"
 
     is_beta = release_type == "Beta"
+    is_nightly = release_type == "Nightly"
         
     # Get current versionName from build.gradle.kts to show as reference
     with open(BUILD_GRADLE_PATH, "r", encoding="utf-8") as f:
@@ -285,118 +315,132 @@ def main():
         
     print(f"New Version Code: {new_version_code}")
 
-    # Banner choice
-    banner_url = prompt_banner_choice(is_beta)
-    
-    # Prompt for changelog source
-    print("\nChangelog source:")
-    print("  1. Git commits since last tag (Recommended - Real changes)")
-    print("  2. Read from docs/CHANGELOG.md [Unreleased] section (Fallback)")
-    source_choice = input("Select source [1 or 2] (default: 1): ").strip().replace("\ufeff", "")
-    
-    raw_unreleased = ""
-    if source_choice == "2":
-        raw_unreleased = extract_unreleased_changelog()
-        has_notes = False
-        for line in raw_unreleased.splitlines():
-            line = line.strip()
-            if (line.startswith("-") or line.startswith("*") or line.startswith("•")) and len(line) > 2:
-                has_notes = True
-                break
-        if not has_notes:
-            print("No notes found in docs/CHANGELOG.md. Falling back to Git commits...")
-            source_choice = "1"
-            
-    if source_choice != "2":
-        # Get recent tags to prompt the user
-        try:
-            tags_output = subprocess.check_output(
-                ["git", "tag", "--sort=-v:refname"],
-                stderr=subprocess.DEVNULL
-            ).decode("utf-8").strip().splitlines()
-            recent_tags = [t.strip() for t in tags_output if t.strip()][:5]
-        except Exception:
-            recent_tags = []
-
-        selected_tag = None
-        if recent_tags:
-            print("\nSelect the previous tag to generate changelog from:")
-            for idx, tag in enumerate(recent_tags):
-                print(f"  {idx + 1}. {tag}")
-            print(f"  {len(recent_tags) + 1}. Custom tag name / branch / commit")
-            
-            choice = input(f"Select option [1-{len(recent_tags) + 1}] (default: 1): ").strip().replace("\ufeff", "")
-            if not choice:
-                selected_tag = recent_tags[0]
-            elif choice.isdigit() and 1 <= int(choice) <= len(recent_tags):
-                selected_tag = recent_tags[int(choice) - 1]
-            elif choice.isdigit() and int(choice) == len(recent_tags) + 1:
-                selected_tag = input("Enter custom tag name or commit/branch: ").strip().replace("\ufeff", "")
-            else:
-                # User typed a tag/branch/commit name directly
-                selected_tag = choice
-                
-        commits = get_commits_since_last_tag(selected_tag)
-        if commits:
-            print(f"Found {len(commits)} commits.")
-            raw_unreleased = "### Added\n" + "\n".join([f"- {c}" for c in commits])
-        else:
-            print("No commits found.")
-            raw_unreleased = "### Added\n- Minor bug fixes and performance improvements."
-        
-    # Format Fastlane changelog
-    fastlane_content = format_fastlane_changelog(new_version_name, raw_unreleased, release_type)
-    
-    # Print Fastlane preview
-    print("\n--- Fastlane Changelog Preview ---")
-    print(fastlane_content)
-    print(f"Total Characters: {len(fastlane_content)}/500")
-    print("---------------------------------\n")
-
-    # Show banner preview
-    if banner_url:
-        print(f"Banner URL: {banner_url}")
+    # Banner choice (nightlies don't create GitHub releases, so no banner)
+    if is_nightly:
+        banner_url = None
     else:
-        print("Banner: None (no image will be included)")
-    print()
+        banner_url = prompt_banner_choice(is_beta)
+    
+    # Nightlies use their commit messages as the changelog (shown in-app),
+    # so changelog/fastlane/banner steps are skipped for nightly preps.
+    raw_unreleased = ""
+    if not is_nightly:
+        # Prompt for changelog source
+        print("\nChangelog source:")
+        print("  1. Git commits since last tag (Recommended - Real changes)")
+        print("  2. Read from docs/CHANGELOG.md [Unreleased] section (Fallback)")
+        source_choice = input("Select source [1 or 2] (default: 1): ").strip().replace("\ufeff", "")
+
+        if source_choice == "2":
+            raw_unreleased = extract_unreleased_changelog()
+            has_notes = False
+            for line in raw_unreleased.splitlines():
+                line = line.strip()
+                if (line.startswith("-") or line.startswith("*") or line.startswith("•")) and len(line) > 2:
+                    has_notes = True
+                    break
+            if not has_notes:
+                print("No notes found in docs/CHANGELOG.md. Falling back to Git commits...")
+                source_choice = "1"
+
+        if source_choice != "2":
+            # Get recent tags to prompt the user
+            try:
+                tags_output = subprocess.check_output(
+                    ["git", "tag", "--sort=-v:refname"],
+                    stderr=subprocess.DEVNULL
+                ).decode("utf-8").strip().splitlines()
+                recent_tags = [t.strip() for t in tags_output if t.strip()][:5]
+            except Exception:
+                recent_tags = []
+
+            selected_tag = None
+            if recent_tags:
+                print("\nSelect the previous tag to generate changelog from:")
+                for idx, tag in enumerate(recent_tags):
+                    print(f"  {idx + 1}. {tag}")
+                print(f"  {len(recent_tags) + 1}. Custom tag name / branch / commit")
+
+                choice = input(f"Select option [1-{len(recent_tags) + 1}] (default: 1): ").strip().replace("\ufeff", "")
+                if not choice:
+                    selected_tag = recent_tags[0]
+                elif choice.isdigit() and 1 <= int(choice) <= len(recent_tags):
+                    selected_tag = recent_tags[int(choice) - 1]
+                elif choice.isdigit() and int(choice) == len(recent_tags) + 1:
+                    selected_tag = input("Enter custom tag name or commit/branch: ").strip().replace("\ufeff", "")
+                else:
+                    # User typed a tag/branch/commit name directly
+                    selected_tag = choice
+
+            commits = get_commits_since_last_tag(selected_tag)
+            if commits:
+                print(f"Found {len(commits)} commits.")
+                raw_unreleased = "### Added\n" + "\n".join([f"- {c}" for c in commits])
+            else:
+                print("No commits found.")
+                raw_unreleased = "### Added\n- Minor bug fixes and performance improvements."
+        
+    if not is_nightly:
+        # Format Fastlane changelog
+        fastlane_content = format_fastlane_changelog(new_version_name, raw_unreleased, release_type)
+
+        # Print Fastlane preview
+        print("\n--- Fastlane Changelog Preview ---")
+        print(fastlane_content)
+        print(f"Total Characters: {len(fastlane_content)}/500")
+        print("---------------------------------\n")
+
+        # Show banner preview
+        if banner_url:
+            print(f"Banner URL: {banner_url}")
+        else:
+            print("Banner: None (no image will be included)")
+        print()
     
     confirm = input("Does this look correct? Proceed with file modifications? (y/N): ").strip().lower().replace("\ufeff", "")
     if confirm != 'y':
         print("Aborted.")
         sys.exit(0)
         
-    # Modify build.gradle.kts
+    # Modify build.gradle.kts (a nightly prep only needs the version bump -
+    # pushing it triggers the nightly workflow)
     update_build_gradle(new_version_code, new_version_name)
-    
-    # Modify docs/CHANGELOG.md
-    update_changelog_file(new_version_name, raw_unreleased)
-    
-    # Write Fastlane file
-    os.makedirs(FASTLANE_DIR, exist_ok=True)
-    fastlane_file_path = os.path.join(FASTLANE_DIR, f"{new_version_code}.txt")
-    with open(fastlane_file_path, "w", encoding="utf-8") as f:
-        f.write(fastlane_content)
-    print(f"Created Fastlane changelog: {fastlane_file_path}")
 
-    # Store banner URL choice so generate_release_notes.py can pick it up
-    banner_hint_path = os.path.join(ROOT_DIR, ".release_banner_url")
-    if banner_url:
-        with open(banner_hint_path, "w", encoding="utf-8") as f:
-            f.write(banner_url)
-        print(f"Stored banner URL: .release_banner_url")
-    else:
-        # Clear any previous stored banner
-        if os.path.exists(banner_hint_path):
-            os.remove(banner_hint_path)
-        print("No banner selected.")
+    if not is_nightly:
+        # Modify docs/CHANGELOG.md
+        update_changelog_file(new_version_name, raw_unreleased)
+
+        # Write Fastlane file
+        os.makedirs(FASTLANE_DIR, exist_ok=True)
+        fastlane_file_path = os.path.join(FASTLANE_DIR, f"{new_version_code}.txt")
+        with open(fastlane_file_path, "w", encoding="utf-8") as f:
+            f.write(fastlane_content)
+        print(f"Created Fastlane changelog: {fastlane_file_path}")
+
+        # Store banner URL choice so generate_release_notes.py can pick it up
+        banner_hint_path = os.path.join(ROOT_DIR, ".release_banner_url")
+        if banner_url:
+            with open(banner_hint_path, "w", encoding="utf-8") as f:
+                f.write(banner_url)
+            print(f"Stored banner URL: .release_banner_url")
+        else:
+            # Clear any previous stored banner
+            if os.path.exists(banner_hint_path):
+                os.remove(banner_hint_path)
+            print("No banner selected.")
     
     normalized_tag = f"v{new_version_name.lower().replace(' ', '-')}"
     print("\nRelease files prepared successfully!")
     print("\nTo build and release, run:")
-    print("  git add app/build.gradle.kts docs/CHANGELOG.md fastlane/metadata/android/en-US/changelogs/")
-    print(f"  git commit -m \"Release {new_version_name}\"")
-    print(f"  git tag {normalized_tag}")
-    print("  git push origin main --tags")
+    if is_nightly:
+        print("  git add app/build.gradle.kts")
+        print(f"  git commit -m \"Release {new_version_name.replace(' Beta', '')} Nightly\"")
+        print("  git push origin main   # push triggers the nightly workflow (no tag needed)")
+    else:
+        print("  git add app/build.gradle.kts docs/CHANGELOG.md fastlane/metadata/android/en-US/changelogs/")
+        print(f"  git commit -m \"Release {new_version_name}\"")
+        print(f"  git tag {normalized_tag}")
+        print("  git push origin main --tags")
 
 if __name__ == "__main__":
     main()

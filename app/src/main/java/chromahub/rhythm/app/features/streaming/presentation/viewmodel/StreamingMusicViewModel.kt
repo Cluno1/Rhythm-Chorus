@@ -40,6 +40,11 @@ import androidx.core.net.toUri
  */
 class StreamingMusicViewModel(application: Application) : AndroidViewModel(application) {
     private val appSettings = AppSettings.getInstance(application)
+
+    companion object {
+        private const val AUTH_PING_RETRIES = 3
+        private const val AUTH_PING_RETRY_DELAY_MS = 800L
+    }
     private val serviceSessionRepository = StreamingServiceSessionRepository(application)
     val repository = StreamingMusicModule.provideStreamingMusicRepository(application)
     private val providerRepository = repository as? StreamingMusicRepositoryImpl
@@ -1324,11 +1329,13 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
     }
 
     private suspend fun checkAndSyncAuthentication(
-        serviceId: String = appSettings.streamingService.value
+        serviceId: String = appSettings.streamingService.value,
+        retries: Int = AUTH_PING_RETRIES
     ): Boolean {
         val normalizedServiceId = normalizeServiceId(serviceId)
+        val sessionMarkedConnected = serviceSessionRepository.isConnected(normalizedServiceId)
         val credentialsExist = providerRepository?.isServiceConnected(normalizedServiceId)
-            ?: serviceSessionRepository.isConnected(normalizedServiceId)
+            ?: sessionMarkedConnected
 
         if (!credentialsExist) {
             _isAuthenticated.value = false
@@ -1336,6 +1343,12 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
                 activeService = sourceTypeFromServiceId(normalizedServiceId),
                 isAuthenticated = false
             )
+            if (sessionMarkedConnected) {
+                _error.value = getApplication<Application>().getString(
+                    R.string.streaming_home_connect_selected_service,
+                    getSourceTypeName(sourceTypeFromServiceId(normalizedServiceId))
+                )
+            }
             return false
         }
 
@@ -1349,16 +1362,23 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
             return true
         }
 
-        // Actually test the connection with a ping to detect stale connections
-        val connected = try {
-            when (normalizedServiceId) {
-                "SUBSONIC" -> providerRepository?.authenticate() == true
-                "JELLYFIN" -> providerRepository?.authenticate() == true
-                else -> false
+        var connected = false
+        repeat(retries) { attempt ->
+            connected = try {
+                when (normalizedServiceId) {
+                    "SUBSONIC" -> providerRepository?.authenticate() == true
+                    "JELLYFIN" -> providerRepository?.authenticate() == true
+                    else -> false
+                }
+            } catch (e: Exception) {
+                false
             }
-        } catch (e: Exception) {
-            // Network error - connection is stale or network unavailable
-            false
+            if (connected) {
+                return@repeat
+            }
+            if (attempt < retries - 1) {
+                delay(AUTH_PING_RETRY_DELAY_MS)
+            }
         }
 
         _isAuthenticated.value = connected
@@ -1366,6 +1386,13 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
             activeService = sourceTypeFromServiceId(normalizedServiceId),
             isAuthenticated = connected
         )
+
+        if (!connected) {
+            _error.value = getApplication<Application>().getString(
+                R.string.streaming_home_connect_selected_service,
+                getSourceTypeName(sourceTypeFromServiceId(normalizedServiceId))
+            )
+        }
         return connected
     }
 

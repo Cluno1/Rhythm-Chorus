@@ -9448,7 +9448,23 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setMonoAudioEnabled(enabled: Boolean) {
+        val context = getApplication<Application>()
+
         appSettings.setMonoAudioEnabled(enabled)
+
+        val intent = Intent(context, MediaPlaybackService::class.java).apply {
+            action = MediaPlaybackService.ACTION_SET_MONO_AUDIO
+            putExtra("enabled", enabled)
+        }
+        val sent = ServiceStartUtils.startServiceSafely(
+            context = context,
+            intent = intent,
+            logTag = TAG,
+            reason = "set_mono_audio"
+        )
+        if (sent) {
+            Log.d(TAG, "Set mono audio enabled: $enabled")
+        }
     }
     
     fun updateSpatializationStatus() {

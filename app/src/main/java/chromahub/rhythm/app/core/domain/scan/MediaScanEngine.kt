@@ -40,6 +40,9 @@ class MediaScanEngine(
     companion object {
         private const val TAG = "MediaScanEngine"
         private const val BATCH_SIZE = 100
+
+        fun mediaScanSelection(): String =
+            "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/mp4' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/x-matroska' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'application/x-matroska') AND ${MediaStore.Audio.Media.DURATION} > 10000"
     }
 
     private val _scanProgress = MutableStateFlow(ScanProgress(0, 0, ScanPhase.Idle))
@@ -93,11 +96,12 @@ class MediaScanEngine(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 add(MediaStore.Audio.Media.GENRE)
                 add(MediaStore.Audio.Media.ALBUM_ARTIST)
+                add(MediaStore.Audio.Media.DISC_NUMBER)
                 add(MediaStore.Audio.Media.CD_TRACK_NUMBER)
             }
         }.toTypedArray()
 
-        val selection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/mp4' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/x-matroska' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'application/x-matroska') AND ${MediaStore.Audio.Media.DURATION} > 10000"
+        val selection = mediaScanSelection()
         val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
 
         val scannedSongs = mutableListOf<SongEntity>()
@@ -126,6 +130,7 @@ class MediaScanEngine(
                 val colData = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
                 val colGenre = cursor.getColumnIndex("genre") // MediaStore.Audio.AudioColumns.GENRE (API 30+)
                 val colAlbumArtist = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ARTIST)
+                val colDiscNumber = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) cursor.getColumnIndex(MediaStore.Audio.Media.DISC_NUMBER) else -1
                 val colCdTrackNumber = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) cursor.getColumnIndex(MediaStore.Audio.Media.CD_TRACK_NUMBER) else -1
 
             var processed = 0
@@ -208,6 +213,7 @@ class MediaScanEngine(
                         val albumId = cursor.getLong(colAlbumId).toString()
                         val rawTrack = cursor.getInt(colTrack)
                         val cdTrack = if (colCdTrackNumber >= 0) cursor.getInt(colCdTrackNumber) else 0
+                        val discFromStore = if (colDiscNumber >= 0) cursor.getInt(colDiscNumber) else 0
                         val rawYear = cursor.getInt(colYear)
                         val dateAdded = cursor.getLong(colDateAdded)
                         val rawGenre = if (colGenre >= 0) cursor.getString(colGenre) else null
@@ -220,14 +226,16 @@ class MediaScanEngine(
                         var albumArtist = rawAlbumArtist?.let { chromahub.rhythm.app.util.MetadataHeuristics.normalizeMetadataText(it) }
 
                         var discNumber = when {
+                            discFromStore > 0 -> discFromStore
                             rawTrack >= 1000 -> rawTrack / 1000
-                            cdTrack > 0 -> cdTrack
                             else -> 1
                         }
 
                         var trackNumber = when {
                             rawTrack >= 1000 -> rawTrack % 1000
-                            else -> rawTrack
+                            rawTrack > 0 -> rawTrack
+                            cdTrack > 0 -> cdTrack
+                            else -> 0
                         }
 
                         var year = rawYear

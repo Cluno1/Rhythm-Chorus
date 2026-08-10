@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
@@ -29,6 +29,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import chromahub.rhythm.app.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -107,7 +108,11 @@ import chromahub.rhythm.app.shared.presentation.components.common.CollapsibleHea
 import chromahub.rhythm.app.shared.presentation.components.common.ButtonGroupStyle
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveScrollBar
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveButtonGroup
-import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveGroupButton
+import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveFilterChip
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonWeighted
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonSize
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonType
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
 import chromahub.rhythm.app.shared.presentation.components.common.StyledProgressBar
 import chromahub.rhythm.app.shared.presentation.components.common.ProgressStyle
@@ -161,6 +166,36 @@ import chromahub.rhythm.app.shared.presentation.screens.settings.SettingItem
 import chromahub.rhythm.app.shared.presentation.screens.settings.SettingGroup
 
 
+private data class FormatCategory(
+    val titleRes: Int,
+    val formats: List<String>
+)
+
+private val FORMAT_CATEGORIES = listOf(
+    FormatCategory(
+        R.string.settings_formats_group_common,
+        listOf("mp3", "m4a", "aac", "alac", "flac", "ogg", "opus", "oga", "opa", "wav", "aiff", "aif", "wma")
+    ),
+    FormatCategory(
+        R.string.settings_formats_group_lossless,
+        listOf("ape", "wv", "tta", "tak", "dsf", "dff", "dsd")
+    ),
+    FormatCategory(
+        R.string.settings_formats_group_surround,
+        listOf("ac3", "ac4", "eac", "eac3", "dts", "dtshd", "dtsx", "truehd")
+    ),
+    FormatCategory(
+        R.string.settings_formats_group_containers,
+        listOf("mka", "m4b", "adts", "mp4", "mkv")
+    ),
+    FormatCategory(
+        R.string.settings_formats_group_legacy,
+        listOf("mid", "midi", "mhm", "mhm1")
+    )
+)
+
+private val ALL_KNOWN_FORMATS: List<String> = FORMAT_CATEGORIES.flatMap { it.formats }
+
 // ✅ REDESIGNED Media Scan Screen with improved UI
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -181,6 +216,21 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
     // Get current media scan mode from settings
     val mediaScanMode by appSettings.mediaScanMode.collectAsState()
     val includeHiddenWhitelistedMedia by appSettings.includeHiddenWhitelistedMedia.collectAsState()
+    val allowedFormats by appSettings.allowedFormats.collectAsState()
+
+    val enabledKnownCount = allowedFormats.count { it in ALL_KNOWN_FORMATS }
+
+    fun updateAllowedFormats(newFormats: Set<String>) {
+        if (newFormats.isEmpty()) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.settings_formats_at_least_one),
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+        appSettings.setAllowedFormats(newFormats)
+    }
 
     // Mode state
     var currentMode by remember {
@@ -190,6 +240,7 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
     // Bottom sheet states
     var showSongsBottomSheet by remember { mutableStateOf(false) }
     var showFoldersBottomSheet by remember { mutableStateOf(false) }
+    var showFormatsBottomSheet by remember { mutableStateOf(false) }
 
     // File picker launcher for folder selection
     val folderPickerLauncher = rememberLauncherForActivityResult(
@@ -470,6 +521,34 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                 Material3SettingsGroup(
                     title = context.getString(R.string.settings_scan_behavior),
                     items = scanBehaviorItems,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+            }
+
+            item {
+                val formatsItems = listOf(
+                    toMaterial3SettingsItem(
+                        context = context,
+                        hapticFeedback = haptic,
+                        item = SettingItem(
+                            icon = RhythmIcons.MusicNote,
+                            title = context.getString(R.string.settings_allowed_formats),
+                            description = context.getString(
+                                R.string.settings_allowed_formats_desc,
+                                enabledKnownCount,
+                                ALL_KNOWN_FORMATS.size
+                            ),
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                showFormatsBottomSheet = true
+                            }
+                        )
+                    )
+                )
+
+                Material3SettingsGroup(
+                    title = context.getString(R.string.settings_audio_formats),
+                    items = formatsItems,
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             }
@@ -1174,6 +1253,225 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                             Text(context.getString(R.string.settings_clear_all_button_short))
                         }
                     }
+                }
+            }
+        }
+    }
+
+    if (showFormatsBottomSheet) {
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+
+        var showContent by remember { mutableStateOf(false) }
+        val contentAlpha by animateFloatAsState(
+            targetValue = if (showContent) 1f else 0f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            ),
+            label = "formatsContentAlpha"
+        )
+
+        LaunchedEffect(Unit) {
+            sheetState.expand()
+        }
+
+        LaunchedEffect(Unit) {
+            delay(100)
+            showContent = true
+        }
+
+        ModalBottomSheet(
+        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
+            onDismissRequest = { showFormatsBottomSheet = false },
+            sheetState = sheetState,
+            dragHandle = {
+                BottomSheetDefaults.DragHandle(
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp)
+                    .graphicsLayer(alpha = contentAlpha)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = context.getString(R.string.settings_allowed_formats),
+                            style = MaterialTheme.typography.displayMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 6.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelLarge,
+                                text = context.getString(
+                                    R.string.settings_allowed_formats_desc,
+                                    enabledKnownCount,
+                                    ALL_KNOWN_FORMATS.size
+                                ),
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                RhythmGroupedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    size = RhythmButtonSize.Large
+                ) {
+                    RhythmButtonWeighted(
+                        onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            updateAllowedFormats(ALL_KNOWN_FORMATS.toSet())
+                        },
+                        weight = 1f,
+                        type = RhythmButtonType.Filled,
+                        isFirst = true,
+                        icon = RhythmIcons.CheckCircle,
+                        text = context.getString(R.string.settings_formats_select_all)
+                    )
+                    RhythmButtonWeighted(
+                        onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            updateAllowedFormats(emptySet())
+                        },
+                        weight = 1f,
+                        type = RhythmButtonType.Tonal,
+                        isFirst = false,
+                        isLast = false,
+                        icon = MaterialSymbolIcon("deselect"),
+                        text = context.getString(R.string.settings_formats_select_none)
+                    )
+                    RhythmButtonWeighted(
+                        onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            updateAllowedFormats(AppSettings.defaultAllowedFormats())
+                        },
+                        weight = 1f,
+                        type = RhythmButtonType.Outlined,
+                        isLast = true,
+                        icon = MaterialSymbolIcon("restart_alt"),
+                        text = context.getString(R.string.bottomsheet_reset)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    FORMAT_CATEGORIES.forEach { category ->
+                        Text(
+                            text = context.getString(category.titleRes),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
+                        )
+
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            category.formats.forEach { format ->
+                                val selected = allowedFormats.contains(format)
+                                ExpressiveFilterChip(
+                                    selected = selected,
+                                    onClick = {
+                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                        updateAllowedFormats(
+                                            if (selected) allowedFormats - format else allowedFormats + format
+                                        )
+                                    },
+                                    leadingIcon = if (selected) ({
+                                        Icon(
+                                            imageVector = RhythmIcons.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                        )
+                                    }) else null,
+                                    label = {
+                                        Text(
+                                            text = format.uppercase(),
+                                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = MaterialSymbolIcon("lightbulb", filled = true),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = context.getString(R.string.settings_quick_tips),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = context.getString(R.string.settings_allowed_formats_open_desc),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f)
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = context.getString(R.string.settings_formats_video_note),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }

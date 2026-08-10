@@ -436,6 +436,16 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             parentScreen = context.getString(R.string.settings_playback_title)
         ))
         add(SearchableSettingItem(
+            id = "mono_audio",
+            title = context.getString(R.string.settings_mono_audio),
+            description = context.getString(R.string.settings_mono_audio_desc),
+            keywords = listOf("mono", "mono audio", "downmix", "stereo", "single earpiece", "earpiece", "one ear", "center", "audio"),
+            icon = MaterialSymbolIcon("graphic_eq"),
+            route = SettingsRoutes.PLAYBACK,
+            parentScreen = context.getString(R.string.settings_playback_title),
+            settingKey = "monoAudioEnabled"
+        ))
+        add(SearchableSettingItem(
             id = "battery_saver_disable_haptics",
             title = context.getString(R.string.performancesettingsscreen_disable_haptics),
             description = context.getString(R.string.performancesettingsscreen_disable_haptics_desc),
@@ -543,6 +553,38 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             icon = MaterialSymbolIcon("library_music"),
             route = SettingsRoutes.MEDIA_SCAN,
             parentScreen = context.getString(R.string.settings_media_scan_title)
+        ))
+        add(SearchableSettingItem(
+            id = "media_clear_all_songs",
+            title = context.getString(R.string.settings_clear_all_songs),
+            description = context.getString(R.string.settings_clear_all_songs_desc, context.getString(R.string.settings_blocked)),
+            keywords = listOf("clear", "all songs", "remove songs", "blocked songs", "whitelisted songs", "reset", "media scan"),
+            icon = MaterialSymbolIcon("delete_sweep"),
+            route = SettingsRoutes.MEDIA_SCAN,
+            parentScreen = context.getString(R.string.settings_media_scan_title)
+        ))
+        add(SearchableSettingItem(
+            id = "media_clear_all_folders",
+            title = context.getString(R.string.settings_clear_all_folders),
+            description = context.getString(R.string.settings_clear_all_folders_desc, context.getString(R.string.settings_blocked)),
+            keywords = listOf("clear", "all folders", "remove folders", "blocked folders", "whitelisted folders", "reset", "media scan"),
+            icon = MaterialSymbolIcon("delete_sweep"),
+            route = SettingsRoutes.MEDIA_SCAN,
+            parentScreen = context.getString(R.string.settings_media_scan_title)
+        ))
+        add(SearchableSettingItem(
+            id = "media_allowed_formats",
+            title = context.getString(R.string.settings_allowed_formats),
+            description = context.getString(R.string.settings_allowed_formats_open_desc),
+            keywords = listOf(
+                "formats", "audio formats", "file types", "extensions", "codec", "mp3", "flac", "m4a",
+                "aac", "ogg", "opus", "wav", "alac", "ape", "wv", "dsd", "dts", "mp4", "mkv",
+                "allowed", "scan", "include formats", "exclude formats"
+            ),
+            icon = RhythmIcons.MusicNote,
+            route = SettingsRoutes.MEDIA_SCAN,
+            parentScreen = context.getString(R.string.settings_media_scan_title),
+            settingKey = "allowedFormats"
         ))
         add(SearchableSettingItem(
             id = "artist_parsing",
@@ -1153,6 +1195,33 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             icon = MaterialSymbolIcon("cloud_queue"),
             route = SettingsRoutes.EXPERIMENTAL_FEATURES,
             parentScreen = context.getString(R.string.settings_experimental_features)
+        ))
+        add(SearchableSettingItem(
+            id = "go_preferred_service",
+            title = context.getString(R.string.streaming_settings_preferred_service),
+            description = context.getString(R.string.streaming_settings_service_sheet_desc),
+            keywords = listOf("preferred service", "subsonic", "jellyfin", "streaming provider", "go settings"),
+            icon = MaterialSymbolIcon("cloud_queue"),
+            route = SettingsRoutes.GO_SETTINGS,
+            parentScreen = context.getString(R.string.exp_go_mode)
+        ))
+        add(SearchableSettingItem(
+            id = "go_streaming_quality",
+            title = context.getString(R.string.streaming_settings_quality),
+            description = context.getString(R.string.streaming_settings_quality_sheet_desc),
+            keywords = listOf("streaming quality", "bitrate", "audio quality", "go settings", "data usage"),
+            icon = MaterialSymbolIcon("speed"),
+            route = SettingsRoutes.GO_SETTINGS,
+            parentScreen = context.getString(R.string.exp_go_mode)
+        ))
+        add(SearchableSettingItem(
+            id = "go_cellular_streaming",
+            title = context.getString(R.string.exp_cellular_streaming),
+            description = context.getString(R.string.gosettingsscreen_enable_streaming_over_mobile),
+            keywords = listOf("cellular", "mobile data", "streaming over cellular", "mobile network", "data usage", "go settings"),
+            icon = MaterialSymbolIcon("signal_cellular_alt"),
+            route = SettingsRoutes.GO_SETTINGS,
+            parentScreen = context.getString(R.string.exp_go_mode)
         ))
         
         // ======================== THEME CUSTOMIZATION SCREEN ========================
