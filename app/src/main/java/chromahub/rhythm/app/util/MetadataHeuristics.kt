@@ -143,6 +143,21 @@ object MetadataHeuristics {
         return null
     }
 
+    fun parseYear(dateOrYearStr: String?): Int {
+        if (dateOrYearStr.isNullOrBlank()) return 0
+        val regex = Regex("""\b(18|19|20|21)\d{2}\b""")
+        val match = regex.find(dateOrYearStr)
+        if (match != null) {
+            return match.value.toIntOrNull() ?: 0
+        }
+        val cleanDigits = dateOrYearStr.filter { it.isDigit() }
+        if (cleanDigits.length >= 4) {
+            val potentialYear = cleanDigits.take(4).toIntOrNull() ?: 0
+            if (potentialYear in 1800..2100) return potentialYear
+        }
+        return dateOrYearStr.trim().toIntOrNull() ?: 0
+    }
+
     fun normalizeMetadataText(value: String?): String? {
         val raw = value?.trim() ?: return value
         if (raw.isBlank()) return raw
@@ -150,7 +165,9 @@ object MetadataHeuristics {
         val hasCommonUtf8MojibakeMarkers =
             raw.contains('Ã') ||
                 raw.contains('Â') ||
-                raw.contains("\u00E2\u20AC")
+                raw.contains("\u00E2\u20AC") ||
+                raw.contains('ï') ||
+                raw.contains('½')
         if (!hasCommonUtf8MojibakeMarkers) return raw
 
         val hasNonLatin1CodePoints = raw.any { it.code > 0xFF }
@@ -159,12 +176,29 @@ object MetadataHeuristics {
             return raw
         }
 
-        return runCatching {
+        val repairedWin1252 = runCatching {
             val repaired = String(raw.toByteArray(java.nio.charset.Charset.forName("windows-1252")), Charsets.UTF_8)
             val repairedHasMoreReplacementChars =
                 repaired.count { it == '\uFFFD' } > raw.count { it == '\uFFFD' }
-            if (repaired.isBlank() || repairedHasMoreReplacementChars) raw else repaired
-        }.getOrDefault(raw)
+            if (repaired.isBlank() || repairedHasMoreReplacementChars) null else repaired
+        }.getOrNull()
+
+        if (repairedWin1252 != null && repairedWin1252 != raw && !repairedWin1252.contains('Ã') && !repairedWin1252.contains('Â')) {
+            return repairedWin1252
+        }
+
+        val repairedIso88591 = runCatching {
+            val repaired = String(raw.toByteArray(Charsets.ISO_8859_1), Charsets.UTF_8)
+            val repairedHasMoreReplacementChars =
+                repaired.count { it == '\uFFFD' } > raw.count { it == '\uFFFD' }
+            if (repaired.isBlank() || repairedHasMoreReplacementChars) null else repaired
+        }.getOrNull()
+
+        if (repairedIso88591 != null && repairedIso88591 != raw && !repairedIso88591.contains('Ã') && !repairedIso88591.contains('Â')) {
+            return repairedIso88591
+        }
+
+        return repairedWin1252 ?: repairedIso88591 ?: raw
     }
 
     fun titleFromDisplayName(displayName: String?): String? {

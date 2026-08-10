@@ -1966,119 +1966,109 @@ class MusicRepository(context: Context) {
         }
     }
 
-    private fun findBestAlbumArtist(songs: List<Song>): String? {
-        val foundAlbumArtists = songs
-            .map { it.albumArtist?.trim()?.takeIf { a -> a.isNotBlank() && !a.equals("<unknown>", ignoreCase = true) } }
-            .groupBy { it }
-            .mapValues { it.value.size }
-        val nonNullCount = foundAlbumArtists.filterKeys { it != null }.size
-        val nullCount = foundAlbumArtists[null] ?: 0
-
-        val theAlbumArtist = foundAlbumArtists.keys.find { it != null }
-        if (theAlbumArtist != null) {
-            val countWithAlbumArtist = foundAlbumArtists[theAlbumArtist]!!
-            if (countWithAlbumArtist >= songs.size / 2 && countWithAlbumArtist > nullCount * 2) {
-                return theAlbumArtist
-            }
-            return null
-        }
-
-        val bestMatch = songs
-            .map { it.artist.trim().takeUnless { a -> a.isBlank() || a.equals("<unknown>", ignoreCase = true) } ?: "Unknown Artist" }
-            .groupBy { it }
-            .maxByOrNull { it.value.size }
-        if (bestMatch == null || bestMatch.key.isBlank()) return null
-        if ((bestMatch.value.size.toFloat() / songs.size) < 0.6f) return null
-        return bestMatch.key
+    private fun extractPrimaryArtist(artistStr: String): String {
+        val trimmed = artistStr.trim()
+        if (trimmed.isBlank() || trimmed.equals("<unknown>", ignoreCase = true)) return "Unknown Artist"
+        val regex = Regex("""(?i)\s+(feat\.|ft\.|featuring|with|and|&)\s+.*""")
+        val main = trimmed.replace(regex, "").trim()
+        return if (main.isNotBlank()) main else trimmed
     }
 
-    private fun rawGroupKeyForSong(song: Song): String =
-        (song.albumArtist?.trim()?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
-            ?: song.artist.trim().takeIf { it.isNotBlank() }
-            ?: "Unknown Artist").lowercase(Locale.ROOT)
+    private fun getAlbumGroupingKey(song: Song): String {
+        val normAlbum = song.album.trim().lowercase(Locale.ROOT).ifBlank { "unknown album" }
 
-    private fun isCompilationAlbum(songs: List<Song>): Boolean {
-        val groups = songs.groupBy { rawGroupKeyForSong(it) }
-        if (groups.size <= 1) return false
-        val maxCount = groups.maxOf { it.value.size }
-        val ratio = maxCount.toFloat() / songs.size
-        return ratio < 0.6f
+        val normAlbumArtist = song.albumArtist?.trim()
+            ?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
+            ?.lowercase(Locale.ROOT)
+
+        if (normAlbumArtist != null) {
+            return "albumartist_${normAlbumArtist}|${normAlbum}"
+        }
+
+        val normAlbumId = song.albumId.trim().takeIf { it.isNotBlank() && it != "0" && it != "-1" }
+        if (normAlbumId != null && normAlbumId.all { it.isDigit() }) {
+            return "mediastore_${normAlbumId}|${normAlbum}"
+        }
+
+        val parentFolder = song.path?.let { File(it).parent }?.lowercase(Locale.ROOT)
+        if (!parentFolder.isNullOrBlank()) {
+            return "folder_${parentFolder}|${normAlbum}"
+        }
+
+        val primaryArtist = extractPrimaryArtist(song.artist).lowercase(Locale.ROOT)
+        return "artist_${primaryArtist}|${normAlbum}"
+    }
+
+    private fun findBestAlbumArtist(songs: List<Song>): String {
+        val explicitAlbumArtists = songs
+            .mapNotNull { it.albumArtist?.trim()?.takeIf { a -> a.isNotBlank() && !a.equals("<unknown>", ignoreCase = true) } }
+        if (explicitAlbumArtists.isNotEmpty()) {
+            val mostCommonExplicit = explicitAlbumArtists
+                .groupBy { it }
+                .maxByOrNull { it.value.size }
+                ?.key
+            if (mostCommonExplicit != null) {
+                return mostCommonExplicit
+            }
+        }
+
+        val primaryArtists = songs
+            .map { extractPrimaryArtist(it.artist) }
+            .filter { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
+
+        if (primaryArtists.isNotEmpty()) {
+            val artistCounts = primaryArtists.groupBy { it }.mapValues { it.value.size }
+            val dominantArtistEntry = artistCounts.maxByOrNull { it.value }
+            if (dominantArtistEntry != null) {
+                val dominantCount = dominantArtistEntry.value
+                if (dominantCount >= (songs.size + 1) / 2 || artistCounts.size == 1) {
+                    return dominantArtistEntry.key
+                }
+            }
+        }
+
+        val distinctRawArtists = songs.map { it.artist.trim() }.distinct()
+        if (distinctRawArtists.size > 1) {
+            return "Various Artists"
+        }
+
+        return songs.firstOrNull()?.artist?.trim()?.takeIf { it.isNotBlank() } ?: "Unknown Artist"
     }
 
     suspend fun loadAlbums(): List<Album> = withContext(Dispatchers.IO) {
         val allSongs = loadSongs()
 
         val albums = buildList {
-            val byAlbumName = allSongs.groupBy { song ->
-                song.album.trim().lowercase(Locale.ROOT)
-            }
+            val groupedByAlbumKey = allSongs.groupBy { getAlbumGroupingKey(it) }
 
-            for ((normalizedAlbumName, songsWithName) in byAlbumName) {
-                val byArtist = songsWithName.groupBy { rawGroupKeyForSong(it) }
+            for ((groupKey, albumSongs) in groupedByAlbumKey) {
+                val albumName = albumSongs.first().album.trim().ifBlank { "Unknown Album" }
+                val smartArtist = findBestAlbumArtist(albumSongs)
 
-                if (byArtist.size <= 1 || !isCompilationAlbum(songsWithName)) {
-                    for ((artistKey, albumSongs) in byArtist) {
-                        val albumName = albumSongs.first().album.trim().ifBlank { "Unknown Album" }
+                val albumId = "hash_${albumName.lowercase(Locale.ROOT)}|${smartArtist.lowercase(Locale.ROOT)}|${kotlin.math.abs(groupKey.hashCode())}"
 
-                        val smartArtist = findBestAlbumArtist(albumSongs)
-                            ?: albumSongs.first().albumArtist?.trim()?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
-                            ?: albumSongs.first().artist.trim().takeIf { it.isNotBlank() }
-                            ?: "Unknown Artist"
+                val year = albumSongs.maxOfOrNull { it.year } ?: 0
+                val dateModified = albumSongs.maxOfOrNull { it.dateModified } ?: System.currentTimeMillis()
 
-                        val albumId = "hash_${normalizedAlbumName}|${smartArtist.lowercase(Locale.ROOT)}"
+                val sortedSongs = albumSongs.sortedWith(
+                    compareBy<Song> { if (it.trackNumber >= 1000) it.trackNumber / 1000 else it.discNumber.coerceAtLeast(1) }
+                        .thenBy { if (it.trackNumber >= 1000) it.trackNumber % 1000 else it.trackNumber }
+                        .thenBy { it.title.lowercase(Locale.ROOT) }
+                )
 
-                        val year = albumSongs.maxOfOrNull { it.year } ?: 0
-                        val dateModified = albumSongs.maxOfOrNull { it.dateModified } ?: System.currentTimeMillis()
-
-                        val sortedSongs = albumSongs.sortedWith(
-                            compareBy<Song> { it.discNumber }
-                                .thenBy { it.trackNumber }
-                                .thenBy { it.title.lowercase(Locale.ROOT) }
-                        )
-
-                        add(Album(
-                            id = albumId,
-                            title = albumName,
-                            artist = smartArtist,
-                            artworkUri = albumSongs.mapNotNull { it.artworkUri }.firstOrNull { uri ->
-                            val s = uri.toString()
-                            s.contains("embedded_art_") || s.startsWith("file://")
-                        } ?: albumSongs.firstOrNull()?.artworkUri,
-                            year = year,
-                            songs = sortedSongs,
-                            numberOfSongs = sortedSongs.size,
-                            dateModified = dateModified
-                        ))
-                    }
-                } else {
-                    val albumName = songsWithName.first().album.trim().ifBlank { "Unknown Album" }
-                    val albumArtist = "Various Artists"
-
-                    val year = songsWithName.maxOfOrNull { it.year } ?: 0
-                    val dateModified = songsWithName.maxOfOrNull { it.dateModified } ?: System.currentTimeMillis()
-
-                    val sortedSongs = songsWithName.sortedWith(
-                        compareBy<Song> { it.discNumber }
-                            .thenBy { it.trackNumber }
-                            .thenBy { it.title.lowercase(Locale.ROOT) }
-                    )
-
-                    val albumId = "hash_${normalizedAlbumName}|variousartists"
-
-                    add(Album(
-                        id = albumId,
-                        title = albumName,
-                        artist = albumArtist,
-                        artworkUri = songsWithName.mapNotNull { it.artworkUri }.firstOrNull { uri ->
-                            val s = uri.toString()
-                            s.contains("embedded_art_") || s.startsWith("file://")
-                        } ?: songsWithName.firstOrNull()?.artworkUri,
-                        year = year,
-                        songs = sortedSongs,
-                        numberOfSongs = sortedSongs.size,
-                        dateModified = dateModified
-                    ))
-                }
+                add(Album(
+                    id = albumId,
+                    title = albumName,
+                    artist = smartArtist,
+                    artworkUri = albumSongs.mapNotNull { it.artworkUri }.firstOrNull { uri ->
+                        val s = uri.toString()
+                        s.contains("embedded_art_") || s.startsWith("file://")
+                    } ?: albumSongs.firstOrNull()?.artworkUri,
+                    year = year,
+                    songs = sortedSongs,
+                    numberOfSongs = sortedSongs.size,
+                    dateModified = dateModified
+                ))
             }
         }.sortedBy { it.title.lowercase(Locale.ROOT) }
 

@@ -224,22 +224,46 @@ object MediaUtils {
                             cursor.getLong(albumIdIndex)
                         )
 
-                        // Keep full artist string so songs appear under all their artists
-                        val artist = cursor.getString(artistIndex) ?: "Unknown Artist"
+                        val rawArtist = cursor.getString(artistIndex) ?: "Unknown Artist"
+                        val rawTitle = cursor.getString(titleIndex)
+                        val rawAlbum = cursor.getString(albumIndex)
+                        val rawTrack = cursor.getInt(trackIndex)
+                        val rawYear = cursor.getInt(yearIndex)
+
+                        val parsedArtist = MetadataHeuristics.normalizeMetadataText(rawArtist) ?: "Unknown Artist"
+                        val parsedTitle = MetadataHeuristics.normalizeMetadataText(rawTitle) ?: "Unknown Title"
+                        val parsedAlbum = MetadataHeuristics.normalizeMetadataText(rawAlbum) ?: "Unknown Album"
+                        val parsedTrack = if (rawTrack >= 1000) rawTrack % 1000 else rawTrack
+                        val parsedDisc = if (rawTrack >= 1000) rawTrack / 1000 else 1
+                        var parsedYear = rawYear
+
+                        if (parsedYear == 0 && filePath.lowercase().endsWith(".flac")) {
+                            try {
+                                val file = File(filePath)
+                                if (file.exists() && file.canRead()) {
+                                    ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                                        val metadata = TagLib.getMetadata(fd.detachFd())
+                                        val dateVal = metadata?.propertyMap?.get("DATE")?.firstOrNull() ?: metadata?.propertyMap?.get("YEAR")?.firstOrNull()
+                                        parsedYear = MetadataHeuristics.parseYear(dateVal)
+                                    }
+                                }
+                            } catch (_: Exception) {}
+                        }
 
                         Log.d(TAG, "Found matching song in MediaStore with ID: $id")
 
                         return Song(
                             id = id.toString(),
-                            title = cursor.getString(titleIndex),
-                            artist = artist,
-                            album = cursor.getString(albumIndex),
+                            title = parsedTitle,
+                            artist = parsedArtist,
+                            album = parsedAlbum,
                             albumId = cursor.getLong(albumIdIndex).toString(),
                             duration = cursor.getLong(durationIndex),
                             uri = contentUri,
                             artworkUri = albumArtUri,
-                            trackNumber = cursor.getInt(trackIndex),
-                            year = cursor.getInt(yearIndex)
+                            trackNumber = parsedTrack,
+                            discNumber = parsedDisc,
+                            year = parsedYear
                         )
                     }
                 }
@@ -336,24 +360,35 @@ object MediaUtils {
                     retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 val extractedYear =
                     retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_YEAR)
+                        ?: retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
                 val extractedGenre =
                     retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE)
+                val extractedTrack =
+                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER)
+                val extractedDisc =
+                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DISC_NUMBER)
 
                 // Use extracted metadata if available, otherwise use fallbacks
-                title = extractedTitle ?: title ?: uri.lastPathSegment?.substringBeforeLast(".")
-                        ?: "Unknown"
+                val rawTitleStr = extractedTitle ?: title ?: uri.lastPathSegment?.substringBeforeLast(".") ?: "Unknown"
+                title = MetadataHeuristics.normalizeMetadataText(rawTitleStr) ?: rawTitleStr
 
-                // Keep full artist string so songs appear under all their artists
-                artist = extractedArtist ?: "Unknown Artist"
+                val rawArtistStr = extractedArtist ?: "Unknown Artist"
+                artist = MetadataHeuristics.normalizeMetadataText(rawArtistStr) ?: rawArtistStr
 
-                album = extractedAlbum ?: "Unknown Album"
+                val rawAlbumStr = extractedAlbum ?: "Unknown Album"
+                album = MetadataHeuristics.normalizeMetadataText(rawAlbumStr) ?: rawAlbumStr
+
                 duration = extractedDuration?.toLongOrNull() ?: 0L
-                year = extractedYear?.toIntOrNull() ?: 0
-                genre = extractedGenre
+                year = MetadataHeuristics.parseYear(extractedYear)
+                genre = MetadataHeuristics.normalizeMetadataText(extractedGenre)
+
+                val rawTrackVal = extractedTrack?.substringBefore('/')?.toIntOrNull() ?: 0
+                val parsedTrack = if (rawTrackVal >= 1000) rawTrackVal % 1000 else rawTrackVal
+                val parsedDisc = if (rawTrackVal >= 1000) rawTrackVal / 1000 else (extractedDisc?.substringBefore('/')?.toIntOrNull() ?: 1)
 
                 Log.d(
                     TAG,
-                    "Metadata extraction successful: Title=$title, Artist=$artist, Duration=$duration, Genre=$genre"
+                    "Metadata extraction successful: Title=$title, Artist=$artist, Duration=$duration, Genre=$genre, Year=$year, Track=$parsedTrack, Disc=$parsedDisc"
                 )
             } catch (e: Exception) {
                 Log.w(TAG, "MediaMetadataRetriever failed, using fallback values", e)
@@ -581,8 +616,12 @@ object MediaUtils {
                     // Extract track and disc numbers from TRACK field
                     val trackInfo = cursor.getInt(trackIndex)
                     if (trackInfo > 0) {
-                        discNumber = trackInfo / 1000
-                        totalTracks = trackInfo % 1000
+                        if (trackInfo >= 1000) {
+                            discNumber = trackInfo / 1000
+                            totalTracks = trackInfo % 1000
+                        } else {
+                            totalTracks = trackInfo
+                        }
                     }
                 }
             }
@@ -685,9 +724,23 @@ object MediaUtils {
                 if (year == 0) {
                     val yearStr =
                         retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_YEAR)
+                            ?: retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
                     if (!yearStr.isNullOrEmpty()) {
-                        year = yearStr.toIntOrNull() ?: 0
+                        year = MetadataHeuristics.parseYear(yearStr)
                     }
+                }
+
+                if (year == 0 && filePath.lowercase().endsWith(".flac")) {
+                    try {
+                        val flacFile = File(filePath)
+                        if (flacFile.exists() && flacFile.canRead()) {
+                            ParcelFileDescriptor.open(flacFile, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                                val metadata = TagLib.getMetadata(fd.detachFd())
+                                val dateVal = metadata?.propertyMap?.get("DATE")?.firstOrNull() ?: metadata?.propertyMap?.get("YEAR")?.firstOrNull()
+                                year = MetadataHeuristics.parseYear(dateVal)
+                            }
+                        }
+                    } catch (_: Exception) {}
                 }
 
                 // Fill in missing genre if available from MediaMetadataRetriever
@@ -698,6 +751,10 @@ object MediaUtils {
                         genre = genreStr
                     }
                 }
+
+                composer = MetadataHeuristics.normalizeMetadataText(composer) ?: ""
+                albumArtist = MetadataHeuristics.normalizeMetadataText(albumArtist) ?: ""
+                genre = MetadataHeuristics.normalizeMetadataText(genre)
 
                 // Determine format from file extension and MIME type
                 val file = File(filePath)

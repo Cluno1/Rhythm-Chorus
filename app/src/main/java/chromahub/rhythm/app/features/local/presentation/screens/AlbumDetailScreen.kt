@@ -110,11 +110,16 @@ private fun prepareAlbumSongDisplayState(
     libraryCombineDiscs: Boolean,
     savedDiscFilter: Int
 ): AlbumSongDisplayState {
+    fun getEffectiveTrack(s: Song): Int = if (s.trackNumber >= 1000) s.trackNumber % 1000 else s.trackNumber
+    fun getEffectiveDisc(s: Song): Int = if (s.trackNumber >= 1000) s.trackNumber / 1000 else s.discNumber.coerceAtLeast(1)
+
     val trackComparator = Comparator<Song> { a, b ->
+        val aTrack = getEffectiveTrack(a)
+        val bTrack = getEffectiveTrack(b)
         when {
-            a.trackNumber > 0 && b.trackNumber > 0 -> a.trackNumber.compareTo(b.trackNumber)
-            a.trackNumber > 0 -> -1
-            b.trackNumber > 0 -> 1
+            aTrack > 0 && bTrack > 0 -> aTrack.compareTo(bTrack)
+            aTrack > 0 -> -1
+            bTrack > 0 -> 1
             else -> a.title.compareTo(b.title, ignoreCase = true)
         }
     }
@@ -133,14 +138,14 @@ private fun prepareAlbumSongDisplayState(
         sortByOrder(songs)
     } else {
         songs
-            .groupBy { it.discNumber.coerceAtLeast(1) }
+            .groupBy { getEffectiveDisc(it) }
             .toSortedMap()
             .values
             .flatMap { discSongs -> sortByOrder(discSongs) }
     }
 
     val availableDiscs = songs
-        .map { it.discNumber.coerceAtLeast(1) }
+        .map { getEffectiveDisc(it) }
         .distinct()
         .sorted()
     val shouldShowDiscFilter = !libraryCombineDiscs && availableDiscs.size > 1
@@ -152,7 +157,7 @@ private fun prepareAlbumSongDisplayState(
     val visibleSongs = if (selectedDisc == 0) {
         sortedSongs
     } else {
-        sortedSongs.filter { it.discNumber.coerceAtLeast(1) == selectedDisc }
+        sortedSongs.filter { getEffectiveDisc(it) == selectedDisc }
     }
     return AlbumSongDisplayState(
         visibleSongs = visibleSongs,

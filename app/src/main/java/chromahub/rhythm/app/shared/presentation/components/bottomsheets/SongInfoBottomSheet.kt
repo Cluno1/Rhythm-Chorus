@@ -1167,10 +1167,9 @@ private fun SongInfoCard(
     val songInfoItems = buildList {
         add(MetadataItem(context.getString(R.string.metadata_duration), formatDuration(song.duration, useHoursFormat), RhythmIcons.AccessTime))
 
-        val trackNum = if (song.trackNumber > 0) song.trackNumber else 0
-        val discNum = (extendedInfo?.discNumber ?: 0).takeIf { it > 0 }
-            ?: song.discNumber.takeIf { it > 0 }
-            ?: 0
+        val rawTrack = song.trackNumber
+        val trackNum = if (rawTrack >= 1000) rawTrack % 1000 else if (rawTrack > 0) rawTrack else 0
+        val discNum = if (rawTrack >= 1000) rawTrack / 1000 else ((extendedInfo?.discNumber ?: 0).takeIf { it > 0 } ?: song.discNumber.takeIf { it > 0 } ?: 0)
         if (discNum > 0) {
             add(MetadataItem(context.getString(R.string.metadata_disc), discNum.toString(), RhythmIcons.AlbumFilled))
         }
@@ -1442,25 +1441,30 @@ private fun EditSongSheet(
     val isTablet = windowScreenWidthDp() >= 600
     val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
     
+    val initYear = if (song.year > 0) song.year else (extendedInfo?.year ?: 0)
+    val initTrackRaw = song.trackNumber
+    val initTrack = if (initTrackRaw >= 1000) initTrackRaw % 1000 else initTrackRaw
+    val initDisc = if (initTrackRaw >= 1000) initTrackRaw / 1000 else if (song.discNumber > 0) song.discNumber else (extendedInfo?.discNumber ?: 1)
+
     val originalTitle by remember(song.id) { mutableStateOf(song.title) }
     val originalArtist by remember(song.id) { mutableStateOf(song.artist) }
     val originalAlbum by remember(song.id) { mutableStateOf(song.album) }
-    val originalGenre by remember(song.id) { mutableStateOf(song.genre ?: "") }
-    val originalYear by remember(song.id) { mutableStateOf(if (song.year > 0) song.year.toString() else "") }
-    val originalTrackNumber by remember(song.id) { mutableStateOf(if (song.trackNumber > 0) song.trackNumber.toString() else "") }
+    val originalGenre by remember(song.id) { mutableStateOf(song.genre ?: extendedInfo?.genre ?: "") }
+    val originalYear by remember(song.id) { mutableStateOf(if (initYear > 0) initYear.toString() else "") }
+    val originalTrackNumber by remember(song.id) { mutableStateOf(if (initTrack > 0) initTrack.toString() else "") }
     val originalAlbumArtist by remember(song.id) { mutableStateOf(song.albumArtist ?: extendedInfo?.albumArtist ?: "") }
     val originalComposer by remember(song.id) { mutableStateOf(extendedInfo?.composer ?: "") }
-    val originalDiscNumber by remember(song.id) { mutableStateOf(if (song.discNumber > 0) song.discNumber.toString() else if ((extendedInfo?.discNumber ?: 0) > 0) extendedInfo!!.discNumber.toString() else "1") }
+    val originalDiscNumber by remember(song.id) { mutableStateOf(if (initDisc > 0) initDisc.toString() else "1") }
     
     var title by remember(song.id) { mutableStateOf(song.title) }
     var artist by remember(song.id) { mutableStateOf(song.artist) }
     var album by remember(song.id) { mutableStateOf(song.album) }
-    var genre by remember(song.id) { mutableStateOf(song.genre ?: "") }
-    var year by remember(song.id) { mutableStateOf(if (song.year > 0) song.year.toString() else "") }
-    var trackNumber by remember(song.id) { mutableStateOf(if (song.trackNumber > 0) song.trackNumber.toString() else "") }
+    var genre by remember(song.id) { mutableStateOf(song.genre ?: extendedInfo?.genre ?: "") }
+    var year by remember(song.id) { mutableStateOf(if (initYear > 0) initYear.toString() else "") }
+    var trackNumber by remember(song.id) { mutableStateOf(if (initTrack > 0) initTrack.toString() else "") }
     var albumArtist by remember(song.id) { mutableStateOf(song.albumArtist ?: extendedInfo?.albumArtist ?: "") }
     var composer by remember(song.id) { mutableStateOf(extendedInfo?.composer ?: "") }
-    var discNumber by remember(song.id) { mutableStateOf(if (song.discNumber > 0) song.discNumber.toString() else if ((extendedInfo?.discNumber ?: 0) > 0) extendedInfo!!.discNumber.toString() else "1") }
+    var discNumber by remember(song.id) { mutableStateOf(if (initDisc > 0) initDisc.toString() else "1") }
     var selectedImageUri by remember(song.id) { mutableStateOf<Uri?>(null) }
     var removeArtwork by remember(song.id) { mutableStateOf(false) }
     val haptics = LocalHapticFeedback.current
