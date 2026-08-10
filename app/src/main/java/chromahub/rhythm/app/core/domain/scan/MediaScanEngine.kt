@@ -97,7 +97,7 @@ class MediaScanEngine(
             }
         }.toTypedArray()
 
-        val selection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%') AND ${MediaStore.Audio.Media.DURATION} > 10000"
+        val selection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/mp4' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/x-matroska' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'application/x-matroska') AND ${MediaStore.Audio.Media.DURATION} > 10000"
         val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
 
         val scannedSongs = mutableListOf<SongEntity>()

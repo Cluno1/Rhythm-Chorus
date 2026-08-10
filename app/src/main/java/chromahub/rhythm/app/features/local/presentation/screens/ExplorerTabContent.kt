@@ -313,7 +313,7 @@ fun SingleCardExplorerContent(
     }
 
     val audioExtensions = remember {
-        setOf("mp3", "flac", "m4a", "aac", "ogg", "wav", "wma", "aiff", "opus", "opa", "mkv", "mka")
+        setOf("mp3", "flac", "m4a", "mp4", "aac", "ogg", "wav", "wma", "aiff", "aif", "opus", "opa", "mkv", "mka", "ac3", "ac4", "eac", "eac3", "dts", "dtshd", "dtsx", "truehd", "alac", "m4b", "oga", "mid", "midi", "adts", "ape", "wv", "tta", "tak", "dsf", "dff", "dsd", "mhm", "mhm1")
     }
 
     var songPathMap by remember { mutableStateOf<Map<String, Song>>(emptyMap()) }
@@ -1302,7 +1302,7 @@ fun getDirectoryContentsOptimized(directoryPath: String, songPathMap: Map<String
     
     val items = mutableListOf<ExplorerItem>()
     val normalizedDirPath = directoryPath.replace("//", "/").trimEnd('/')
-    val audioExtensions = setOf("mp3", "flac", "m4a", "aac", "ogg", "wav", "wma", "aiff", "opus", "opa", "mkv", "mka")
+    val audioExtensions = setOf("mp3", "flac", "m4a", "mp4", "aac", "ogg", "wav", "wma", "aiff", "aif", "opus", "opa", "mkv", "mka", "ac3", "ac4", "eac", "eac3", "dts", "dtshd", "dtsx", "truehd", "alac", "m4b", "oga", "mid", "midi", "adts", "ape", "wv", "tta", "tak", "dsf", "dff", "dsd", "mhm", "mhm1")
     
     val subdirectorySongCounts = mutableMapOf<String, Int>()
     val directoriesWithSongs = mutableSetOf<String>()

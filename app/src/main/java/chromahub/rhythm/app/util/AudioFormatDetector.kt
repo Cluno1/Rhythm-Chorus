@@ -326,24 +326,33 @@ object AudioFormatDetector {
                 path.endsWith(".dsf") || path.endsWith(".dff") -> "DSD"
                 mime?.contains("alac", ignoreCase = true) == true -> "ALAC"
                 mime?.contains("flac", ignoreCase = true) == true -> "FLAC"
-                mime?.contains("dsd", ignoreCase = true) == true || mime?.contains("x-dsd", ignoreCase = true) == true -> "DSD"
-                mime?.contains("mp4", ignoreCase = true) == true -> "AAC" // Could be ALAC in MP4 container
-                mime?.contains("mpeg", ignoreCase = true) == true -> "MP3"
-                mime?.contains("ogg", ignoreCase = true) == true -> "OGG Vorbis"
+                mime?.contains("truehd", ignoreCase = true) == true || mime?.contains("mlp", ignoreCase = true) == true -> "TrueHD"
+                mime?.contains("atmos", ignoreCase = true) == true -> "Dolby Atmos"
+                mime?.contains("ac4", ignoreCase = true) == true -> "AC-4"
                 mime?.contains("eac3", ignoreCase = true) == true || mime?.contains("ec-3", ignoreCase = true) == true || mime?.contains("eac", ignoreCase = true) == true -> "E-AC-3"
                 mime?.contains("ac3", ignoreCase = true) == true || mime?.contains("ac-3", ignoreCase = true) == true -> "AC-3"
+                mime?.contains("dts-x", ignoreCase = true) == true || mime?.contains("dtsx", ignoreCase = true) == true -> "DTS:X"
+                mime?.contains("dts-hd", ignoreCase = true) == true || mime?.contains("dtshd", ignoreCase = true) == true -> "DTS-HD MA"
+                mime?.contains("dts", ignoreCase = true) == true -> "DTS"
+                mime?.contains("dsd", ignoreCase = true) == true || mime?.contains("x-dsd", ignoreCase = true) == true -> "DSD"
+                mime?.contains("mp4", ignoreCase = true) == true || path.endsWith(".mp4") || path.endsWith(".m4a") -> "AAC"
+                path.endsWith(".mka") -> "MKA"
+                mime?.contains("mpeg", ignoreCase = true) == true -> "MP3"
+                mime?.contains("ogg", ignoreCase = true) == true -> "OGG Vorbis"
                 mime?.contains("mpegh", ignoreCase = true) == true || mime?.contains("mpeg-h", ignoreCase = true) == true || mime?.contains("mhm1", ignoreCase = true) == true -> "MPEG-H"
                 else -> "Unknown"
             }
             
-            val isLossless = codec in listOf("ALAC", "FLAC", "PCM", "WAV", "DSD")
+            val isLossless = codec in listOf("ALAC", "FLAC", "PCM", "WAV", "DSD", "TrueHD", "Dolby Atmos", "DTS-HD MA", "DTS:X")
+            val isDolby = codec in listOf("AC-3", "AC-4", "E-AC-3", "TrueHD", "Dolby Atmos")
+            val isDTS = codec.contains("DTS", ignoreCase = true)
             val isHiRes = sampleRate >= 48000 || isLossless
             
             return AudioFormatInfo(
                 codec = codec,
                 isLossless = isLossless,
-                isDolby = false,
-                isDTS = false,
+                isDolby = isDolby,
+                isDTS = isDTS,
                 isHiRes = isHiRes,
                 bitDepth = bitDepth,
                 sampleRateHz = sampleRate,

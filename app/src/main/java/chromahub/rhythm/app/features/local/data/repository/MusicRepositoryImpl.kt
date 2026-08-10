@@ -1033,8 +1033,9 @@ class MusicRepository(context: Context) {
         }
 
         return extension in setOf(
-            "mp3", "m4a", "flac", "ogg", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka",
-            "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1"
+            "mp3", "m4a", "mp4", "flac", "ogg", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka",
+            "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1", "dts", "dtshd", "dtsx", "truehd",
+            "ape", "wv", "tta", "tak", "dsf", "dff", "dsd"
         )
     }
 

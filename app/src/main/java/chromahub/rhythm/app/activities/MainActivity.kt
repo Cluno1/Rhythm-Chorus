@@ -818,6 +818,7 @@ class MainActivity : AppCompatActivity() {
                 uri.toString().let { uriStr ->
                     uriStr.endsWith(".mp3", ignoreCase = true) ||
                     uriStr.endsWith(".m4a", ignoreCase = true) ||
+                    uriStr.endsWith(".mp4", ignoreCase = true) ||
                     uriStr.endsWith(".alac", ignoreCase = true) ||
                     uriStr.endsWith(".wav", ignoreCase = true) ||
                     uriStr.endsWith(".ogg", ignoreCase = true) ||

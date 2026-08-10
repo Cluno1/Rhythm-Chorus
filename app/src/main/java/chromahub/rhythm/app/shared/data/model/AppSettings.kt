@@ -1972,8 +1972,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     
     // Media Scan Filtering
     private val _allowedFormats = MutableStateFlow(
-        prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1"))
-            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1")
+        prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "mp4", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1", "dts", "dtshd", "dtsx", "truehd", "ape", "wv", "tta", "tak", "dsf", "dff", "dsd"))
+            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "mp4", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1", "dts", "dtshd", "dtsx", "truehd", "ape", "wv", "tta", "tak", "dsf", "dff", "dsd")
     )
     val allowedFormats: StateFlow<Set<String>> = _allowedFormats.asStateFlow()
     
@@ -5141,8 +5141,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _lastScanDuration.value = safeLong(KEY_LAST_SCAN_DURATION, 0L)
         
         // Media Scan Filtering
-        _allowedFormats.value = prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka"))
-            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "wma", "mkv", "mka")
+        _allowedFormats.value = prefs.getStringSet(KEY_ALLOWED_FORMATS, setOf("mp3", "flac", "ogg", "m4a", "mp4", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1", "dts", "dtshd", "dtsx", "truehd", "ape", "wv", "tta", "tak", "dsf", "dff", "dsd"))
+            ?.toSet() ?: setOf("mp3", "flac", "ogg", "m4a", "mp4", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mkv", "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1", "dts", "dtshd", "dtsx", "truehd", "ape", "wv", "tta", "tak", "dsf", "dff", "dsd")
         _minimumBitrate.value = prefs.getInt(KEY_MINIMUM_BITRATE, 0)
         _minimumDuration.value = safeLong(KEY_MINIMUM_DURATION, 0L)
 

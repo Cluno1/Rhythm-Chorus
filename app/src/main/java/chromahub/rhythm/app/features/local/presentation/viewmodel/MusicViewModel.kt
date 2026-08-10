@@ -4541,7 +4541,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             "ogg", "oga" -> "audio/ogg"
             "mkv", "mka" -> "audio/x-matroska"
             "mp3" -> "audio/mpeg"
-            "m4a", "m4b" -> "audio/mp4"
+            "m4a", "m4b", "mp4" -> "audio/mp4"
             "flac" -> "audio/flac"
             "wav" -> "audio/wav"
             "aac", "adts" -> "audio/aac"

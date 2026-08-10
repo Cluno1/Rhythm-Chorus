@@ -480,7 +480,7 @@ object MediaUtils {
             "ogg", "oga" -> "audio/ogg"
             "mkv", "mka" -> "audio/x-matroska"
             "mp3" -> "audio/mpeg"
-            "m4a", "m4b" -> "audio/mp4"
+            "m4a", "m4b", "mp4" -> "audio/mp4"
             "flac" -> "audio/flac"
             "wav" -> "audio/wav"
             "aac", "adts" -> "audio/aac"
@@ -2951,6 +2951,7 @@ object MediaUtils {
         FLAC("flac"),
         OGG("ogg"),
         WAV("wav"),
+        MATROSKA("mka"),
         UNKNOWN("")
     }
 
@@ -2993,6 +2994,10 @@ object MediaUtils {
                         header[9] == 'A'.code.toByte() &&
                         header[10] == 'V'.code.toByte() &&
                         header[11] == 'E'.code.toByte() -> DetectedContainer.WAV
+                    header[0] == 0x1A.toByte() &&
+                        header[1] == 0x45.toByte() &&
+                        header[2] == 0xDF.toByte() &&
+                        header[3] == 0xA3.toByte() -> DetectedContainer.MATROSKA
                     else -> DetectedContainer.UNKNOWN
                 }
             }
