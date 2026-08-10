@@ -133,6 +133,8 @@ import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.M3ImageUtils
 import chromahub.rhythm.app.util.ColorExtractor
+import chromahub.rhythm.app.util.DevicePosture
+import chromahub.rhythm.app.util.rememberDevicePosture
 import com.google.android.material.color.utilities.Hct
 import chromahub.rhythm.app.util.LrcUtils
 import chromahub.rhythm.app.network.CanvasArtwork
@@ -364,6 +366,9 @@ fun ExpressivePlayerScreen(
     val tapLyricsToFullScreen by appSettings.tapLyricsToFullScreen.collectAsState()
     val playerLyricsAlignment by appSettings.playerLyricsAlignment.collectAsState()
     val keepScreenOnLyrics by appSettings.keepScreenOnLyrics.collectAsState()
+
+    val postureState by rememberDevicePosture()
+    val isFlexMode = postureState is DevicePosture.TableTop
 
     val onTapLyricsView = if (tapLyricsToFullScreen) onOpenFullScreenLyrics else null
     var isScrubbing by remember { mutableStateOf(false) }
@@ -1460,7 +1465,39 @@ fun ExpressivePlayerScreen(
                     }
                 }
 
-                if (isLandscapeTablet) {
+                if (isFlexMode) {
+                    Column(
+                        Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Upper half (top screen): Artwork / Lyrics / Visualizer
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            artworkContent(Modifier.fillMaxSize())
+                        }
+
+                        // Lower half (bottom screen): Ergonomic Playback Controls
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            controlsContent()
+                            Spacer(Modifier.height(8.dp))
+                            bottomButtonsContent()
+                        }
+                    }
+                } else if (isLandscapeTablet) {
                     Row(Modifier.fillMaxSize().navigationBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1.1f).fillMaxHeight().padding(horizontal = 24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {

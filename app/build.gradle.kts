@@ -47,6 +47,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     // Product flavors for different distribution channels
     flavorDimensions += "distribution"
     
@@ -238,6 +242,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material3.android)
     implementation(libs.androidx.material3.window.size)
+    implementation(libs.androidx.window)
     implementation(libs.com.google.android.material)
 
     // Media3 dependencies

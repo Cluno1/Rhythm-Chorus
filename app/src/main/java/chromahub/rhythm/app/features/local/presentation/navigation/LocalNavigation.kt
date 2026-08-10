@@ -100,6 +100,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewmodel.compose.viewModel
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.util.DevicePosture
+import chromahub.rhythm.app.util.rememberDevicePosture
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -492,7 +494,8 @@ fun LocalNavigation(
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
     val windowSizeClass = calculateWindowSizeClass(context as android.app.Activity)
-    val isTablet = windowSizeClass.widthSizeClass >= WindowWidthSizeClass.Medium
+    val postureState by rememberDevicePosture()
+    val isTablet = windowSizeClass.widthSizeClass >= WindowWidthSizeClass.Medium || postureState is DevicePosture.Book || postureState is DevicePosture.Separated
 
     val onPlayPause = { viewModel.togglePlayPause() }
     val onSkipNext = { viewModel.skipToNext() }
