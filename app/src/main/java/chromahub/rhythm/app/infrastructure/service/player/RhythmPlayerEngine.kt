@@ -27,6 +27,7 @@ import kotlinx.coroutines.runBlocking
 import androidx.media3.datasource.cache.CacheDataSource
 import chromahub.rhythm.app.infrastructure.audio.RhythmBassBoostProcessor
 import chromahub.rhythm.app.infrastructure.audio.RhythmSpatializationProcessor
+import chromahub.rhythm.app.infrastructure.audio.RhythmMonoAudioProcessor
 import chromahub.rhythm.app.shared.data.model.TransitionSettings
 import chromahub.rhythm.app.infrastructure.service.player.replaygain.ReplayGainAudioProcessor
 import chromahub.rhythm.app.infrastructure.service.player.replaygain.ReplayGainUtil
@@ -57,7 +58,8 @@ import androidx.core.net.toUri
 class RhythmPlayerEngine(
     private val context: Context,
     private val bassBoostProcessor: RhythmBassBoostProcessor? = null,
-    private val spatializationProcessor: RhythmSpatializationProcessor? = null
+    private val spatializationProcessor: RhythmSpatializationProcessor? = null,
+    private val monoProcessor: RhythmMonoAudioProcessor? = null
 ) {
     companion object {
         private const val TAG = "RhythmPlayerEngine"
@@ -76,6 +78,8 @@ class RhythmPlayerEngine(
     private var playerBBassBoost: RhythmBassBoostProcessor? = null
     private var playerASpatialization: RhythmSpatializationProcessor? = null
     private var playerBSpatialization: RhythmSpatializationProcessor? = null
+    private var playerAMono: RhythmMonoAudioProcessor? = null
+    private var playerBMono: RhythmMonoAudioProcessor? = null
     private lateinit var playerAReplayGain: ReplayGainAudioProcessor
     private lateinit var playerBReplayGain: ReplayGainAudioProcessor
     private var activeReplayGainProcessor: ReplayGainAudioProcessor? = null
@@ -179,17 +183,21 @@ class RhythmPlayerEngine(
         // Instantiate child processors for Player A
         val aBass = bassBoostProcessor?.let { RhythmBassBoostProcessor().apply { setParent(it) } }
         val aSpatial = spatializationProcessor?.let { RhythmSpatializationProcessor().apply { setParent(it) } }
+        val aMono = monoProcessor?.let { RhythmMonoAudioProcessor().apply { setParent(it) } }
         val aReplayGain = ReplayGainAudioProcessor()
         playerABassBoost = aBass
         playerASpatialization = aSpatial
+        playerAMono = aMono
         playerAReplayGain = aReplayGain
 
         // Instantiate child processors for Player B
         val bBass = bassBoostProcessor?.let { RhythmBassBoostProcessor().apply { setParent(it) } }
         val bSpatial = spatializationProcessor?.let { RhythmSpatializationProcessor().apply { setParent(it) } }
+        val bMono = monoProcessor?.let { RhythmMonoAudioProcessor().apply { setParent(it) } }
         val bReplayGain = ReplayGainAudioProcessor()
         playerBBassBoost = bBass
         playerBSpatialization = bSpatial
+        playerBMono = bMono
         playerBReplayGain = bReplayGain
 
         // Apply settings initially
@@ -197,8 +205,8 @@ class RhythmPlayerEngine(
         applyReplayGainSettingsOnProcessor(aReplayGain, appSettings.replayGain.value)
         applyReplayGainSettingsOnProcessor(bReplayGain, appSettings.replayGain.value)
 
-        playerA = buildPlayer(handleAudioFocus = false, bassProcessor = aBass, spatialProcessor = aSpatial, replayGainProcessor = aReplayGain)
-        playerB = buildPlayer(handleAudioFocus = false, bassProcessor = bBass, spatialProcessor = bSpatial, replayGainProcessor = bReplayGain)
+        playerA = buildPlayer(handleAudioFocus = false, bassProcessor = aBass, spatialProcessor = aSpatial, monoProcessor = aMono, replayGainProcessor = aReplayGain)
+        playerB = buildPlayer(handleAudioFocus = false, bassProcessor = bBass, spatialProcessor = bSpatial, monoProcessor = bMono, replayGainProcessor = bReplayGain)
 
         playerA.addListener(masterPlayerListener)
         activeReplayGainProcessor = aReplayGain
@@ -215,6 +223,7 @@ class RhythmPlayerEngine(
             launch { appSettings.replayGain.collect { updateTrackSelectionParameters() } }
             launch { appSettings.bassBoostEnabled.collect { updateTrackSelectionParameters() } }
             launch { appSettings.virtualizerEnabled.collect { updateTrackSelectionParameters() } }
+            launch { appSettings.monoAudioEnabled.collect { updateTrackSelectionParameters() } }
             launch { appSettings.isAudioOffloadActive.collect { updateTrackSelectionParameters() } }
         }
     }
@@ -252,6 +261,7 @@ class RhythmPlayerEngine(
         handleAudioFocus: Boolean,
         bassProcessor: RhythmBassBoostProcessor? = null,
         spatialProcessor: RhythmSpatializationProcessor? = null,
+        monoProcessor: RhythmMonoAudioProcessor? = null,
         replayGainProcessor: ReplayGainAudioProcessor? = null
     ): ExoPlayer {
         val loadControl = DefaultLoadControl.Builder()
@@ -271,6 +281,9 @@ class RhythmPlayerEngine(
                 }
                 if (spatialProcessor != null) {
                     processors.add(spatialProcessor)
+                }
+                if (monoProcessor != null) {
+                    processors.add(monoProcessor)
                 }
                 if (replayGainProcessor != null) {
                     processors.add(replayGainProcessor)
@@ -645,10 +658,12 @@ class RhythmPlayerEngine(
             val otherReplayGain = if (incomingReplayGain === playerAReplayGain) playerBReplayGain else playerAReplayGain
             val otherBassBoost = if (incomingReplayGain === playerAReplayGain) playerBBassBoost else playerABassBoost
             val otherSpatial = if (incomingReplayGain === playerAReplayGain) playerBSpatialization else playerASpatialization
+            val otherMono = if (incomingReplayGain === playerAReplayGain) playerBMono else playerAMono
             playerB = buildPlayer(
                 handleAudioFocus = false,
                 bassProcessor = otherBassBoost,
                 spatialProcessor = otherSpatial,
+                monoProcessor = otherMono,
                 replayGainProcessor = otherReplayGain
             )
         }
@@ -695,8 +710,9 @@ class RhythmPlayerEngine(
                 val isReplayGainEnabled = appSettings.replayGain.value
                 val isBassBoostEnabled = appSettings.bassBoostEnabled.value
                 val isVirtualizerEnabled = appSettings.virtualizerEnabled.value
+                val isMonoAudioEnabled = appSettings.monoAudioEnabled.value
                 val isOffloadSupported = appSettings.isAudioOffloadActive.value &&
-                    (!isCrossfadeEnabled && !isEqualizerEnabled && !isReplayGainEnabled && !isBassBoostEnabled && !isVirtualizerEnabled)
+                    (!isCrossfadeEnabled && !isEqualizerEnabled && !isReplayGainEnabled && !isBassBoostEnabled && !isVirtualizerEnabled && !isMonoAudioEnabled)
                 val audioOffloadPreferences = TrackSelectionParameters.AudioOffloadPreferences.Builder()
                     .setAudioOffloadMode(
                         if (isOffloadSupported) {
@@ -711,7 +727,7 @@ class RhythmPlayerEngine(
             val params = trackSelectionParametersBuilder.build()
             playerA.trackSelectionParameters = params
             playerB.trackSelectionParameters = params
-            Log.d(TAG, "Updated track selection parameters: offloadActive=${appSettings.isAudioOffloadActive.value}, crossfadeEnabled=${appSettings.crossfade.value}, eqEnabled=${appSettings.equalizerEnabled.value}, bassEnabled=${appSettings.bassBoostEnabled.value}, virtualizerEnabled=${appSettings.virtualizerEnabled.value}")
+            Log.d(TAG, "Updated track selection parameters: offloadActive=${appSettings.isAudioOffloadActive.value}, crossfadeEnabled=${appSettings.crossfade.value}, eqEnabled=${appSettings.equalizerEnabled.value}, bassEnabled=${appSettings.bassBoostEnabled.value}, virtualizerEnabled=${appSettings.virtualizerEnabled.value}, monoAudioEnabled=${appSettings.monoAudioEnabled.value}")
         }
     }
 

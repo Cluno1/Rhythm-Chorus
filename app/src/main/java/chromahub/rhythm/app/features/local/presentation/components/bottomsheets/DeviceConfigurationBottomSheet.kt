@@ -9,6 +9,7 @@ import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedB
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonWeighted
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonSize
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonType
+import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -921,6 +922,19 @@ private fun DeviceCard(
                                     .rhythmMarquee()
                             )
                         }
+                        if (device.monoAudioEnabled) {
+                            Text(
+                                text = "•",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_mono_audio),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.secondary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                 }
                 
@@ -1028,6 +1042,7 @@ private fun AddEditDeviceDialog(
     var deviceName by remember { mutableStateOf(existingDevice?.name ?: "") }
     var deviceBrand by remember { mutableStateOf(existingDevice?.brand ?: "") }
     var selectedType by remember { mutableStateOf(existingDevice?.type ?: UserAudioDevice.DeviceType.HEADPHONES) }
+    var monoAudioEnabled by remember { mutableStateOf(existingDevice?.monoAudioEnabled ?: false) }
     
     val isEditing = existingDevice != null
     
@@ -1108,6 +1123,34 @@ private fun AddEditDeviceDialog(
                         )
                     }
                 }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.device_mono_audio_title),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = stringResource(R.string.device_mono_audio_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TunerAnimatedSwitch(
+                        checked = monoAudioEnabled,
+                        onCheckedChange = { monoAudioEnabled = it }
+                    )
+                }
             }
         },
         confirmButton = {
@@ -1118,13 +1161,15 @@ private fun AddEditDeviceDialog(
                             existingDevice.copy(
                                 name = deviceName,
                                 brand = deviceBrand,
-                                type = selectedType
+                                type = selectedType,
+                                monoAudioEnabled = monoAudioEnabled
                             )
                         } else {
                             UserAudioDevice(
                                 name = deviceName,
                                 brand = deviceBrand,
-                                type = selectedType
+                                type = selectedType,
+                                monoAudioEnabled = monoAudioEnabled
                             )
                         }
                         onSave(device)

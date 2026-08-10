@@ -64,6 +64,7 @@ fun PlaybackSettingsScreen(
     val crossfadeRepeatOne by appSettings.crossfadeRepeatOne.collectAsState()
     val crossfadeOnSkip by appSettings.crossfadeOnSkip.collectAsState()
     val stopPlaybackOnAppClose by appSettings.stopPlaybackOnAppClose.collectAsState()
+    val monoAudioEnabled by appSettings.monoAudioEnabled.collectAsState()
     val useSystemVolume by appSettings.useSystemVolume.collectAsState()
     val resumeOnDeviceReconnect by appSettings.resumeOnDeviceReconnect.collectAsState()
     val audioOffloadEnabled by appSettings.audioOffloadEnabled.collectAsState()
@@ -179,6 +180,18 @@ fun PlaybackSettingsScreen(
                         toggleState = if (isOffloadEnforced) false else crossfadeOnSkip,
                         onToggleChange = { if (!isOffloadEnforced) appSettings.setCrossfadeOnSkip(it) },
                         enabled = crossfadeEnabled && !isOffloadEnforced
+                    ),
+                    SettingItem(
+                        MaterialSymbolIcon("headset_mic"),
+                        context.getString(R.string.settings_mono_audio),
+                        when {
+                            isOffloadEnforced -> "Disabled under Lite Mode to conserve battery."
+                            isAudioOffloadActive && !monoAudioEnabled -> "${context.getString(R.string.settings_mono_audio_desc)}\n(Enabling will disable hardware Audio Offload)"
+                            else -> context.getString(R.string.settings_mono_audio_desc)
+                        },
+                        toggleState = if (isOffloadEnforced) false else monoAudioEnabled,
+                        onToggleChange = { if (!isOffloadEnforced) musicViewModel.setMonoAudioEnabled(it) },
+                        enabled = !isOffloadEnforced
                     ),
                     SettingItem(
                         MaterialSymbolIcon("volume_up"),

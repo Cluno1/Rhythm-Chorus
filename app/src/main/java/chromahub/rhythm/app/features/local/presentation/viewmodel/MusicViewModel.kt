@@ -253,6 +253,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val bassBoostStrength = appSettings.bassBoostStrength
     val virtualizerEnabled = appSettings.virtualizerEnabled
     val virtualizerStrength = appSettings.virtualizerStrength
+    val monoAudioEnabled = appSettings.monoAudioEnabled
     
     // Spatialization status
     private val _spatializationStatus = MutableStateFlow("Unknown")
@@ -9445,6 +9446,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             updateSpatializationStatus()
         }
     }
+
+    fun setMonoAudioEnabled(enabled: Boolean) {
+        appSettings.setMonoAudioEnabled(enabled)
+    }
     
     fun updateSpatializationStatus() {
         viewModelScope.launch {
@@ -9618,6 +9623,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d(TAG, "Applied AutoEQ profile for device: ${device.autoEQProfileName}")
             }
         }
+
+        // Apply device-specific mono audio preference
+        setMonoAudioEnabled(device.monoAudioEnabled)
+        Log.d(TAG, "Applied mono audio for device: ${device.monoAudioEnabled}")
     }
     
     fun getActiveAudioDevice(): chromahub.rhythm.app.shared.data.model.UserAudioDevice? {

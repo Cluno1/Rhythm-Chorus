@@ -105,6 +105,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     // Rhythm audio processors (replaced Android BassBoost and Spatializer for better quality)
     private var rhythmBassBoostProcessor: chromahub.rhythm.app.infrastructure.audio.RhythmBassBoostProcessor? = null
     private var rhythmSpatializationProcessor: chromahub.rhythm.app.infrastructure.audio.RhythmSpatializationProcessor? = null
+    private var rhythmMonoAudioProcessor: chromahub.rhythm.app.infrastructure.audio.RhythmMonoAudioProcessor? = null
     
     private var virtualizerStrength: Short = 0 // Store strength for virtualizer
     private var isInitializingAudioEffects: Boolean = false // Prevent concurrent initialization
@@ -573,6 +574,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         try {
             rhythmBassBoostProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmBassBoostProcessor()
             rhythmSpatializationProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmSpatializationProcessor()
+            rhythmMonoAudioProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmMonoAudioProcessor()
             isBassBoostAvailable = true
             appSettings.setBassBoostAvailable(true)
             Log.d(TAG, "Rhythm audio processors initialized early")
@@ -580,6 +582,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             Log.e(TAG, "Failed to initialize Rhythm processors", e)
             rhythmBassBoostProcessor = null
             rhythmSpatializationProcessor = null
+            rhythmMonoAudioProcessor = null
             isBassBoostAvailable = false
             appSettings.setBassBoostAvailable(false)
         }
@@ -915,7 +918,8 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
         rhythmPlayerEngine = RhythmPlayerEngine(
             this, 
             bassBoostProcessor = rhythmBassBoostProcessor,
-            spatializationProcessor = rhythmSpatializationProcessor
+            spatializationProcessor = rhythmSpatializationProcessor,
+            monoProcessor = rhythmMonoAudioProcessor
         )
         rhythmPlayerEngine.initialize()
         
@@ -1007,6 +1011,12 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                             rhythmSpatializationProcessor?.setEnabled(true)
                             rhythmSpatializationProcessor?.setStrength(appSettings.virtualizerStrength.value.toShort())
                             Log.d(TAG, "Cold boot: Re-applied spatial audio - enabled=true, strength=${appSettings.virtualizerStrength.value}")
+                        }
+
+                        // Re-apply mono audio if enabled
+                        if (appSettings.monoAudioEnabled.value && rhythmMonoAudioProcessor != null) {
+                            rhythmMonoAudioProcessor?.setEnabled(true)
+                            Log.d(TAG, "Cold boot: Re-applied mono audio - enabled=true")
                         }
                     }
                     
@@ -3092,8 +3102,15 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
             } else {
                 Log.d(TAG, "Cannot load spatialization settings: Rhythm processor is null")
             }
+
+            // Load Rhythm mono audio settings
+            val monoAudioEnabled = appSettings.monoAudioEnabled.value
+            if (rhythmMonoAudioProcessor != null) {
+                rhythmMonoAudioProcessor?.setEnabled(monoAudioEnabled)
+                Log.d(TAG, "Rhythm mono audio loaded: enabled=$monoAudioEnabled")
+            }
             
-            Log.d(TAG, "Loaded saved audio effects - EQ: ${appSettings.equalizerEnabled.value}, Bass: ${appSettings.bassBoostEnabled.value}, Virtualizer: ${appSettings.virtualizerEnabled.value}")
+            Log.d(TAG, "Loaded saved audio effects - EQ: ${appSettings.equalizerEnabled.value}, Bass: ${appSettings.bassBoostEnabled.value}, Virtualizer: ${appSettings.virtualizerEnabled.value}, Mono: ${appSettings.monoAudioEnabled.value}")
             if (::rhythmPlayerEngine.isInitialized) {
                 rhythmPlayerEngine.updateTrackSelectionParameters()
             }
@@ -3381,6 +3398,19 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
             else -> "Active (Rhythm-based)"
         }
     }
+
+    fun setMonoAudioEnabled(enabled: Boolean) {
+        try {
+            rhythmMonoAudioProcessor?.setEnabled(enabled)
+            Log.d(TAG, "Rhythm mono audio enabled set to $enabled")
+            if (::rhythmPlayerEngine.isInitialized) {
+                rhythmPlayerEngine.updateTrackSelectionParameters()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting mono audio enabled", e)
+        }
+    }
+
     
     // Public methods for external access
     fun getMediaSession(): MediaLibrarySession? = mediaSession
@@ -3398,8 +3428,10 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
             // Reset Rhythm processors
             rhythmBassBoostProcessor?.reset()
             rhythmSpatializationProcessor?.reset()
+            rhythmMonoAudioProcessor?.reset()
             rhythmBassBoostProcessor = null
             rhythmSpatializationProcessor = null
+            rhythmMonoAudioProcessor = null
             
             Log.d(TAG, "Audio effects released")
         } catch (e: Exception) {

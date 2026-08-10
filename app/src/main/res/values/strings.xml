@@ -68,6 +68,10 @@
     <string name="settings_remember_shuffle_mode">Persist Shuffle Mode</string>
     <string name="settings_remember_shuffle_mode_desc">Restore shuffle mode after restart.</string>
     <string name="settings_audio_effects">Transitions and Output</string>
+    <string name="settings_mono_audio">Mono Audio</string>
+    <string name="settings_mono_audio_desc">Downmix stereo channels to center for 1-earpiece listening.</string>
+    <string name="device_mono_audio_title">Single Earpiece (Mono Audio)</string>
+    <string name="device_mono_audio_desc">Force mono downmix when this audio device is active.</string>
     <string name="settings_resume_on_device_reconnect">Auto Resume</string>
     <string name="settings_resume_on_device_reconnect_desc">Auto-resume when audio devices reconnect</string>
     <string name="settings_gapless_playback">Gapless Playback</string>

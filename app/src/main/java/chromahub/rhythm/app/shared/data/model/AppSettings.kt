@@ -222,6 +222,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_BASS_BOOST_AVAILABLE = "bass_boost_available"
         private const val KEY_VIRTUALIZER_ENABLED = "virtualizer_enabled"
         private const val KEY_VIRTUALIZER_STRENGTH = "virtualizer_strength"
+        private const val KEY_MONO_AUDIO_ENABLED = "mono_audio_enabled"
         
         // Cache Settings
         private const val KEY_MAX_CACHE_SIZE = "max_cache_size"
@@ -1052,6 +1053,9 @@ class AppSettings private constructor(context: Context) {
     
     private val _virtualizerStrength = MutableStateFlow(prefs.getInt(KEY_VIRTUALIZER_STRENGTH, 0))
     val virtualizerStrength: StateFlow<Int> = _virtualizerStrength.asStateFlow()
+    
+    private val _monoAudioEnabled = MutableStateFlow(prefs.getBoolean(KEY_MONO_AUDIO_ENABLED, false))
+    val monoAudioEnabled: StateFlow<Boolean> = _monoAudioEnabled.asStateFlow()
     
     // Sleep Timer
     private val _sleepTimerActive = MutableStateFlow(prefs.getBoolean(KEY_SLEEP_TIMER_ACTIVE, false))
@@ -2696,6 +2700,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setVirtualizerStrength(strength: Int) {
         prefs.edit { putInt(KEY_VIRTUALIZER_STRENGTH, strength) }
         _virtualizerStrength.value = strength
+    }
+    
+    fun setMonoAudioEnabled(enable: Boolean) {
+        prefs.edit { putBoolean(KEY_MONO_AUDIO_ENABLED, enable) }
+        _monoAudioEnabled.value = enable
     }
     
     // Sleep Timer Methods
