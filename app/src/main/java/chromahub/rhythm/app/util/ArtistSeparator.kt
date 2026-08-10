@@ -84,15 +84,17 @@ object ArtistSeparator {
             return listOf(artistName.trim()).filter { it.isNotBlank() }
         }
 
-        // Protect escaped delimiter characters before regex splitting
+        // Protect escaped "\<delim>" pairs with unique tokens so the delimiter never becomes a split point.
         val placeholder = "\u0000\u0001"
+        val escapedChars = mutableListOf<Char>()
         val escaped = StringBuilder(artistName.length)
         var i = 0
         while (i < artistName.length) {
             val c = artistName[i]
             if (c == ESCAPE_CHAR && i + 1 < artistName.length && delimiters.contains(artistName[i + 1])) {
+                escapedChars.add(artistName[i + 1])
                 escaped.append(placeholder)
-                escaped.append(artistName[i + 1])
+                escaped.append((escapedChars.size - 1).toChar())
                 i += 2
             } else {
                 escaped.append(c)
@@ -102,7 +104,13 @@ object ArtistSeparator {
 
         val regex = getOrCreateRegex(delimiters)
         return regex.split(escaped.toString())
-            .map { it.replace(placeholder, ESCAPE_CHAR.toString()).trim() }
+            .map { segment ->
+                var restored = segment
+                for ((index, char) in escapedChars.withIndex()) {
+                    restored = restored.replace(placeholder + index.toChar(), char.toString())
+                }
+                restored.trim()
+            }
             .filter { it.isNotBlank() }
     }
 

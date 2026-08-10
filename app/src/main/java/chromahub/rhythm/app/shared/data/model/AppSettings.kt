@@ -2289,8 +2289,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
     
     fun setArtistSeparatorDelimiters(delimiters: String) {
-        prefs.edit { putString(KEY_ARTIST_SEPARATOR_DELIMITERS, delimiters) }
-        _artistSeparatorDelimiters.value = delimiters
+        val sanitized = delimiters.filterNot { it.isWhitespace() }.toSet().joinToString("")
+        prefs.edit { putString(KEY_ARTIST_SEPARATOR_DELIMITERS, sanitized) }
+        _artistSeparatorDelimiters.value = sanitized
     }
 
     fun getArtistSeparatorCacheSignature(): String? {

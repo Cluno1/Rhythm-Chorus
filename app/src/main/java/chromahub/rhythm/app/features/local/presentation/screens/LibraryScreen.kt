@@ -261,7 +261,6 @@ import chromahub.rhythm.app.shared.presentation.components.common.TabAnimation
 import chromahub.rhythm.app.util.AudioFormatDetector
 import chromahub.rhythm.app.util.AudioQualityDetector
 import chromahub.rhythm.app.shared.presentation.components.common.ActionProgressLoader
-import chromahub.rhythm.app.features.streaming.presentation.components.StreamingServiceStateCard
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveButtonGroup
 import chromahub.rhythm.app.shared.presentation.components.common.ButtonGroupStyle
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveElevation
@@ -584,14 +583,19 @@ fun LibraryScreen(
         val delimitersStr = if (artistSeparatorEnabled) artistSeparatorDelimiters else ""
         val artistSongsMap = java.util.HashMap<String, MutableList<Song>>()
         val artistAlbumsMap = java.util.HashMap<String, java.util.HashSet<String>>()
+        val artistNameMap = java.util.HashMap<String, String>()
         for (song in preparedSongs) {
             val albumArtistName = song.albumArtist?.trim().orEmpty()
             val artistField = if (albumArtistName.isNotBlank() && !albumArtistName.equals("<unknown>", ignoreCase = true)) albumArtistName else song.artist
             val names = ArtistSeparator.splitArtistNames(artistField, delimitersStr, artistSeparatorEnabled)
             for (name in names) {
+                if (name.equals("<unknown>", ignoreCase = true)) continue
                 val key = name.lowercase()
                 artistSongsMap.getOrPut(key) { mutableListOf() }.add(song)
                 artistAlbumsMap.getOrPut(key) { java.util.HashSet() }.add(song.album.trim().lowercase())
+                if (!artistNameMap.containsKey(key)) {
+                    artistNameMap[key] = name
+                }
             }
         }
         val artistByName = artists.associateBy { it.name.lowercase() }
@@ -599,7 +603,7 @@ fun LibraryScreen(
             val existing = artistByName[key]
             Artist(
                 id = existing?.id ?: "albumartist:$key",
-                name = songsOfArtist.firstOrNull()?.albumArtist?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) } ?: songsOfArtist.first().artist,
+                name = artistNameMap[key] ?: songsOfArtist.first().artist,
                 artworkUri = existing?.artworkUri,
                 songs = songsOfArtist,
                 numberOfTracks = songsOfArtist.size,
@@ -1745,18 +1749,16 @@ fun LibraryScreen(
                         Box(modifier = Modifier.weight(1f).clipToBounds()) {
                             when {
                                 isStreamingMode && !streamingServiceConnected && !streamingIsLoading -> {
-                                    StreamingServiceStateCard(
-                                        title = context.getString(R.string.streaming_home_selected_service_unavailable),
+                                    EmptyState(
+                                        message = context.getString(R.string.streaming_home_selected_service_unavailable),
+                                        icon = RhythmIcons.Connectivity.WifiOff,
                                         subtitle = streamingError?.takeIf { it.isNotBlank() }
                                             ?: context.getString(
                                                 R.string.streaming_home_connect_selected_service,
                                                 streamingServiceName.ifBlank { context.getString(R.string.streaming_not_selected) }
                                             ),
-                                        actionText = context.getString(R.string.streaming_service_setup_reconnect),
-                                        onAction = { onConfigureService(streamingServiceName) },
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                                        actionLabel = context.getString(R.string.streaming_service_setup_reconnect),
+                                        onRefresh = { onConfigureService(streamingServiceName) }
                                     )
                                 }
                                 isStreamingMode && streamingIsLoading -> {
@@ -4117,6 +4119,7 @@ fun EmptyState(
     message: String,
     icon: MaterialSymbolIcon,
     subtitle: String? = null,
+    actionLabel: String? = null,
     onRefresh: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
@@ -4217,7 +4220,7 @@ fun EmptyState(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.cd_refresh))
+                        Text(actionLabel ?: context.getString(R.string.cd_refresh))
                     }
                 }
             }

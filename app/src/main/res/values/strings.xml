@@ -1404,6 +1404,7 @@
     <string name="streaming_status_selected_service">Selected: %1$s</string>
     <string name="streaming_status_connected">Account connected</string>
     <string name="streaming_status_not_connected">Authentication pending</string>
+    <string name="streaming_status_ready_to_connect">Ready to connect</string>
     <string name="streaming_status_badge_connected">Connected</string>
     <string name="streaming_status_badge_pending">Pending</string>
     <string name="streaming_status_badge_refreshing">Refreshing</string>

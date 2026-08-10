@@ -12,11 +12,16 @@ import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolI
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import chromahub.rhythm.app.features.streaming.presentation.components.StreamingServiceStateCard
+import chromahub.rhythm.app.features.streaming.data.repository.StreamingServiceSession
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingSong
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingArtist
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingPlaylist
+import chromahub.rhythm.app.features.streaming.domain.model.StreamingServiceId
+import chromahub.rhythm.app.features.streaming.presentation.model.StreamingServiceOptions
 import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
+import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
+import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -269,6 +274,7 @@ fun HomeScreen(
     streamingIsLoading: Boolean = false,
     streamingError: String? = null,
     onConfigureService: (String) -> Unit = {},
+    onSwitchToLocalMode: () -> Unit = {},
     onStreamingNavigateToArtist: (chromahub.rhythm.app.features.streaming.domain.model.StreamingArtist) -> Unit = {},
     onStreamingNavigateToAlbum: (chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum) -> Unit = {},
     onStreamingNavigateToPlaylist: (chromahub.rhythm.app.features.streaming.domain.model.StreamingPlaylist) -> Unit = {},
@@ -285,6 +291,7 @@ fun HomeScreen(
     val headerDisplayMode by appSettings.homeHeaderDisplayMode.collectAsState()
     val showAppIcon by appSettings.homeShowAppIcon.collectAsState()
     val iconVisibilityMode by appSettings.homeAppIconVisibility.collectAsState()
+    val streamingDisconnected = isStreamingMode && !streamingServiceConnected && !streamingIsLoading
 
     // State for AddToPlaylist bottom sheet
     var showAddToPlaylistSheet by remember { mutableStateOf(false) }
@@ -514,27 +521,30 @@ fun HomeScreen(
     }
 
     CollapsibleHeaderScreen(
-        title = if (isStreamingMode) context.getString(R.string.streaming_integration_title) else context.getString(R.string.home_title),
+        title = if (streamingDisconnected) "" else if (isStreamingMode) context.getString(R.string.streaming_integration_title) else context.getString(R.string.home_title),
         headerDisplayMode = headerDisplayMode,
+        alwaysCollapsed = streamingDisconnected,
         showAppIcon = showAppIcon,
         iconVisibilityMode = iconVisibilityMode,
         actions = {
-            ExpressiveFilledTonalIconButton(
-                onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                    showHomeSectionOrderSheet = true
-                },
-                colors = IconButtonDefaults.filledTonalIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                ),
-                modifier = Modifier.padding(end = 8.dp)
-            ) {
-                Icon(
-                    imageVector = MaterialSymbolIcon("reorder", filled = true),
-                    contentDescription = context.getString(R.string.cd_reorder_home_sections),
-                    modifier = Modifier.size(25.dp)
-                )
+            if (!streamingDisconnected) {
+                ExpressiveFilledTonalIconButton(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        showHomeSectionOrderSheet = true
+                    },
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    ),
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = MaterialSymbolIcon("reorder", filled = true),
+                        contentDescription = context.getString(R.string.cd_reorder_home_sections),
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
             }
             ExpressiveFilledIconButton(
                 onClick = {
@@ -571,6 +581,7 @@ fun HomeScreen(
                 isLoading = streamingIsLoading,
                 errorMessage = streamingError,
                 onConfigureService = onConfigureService,
+                onSwitchToLocalMode = onSwitchToLocalMode,
                 onNavigateToArtist = onStreamingNavigateToArtist,
                 onNavigateToAlbum = onStreamingNavigateToAlbum,
                 onNavigateToPlaylist = onStreamingNavigateToPlaylist,
@@ -649,6 +660,7 @@ private fun StreamingHomeBody(
     isLoading: Boolean,
     errorMessage: String?,
     onConfigureService: (String) -> Unit,
+    onSwitchToLocalMode: () -> Unit = {},
     onNavigateToArtist: (chromahub.rhythm.app.features.streaming.domain.model.StreamingArtist) -> Unit,
     onNavigateToAlbum: (chromahub.rhythm.app.features.streaming.domain.model.StreamingAlbum) -> Unit,
     onNavigateToPlaylist: (chromahub.rhythm.app.features.streaming.domain.model.StreamingPlaylist) -> Unit,
@@ -717,8 +729,6 @@ private fun StreamingHomeBody(
         todayListeningMinutes = (totalMs / 60000L).toInt().coerceAtLeast(0)
     }
 
-    // Mirror the local home's responsive section inset and spacing so the
-    // streaming home adapts to the same layout on phones and tablets.
     val horizontalPadding = when (widthSizeClass) {
         WindowWidthSizeClass.Compact -> 20.dp
         WindowWidthSizeClass.Medium -> 48.dp
@@ -757,8 +767,6 @@ private fun StreamingHomeBody(
     val streamingArtistById = remember(rawArtists) { rawArtists.associateBy { it.id } }
     val streamingPlaylistById = remember(rawPlaylists) { rawPlaylists.associateBy { it.id } }
 
-    // Load streaming home/library content once connected (the old standalone
-    // streaming screens owned this; the merged screen must trigger it too).
     val hasLoadedHomeContent = vm?.hasLoadedHomeContent?.collectAsState()?.value ?: false
     val hasLoadedLibrary = vm?.hasLoadedLibrary?.collectAsState()?.value ?: false
     LaunchedEffect(vm, serviceConnected, hasLoadedHomeContent) {
@@ -775,6 +783,20 @@ private fun StreamingHomeBody(
     val playQueueFromMapped: (List<Song>, Int, Boolean) -> Unit = { mappedSongs, startIndex, shuffle ->
         val originals = mappedSongs.mapNotNull { streamingSongById[it.id] }
         if (originals.isNotEmpty()) onPlayQueue(originals, startIndex, shuffle)
+    }
+
+    val serviceSessions = vm?.serviceSessions?.collectAsState()?.value ?: emptyMap()
+    val isAuthenticated = vm?.isAuthenticated?.collectAsState()?.value ?: false
+
+    if (!serviceConnected && !isLoading) {
+        StreamingHomeWelcomeContent(
+            modifier = modifier.fillMaxSize(),
+            serviceSessions = serviceSessions,
+            isAuthenticated = isAuthenticated,
+            onConfigureService = onConfigureService,
+            onSwitchToLocalMode = onSwitchToLocalMode
+        )
+        return
     }
 
     val pullToRefreshState = rememberPullToRefreshState()
@@ -825,18 +847,6 @@ private fun StreamingHomeBody(
             verticalArrangement = Arrangement.spacedBy(sectionSpacing)
         ) {
         when {
-            !serviceConnected && !isLoading -> {
-                StreamingServiceStateCard(
-                    title = context.getString(R.string.streaming_home_selected_service_unavailable),
-                    subtitle = context.getString(
-                        R.string.streaming_home_connect_selected_service,
-                        serviceName.ifBlank { context.getString(R.string.streaming_not_selected) }
-                    ),
-                    actionText = context.getString(R.string.streaming_service_setup_reconnect),
-                    onAction = { onConfigureService(serviceName) }
-                )
-            }
-
             isLoading && songs.isEmpty() -> {
                 StreamingServiceStateCard(
                     title = context.getString(R.string.streaming_home_no_content_title),
@@ -1034,6 +1044,162 @@ private fun StreamingHomeBody(
         )
         }
     }
+    }
+}
+
+@Composable
+private fun StreamingHomeWelcomeContent(
+    modifier: Modifier = Modifier,
+    serviceSessions: Map<String, StreamingServiceSession>,
+    isAuthenticated: Boolean,
+    onConfigureService: (String) -> Unit,
+    onSwitchToLocalMode: () -> Unit
+) {
+    val context = LocalContext.current
+    val haptics = LocalHapticFeedback.current
+    val appSettings = remember { AppSettings.getInstance(context) }
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        item {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.rhythm_splash_logo),
+                        contentDescription = stringResource(R.string.updates_rhythm_logo_cd),
+                        modifier = Modifier.size(100.dp)
+                    )
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(id = R.string.common_rhythm),
+                            style = MaterialTheme.typography.displayMedium.copy(
+                                fontSize = 42.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Text(
+                            text = stringResource(R.string.splashscreen_go),
+                            style = MaterialTheme.typography.displayMedium.copy(
+                                fontSize = 42.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            ),
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                Text(
+                    text = if (isAuthenticated) {
+                        stringResource(R.string.streaming_status_ready_to_connect)
+                    } else {
+                        stringResource(R.string.streaming_status_not_connected)
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+
+                Button(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        onSwitchToLocalMode()
+                    }
+                ) {
+                    Text(text = stringResource(R.string.streaminghomescreen_leave_go_mode))
+                }
+            }
+        }
+
+        item {
+            val settingsItems = remember(serviceSessions) {
+                StreamingServiceOptions.defaults.map { service ->
+                    val isConnected = serviceSessions[service.id]?.isConnected == true
+
+                    Material3SettingsItem(
+                        leadingContent = {
+                            val providerIconRes = when (service.id) {
+                                StreamingServiceId.SUBSONIC -> R.drawable.ic_subsonic
+                                StreamingServiceId.JELLYFIN -> R.drawable.ic_jellyfin
+                                else -> null
+                            }
+                            if (providerIconRes != null) {
+                                Image(
+                                    painter = painterResource(id = providerIconRes),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+                        },
+                        title = {
+                            Text(
+                                text = stringResource(id = service.nameRes),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        },
+                        description = {
+                            Text(
+                                text = stringResource(id = service.descriptionRes),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        trailingContent = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                FilledTonalButton(
+                                    onClick = {
+                                        appSettings.setStreamingService(service.id)
+                                        onConfigureService(service.id)
+                                    }
+                                ) {
+                                    Text(
+                                        text = if (isConnected) {
+                                            stringResource(id = R.string.streaming_manage)
+                                        } else {
+                                            stringResource(id = R.string.streaming_connect)
+                                        }
+                                    )
+                                }
+                            }
+                        },
+                        onClick = {
+                            appSettings.setStreamingService(service.id)
+                            onConfigureService(service.id)
+                        }
+                    )
+                }
+            }
+
+            Material3SettingsGroup(items = settingsItems)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(18.dp))
+        }
     }
 }
 

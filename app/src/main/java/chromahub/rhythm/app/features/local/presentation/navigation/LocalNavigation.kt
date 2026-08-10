@@ -1753,10 +1753,18 @@ private fun LocalNavigationContent(
                             streamingServiceConnected = streamingServiceConnected,
                             streamingIsLoading = streamingIsLoading,
                             streamingError = streamingError,
-                            onConfigureService = { _ ->
-                                navController.navigate(StreamingRoutes.serviceSetup(streamingServiceId)) {
+                            onConfigureService = { serviceId ->
+                                val target = StreamingServiceOptions.defaults
+                                    .firstOrNull { it.id.equals(serviceId, ignoreCase = true) }
+                                    ?.id
+                                    ?: streamingServiceId
+                                navController.navigate(StreamingRoutes.serviceSetup(target)) {
                                     launchSingleTop = true
                                 }
+                            },
+                            onSwitchToLocalMode = {
+                                appSettings.setAppMode("LOCAL")
+                                viewModel.restartApp()
                             },
                             onStreamingNavigateToArtist = { artist ->
                                 navController.navigate(StreamingRoutes.artist(artist.id, artist.name)) {
@@ -3079,8 +3087,12 @@ private fun LocalNavigationContent(
                         streamingServiceConnected = streamingServiceConnected,
                         streamingIsLoading = streamingIsLoading,
                         streamingError = streamingError,
-                        onConfigureService = { _ ->
-                            navController.navigate(StreamingRoutes.serviceSetup(streamingServiceId)) {
+                        onConfigureService = { serviceId ->
+                            val target = StreamingServiceOptions.defaults
+                                .firstOrNull { it.id.equals(serviceId, ignoreCase = true) }
+                                ?.id
+                                ?: streamingServiceId
+                            navController.navigate(StreamingRoutes.serviceSetup(target)) {
                                 launchSingleTop = true
                             }
                         },
