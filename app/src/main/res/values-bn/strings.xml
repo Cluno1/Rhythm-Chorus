@@ -1293,8 +1293,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">পরবর্তী খেলুন</string>
     <string name="action_add_to_queue">সারিতে যোগ করুন</string>
-    <string name="action_remove_from_favorites">প্রিয় থেকে সরান</string>
-    <string name="action_add_to_favorites">ফেভারিট যোগ করুন</string>
     <string name="action_song_info">গানের তথ্য</string>
     <string name="action_add_to_blacklist">কালো তালিকায় যুক্ত করুন</string>
     <string name="action_play_all">সব খেলুন</string>
@@ -1740,8 +1738,6 @@
     <string name="settings_shapes_desc">অভিব্যক্তিপূর্ণ আকার</string>
     <string name="settings_skip_silence">নীরবতা এড়িয়ে যান</string>
     <string name="settings_skip_silence_desc">স্বয়ংক্রিয়ভাবে ট্র্যাকগুলিতে নীরব বিরতিগুলি এড়িয়ে যান।</string>
-    <string name="settings_song_ratings">গানের রেটিং</string>
-    <string name="settings_song_ratings_desc">পরিসংখ্যান এবং বাছাই উন্নত করতে তারা দিয়ে গান রেট করুন</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">মিনিপ্লেয়ার সোয়াইপ অঙ্গভঙ্গি</string>
     <string name="settings_gesture_miniplayer_swipe_desc">খুলুন, খারিজ করুন, সোয়াইপ এড়িয়ে যান</string>
@@ -2122,8 +2118,6 @@
     <string name="rhythmstatsscreen_top_songs">সেরা গান</string>
     <string name="rhythmstatsscreen_listening_habits">শোনার অভ্যাস</string>
     <string name="rhythmstatsscreen_listening_timeline">টাইমলাইন শোনা</string>
-    <string name="rhythmstatsscreen_favorites">প্রিয়</string>
-    <string name="rhythmstatsscreen_loved_4">ভালোলাগা (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">এখনো কোনো পরিসংখ্যান পাওয়া যায়নি</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">আপনার সঙ্গীত যাত্রা নির্মাণ শুনতে থাকুন!</string>
     <string name="universalsearchscreen_remove_search">অনুসন্ধান সরান</string>
@@ -2241,15 +2235,6 @@
     <string name="playing_next_simple">পরবর্তী বাজানো হচ্ছে: %1$s</string>
     <string name="failed_to_request_permission">অনুমতির অনুরোধ করতে ব্যর্থ হয়েছে: %1$s</string>
     <string name="unexpected_error">অপ্রত্যাশিত ত্রুটি: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="one">%1$s - %2$d তারা</item>
-        <item quantity="other">%1$s - %2$d তারা</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="one">%1$dটি তারা</item>
-        <item quantity="other">%1$dটি তারা</item>
-    </plurals>
-    <string name="rating_unknown">অজানা</string>
     <string name="album_artwork_description">%1$s এর জন্য অ্যালবাম আর্টওয়ার্ক</string>
     <string name="error_fetching_artwork">আর্টওয়ার্ক আনার সময় ত্রুটি: %1$s</string>
     <string name="edit_lyrics">গানের কথা সম্পাদনা করুন</string>
@@ -2266,19 +2251,6 @@
         <item quantity="one">আপনি কি এই প্লেলিস্ট থেকে %1$dটি গান সরাতে চান?</item>
         <item quantity="other">আপনি কি এই প্লেলিস্ট থেকে %1$dটি গান সরাতে চান?</item>
     </plurals>
-    <string name="rating_not_rated">রেট করা হয়নি</string>
-    <string name="rating_liked">পছন্দ হয়েছে</string>
-    <string name="rating_good">ভালো</string>
-    <string name="rating_great">দারুণ</string>
-    <string name="rating_loved">ভালবাসত</string>
-    <string name="rating_absolute_favorite">পরম প্রিয়</string>
-    <string name="rating_desc_not_rated">কোন রেটিং নেই</string>
-    <string name="rating_desc_liked">ভালো লেগেছে - মাঝে মাঝে শোনার জন্য ভালো</string>
-    <string name="rating_desc_good">ভাল - কঠিন ট্র্যাক</string>
-    <string name="rating_desc_great">দুর্দান্ত - সত্যিই এটি উপভোগ করছি</string>
-    <string name="rating_desc_loved">ভালোবাসি - আমার প্রিয় এক</string>
-    <string name="rating_desc_absolute_favorite">পরম প্রিয় - শীর্ষ স্তরের ট্র্যাক</string>
-    <string name="rating_desc_unknown">অজানা রেটিং</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">বড় উইজেটগুলিতে প্রিয় টগল প্রদর্শন করুন</string>
     <string name="settings_clear_all_logs_desc">সমস্ত সঞ্চিত ক্র্যাশ রিপোর্ট সরান</string>
@@ -2335,10 +2307,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">মিনি প্লেয়ারে অগ্রগতি বার সক্রিয়। পরবর্তী আকার এবং কোণার tweaks চেষ্টা করুন.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">মিনি প্লেয়ার অগ্রগতি লুকানো আছে. দ্রুত ট্র্যাক সচেতনতার জন্য এটি সক্ষম করুন।</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">কমপ্যাক্ট মোড এখন ন্যূনতম। আরও ভাল নজরে পড়ার জন্য অগ্রগতি চালু করুন।</string>
-    <string name="settings_tip_library_active_desc_1">রেটিং সক্রিয় করা হয়. আবিষ্কার এবং বাছাই তীক্ষ্ণ করতে লাইব্রেরি সেটিংস ব্যবহার করুন।</string>
-    <string name="settings_tip_library_active_desc_2">আপনার লাইব্রেরি রেটিং সমর্থন করে. ক্লিনার ব্রাউজিংয়ের জন্য স্ক্যান এবং গ্রুপিং টিউন করুন।</string>
-    <string name="settings_tip_library_inactive_desc_1">রেটিং নিষ্ক্রিয় করা হয়. লাইব্রেরি সেটিংস এখনও গঠন এবং গতি উন্নত করতে পারে।</string>
-    <string name="settings_tip_library_inactive_desc_2">সরলীকৃত লাইব্রেরি মোড সনাক্ত করা হয়েছে৷ দ্রুত নেভিগেশনের জন্য গ্রুপিং সামঞ্জস্য করুন।</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">প্রথম এম্বেড করা</string>
     <string name="lyrics_source_embedded_first_desc">অডিও ফাইল মেটাডেটা → অনলাইন APIs → .lrc ফাইল ব্যবহার করে দেখুন</string>
@@ -2545,11 +2513,6 @@
     <string name="library_scan_media">মিডিয়া স্ক্যান করা হচ্ছে…</string>
     <string name="library_category_all">সব</string>
     <string name="library_category_favorites">❤️ প্রিয়</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ পরম প্রিয়</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ ভালোবাসত</string>
-    <string name="library_category_great">⭐⭐⭐ দারুণ</string>
-    <string name="library_category_good">⭐⭐ ভালো</string>
-    <string name="library_category_liked">⭐ পছন্দ হয়েছে</string>
     <string name="library_category_short">সংক্ষিপ্ত (&lt;3 মিনিট)</string>
     <string name="library_category_medium">মাঝারি (৩–৫ মিনিট)</string>
     <string name="library_category_long">দীর্ঘ (&gt; ৫ মিনিট)</string>
@@ -2660,7 +2623,6 @@
     <string name="metadata_album_artist">অ্যালবাম শিল্পী</string>
     <string name="metadata_play_count">প্লে কাউন্ট</string>
     <string name="metadata_total_played">মোট খেলা</string>
-    <string name="metadata_rating">রেটিং</string>
     <string name="metadata_quality">গুণমান</string>
     <string name="metadata_audio_tech">অডিও টেক</string>
     <string name="metadata_bit_depth">বিট গভীরতা</string>

@@ -94,6 +94,7 @@ import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository
 import chromahub.rhythm.app.shared.data.repository.StatsTimeRange
+import chromahub.rhythm.app.util.ArtistSeparator
 import chromahub.rhythm.app.util.GsonUtils
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
@@ -102,10 +103,10 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import kotlin.system.exitProcess
 import chromahub.rhythm.app.shared.presentation.components.common.CollapsibleHeaderScreen
-import chromahub.rhythm.app.shared.presentation.components.common.ButtonGroupStyle
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveScrollBar
-import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveButtonGroup
-import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveGroupButton
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonSize
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonWeighted
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
 import chromahub.rhythm.app.shared.presentation.components.common.StyledProgressBar
 import chromahub.rhythm.app.shared.presentation.components.common.ProgressStyle
@@ -135,7 +136,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.core.text.HtmlCompat
 import chromahub.rhythm.app.shared.presentation.components.common.M3FourColorCircularLoader
 import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
@@ -252,7 +252,6 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                 )
             }
 
-            // Info Card
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 Card(
@@ -291,22 +290,162 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                 }
             }
 
-            // Examples
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+
+    if (showDelimiterBottomSheet) {
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+        val commonDelimiters = listOf(
+            '/' to context.getString(R.string.delimiter_slash),
+            ';' to context.getString(R.string.delimiter_semicolon),
+            ',' to context.getString(R.string.delimiter_comma),
+            '+' to context.getString(R.string.delimiter_plus),
+            '&' to context.getString(R.string.delimiter_ampersand)
+        )
+
+        LaunchedEffect(Unit) {
+            sheetState.expand()
+        }
+
+        ModalBottomSheet(
+            onDismissRequest = { showDelimiterBottomSheet = false },
+            sheetState = sheetState,
+            dragHandle = {
+                BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+            },
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 12.dp)
+            ) {
+                Text(
+                    text = context.getString(R.string.settings_configure_delimiters),
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 8.dp),
+                    modifier = Modifier.height(120.dp * 3 + 12.dp * 2)
+                ) {
+                    items(commonDelimiters.size, key = { index -> "delimiter_$index" }) { index ->
+                        val (char, name) = commonDelimiters[index]
+                        val isSelected = tempDelimiters.contains(char)
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isSelected)
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                else
+                                    MaterialTheme.colorScheme.surfaceContainerHigh
+                            ),
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                tempDelimiters = if (tempDelimiters.contains(char)) {
+                                    tempDelimiters.replace(char.toString(), "")
+                                } else {
+                                    tempDelimiters + char
+                                }
+                            }
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 16.dp, top = 12.dp, end = 16.dp)
+                                        .height(48.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = char.toString(),
+                                        style = MaterialTheme.typography.headlineLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected)
+                                            MaterialTheme.colorScheme.primaryContainer
+                                        else
+                                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                    )
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomStart)
+                                        .fillMaxWidth()
+                                        .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+                                ) {
+                                    Text(
+                                        text = name,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected)
+                                            MaterialTheme.colorScheme.primaryContainer
+                                        else
+                                            MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Clip,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(
+                                                RoundedCornerShape(
+                                                    topStart = 0.dp,
+                                                    topEnd = 20.dp,
+                                                    bottomEnd = 20.dp,
+                                                    bottomStart = 0.dp
+                                                )
+                                            )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val liveSamples = remember(tempDelimiters) {
+                    listOf(
+                        "Artist1/Artist2" to ArtistSeparator.splitArtistNames("Artist1/Artist2", tempDelimiters, tempDelimiters.isNotEmpty()).joinToString(", "),
+                        "Artist1; Artist2" to ArtistSeparator.splitArtistNames("Artist1; Artist2", tempDelimiters, tempDelimiters.isNotEmpty()).joinToString(", "),
+                        "Artist1 & Artist2" to ArtistSeparator.splitArtistNames("Artist1 & Artist2", tempDelimiters, tempDelimiters.isNotEmpty()).joinToString(", "),
+                        "AC\\/DC ft. Brian" to ArtistSeparator.splitArtistNames("AC\\/DC ft. Brian", tempDelimiters, tempDelimiters.isNotEmpty()).joinToString(", ")
+                    )
+                }
+
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 240.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
                     )
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .padding(20.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = MaterialSymbolIcon("lightbulb"),
                                 contentDescription = null,
@@ -322,211 +461,64 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-
-                        ArtistSeparatorExampleItem(
-                            original = "Artist1/Artist2",
-                            result = "Artist1, Artist2"
-                        )
-                        ArtistSeparatorExampleItem(
-                            original = "Artist1; Artist2",
-                            result = "Artist1, Artist2"
-                        )
-                        ArtistSeparatorExampleItem(
-                            original = "Artist1 & Artist2",
-                            result = "Artist1, Artist2"
-                        )
-                        ArtistSeparatorExampleItem(
-                            original = "Artist1\\\\/Artist2",
-                            result = "Artist1/Artist2 (escaped)"
-                        )
-                    }
-                }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-        }
-    }
-
-    // Delimiter Configuration Bottom Sheet
-    if (showDelimiterBottomSheet) {
-        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-        val commonDelimiters = listOf(
-            '/' to context.getString(R.string.delimiter_slash),
-            ';' to context.getString(R.string.delimiter_semicolon),
-            ',' to context.getString(R.string.delimiter_comma),
-            '+' to context.getString(R.string.delimiter_plus),
-            '&' to context.getString(R.string.delimiter_ampersand)
-        )
-
-        ModalBottomSheet(
-            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
-            onDismissRequest = { showDelimiterBottomSheet = false },
-            sheetState = sheetState,
-            dragHandle = {
-                BottomSheetDefaults.DragHandle(
-                    color = MaterialTheme.colorScheme.primary
-                )
-            },
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        ) {
-            // Scrollable content
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp)
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Inline header
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                ) {
-                    Text(
-                        text = context.getString(R.string.settings_configure_delimiters),
-                        style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = context.getString(R.string.settings_select_artist_separators),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Delimiter options in a responsive two-column layout
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    commonDelimiters.chunked(2).forEach { delimiterRow ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            delimiterRow.forEach { (char, name) ->
-                                val isSelected = tempDelimiters.contains(char)
-                                val containerColor by animateColorAsState(
-                                    targetValue = if (isSelected)
-                                        MaterialTheme.colorScheme.primaryContainer
-                                    else
-                                        MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    label = "delimiter_color"
+                        liveSamples.forEach { (original, result) ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = original,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.75f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f)
                                 )
-
-                                Card(
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                        tempDelimiters = if (tempDelimiters.contains(char)) {
-                                            tempDelimiters.replace(char.toString(), "")
-                                        } else {
-                                            tempDelimiters + char
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(120.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = containerColor
-                                    ),
-                                    border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(12.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(48.dp)
-                                                .background(
-                                                    color = if (isSelected)
-                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                                    else
-                                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                                                    shape = RoundedCornerShape(12.dp)
-                                                ),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = char.toString(),
-                                                style = MaterialTheme.typography.titleLarge,
-                                                fontWeight = FontWeight.Bold,
-                                                color = if (isSelected)
-                                                    MaterialTheme.colorScheme.primary
-                                                else
-                                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        Text(
-                                            text = name,
-                                            style = MaterialTheme.typography.labelMedium,
-                                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                            color = if (isSelected)
-                                                MaterialTheme.colorScheme.onPrimaryContainer
-                                            else
-                                                MaterialTheme.colorScheme.onSurface,
-                                            textAlign = TextAlign.Center,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-                                }
-                            }
-                            if (delimiterRow.size == 1) {
-                                Spacer(modifier = Modifier.weight(1f))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = RhythmIcons.Forward,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = result,
+                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
                             }
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // Sticky action buttons at bottom
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surfaceContainer,
                 tonalElevation = 3.dp
             ) {
-                ExpressiveButtonGroup(
+                RhythmGroupedButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp, vertical = 16.dp),
-                    style = ButtonGroupStyle.Tonal
+                    size = RhythmButtonSize.Large
                 ) {
-                    ExpressiveGroupButton(
+                    RhythmButtonWeighted(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             tempDelimiters = artistSeparatorDelimiters
                         },
-                        modifier = Modifier.weight(1f),
-                        isStart = true
-                    ) {
-                        Icon(
-                            imageVector = RhythmIcons.Refresh,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.ui_reset))
-                    }
-                    ExpressiveGroupButton(
+                        weight = 1f,
+                        isFirst = true,
+                        icon = MaterialSymbolIcon("restart_alt"),
+                        text = context.getString(R.string.bottomsheet_reset)
+                    )
+                    RhythmButtonWeighted(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                             scope.launch {
@@ -534,70 +526,17 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                                 showDelimiterBottomSheet = false
                             }
                         },
-                        modifier = Modifier.weight(1f),
-                        isEnd = true,
+                        weight = 1f,
+                        isLast = true,
+                        icon = RhythmIcons.Check,
+                        text = context.getString(R.string.bottomsheet_save),
                         enabled = tempDelimiters.isNotEmpty()
-                    ) {
-                        Icon(
-                            imageVector = RhythmIcons.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.ui_save))
-                    }
+                    )
                 }
             }
         }
     }
 }
-
-
-
-@Composable
-fun ArtistSeparatorExampleItem(original: String, result: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = RhythmIcons.MusicNote,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f),
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "\"$original\"",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 24.dp, top = 2.dp)
-        ) {
-            Icon(
-                imageVector = RhythmIcons.Forward,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.4f),
-                modifier = Modifier.size(14.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = result,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
-            )
-        }
-    }
-}
-
 
 
 @Composable
@@ -622,7 +561,6 @@ fun ApiServiceRow(
             .clickable(onClick = onClick)
             .padding(16.dp)
     ) {
-        // Icon
         Box(
             modifier = Modifier
                 .size(48.dp)
@@ -650,7 +588,6 @@ fun ApiServiceRow(
 
         Spacer(modifier = Modifier.width(16.dp))
 
-        // Content
         Column(modifier = Modifier.weight(1f)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -690,7 +627,6 @@ fun ApiServiceRow(
             )
         }
 
-        // Toggle or Arrow icon
         if (showToggle && onToggle != null) {
             TunerAnimatedSwitch(
                 checked = isEnabled,

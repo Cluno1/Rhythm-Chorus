@@ -637,16 +637,6 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             parentScreen = context.getString(R.string.settings_section_library_content)
         ))
         add(SearchableSettingItem(
-            id = "song_ratings",
-            title = context.getString(R.string.settings_song_ratings),
-            description = context.getString(R.string.settings_song_ratings_desc),
-            keywords = listOf("rating", "star", "favorite", "like", "score", "rate songs"),
-            icon = MaterialSymbolIcon("star"),
-            route = SettingsRoutes.LIBRARY_SETTINGS,
-            parentScreen = context.getString(R.string.settings_library_settings),
-            settingKey = "enableRatingSystem"
-        ))
-        add(SearchableSettingItem(
             id = "library_tab_order",
             title = context.getString(R.string.settings_library_tab_order),
             description = context.getString(R.string.settings_library_tab_order_desc),

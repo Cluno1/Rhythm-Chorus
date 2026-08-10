@@ -1293,8 +1293,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">அடுத்து விளையாடு</string>
     <string name="action_add_to_queue">வரிசையில் சேர்</string>
-    <string name="action_remove_from_favorites">பிடித்தவற்றிலிருந்து அகற்று</string>
-    <string name="action_add_to_favorites">பிடித்தவைகளில் சேர்க்கவும்</string>
     <string name="action_song_info">பாடல் தகவல்</string>
     <string name="action_add_to_blacklist">தடுப்புப்பட்டியலில் சேர்க்கவும்</string>
     <string name="action_play_all">அனைத்தையும் விளையாடு</string>
@@ -1740,8 +1738,6 @@
     <string name="settings_shapes_desc">வெளிப்படுத்தும் வடிவங்கள்</string>
     <string name="settings_skip_silence">நிசப்தம் தவிர்க்கவும்</string>
     <string name="settings_skip_silence_desc">தடங்களில் அமைதியான இடைவெளிகளைத் தானாகத் தவிர்க்கவும்.</string>
-    <string name="settings_song_ratings">பாடல் மதிப்பீடுகள்</string>
-    <string name="settings_song_ratings_desc">புள்ளிவிவரங்கள் மற்றும் வரிசைப்படுத்தலை மேம்படுத்த, நட்சத்திரங்களுடன் பாடல்களை மதிப்பிடவும்</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">மினிபிளேயர் ஸ்வைப் சைகைகள்</string>
     <string name="settings_gesture_miniplayer_swipe_desc">திற, நிராகரி, ஸ்வைப் செய்வதைத் தவிர்க்கவும்</string>
@@ -2122,8 +2118,6 @@
     <string name="rhythmstatsscreen_top_songs">சிறந்த பாடல்கள்</string>
     <string name="rhythmstatsscreen_listening_habits">கேட்கும் பழக்கம்</string>
     <string name="rhythmstatsscreen_listening_timeline">கேட்கும் காலவரிசை</string>
-    <string name="rhythmstatsscreen_favorites">பிடித்தவை</string>
-    <string name="rhythmstatsscreen_loved_4">நேசித்தேன் (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">இதுவரை புள்ளிவிவரங்கள் எதுவும் கிடைக்கவில்லை</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">உங்கள் இசைப் பயணத்தை உருவாக்க தொடர்ந்து கேளுங்கள்!</string>
     <string name="universalsearchscreen_remove_search">தேடலை அகற்று</string>
@@ -2241,15 +2235,6 @@
     <string name="playing_next_simple">அடுத்து விளையாடுகிறது: %1$s</string>
     <string name="failed_to_request_permission">அனுமதி கோருவதில் தோல்வி: %1$s</string>
     <string name="unexpected_error">எதிர்பாராத பிழை: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="one">%1$s - %2$d நட்சத்திரங்கள்</item>
-        <item quantity="other">%1$s - %2$d நட்சத்திரங்கள்</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="one">%1$d நட்சத்திரங்கள்</item>
-        <item quantity="other">%1$d நட்சத்திரங்கள்</item>
-    </plurals>
-    <string name="rating_unknown">தெரியவில்லை</string>
     <string name="album_artwork_description">%1$sக்கான ஆல்பம் கலைப்படைப்பு</string>
     <string name="error_fetching_artwork">கலைப்படைப்பைப் பெறுவதில் பிழை: %1$s</string>
     <string name="edit_lyrics">பாடல் வரிகளைத் திருத்தவும்</string>
@@ -2266,19 +2251,6 @@
         <item quantity="one">இந்த பிளேலிஸ்ட்டில் இருந்து %1$d பாடல்களை நிச்சயமாக அகற்ற விரும்புகிறீர்களா?</item>
         <item quantity="other">இந்த பிளேலிஸ்ட்டில் இருந்து %1$d பாடல்களை நிச்சயமாக அகற்ற விரும்புகிறீர்களா?</item>
     </plurals>
-    <string name="rating_not_rated">மதிப்பிடப்படவில்லை</string>
-    <string name="rating_liked">பிடித்திருந்தது</string>
-    <string name="rating_good">நல்லது</string>
-    <string name="rating_great">பெரியது</string>
-    <string name="rating_loved">நேசித்தேன்</string>
-    <string name="rating_absolute_favorite">முற்றிலும் பிடித்தமானது</string>
-    <string name="rating_desc_not_rated">மதிப்பீடு இல்லை</string>
-    <string name="rating_desc_liked">பிடித்தது - அவ்வப்போது கேட்பதற்கு நல்லது</string>
-    <string name="rating_desc_good">நல்லது - திடமான பாதை</string>
-    <string name="rating_desc_great">அருமை - இதை மிகவும் ரசிக்கிறேன்</string>
-    <string name="rating_desc_loved">நேசித்தேன் - எனக்கு பிடித்த ஒன்று</string>
-    <string name="rating_desc_absolute_favorite">முற்றிலும் பிடித்தமானது - மேல் அடுக்கு பாதை</string>
-    <string name="rating_desc_unknown">அறியப்படாத மதிப்பீடு</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">பெரிய விட்ஜெட்களில் பிடித்த நிலைமாற்றத்தைக் காண்பி</string>
     <string name="settings_clear_all_logs_desc">சேமிக்கப்பட்ட அனைத்து செயலிழப்பு அறிக்கைகளையும் அகற்றவும்</string>
@@ -2335,10 +2307,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">மினி பிளேயரில் முன்னேற்றப் பட்டி செயலில் உள்ளது. அடுத்து வடிவம் மற்றும் மூலை மாற்றங்களை முயற்சிக்கவும்.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">மினி பிளேயர் முன்னேற்றம் மறைக்கப்பட்டுள்ளது. விரைவான பாதை விழிப்புணர்வுக்காக அதை இயக்கவும்.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">காம்பாக்ட் பயன்முறை இப்போது குறைவாக உள்ளது. சிறந்த பார்வைக்கு முன்னேற்றத்தை இயக்கவும்.</string>
-    <string name="settings_tip_library_active_desc_1">மதிப்பீடுகள் இயக்கப்பட்டுள்ளன. கண்டுபிடிப்பு மற்றும் வரிசைப்படுத்தலைக் கூர்மைப்படுத்த நூலக அமைப்புகளைப் பயன்படுத்தவும்.</string>
-    <string name="settings_tip_library_active_desc_2">உங்கள் நூலகம் மதிப்பீடுகளை ஆதரிக்கிறது. தூய்மையான உலாவலுக்கு ஸ்கேன் செய்து குழுவாக்குதல்.</string>
-    <string name="settings_tip_library_inactive_desc_1">மதிப்பீடுகள் முடக்கப்பட்டுள்ளன. நூலக அமைப்புகள் இன்னும் கட்டமைப்பையும் வேகத்தையும் மேம்படுத்தலாம்.</string>
-    <string name="settings_tip_library_inactive_desc_2">எளிமைப்படுத்தப்பட்ட நூலக முறை கண்டறியப்பட்டது. வேகமான வழிசெலுத்தலுக்கு குழுவாக்கத்தை சரிசெய்யவும்.</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">முதலில் உட்பொதிக்கப்பட்டது</string>
     <string name="lyrics_source_embedded_first_desc">ஆடியோ கோப்பு மெட்டாடேட்டா → ஆன்லைன் APIகள் → .lrc கோப்புகளை முயற்சிக்கவும்</string>
@@ -2545,11 +2513,6 @@
     <string name="library_scan_media">மீடியாவை ஸ்கேன் செய்கிறது…</string>
     <string name="library_category_all">அனைத்தும்</string>
     <string name="library_category_favorites">❤️ பிடித்தவை</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ முழுமையான பிடித்தவை</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ நேசித்தேன்</string>
-    <string name="library_category_great">⭐⭐⭐ அருமை</string>
-    <string name="library_category_good">⭐⭐ நல்லது</string>
-    <string name="library_category_liked">⭐ விரும்பப்பட்டது</string>
     <string name="library_category_short">குறுகிய (&lt; 3 நிமிடம்)</string>
     <string name="library_category_medium">நடுத்தரம் (3–5 நிமிடம்)</string>
     <string name="library_category_long">நீளம் (&gt; 5 நிமிடம்)</string>
@@ -2660,7 +2623,6 @@
     <string name="metadata_album_artist">ஆல்பம் கலைஞர்</string>
     <string name="metadata_play_count">விளையாட்டு எண்ணிக்கை</string>
     <string name="metadata_total_played">விளையாடிய மொத்தம்</string>
-    <string name="metadata_rating">மதிப்பீடு</string>
     <string name="metadata_quality">தரம்</string>
     <string name="metadata_audio_tech">ஆடியோ தொழில்நுட்பம்</string>
     <string name="metadata_bit_depth">பிட் ஆழம்</string>

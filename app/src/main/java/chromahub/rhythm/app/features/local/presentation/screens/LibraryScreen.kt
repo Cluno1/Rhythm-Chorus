@@ -4,6 +4,7 @@ package chromahub.rhythm.app.features.local.presentation.screens
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
+import chromahub.rhythm.app.util.ArtistSeparator
 import chromahub.rhythm.app.util.NaturalSortComparator
 
 import kotlin.math.abs
@@ -357,13 +358,17 @@ fun LibraryScreen(
     val appSettings = remember { AppSettings.getInstance(context) }
     val tabOrder by appSettings.libraryTabOrder.collectAsState()
     val hiddenTabs by appSettings.hiddenLibraryTabs.collectAsState()
-    val enableRatingSystem by appSettings.enableRatingSystem.collectAsState()
     val showLibraryBottomBarAlways by appSettings.showLibraryBottomBarAlways.collectAsState()
+
+    // Show Album Artists tab by default in Go mode, hidden in local mode
+    val effectiveHiddenTabs = remember(hiddenTabs, isStreamingMode) {
+        if (isStreamingMode) hiddenTabs - "ALBUM_ARTISTS" else hiddenTabs
+    }
     
-    val allowedStreamingTabs = setOf("SONGS", "LIKED", "PLAYLISTS", "ALBUMS", "ARTISTS")
-    val tabs = remember(tabOrder, hiddenTabs, isStreamingMode) {
+    val allowedStreamingTabs = setOf("SONGS", "LIKED", "PLAYLISTS", "ALBUMS", "ARTISTS", "ALBUM_ARTISTS")
+    val tabs = remember(tabOrder, effectiveHiddenTabs, isStreamingMode) {
         tabOrder
-            .filter { !hiddenTabs.contains(it) && (!isStreamingMode || it in allowedStreamingTabs) }
+            .filter { !effectiveHiddenTabs.contains(it) && (!isStreamingMode || it in allowedStreamingTabs) }
             .map { tabId ->
                 when (tabId) {
                     "SONGS" -> context.getString(R.string.settings_tab_songs)
@@ -371,6 +376,7 @@ fun LibraryScreen(
                     "PLAYLISTS" -> context.getString(R.string.settings_tab_playlists)
                     "ALBUMS" -> context.getString(R.string.settings_tab_albums)
                     "ARTISTS" -> context.getString(R.string.settings_tab_artists)
+                    "ALBUM_ARTISTS" -> context.getString(R.string.settings_tab_album_artists)
                     "DATES" -> context.getString(R.string.settings_tab_dates)
                     "EXPLORER" -> context.getString(R.string.settings_tab_explorer)
                     else -> tabId
@@ -378,9 +384,9 @@ fun LibraryScreen(
             }
     }
     
-    val visibleTabIds = remember(tabOrder, hiddenTabs, isStreamingMode) {
+    val visibleTabIds = remember(tabOrder, effectiveHiddenTabs, isStreamingMode) {
         tabOrder.filter {
-            !hiddenTabs.contains(it) && (!isStreamingMode || it in allowedStreamingTabs)
+            !effectiveHiddenTabs.contains(it) && (!isStreamingMode || it in allowedStreamingTabs)
         }
     }
     
@@ -511,7 +517,6 @@ fun LibraryScreen(
     }
     val breadcrumbScrollState = rememberLazyListState()
 
-    val ratingDistribution = remember(appSettings) { appSettings.getRatingDistribution() }
     val sortedSongs = remember(songs, sortOrder) {
         when (sortOrder) {
             MusicViewModel.SortOrder.TITLE_ASC -> songs.sortedBy { it.title.lowercase() }
@@ -533,22 +538,12 @@ fun LibraryScreen(
         sortedSongs.distinctBy { "${it.id}_${it.uri}" }
     }
 
-    val categories = remember(preparedSongs, favoriteSongs, enableRatingSystem) {
-        calculateSongCategories(
-            preparedSongs = preparedSongs,
-            favoriteSongs = favoriteSongs.toSet(),
-            enableRatingSystem = enableRatingSystem,
-            ratingDistribution = ratingDistribution
-        )
+    val categories = remember(preparedSongs) {
+        calculateSongCategories(preparedSongs)
     }
 
-    val filteredSongs = remember(preparedSongs, selectedCategory, favoriteSongs) {
-        filterSongsByCategory(
-            preparedSongs = preparedSongs,
-            selectedCategory = selectedCategory,
-            favoriteSongs = favoriteSongs.toSet(),
-            ratedSongIdsProvider = { rating -> appSettings.getSongsByRating(rating).toSet() }
-        )
+    val filteredSongs = remember(preparedSongs, selectedCategory) {
+        filterSongsByCategory(preparedSongs, selectedCategory)
     }
 
     val likedSongs = remember(preparedSongs, favoriteSongs) {
@@ -575,6 +570,45 @@ fun LibraryScreen(
     var artistSortOption by rememberSaveable { mutableStateOf(ArtistSortOption.NAME_ASC) }
     val sortedArtists = remember(artists, artistSortOption) {
         val baseList = artists.distinctBy { it.id }
+        when (artistSortOption) {
+            ArtistSortOption.NAME_ASC -> baseList.sortedBy { it.name.lowercase() }
+            ArtistSortOption.NAME_DESC -> baseList.sortedByDescending { it.name.lowercase() }
+            ArtistSortOption.TRACK_COUNT_DESC -> baseList.sortedByDescending { it.numberOfTracks }
+            ArtistSortOption.ALBUM_COUNT_DESC -> baseList.sortedByDescending { it.numberOfAlbums }
+        }
+    }
+
+    val artistSeparatorEnabled by appSettings.artistSeparatorEnabled.collectAsState()
+    val artistSeparatorDelimiters by appSettings.artistSeparatorDelimiters.collectAsState()
+    val albumArtists = remember(preparedSongs, artists, artistSeparatorEnabled, artistSeparatorDelimiters) {
+        val delimitersStr = if (artistSeparatorEnabled) artistSeparatorDelimiters else ""
+        val artistSongsMap = java.util.HashMap<String, MutableList<Song>>()
+        val artistAlbumsMap = java.util.HashMap<String, java.util.HashSet<String>>()
+        for (song in preparedSongs) {
+            val albumArtistName = song.albumArtist?.trim().orEmpty()
+            val artistField = if (albumArtistName.isNotBlank() && !albumArtistName.equals("<unknown>", ignoreCase = true)) albumArtistName else song.artist
+            val names = ArtistSeparator.splitArtistNames(artistField, delimitersStr, artistSeparatorEnabled)
+            for (name in names) {
+                val key = name.lowercase()
+                artistSongsMap.getOrPut(key) { mutableListOf() }.add(song)
+                artistAlbumsMap.getOrPut(key) { java.util.HashSet() }.add(song.album.trim().lowercase())
+            }
+        }
+        val artistByName = artists.associateBy { it.name.lowercase() }
+        artistSongsMap.map { (key, songsOfArtist) ->
+            val existing = artistByName[key]
+            Artist(
+                id = existing?.id ?: "albumartist:$key",
+                name = songsOfArtist.firstOrNull()?.albumArtist?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) } ?: songsOfArtist.first().artist,
+                artworkUri = existing?.artworkUri,
+                songs = songsOfArtist,
+                numberOfTracks = songsOfArtist.size,
+                numberOfAlbums = artistAlbumsMap[key]?.size ?: 0
+            )
+        }
+    }
+    val sortedAlbumArtists = remember(albumArtists, artistSortOption) {
+        val baseList = albumArtists.distinctBy { it.id }
         when (artistSortOption) {
             ArtistSortOption.NAME_ASC -> baseList.sortedBy { it.name.lowercase() }
             ArtistSortOption.NAME_DESC -> baseList.sortedByDescending { it.name.lowercase() }
@@ -799,6 +833,13 @@ fun LibraryScreen(
                         artistsListState.firstVisibleItemIndex == 0 && artistsListState.firstVisibleItemScrollOffset == 0
                     }
                 }
+                "ALBUM_ARTISTS" -> {
+                    if (artistViewType == ArtistViewType.GRID) {
+                        artistsGridState.firstVisibleItemIndex == 0 && artistsGridState.firstVisibleItemScrollOffset == 0
+                    } else {
+                        artistsListState.firstVisibleItemIndex == 0 && artistsListState.firstVisibleItemScrollOffset == 0
+                    }
+                }
                 "EXPLORER" -> explorerListState.firstVisibleItemIndex == 0 && explorerListState.firstVisibleItemScrollOffset == 0
                 else -> true
             }
@@ -919,6 +960,7 @@ fun LibraryScreen(
             "DATES" -> filteredSongs
             "ALBUMS" -> sortedAlbums.flatMap { it.songs }
             "ARTISTS" -> sortedArtists.flatMap { it.songs }
+            "ALBUM_ARTISTS" -> sortedAlbumArtists.flatMap { it.songs }
             "EXPLORER" -> explorerFolderSongs
             else -> emptyList()
         }
@@ -957,7 +999,7 @@ fun LibraryScreen(
                     )
                 },
                 actions = {
-                    val showShuffle = !showLibraryBottomBarAlways && !isSelectionMode && bottomBarSongs.isNotEmpty() && activeTabIdOuter != "ARTISTS" && activeTabIdOuter != "ALBUMS"
+                    val showShuffle = !showLibraryBottomBarAlways && !isSelectionMode && bottomBarSongs.isNotEmpty() && activeTabIdOuter != "ARTISTS" && activeTabIdOuter != "ALBUM_ARTISTS" && activeTabIdOuter != "ALBUMS"
 
                     AnimatedVisibility(
                         visible = showShuffle,
@@ -1054,6 +1096,41 @@ fun LibraryScreen(
                                 )
                             }
                             
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+
+                        "ALBUM_ARTISTS" -> {
+                            val buttonScale by animateFloatAsState(
+                                targetValue = 1f,
+                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                label = "albumArtistToggleScale"
+                            )
+
+                            FilledTonalIconButton(
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    val newViewType = if (artistViewType == ArtistViewType.LIST) ArtistViewType.GRID else ArtistViewType.LIST
+                                    appSettings.setArtistViewType(newViewType)
+                                },
+                                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                ),
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .size(42.dp)
+                                    .graphicsLayer {
+                                        scaleX = buttonScale
+                                        scaleY = buttonScale
+                                    }
+                            ) {
+                                Icon(
+                                    imageVector = if (artistViewType == ArtistViewType.LIST) RhythmIcons.GridView else MaterialSymbolIcon("view_list", filled = true),
+                                    contentDescription = if (artistViewType == ArtistViewType.LIST) "Switch to Grid View" else "Switch to List View",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+
                             Spacer(modifier = Modifier.width(8.dp))
                         }
                         
@@ -1448,13 +1525,15 @@ fun LibraryScreen(
                                     val currentTabId = visibleTabIds.getOrNull(index)
                                     Icon(
                                         imageVector = when (currentTabId) {
-                                            "SONGS" -> RhythmIcons.Relax
+                                            "SONGS" -> RhythmIcons.HeadphonesFilled
+                                            "LIKED" -> RhythmIcons.FavoriteFilled
                                             "PLAYLISTS" -> RhythmIcons.PlaylistFilled
                                             "ALBUMS" -> RhythmIcons.Music.Album
                                             "ARTISTS" -> RhythmIcons.Artist
+                                            "ALBUM_ARTISTS" -> MaterialSymbolIcon("person_pin")
                                             "DATES" -> RhythmIcons.CalendarMonth
                                             "EXPLORER" -> RhythmIcons.Folder
-                                            else -> RhythmIcons.Music.Song
+                                            else -> RhythmIcons.HeadphonesFilled
                                         },
                                         contentDescription = null,
                                         modifier = Modifier.size(18.dp)
@@ -1469,7 +1548,7 @@ fun LibraryScreen(
                         )
                     }
                     
-                    if (!isStreamingMode) item {
+                    item {
                         var showLibraryTabOrderSheet by remember { mutableStateOf(false) }
 
                         TabAnimation(
@@ -1615,14 +1694,8 @@ fun LibraryScreen(
                                                     selectedCategory = category
                                                 },
                                                 label = {
-                                                    Text(
-                                                        text = when (category) {
+                                                    Text(                                                                text = when (category) {
                                                             "All" -> context.getString(R.string.library_category_all)
-                                                            "⭐⭐⭐⭐⭐ Absolute Favorites" -> context.getString(R.string.library_category_absolute_favorites)
-                                                            "⭐⭐⭐⭐ Loved" -> context.getString(R.string.library_category_loved)
-                                                            "⭐⭐⭐ Great" -> context.getString(R.string.library_category_great)
-                                                            "⭐⭐ Good" -> context.getString(R.string.library_category_good)
-                                                            "⭐ Liked" -> context.getString(R.string.library_category_liked)
                                                             "Short (< 3 min)" -> context.getString(R.string.library_category_short)
                                                             "Medium (3-5 min)" -> context.getString(R.string.library_category_medium)
                                                             "Long (> 5 min)" -> context.getString(R.string.library_category_long)
@@ -1753,7 +1826,6 @@ fun LibraryScreen(
                                             currentSong = currentSong,
                                             isPlaying = isPlaying,
                                             haptics = haptics,
-                                            enableRatingSystem = enableRatingSystem,
                                             isSelectionMode = isSelectionMode,
                                             selectedSongIds = selectedSongIds,
                                             multiSelectionState = multiSelectionState,
@@ -1804,7 +1876,6 @@ fun LibraryScreen(
                                             currentSong = currentSong,
                                             isPlaying = isPlaying,
                                             haptics = haptics,
-                                            enableRatingSystem = enableRatingSystem,
                                             isSelectionMode = isSelectionMode,
                                             selectedSongIds = selectedSongIds,
                                             multiSelectionState = multiSelectionState,
@@ -1860,6 +1931,21 @@ fun LibraryScreen(
                                         initialSortOption = artistSortOption,
                                         onSortOptionChange = { artistSortOption = it }
                                     )
+                                    "ALBUM_ARTISTS" -> SingleCardArtistsContent(
+                                        artists = sortedAlbumArtists,
+                                        onArtistClick = { artist ->
+                                            onNavigateToArtist(artist)
+                                        },
+                                        listState = artistsListState,
+                                        gridState = artistsGridState,
+                                        haptics = haptics,
+                                        onPlayQueue = onPlayQueue,
+                                        onShuffleQueue = onShuffleQueue,
+                                        onRefreshClick = onRefreshClick,
+                                        bottomPadding = baseLibraryBottomPadding,
+                                        initialSortOption = artistSortOption,
+                                        onSortOptionChange = { artistSortOption = it }
+                                    )
                                     "DATES" -> YearGroupedSongsContent(
                                     songs = filteredSongs,
                                     albums = albums,
@@ -1889,7 +1975,6 @@ fun LibraryScreen(
                                         currentSong = currentSong,
                                         isPlaying = isPlaying,
                                         haptics = haptics,
-                                        enableRatingSystem = enableRatingSystem,
                                         isSelectionMode = isSelectionMode,
                                         selectedSongIds = selectedSongIds,
                                         multiSelectionState = multiSelectionState,
@@ -1923,7 +2008,6 @@ fun LibraryScreen(
                                         musicViewModel = musicViewModel,
                                         currentSong = currentSong,
                                         isPlaying = isPlaying,
-                                        enableRatingSystem = enableRatingSystem,
                                         currentPath = explorerPath,
                                         onPathChanged = { explorerPath = it },
                                         onFolderSongsChanged = { explorerFolderSongs = it },
@@ -1975,6 +2059,7 @@ fun LibraryScreen(
                             "LIKED" -> likedSongs.isNotEmpty()
                             "ALBUMS" -> albums.isNotEmpty()
                             "ARTISTS" -> false
+                            "ALBUM_ARTISTS" -> albumArtists.isNotEmpty()
                             "DATES" -> songs.isNotEmpty()
                             "EXPLORER" -> explorerPath != null || explorerFolderSongs.isNotEmpty()
                             else -> false
@@ -2033,6 +2118,10 @@ fun LibraryScreen(
                                                         else albumsListState.animateScrollToItem(0)
                                                     }
                                                     "ARTISTS" -> {
+                                                        if (artistViewType == ArtistViewType.GRID) artistsGridState.animateScrollToItem(0)
+                                                        else artistsListState.animateScrollToItem(0)
+                                                    }
+                                                    "ALBUM_ARTISTS" -> {
                                                         if (artistViewType == ArtistViewType.GRID) artistsGridState.animateScrollToItem(0)
                                                         else artistsListState.animateScrollToItem(0)
                                                     }
@@ -2303,7 +2392,6 @@ fun SingleCardSongsContent(
     currentSong: Song? = null,
     isPlaying: Boolean = false,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
-    enableRatingSystem: Boolean = true,
     isSelectionMode: Boolean = false,
     selectedSongIds: Set<String> = emptySet(),
     multiSelectionState: chromahub.rhythm.app.features.local.presentation.viewmodel.MultiSelectionStateHolder? = null,
@@ -2510,7 +2598,6 @@ fun SingleCardSongsContent(
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             haptics = haptics,
-                            enableRatingSystem = enableRatingSystem,
                             itemShape = groupedLibraryItemShape(index, preparedSongs.size),
                             isSelected = isSelected,
                             isSelectionMode = isSelectionMode,
@@ -3173,7 +3260,6 @@ fun LibrarySongItem(
     currentSong: Song? = null,
     isPlaying: Boolean = false,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
-    enableRatingSystem: Boolean = true,
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
     selectionIndex: Int? = null,
@@ -3182,8 +3268,6 @@ fun LibrarySongItem(
 ) {
     val context = LocalContext.current
     var showDropdown by remember { mutableStateOf(false) }
-    val appSettings = remember { chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context) }
-    var currentRating by remember(song.id) { mutableIntStateOf(appSettings.getSongRating(song.id)) }
     val isCurrentSong = currentSong?.id == song.id
 
     val titleColor by animateColorAsState(
@@ -3435,7 +3519,6 @@ fun LibrarySongItemWrapper(
     currentSong: Song? = null,
     isPlaying: Boolean = false,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
-    enableRatingSystem: Boolean = true,
     itemShape: RoundedCornerShape = RoundedCornerShape(20.dp),
     horizontalPadding: androidx.compose.ui.unit.Dp = 0.dp,
     isSelected: Boolean = false,
@@ -3505,7 +3588,6 @@ fun LibrarySongItemWrapper(
             currentSong = currentSong,
             isPlaying = isPlaying,
             haptics = haptics,
-            enableRatingSystem = enableRatingSystem,
             isSelected = isSelected,
             isSelectionMode = isSelectionMode,
             selectionIndex = selectionIndex,
@@ -6247,12 +6329,7 @@ fun isStudioMaster(song: Song): Boolean {
     return false
 }
 
-fun calculateSongCategories(
-    preparedSongs: List<Song>,
-    favoriteSongs: Set<String>,
-    enableRatingSystem: Boolean,
-    ratingDistribution: Map<Int, Int>
-): List<String> {
+fun calculateSongCategories(preparedSongs: List<Song>): List<String> {
     val allCategories = mutableListOf("All")
 
     if (preparedSongs.any { isStudioMaster(it) }) {
@@ -6299,24 +6376,6 @@ fun calculateSongCategories(
         allCategories.add("Mono")
     }
 
-    if (enableRatingSystem) {
-        if ((ratingDistribution[5] ?: 0) > 0) {
-            allCategories.add("⭐⭐⭐⭐⭐ Absolute Favorites")
-        }
-        if ((ratingDistribution[4] ?: 0) > 0) {
-            allCategories.add("⭐⭐⭐⭐ Loved")
-        }
-        if ((ratingDistribution[3] ?: 0) > 0) {
-            allCategories.add("⭐⭐⭐ Great")
-        }
-        if ((ratingDistribution[2] ?: 0) > 0) {
-            allCategories.add("⭐⭐ Good")
-        }
-        if ((ratingDistribution[1] ?: 0) > 0) {
-            allCategories.add("⭐ Liked")
-        }
-    }
-
     if (preparedSongs.any { isLossyAudio(it) }) {
         allCategories.add("Lossy")
     }
@@ -6352,33 +6411,10 @@ fun calculateSongCategories(
 
 fun filterSongsByCategory(
     preparedSongs: List<Song>,
-    selectedCategory: String,
-    favoriteSongs: Set<String>,
-    ratedSongIdsProvider: (Int) -> Set<String>
+    selectedCategory: String
 ): List<Song> {
     return when (selectedCategory) {
         "All" -> preparedSongs
-
-        "⭐⭐⭐⭐⭐ Absolute Favorites" -> {
-            val ratedSongIds = ratedSongIdsProvider(5)
-            preparedSongs.filter { it.id in ratedSongIds }
-        }
-        "⭐⭐⭐⭐ Loved" -> {
-            val ratedSongIds = ratedSongIdsProvider(4)
-            preparedSongs.filter { it.id in ratedSongIds }
-        }
-        "⭐⭐⭐ Great" -> {
-            val ratedSongIds = ratedSongIdsProvider(3)
-            preparedSongs.filter { it.id in ratedSongIds }
-        }
-        "⭐⭐ Good" -> {
-            val ratedSongIds = ratedSongIdsProvider(2)
-            preparedSongs.filter { it.id in ratedSongIds }
-        }
-        "⭐ Liked" -> {
-            val ratedSongIds = ratedSongIdsProvider(1)
-            preparedSongs.filter { it.id in ratedSongIds }
-        }
 
         "Short (< 3 min)" -> preparedSongs.filter { it.duration < 3 * 60 * 1000 }
         "Medium (3-5 min)" -> preparedSongs.filter { it.duration in (3 * 60 * 1000)..(5 * 60 * 1000) }
@@ -6434,7 +6470,6 @@ fun YearGroupedSongsContent(
     currentSong: Song? = null,
     isPlaying: Boolean = false,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
-    enableRatingSystem: Boolean = true,
     isSelectionMode: Boolean = false,
     selectedSongIds: Set<String> = emptySet(),
     multiSelectionState: chromahub.rhythm.app.features.local.presentation.viewmodel.MultiSelectionStateHolder? = null,
@@ -6549,7 +6584,6 @@ fun YearGroupedSongsContent(
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             haptics = haptics,
-                            enableRatingSystem = enableRatingSystem,
                             itemShape = groupedLibraryItemShape(index, yearSongs.size),
                             isSelected = isSelected,
                             isSelectionMode = isSelectionMode,

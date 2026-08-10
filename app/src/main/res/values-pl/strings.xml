@@ -1321,8 +1321,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">Graj dalej</string>
     <string name="action_add_to_queue">Dodaj do kolejki</string>
-    <string name="action_remove_from_favorites">Usuń z ulubionych</string>
-    <string name="action_add_to_favorites">Dodaj do ulubionych</string>
     <string name="action_song_info">Informacje o utworze</string>
     <string name="action_add_to_blacklist">Dodaj do czarnej listy</string>
     <string name="action_play_all">Odtwórz wszystko</string>
@@ -1776,8 +1774,6 @@
     <string name="settings_shapes_desc">Wyraziste kształty</string>
     <string name="settings_skip_silence">Pomiń ciszę</string>
     <string name="settings_skip_silence_desc">Automatycznie pomijaj ciche interwały w utworach.</string>
-    <string name="settings_song_ratings">Oceny utworów</string>
-    <string name="settings_song_ratings_desc">Oceniaj utwory gwiazdkami, aby poprawić statystyki i sortowanie</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">Gesty przesuwania miniodtwarzacza</string>
     <string name="settings_gesture_miniplayer_swipe_desc">Otwórz, zamknij, pomiń przesunięcie</string>
@@ -2158,8 +2154,6 @@
     <string name="rhythmstatsscreen_top_songs">Najlepsze utwory</string>
     <string name="rhythmstatsscreen_listening_habits">Nawyki słuchania</string>
     <string name="rhythmstatsscreen_listening_timeline">Oś czasu słuchania</string>
-    <string name="rhythmstatsscreen_favorites">Ulubione</string>
-    <string name="rhythmstatsscreen_loved_4">Kochany (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">Żadne statystyki nie są jeszcze dostępne</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">Słuchaj dalej, aby budować swoją muzyczną podróż!</string>
     <string name="universalsearchscreen_remove_search">Usuń wyszukiwanie</string>
@@ -2279,19 +2273,6 @@
     <string name="playing_next_simple">Następne odtwarzanie: %1$s</string>
     <string name="failed_to_request_permission">Nie udało się poprosić o pozwolenie: %1$s</string>
     <string name="unexpected_error">Nieoczekiwany błąd: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="one">Gwiazdy %1$s - %2$d</item>
-        <item quantity="few">Gwiazdy %1$s - %2$d</item>
-        <item quantity="many">Gwiazdy %1$s - %2$d</item>
-        <item quantity="other">Gwiazdy %1$s - %2$d</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="one">Gwiazdy %1$d</item>
-        <item quantity="few">Gwiazdy %1$d</item>
-        <item quantity="many">Gwiazdy %1$d</item>
-        <item quantity="other">Gwiazdy %1$d</item>
-    </plurals>
-    <string name="rating_unknown">Nieznane</string>
     <string name="album_artwork_description">Okładka albumu dla %1$s</string>
     <string name="error_fetching_artwork">Błąd podczas pobierania grafiki: %1$s</string>
     <string name="edit_lyrics">Edytuj teksty</string>
@@ -2310,19 +2291,6 @@
         <item quantity="many">Czy na pewno chcesz usunąć utwory z tej listy odtwarzania (%1$d)?</item>
         <item quantity="other">Czy na pewno chcesz usunąć utwory z tej listy odtwarzania (%1$d)?</item>
     </plurals>
-    <string name="rating_not_rated">Brak oceny</string>
-    <string name="rating_liked">Podobało mi się</string>
-    <string name="rating_good">Dobrze</string>
-    <string name="rating_great">Świetnie</string>
-    <string name="rating_loved">Bardzo mi się podobało</string>
-    <string name="rating_absolute_favorite">Absolutny faworyt</string>
-    <string name="rating_desc_not_rated">Brak oceny</string>
-    <string name="rating_desc_liked">Podobało się – dobre do okazjonalnego słuchania</string>
-    <string name="rating_desc_good">Dobrze – solidny tor</string>
-    <string name="rating_desc_great">Świetnie – naprawdę mi się podoba</string>
-    <string name="rating_desc_loved">Bardzo mi się podobało – jeden z moich ulubionych</string>
-    <string name="rating_desc_absolute_favorite">Absolutny faworyt – utwór z najwyższej półki</string>
-    <string name="rating_desc_unknown">Ocena nieznana</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">Przełącznik wyświetlania ulubionych w dużych widżetach</string>
     <string name="settings_clear_all_logs_desc">Usuń wszystkie zapisane raporty o awariach</string>
@@ -2379,10 +2347,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">Pasek postępu jest aktywny w miniodtwarzaczu. Następnie wypróbuj poprawki kształtu i narożników.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">Postęp minigracza jest ukryty. Włącz tę funkcję, aby szybko uzyskać świadomość.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">Tryb kompaktowy jest teraz minimalny. Włącz postęp, aby uzyskać lepszą przejrzystość.</string>
-    <string name="settings_tip_library_active_desc_1">Oceny są włączone. Użyj ustawień biblioteki, aby usprawnić odkrywanie i sortowanie.</string>
-    <string name="settings_tip_library_active_desc_2">Twoja biblioteka obsługuje oceny. Dostosuj skanowanie i grupowanie, aby przeglądanie było czystsze.</string>
-    <string name="settings_tip_library_inactive_desc_1">Oceny są wyłączone. Ustawienia biblioteki mogą jeszcze poprawić strukturę i szybkość.</string>
-    <string name="settings_tip_library_inactive_desc_2">Wykryto uproszczony tryb biblioteki. Dostosuj grupowanie, aby przyspieszyć nawigację.</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">Najpierw osadzone</string>
     <string name="lyrics_source_embedded_first_desc">Wypróbuj metadane pliku audio → Interfejsy API online → Pliki .lrc</string>
@@ -2597,11 +2561,6 @@
     <string name="library_scan_media">Skanowanie multimediów…</string>
     <string name="library_category_all">Wszystko</string>
     <string name="library_category_favorites">❤️ Ulubione</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ Absolutni ulubieńcy</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ Bardzo mi się podobało</string>
-    <string name="library_category_great">⭐⭐⭐ Świetnie</string>
-    <string name="library_category_good">⭐⭐ Dobrze</string>
-    <string name="library_category_liked">⭐ Polubione</string>
     <string name="library_category_short">Krótki (&lt; 3 min)</string>
     <string name="library_category_medium">Średni (3–5 min)</string>
     <string name="library_category_long">Długie (&gt; 5 min)</string>
@@ -2716,7 +2675,6 @@
     <string name="metadata_album_artist">Artysta albumu</string>
     <string name="metadata_play_count">Liczba odtworzeń</string>
     <string name="metadata_total_played">Całkowita liczba odtworzeń</string>
-    <string name="metadata_rating">Ocena</string>
     <string name="metadata_quality">Jakość</string>
     <string name="metadata_audio_tech">Technika audio</string>
     <string name="metadata_bit_depth">Głębia bitowa</string>

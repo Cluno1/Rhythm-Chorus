@@ -109,10 +109,11 @@ fun RhythmSongMenuContent(
             val fav = isFavorite == true
             add(
                 SongMenuItem(
-                    title = if (fav) context.getString(R.string.action_remove_from_favorites) else context.getString(R.string.action_add_to_favorites),
-                    icon = if (fav) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
-                    iconBgColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
-                    iconTint = MaterialTheme.colorScheme.onTertiaryContainer,
+                    title = if (fav) context.getString(R.string.action_dislike) else context.getString(R.string.action_like),
+                    icon = if (fav) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
+                    iconBgColor = if (fav) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+                        else MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+                    iconTint = if (fav) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onTertiaryContainer,
                     onClick = action
                 )
             )

@@ -1279,8 +1279,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">Chơi tiếp</string>
     <string name="action_add_to_queue">Thêm vào hàng đợi</string>
-    <string name="action_remove_from_favorites">Xóa khỏi mục yêu thích</string>
-    <string name="action_add_to_favorites">Thêm vào mục yêu thích</string>
     <string name="action_song_info">Thông tin bài hát</string>
     <string name="action_add_to_blacklist">Thêm vào danh sách đen</string>
     <string name="action_play_all">Chơi tất cả</string>
@@ -1722,8 +1720,6 @@
     <string name="settings_shapes_desc">Hình dạng biểu cảm</string>
     <string name="settings_skip_silence">Bỏ qua sự im lặng</string>
     <string name="settings_skip_silence_desc">Tự động bỏ qua các khoảng im lặng trong bản nhạc.</string>
-    <string name="settings_song_ratings">Xếp hạng bài hát</string>
-    <string name="settings_song_ratings_desc">Xếp hạng các bài hát bằng sao để cải thiện số liệu thống kê và sắp xếp</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">Cử chỉ vuốt MiniPlayer</string>
     <string name="settings_gesture_miniplayer_swipe_desc">Mở, bỏ qua, bỏ qua thao tác vuốt</string>
@@ -2104,8 +2100,6 @@
     <string name="rhythmstatsscreen_top_songs">Bài hát hàng đầu</string>
     <string name="rhythmstatsscreen_listening_habits">Thói quen lắng nghe</string>
     <string name="rhythmstatsscreen_listening_timeline">Dòng thời gian nghe</string>
-    <string name="rhythmstatsscreen_favorites">Yêu thích</string>
-    <string name="rhythmstatsscreen_loved_4">Được yêu thích (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">Chưa có số liệu thống kê</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">Hãy tiếp tục lắng nghe để xây dựng hành trình âm nhạc của bạn!</string>
     <string name="universalsearchscreen_remove_search">Xóa tìm kiếm</string>
@@ -2222,13 +2216,6 @@
     <string name="playing_next_simple">Phát tiếp theo: %1$s</string>
     <string name="failed_to_request_permission">Không thể yêu cầu quyền: %1$s</string>
     <string name="unexpected_error">Lỗi không mong muốn: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="other">%1$s - %2$d sao</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="other">%1$d sao</item>
-    </plurals>
-    <string name="rating_unknown">Không rõ</string>
     <string name="album_artwork_description">Ảnh minh họa album cho %1$s</string>
     <string name="error_fetching_artwork">Lỗi tìm nạp tác phẩm nghệ thuật: %1$s</string>
     <string name="edit_lyrics">Chỉnh sửa lời bài hát</string>
@@ -2244,19 +2231,6 @@
     <plurals name="playlist_remove_songs_confirm">
         <item quantity="other">Bạn có chắc chắn muốn xóa %1$d bài hát khỏi danh sách phát này không?</item>
     </plurals>
-    <string name="rating_not_rated">Không được xếp hạng</string>
-    <string name="rating_liked">Đã thích</string>
-    <string name="rating_good">Tốt</string>
-    <string name="rating_great">Tuyệt vời</string>
-    <string name="rating_loved">Được yêu thích</string>
-    <string name="rating_absolute_favorite">Tuyệt đối yêu thích</string>
-    <string name="rating_desc_not_rated">Không có đánh giá</string>
-    <string name="rating_desc_liked">Đã thích - Tốt để thỉnh thoảng nghe</string>
-    <string name="rating_desc_good">Tốt - Đường chạy chắc chắn</string>
-    <string name="rating_desc_great">Tuyệt vời - Thực sự thích cái này</string>
-    <string name="rating_desc_loved">Loved - Một trong những sở thích của tôi</string>
-    <string name="rating_desc_absolute_favorite">Tuyệt đối yêu thích - Bài hát hàng đầu</string>
-    <string name="rating_desc_unknown">Đánh giá không xác định</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">Hiển thị nút chuyển đổi yêu thích trên các widget lớn</string>
     <string name="settings_clear_all_logs_desc">Xóa tất cả các báo cáo sự cố được lưu trữ</string>
@@ -2313,10 +2287,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">Thanh tiến trình đang hoạt động trên trình phát mini. Tiếp theo hãy thử chỉnh sửa hình dạng và góc.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">Tiến trình của người chơi mini bị ẩn. Kích hoạt nó để nhận biết theo dõi nhanh chóng.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">Chế độ thu gọn hiện đã ở mức tối thiểu. Bật tiến trình để có khả năng xem tốt hơn.</string>
-    <string name="settings_tip_library_active_desc_1">Xếp hạng được kích hoạt. Sử dụng cài đặt thư viện để nâng cao khả năng khám phá và sắp xếp.</string>
-    <string name="settings_tip_library_active_desc_2">Thư viện của bạn hỗ trợ xếp hạng. Điều chỉnh quét và nhóm để duyệt sạch hơn.</string>
-    <string name="settings_tip_library_inactive_desc_1">Xếp hạng bị vô hiệu hóa. Cài đặt thư viện vẫn có thể cải thiện cấu trúc và tốc độ.</string>
-    <string name="settings_tip_library_inactive_desc_2">Đã phát hiện thấy chế độ thư viện đơn giản hóa. Điều chỉnh nhóm để điều hướng nhanh hơn.</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">Được nhúng đầu tiên</string>
     <string name="lyrics_source_embedded_first_desc">Thử siêu dữ liệu tệp âm thanh → API trực tuyến → tệp .lrc</string>
@@ -2519,11 +2489,6 @@
     <string name="library_scan_media">Đang quét phương tiện…</string>
     <string name="library_category_all">Tất cả</string>
     <string name="library_category_favorites">❤️ Yêu thích</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ Yêu thích tuyệt đối</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ Đã yêu</string>
-    <string name="library_category_great">⭐⭐⭐ Tuyệt vời</string>
-    <string name="library_category_good">⭐⭐ Tốt</string>
-    <string name="library_category_liked">⭐ Đã thích</string>
     <string name="library_category_short">Ngắn (&lt; 3 phút)</string>
     <string name="library_category_medium">Trung bình (3–5 phút)</string>
     <string name="library_category_long">Dài (&gt; 5 phút)</string>
@@ -2632,7 +2597,6 @@
     <string name="metadata_album_artist">Nghệ sĩ album</string>
     <string name="metadata_play_count">Số lần chơi</string>
     <string name="metadata_total_played">Tổng số đã chơi</string>
-    <string name="metadata_rating">Đánh giá</string>
     <string name="metadata_quality">Chất lượng</string>
     <string name="metadata_audio_tech">Công nghệ âm thanh</string>
     <string name="metadata_bit_depth">Độ sâu bit</string>

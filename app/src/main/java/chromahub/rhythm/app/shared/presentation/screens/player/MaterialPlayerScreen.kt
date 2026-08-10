@@ -327,7 +327,6 @@ fun MaterialPlayerScreen(
     val artistSeparatorDelimiters by appSettingsInstance.artistSeparatorDelimiters.collectAsState()
     val useHoursFormat by appSettingsInstance.useHoursInTimeFormat.collectAsState()
     val showRemainingTime by appSettingsInstance.showRemainingTime.collectAsState()
-    val enableRatingSystem by appSettingsInstance.enableRatingSystem.collectAsState()
     
     // Player customization settings
     val playerShowGradientOverlay by appSettingsInstance.playerShowGradientOverlay.collectAsState()
@@ -1969,26 +1968,6 @@ fun MaterialPlayerScreen(
                                                 )
                                             }
                                             
-                                            // Rating stars display
-                                            // Rating stars display - only show if rating system is enabled
-                                            val currentRating = chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context).getSongRating(song.id)
-                                            if (enableRatingSystem && currentRating > 0) {
-                                                Spacer(modifier = Modifier.height(if (isExtraSmallWidth) 2.dp else if (isCompactHeight) 4.dp else 6.dp))
-                                                Box(
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    contentAlignment = when (playerTextAlignment) {
-                                                        "START" -> Alignment.CenterStart
-                                                        "END" -> Alignment.CenterEnd
-                                                        else -> Alignment.Center
-                                                    }
-                                                ) {
-                                                    chromahub.rhythm.app.shared.presentation.components.RatingStarsDisplay(
-                                                        rating = currentRating,
-                                                        size = if (isExtraSmallWidth) 10.dp else if (isCompactHeight) 14.dp else 16.dp
-                                                    )
-                                                }
-                                            }
-                                            
                                             // Audio quality badges
                                             if (playerShowAudioQualityBadges) {
                                                 Spacer(modifier = Modifier.height(if (isExtraSmallWidth) 4.dp else 8.dp))
@@ -2423,26 +2402,6 @@ fun MaterialPlayerScreen(
                                     },
                                 enabled = true
                             )
-                            
-                            // Rating stars display
-                            // Rating stars display - only show if rating system is enabled
-                            val currentRating = chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context).getSongRating(song.id)
-                            if (enableRatingSystem && currentRating > 0) {
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Box(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = when (playerTextAlignment) {
-                                        "START" -> Alignment.CenterStart
-                                        "END" -> Alignment.CenterEnd
-                                        else -> Alignment.Center
-                                    }
-                                ) {
-                                    chromahub.rhythm.app.shared.presentation.components.RatingStarsDisplay(
-                                        rating = currentRating,
-                                        size = 14.dp
-                                    )
-                                }
-                            }
                             
                             // Audio quality badges for tablets
                             if (playerShowAudioQualityBadges) {
@@ -3014,7 +2973,7 @@ fun MaterialPlayerScreen(
                                                     },
                                                     leadingIcon = {
                                                         Icon(
-                                                            imageVector = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
+                                                            imageVector = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
                                                             contentDescription = stringResource(R.string.cd_toggle_favorite),
                                                             modifier = Modifier.size(if (isExtraSmallWidth) 14.dp else 16.dp)
                                                         )
@@ -4122,7 +4081,7 @@ fun MaterialPlayerScreen(
     if (showLyricsEditorDialog) {
         LyricsEditorBottomSheet(
             lyricsData = lyrics,
-            songTitle = song?.title ?: stringResource(R.string.rating_unknown),
+            songTitle = song?.title ?: stringResource(R.string.common_unknown),
             initialTimeOffset = musicViewModel.lyricsTimeOffset.collectAsState().value,
             song = song,
             isStreamingMode = isStreamingMode,

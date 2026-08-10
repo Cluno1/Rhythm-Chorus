@@ -1279,8 +1279,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">เล่นถัดไป</string>
     <string name="action_add_to_queue">เพิ่มลงในคิว</string>
-    <string name="action_remove_from_favorites">ลบออกจากรายการโปรด</string>
-    <string name="action_add_to_favorites">เพิ่มในรายการโปรด</string>
     <string name="action_song_info">ข้อมูลเพลง</string>
     <string name="action_add_to_blacklist">เพิ่มลงในบัญชีดำ</string>
     <string name="action_play_all">เล่นทั้งหมด</string>
@@ -1722,8 +1720,6 @@
     <string name="settings_shapes_desc">รูปร่างที่แสดงออก</string>
     <string name="settings_skip_silence">ข้ามความเงียบ</string>
     <string name="settings_skip_silence_desc">ข้ามช่วงเวลาที่ไม่มีเสียงในแทร็กโดยอัตโนมัติ</string>
-    <string name="settings_song_ratings">เรตติ้งเพลง</string>
-    <string name="settings_song_ratings_desc">ให้คะแนนเพลงที่มีดาวเพื่อปรับปรุงสถิติและการเรียงลำดับ</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">ท่าทางการปัดนิ้วของเครื่องเล่นขนาดเล็ก</string>
     <string name="settings_gesture_miniplayer_swipe_desc">เปิด ปิด ข้ามการปัด</string>
@@ -2104,8 +2100,6 @@
     <string name="rhythmstatsscreen_top_songs">เพลงยอดนิยม</string>
     <string name="rhythmstatsscreen_listening_habits">นิสัยการฟัง</string>
     <string name="rhythmstatsscreen_listening_timeline">ไทม์ไลน์การฟัง</string>
-    <string name="rhythmstatsscreen_favorites">รายการโปรด</string>
-    <string name="rhythmstatsscreen_loved_4">ชอบ (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">ยังไม่มีสถิติ</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">ฟังต่อไปเพื่อสร้างการเดินทางทางดนตรีของคุณ!</string>
     <string name="universalsearchscreen_remove_search">ลบการค้นหา</string>
@@ -2222,13 +2216,6 @@
     <string name="playing_next_simple">กำลังเล่นถัดไป: %1$s</string>
     <string name="failed_to_request_permission">ไม่สามารถร้องขอการอนุญาต: %1$s</string>
     <string name="unexpected_error">ข้อผิดพลาดที่ไม่คาดคิด: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="other">%1$s - %2$d ดาว</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="other">%1$d ดาว</item>
-    </plurals>
-    <string name="rating_unknown">ไม่ทราบ</string>
     <string name="album_artwork_description">ปกอัลบั้มสำหรับ %1$s</string>
     <string name="error_fetching_artwork">เกิดข้อผิดพลาดในการเรียกงานศิลปะ: %1$s</string>
     <string name="edit_lyrics">แก้ไขเนื้อเพลง</string>
@@ -2244,19 +2231,6 @@
     <plurals name="playlist_remove_songs_confirm">
         <item quantity="other">คุณแน่ใจหรือไม่ว่าต้องการลบ %1$d เพลงออกจากเพลย์ลิสต์นี้</item>
     </plurals>
-    <string name="rating_not_rated">ไม่ได้รับการจัดอันดับ</string>
-    <string name="rating_liked">ชอบ</string>
-    <string name="rating_good">ดี</string>
-    <string name="rating_great">เยี่ยมมาก</string>
-    <string name="rating_loved">รัก</string>
-    <string name="rating_absolute_favorite">รายการโปรดอย่างแน่นอน</string>
-    <string name="rating_desc_not_rated">ไม่มีการให้คะแนน</string>
-    <string name="rating_desc_liked">ชอบ - เหมาะสำหรับการฟังเป็นครั้งคราว</string>
-    <string name="rating_desc_good">ดี - เส้นทางที่มั่นคง</string>
-    <string name="rating_desc_great">เยี่ยมมาก - สนุกกับเรื่องนี้จริงๆ</string>
-    <string name="rating_desc_loved">รัก - หนึ่งในรายการโปรดของฉัน</string>
-    <string name="rating_desc_absolute_favorite">Absolute Favorite - เพลงระดับบนสุด</string>
-    <string name="rating_desc_unknown">เรตติ้งที่ไม่รู้จัก</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">แสดงการสลับรายการโปรดบนวิดเจ็ตขนาดใหญ่</string>
     <string name="settings_clear_all_logs_desc">ลบรายงานข้อขัดข้องที่เก็บไว้ทั้งหมด</string>
@@ -2313,10 +2287,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">แถบความคืบหน้าเปิดใช้งานอยู่บนเครื่องเล่นขนาดเล็ก ลองปรับแต่งรูปร่างและมุมต่อไป</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">ความคืบหน้าของผู้เล่นขนาดเล็กถูกซ่อนอยู่ เปิดใช้งานเพื่อการรับรู้การติดตามอย่างรวดเร็ว</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">โหมดกะทัดรัดมีน้อยที่สุดในขณะนี้ เปิดความคืบหน้าเพื่อให้มองเห็นได้ดีขึ้น</string>
-    <string name="settings_tip_library_active_desc_1">เปิดใช้งานการให้คะแนนแล้ว ใช้การตั้งค่าไลบรารีเพื่อเพิ่มความคมชัดในการค้นหาและการเรียงลำดับ</string>
-    <string name="settings_tip_library_active_desc_2">ห้องสมุดของคุณรองรับการให้คะแนน ปรับแต่งการสแกนและจัดกลุ่มเพื่อการท่องเว็บที่สะอาดยิ่งขึ้น</string>
-    <string name="settings_tip_library_inactive_desc_1">การให้คะแนนถูกปิดใช้งาน การตั้งค่าไลบรารียังสามารถปรับปรุงโครงสร้างและความเร็วได้</string>
-    <string name="settings_tip_library_inactive_desc_2">ตรวจพบโหมดไลบรารีแบบง่าย ปรับการจัดกลุ่มเพื่อการนำทางที่รวดเร็วยิ่งขึ้น</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">ฝังก่อน</string>
     <string name="lyrics_source_embedded_first_desc">ลองใช้ข้อมูลเมตาของไฟล์เสียง → API ออนไลน์ → ไฟล์ .lrc</string>
@@ -2519,11 +2489,6 @@
     <string name="library_scan_media">กำลังสแกนสื่อ…</string>
     <string name="library_category_all">ทั้งหมด</string>
     <string name="library_category_favorites">❤️รายการโปรด</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ รายการโปรดที่แน่นอน</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ รักเลย</string>
-    <string name="library_category_great">⭐⭐⭐ เยี่ยมเลย</string>
-    <string name="library_category_good">⭐⭐ ดี</string>
-    <string name="library_category_liked">⭐ ชอบ</string>
     <string name="library_category_short">สั้น (&lt; 3 นาที)</string>
     <string name="library_category_medium">ปานกลาง (3–5 นาที)</string>
     <string name="library_category_long">ยาว (&gt; 5 นาที)</string>
@@ -2632,7 +2597,6 @@
     <string name="metadata_album_artist">ศิลปินอัลบั้ม</string>
     <string name="metadata_play_count">จำนวนการเล่น</string>
     <string name="metadata_total_played">จำนวนการเล่นทั้งหมด</string>
-    <string name="metadata_rating">เรตติ้ง</string>
     <string name="metadata_quality">คุณภาพ</string>
     <string name="metadata_audio_tech">เทคโนโลยีเสียง</string>
     <string name="metadata_bit_depth">ความลึกบิต</string>

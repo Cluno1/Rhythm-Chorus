@@ -1349,8 +1349,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">العب بعد ذلك</string>
     <string name="action_add_to_queue">أضف إلى قائمة الانتظار</string>
-    <string name="action_remove_from_favorites">احذفه من المفضلة</string>
-    <string name="action_add_to_favorites">أضف إلى المفضلة</string>
     <string name="action_song_info">معلومات عن الاغنية</string>
     <string name="action_add_to_blacklist">أضف إلى القائمة السوداء</string>
     <string name="action_play_all">العب الكل</string>
@@ -1812,8 +1810,6 @@
     <string name="settings_shapes_desc">الأشكال التعبيرية</string>
     <string name="settings_skip_silence">تخطي الصمت</string>
     <string name="settings_skip_silence_desc">تخطي الفواصل الصامتة تلقائيًا في المسارات.</string>
-    <string name="settings_song_ratings">تقييمات الأغنية</string>
-    <string name="settings_song_ratings_desc">قم بتقييم الأغاني بالنجوم لتحسين الإحصائيات والفرز</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">إيماءات التمرير في MiniPlayer</string>
     <string name="settings_gesture_miniplayer_swipe_desc">فتح، ورفض، وتخطي التمرير</string>
@@ -2194,8 +2190,6 @@
     <string name="rhythmstatsscreen_top_songs">أفضل الأغاني</string>
     <string name="rhythmstatsscreen_listening_habits">عادات الاستماع</string>
     <string name="rhythmstatsscreen_listening_timeline">الاستماع الجدول الزمني</string>
-    <string name="rhythmstatsscreen_favorites">المفضلة</string>
-    <string name="rhythmstatsscreen_loved_4">أحب (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">لا توجد إحصائيات متاحة حتى الآن</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">استمر في الاستماع لبناء رحلتك الموسيقية!</string>
     <string name="universalsearchscreen_remove_search">إزالة البحث</string>
@@ -2317,23 +2311,6 @@
     <string name="playing_next_simple">التشغيل التالي: %1$s</string>
     <string name="failed_to_request_permission">فشل طلب الإذن: %1$s</string>
     <string name="unexpected_error">خطأ غير متوقع: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="zero">%1$s - %2$d نجمة</item>
-        <item quantity="one">%1$s - %2$d نجمة</item>
-        <item quantity="two">%1$s - %2$d نجمة</item>
-        <item quantity="few">%1$s - %2$d نجمة</item>
-        <item quantity="many">%1$s - %2$d نجمة</item>
-        <item quantity="other">%1$s - %2$d نجمة</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="zero">%1$d نجمة</item>
-        <item quantity="one">%1$d نجمة</item>
-        <item quantity="two">%1$d نجمة</item>
-        <item quantity="few">%1$d نجمة</item>
-        <item quantity="many">%1$d نجمة</item>
-        <item quantity="other">%1$d نجمة</item>
-    </plurals>
-    <string name="rating_unknown">غير معروف</string>
     <string name="album_artwork_description">العمل الفني للألبوم لـ %1$s</string>
     <string name="error_fetching_artwork">خطأ في جلب العمل الفني: %1$s</string>
     <string name="edit_lyrics">تحرير الأغاني</string>
@@ -2354,19 +2331,6 @@
         <item quantity="many">هل أنت متأكد أنك تريد إزالة %1$d أغنية من قائمة التشغيل هذه؟</item>
         <item quantity="other">هل أنت متأكد أنك تريد إزالة %1$d أغنية من قائمة التشغيل هذه؟</item>
     </plurals>
-    <string name="rating_not_rated">غير مصنف</string>
-    <string name="rating_liked">أعجب</string>
-    <string name="rating_good">جيد</string>
-    <string name="rating_great">عظيم</string>
-    <string name="rating_loved">أحب</string>
-    <string name="rating_absolute_favorite">التفضيل المطلق</string>
-    <string name="rating_desc_not_rated">لا يوجد تقييم</string>
-    <string name="rating_desc_liked">أعجبني - جيد للاستماع من حين لآخر</string>
-    <string name="rating_desc_good">جيد – مسار متين</string>
-    <string name="rating_desc_great">عظيم - أستمتع حقًا بهذا</string>
-    <string name="rating_desc_loved">أحببت – من مفضلاتي</string>
-    <string name="rating_desc_absolute_favorite">المفضلة المطلقة - المسار من الدرجة الأولى</string>
-    <string name="rating_desc_unknown">تصنيف غير معروف</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">عرض التبديل المفضل على عناصر واجهة المستخدم الكبيرة</string>
     <string name="settings_clear_all_logs_desc">قم بإزالة كافة تقارير الأعطال المخزنة</string>
@@ -2423,10 +2387,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">شريط التقدم نشط على المشغل المصغر. جرب تعديلات الشكل والزاوية بعد ذلك.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">يتم إخفاء تقدم اللاعب الصغير. تمكينه للتوعية المسار السريع.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">أصبح الوضع المضغوط في حده الأدنى الآن. قم بتشغيل التقدم للحصول على إمكانية رؤية أفضل.</string>
-    <string name="settings_tip_library_active_desc_1">تم تمكين التقييمات. استخدم إعدادات المكتبة لتحسين الاكتشاف والفرز.</string>
-    <string name="settings_tip_library_active_desc_2">مكتبتك تدعم التقييمات. ضبط المسح والتجميع للتصفح الأنظف.</string>
-    <string name="settings_tip_library_inactive_desc_1">تم تعطيل التقييمات. لا يزال بإمكان إعدادات المكتبة تحسين البنية والسرعة.</string>
-    <string name="settings_tip_library_inactive_desc_2">تم اكتشاف وضع المكتبة المبسطة. اضبط التجميع للتنقل بشكل أسرع.</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">جزءا لا يتجزأ أولا</string>
     <string name="lyrics_source_embedded_first_desc">جرّب البيانات التعريفية للملفات الصوتية ← واجهات برمجة التطبيقات عبر الإنترنت ← ملفات .lrc</string>
@@ -2649,11 +2609,6 @@
     <string name="library_scan_media">مسح الوسائط…</string>
     <string name="library_category_all">الكل</string>
     <string name="library_category_favorites">❤️ المفضلة</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ المفضلة المطلقة</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ أحببت</string>
-    <string name="library_category_great">⭐⭐⭐ رائع</string>
-    <string name="library_category_good">⭐⭐ جيد</string>
-    <string name="library_category_liked">⭐أعجبني</string>
     <string name="library_category_short">قصير (&lt; 3 دقائق)</string>
     <string name="library_category_medium">متوسط (3–5 دقائق)</string>
     <string name="library_category_long">طويل (&gt; 5 دقائق)</string>
@@ -2772,7 +2727,6 @@
     <string name="metadata_album_artist">فنان الألبوم</string>
     <string name="metadata_play_count">عدد مرات اللعب</string>
     <string name="metadata_total_played">إجمالي اللعب</string>
-    <string name="metadata_rating">التقييم</string>
     <string name="metadata_quality">الجودة</string>
     <string name="metadata_audio_tech">تكنولوجيا الصوت</string>
     <string name="metadata_bit_depth">عمق البت</string>

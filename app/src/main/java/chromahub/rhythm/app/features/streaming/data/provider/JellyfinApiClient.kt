@@ -114,7 +114,7 @@ class JellyfinApiClient(context: Context) {
             includeItemTypes = "MusicAlbum",
             query = query,
             limit = limit,
-            fields = "Overview,ArtistItems,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId"
+            fields = "Overview,Genres,ArtistItems,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId"
         )
 
         return requestJson("/Users/${cred.userId}/Items", params).map { response ->
@@ -276,7 +276,7 @@ class JellyfinApiClient(context: Context) {
         }
 
         val params = mapOf(
-            "Fields" to "Overview,ArtistItems,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId,ItemCounts"
+            "Fields" to "Overview,Genres,ArtistItems,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId,ItemCounts"
         )
 
         return requestJson("/Users/${cred.userId}/Items/$albumId", params).map { response ->
@@ -296,7 +296,7 @@ class JellyfinApiClient(context: Context) {
         val params = mutableMapOf<String, String>(
             "IncludeItemTypes" to "Audio",
             "Recursive" to "true",
-            "Fields" to "Overview,ArtistItems,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId",
+            "Fields" to "Overview,Genres,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId",
             "Limit" to limit.toString(),
             "SortBy" to "PlayCount,Name",
             "SortOrder" to "Descending"
@@ -323,7 +323,7 @@ class JellyfinApiClient(context: Context) {
         val params = mutableMapOf<String, String>(
             "IncludeItemTypes" to "MusicAlbum",
             "Recursive" to "true",
-            "Fields" to "Overview,ArtistItems,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId",
+            "Fields" to "Overview,Genres,ArtistItems,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId",
             "Limit" to limit.toString()
         )
         if (!artistId.isNullOrBlank()) {
@@ -364,7 +364,7 @@ class JellyfinApiClient(context: Context) {
             query = null,
             limit = limit.coerceIn(1, 100)
         ).toMutableMap()
-        baseParams["Fields"] = "Artists,Album,ImageTags,RunTimeTicks,MediaSources"
+        baseParams["Fields"] = "Artists,Album,Genres,ImageTags,RunTimeTicks,MediaSources"
 
         return requestJson("/Items/$songId/Similar", baseParams).map { response ->
             parseAudioItems(response)
@@ -401,7 +401,7 @@ class JellyfinApiClient(context: Context) {
             includeItemTypes = "MusicAlbum",
             query = null,
             limit = limit.coerceIn(1, 100),
-            fields = "Overview,ArtistItems,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId"
+            fields = "Overview,Genres,ArtistItems,Artists,AlbumArtist,ProductionYear,ImageTags,RunTimeTicks,ParentId"
         ).toMutableMap()
         params["SortBy"] = sortBy
         if (sortBy == "PremiereDate" || sortBy == "DateCreated" || sortBy == "PlayCount") {

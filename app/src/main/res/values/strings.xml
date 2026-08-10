@@ -1170,8 +1170,8 @@
     <string name="sort_duration_long_first">Duration (Long first)</string>
 <string name="action_play_next">Play next</string>
     <string name="action_add_to_queue">Add to queue</string>
-    <string name="action_remove_from_favorites">Remove from favorites</string>
-    <string name="action_add_to_favorites">Add to favorites</string>
+    <string name="action_like">Like</string>
+    <string name="action_dislike">Dislike</string>
     <string name="action_song_info">Song info</string>
     <string name="action_add_to_blacklist">Add to blacklist</string>
     <string name="action_play_all">Play All</string>
@@ -1461,6 +1461,7 @@
     <string name="settings_tab_playlists">Playlists</string>
     <string name="settings_tab_albums">Albums</string>
     <string name="settings_tab_artists">Artists</string>
+    <string name="settings_tab_album_artists">Album Artists</string>
     <string name="settings_tab_dates">Dates</string>
     <string name="settings_tab_explorer">Explorer</string>
     <string name="settings_tab_order_reset">Tab order reset to default</string>
@@ -1569,8 +1570,6 @@
     <string name="settings_shapes_desc">Custom shapes for artwork and controls</string>
     <string name="settings_skip_silence">Skip Silence</string>
     <string name="settings_skip_silence_desc">Automatically skip silent intervals in tracks.</string>
-    <string name="settings_song_ratings">Song Ratings</string>
-    <string name="settings_song_ratings_desc">Rate songs with stars to improve stats and sorting</string>
 <string name="settings_gesture_miniplayer_swipe">MiniPlayer Swipe Gestures</string>
     <string name="settings_gesture_miniplayer_swipe_desc">Open, dismiss, skip swipe</string>
     <string name="settings_gesture_player_dismiss">Swipe Down to Dismiss</string>
@@ -1659,8 +1658,8 @@
     <string name="settings_shape_mini_player_desc">Mini player shape</string>
 
     <string name="settings_library_settings">Library Experience</string>
-    <string name="settings_library_settings_desc">Ratings, organization and artwork behavior</string>
-    <string name="settings_library_group_organization">Organization &amp; Ratings</string>
+    <string name="settings_library_settings_desc">Organization and artwork behavior</string>
+    <string name="settings_library_group_organization">Organization</string>
     <string name="settings_library_combine_discs">Combine Discs</string>
     <string name="settings_library_combine_discs_desc">Merge multi-disc albums into one continuous sort</string>
     <string name="settings_show_library_bottom_bar_always">Show library bottom bar always</string>
@@ -1955,8 +1954,6 @@
     <string name="rhythmstatsscreen_top_songs">Top Songs</string>
     <string name="rhythmstatsscreen_listening_habits">Listening Habits</string>
     <string name="rhythmstatsscreen_listening_timeline">Listening Timeline</string>
-    <string name="rhythmstatsscreen_favorites">Favorites</string>
-    <string name="rhythmstatsscreen_loved_4">Loved (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">No stats available yet</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">Keep listening to build your musical journey!</string>
     <string name="universalsearchscreen_remove_search">Remove search</string>
@@ -2077,15 +2074,6 @@
     <string name="playing_next_simple">Playing next: %1$s</string>
     <string name="failed_to_request_permission">Failed to request permission: %1$s</string>
     <string name="unexpected_error">Unexpected error: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="one">%1$s - %2$d star</item>
-        <item quantity="other">%1$s - %2$d stars</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="one">%1$d star</item>
-        <item quantity="other">%1$d stars</item>
-    </plurals>
-    <string name="rating_unknown">Unknown</string>
     <string name="album_artwork_description">Album artwork for %1$s</string>
     <string name="error_fetching_artwork">Error fetching artwork: %1$s</string>
     <string name="edit_lyrics">Edit Lyrics</string>
@@ -2102,19 +2090,6 @@
         <item quantity="one">Are you sure you want to remove %1$d song from this playlist?</item>
         <item quantity="other">Are you sure you want to remove %1$d songs from this playlist?</item>
     </plurals>
-    <string name="rating_not_rated">Not Rated</string>
-    <string name="rating_liked">Liked</string>
-    <string name="rating_good">Good</string>
-    <string name="rating_great">Great</string>
-    <string name="rating_loved">Loved</string>
-    <string name="rating_absolute_favorite">Absolute Favorite</string>
-    <string name="rating_desc_not_rated">No rating</string>
-    <string name="rating_desc_liked">Liked - Good for occasional listening</string>
-    <string name="rating_desc_good">Good - Solid track</string>
-    <string name="rating_desc_great">Great - Really enjoying this one</string>
-    <string name="rating_desc_loved">Loved - One of my favorites</string>
-    <string name="rating_desc_absolute_favorite">Absolute Favorite - Top tier track</string>
-    <string name="rating_desc_unknown">Unknown rating</string>
 <string name="widget_show_favorite_button_desc">Display favorite toggle on large widgets</string>
     <string name="settings_clear_all_logs_desc">Remove all stored crash reports</string>
     <string name="widget_theme_dynamic">Dynamic Color</string>
@@ -2168,10 +2143,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">Progress bar is active on mini player. Try shape and corner tweaks next.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">Mini player progress is hidden. Enable it for quick track awareness.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">Compact mode is minimal now. Turn progress on for better glanceability.</string>
-    <string name="settings_tip_library_active_desc_1">Ratings are enabled. Use library settings to sharpen discovery and sorting.</string>
-    <string name="settings_tip_library_active_desc_2">Your library supports ratings. Tune scan and grouping for cleaner browsing.</string>
-    <string name="settings_tip_library_inactive_desc_1">Ratings are disabled. Library settings can still improve structure and speed.</string>
-    <string name="settings_tip_library_inactive_desc_2">Simplified library mode detected. Adjust grouping for faster navigation.</string>
 <string name="lyrics_source_embedded_first">Embedded First</string>
     <string name="lyrics_source_embedded_first_desc">Try audio file metadata → Online APIs → .lrc files</string>
     <string name="lyrics_source_api_first">API First</string>
@@ -2362,11 +2333,6 @@
     <string name="library_scan_media">Scanning media…</string>
     <string name="library_category_all">All</string>
     <string name="library_category_favorites">❤️ Favorites</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ Absolute Favorites</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ Loved</string>
-    <string name="library_category_great">⭐⭐⭐ Great</string>
-    <string name="library_category_good">⭐⭐ Good</string>
-    <string name="library_category_liked">⭐ Liked</string>
     <string name="library_category_short">Short (&lt; 3 min)</string>
     <string name="library_category_medium">Medium (3–5 min)</string>
     <string name="library_category_long">Long (&gt; 5 min)</string>
@@ -2475,7 +2441,6 @@
     <string name="metadata_album_artist">Album Artist</string>
     <string name="metadata_play_count">Play Count</string>
     <string name="metadata_total_played">Total Played</string>
-    <string name="metadata_rating">Rating</string>
     <string name="metadata_quality">Quality</string>
     <string name="metadata_audio_tech">Audio Tech</string>
     <string name="metadata_bit_depth">Bit Depth</string>
@@ -2698,6 +2663,7 @@
     <string name="expressiveplayerscreen_artwork_embedded_toast">Artwork embedded into file on disk!</string>
     <string name="expressiveplayerscreen_artwork_applied_toast">Artwork applied to library!</string>
     <string name="expressiveplayerscreen_artwork_applied">Artwork applied!</string>
+    <string name="expressiveplayerscreen_no_artwork_found">No artwork found for this song</string>
     <string name="albumdetail_about_album">About Album</string>
     <string name="artistdetail_about_artist">About Artist</string>
     <string name="content_desc_customize_artwork">Customize Artwork</string>

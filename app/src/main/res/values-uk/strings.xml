@@ -1321,8 +1321,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">Грати далі</string>
     <string name="action_add_to_queue">Додати до черги</string>
-    <string name="action_remove_from_favorites">Видалити з вибраного</string>
-    <string name="action_add_to_favorites">Додати до вибраного</string>
     <string name="action_song_info">Інформація про пісню</string>
     <string name="action_add_to_blacklist">Додати до чорного списку</string>
     <string name="action_play_all">Грати все</string>
@@ -1776,8 +1774,6 @@
     <string name="settings_shapes_desc">Виразні форми</string>
     <string name="settings_skip_silence">Пропустити тишу</string>
     <string name="settings_skip_silence_desc">Автоматично пропускати інтервали мовчання в треках.</string>
-    <string name="settings_song_ratings">Оцінки пісень</string>
-    <string name="settings_song_ratings_desc">Оцінюйте пісні зірочками, щоб покращити статистику та сортування</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">Жести пальцем у міні-плеєрі</string>
     <string name="settings_gesture_miniplayer_swipe_desc">Відкрити, закрити, пропустити</string>
@@ -2158,8 +2154,6 @@
     <string name="rhythmstatsscreen_top_songs">Найкращі пісні</string>
     <string name="rhythmstatsscreen_listening_habits">Звички слухати</string>
     <string name="rhythmstatsscreen_listening_timeline">Хронологія прослуховування</string>
-    <string name="rhythmstatsscreen_favorites">Вибране</string>
-    <string name="rhythmstatsscreen_loved_4">Люблю (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">Статистичних даних ще немає</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">Продовжуйте слухати, щоб побудувати свою музичну подорож!</string>
     <string name="universalsearchscreen_remove_search">Видалити пошук</string>
@@ -2279,19 +2273,6 @@
     <string name="playing_next_simple">Далі грає: %1$s</string>
     <string name="failed_to_request_permission">Не вдалося запитати дозвіл: %1$s</string>
     <string name="unexpected_error">Неочікувана помилка: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="one">%1$s - %2$d зірок</item>
-        <item quantity="few">%1$s - %2$d зірок</item>
-        <item quantity="many">%1$s - %2$d зірок</item>
-        <item quantity="other">%1$s - %2$d зірок</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="one">%1$d зірок</item>
-        <item quantity="few">%1$d зірок</item>
-        <item quantity="many">%1$d зірок</item>
-        <item quantity="other">%1$d зірок</item>
-    </plurals>
-    <string name="rating_unknown">Невідомо</string>
     <string name="album_artwork_description">Обкладинка альбому %1$s</string>
     <string name="error_fetching_artwork">Помилка отримання ілюстрації: %1$s</string>
     <string name="edit_lyrics">Редагувати текст</string>
@@ -2310,19 +2291,6 @@
         <item quantity="many">Ви впевнені, що хочете видалити %1$d пісень із цього списку відтворення?</item>
         <item quantity="other">Ви впевнені, що хочете видалити %1$d пісень із цього списку відтворення?</item>
     </plurals>
-    <string name="rating_not_rated">Без рейтингу</string>
-    <string name="rating_liked">Сподобалось</string>
-    <string name="rating_good">Добре</string>
-    <string name="rating_great">Чудово</string>
-    <string name="rating_loved">Любив</string>
-    <string name="rating_absolute_favorite">Абсолютний фаворит</string>
-    <string name="rating_desc_not_rated">Без рейтингу</string>
-    <string name="rating_desc_liked">Сподобалось – добре для часового прослуховування</string>
-    <string name="rating_desc_good">Хороший – надійний трек</string>
-    <string name="rating_desc_great">Чудово – це справді подобається</string>
-    <string name="rating_desc_loved">Люблю – один із моїх улюблених</string>
-    <string name="rating_desc_absolute_favorite">Абсолютний фаворит – трек найвищого рівня</string>
-    <string name="rating_desc_unknown">Невідомий рейтинг</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">Відображати улюблені перемикачі на великих віджетах</string>
     <string name="settings_clear_all_logs_desc">Видалити всі збережені звіти про збої</string>
@@ -2379,10 +2347,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">Індикатор прогресу активний у міні-програвачі. Далі спробуйте змінити форму та кути.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">Прогрес міні-програвача приховано. Увімкніть його для швидкого відстеження.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">Компактний режим тепер мінімальний. Увімкніть прогрес для кращої видимості.</string>
-    <string name="settings_tip_library_active_desc_1">Рейтинги ввімкнено. Використовуйте налаштування бібліотеки, щоб покращити виявлення та сортування.</string>
-    <string name="settings_tip_library_active_desc_2">Ваша бібліотека підтримує рейтинги. Налаштуйте сканування та групування для чистішого перегляду.</string>
-    <string name="settings_tip_library_inactive_desc_1">Рейтинги вимкнено. Налаштування бібліотеки можуть покращити структуру та швидкість.</string>
-    <string name="settings_tip_library_inactive_desc_2">Виявлено режим спрощеної бібліотеки. Налаштуйте групування для швидшої навігації.</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">Спочатку вбудовано</string>
     <string name="lyrics_source_embedded_first_desc">Спробуйте метадані аудіофайлів → Онлайн-інтерфейси API → Файли .lrc</string>
@@ -2597,11 +2561,6 @@
     <string name="library_scan_media">Сканування носія…</string>
     <string name="library_category_all">Усі</string>
     <string name="library_category_favorites">❤️ Вибране</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ Абсолютні фаворити</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ Люблю</string>
-    <string name="library_category_great">⭐⭐⭐ Чудово</string>
-    <string name="library_category_good">⭐⭐ Добре</string>
-    <string name="library_category_liked">⭐ Сподобалось</string>
     <string name="library_category_short">Короткий (&lt; 3 хв)</string>
     <string name="library_category_medium">Середній (3–5 хв)</string>
     <string name="library_category_long">Довгий (&gt; 5 хв)</string>
@@ -2716,7 +2675,6 @@
     <string name="metadata_album_artist">Виконавець альбому</string>
     <string name="metadata_play_count">Лічильник відтворення</string>
     <string name="metadata_total_played">Усього зіграно</string>
-    <string name="metadata_rating">Рейтинг</string>
     <string name="metadata_quality">Якість</string>
     <string name="metadata_audio_tech">Audio Tech</string>
     <string name="metadata_bit_depth">Розрядність</string>

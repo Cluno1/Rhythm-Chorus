@@ -166,7 +166,6 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
-    val enableRatingSystem by appSettings.enableRatingSystem.collectAsState()
     val libraryCombineDiscs by appSettings.libraryCombineDiscs.collectAsState()
     val showLibraryBottomBarAlways by appSettings.showLibraryBottomBarAlways.collectAsState()
     val preferSongArtwork by appSettings.preferSongArtwork.collectAsState()
@@ -201,13 +200,6 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
             SettingGroup(
                 title = context.getString(R.string.settings_library_group_organization),
                 items = listOf(
-                    SettingItem(
-                        MaterialSymbolIcon("star"),
-                        context.getString(R.string.settings_song_ratings),
-                        context.getString(R.string.settings_song_ratings_desc),
-                        toggleState = enableRatingSystem,
-                        onToggleChange = { appSettings.setEnableRatingSystem(it) }
-                    ),
                     SettingItem(
                         MaterialSymbolIcon("reorder"),
                         context.getString(R.string.settings_library_tab_order),

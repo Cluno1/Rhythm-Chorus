@@ -80,7 +80,6 @@ import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonTy
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonWeighted
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonSize
-import chromahub.rhythm.app.shared.presentation.components.RatingStarsDisplay
 import chromahub.rhythm.app.util.ImageUtils
 import chromahub.rhythm.app.util.MediaUtils
 import chromahub.rhythm.app.util.HapticUtils
@@ -202,52 +201,39 @@ fun SongInfoBottomSheet(
     var isLoadingStats by remember { mutableStateOf(true) }
     var showEditSheet by remember { mutableStateOf(false) }
     
-    // Detect tablet mode
     val isTablet = windowScreenWidthDp() >= 600
     val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
     
-    // Time format setting
     val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
     
-    // Animation states
     var showContent by remember { mutableStateOf(false) }
     
-    // Track the current song state to allow updates
     var currentSong by remember(song?.id) { mutableStateOf(song) }
     
-    // Update currentSong when the original song changes
     LaunchedEffect(song) {
         if (song != null) {
             currentSong = song
         }
     }
     
-    // Blacklist states
     val blacklistedSongs by appSettings.blacklistedSongs.collectAsState()
     val blacklistedFolders by appSettings.blacklistedFolders.collectAsState()
     var isLoadingBlacklist by remember { mutableStateOf(false) }
     var showBlacklistTrackConfirm by remember { mutableStateOf(false) }
     var showBlacklistFolderConfirm by remember { mutableStateOf(false) }
     
-    // Whitelist states
     val whitelistedSongs by appSettings.whitelistedSongs.collectAsState()
     val whitelistedFolders by appSettings.whitelistedFolders.collectAsState()
     var isLoadingWhitelist by remember { mutableStateOf(false) }
     
-    // Rhythm stats and rating states
     var songPlaybackStats by remember { mutableStateOf<chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository.SongPlaybackSummary?>(null) }
-    var songRating by remember(song?.id) { mutableIntStateOf(0) }
     
-    // Expressive shape for artwork
     val songArtShape = rememberExpressiveShapeFor(ExpressiveShapeTarget.SONG_ART)
     
-    // Check if song is blacklisted
     val isBlacklisted = song?.let { blacklistedSongs.contains(it.id) } ?: false
     
-    // Check if song is whitelisted
     val isWhitelisted = song?.let { whitelistedSongs.contains(it.id) } ?: false
     
-    // Check if song is in a blacklisted folder
     val folderPath = remember(song?.uri) {
         song?.let { 
             try {
@@ -296,7 +282,6 @@ fun SongInfoBottomSheet(
         }
     }
 
-    // Load extended metadata
     LaunchedEffect(song.id) {
         isLoadingMetadata = true
         extendedInfo = withContext(Dispatchers.IO) {
@@ -305,31 +290,24 @@ fun SongInfoBottomSheet(
         isLoadingMetadata = false
     }
     
-    // Load rhythm stats and rating
     LaunchedEffect(song.id) {
         isLoadingStats = true
         song.let { currentSong ->
-            // Load playback stats
             songPlaybackStats = withContext(Dispatchers.IO) {
                 chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository.getInstance(context).getSongPlaybackStats(
                     currentSong.id,
                     chromahub.rhythm.app.shared.data.repository.StatsTimeRange.ALL_TIME
                 )
             }
-            
-            // Load rating
-            songRating = appSettings.getSongRating(currentSong.id)
         }
         isLoadingStats = false
     }
 
-    // Animation trigger
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(100)
         showContent = true
     }
     
-    // Blacklist track confirmation dialog
     if (showBlacklistTrackConfirm) {
         AlertDialog(
             onDismissRequest = { showBlacklistTrackConfirm = false },
@@ -407,7 +385,6 @@ fun SongInfoBottomSheet(
         )
     }
     
-    // Blacklist folder confirmation dialog
     if (showBlacklistFolderConfirm) {
         AlertDialog(
             onDismissRequest = { showBlacklistFolderConfirm = false },
@@ -486,7 +463,6 @@ fun SongInfoBottomSheet(
     }
 
     if (isLandscapeTablet) {
-        // Tablet layout: Dialog with side-by-side layout
         Dialog(
             onDismissRequest = onDismiss,
             properties = DialogProperties(
@@ -517,7 +493,6 @@ fun SongInfoBottomSheet(
                         .navigationBarsPadding()
                 ) {
                     Row(modifier = Modifier.fillMaxSize()) {
-                        // Left side: Song artwork and info
                         Surface(
                             modifier = Modifier
                                 .weight(0.4f)
@@ -531,7 +506,6 @@ fun SongInfoBottomSheet(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                // Song artwork
                                 Surface(
                                     modifier = Modifier
                                         .size(180.dp),
@@ -560,7 +534,6 @@ fun SongInfoBottomSheet(
 
                                 Spacer(modifier = Modifier.height(24.dp))
 
-                                // Song info
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -585,30 +558,10 @@ fun SongInfoBottomSheet(
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
-
-                                    val tabletDiscNumber = (extendedInfo?.discNumber ?: 0)
-                                        .takeIf { it > 0 }
-                                        ?: displaySong.discNumber.takeIf { it > 0 }
-                                    val tabletSongDescriptor = buildList {
-                                        tabletDiscNumber?.let { add(context.getString(R.string.blacklist_disc_label, it)) }
-                                        if (displaySong.trackNumber > 0) add(context.getString(R.string.blacklist_track_label, displaySong.trackNumber))
-                                    }.joinToString(" • ")
-
-                                    if (tabletSongDescriptor.isNotEmpty()) {
-                                        Text(
-                                            text = tabletSongDescriptor,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
-                                            textAlign = TextAlign.Center,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
                                 }
                             }
                         }
 
-                        // Right side: Metadata grid
                         Surface(
                             modifier = Modifier
                                 .weight(0.6f)
@@ -616,7 +569,6 @@ fun SongInfoBottomSheet(
                             color = Color.Transparent
                         ) {
                             Column(modifier = Modifier.fillMaxSize()) {
-                                // Header with close and edit buttons
                                 Surface(
                                     modifier = Modifier.fillMaxWidth(),
                                     color = Color.Transparent
@@ -636,7 +588,6 @@ fun SongInfoBottomSheet(
                                             modifier = Modifier.weight(1f)
                                         )
 
-                                        // Action buttons
                                         Row(
                                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                                             verticalAlignment = Alignment.CenterVertically
@@ -668,7 +619,6 @@ fun SongInfoBottomSheet(
                                                 }
                                             }
 
-                                            // Close button on tablet
                                             IconButton(
                                                 onClick = onDismiss,
                                                 modifier = Modifier.size(44.dp)
@@ -683,7 +633,6 @@ fun SongInfoBottomSheet(
                                     }
                                 }
 
-                                // Metadata grid
                                 Surface(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -717,7 +666,6 @@ fun SongInfoBottomSheet(
                                         item {
                                             RhythmStatsCard(
                                                 songPlaybackStats = songPlaybackStats,
-                                                songRating = songRating,
                                                 useHoursFormat = useHoursFormat,
                                                 isLoading = isLoadingStats
                                             )
@@ -739,7 +687,6 @@ fun SongInfoBottomSheet(
             }
         }
 
-        // Edit sheet for tablet
         if (showEditSheet) {
             EditSongSheet(
                 song = currentSong ?: song,
@@ -785,7 +732,6 @@ fun SongInfoBottomSheet(
             )
         }
     } else {
-        // Phone layout: Bottom sheet
         ModalBottomSheet(
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
@@ -805,7 +751,6 @@ fun SongInfoBottomSheet(
             verticalArrangement = Arrangement.spacedBy(28.dp)
         ) {
             item {
-                // Header with album art and track info
                 AnimatedVisibility(
                     visible = showContent,
                     enter = fadeIn() + slideInVertically { it },
@@ -818,7 +763,6 @@ fun SongInfoBottomSheet(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Album Art with modern styling
                         Surface(
                             modifier = Modifier.size(80.dp),
                             shape = songArtShape,
@@ -842,7 +786,6 @@ fun SongInfoBottomSheet(
                             )
                         }
 
-                        // Song info with improved layout
                         Column(
                             modifier = Modifier.weight(1f),
                             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -866,25 +809,6 @@ fun SongInfoBottomSheet(
                                 gradientEdgeColor = MaterialTheme.colorScheme.surface,
                                 modifier = Modifier.fillMaxWidth()
                             )
-
-                            val phoneDiscNumber = (extendedInfo?.discNumber ?: 0)
-                                .takeIf { it > 0 }
-                                ?: displaySong.discNumber.takeIf { it > 0 }
-                            val phoneSongDescriptor = buildList {
-                                phoneDiscNumber?.let { add(context.getString(R.string.blacklist_disc_label, it)) }
-                                if (displaySong.trackNumber > 0) add(context.getString(R.string.blacklist_track_label, displaySong.trackNumber))
-                            }.joinToString(" • ")
-
-                            if (phoneSongDescriptor.isNotEmpty()) {
-                                Text(
-                                    text = phoneSongDescriptor,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
                         }
                     }
                 }
@@ -899,7 +823,6 @@ fun SongInfoBottomSheet(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // Edit button
                             if (onEditSong != null) {
                                 RhythmDetailActionButton(
                                     onClick = {
@@ -918,7 +841,6 @@ fun SongInfoBottomSheet(
                                 )
                             }
 
-                            // Block Song
                             RhythmDetailActionButton(
                                 onClick = {
                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
@@ -943,7 +865,6 @@ fun SongInfoBottomSheet(
                                     MaterialTheme.colorScheme.onSecondaryContainer
                             )
 
-                            // Block Folder
                             if (folderPath != null) {
                                 RhythmDetailActionButton(
                                     onClick = {
@@ -975,7 +896,6 @@ fun SongInfoBottomSheet(
             }
             
             item {
-                // Song Info card
                 AnimatedVisibility(
                     visible = showContent,
                     enter = fadeIn() + slideInVertically { it },
@@ -998,7 +918,6 @@ fun SongInfoBottomSheet(
                 ) {
                     RhythmStatsCard(
                         songPlaybackStats = songPlaybackStats,
-                        songRating = songRating,
                         useHoursFormat = useHoursFormat,
                         isLoading = isLoadingStats
                     )
@@ -1021,7 +940,6 @@ fun SongInfoBottomSheet(
             }
         }
         
-        // Show Edit Sheet
         if (showEditSheet) {
             EditSongSheet(
                 song = currentSong ?: song,
@@ -1070,8 +988,6 @@ fun SongInfoBottomSheet(
     }
 }
 
-// Connected-grid helpers: compute each item's (row, col) cell (col 2 = full-width
-// span) and derive a shared-edge shape so items visually fuse like a single card.
 private fun computeGridCellInfo(
     itemCount: Int,
     isFullWidth: (Int) -> Boolean
@@ -1127,6 +1043,7 @@ private fun MetadataSection(
     title: String,
     icon: MaterialSymbolIcon,
     isLoading: Boolean,
+    tint: Color = MaterialTheme.colorScheme.primary,
     content: @Composable () -> Unit
 ) {
     Column(
@@ -1145,7 +1062,7 @@ private fun MetadataSection(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = tint,
                 modifier = Modifier.size(20.dp)
             )
             Text(
@@ -1175,14 +1092,17 @@ private fun MetadataGridCard(
     title: String,
     icon: MaterialSymbolIcon,
     items: List<MetadataItem>,
-    isLoading: Boolean
+    isLoading: Boolean,
+    tint: Color = MaterialTheme.colorScheme.primary,
+    tintContainer: Color = MaterialTheme.colorScheme.primaryContainer
 ) {
     val visibleItems = items.filter { it.value.isNotBlank() && !it.value.equals("Unknown", ignoreCase = true) }
     if (isLoading || visibleItems.isNotEmpty()) {
         MetadataSection(
             title = title,
             icon = icon,
-            isLoading = isLoading
+            isLoading = isLoading,
+            tint = tint
         ) {
             if (visibleItems.isNotEmpty()) {
                 val regularCount = visibleItems.count { !it.isWide }
@@ -1222,7 +1142,12 @@ private fun MetadataGridCard(
                             )
                         ) {
                             val (row, col) = cells[index]
-                            InfoGridItem(item = item, shape = connectedGridItemShape(row, col, totalRows))
+                            InfoGridItem(
+                                item = item,
+                                shape = connectedGridItemShape(row, col, totalRows),
+                                tint = tint,
+                                tintContainer = tintContainer
+                            )
                         }
                     }
                 }
@@ -1240,10 +1165,8 @@ private fun SongInfoCard(
 ) {
     val context = LocalContext.current
     val songInfoItems = buildList {
-        // Basic song info
         add(MetadataItem(context.getString(R.string.metadata_duration), formatDuration(song.duration, useHoursFormat), RhythmIcons.AccessTime))
 
-        // Track info (prefer extended info if available)
         val trackNum = if (song.trackNumber > 0) song.trackNumber else 0
         val discNum = (extendedInfo?.discNumber ?: 0).takeIf { it > 0 }
             ?: song.discNumber.takeIf { it > 0 }
@@ -1255,19 +1178,16 @@ private fun SongInfoCard(
             add(MetadataItem(context.getString(R.string.metadata_track), trackNum.toString(), RhythmIcons.FormatListNumbered))
         }
 
-        // Year (prefer song data, fallback to extended info)
         val yearValue = if (song.year > 0) song.year else extendedInfo?.year ?: 0
         if (yearValue > 0) {
             add(MetadataItem(context.getString(R.string.metadata_year), yearValue.toString(), RhythmIcons.DateRange))
         }
 
-        // Genre (prefer song data, fallback to extended info)
         val genreValue = if (!song.genre.isNullOrEmpty()) song.genre else extendedInfo?.genre
         if (!genreValue.isNullOrEmpty()) {
             add(MetadataItem(context.getString(R.string.metadata_genre), genreValue.trim(), RhythmIcons.Category))
         }
 
-        // Album
         if (!song.album.isNullOrEmpty()) {
             add(MetadataItem(context.getString(R.string.metadata_album), song.album, RhythmIcons.AlbumFilled, isWide = true))
         }
@@ -1286,20 +1206,20 @@ private fun SongInfoCard(
         title = context.getString(R.string.cd_song_info),
         icon = RhythmIcons.Info,
         items = songInfoItems,
-        isLoading = isLoading
+        isLoading = isLoading,
+        tint = MaterialTheme.colorScheme.primary,
+        tintContainer = MaterialTheme.colorScheme.primaryContainer
     )
 }
 
 @Composable
 private fun RhythmStatsCard(
     songPlaybackStats: chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository.SongPlaybackSummary?,
-    songRating: Int,
     useHoursFormat: Boolean = false,
     isLoading: Boolean = false
 ) {
     val context = LocalContext.current
     val rhythmStatsItems = buildList {
-        // Rhythm stats
         songPlaybackStats?.let { stats ->
             if (stats.playCount > 0) {
                 add(MetadataItem(context.getString(R.string.metadata_play_count), stats.playCount.toString(), RhythmIcons.Play))
@@ -1308,18 +1228,15 @@ private fun RhythmStatsCard(
                 add(MetadataItem(context.getString(R.string.metadata_total_played), formatDuration(stats.totalDurationMs, useHoursFormat), RhythmIcons.AccessTime))
             }
         }
-
-        // Star rating
-        if (songRating > 0) {
-            add(MetadataItem(context.getString(R.string.metadata_rating), "${songRating}★", MaterialSymbolIcon("star", filled = true)))
-        }
     }
 
     MetadataGridCard(
         title = context.getString(R.string.rhythm_stats),
         icon = RhythmIcons.BarChart,
         items = rhythmStatsItems,
-        isLoading = isLoading
+        isLoading = isLoading,
+        tint = MaterialTheme.colorScheme.secondary,
+        tintContainer = MaterialTheme.colorScheme.secondaryContainer
     )
 }
 
@@ -1333,7 +1250,6 @@ private fun FileInfoCard(
     val context = LocalContext.current
     val fileInfoItems = buildList {
         extendedInfo?.let { info ->
-            // Enhanced Audio Quality Badge - show detailed quality type
             if (info.qualityLabel != "Unknown" && info.qualityLabel.isNotEmpty()) {
                 val qualityIcon: Any = when {
                     info.isDolby -> R.drawable.ic_dolby
@@ -1352,7 +1268,6 @@ private fun FileInfoCard(
                 add(MetadataItem(context.getString(R.string.metadata_quality), localizedLabel, qualityIcon))
             }
 
-            // Legacy quality badges for backward compatibility (only if not covered by qualityLabel)
             if (info.qualityLabel == "Unknown") {
                 if (info.isLossless) {
                     add(MetadataItem(context.getString(R.string.metadata_quality), "Lossless", R.drawable.ic_cd))
@@ -1368,7 +1283,6 @@ private fun FileInfoCard(
                 }
             }
 
-            // Audio quality info
             if (info.bitDepth > 0) {
                 add(MetadataItem(context.getString(R.string.metadata_bit_depth), "${info.bitDepth}-bit", MaterialSymbolIcon("high_quality", filled = true)))
             }
@@ -1387,12 +1301,10 @@ private fun FileInfoCard(
                 add(MetadataItem(context.getString(R.string.metadata_format), info.format, RhythmIcons.MusicNote))
             }
 
-            // File info
             folderPath?.let {
                 add(MetadataItem(context.getString(R.string.metadata_location), it, RhythmIcons.FolderOpen, isWide = true))
             }
 
-            // Additional metadata (non-duplicating)
             if (info.hasLyrics) {
                 add(MetadataItem(context.getString(R.string.metadata_lyrics), context.getString(R.string.metadata_lyrics_available), MaterialSymbolIcon("lyrics", filled = true)))
             }
@@ -1400,7 +1312,6 @@ private fun FileInfoCard(
                 add(MetadataItem(context.getString(R.string.metadata_mime_type), info.mimeType.substringAfter("/").uppercase(), RhythmIcons.Code))
             }
 
-            // Date info
             if (info.dateAdded > 0) {
                 add(MetadataItem(context.getString(R.string.metadata_date_added), formatDate(context, info.dateAdded), RhythmIcons.Add))
             }
@@ -1414,19 +1325,23 @@ private fun FileInfoCard(
         title = context.getString(R.string.file_info),
         icon = RhythmIcons.Folder,
         items = fileInfoItems,
-        isLoading = isLoading
+        isLoading = isLoading,
+        tint = MaterialTheme.colorScheme.tertiary,
+        tintContainer = MaterialTheme.colorScheme.tertiaryContainer
     )
 }
 
 @Composable
 private fun InfoGridItem(
     item: MetadataItem,
-    shape: RoundedCornerShape
+    shape: RoundedCornerShape,
+    tint: Color = MaterialTheme.colorScheme.primary,
+    tintContainer: Color = MaterialTheme.colorScheme.primaryContainer
 ) {
     val tileColor = lerp(
         MaterialTheme.colorScheme.surfaceContainer,
-        MaterialTheme.colorScheme.primaryContainer,
-        0.6f
+        tintContainer,
+        0.35f
     )
     Surface(
         modifier = Modifier
@@ -1441,7 +1356,7 @@ private fun InfoGridItem(
                 is MaterialSymbolIcon -> Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = MusicDimensions.infoTileWatermarkAlpha),
+                    tint = tint.copy(alpha = MusicDimensions.infoTileWatermarkAlpha),
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .offset(
@@ -1453,7 +1368,7 @@ private fun InfoGridItem(
                 is Int -> Icon(
                     painter = painterResource(id = icon),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = MusicDimensions.infoTileWatermarkAlpha),
+                    tint = tint.copy(alpha = MusicDimensions.infoTileWatermarkAlpha),
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .offset(
@@ -1468,7 +1383,7 @@ private fun InfoGridItem(
                 text = item.value,
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 ),
                 gradientEdgeColor = tileColor,
@@ -1484,8 +1399,8 @@ private fun InfoGridItem(
 
             Text(
                 text = item.label,
-                style = MaterialTheme.typography.titleLarge.copy(
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = MusicDimensions.infoTileWatermarkAlpha),
+                style = MaterialTheme.typography.titleSmall.copy(
+                    color = tint,
                     fontWeight = FontWeight.Bold
                 ),
                 maxLines = 1,
@@ -1524,11 +1439,9 @@ private fun EditSongSheet(
     val context = LocalContext.current
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     
-    // Detect tablet mode
     val isTablet = windowScreenWidthDp() >= 600
     val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
     
-    // Store original values for undo functionality
     val originalTitle by remember(song.id) { mutableStateOf(song.title) }
     val originalArtist by remember(song.id) { mutableStateOf(song.artist) }
     val originalAlbum by remember(song.id) { mutableStateOf(song.album) }
@@ -1560,7 +1473,6 @@ private fun EditSongSheet(
         mutableStateOf(song.artworkUri)
     }
     
-    // Animation effect
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(50)
         showContent = true
@@ -1572,7 +1484,6 @@ private fun EditSongSheet(
         }
     }
     
-    // Function to reset all fields to original values
     val resetToOriginal = {
         title = originalTitle
         artist = originalArtist
@@ -1588,15 +1499,13 @@ private fun EditSongSheet(
         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
     }
     
-    // Helper function to proceed with save after permissions are granted
     val proceedWithSave = { 
         val yearInt = year.toIntOrNull() ?: 0
         val trackInt = trackNumber.toIntOrNull() ?: 0
         val discInt = discNumber.toIntOrNull() ?: 1
         
         isSaving = true
-        // Pass metadata with artwork intent to the save callback
-        onSave(
+            onSave(
             title.trim(),
             artist.trim(),
             album.trim(),
@@ -1616,7 +1525,6 @@ private fun EditSongSheet(
         }
     }
 
-    // Permission launchers for different scenarios
     val storagePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -1632,7 +1540,6 @@ private fun EditSongSheet(
         }
     }
     
-    // Multiple permissions launcher for Android 13+
     val multiplePermissionsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -1649,7 +1556,6 @@ private fun EditSongSheet(
         }
     }
     
-    // Image picker launcher
     val imagePickerLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
@@ -1685,7 +1591,6 @@ private fun EditSongSheet(
         }
     }
     
-    // Function to handle save with permission checks
     fun handleSave() {
         if (isSaving) return
         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
@@ -1738,7 +1643,6 @@ private fun EditSongSheet(
     }
 
     if (isLandscapeTablet) {
-        // Tablet layout: Dialog with side-by-side layout
         Dialog(
             onDismissRequest = onDismiss,
             properties = DialogProperties(
@@ -1768,7 +1672,6 @@ private fun EditSongSheet(
                         )
                 ) {
                     Row(modifier = Modifier.fillMaxSize()) {
-                        // Left side: Artwork editing
                         Surface(
                             modifier = Modifier
                                 .weight(0.4f)
@@ -1782,7 +1685,6 @@ private fun EditSongSheet(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                // Artwork display
                                 Box(
                                     modifier = Modifier
                                         .size(220.dp)
@@ -1807,7 +1709,6 @@ private fun EditSongSheet(
                                         contentScale = ContentScale.Crop
                                     )
 
-                                    // Change artwork button in top corner
                                     IconButton(
                                         onClick = {
                                             imagePickerLauncher.launch("image/*")
@@ -1850,7 +1751,6 @@ private fun EditSongSheet(
                             }
                         }
 
-                        // Right side: Form fields
                         Surface(
                             modifier = Modifier
                                 .weight(0.6f)
@@ -1858,7 +1758,6 @@ private fun EditSongSheet(
                             color = Color.Transparent
                         ) {
                             Column(modifier = Modifier.fillMaxSize()) {
-                                // Header with close button
                                 Surface(
                                     modifier = Modifier.fillMaxWidth(),
                                     color = Color.Transparent
@@ -1878,7 +1777,6 @@ private fun EditSongSheet(
                                             modifier = Modifier.weight(1f)
                                         )
 
-                                        // Close button
                                         IconButton(
                                             onClick = onDismiss,
                                             modifier = Modifier.size(44.dp)
@@ -1892,7 +1790,6 @@ private fun EditSongSheet(
                                     }
                                 }
 
-                                // Form fields
                                 Surface(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -1909,7 +1806,6 @@ private fun EditSongSheet(
                                             .verticalScroll(rememberScrollState()),
                                         verticalArrangement = Arrangement.spacedBy(16.dp)
                                     ) {
-                                        // Title field
                                         OutlinedTextField(
                                             value = title,
                                             onValueChange = { title = it },
@@ -1925,7 +1821,6 @@ private fun EditSongSheet(
                                             singleLine = true
                                         )
 
-                                        // Artist field
                                         OutlinedTextField(
                                             value = artist,
                                             onValueChange = { artist = it },
@@ -1941,7 +1836,6 @@ private fun EditSongSheet(
                                             singleLine = true
                                         )
 
-                                        // Album field
                                         OutlinedTextField(
                                             value = album,
                                             onValueChange = { album = it },
@@ -1957,7 +1851,6 @@ private fun EditSongSheet(
                                             singleLine = true
                                         )
 
-                                        // Album Artist field
                                         OutlinedTextField(
                                             value = albumArtist,
                                             onValueChange = { albumArtist = it },
@@ -1973,7 +1866,6 @@ private fun EditSongSheet(
                                             singleLine = true
                                         )
 
-                                        // Composer field
                                         OutlinedTextField(
                                             value = composer,
                                             onValueChange = { composer = it },
@@ -1989,7 +1881,6 @@ private fun EditSongSheet(
                                             singleLine = true
                                         )
 
-                                        // Genre field
                                         OutlinedTextField(
                                             value = genre,
                                             onValueChange = { genre = it },
@@ -2009,7 +1900,6 @@ private fun EditSongSheet(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                                         ) {
-                                            // Year field
                                             OutlinedTextField(
                                                 value = year,
                                                 onValueChange = { year = it },
@@ -2025,7 +1915,6 @@ private fun EditSongSheet(
                                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                             )
 
-                                            // Track number field
                                             OutlinedTextField(
                                                 value = trackNumber,
                                                 onValueChange = { trackNumber = it },
@@ -2041,7 +1930,6 @@ private fun EditSongSheet(
                                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                             )
 
-                                            // Disc number field
                                             OutlinedTextField(
                                                 value = discNumber,
                                                 onValueChange = { discNumber = it },
@@ -2060,7 +1948,6 @@ private fun EditSongSheet(
 
                                         Spacer(modifier = Modifier.height(8.dp))
 
-                                        // Progress
                                         AnimatedVisibility(visible = isSaving) {
                                             Column(
                                                 modifier = Modifier
@@ -2085,12 +1972,10 @@ private fun EditSongSheet(
 
                                         Spacer(modifier = Modifier.height(8.dp))
 
-                                        // Action buttons
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                                         ) {
-                                            // Reset button
                                             OutlinedButton(
                                                 onClick = {
                                                     HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
@@ -2108,7 +1993,6 @@ private fun EditSongSheet(
                                                 Text(stringResource(R.string.ui_reset))
                                             }
 
-                                            // Cancel button
                                             OutlinedButton(
                                                 onClick = onDismiss,
                                                 modifier = Modifier.weight(1f),
@@ -2123,7 +2007,6 @@ private fun EditSongSheet(
                                                 Text(stringResource(R.string.ui_cancel))
                                             }
 
-                                            // Save button
                                             Button(
                                                 onClick = { handleSave() },
                                                 modifier = Modifier.weight(1f),
@@ -2237,7 +2120,6 @@ private fun EditSongSheet(
             }
         }
 
-        // Warning Dialog for tablet
         if (showWarningDialog) {
             AlertDialog(
                 onDismissRequest = { showWarningDialog = false },
@@ -2308,7 +2190,6 @@ private fun EditSongSheet(
             )
         }
     } else {
-        // Phone layout: Bottom sheet
         ModalBottomSheet(
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
@@ -2602,7 +2483,6 @@ private fun EditSongSheet(
                                 singleLine = true
                             )
 
-                            // Album Artist field
                             OutlinedTextField(
                                 value = albumArtist,
                                 onValueChange = { albumArtist = it },
@@ -2618,7 +2498,6 @@ private fun EditSongSheet(
                                 singleLine = true
                             )
 
-                            // Composer field
                             OutlinedTextField(
                                 value = composer,
                                 onValueChange = { composer = it },
@@ -2716,7 +2595,6 @@ private fun EditSongSheet(
                 }
             }
 
-            // Progress
             AnimatedVisibility(visible = isSaving) {
                 Column(
                     modifier = Modifier
@@ -2777,7 +2655,6 @@ private fun EditSongSheet(
         }
     }
     
-    // Warning Dialog for phone layout
     if (showWarningDialog) {
         AlertDialog(
             onDismissRequest = { showWarningDialog = false },
@@ -2850,7 +2727,6 @@ private fun EditSongSheet(
     }
 }
 
-// Data classes
 data class MetadataItem(
     val label: String,
     val value: String,
@@ -2858,7 +2734,6 @@ data class MetadataItem(
     val isWide: Boolean = false
 )
 
-// Helper functions
 private fun formatFileSize(bytes: Long): String {
     val kb = bytes / 1024.0
     val mb = kb / 1024.0

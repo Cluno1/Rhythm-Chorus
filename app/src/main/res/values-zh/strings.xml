@@ -1279,8 +1279,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">播放下一个</string>
     <string name="action_add_to_queue">添加到队列</string>
-    <string name="action_remove_from_favorites">从收藏夹中删除</string>
-    <string name="action_add_to_favorites">添加到收藏夹</string>
     <string name="action_song_info">歌曲信息</string>
     <string name="action_add_to_blacklist">加入黑名单</string>
     <string name="action_play_all">全部播放</string>
@@ -1722,8 +1720,6 @@
     <string name="settings_shapes_desc">富有表现力的形状</string>
     <string name="settings_skip_silence">跳过沉默部分</string>
     <string name="settings_skip_silence_desc">自动跳过曲目中的静音间隔。</string>
-    <string name="settings_song_ratings">歌曲评级</string>
-    <string name="settings_song_ratings_desc">用星星评价歌曲以改进统计数据和排序</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">迷你播放器滑动手势</string>
     <string name="settings_gesture_miniplayer_swipe_desc">打开、关闭、跳过滑动</string>
@@ -2104,8 +2100,6 @@
     <string name="rhythmstatsscreen_top_songs">热门歌曲</string>
     <string name="rhythmstatsscreen_listening_habits">聆听习惯</string>
     <string name="rhythmstatsscreen_listening_timeline">听力时间表</string>
-    <string name="rhythmstatsscreen_favorites">收藏夹</string>
-    <string name="rhythmstatsscreen_loved_4">喜爱 (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">尚无可用统计数据</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">继续聆听，构建您的音乐之旅！</string>
     <string name="universalsearchscreen_remove_search">删除搜索</string>
@@ -2222,13 +2216,6 @@
     <string name="playing_next_simple">下一个播放：%1$s</string>
     <string name="failed_to_request_permission">请求权限失败：%1$s</string>
     <string name="unexpected_error">意外错误：%1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="other">%1$s - %2$d 颗星</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="other">%1$d 颗星</item>
-    </plurals>
-    <string name="rating_unknown">未知</string>
     <string name="album_artwork_description">%1$s 的专辑封面</string>
     <string name="error_fetching_artwork">获取封面时出错：%1$s</string>
     <string name="edit_lyrics">编辑歌词</string>
@@ -2244,19 +2231,6 @@
     <plurals name="playlist_remove_songs_confirm">
         <item quantity="other">您确定要从此播放列表中删除 %1$d 首歌曲吗？</item>
     </plurals>
-    <string name="rating_not_rated">未评级</string>
-    <string name="rating_liked">喜欢</string>
-    <string name="rating_good">好</string>
-    <string name="rating_great">太棒了</string>
-    <string name="rating_loved">喜爱</string>
-    <string name="rating_absolute_favorite">绝对的最爱</string>
-    <string name="rating_desc_not_rated">暂无评级</string>
-    <string name="rating_desc_liked">喜欢——适合偶尔听听</string>
-    <string name="rating_desc_good">好——耐听的好歌</string>
-    <string name="rating_desc_great">超棒——真的很喜欢这个</string>
-    <string name="rating_desc_loved">喜爱——我的最爱之一</string>
-    <string name="rating_desc_absolute_favorite">绝对最爱——顶级曲目</string>
-    <string name="rating_desc_unknown">未知评级</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">在大型小部件上显示最喜欢的切换</string>
     <string name="settings_clear_all_logs_desc">删除所有存储的崩溃报告</string>
@@ -2313,10 +2287,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">进度条在迷你播放器上处于活动状态。接下来尝试调整形状和角。</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">迷你播放器进度条已隐藏。启用它以快速了解进度。</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">紧凑模式现在是极简的。打开进度以获得更好的一目了然。</string>
-    <string name="settings_tip_library_active_desc_1">评级已启用。使用库设置来加强发现和排序。</string>
-    <string name="settings_tip_library_active_desc_2">您的音乐库支持评级。调整扫描和分组以实现更清晰的浏览。</string>
-    <string name="settings_tip_library_inactive_desc_1">评级已禁用。库设置仍然可以提高结构和速度。</string>
-    <string name="settings_tip_library_inactive_desc_2">检测到简化库模式。调整分组以加快导航速度。</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">嵌入式优先</string>
     <string name="lyrics_source_embedded_first_desc">尝试音频文件元数据 → 在线 API → .lrc 文件</string>
@@ -2519,11 +2489,6 @@
     <string name="library_scan_media">扫描媒体…</string>
     <string name="library_category_all">全部</string>
     <string name="library_category_favorites">❤️最爱</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ 绝对最爱</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ 喜欢</string>
-    <string name="library_category_great">⭐⭐⭐ 太棒了</string>
-    <string name="library_category_good">⭐⭐ 好</string>
-    <string name="library_category_liked">⭐ 喜欢</string>
     <string name="library_category_short">短篇（&lt; 3 分钟）</string>
     <string name="library_category_medium">中等（3–5 分钟）</string>
     <string name="library_category_long">长（&gt; 5 分钟）</string>
@@ -2632,7 +2597,6 @@
     <string name="metadata_album_artist">专辑艺术家</string>
     <string name="metadata_play_count">播放次数</string>
     <string name="metadata_total_played">总播放次数</string>
-    <string name="metadata_rating">评级</string>
     <string name="metadata_quality">质量</string>
     <string name="metadata_audio_tech">音频技术</string>
     <string name="metadata_bit_depth">位深度</string>

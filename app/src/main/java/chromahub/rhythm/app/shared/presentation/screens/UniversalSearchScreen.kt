@@ -200,17 +200,22 @@ fun UniversalSearchScreen(
     val streamingLikedSongs by streamingViewModel.likedSongs.collectAsState()
 
     val isGenreDetectionComplete by localViewModel.isGenreDetectionComplete.collectAsState()
+    val streamingBrowseCategories by streamingViewModel.browseCategories.collectAsState()
 
-    val genres = remember(localSongs) {
-        localSongs
+    val genres = remember(localSongs, streamingBrowseCategories, streamingResults.songs) {
+        val localGenres = localSongs
             .flatMap { song -> GenreUtils.splitGenres(song.genre) }
+        val streamingGenres = streamingBrowseCategories.map { it.name } +
+            streamingResults.songs.flatMap { song -> GenreUtils.splitGenres(song.genre) }
+        (localGenres + streamingGenres)
             .distinctBy { it.lowercase() }
             .sortedBy { it.lowercase() }
     }
 
-    val genreSongCounts = remember(genres, localSongs) {
+    val genreSongCounts = remember(genres, localSongs, streamingResults.songs) {
         genres.associateWith { genre ->
-            localSongs.count { song -> GenreUtils.matchesGenre(song.genre, genre) }
+            localSongs.count { song -> GenreUtils.matchesGenre(song.genre, genre) } +
+                streamingResults.songs.count { song -> GenreUtils.matchesGenre(song.genre, genre) }
         }
     }
 
@@ -2120,8 +2125,8 @@ fun UniversalSongOptionsBottomSheet(
                             )
                             add(
                                 UniversalOptionItem(
-                                    icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
-                                    text = if (isFavorite) context.getString(R.string.action_remove_from_favorites) else context.getString(R.string.action_add_to_favorites),
+                                    icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
+                                    text = if (isFavorite) context.getString(R.string.action_dislike) else context.getString(R.string.action_like),
                                     containerColor = tertiaryContainer,
                                     iconColor = onTertiaryContainer,
                                     onClick = onToggleFavorite
@@ -2613,14 +2618,30 @@ private fun UniversalGenreBrowseItemCard(
 private fun universalGenreIconFor(genre: String): chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon {
     val normalized = genre.lowercase()
     return when {
-        normalized.contains("hip hop") || normalized.contains("hip-hop") || normalized.contains("rap") || normalized.contains("trap") -> MaterialSymbolIcon("mic")
-        normalized.contains("rock") || normalized.contains("metal") || normalized.contains("punk") || normalized.contains("grunge") -> RhythmIcons.Music.Audiotrack
-        normalized.contains("electronic") || normalized.contains("edm") || normalized.contains("house") || normalized.contains("techno") || normalized.contains("trance") || normalized.contains("synth") -> RhythmIcons.Player.Equalizer
-        normalized.contains("classical") || normalized.contains("instrumental") || normalized.contains("orchestra") || normalized.contains("opera") -> RhythmIcons.Music.Album
-        normalized.contains("jazz") || normalized.contains("blues") || normalized.contains("soul") || normalized.contains("r&b") || normalized.contains("funk") -> RhythmIcons.Music.MusicNote
-        normalized.contains("ambient") || normalized.contains("chill") || normalized.contains("lofi") || normalized.contains("lo-fi") || normalized.contains("acoustic") -> RhythmIcons.Devices.Headphones
-        normalized.contains("pop") || normalized.contains("dance") || normalized.contains("disco") || normalized.contains("k-pop") || normalized.contains("j-pop") -> RhythmIcons.Music.MusicNote
-        normalized.contains("country") || normalized.contains("folk") -> RhythmIcons.Music.Audiotrack
+        normalized.contains("hip hop") || normalized.contains("hip-hop") || normalized.contains("rap") || normalized.contains("trap") ->
+            MaterialSymbolIcon("mic")
+
+        normalized.contains("rock") || normalized.contains("metal") || normalized.contains("punk") || normalized.contains("grunge") ->
+            RhythmIcons.Music.Audiotrack
+
+        normalized.contains("electronic") || normalized.contains("edm") || normalized.contains("house") || normalized.contains("techno") || normalized.contains("trance") || normalized.contains("synth") ->
+            RhythmIcons.Player.Equalizer
+
+        normalized.contains("classical") || normalized.contains("instrumental") || normalized.contains("orchestra") || normalized.contains("opera") ->
+            RhythmIcons.Music.Album
+
+        normalized.contains("jazz") || normalized.contains("blues") || normalized.contains("soul") || normalized.contains("r&b") || normalized.contains("funk") ->
+            RhythmIcons.Actions.Favorite
+
+        normalized.contains("ambient") || normalized.contains("chill") || normalized.contains("lofi") || normalized.contains("lo-fi") || normalized.contains("acoustic") ->
+            MaterialSymbolIcon("headphones")
+
+        normalized.contains("pop") || normalized.contains("dance") || normalized.contains("disco") || normalized.contains("k-pop") || normalized.contains("j-pop") ->
+            RhythmIcons.Music.MusicNote
+
+        normalized.contains("country") || normalized.contains("folk") ->
+            RhythmIcons.Music.Audiotrack
+
         else -> RhythmIcons.Music.MusicNote
     }
 }

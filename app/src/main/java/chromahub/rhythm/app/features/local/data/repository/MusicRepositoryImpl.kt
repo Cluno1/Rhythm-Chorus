@@ -2282,7 +2282,8 @@ class MusicRepository(context: Context) {
     private suspend fun saveArtistsToRoom(artists: List<Artist>, groupByAlbumArtist: Boolean) = withContext(Dispatchers.IO) {
         try {
             val artistEntities = artists.map { artist ->
-                val resolvedUri = artist.artworkUri ?: findLocalArtistImage(artist.name)
+                val placeholderUri = artist.artworkUri?.takeIf { it.scheme == "file" && it.lastPathSegment?.startsWith("placeholder_") == true }
+                val resolvedUri = if (placeholderUri != null) findLocalArtistImage(artist.name) else artist.artworkUri ?: findLocalArtistImage(artist.name)
                 ArtistEntity(
                     id = artist.id,
                     name = artist.name,
@@ -2608,6 +2609,7 @@ class MusicRepository(context: Context) {
     suspend fun fetchArtistImages(artists: List<Artist>): List<Artist> =
         withContext(Dispatchers.IO) {
             val updatedArtists = mutableListOf<Artist>()
+            val placeholderArtists = mutableSetOf<String>()
 
             val allSongsForLocalLookup = runCatching { loadSongs() }.getOrDefault(emptyList())
             val appSettings = AppSettings.getInstance(context)
@@ -2690,6 +2692,7 @@ class MusicRepository(context: Context) {
                                 cacheDir = context.cacheDir
                             )
                         artistImageCache[artist.name] = placeholderUri
+                        placeholderArtists.add(artist.id)
                         updatedArtists.add(artist.copy(artworkUri = placeholderUri))
                         continue
                     }
@@ -2831,6 +2834,7 @@ class MusicRepository(context: Context) {
                             cacheDir = context.cacheDir
                         )
                     artistImageCache[artist.name] = placeholderUri
+                    placeholderArtists.add(artist.id)
                     updatedArtists.add(artist.copy(artworkUri = placeholderUri))
 
                 } catch (e: Exception) {
@@ -2842,6 +2846,7 @@ class MusicRepository(context: Context) {
                                 size = 500,
                                 cacheDir = context.cacheDir
                             )
+                        placeholderArtists.add(artist.id)
                         updatedArtists.add(artist.copy(artworkUri = placeholderUri))
                     } catch (e2: Exception) {
                         Log.e(TAG, "Error generating placeholder for ${artist.name}", e2)
@@ -2856,7 +2861,7 @@ class MusicRepository(context: Context) {
                     ArtistEntity(
                         id = artist.id,
                         name = artist.name,
-                        artworkUri = artist.artworkUri?.toString(),
+                        artworkUri = if (artist.id in placeholderArtists) null else artist.artworkUri?.toString(),
                         numberOfAlbums = artist.numberOfAlbums,
                         numberOfTracks = artist.numberOfTracks,
                         groupByAlbumArtist = groupByAlbumArtist

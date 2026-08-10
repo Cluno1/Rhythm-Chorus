@@ -1279,8 +1279,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">Mainkan selanjutnya</string>
     <string name="action_add_to_queue">Tambahkan ke antrian</string>
-    <string name="action_remove_from_favorites">Hapus dari favorit</string>
-    <string name="action_add_to_favorites">Tambahkan ke favorit</string>
     <string name="action_song_info">Informasi lagu</string>
     <string name="action_add_to_blacklist">Tambahkan ke daftar hitam</string>
     <string name="action_play_all">Mainkan Semua</string>
@@ -1722,8 +1720,6 @@
     <string name="settings_shapes_desc">Bentuk Ekspresif</string>
     <string name="settings_skip_silence">Lewati Keheningan</string>
     <string name="settings_skip_silence_desc">Secara otomatis melewati interval senyap di trek.</string>
-    <string name="settings_song_ratings">Peringkat Lagu</string>
-    <string name="settings_song_ratings_desc">Nilai lagu dengan bintang untuk meningkatkan statistik dan penyortiran</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">Gerakan Gesek MiniPlayer</string>
     <string name="settings_gesture_miniplayer_swipe_desc">Buka, tutup, lewati gesek</string>
@@ -2104,8 +2100,6 @@
     <string name="rhythmstatsscreen_top_songs">Lagu Teratas</string>
     <string name="rhythmstatsscreen_listening_habits">Kebiasaan Mendengarkan</string>
     <string name="rhythmstatsscreen_listening_timeline">Garis Waktu Mendengarkan</string>
-    <string name="rhythmstatsscreen_favorites">Favorit</string>
-    <string name="rhythmstatsscreen_loved_4">Dicintai (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">Belum ada statistik yang tersedia</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">Teruslah mendengarkan untuk membangun perjalanan musik Anda!</string>
     <string name="universalsearchscreen_remove_search">Hapus pencarian</string>
@@ -2222,13 +2216,6 @@
     <string name="playing_next_simple">Diputar berikutnya: %1$s</string>
     <string name="failed_to_request_permission">Gagal meminta izin: %1$s</string>
     <string name="unexpected_error">Kesalahan tak terduga: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="other">%1$s - %2$d bintang</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="other">%1$d bintang</item>
-    </plurals>
-    <string name="rating_unknown">Tidak diketahui</string>
     <string name="album_artwork_description">Sampul album untuk %1$s</string>
     <string name="error_fetching_artwork">Kesalahan saat mengambil karya seni: %1$s</string>
     <string name="edit_lyrics">Edit Lirik</string>
@@ -2244,19 +2231,6 @@
     <plurals name="playlist_remove_songs_confirm">
         <item quantity="other">Yakin ingin menghapus %1$d lagu dari playlist ini?</item>
     </plurals>
-    <string name="rating_not_rated">Tidak Dinilai</string>
-    <string name="rating_liked">Menyukai</string>
-    <string name="rating_good">Bagus</string>
-    <string name="rating_great">Bagus</string>
-    <string name="rating_loved">Dicintai</string>
-    <string name="rating_absolute_favorite">Favorit Mutlak</string>
-    <string name="rating_desc_not_rated">Tidak ada peringkat</string>
-    <string name="rating_desc_liked">Menyukai - Cocok untuk didengarkan sesekali</string>
-    <string name="rating_desc_good">Bagus - Trek solid</string>
-    <string name="rating_desc_great">Hebat - Sangat menikmati yang ini</string>
-    <string name="rating_desc_loved">Dicintai - Salah satu favoritku</string>
-    <string name="rating_desc_absolute_favorite">Favorit Mutlak - Lagu tingkat atas</string>
-    <string name="rating_desc_unknown">Peringkat tidak diketahui</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">Tampilkan tombol favorit pada widget besar</string>
     <string name="settings_clear_all_logs_desc">Hapus semua laporan kerusakan yang tersimpan</string>
@@ -2313,10 +2287,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">Bilah kemajuan aktif di pemutar mini. Coba penyesuaian bentuk dan sudut selanjutnya.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">Kemajuan pemain mini disembunyikan. Aktifkan untuk kesadaran jalur cepat.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">Mode ringkas kini menjadi minimal. Aktifkan kemajuan agar dapat dilihat dengan lebih baik.</string>
-    <string name="settings_tip_library_active_desc_1">Peringkat diaktifkan. Gunakan pengaturan perpustakaan untuk mempertajam penemuan dan penyortiran.</string>
-    <string name="settings_tip_library_active_desc_2">Perpustakaan Anda mendukung pemeringkatan. Sesuaikan pemindaian dan pengelompokan untuk penjelajahan yang lebih bersih.</string>
-    <string name="settings_tip_library_inactive_desc_1">Peringkat dinonaktifkan. Pengaturan perpustakaan masih dapat meningkatkan struktur dan kecepatan.</string>
-    <string name="settings_tip_library_inactive_desc_2">Mode perpustakaan yang disederhanakan terdeteksi. Sesuaikan pengelompokan untuk navigasi yang lebih cepat.</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">Tertanam Pertama</string>
     <string name="lyrics_source_embedded_first_desc">Coba metadata file audio → API Online → file .lrc</string>
@@ -2519,11 +2489,6 @@
     <string name="library_scan_media">Memindai media…</string>
     <string name="library_category_all">Semua</string>
     <string name="library_category_favorites">❤️ Favorit</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ Favorit Mutlak</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ Dicintai</string>
-    <string name="library_category_great">⭐⭐⭐ Hebat</string>
-    <string name="library_category_good">⭐⭐ Bagus</string>
-    <string name="library_category_liked">⭐ Menyukai</string>
     <string name="library_category_short">Singkat (&lt; 3 menit)</string>
     <string name="library_category_medium">Sedang (3–5 menit)</string>
     <string name="library_category_long">Panjang (&gt; 5 menit)</string>
@@ -2632,7 +2597,6 @@
     <string name="metadata_album_artist">Artis Album</string>
     <string name="metadata_play_count">Jumlah Putar</string>
     <string name="metadata_total_played">Jumlah yang Dimainkan</string>
-    <string name="metadata_rating">Peringkat</string>
     <string name="metadata_quality">Kualitas</string>
     <string name="metadata_audio_tech">Teknologi Audio</string>
     <string name="metadata_bit_depth">Kedalaman Bit</string>

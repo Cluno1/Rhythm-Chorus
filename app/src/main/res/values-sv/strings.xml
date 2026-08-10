@@ -1293,8 +1293,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">Spela nästa</string>
     <string name="action_add_to_queue">Lägg till i kö</string>
-    <string name="action_remove_from_favorites">Ta bort från favoriter</string>
-    <string name="action_add_to_favorites">Lägg till i favoriter</string>
     <string name="action_song_info">Låtinformation</string>
     <string name="action_add_to_blacklist">Lägg till på svartlista</string>
     <string name="action_play_all">Spela alla</string>
@@ -1740,8 +1738,6 @@
     <string name="settings_shapes_desc">Expressiva former</string>
     <string name="settings_skip_silence">Hoppa över tystnad</string>
     <string name="settings_skip_silence_desc">Hoppa automatiskt över tysta intervaller i spår.</string>
-    <string name="settings_song_ratings">Låtbetyg</string>
-    <string name="settings_song_ratings_desc">Betygsätt låtar med stjärnor för att förbättra statistik och sortering</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">Minispelares svepgester</string>
     <string name="settings_gesture_miniplayer_swipe_desc">Öppna, avvisa, hoppa över svep</string>
@@ -2122,8 +2118,6 @@
     <string name="rhythmstatsscreen_top_songs">Topplåtar</string>
     <string name="rhythmstatsscreen_listening_habits">Lyssningsvanor</string>
     <string name="rhythmstatsscreen_listening_timeline">Lyssningstidslinje</string>
-    <string name="rhythmstatsscreen_favorites">Favoriter</string>
-    <string name="rhythmstatsscreen_loved_4">Älskad (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">Ingen statistik tillgänglig ännu</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">Fortsätt lyssna för att bygga din musikaliska resa!</string>
     <string name="universalsearchscreen_remove_search">Ta bort sökning</string>
@@ -2241,15 +2235,6 @@
     <string name="playing_next_simple">Spelar nästa: %1$s</string>
     <string name="failed_to_request_permission">Det gick inte att begära tillstånd: %1$s</string>
     <string name="unexpected_error">Oväntat fel: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="one">%1$s - %2$d stjärnor</item>
-        <item quantity="other">%1$s - %2$d stjärnor</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="one">%1$d stjärnor</item>
-        <item quantity="other">%1$d stjärnor</item>
-    </plurals>
-    <string name="rating_unknown">Okänd</string>
     <string name="album_artwork_description">Albumomslag för %1$s</string>
     <string name="error_fetching_artwork">Fel vid hämtning av konstverk: %1$s</string>
     <string name="edit_lyrics">Redigera sångtexter</string>
@@ -2266,19 +2251,6 @@
         <item quantity="one">Är du säker på att du vill ta bort %1$d låtar från den här spellistan?</item>
         <item quantity="other">Är du säker på att du vill ta bort %1$d låtar från den här spellistan?</item>
     </plurals>
-    <string name="rating_not_rated">Ej klassad</string>
-    <string name="rating_liked">Gillade</string>
-    <string name="rating_good">Bra</string>
-    <string name="rating_great">Bra</string>
-    <string name="rating_loved">Älskad</string>
-    <string name="rating_absolute_favorite">Absolut favorit</string>
-    <string name="rating_desc_not_rated">Inget betyg</string>
-    <string name="rating_desc_liked">Gillade - Bra för att lyssna ibland</string>
-    <string name="rating_desc_good">Bra - Solid spår</string>
-    <string name="rating_desc_great">Fantastiskt - Jag tycker verkligen om den här</string>
-    <string name="rating_desc_loved">Älskad - En av mina favoriter</string>
-    <string name="rating_desc_absolute_favorite">Absolute Favorite - Spår på högsta nivå</string>
-    <string name="rating_desc_unknown">Okänt betyg</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">Visa favoritväxling på stora widgetar</string>
     <string name="settings_clear_all_logs_desc">Ta bort alla lagrade kraschrapporter</string>
@@ -2335,10 +2307,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">Förloppsindikatorn är aktiv på minispelaren. Testa form- och hörnjusteringar härnäst.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">Minispelarens framsteg är dold. Aktivera det för snabb spårmedvetenhet.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">Kompaktläge är minimalt nu. Aktivera framsteg för bättre överblick.</string>
-    <string name="settings_tip_library_active_desc_1">Klassificeringar är aktiverade. Använd biblioteksinställningar för att skärpa upptäckt och sortering.</string>
-    <string name="settings_tip_library_active_desc_2">Ditt bibliotek stöder betyg. Justera skanning och gruppering för renare surfning.</string>
-    <string name="settings_tip_library_inactive_desc_1">Klassificeringar är inaktiverade. Biblioteksinställningar kan fortfarande förbättra struktur och hastighet.</string>
-    <string name="settings_tip_library_inactive_desc_2">Förenklat biblioteksläge upptäckt. Justera gruppering för snabbare navigering.</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">Inbäddad först</string>
     <string name="lyrics_source_embedded_first_desc">Testa ljudfilsmetadata → Online-API:er → .lrc-filer</string>
@@ -2545,11 +2513,6 @@
     <string name="library_scan_media">Skannar media…</string>
     <string name="library_category_all">Alla</string>
     <string name="library_category_favorites">❤️ Favoriter</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ Absoluta favoriter</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ Älskad</string>
-    <string name="library_category_great">⭐⭐⭐ Bra</string>
-    <string name="library_category_good">⭐⭐ Bra</string>
-    <string name="library_category_liked">⭐ Gillade</string>
     <string name="library_category_short">Kort (&lt; 3 min)</string>
     <string name="library_category_medium">Medium (3–5 min)</string>
     <string name="library_category_long">Lång (&gt;5 min)</string>
@@ -2660,7 +2623,6 @@
     <string name="metadata_album_artist">Albumartist</string>
     <string name="metadata_play_count">Spelräkning</string>
     <string name="metadata_total_played">Totalt spelat</string>
-    <string name="metadata_rating">Betyg</string>
     <string name="metadata_quality">Kvalitet</string>
     <string name="metadata_audio_tech">Audio Tech</string>
     <string name="metadata_bit_depth">Bitdjup</string>

@@ -905,7 +905,7 @@ fun PlayerScreen(
     if (showLyricsEditorDialog) {
         LyricsEditorBottomSheet(
             lyricsData = lyrics,
-            songTitle = song?.title ?: stringResource(R.string.rating_unknown),
+            songTitle = song?.title ?: stringResource(R.string.common_unknown),
             initialTimeOffset = lyricsTimeOffset,
             song = song,
             isStreamingMode = isStreamingMode,

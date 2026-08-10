@@ -234,8 +234,6 @@ class AppSettings private constructor(context: Context) {
         // Playlists
         private const val KEY_PLAYLISTS = "playlists"
         private const val KEY_FAVORITE_SONGS = "favorite_songs"
-        private const val KEY_SONG_RATINGS = "song_ratings" // Map of songId to rating (0-5)
-        private const val KEY_ENABLE_RATING_SYSTEM = "enable_rating_system" // Enable/disable rating system
         private const val KEY_DEFAULT_PLAYLISTS_ENABLED = "default_playlists_enabled"
         
         // User Statistics
@@ -835,18 +833,24 @@ class AppSettings private constructor(context: Context) {
     val artistCollaborationMode: StateFlow<Boolean> = _artistCollaborationMode.asStateFlow()
     
     // Library Tab Order
-    private val defaultTabOrder = listOf("SONGS", "LIKED", "PLAYLISTS", "ALBUMS", "ARTISTS", "EXPLORER")
+    private val defaultTabOrder = listOf("SONGS", "LIKED", "PLAYLISTS", "ALBUMS", "ARTISTS", "ALBUM_ARTISTS", "EXPLORER")
     private val _libraryTabOrder = MutableStateFlow(
         prefs.getString(KEY_LIBRARY_TAB_ORDER, null)
             ?.split(",")
             ?.filter { it.isNotBlank() }
             ?.takeIf { it.isNotEmpty() }
             ?.let { order ->
-                if ("LIKED" in order) order
+                val withLiked = if ("LIKED" in order) order
                 else {
                     val songsIndex = order.indexOf("SONGS")
                     if (songsIndex >= 0) order.toMutableList().apply { add(songsIndex + 1, "LIKED") }
                     else order + "LIKED"
+                }
+                if ("ALBUM_ARTISTS" in withLiked) withLiked
+                else {
+                    val artistsIndex = withLiked.indexOf("ARTISTS")
+                    if (artistsIndex >= 0) withLiked.toMutableList().apply { add(artistsIndex + 1, "ALBUM_ARTISTS") }
+                    else withLiked + "ALBUM_ARTISTS"
                 }
             }
             ?: defaultTabOrder
@@ -883,11 +887,17 @@ class AppSettings private constructor(context: Context) {
     
     // Hidden Library Tabs
     private val _hiddenLibraryTabs = MutableStateFlow(
-        prefs.getString(KEY_HIDDEN_LIBRARY_TABS, null)
+        (prefs.getString(KEY_HIDDEN_LIBRARY_TABS, null)
             ?.split(",")
             ?.filter { it.isNotBlank() }
             ?.toSet()
-            ?: emptySet()
+            ?: emptySet()) + if ("ALBUM_ARTISTS" in (prefs.getString(KEY_LIBRARY_TAB_ORDER, null) ?: "")) {
+            // User already has an order that includes Album Artists (they enabled it explicitly)
+            emptySet()
+        } else {
+            // Legacy or fresh installs: hide the Album Artists tab by default
+            setOf("ALBUM_ARTISTS")
+        }
     )
     val hiddenLibraryTabs: StateFlow<Set<String>> = _hiddenLibraryTabs.asStateFlow()
     
@@ -1177,21 +1187,6 @@ class AppSettings private constructor(context: Context) {
     private val _favoriteSongs = MutableStateFlow<String?>(prefs.getString(KEY_FAVORITE_SONGS, null))
     val favoriteSongs: StateFlow<String?> = _favoriteSongs.asStateFlow()
     
-    // Song Ratings - Map of songId to rating (0-5)
-    private val _songRatings = MutableStateFlow<Map<String, Int>>(
-        try {
-            val json = prefs.getString(KEY_SONG_RATINGS, null)
-            if (json != null) {
-                Gson().fromJson(json, object : TypeToken<Map<String, Int>>() {}.type)
-            } else {
-                emptyMap()
-            }
-        } catch (e: Exception) {
-            emptyMap()
-        }
-    )
-    val songRatings: StateFlow<Map<String, Int>> = _songRatings.asStateFlow()
-
     // Song Lyrics Preferences - Map of songId to source preference ("online", "embedded", "lrc")
     private val _songLyricsPreferences = MutableStateFlow<Map<String, String>>(
         try {
@@ -1225,10 +1220,6 @@ class AppSettings private constructor(context: Context) {
     // LRC Rename Behavior - "ask", "always", "never"
     private val _lrcRenameBehavior = MutableStateFlow(prefs.getString(KEY_LRC_RENAME_BEHAVIOR, "ask") ?: "ask")
     val lrcRenameBehavior: StateFlow<String> = _lrcRenameBehavior.asStateFlow()
-    
-    // Enable/Disable Rating System
-    private val _enableRatingSystem = MutableStateFlow(prefs.getBoolean(KEY_ENABLE_RATING_SYSTEM, true))
-    val enableRatingSystem: StateFlow<Boolean> = _enableRatingSystem.asStateFlow()
     
     private val _defaultPlaylistsEnabled = MutableStateFlow(prefs.getBoolean(KEY_DEFAULT_PLAYLISTS_ENABLED, true))
     val defaultPlaylistsEnabled: StateFlow<Boolean> = _defaultPlaylistsEnabled.asStateFlow()
@@ -2938,11 +2929,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _defaultPlaylistsEnabled.value = enabled
     }
     
-    fun setEnableRatingSystem(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_ENABLE_RATING_SYSTEM, enabled) }
-        _enableRatingSystem.value = enabled
-    }
-
     // User Statistics Methods
     fun setListeningTime(time: Long) {
         prefs.edit { putLong(KEY_LISTENING_TIME, time) }
@@ -3867,90 +3853,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
     
     // Song Rating Methods
-    /**
-     * Set rating for a song (0-5 stars)
-     * 0 = No rating/removed from favorites
-     * 1-5 = Rating levels, with 5 being "Absolute Favorite"
-     */
-    fun setSongRating(songId: String, rating: Int) {
-        if (rating !in 0..5) {
-            Log.w("AppSettings", "Invalid rating value: $rating. Must be 0-5")
-            return
-        }
-        
-        val currentRatings = _songRatings.value.toMutableMap()
-        if (rating == 0) {
-            // Rating 0 means remove rating
-            currentRatings.remove(songId)
-        } else {
-            currentRatings[songId] = rating
-        }
-        
-        val json = Gson().toJson(currentRatings)
-        prefs.edit { putString(KEY_SONG_RATINGS, json) }
-        _songRatings.value = currentRatings
-        
-        Log.d("AppSettings", "Set rating for song $songId: $rating")
-    }
-    
-    /**
-     * Get rating for a specific song (0-5)
-     * Returns 0 if song has no rating
-     */
-    fun getSongRating(songId: String): Int {
-        return _songRatings.value[songId] ?: 0
-    }
-    
-    /**
-     * Get all rated songs as a map of songId to rating
-     */
-    fun getAllRatedSongs(): Map<String, Int> {
-        return _songRatings.value.toMap()
-    }
-    
-    /**
-     * Get songs filtered by minimum rating
-     */
-    fun getSongsByMinimumRating(minRating: Int): List<String> {
-        if (minRating !in 1..5) return emptyList()
-        return _songRatings.value.filter { it.value >= minRating }.keys.toList()
-    }
-    
-    /**
-     * Get songs with a specific rating
-     */
-    fun getSongsByRating(rating: Int): List<String> {
-        if (rating !in 1..5) return emptyList()
-        return _songRatings.value.filter { it.value == rating }.keys.toList()
-    }
-    
-    /**
-     * Clear all song ratings
-     */
-    fun clearAllRatings() {
-        prefs.edit { remove(KEY_SONG_RATINGS) }
-        _songRatings.value = emptyMap()
-        Log.d("AppSettings", "Cleared all song ratings")
-    }
-    
-    /**
-     * Check if a song has any rating (1-5)
-     */
-    fun isSongRated(songId: String): Boolean {
-        return _songRatings.value.containsKey(songId)
-    }
-    
-    /**
-     * Get count of songs by rating level
-     */
-    fun getRatingDistribution(): Map<Int, Int> {
-        val distribution = mutableMapOf<Int, Int>()
-        for (rating in 1..5) {
-            distribution[rating] = _songRatings.value.count { it.value == rating }
-        }
-        return distribution
-    }
-    
     // Whitelisted Folders Methods
     fun addFolderToWhitelist(folderPath: String) {
         val currentList = _whitelistedFolders.value.toMutableList()

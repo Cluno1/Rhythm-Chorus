@@ -1293,8 +1293,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">Speel hierna</string>
     <string name="action_add_to_queue">Toevoegen aan wachtrij</string>
-    <string name="action_remove_from_favorites">Verwijderen uit favorieten</string>
-    <string name="action_add_to_favorites">Toevoegen aan favorieten</string>
     <string name="action_song_info">Nummerinformatie</string>
     <string name="action_add_to_blacklist">Toevoegen aan zwarte lijst</string>
     <string name="action_play_all">Alles afspelen</string>
@@ -1740,8 +1738,6 @@
     <string name="settings_shapes_desc">Expressieve vormen</string>
     <string name="settings_skip_silence">Stilte overslaan</string>
     <string name="settings_skip_silence_desc">Sla automatisch stille intervallen in nummers over.</string>
-    <string name="settings_song_ratings">Nummerbeoordelingen</string>
-    <string name="settings_song_ratings_desc">Beoordeel nummers met sterren om de statistieken en sortering te verbeteren</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">MiniPlayer-veegbewegingen</string>
     <string name="settings_gesture_miniplayer_swipe_desc">Openen, sluiten, swipen overslaan</string>
@@ -2122,8 +2118,6 @@
     <string name="rhythmstatsscreen_top_songs">Topnummers</string>
     <string name="rhythmstatsscreen_listening_habits">Luistergewoonten</string>
     <string name="rhythmstatsscreen_listening_timeline">Luistertijdlijn</string>
-    <string name="rhythmstatsscreen_favorites">Favorieten</string>
-    <string name="rhythmstatsscreen_loved_4">Geliefd (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">Nog geen statistieken beschikbaar</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">Blijf luisteren om je muzikale reis op te bouwen!</string>
     <string name="universalsearchscreen_remove_search">Zoekopdracht verwijderen</string>
@@ -2241,15 +2235,6 @@
     <string name="playing_next_simple">Volgende afspelen: %1$s</string>
     <string name="failed_to_request_permission">Kan geen toestemming vragen: %1$s</string>
     <string name="unexpected_error">Onverwachte fout: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="one">%1$s - %2$d sterren</item>
-        <item quantity="other">%1$s - %2$d sterren</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="one">%1$d sterren</item>
-        <item quantity="other">%1$d sterren</item>
-    </plurals>
-    <string name="rating_unknown">Onbekend</string>
     <string name="album_artwork_description">Albumillustraties voor %1$s</string>
     <string name="error_fetching_artwork">Fout bij ophalen van artwork: %1$s</string>
     <string name="edit_lyrics">Tekst bewerken</string>
@@ -2266,19 +2251,6 @@
         <item quantity="one">Weet je zeker dat je %1$d nummers uit deze afspeellijst wilt verwijderen?</item>
         <item quantity="other">Weet je zeker dat je %1$d nummers uit deze afspeellijst wilt verwijderen?</item>
     </plurals>
-    <string name="rating_not_rated">Niet beoordeeld</string>
-    <string name="rating_liked">Vond ik leuk</string>
-    <string name="rating_good">Goed</string>
-    <string name="rating_great">Geweldig</string>
-    <string name="rating_loved">Geliefd</string>
-    <string name="rating_absolute_favorite">Absolute favoriet</string>
-    <string name="rating_desc_not_rated">Geen beoordeling</string>
-    <string name="rating_desc_liked">Leuk gevonden - Goed voor af en toe luisteren</string>
-    <string name="rating_desc_good">Goed - Solide nummer</string>
-    <string name="rating_desc_great">Geweldig - Ik geniet hier echt van</string>
-    <string name="rating_desc_loved">Geliefd - Een van mijn favorieten</string>
-    <string name="rating_desc_absolute_favorite">Absolute favoriet - nummer van het hoogste niveau</string>
-    <string name="rating_desc_unknown">Onbekende beoordeling</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">Favoriete schakelaar weergeven op grote widgets</string>
     <string name="settings_clear_all_logs_desc">Verwijder alle opgeslagen crashrapporten</string>
@@ -2335,10 +2307,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">Voortgangsbalk is actief op de minispeler. Probeer vervolgens vorm- en hoekaanpassingen.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">De voortgang van de minispeler is verborgen. Schakel het in voor snelle bewustwording.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">De compacte modus is nu minimaal. Schakel voortgang in voor betere overzichten.</string>
-    <string name="settings_tip_library_active_desc_1">Beoordelingen zijn ingeschakeld. Gebruik bibliotheekinstellingen om het ontdekken en sorteren te verbeteren.</string>
-    <string name="settings_tip_library_active_desc_2">Uw bibliotheek ondersteunt beoordelingen. Stem scannen en groeperen af ​​voor schoner browsen.</string>
-    <string name="settings_tip_library_inactive_desc_1">Beoordelingen zijn uitgeschakeld. Bibliotheekinstellingen kunnen nog steeds de structuur en snelheid verbeteren.</string>
-    <string name="settings_tip_library_inactive_desc_2">Vereenvoudigde bibliotheekmodus gedetecteerd. Pas de groepering aan voor snellere navigatie.</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">Eerst ingebed</string>
     <string name="lyrics_source_embedded_first_desc">Probeer metadata van audiobestanden → Online API\'s → .lrc-bestanden</string>
@@ -2545,11 +2513,6 @@
     <string name="library_scan_media">Media scannen…</string>
     <string name="library_category_all">Allemaal</string>
     <string name="library_category_favorites">❤️ Favorieten</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ Absolute favorieten</string>
-    <string name="library_category_loved">⭐⭐⭐⭐Geliefd</string>
-    <string name="library_category_great">⭐⭐⭐ Geweldig</string>
-    <string name="library_category_good">⭐⭐ Goed</string>
-    <string name="library_category_liked">⭐ Vond ik leuk</string>
     <string name="library_category_short">Kort (&lt; 3 min)</string>
     <string name="library_category_medium">Gemiddeld (3–5 min.)</string>
     <string name="library_category_long">Lang (&gt; 5 min)</string>
@@ -2660,7 +2623,6 @@
     <string name="metadata_album_artist">Albumartiest</string>
     <string name="metadata_play_count">Afspeeltelling</string>
     <string name="metadata_total_played">Totaal gespeeld</string>
-    <string name="metadata_rating">Beoordeling</string>
     <string name="metadata_quality">Kwaliteit</string>
     <string name="metadata_audio_tech">Audiotechnologie</string>
     <string name="metadata_bit_depth">Bitdiepte</string>

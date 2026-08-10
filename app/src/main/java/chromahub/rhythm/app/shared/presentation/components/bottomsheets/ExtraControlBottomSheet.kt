@@ -174,7 +174,7 @@ fun ExtraControlBottomSheet(
 
         if ("FAVORITE" !in hiddenChips) {
             add(ControlAction(
-                icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
+                icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
                 label = if (isFavorite) context.getString(R.string.action_unfavorite) else context.getString(R.string.player_chip_favorite),
                 description = if (isFavorite) context.getString(R.string.extrasheet_saved) else null,
                 containerColor = if (isFavorite) errorContainer else primary,

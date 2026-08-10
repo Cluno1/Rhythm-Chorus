@@ -1279,8 +1279,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">次のプレイ</string>
     <string name="action_add_to_queue">キューに追加</string>
-    <string name="action_remove_from_favorites">お気に入りから削除</string>
-    <string name="action_add_to_favorites">お気に入りに追加</string>
     <string name="action_song_info">楽曲情報</string>
     <string name="action_add_to_blacklist">ブラックリストに追加</string>
     <string name="action_play_all">全部プレイ</string>
@@ -1722,8 +1720,6 @@
     <string name="settings_shapes_desc">表情豊かな形状</string>
     <string name="settings_skip_silence">スキップサイレンス</string>
     <string name="settings_skip_silence_desc">トラック内の無音区間を自動的にスキップします。</string>
-    <string name="settings_song_ratings">曲の評価</string>
-    <string name="settings_song_ratings_desc">曲を星付きで評価して、統計と並べ替えを改善します</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">ミニプレーヤーのスワイプ ジェスチャー</string>
     <string name="settings_gesture_miniplayer_swipe_desc">開く、閉じる、スワイプをスキップする</string>
@@ -2104,8 +2100,6 @@
     <string name="rhythmstatsscreen_top_songs">トップソング</string>
     <string name="rhythmstatsscreen_listening_habits">聞く習慣</string>
     <string name="rhythmstatsscreen_listening_timeline">リスニングタイムライン</string>
-    <string name="rhythmstatsscreen_favorites">お気に入り</string>
-    <string name="rhythmstatsscreen_loved_4">大好き (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">まだ統計はありません</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">音楽の旅を築くために聴き続けてください!</string>
     <string name="universalsearchscreen_remove_search">検索を削除する</string>
@@ -2222,13 +2216,6 @@
     <string name="playing_next_simple">次のプレイ: %1$s</string>
     <string name="failed_to_request_permission">許可のリクエストに失敗しました: %1$s</string>
     <string name="unexpected_error">予期しないエラー: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="other">%1$s ～ %2$d つ星</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="other">%1$d つ星</item>
-    </plurals>
-    <string name="rating_unknown">不明</string>
     <string name="album_artwork_description">%1$s のアルバムアートワーク</string>
     <string name="error_fetching_artwork">アートワークの取得中にエラーが発生しました: %1$s</string>
     <string name="edit_lyrics">歌詞編集</string>
@@ -2244,19 +2231,6 @@
     <plurals name="playlist_remove_songs_confirm">
         <item quantity="other">このプレイリストから %1$d 曲を削除してもよろしいですか?</item>
     </plurals>
-    <string name="rating_not_rated">評価されていません</string>
-    <string name="rating_liked">いいね</string>
-    <string name="rating_good">良い</string>
-    <string name="rating_great">素晴らしい</string>
-    <string name="rating_loved">愛されています</string>
-    <string name="rating_absolute_favorite">絶対的なお気に入り</string>
-    <string name="rating_desc_not_rated">評価なし</string>
-    <string name="rating_desc_liked">いいね - たまに聞くのに適しています</string>
-    <string name="rating_desc_good">良い - しっかりしたトラック</string>
-    <string name="rating_desc_great">素晴らしい - 本当に楽しんでいます</string>
-    <string name="rating_desc_loved">大好き - 私のお気に入りの 1 つ</string>
-    <string name="rating_desc_absolute_favorite">Absolute Favorite - 最上位トラック</string>
-    <string name="rating_desc_unknown">評価不明</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">大型ウィジェットのお気に入り表示トグル</string>
     <string name="settings_clear_all_logs_desc">保存されているクラッシュ レポートをすべて削除する</string>
@@ -2313,10 +2287,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">ミニプレーヤーでプログレスバーがアクティブになります。次に、形状と角の微調整を試してください。</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">ミニプレイヤーの進行状況は非表示になります。トラックを素早く認識するにはこれを有効にします。</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">コンパクトモードは最小限になりました。一目で分かりやすくするために進行状況をオンにします。</string>
-    <string name="settings_tip_library_active_desc_1">評価が有効になります。ライブラリ設定を使用して、発見と並べ替えを強化します。</string>
-    <string name="settings_tip_library_active_desc_2">あなたのライブラリは評価をサポートしています。スキャンとグループ化を調整して、よりクリーンなブラウジングを実現します。</string>
-    <string name="settings_tip_library_inactive_desc_1">評価は無効になっています。ライブラリ設定により、構造と速度を向上させることができます。</string>
-    <string name="settings_tip_library_inactive_desc_2">簡易ライブラリ モードが検出されました。グループ化を調整してナビゲーションを高速化します。</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">埋め込みが先</string>
     <string name="lyrics_source_embedded_first_desc">オーディオ ファイルのメタデータ → オンライン API → .lrc ファイルを試す</string>
@@ -2519,11 +2489,6 @@
     <string name="library_scan_media">メディアをスキャン中…</string>
     <string name="library_category_all">すべて</string>
     <string name="library_category_favorites">❤️ お気に入り</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐絶対のお気に入り</string>
-    <string name="library_category_loved">⭐⭐⭐⭐大好き</string>
-    <string name="library_category_great">⭐⭐⭐素晴らしい</string>
-    <string name="library_category_good">⭐⭐良い</string>
-    <string name="library_category_liked">⭐好き</string>
     <string name="library_category_short">短い (&lt; 3 分)</string>
     <string name="library_category_medium">中 (3～5分)</string>
     <string name="library_category_long">長い (&gt; 5 分)</string>
@@ -2632,7 +2597,6 @@
     <string name="metadata_album_artist">アルバムアーティスト</string>
     <string name="metadata_play_count">再生回数</string>
     <string name="metadata_total_played">合計プレイ数</string>
-    <string name="metadata_rating">評価</string>
     <string name="metadata_quality">品質</string>
     <string name="metadata_audio_tech">オーディオテック</string>
     <string name="metadata_bit_depth">ビット深度</string>

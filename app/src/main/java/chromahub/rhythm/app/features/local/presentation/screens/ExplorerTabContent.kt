@@ -136,7 +136,6 @@ fun SingleCardExplorerContent(
     musicViewModel: MusicViewModel,
     currentSong: Song? = null,
     isPlaying: Boolean = false,
-    enableRatingSystem: Boolean = true,
     listState: LazyListState = rememberLazyListState(),
     isSelectionMode: Boolean = false,
     selectedSongIds: Set<String> = emptySet(),
@@ -578,7 +577,6 @@ fun SingleCardExplorerContent(
                             onAddFolderToQueue = null,
                             currentSong = currentSong,
                             isPlaying = isPlaying,
-                            enableRatingSystem = enableRatingSystem,
                             itemShape = groupedLibraryItemShape(index, storageItems.size)
                         )
                     }
@@ -688,7 +686,6 @@ fun SingleCardExplorerContent(
                                 },
                                 currentSong = currentSong,
                                 isPlaying = isPlaying,
-                                enableRatingSystem = enableRatingSystem,
                                 itemShape = groupedLibraryItemShape(index, pinnedFolderItems.size)
                             )
                         }
@@ -787,7 +784,6 @@ fun SingleCardExplorerContent(
                             } else null,
                             currentSong = currentSong,
                             isPlaying = isPlaying,
-                            enableRatingSystem = enableRatingSystem,
                             itemShape = groupedLibraryItemShape(index, currentItems.size),
                             isSelected = item.song?.let { selectedSongIds.contains(it.id) } ?: false,
                             isSelectionMode = isSelectionMode,
@@ -2087,7 +2083,6 @@ fun ExplorerItemCard(
     onAddFolderToQueue: ((ExplorerItem) -> Unit)? = null,
     currentSong: Song? = null,
     isPlaying: Boolean = false,
-    enableRatingSystem: Boolean = true,
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
     selectionIndex: Int? = null,
@@ -2401,7 +2396,6 @@ fun ExplorerItemCard(
                     currentSong = currentSong,
                     isPlaying = isPlaying,
                     haptics = haptics,
-                    enableRatingSystem = enableRatingSystem,
                     itemShape = itemShape ?: RoundedCornerShape(16.dp),
                     isSelected = isSelected,
                     isSelectionMode = isSelectionMode,

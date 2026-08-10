@@ -233,8 +233,6 @@ private fun StatsPageContent(
                                 artists = artists,
                                 useHoursFormat = useHoursFormat
                             )
-
-                            RatingStatsCard(viewModel = viewModel)
                         }
                     }
                 } else {
@@ -261,8 +259,6 @@ private fun StatsPageContent(
                             stats = stats,
                             useHoursFormat = useHoursFormat
                         )
-
-                        RatingStatsCard(viewModel = viewModel)
                         
                         Spacer(modifier = Modifier.height(32.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()))
                     }
@@ -1073,86 +1069,6 @@ private fun BeatTimelineCard(timeline: List<PlaybackStatsRepository.TimelineEntr
 }
 
 // ---------------------------------------------------------------------------
-
-@Composable
-private fun RatingStatsCard(viewModel: MusicViewModel) {
-    val context = LocalContext.current
-    val appSettings = chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context)
-    val ratingDistribution = appSettings.getRatingDistribution()
-    val totalRated = ratingDistribution.values.sum()
-
-    if (totalRated == 0) return
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.settings_song_ratings),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            (5 downTo 1).forEach { rating ->
-                val count = ratingDistribution[rating] ?: 0
-                val percentage = if (totalRated > 0) (count.toFloat() / totalRated) else 0f
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "$rating ★",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.width(36.dp)
-                    )
-                    LinearProgressIndicator(
-                        progress = { percentage },
-                        modifier = Modifier.weight(1f).height(8.dp).clip(CircleShape),
-                        color = if (rating >= 4) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                        trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                    )
-                    Text(
-                        text = "$count",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.width(28.dp),
-                        textAlign = TextAlign.End
-                    )
-                }
-            }
-
-            if ((ratingDistribution[5] ?: 0) > 0 || (ratingDistribution[4] ?: 0) > 0) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if ((ratingDistribution[5] ?: 0) > 0) {
-                        AssistChip(
-                            onClick = { viewModel.playRatingPlaylist(5, shuffled = false) },
-                            label = { Text(stringResource(R.string.rhythmstatsscreen_favorites)) },
-                            leadingIcon = { Icon(MaterialSymbolIcon("star"), contentDescription = null, modifier = Modifier.size(16.dp)) }
-                        )
-                    }
-                    if (totalRated > 0) {
-                        AssistChip(
-                            onClick = { viewModel.playMinimumRatingPlaylist(4, shuffled = false) },
-                            label = { Text(stringResource(R.string.rhythmstatsscreen_loved_4)) },
-                            leadingIcon = { Icon(RhythmIcons.Favorite, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun EmptyStatsView() {

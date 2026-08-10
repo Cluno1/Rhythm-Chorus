@@ -177,8 +177,10 @@ private val artworkValidationCache = java.util.concurrent.ConcurrentHashMap<andr
  * Decode a bitmap from a song's artwork URI.
  *
  * Local songs expose content:// URIs that only ContentResolver can open; streaming
- * (Go-mode) songs expose http(s):// artwork URLs that ContentResolver rejects, so
- * those are fetched through Coil instead.
+ * (Go-mode) songs expose http(s):// artwork URLs so those are fetched through Coil.
+ *
+ * We want at least `maxSize` pixels on the longest dimension so the downstream
+ * ColorExtractor.QuantizerCelebi has enough pixels to produce meaningful clusters.
  */
 private suspend fun loadArtworkBitmap(context: android.content.Context, uri: android.net.Uri, maxSize: Int = 512): android.graphics.Bitmap? {
     return try {
@@ -186,11 +188,41 @@ private suspend fun loadArtworkBitmap(context: android.content.Context, uri: and
         if (isRemote) {
             val request = ImageRequest.Builder(context)
                 .data(uri.toString())
+                .memoryCacheKey(uri.toString())
                 .size(maxSize)
+                .crossfade(false)
+                .allowHardware(false)
                 .build()
-            (coil.Coil.imageLoader(context).execute(request).drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
+            val result = coil.Coil.imageLoader(context).execute(request)
+            val bitmapDrawable = result.drawable as? android.graphics.drawable.BitmapDrawable
+            if (bitmapDrawable != null) {
+                return bitmapDrawable.bitmap.copy(android.graphics.Bitmap.Config.ARGB_8888, false)
+            }
+            val bytes = (result.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
+                ?: run {
+                    val url = java.net.URL(uri.toString())
+                    val peekOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                    val conn = url.openConnection()
+                    conn.connectTimeout = 3000
+                    conn.readTimeout = 5000
+                    conn.getInputStream().use { BitmapFactory.decodeStream(it, null, peekOpts) }
+                    val sample = calculateInSampleSize(peekOpts.outWidth, peekOpts.outHeight, maxSize)
+                    val conn2 = url.openConnection()
+                    conn2.connectTimeout = 3000
+                    conn2.readTimeout = 5000
+                    val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+                    conn2.getInputStream().use { BitmapFactory.decodeStream(it, null, opts) }
+                }
+            bytes
         } else {
-            val opts = BitmapFactory.Options().apply { inSampleSize = 16 }
+            val peekOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            context.contentResolver.openInputStream(uri)?.use { stream ->
+                BitmapFactory.decodeStream(stream, null, peekOpts)
+            }
+            val srcW = peekOpts.outWidth
+            val srcH = peekOpts.outHeight
+            val sample = calculateInSampleSize(srcW, srcH, maxSize)
+            val opts = BitmapFactory.Options().apply { inSampleSize = sample }
             context.contentResolver.openInputStream(uri)?.use { stream ->
                 BitmapFactory.decodeStream(stream, null, opts)
             }
@@ -200,11 +232,25 @@ private suspend fun loadArtworkBitmap(context: android.content.Context, uri: and
     }
 }
 
+/**
+ * Calculate a power-of-two [inSampleSize] so the decoded bitmap fits within [maxSize]
+ * on its longest dimension. On zero / missing dimensions returns 1 (no downscale).
+ */
+private fun calculateInSampleSize(srcW: Int, srcH: Int, maxSize: Int): Int {
+    if (srcW <= 0 || srcH <= 0 || maxSize <= 0) return 1
+    val longest = maxOf(srcW, srcH)
+    var sample = 1
+    while (longest / (sample * 2) >= maxSize) sample *= 2
+    return sample
+}
+
 @Composable
 private fun rememberArtworkValidation(uri: android.net.Uri?, context: android.content.Context): Boolean? {
     if (uri == null || uri == android.net.Uri.EMPTY) return false
     val str = uri.toString().trim()
     if (str.isEmpty() || str == "null" || str == "content://media/external/audio/albumart/0") return false
+    // Generated letter placeholders are not real artwork — treat as missing so auto-fetch can run
+    if (uri.scheme == "file" && uri.lastPathSegment?.startsWith("placeholder_") == true) return false
     if (str.startsWith("http://") || str.startsWith("https://")) return true
 
     artworkValidationCache[uri]?.let { return it }
@@ -215,17 +261,15 @@ private fun rememberArtworkValidation(uri: android.net.Uri?, context: android.co
     LaunchedEffect(uri) {
         val valid = withContext(Dispatchers.IO) {
             try {
-                // Must actually decode a bitmap — openInputStream succeeds on dead MediaStore URIs
+                // Use inJustDecodeBounds — the fastest way to confirm an image
+                // exists at the URI without decoding any pixels.
                 val opts = android.graphics.BitmapFactory.Options().apply {
-                    inSampleSize = 64   // tiny decode just to verify data exists
-                    inJustDecodeBounds = false
+                    inJustDecodeBounds = true
                 }
-                val bmp = context.contentResolver.openInputStream(uri)?.use { stream ->
+                context.contentResolver.openInputStream(uri)?.use { stream ->
                     android.graphics.BitmapFactory.decodeStream(stream, null, opts)
                 }
-                val result = bmp != null && bmp.width > 0 && bmp.height > 0
-                bmp?.recycle()
-                result
+                opts.outWidth > 0 && opts.outHeight > 0
             } catch (_: Exception) {
                 false
             }
@@ -379,9 +423,7 @@ fun ExpressivePlayerScreen(
             try {
                 val bitmap = loadArtworkBitmap(context, artworkUri, 512)
                 val extracted = if (bitmap != null) {
-                    val result = ColorExtractor.extractColorsFromBitmap(bitmap)
-                    bitmap.recycle()
-                    result
+                    ColorExtractor.extractColorsFromBitmap(bitmap)
                 } else null
                 val seedArgb = extracted?.seedColor?.takeIf { it != 0 }
                     ?: if (isDarkTheme) extracted?.darkPrimary else extracted?.primary
@@ -480,7 +522,6 @@ fun ExpressivePlayerScreen(
 
     val artworkClipShape = if (lyricsVisible) RoundedCornerShape(artworkCornerRadius) else playerArtworkShape
 
-    // Extract dominant color from artwork for expressive ambient backdrop surfaces
     val needsDarkSurfaces = showDarkBg && !useLightModeOnDarkBg
     val darkScheme = remember { darkColorScheme() }
     val darkSurfaceHigh = darkScheme.surfaceContainerHigh
@@ -503,7 +544,6 @@ fun ExpressivePlayerScreen(
                             b += android.graphics.Color.blue(p)
                         }
                     }
-                    bitmap.recycle()
                     Color(r.toFloat() / count / 255f, g.toFloat() / count / 255f, b.toFloat() / count / 255f)
                 } else null
             } catch (_: Exception) { null }
@@ -523,7 +563,6 @@ fun ExpressivePlayerScreen(
     // the text (effective backdrop luminance ≈ 70% of the raw artwork luminance).
     val ambientTextColor = if ((artColor?.luminance() ?: 0f) > 0.65f) Color.Black else Color.White
 
-    // Animated colors — derived from artwork when backdrop is active, solid M3 surfaces otherwise
     val ambientAlpha = if (isBackdropEnabled) playerAmbientBackdropIntensity else 1f
     val ambientPlayContainer = Color.White
     val ambientPlayContent = Color.Black
@@ -590,8 +629,6 @@ fun ExpressivePlayerScreen(
         targetValue = if (lyricsVisible && showDarkBg) 1f else 0f, animationSpec = tween(600), label = "lyricsOverlayAlpha"
     )
 
-
-    // showAlbumArt is now a derived val (computed above) — no LaunchedEffect needed.
 
     val isCompactWidth = windowScreenWidthDp() < 360
     val isCompactHeight = windowScreenHeightDp() < 640
@@ -662,6 +699,7 @@ fun ExpressivePlayerScreen(
     var showAutoFetchEmbedDialog by remember { mutableStateOf(false) }
     var pendingAutoFetchSong by remember { mutableStateOf<Song?>(null) }
     val autoFetchPromptedSongIds = remember { mutableStateOf<Set<String>>(emptySet()) }
+    var lastNoArtworkToastTime by remember { mutableStateOf(0L) }
 
     // Auto-fetch in both modes, but only after validation confirms the song has no
     // artwork (null = still checking). Each song is prompted at most once per session.
@@ -689,6 +727,16 @@ fun ExpressivePlayerScreen(
                         pendingAutoFetchSong = currentSong
                         fetchedAutoArtworkUriStr = uriStr
                         showAutoFetchEmbedDialog = true
+                    }
+                } else {
+                    val now = android.os.SystemClock.elapsedRealtime()
+                    if (now - lastNoArtworkToastTime > 5000) {
+                        lastNoArtworkToastTime = now
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.expressiveplayerscreen_no_artwork_found),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -796,7 +844,6 @@ fun ExpressivePlayerScreen(
         )
     }
 
-    // ====== Unified Background Layer (motion canvas style with smooth track transitions) ======
     val unifiedBackground = @Composable { modifier: Modifier ->
         val currentArtworkUri = debouncedSong.value?.artworkUri
         val gc = if (useLightModeOnDarkBg) Color.White else Color.Black
@@ -818,13 +865,11 @@ fun ExpressivePlayerScreen(
                     label = "canvasArtworkTransition"
                 ) { artworkUri ->
                     Box(modifier = modifier.fillMaxSize()) {
-                        // Layer 1: Full-screen blurred artwork
                         AsyncImage(
                             model = ImageRequest.Builder(context).data(artworkUri).size(128, 128).build(),
                             contentDescription = null, contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize().blur(150.dp)
                         )
-                        // Layer 2: Clear artwork with motion canvas gradient mask
                         // Phone: vertical gradient (top to bottom, fades at ~65%)
                         // Tablet landscape: horizontal gradient (left to right, artwork on left)
                         Box(
@@ -851,11 +896,9 @@ fun ExpressivePlayerScreen(
                                 CanvasArtworkPlayer(primaryUrl = canvasArtwork.animated, fallbackUrl = canvasArtwork.videoUrl, isPlaying = isPlaying, alwaysPlay = true, modifier = Modifier.fillMaxSize())
                             }
                         }
-                        // Layer 3: Dynamic overlay for depth
                         Box(modifier = Modifier.fillMaxSize().background(
                             if (isLandscapeTablet) Brush.horizontalGradient(listOf(gc.copy(alpha = 0.03f), gc.copy(alpha = 0.35f)))
                             else Brush.verticalGradient(listOf(gc.copy(alpha = 0.05f), gc.copy(alpha = 0.4f)))))
-                        // Layer 4: Lyrics overlay
                         Box(modifier = Modifier.fillMaxSize().alpha(lyricsOverlayAlpha).background(
                             if (isLandscapeTablet) Brush.horizontalGradient(
                                 colors = listOf(gc.copy(alpha = 0.65f), gc.copy(alpha = 0.50f), gc.copy(alpha = 0.72f)))
@@ -896,17 +939,14 @@ fun ExpressivePlayerScreen(
     Box(
         modifier = Modifier.fillMaxSize().background(outerBoxBgColor)
     ) {
-        // Background
         AnimatedVisibility(visible = showBg, enter = fadeIn(tween(600)), exit = fadeOut(tween(600))) {
             val bgZoom = 1f + 0.04f * (1f - localEntranceFraction)
             unifiedBackground(Modifier.fillMaxSize().graphicsLayer { scaleX = bgZoom; scaleY = bgZoom })
         }
 
-        // Content Column with swipe dismiss
         Column(
             modifier = Modifier.fillMaxSize().statusBarsPadding().then(swipeMinimizeModifier)
         ) {
-            // ====== Content area ======
             BoxWithConstraints(
                 modifier = Modifier.weight(1f).fillMaxWidth().navigationBarsPadding().padding(top = 8.dp, bottom = 0.dp)
             ) {
@@ -1107,7 +1147,7 @@ fun ExpressivePlayerScreen(
                                             isLast = true,
                                             containerColor = controlsContainerColor,
                                             contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
-                                            icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite
+                                            icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true)
                                         )
                                     }
                                 }
@@ -1284,7 +1324,7 @@ fun ExpressivePlayerScreen(
                                         isFirst = false,
                                         isLast = false,
                                         type = RhythmButtonType.Tonal,
-                                        icon = if (isFavorite) RhythmIcons.FavoriteFilled else RhythmIcons.Favorite,
+                                        icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
                                         iconSize = 20.dp,
                                         text = null,
                                         contentDescription = stringResource(R.string.expressiveplayerscreen_favorite),

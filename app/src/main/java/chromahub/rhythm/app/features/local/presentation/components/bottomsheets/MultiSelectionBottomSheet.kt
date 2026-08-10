@@ -256,8 +256,8 @@ fun MultiSelectionBottomSheet(
                             if (onToggleLikeAll != null) {
                                 add(
                                     MultiOptionItem(
-                                        icon = if (allAreLiked) MaterialSymbolIcon("heart_broken", filled = true) else RhythmIcons.FavoriteFilled,
-                                        text = if (allAreLiked) context.getString(R.string.action_remove_from_favorites) else context.getString(R.string.action_add_to_favorites),
+                                        icon = if (allAreLiked) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
+                                        text = if (allAreLiked) context.getString(R.string.action_dislike) else context.getString(R.string.action_like),
                                         containerColor = tertiaryContainer,
                                         iconColor = onTertiaryContainer,
                                         onClick = { onToggleLikeAll(!allAreLiked); onDismiss() }

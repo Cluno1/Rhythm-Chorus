@@ -294,13 +294,18 @@ object ColorExtractor {
      * Resize bitmap for efficient color extraction
      */
     private fun resizeForExtraction(bitmap: Bitmap, maxDimension: Int): Bitmap {
-        if (maxDimension <= 0) return bitmap
-        if (bitmap.width <= maxDimension && bitmap.height <= maxDimension) return bitmap
+        val source = if (bitmap.config == Bitmap.Config.HARDWARE) {
+            bitmap.copy(Bitmap.Config.ARGB_8888, false)
+        } else {
+            bitmap
+        }
+        if (maxDimension <= 0) return source
+        if (source.width <= maxDimension && source.height <= maxDimension) return source
 
-        val scale = maxDimension.toFloat() / max(bitmap.width, bitmap.height).toFloat()
-        val newWidth = (bitmap.width * scale).roundToInt().coerceAtLeast(1)
-        val newHeight = (bitmap.height * scale).roundToInt().coerceAtLeast(1)
-        return bitmap.scale(newWidth, newHeight, true)
+        val scale = maxDimension.toFloat() / max(source.width, source.height).toFloat()
+        val newWidth = (source.width * scale).roundToInt().coerceAtLeast(1)
+        val newHeight = (source.height * scale).roundToInt().coerceAtLeast(1)
+        return source.scale(newWidth, newHeight, true)
     }
 
     /**

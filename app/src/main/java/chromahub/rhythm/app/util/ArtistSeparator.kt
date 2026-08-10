@@ -84,9 +84,25 @@ object ArtistSeparator {
             return listOf(artistName.trim()).filter { it.isNotBlank() }
         }
 
+        // Protect escaped delimiter characters before regex splitting
+        val placeholder = "\u0000\u0001"
+        val escaped = StringBuilder(artistName.length)
+        var i = 0
+        while (i < artistName.length) {
+            val c = artistName[i]
+            if (c == ESCAPE_CHAR && i + 1 < artistName.length && delimiters.contains(artistName[i + 1])) {
+                escaped.append(placeholder)
+                escaped.append(artistName[i + 1])
+                i += 2
+            } else {
+                escaped.append(c)
+                i++
+            }
+        }
+
         val regex = getOrCreateRegex(delimiters)
-        return regex.split(artistName)
-            .map { it.trim() }
+        return regex.split(escaped.toString())
+            .map { it.replace(placeholder, ESCAPE_CHAR.toString()).trim() }
             .filter { it.isNotBlank() }
     }
 

@@ -1321,8 +1321,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">Играть дальше</string>
     <string name="action_add_to_queue">Добавить в очередь</string>
-    <string name="action_remove_from_favorites">Удалить из избранного</string>
-    <string name="action_add_to_favorites">Добавить в избранное</string>
     <string name="action_song_info">Информация о песне</string>
     <string name="action_add_to_blacklist">Добавить в черный список</string>
     <string name="action_play_all">Воспроизвести все</string>
@@ -1776,8 +1774,6 @@
     <string name="settings_shapes_desc">Выразительные формы</string>
     <string name="settings_skip_silence">Пропустить тишину</string>
     <string name="settings_skip_silence_desc">Автоматический пропуск пауз в треках.</string>
-    <string name="settings_song_ratings">Рейтинги песен</string>
-    <string name="settings_song_ratings_desc">Оценивайте песни звездочками, чтобы улучшить статистику и сортировку</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">Жесты смахивания в мини-плеере</string>
     <string name="settings_gesture_miniplayer_swipe_desc">Открыть, закрыть, пропустить смахивание</string>
@@ -2158,8 +2154,6 @@
     <string name="rhythmstatsscreen_top_songs">Лучшие песни</string>
     <string name="rhythmstatsscreen_listening_habits">Привычки слушать</string>
     <string name="rhythmstatsscreen_listening_timeline">Хронология прослушивания</string>
-    <string name="rhythmstatsscreen_favorites">Избранное</string>
-    <string name="rhythmstatsscreen_loved_4">Люблю (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">Статистики пока нет</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">Продолжайте слушать и стройте свое музыкальное путешествие!</string>
     <string name="universalsearchscreen_remove_search">Удалить поиск</string>
@@ -2279,19 +2273,6 @@
     <string name="playing_next_simple">Дальше играет: %1$s</string>
     <string name="failed_to_request_permission">Не удалось запросить разрешение: %1$s</string>
     <string name="unexpected_error">Непредвиденная ошибка: %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="one">Звезды %1$s – %2$d</item>
-        <item quantity="few">Звезды %1$s – %2$d</item>
-        <item quantity="many">Звезды %1$s – %2$d</item>
-        <item quantity="other">Звезды %1$s – %2$d</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="one">%1$d звезд</item>
-        <item quantity="few">%1$d звезд</item>
-        <item quantity="many">%1$d звезд</item>
-        <item quantity="other">%1$d звезд</item>
-    </plurals>
-    <string name="rating_unknown">Неизвестно</string>
     <string name="album_artwork_description">Обложка альбома %1$s</string>
     <string name="error_fetching_artwork">Ошибка при загрузке обложки: %1$s</string>
     <string name="edit_lyrics">Редактировать текст</string>
@@ -2310,19 +2291,6 @@
         <item quantity="many">Вы уверены, что хотите удалить песни (%1$d) из этого плейлиста?</item>
         <item quantity="other">Вы уверены, что хотите удалить песни (%1$d) из этого плейлиста?</item>
     </plurals>
-    <string name="rating_not_rated">Без рейтинга</string>
-    <string name="rating_liked">Понравилось</string>
-    <string name="rating_good">Хорошо</string>
-    <string name="rating_great">Отлично</string>
-    <string name="rating_loved">Очень понравился</string>
-    <string name="rating_absolute_favorite">Абсолютный фаворит</string>
-    <string name="rating_desc_not_rated">Нет рейтинга</string>
-    <string name="rating_desc_liked">Понравилось — подходит для периодического прослушивания</string>
-    <string name="rating_desc_good">Хорошо – сплошная трасса</string>
-    <string name="rating_desc_great">Отлично! Мне очень нравится</string>
-    <string name="rating_desc_loved">Очень понравился – один из моих любимых</string>
-    <string name="rating_desc_absolute_favorite">Абсолютный фаворит — трек высшего уровня</string>
-    <string name="rating_desc_unknown">Неизвестный рейтинг</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">Отображение переключателя избранных на больших виджетах</string>
     <string name="settings_clear_all_logs_desc">Удалить все сохраненные отчеты о сбоях</string>
@@ -2379,10 +2347,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">На мини-плеере активен индикатор выполнения. Затем попробуйте изменить форму и углы.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">Прогресс мини-плеера скрыт. Включите его для быстрого отслеживания.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">Компактный режим теперь минимален. Включите прогресс для лучшей видимости.</string>
-    <string name="settings_tip_library_active_desc_1">Рейтинги включены. Используйте настройки библиотеки, чтобы улучшить обнаружение и сортировку.</string>
-    <string name="settings_tip_library_active_desc_2">Ваша библиотека поддерживает рейтинги. Настройте сканирование и группировку для более чистого просмотра.</string>
-    <string name="settings_tip_library_inactive_desc_1">Рейтинги отключены. Настройки библиотеки по-прежнему могут улучшить структуру и скорость.</string>
-    <string name="settings_tip_library_inactive_desc_2">Обнаружен упрощенный режим библиотеки. Настройте группировку для более быстрой навигации.</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">Сначала встраивается</string>
     <string name="lyrics_source_embedded_first_desc">Попробуйте метаданные аудиофайла → Онлайн API → файлы .lrc</string>
@@ -2597,11 +2561,6 @@
     <string name="library_scan_media">Сканирование носителя…</string>
     <string name="library_category_all">Все</string>
     <string name="library_category_favorites">❤️ Избранное</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ Абсолютные фавориты</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ Очень понравился</string>
-    <string name="library_category_great">⭐⭐⭐ Отлично</string>
-    <string name="library_category_good">⭐⭐ Хорошо</string>
-    <string name="library_category_liked">⭐ Понравилось</string>
     <string name="library_category_short">Короткий (&lt; 3 мин)</string>
     <string name="library_category_medium">Средний (3–5 мин)</string>
     <string name="library_category_long">Длинный (&gt; 5 мин)</string>
@@ -2716,7 +2675,6 @@
     <string name="metadata_album_artist">Исполнитель альбома</string>
     <string name="metadata_play_count">Счетчик воспроизведений</string>
     <string name="metadata_total_played">Всего сыграно</string>
-    <string name="metadata_rating">Рейтинг</string>
     <string name="metadata_quality">Качество</string>
     <string name="metadata_audio_tech">Аудиотехника</string>
     <string name="metadata_bit_depth">Битовая глубина</string>

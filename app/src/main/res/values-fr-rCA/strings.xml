@@ -1307,8 +1307,6 @@
     <!-- Context Menu Actions -->
     <string name="action_play_next">Jouer ensuite</string>
     <string name="action_add_to_queue">Ajouter à la file d\'attente</string>
-    <string name="action_remove_from_favorites">Supprimer des favoris</string>
-    <string name="action_add_to_favorites">Ajouter aux favoris</string>
     <string name="action_song_info">Informations sur la chanson</string>
     <string name="action_add_to_blacklist">Ajouter à la liste noire</string>
     <string name="action_play_all">Tout lire</string>
@@ -1758,8 +1756,6 @@
     <string name="settings_shapes_desc">Formes expressives</string>
     <string name="settings_skip_silence">Passer le silence</string>
     <string name="settings_skip_silence_desc">Ignorer automatiquement les intervalles de silence dans les pistes.</string>
-    <string name="settings_song_ratings">Classements des chansons</string>
-    <string name="settings_song_ratings_desc">Évaluez les chansons avec des étoiles pour améliorer les statistiques et le tri</string>
     <!-- Gestures Search Strings -->
     <string name="settings_gesture_miniplayer_swipe">Gestes de balayage du mini-lecteur</string>
     <string name="settings_gesture_miniplayer_swipe_desc">Ouvrir, fermer, ignorer le balayage</string>
@@ -2140,8 +2136,6 @@
     <string name="rhythmstatsscreen_top_songs">Meilleures chansons</string>
     <string name="rhythmstatsscreen_listening_habits">Habitudes d\'écoute</string>
     <string name="rhythmstatsscreen_listening_timeline">Chronologie d\'écoute</string>
-    <string name="rhythmstatsscreen_favorites">Favoris</string>
-    <string name="rhythmstatsscreen_loved_4">Aimé (4+)</string>
     <string name="rhythmstatsscreen_no_stats_available_yet">Aucune statistique disponible pour l\'instant</string>
     <string name="rhythmstatsscreen_keep_listening_to_build">Continuez à écouter pour construire votre voyage musical !</string>
     <string name="universalsearchscreen_remove_search">Supprimer la recherche</string>
@@ -2260,17 +2254,6 @@
     <string name="playing_next_simple">Lecture suivante : %1$s</string>
     <string name="failed_to_request_permission">Échec de la demande d\'autorisation : %1$s</string>
     <string name="unexpected_error">Erreur inattendue : %1$s</string>
-    <plurals name="rating_stars_desc">
-        <item quantity="one">%1$s - %2$d étoiles</item>
-        <item quantity="many">%1$s - %2$d étoiles</item>
-        <item quantity="other">%1$s - %2$d étoiles</item>
-    </plurals>
-    <plurals name="rating_stars_count">
-        <item quantity="one">%1$d étoiles</item>
-        <item quantity="many">%1$d étoiles</item>
-        <item quantity="other">%1$d étoiles</item>
-    </plurals>
-    <string name="rating_unknown">Inconnu</string>
     <string name="album_artwork_description">Pochette d\'album pour %1$s</string>
     <string name="error_fetching_artwork">Erreur lors de la récupération de l\'illustration : %1$s</string>
     <string name="edit_lyrics">Modifier les paroles</string>
@@ -2288,19 +2271,6 @@
         <item quantity="many">Êtes-vous sûr de vouloir supprimer %1$d titres de cette playlist ?</item>
         <item quantity="other">Êtes-vous sûr de vouloir supprimer %1$d titres de cette playlist ?</item>
     </plurals>
-    <string name="rating_not_rated">Non noté</string>
-    <string name="rating_liked">J\'ai aimé</string>
-    <string name="rating_good">Bien</string>
-    <string name="rating_great">Génial</string>
-    <string name="rating_loved">J\'ai adoré</string>
-    <string name="rating_absolute_favorite">Favoris absolu</string>
-    <string name="rating_desc_not_rated">Aucune note</string>
-    <string name="rating_desc_liked">J\'ai aimé - Idéal pour une écoute occasionnelle</string>
-    <string name="rating_desc_good">Bon – Piste solide</string>
-    <string name="rating_desc_great">Génial – J\'apprécie vraiment celui-ci</string>
-    <string name="rating_desc_loved">J\'ai adoré - Un de mes favoris</string>
-    <string name="rating_desc_absolute_favorite">Absolute Favorite - Piste de premier plan</string>
-    <string name="rating_desc_unknown">Note inconnue</string>
     <!-- Settings Toggles / Options Descriptions -->
     <string name="widget_show_favorite_button_desc">Afficher la bascule des favoris sur les grands widgets</string>
     <string name="settings_clear_all_logs_desc">Supprimer tous les rapports de crash stockés</string>
@@ -2357,10 +2327,6 @@
     <string name="settings_tip_miniplayer_active_desc_2">La barre de progression est active sur le mini-lecteur. Essayez ensuite de modifier la forme et les coins.</string>
     <string name="settings_tip_miniplayer_inactive_desc_1">La progression du mini-lecteur est masquée. Activez-le pour une connaissance rapide des pistes.</string>
     <string name="settings_tip_miniplayer_inactive_desc_2">Le mode compact est désormais minimal. Activez la progression pour une meilleure visibilité.</string>
-    <string name="settings_tip_library_active_desc_1">Les classements sont activés. Utilisez les paramètres de la bibliothèque pour affiner la découverte et le tri.</string>
-    <string name="settings_tip_library_active_desc_2">Votre bibliothèque prend en charge les évaluations. Ajustez l\'analyse et le regroupement pour une navigation plus propre.</string>
-    <string name="settings_tip_library_inactive_desc_1">Les classements sont désactivés. Les paramètres de la bibliothèque peuvent encore améliorer la structure et la vitesse.</string>
-    <string name="settings_tip_library_inactive_desc_2">Mode bibliothèque simplifié détecté. Ajustez le regroupement pour une navigation plus rapide.</string>
     <!-- Lyrics Source Dialog -->
     <string name="lyrics_source_embedded_first">Intégré en premier</string>
     <string name="lyrics_source_embedded_first_desc">Essayez les métadonnées des fichiers audio → API en ligne → fichiers .lrc</string>
@@ -2571,11 +2537,6 @@
     <string name="library_scan_media">Numérisation des médias…</string>
     <string name="library_category_all">Tous</string>
     <string name="library_category_favorites">❤️ Favoris</string>
-    <string name="library_category_absolute_favorites">⭐⭐⭐⭐⭐ Favoris absolus</string>
-    <string name="library_category_loved">⭐⭐⭐⭐ J\'ai adoré</string>
-    <string name="library_category_great">⭐⭐⭐ Génial</string>
-    <string name="library_category_good">⭐⭐ Bien</string>
-    <string name="library_category_liked">⭐ J\'ai aimé</string>
     <string name="library_category_short">Court (&lt; 3 min)</string>
     <string name="library_category_medium">Moyen (3–5 minutes)</string>
     <string name="library_category_long">Longue (&gt; 5 min)</string>
@@ -2688,7 +2649,6 @@
     <string name="metadata_album_artist">Artiste de l\'album</string>
     <string name="metadata_play_count">Nombre de lectures</string>
     <string name="metadata_total_played">Total joué</string>
-    <string name="metadata_rating">Note</string>
     <string name="metadata_quality">Qualité</string>
     <string name="metadata_audio_tech">Technologie audio</string>
     <string name="metadata_bit_depth">Profondeur de bits</string>

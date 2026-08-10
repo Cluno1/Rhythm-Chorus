@@ -1389,7 +1389,6 @@ fun SettingsTipsRow(
     val miniPlayerShowProgress by appSettings.miniPlayerShowProgress.collectAsState()
     val playerShowSeekButtons by appSettings.playerShowSeekButtons.collectAsState()
     val gesturePlayerSwipeTracks by appSettings.gesturePlayerSwipeTracks.collectAsState()
-    val enableRatingSystem by appSettings.enableRatingSystem.collectAsState()
 
     LaunchedEffect(limitMinutes, manualVolumeFloat) {
         val statsRepo = chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository.getInstance(context)
@@ -1428,8 +1427,7 @@ fun SettingsTipsRow(
         updatesEnabled,
         miniPlayerShowProgress,
         playerShowSeekButtons,
-        gesturePlayerSwipeTracks,
-        enableRatingSystem
+        gesturePlayerSwipeTracks
     ) {
         val random = kotlin.random.Random(shuffleSeed)
         val isLocalMode = appMode == "LOCAL"
@@ -1636,22 +1634,11 @@ fun SettingsTipsRow(
                 )
             )
             if (isLocalMode) {
-                val descs = if (enableRatingSystem) {
-                    listOf(
-                        context.getString(R.string.settings_tip_library_active_desc_1),
-                        context.getString(R.string.settings_tip_library_active_desc_2)
-                    )
-                } else {
-                    listOf(
-                        context.getString(R.string.settings_tip_library_inactive_desc_1),
-                        context.getString(R.string.settings_tip_library_inactive_desc_2)
-                    )
-                }
                 add(
                     SettingsTipData(
                         icon = RhythmIcons.Library,
                         title = context.getString(R.string.settingsscreen_library_settings),
-                        text = descs.random(random),
+                        text = context.getString(R.string.settings_library_settings_desc),
                         route = SettingsRoutes.LIBRARY_SETTINGS
                     )
                 )
