@@ -10,6 +10,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.4.457.1200 Beta] - 2026-08-11
+
+### Added
+- Add support for TTML lyrics and "Better Lyrics" #363
+- Add custom artwork editing for artists/playlists #280 #415
+- Add shortcuts to active it via android quick settings tile #227 #457
+- Add option to disable artist image #475
+- Add option to select songs from the folder section #492
+- Add song deletion flow and player UX polish #179 #493 #501 #508
+- Add foldable posture-aware player layouts #529 #530
+- Add mono audio downmix and device toggle #531
+- Expand support for MP4 and advanced audio codecs #535
+- Improve metadata parsing and album grouping #521 #538
+- Add format scan controls and metadata fixes
+- Drop song ratings, add Album Artists tab
+- Merge streaming mode into shared local UI
+- Harden plural string handling in settings
+- Fix vertical alignment of time duration texts in Expressive player layout
+- Optimize compose duration formatting performance and click modifiers target area
+- Add toggle option for remaining playback time
+- Update translations
+
 ## [5.4.457.1199 Beta] - 2026-08-11
 
 ### Added
