@@ -721,7 +721,7 @@ fun ExpressivePlayerScreen(
                         // Go mode: no file to embed — apply to the in-memory song (session-only).
                         if (debouncedSong.value?.id == currentSong.id) {
                             val artUri = uriStr.toUri()
-                            musicViewModel?.updateCurrentSongMetadata(currentSong.copy(artworkUri = artUri))
+                            musicViewModel.updateCurrentSongMetadata(currentSong.copy(artworkUri = artUri))
                             Toast.makeText(
                                 context,
                                 context.getString(R.string.expressiveplayerscreen_artwork_applied),

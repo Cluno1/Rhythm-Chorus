@@ -198,7 +198,7 @@ jobs:
 
       - name: Upload Nightly APKs
         if: steps.check_version.outputs.should_run == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Rhythm-Nightly-Artifacts
           path: |

@@ -202,9 +202,8 @@ class RhythmApplication : Application(), ImageLoaderFactory {
         // 10 = low, 15 = moderate). Release image caches whenever the app is under
         // real pressure OR fully backgrounded — this is the main OOM fix when many
         // apps are open.
-        val underPressure = level <= ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE
-        val fullyHidden = level >= ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN
-        if (underPressure || fullyHidden) {
+        val isBackgroundOrCritical = level >= ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN
+        if (isBackgroundOrCritical) {
             CoroutineScope(Dispatchers.Main).launch {
                 try {
                     Coil.imageLoader(applicationContext).memoryCache?.clear()
