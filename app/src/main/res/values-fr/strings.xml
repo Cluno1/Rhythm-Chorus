@@ -39,11 +39,11 @@
     <!-- Settings - Queue & Playback -->
     <!-- Settings - Queue -->
     <string name="settings_queue">File d\'attente</string>
-    <string name="settings_queue_desc">Règles de file d\'attente, génération automatique, comportement</string>
+    <string name="settings_queue_desc">Comportement de la file d\'attente, mélange aléatoire et génération automatique</string>
     <string name="settings_queue_title">Paramètres de file d\'attente</string>
     <!-- Settings - Playback -->
     <string name="settings_playback">Lecture</string>
-    <string name="settings_playback_desc">États de lecture, fondu enchaîné, formatage de l\'heure</string>
+    <string name="settings_playback_desc">Comportement de lecture, fondu enchaîné et affichage de l\'heure</string>
     <string name="settings_playback_title">Paramètres de lecture</string>
     <string name="settings_queue_behavior">Règles de file d\'attente et lecture aléatoire</string>
     <string name="settings_use_exoplayer_shuffle">Moteur de lecture aléatoire</string>
@@ -522,7 +522,7 @@
     <string name="onboarding_library_3">Options avancées d\'affichage et de tri disponibles dans Paramètres &gt; Paramètres de la bibliothèque</string>
     <string name="onboarding_library_4">Les listes de lecture par défaut (récemment ajoutées, les plus jouées) peuvent être basculées dans Paramètres &gt; Listes de lecture</string>
     <string name="onboarding_theme_title">Faites vôtre Rhythm</string>
-    <string name="onboarding_theme_desc">Personnalisez l\'apparence de Rhythm en fonction de votre style. Choisissez le thème de votre système, la police ou Material vos couleurs dynamiques (Android 12+).</string>
+    <string name="onboarding_theme_desc">Personnalisez l\'apparence de Rhythm pour l\'adapter à votre style. Choisissez d\'où proviennent les couleurs, sélectionnez une palette de couleurs ou modifiez la police.</string>
     <string name="onboarding_more_tuner">Plus de personnalisation dans les paramètres</string>
     <string name="onboarding_tuner_1">Schémas de couleurs personnalisés et extraction des couleurs des pochettes d\'album</string>
     <string name="onboarding_tuner_2">Paramètres de personnalisation des polices et de typographie</string>
@@ -600,7 +600,7 @@
     
     <!-- Onboarding Theming -->
     <string name="onboarding_player_theme_title">Thèmes de lecture et de mini-lecteur</string>
-    <string name="onboarding_player_theme_desc">Personnalisez vos interfaces de lecture. Basculez entre le design Rhythm épuré et moderne ou le design expressif dynamique et fluide.</string>
+    <string name="onboarding_player_theme_desc">Personnalisez la lecture et le mini-lecteur. Choisissez entre le design épuré « Rhythm » et le design dynamique « Expressive », puis affinez les réglages des commandes, de la disposition et de l\'affichage de la progression.</string>
     <!-- Onboarding Updater -->
     <string name="onboarding_update_check_failed">Échec de la vérification de la mise à jour</string>
     <string name="onboarding_ready_to_install">Prêt à installer</string>
@@ -664,7 +664,7 @@
     <string name="onboarding_gesture_tip_2">Les balayages rapides répondent plus rapidement que les balayages lents</string>
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">Widgets de lancement</string>
-    <string name="onboarding_widgets_desc">Ajoutez des widgets Rhythm à votre lanceur pour un contrôle rapide de la musique. Personnalisez les informations affichées et l\'apparence du widget.</string>
+    <string name="onboarding_widgets_desc">Ajoutez les widgets « Rhythm Cookie » et « Stats » à votre lanceur pour contrôler votre musique d\'un seul coup d\'œil. Choisissez la fonction associée à chaque coin du « Rhythm Cookie » et les statistiques que le widget affiche.</string>
     <string name="onboarding_widget_artist">Afficher le nom de l\'artiste</string>
     <string name="onboarding_widget_artist_desc">Afficher l\'artiste actuel dans le widget</string>
     <string name="onboarding_widget_album">Afficher le nom de l\'album</string>
@@ -764,7 +764,7 @@
     <string name="licenses_title">Licences Open Source</string>
     <string name="licenses_desc">Construit avec d\'étonnants projets open source</string>
     <string name="licenses_apache">Licences Open Source</string>
-    <string name="licenses_attribution">Cette application est sous licence GPL-3.0. Les bibliothèques sont sous licence Apache 2.0 ou sous licences compatibles</string>
+    <string name="licenses_attribution">Cette application est distribuée sous licence GPL. Les bibliothèques sont distribuées sous licence Apache ou sous des licences compatibles.</string>
     <!-- Components: Player Chip Order -->
     <string name="player_chip_order_title">Ordre des jetons du joueur</string>
     <string name="player_chip_order_desc">Personnalisez les jetons des joueurs</string>
@@ -773,7 +773,7 @@
     <string name="library_tab_order_title">Ordre des onglets de la bibliothèque</string>
     <string name="library_tab_order_desc">Réorganiser et basculer la visibilité</string>
     <!-- Components: Playback Bottom Sheet -->
-    <string name="playback_lyrics_priority_desc">Configurer les sources, les comportements, la mise en page, la taille et le style des paroles</string>
+    <string name="playback_lyrics_priority_desc">Sources des paroles, comportement et options d\'affichage</string>
     <string name="playback_settings">Paramètres de lecture</string>
     <!-- Components: Lyrics Editor -->
     <string name="lyrics_placeholder">Entrez les paroles ici…\n\nVous pouvez utiliser le format LRC :\n[00:12.00] Première ligne\n[00:17.00] Deuxième ligne</string>
@@ -795,7 +795,7 @@
     <string name="backup_restore_tap_placeholder">Restaurer à partir de fichiers ou du presse-papiers en un seul clic</string>
     <string name="backup_local_storage_placeholder">Sauvegardes stockées localement sur votre appareil pour des raisons de confidentialité</string>
     <string name="library_reorder_tabs">Réorganiser les onglets pour personnaliser votre expérience de bibliothèque</string>
-    <string name="external_services_desc">Contrôlez quels services externes API sont actifs pour améliorer votre expérience musicale. Activez/désactivez les services pour gérer l\'utilisation des données et les fonctionnalités.</string>
+    <string name="external_services_desc">Choisissez les services en ligne utilisés par Rhythm pour les paroles, les photos d\'artistes et les pochettes d\'album animées. Désactivez ceux dont vous n\'avez pas besoin afin de réduire la consommation de données.</string>
     <string name="lyrics_source_priority_title">Priorité à la source des paroles</string>
     <string name="playlist_action_title">Action de clic sur la liste de lecture</string>
     <string name="playlist_action_desc">Comportement par défaut pour les taps de playlist</string>
@@ -899,51 +899,51 @@
     <string name="settings_title">Paramètres</string>
     <string name="settings_section_appearance">Apparence et convivialité</string>
     <string name="settings_theme_customization">Thème</string>
-    <string name="settings_theme_customization_desc">Mode sombre, couleurs d\'accentuation</string>
+    <string name="settings_theme_customization_desc">Mode sombre, couleurs d\'accentuation et polices</string>
     <string name="settings_section_home_widgets">Accueil et widgets</string>
     <string name="settings_library_tab_order">Ordre des onglets de la bibliothèque</string>
-    <string name="settings_library_tab_order_desc">Disposition des onglets</string>
+    <string name="settings_library_tab_order_desc">Réorganiser et basculer entre les onglets de la bibliothèque</string>
     <string name="settings_section_user_interface">Navigation et commandes</string>
     <string name="settings_language">Langue</string>
-    <string name="settings_language_desc">Anglais, Espagnol</string>
+    <string name="settings_language_desc">Changer la langue de l\'application</string>
     <string name="settings_haptic_feedback">Retour haptique</string>
-    <string name="settings_haptic_feedback_desc">Appuyez sur les commentaires</string>
+    <string name="settings_haptic_feedback_desc">Vibrations lors des tapotements et des gestes</string>
     <string name="settings_section_queue_playback">File d\'attente et lecture</string>
     <string name="settings_section_audio_lyrics">Audio et effets</string>
     <string name="settings_section_audio_playback">Audio et lecture</string>
     <string name="settings_section_volume_device">Volume et appareil</string>
     <string name="settings_system_volume">Volume du système</string>
-    <string name="settings_system_volume_desc">Son du système</string>
+    <string name="settings_system_volume_desc">Utilisez le volume système plutôt que le volume de l\'application</string>
     <string name="settings_stop_playback_on_zero_volume">Pause sur volume zéro</string>
     <string name="settings_stop_playback_on_zero_volume_desc">Mettre la lecture en pause lorsque le volume atteint zéro</string>
     <string name="settings_show_lyrics">Afficher les paroles</string>
-    <string name="settings_show_lyrics_desc">Affichage des paroles</string>
+    <string name="settings_show_lyrics_desc">Afficher les paroles dans le lecteur</string>
     <string name="settings_queue_playback_title">File d\'attente et lecture</string>
-    <string name="settings_queue_playback_desc">Ajout automatique, répétition</string>
+    <string name="settings_queue_playback_desc">Ajout automatique à la file d\'attente, répétition et lecture aléatoire</string>
     <string name="settings_equalizer_title">Égaliseur</string>
-    <string name="settings_equalizer_desc">Graves, aigus</string>
+    <string name="settings_equalizer_desc">Graves, aigus et effets audio</string>
     <string name="settings_section_library_content">Bibliothèque et médias</string>
     <string name="settings_media_scan_title">Analyse des médias</string>
-    <string name="settings_media_scan_desc">Scanner les dossiers</string>
+    <string name="settings_media_scan_desc">Filtrer les morceaux et les dossiers qui apparaissent dans votre bibliothèque</string>
     <string name="settings_playlists_title">Listes de lecture</string>
-    <string name="settings_playlists_desc">Créer, importer</string>
+    <string name="settings_playlists_desc">Créer, importer et exporter des playlists</string>
     <string name="settings_section_notifications_services">Notifications et services</string>
-    <string name="settings_notifications_desc">Alertes de lecture, commandes</string>
+    <string name="settings_notifications_desc">Commandes de lecture, alertes et rappels</string>
     <string name="settings_section_storage_data">Données et stockage</string>
     <string name="settings_cache_management_title">Cache</string>
-    <string name="settings_cache_management_desc">Images, paroles</string>
+    <string name="settings_cache_management_desc">Pochettes d\'albums, paroles et fichiers mis en cache</string>
     <string name="settings_backup_restore_title">Sauvegarde et restauration</string>
-    <string name="settings_backup_restore_desc">Exporter, importer</string>
+    <string name="settings_backup_restore_desc">Sauvegarder et restaurer les playlists et les paramètres</string>
     <string name="settings_api_management">Intégrations</string>
-    <string name="settings_api_management_desc">API, Scrobble</string>
+    <string name="settings_api_management_desc">Paroles, pochettes d\'albums et services de scrobbling</string>
     <string name="settings_section_updates_info">Mises à jour et informations</string>
     <string name="settings_updates_title">Mises à jour</string>
     <string name="settings_updates_desc">Mises à jour de l\'application</string>
     <string name="settings_about_title">À propos</string>
-    <string name="settings_about_desc">Informations sur les versions</string>
+    <string name="settings_about_desc">Version, mentions légales et licences</string>
     <string name="settings_section_advanced">Avancé</string>
     <string name="settings_crash_log_history">Historique du journal des accidents</string>
-    <string name="settings_crash_log_history_desc">Rapports d\'accident</string>
+    <string name="settings_crash_log_history_desc">Consulter, exporter et partager les rapports d\'erreur</string>
     <string name="settings_experimental_features">Caractéristiques expérimentales</string>
     <string name="settings_experimental_features_desc">Fonctionnalités de pointe</string>
     <string name="settings_select_option">Paramètres Rhythm</string>
@@ -1125,13 +1125,13 @@
     <string name="settings_home_customization">Accueil</string>
     <string name="settings_home_customization_desc">Actions rapides, musique récente</string>
     <string name="settings_player_customization">Joueur</string>
-    <string name="settings_player_customization_desc">Boutons Sauter, barre de progression</string>
+    <string name="settings_player_customization_desc">Disposition du lecteur, commandes et barre de progression</string>
     <string name="settings_miniplayer_customization">Mini-lecteur</string>
-    <string name="settings_miniplayer_customization_desc">Contexte, contrôles</string>
+    <string name="settings_miniplayer_customization_desc">Style et commandes du mini-lecteur</string>
     <string name="settings_album_bottom_sheet_gradient_blur">Dégradé/Flou de l\'écran de l\'album</string>
     <string name="settings_album_bottom_sheet_gradient_blur_desc">Contrôle du dégradé et du flou derrière l\'écran de détails de l\'album</string>
     <string name="settings_gestures">Gestes</string>
-    <string name="settings_gestures_desc">Faites glisser pour ignorer</string>
+    <string name="settings_gestures_desc">Raccourcis de lecture par glissement et appui</string>
     <string name="settings_ignore_mediastore_covers">Afficher la pochette de la chanson au lieu de la pochette de l\'album</string>
     <string name="settings_ignore_mediastore_covers_desc">Préférez les illustrations intégrées à chaque fichier audio (anciennement Ignorer les couvertures MediaStore)</string>
     <string name="settings_lossless_artwork">Illustration sans perte</string>
@@ -1139,7 +1139,7 @@
     <string name="settings_song_artwork_restart_required">Le mode illustration a été modifié. Redémarrez l\'application pour vider les caches et exécuter une nouvelle analyse complète des médias avec les sources d\'illustrations mises à jour.</string>
     <string name="settings_artwork_cache_size">Taille du cache des illustrations</string>
     <string name="settings_artist_parsing">Artistes</string>
-    <string name="settings_artist_parsing_desc">Séparateurs, affichage</string>
+    <string name="settings_artist_parsing_desc">Comment les noms d\'artistes sont séparés et affichés</string>
     <string name="settings_rhythm_stats">Rhythm Statistiques</string>
     <string name="settings_rhythm_stats_desc">Durée d\'écoute, meilleurs titres et tendances</string>
     <string name="settings_rhythm_guard">Rhythm Garde</string>
@@ -1260,7 +1260,7 @@
     
     <!-- Playlist Settings Toggle -->
     <string name="playlist_ask_each_time">Demandez à chaque fois</string>
-    <string name="playlist_ask_each_time_desc">Afficher la boîte de dialogue avec les options</string>
+    <string name="playlist_ask_each_time_desc">Demander à chaque fois qu\'un morceau est lu</string>
     <!-- About Multi-Artist Parsing -->
     
     <!-- Home Screen Greetings -->
@@ -1278,7 +1278,7 @@
     <string name="artists_title">Artistes</string>
     <string name="artist_multi_parsing">Analyse multi-artistes</string>
     <string name="artist_enable_separation">Activer la séparation des artistes</string>
-    <string name="artist_enable_separation_desc">Diviser les balises multi-artistes (par exemple, \"Artiste1/Artiste2\")</string>
+    <string name="artist_enable_separation_desc">Séparer les balises regroupant plusieurs artistes (par exemple, « Artiste A/Artiste B »)</string>
     <string name="artist_configure_delimiters">Configurer les délimiteurs</string>
     <string name="artist_current_delimiters">Actuel : %1$s</string>
     <!-- About Screen -->
@@ -1325,7 +1325,7 @@
     <!-- About Screen (additional strings) -->
     
     <!-- Sleep Timer -->
-    <string name="sleep_timer_set_control">Définir le contrôle de lecture automatique</string>
+    <string name="sleep_timer_set_control">Mettre en pause ou arrêter la lecture après un délai défini</string>
     <!-- Home Sections -->
     <string name="home_section_recently_played">Récemment joué</string>
     <string name="home_section_discover">Découvrir le carrousel</string>
@@ -1446,7 +1446,7 @@
     <string name="settings_snowflake_display_area">Zone d\'affichage du flocon de neige</string>
     <string name="settings_snowflake_size">Taille du flocon de neige</string>
     <string name="settings_toggle_decoration_elements">Basculer les éléments de décoration individuels par position</string>
-    <string name="settings_multi_artist_parsing_info">Lorsqu\'il est activé, Rhythm divisera automatiquement les tags d\'artiste contenant plusieurs artistes. Ceci est utile pour les chansons téléchargées avec yt-dlp ou d\'autres outils qui utilisent des délimiteurs comme « / » pour séparer les artistes.\n\nLa barre oblique inverse (\\) peut être utilisée pour échapper aux délimiteurs.</string>
+    <string name="settings_multi_artist_parsing_info">Lorsqu\'elle est activée, la fonction « Rhythm » sépare les balises d\'artiste contenant plusieurs noms — comme « Artiste A/Artiste B » — en artistes distincts. Choisissez les délimiteurs à utiliser pour la séparation : barre oblique, virgule, point-virgule, signe plus ou esperluette.\n\nUtilisez une barre oblique inversée (\\) pour conserver un caractère délimiteur dans le nom d\'un artiste.</string>
     <!-- Format Strings with Placeholders -->
     <string name="settings_cache_size_2gb">2 Go</string>
     <string name="settings_cache_size_64mb">64 Mo</string>
@@ -1525,13 +1525,13 @@
     <string name="settings_lyrics_cache_clear_failed">Échec de la suppression du cache des paroles</string>
     <string name="settings_all_cache_cleared">Tout le cache vidé</string>
     <string name="settings_cache_clear_failed">Échec de la suppression du cache</string>
-    <string name="settings_cache_restart_required">Le cache a été vidé. Redémarrez l\'application pour tout actualiser proprement.</string>
+    <string name="settings_cache_restart_required">Le cache a été vidé. Redémarrez l\'application pour tout actualiser correctement. Les pochettes d\'album seront restaurées lors de la prochaine analyse de la bibliothèque.</string>
     <string name="settings_clear_all_cache">Effacer tout le cache</string>
     <string name="settings_clear_all_cache_desc">Supprimer toutes les données mises en cache, y compris les entrées de cache relatives aux illustrations intégrées</string>
-    <string name="settings_cache_info_1">Le cache comprend les pochettes d\'album, les fichiers temporaires et les données d\'application</string>
-    <string name="settings_cache_info_2">Vider le cache peut temporairement ralentir l\'application</string>
-    <string name="settings_cache_info_3">Les données mises en cache seront automatiquement reconstruites si nécessaire</string>
-    <string name="settings_cache_info_4">La compensation automatique aide à maintenir des performances optimales</string>
+    <string name="settings_cache_info_1">Le cache stocke les pochettes d\'album, les paroles et les fichiers temporaires</string>
+    <string name="settings_cache_info_2">Vider le cache libère de l\'espace de stockage ; le contenu se recharge à la demande</string>
+    <string name="settings_cache_info_3">Les données mises en cache sont reconstituées automatiquement au fur et à mesure que vous utilisez l\'application</string>
+    <string name="settings_cache_info_4">La fonction « Auto-trim » maintient la taille du cache dans les limites que vous avez définies</string>
     <!-- Updates Settings -->
     <string name="updates_status_error">Erreur</string>
     <string name="updates_rhythm_logo_cd">Logo Rhythm</string>
@@ -1754,7 +1754,7 @@
 
     <!-- Settings Screen -->
     <string name="settings_shapes">Formes</string>
-    <string name="settings_shapes_desc">Formes expressives</string>
+    <string name="settings_shapes_desc">Formes personnalisées pour les éléments graphiques et les contrôles</string>
     <string name="settings_skip_silence">Passer le silence</string>
     <string name="settings_skip_silence_desc">Ignorer automatiquement les intervalles de silence dans les pistes.</string>
     <!-- Gestures Search Strings -->
@@ -1796,17 +1796,17 @@
     <string name="settings_exp_ignore_mediastore">Afficher la pochette de la chanson au lieu de la pochette de l\'album</string>
     <string name="settings_exp_ignore_mediastore_desc">Préférer les illustrations intégrées à chaque chanson</string>
     <string name="settings_exp_codec_monitoring">Surveillance des codecs</string>
-    <string name="settings_exp_codec_monitoring_desc">Enregistrer les informations audio</string>
+    <string name="settings_exp_codec_monitoring_desc">Enregistrer les informations relatives au codec et au format audio à des fins de débogage</string>
     <string name="settings_exp_audio_device_logging">Journalisation des périphériques audio</string>
-    <string name="settings_exp_audio_device_logging_desc">Consigner les modifications du périphérique</string>
+    <string name="settings_exp_audio_device_logging_desc">Enregistrer les changements de périphérique audio (Bluetooth, écouteurs, etc.)</string>
     <string name="settings_exp_launch_onboarding">Lancer la visite Rhythm</string>
-    <string name="settings_exp_launch_onboarding_desc">Relancer la tournée Rhythm</string>
+    <string name="settings_exp_launch_onboarding_desc">Réinitialiser et relancer l\'expérience Rhythm Tour</string>
     <string name="settings_exp_test_crash">Test de crash</string>
-    <string name="settings_exp_test_crash_desc">Forcer le crash de l\'application</string>
+    <string name="settings_exp_test_crash_desc">Provoquer un plantage de l\'application pour tester la gestion des plantages et la génération de rapports</string>
     <string name="settings_broadcast_status_enabled">Activer la diffusion d\'état</string>
-    <string name="settings_broadcast_status_enabled_desc">État de lecture de diffusion</string>
+    <string name="settings_broadcast_status_enabled_desc">Envoyer les informations de lecture à Tasker, KWGT et aux applications d\'automatisation</string>
     <string name="settings_bluetooth_lyrics_enabled">Mode paroles Bluetooth</string>
-    <string name="settings_bluetooth_lyrics_enabled_desc">Diffusez la ligne de paroles actuelle via les métadonnées Bluetooth</string>
+    <string name="settings_bluetooth_lyrics_enabled_desc">Envoyer la ligne de paroles synchronisée comme titre du morceau via Bluetooth et déplacer « Morceau - Artiste » dans les métadonnées de l\'artiste</string>
     <string name="exp_go_mode">Go Mode</string>
     <string name="exp_go_mode_desc">Passer à Rhythm Go streaming mode</string>
     <!-- Home Screen Search Strings -->
@@ -1849,8 +1849,8 @@
     <string name="settings_shape_mini_player">Forme du mini-joueur</string>
     <string name="settings_shape_mini_player_desc">Forme du mini-joueur</string>
     <string name="settings_library_settings">Expérience de bibliothèque</string>
-    <string name="settings_library_settings_desc">Notes, organisation et comportement artistique</string>
-    <string name="settings_library_group_organization">Organisation et évaluations</string>
+    <string name="settings_library_settings_desc">Organisation et comportement artistique</string>
+    <string name="settings_library_group_organization">Organisation</string>
     <string name="settings_library_combine_discs">Combiner des disques</string>
     <string name="settings_library_combine_discs_desc">Fusionner des albums multidisques en un seul tri continu</string>
     <string name="settings_show_library_bottom_bar_always">Afficher toujours la barre inférieure de la bibliothèque</string>
@@ -2168,7 +2168,7 @@
     <string name="expressiveshapessettingsscreen_randomize_all_shapes">Randomiser toutes les formes</string>
     <string name="expressiveshapessettingsscreen_individual_shape_settings">Paramètres de forme individuels</string>
     <string name="expressiveshapessettingsscreen_about_expressive_shapes">À propos des formes expressives</string>
-    <string name="expressiveshapessettingsscreen_material_3_expressive_introduces">Material 3 Expressive introduit des formes organiques et ludiques comme des fleurs, des cœurs, des biscuits et bien plus encore. Ces formes créent une expérience unique et expressive qui rend votre application musicale plus personnelle et amusante. Permettez à des formes expressives de donner vie à votre collection musicale avec de belles formes organiques adaptées à votre âge.</string>
+    <string name="expressiveshapessettingsscreen_material_3_expressive_introduces">Les formes vous permettent de personnaliser l\'apparence des visuels et des commandes du lecteur : pochettes d\'album, visuels du lecteur, pochettes de titres, photos d\'artistes et mini-lecteur. Choisissez un préréglage tel que « Friendly », « Playful » ou « Organic », ou ajustez chaque forme pour l\'adapter à votre style.</string>
     <string name="expressiveshapessettingsscreen_choose_a_preset">Choisissez un préréglage</string>
     <string name="expressiveshapessettingsscreen_select_a_theme_for">Sélectionnez un thème pour tous les composants</string>
     <string name="expressiveshapessettingsscreen_choose_an_expressive_shape">Choisissez une forme expressive</string>
@@ -2177,7 +2177,7 @@
     <string name="festivesettingsscreen_festive_decorations_add_a">Les décorations festives ajoutent une touche de célébration à votre expérience musicale. Lorsque la détection automatique est activée, les décorations apparaissent automatiquement pendant les vacances comme Noël (15–31 décembre).</string>
     <string name="homescreencustomizationsettingsscreen_immersive_mode_is_active">Le mode immersif est actif. Seuls les contrôles de découverte pris en charge sont affichés.</string>
     <string name="homescreencustomizationsettingsscreen_album_count">Nombre d\'albums</string>
-    <string name="librarysettingsscreen_autofetch_artwork">Récupération automatique des illustrations</string>
+    <string name="librarysettingsscreen_autofetch_artwork">Récupération automatique des pochettes manquantes</string>
     <string name="lyricssourcesettingsscreen_online_api_options">Options en ligne API</string>
     <string name="lyricssourcesettingsscreen_lyrics_api_priority">Paroles API Priorité</string>
     <string name="lyricssourcesettingsscreen_choose_which_online_lyrics">Choisissez les paroles en ligne API à rechercher en premier</string>
@@ -2416,7 +2416,7 @@
     <string name="lyrics_settings_disable_animations_desc">Désactivez les transitions et les animations dans la vue paroles</string>
     <string name="lyrics_settings_word_by_word_translation">Synchronisation automatique des mots</string>
     <string name="lyrics_settings_word_by_word_translation_desc">Générez automatiquement un timing au niveau des mots pour les paroles synchronisées en ligne en répartissant la durée proportionnellement</string>
-    <string name="lyrics_settings_info_bullets">Détails de synchronisation supplémentaires :\n• Les API en ligne fournissent des paroles synchronisées de haute qualité\n• Rhythm offre une synchronisation mot par mot\n• LRCLib fournit une synchronisation gratuite ligne par ligne</string>
+    <string name="lyrics_settings_info_bullets">Sources des paroles :\n• LRCLib — paroles synchronisées ligne par ligne, en libre accès\n• BetterLyrics — paroles mot à mot, style karaoké\n• Lyrically — synchronisation mot à mot de haute qualité\n\nDéfinissez l\'ordre de vos sources préférées dans « Priorité de l\'API Paroles ».</string>
     <!-- AutoEQ Preset Picker additions -->
     <string name="autoeqpresetpickerbottomsheet_search_presets">Rechercher des préréglages…</string>
     <string name="autoeqpresetpickerbottomsheet_disable">Aucun / Désactiver AutoEQ</string>
@@ -2543,7 +2543,7 @@
     <string name="library_category_long">Longue (&gt; 5 min)</string>
     <string name="library_category_mono">Mono</string>
     <string name="library_category_stereo">Stéréo</string>
-    <string name="library_no_playlists_yet">Aucune playlist pour l\'instant\nCréez votre première playlist à l\'aide du bouton +</string>
+    <string name="library_no_playlists_yet">Aucune playlist pour l\'instant</string>
     <string name="library_no_albums_yet">Aucun album pour l\'instant</string>
     <string name="library_no_artists_yet">Aucun artiste pour l\'instant</string>
     <string name="library_action_add_to_playlist">Ajouter à la liste de lecture</string>
@@ -2690,7 +2690,7 @@
     <string name="shape_target_playlist_art">Illustration de la liste de lecture</string>
     <string name="shape_target_artist_art">Oeuvre d\'artiste</string>
     <string name="settings_shape_for">Forme pour %1$s</string>
-    <string name="lyric_widget_description">Widget affichant les paroles du média en cours de lecture</string>
+    <string name="lyric_widget_description">Lire les paroles du titre en cours de lecture.</string>
     <string name="edit_album_title">Modifier l\'album</string>
     <string name="edit_album_desc">Modifiez les balises et les illustrations de toutes les chansons de cet album.</string>
     <string name="edit_album_saving">Mise à jour des métadonnées de l\'album…</string>
@@ -2821,4 +2821,119 @@
     <string name="cd_copy">Copier</string>
     <string name="widget_tip_cookie_corners">Choisissez l\'action associée aux coins inférieurs du widget « cookie » : passer, lire en aléatoire, répéter, ajouter aux favoris ou les masquer</string>
     <string name="widget_tip_stats_widget">Choisissez la période et le badge en bas d\'écran affichés par le widget de statistiques</string>
+    <string name="widget_tip_resize_settings">Appuyez longuement sur un widget pour le redimensionner ou ouvrir ses paramètres</string>
+    <string name="settings_mono_audio">Audio mono</string>
+    <string name="settings_mono_audio_desc">Regroupez les canaux stéréo sur le canal central pour une écoute avec un seul écouteur.</string>
+    <string name="device_mono_audio_title">Écouteur unique (audio mono)</string>
+    <string name="device_mono_audio_desc">Forcer le downmix mono lorsque ce périphérique audio est actif.</string>
+    <string name="settings_show_remaining_time">Afficher le temps restant</string>
+    <string name="settings_show_remaining_time_desc">Afficher la durée de lecture restante sur les écrans du lecteur</string>
+    <string name="settings_audio_formats">Formats audio</string>
+    <string name="settings_allowed_formats">Formats autorisés</string>
+    <string name="settings_allowed_formats_desc">%1$d formats sur %2$d sont activés</string>
+    <string name="settings_allowed_formats_open_desc">Sélectionnez les types de fichiers audio à analyser pour les ajouter à votre bibliothèque. Les modifications entraînent une nouvelle analyse complète lors du prochain démarrage.</string>
+    <string name="settings_formats_select_all">Tout sélectionner</string>
+    <string name="settings_formats_select_none">Sélectionner « Aucun »</string>
+    <string name="settings_formats_at_least_one">Au moins un format doit rester activé</string>
+    <string name="settings_formats_restore_defaults">Rétablir les paramètres par défaut</string>
+    <string name="settings_formats_video_note">Les formats MP4 et MKV sont désactivés par défaut ; activez-les pour inclure les pistes audio des fichiers vidéo.</string>
+    <string name="settings_formats_group_common">Courant</string>
+    <string name="settings_formats_group_lossless">Sans perte &amp; Haute résolution</string>
+    <string name="settings_formats_group_surround">Son surround &amp; Audio HD</string>
+    <string name="settings_formats_group_containers">Conteneurs</string>
+    <string name="settings_formats_group_legacy">Héritage</string>
+    <string name="default_playback_speed">Vitesse de lecture par défaut</string>
+    <string name="default_playback_speed_desc">Vitesse personnalisée à appliquer automatiquement aux nouveaux titres</string>
+    <string name="use_default_playback_speed">Utiliser la vitesse par défaut pour les nouveaux titres</string>
+    <string name="use_default_playback_speed_desc">Toujours lancer les nouveaux morceaux à la vitesse de lecture par défaut, au lieu de conserver la dernière vitesse utilisée</string>
+    <string name="set_as_default_speed">Définir comme vitesse par défaut</string>
+    <string name="onboarding_integration_betterlyrics">De meilleures paroles</string>
+    <string name="playlist_no_songs_yet_desc">Commencez à créer votre playlist en ajoutant quelques morceaux</string>
+    <string name="playlist_search_no_matches_desc">Essayez une autre requête de recherche</string>
+    <string name="playlist_add_songs_button">Ajouter des morceaux</string>
+    <string name="action_like">J\'aime</string>
+    <string name="action_dislike">Je n\'aime pas</string>
+    <string name="settings_expressive_player">Lecteur expressif</string>
+    <string name="streaming_status_ready_to_connect">Prêt à vous connecter</string>
+    <string name="settings_tab_liked">J\'ai aimé</string>
+    <string name="settings_tab_album_artists">Artistes de l\'album</string>
+    <string name="addtoplaylistscreen_exit_selection">Quitter la sélection multiple</string>
+    <string name="explorer_no_storage">Aucun espace de stockage trouvé</string>
+    <string name="explorer_no_storage_desc">Connectez des périphériques de stockage ou vérifiez les droits d\'accès pour parcourir vos fichiers musicaux</string>
+    <string name="explorer_empty_folder">Dossier vide</string>
+    <string name="explorer_empty_folder_desc">Ce dossier ne contient aucun fichier audio</string>
+    <string name="rhythmwidgetpreview_str_12_vertical_widget">Widget vertical 1×2</string>
+    <string name="rhythmwidgetpreview_str_32_medium_widget">Widget moyen 3×2</string>
+    <string name="action_delete_song">Supprimer un morceau</string>
+    <string name="api_apple_canvas_wifi">Uniquement via Wi-Fi</string>
+    <string name="api_apple_canvas_both">Wi-Fi &amp; Réseau mobile</string>
+    <string name="api_ytmusic_desc">Solution de secours pour les images d\'artistes et les pochettes d\'albums</string>
+    <string name="backup_restore_queued_message">L\'analyse des supports est en cours. La restauration a été mise en file d\'attente et s\'effectuera automatiquement une fois l\'analyse terminée.</string>
+    <string name="backup_restore_blocked_message">Il est impossible de créer une sauvegarde tant qu\'une analyse des supports est en cours. Veuillez patienter jusqu\'à la fin de l\'analyse.</string>
+    <string name="backup_restore_queued_completed_title">Restauration en file d\'attente terminée</string>
+    <string name="backup_restore_queued_completed_message">La restauration en file d\'attente s\'est déroulée avec succès.\n\nVeuillez redémarrer l\'application pour que tous les paramètres soient pris en compte.</string>
+    <string name="backup_restore_completed_message">La restauration s\'est déroulée avec succès.\n\nSections restaurées :\n%1$s</string>
+    <string name="backup_completed_message">La sauvegarde s\'est déroulée avec succès.\n\nSections incluses :\n%1$s</string>
+    <string name="settings_cache_size_mb">%1$s Mo</string>
+    <string name="festive_enabled_desc">Afficher les décorations de fête dans toute l\'application</string>
+    <string name="festive_auto_detect_desc">Afficher automatiquement les décorations pour les fêtes</string>
+    <string name="festive_christmas_desc">Décorations sur le thème de la neige</string>
+    <string name="festive_new_year_desc">Chutes de neige festives et paillettes</string>
+    <string name="lyrics_import_preferences_desc">Restaurer les paramètres source spécifiques à chaque morceau et les balises personnalisées à partir d\'un fichier CSV</string>
+    <string name="lyrics_file_data_management">Gestion des fichiers de paroles et des données</string>
+    <string name="performancesettingsscreen_disable_lossless_artwork_desc">Utiliser des illustrations standard plutôt que sans perte dans la section « Performances »</string>
+    <string name="performancesettingsscreen_disable_auto_fetch_artwork_desc">Désactivez le chargement automatique des illustrations pour réduire les ralentissements et la charge réseau</string>
+    <string name="player_ambient_intensity">Intensité ambiante</string>
+    <string name="player_ambient_desc">Pochette d\'album floue derrière les commandes</string>
+    <string name="extrasheet_tempo_pitch">Tempo &amp; Hauteur</string>
+    <string name="player_speed_and_pitch">Vitesse &amp; Hauteur</string>
+    <string name="player_sync_speed_pitch">Synchronisation de la vitesse &amp; de la hauteur</string>
+    <string name="player_sync_speed_pitch_desc">Synchroniser le tempo et la hauteur de la lecture</string>
+    <string name="player_playback_speed">Vitesse de lecture</string>
+    <string name="player_current_rate">Actuel : %1$sx</string>
+    <string name="library_no_playlists_yet_desc">Créez votre première playlist à l\'aide du bouton « + »</string>
+    <string name="library_no_albums_yet_desc">Les albums apparaissent ici une fois que vous avez ajouté de la musique</string>
+    <string name="library_no_artists_yet_desc">Les artistes apparaissent ici une fois que vous avez ajouté de la musique</string>
+    <string name="library_no_dated_songs">Aucun morceau daté n\'a été trouvé</string>
+    <string name="library_no_dated_songs_desc">Les titres dont la date de sortie est connue apparaîtront ici</string>
+    <string name="about_copied_format">%1$s a été copié !</string>
+    <string name="api_deezer_desc">Images d\'artistes et pochettes d\'albums gratuites – aucune configuration requise</string>
+    <string name="api_lrclib_desc">Paroles synchronisées gratuitement, ligne par ligne (solution de secours)</string>
+    <string name="api_betterlyrics_desc">Paroles synchronisées mot à mot (mode karaoké)</string>
+    <string name="api_lyrically_desc">Paroles synchronisées mot à mot (qualité optimale)</string>
+    <string name="api_apple_motion_canvas_desc">Pochette d\'album animée et dynamique - %1$s</string>
+    <plurals name="settings_count_songs">
+        <item quantity="one">%1$d titre</item>
+        <item quantity="many">%1$d titres</item>
+        <item quantity="other">%1$d titres</item>
+    </plurals>
+    <plurals name="settings_count_artists">
+        <item quantity="one">%1$d artiste</item>
+        <item quantity="many">%1$d artistes</item>
+        <item quantity="other">%1$d artistes</item>
+    </plurals>
+    <plurals name="settings_count_albums">
+        <item quantity="one">%1$d album</item>
+        <item quantity="many">%1$d albums</item>
+        <item quantity="other">%1$d albums</item>
+    </plurals>
+    <string name="library_auto_fetch_artwork_desc">Récupérer automatiquement en ligne les pochettes manquantes lors de la lecture de titres ou au démarrage</string>
+    <string name="lyrics_exported_success">Exportation réussie</string>
+    <string name="lyrics_export_failed">Échec de l\'exportation</string>
+    <string name="lyrics_imported_success">Importation réussie</string>
+    <string name="lyrics_import_failed">Échec de l\'importation</string>
+    <string name="lyrics_lrc_rename_behavior">Comportement de renommage dans LRC</string>
+    <string name="lyrics_rename_always">Toujours renommer en fonction du titre du morceau</string>
+    <string name="lyrics_rename_never">Ne jamais renommer (toujours ajouter un tag)</string>
+    <string name="lyrics_rename_ask">Demandez à chaque fois</string>
+    <string name="lyrics_export_preferences">Exporter les préférences relatives aux paroles</string>
+    <string name="lyrics_export_preferences_desc">Sauvegarder les paramètres source spécifiques à chaque morceau et les balises personnalisées au format CSV</string>
+    <string name="lyrics_import_preferences">Importer les préférences relatives aux paroles</string>
+    <string name="lyrics_size_min" formatted="false">50 %</string>
+    <string name="lyrics_size_max" formatted="false">200 %</string>
+    <string name="notifications_sleep_timer_status">État de la minuterie</string>
+    <string name="notifications_sleep_timer_status_desc">Afficher le compte à rebours et les commandes de notification lorsque la minuterie est activée</string>
+    <string name="notifications_cloud_streaming">Cloud &amp; Streaming</string>
+    <string name="notifications_cloud_sync_alerts">Alertes de synchronisation dans le cloud</string>
+    <string name="notifications_cloud_sync_alerts_desc">Afficher les notifications concernant la connexion au service de streaming et la progression de la synchronisation</string>
 </resources>
