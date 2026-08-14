@@ -2936,4 +2936,5 @@
     <string name="notifications_cloud_streaming">Cloud &amp; Streaming</string>
     <string name="notifications_cloud_sync_alerts">Alertes de synchronisation dans le cloud</string>
     <string name="notifications_cloud_sync_alerts_desc">Afficher les notifications concernant la connexion au service de streaming et la progression de la synchronisation</string>
+    <string name="performancesettingsscreen_haptics_detail">Toutes les vibrations sont désactivées afin d\'économiser la batterie.</string>
 </resources>
