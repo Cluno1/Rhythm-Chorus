@@ -2937,4 +2937,19 @@
     <string name="notifications_cloud_sync_alerts">Alertes de synchronisation dans le cloud</string>
     <string name="notifications_cloud_sync_alerts_desc">Afficher les notifications concernant la connexion au service de streaming et la progression de la synchronisation</string>
     <string name="performancesettingsscreen_haptics_detail">Toutes les vibrations sont désactivées afin d\'économiser la batterie.</string>
+    <string name="expressiveplayerscreen_favorite">Favoris</string>
+    <string name="player_ambient_intensity_desc">Gère la transparence des cartes</string>
+    <string name="player_ambient_intensity_requires_ambient">Activez d\'abord l\'arrière-plan ambiant</string>
+    <string name="status_enabled">Activé</string>
+    <string name="action_unfavorite">Retirer des favoris</string>
+    <string name="action_edit_lyrics">Modifier les paroles</string>
+    <string name="action_add_lyrics">Ajouter les paroles</string>
+    <string name="extrasheet_saved">Enregistré</string>
+    <string name="extrasheet_has_lyrics">Contient les paroles</string>
+    <string name="extrasheet_share_file">Partager un fichier</string>
+    <string name="content_desc_edit_image">Modifier l\'image</string>
+    <string name="content_desc_artwork_preview">Aperçu de l\'œuvre</string>
+    <string name="materialplayerscreen_canvas">Canvas</string>
+    <string name="materialplayerscreen_share_song_cd">Partager le titre</string>
+    <string name="expressiveplayerscreen_artwork_auto_fetched">Image récupérée automatiquement</string>
 </resources>
