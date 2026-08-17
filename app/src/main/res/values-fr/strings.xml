@@ -2952,4 +2952,25 @@
     <string name="materialplayerscreen_canvas">Canvas</string>
     <string name="materialplayerscreen_share_song_cd">Partager le titre</string>
     <string name="expressiveplayerscreen_artwork_auto_fetched">Image récupérée automatiquement</string>
+    <string name="expressiveplayerscreen_artwork_auto_fetched_msg">Une illustration en ligne a été automatiquement ajoutée à votre bibliothèque pour « %1$s ». Souhaitez-vous intégrer cette illustration au fichier audio stocké sur le disque ?</string>
+    <string name="expressiveplayerscreen_embed_in_file">Intégrer dans un fichier</string>
+    <string name="expressiveplayerscreen_keep_library_only">Conserver uniquement dans la bibliothèque</string>
+    <string name="expressiveplayerscreen_artwork_embedded_toast">Illustration intégrée au fichier sur le disque !</string>
+    <string name="expressiveplayerscreen_artwork_applied_toast">Illustration ajoutée à la bibliothèque !</string>
+    <string name="expressiveplayerscreen_artwork_applied">Illustration ajoutée !</string>
+    <string name="expressiveplayerscreen_no_artwork_found">Aucune illustration n\'a été trouvée pour ce morceau</string>
+    <string name="albumdetail_about_album">À propos de l\'album</string>
+    <string name="artistdetail_about_artist">À propos de l\'artiste</string>
+    <string name="content_desc_customize_artwork">Personnaliser une illustration</string>
+    <string name="licenses_desc_better_lyrics">Service open source proposant des paroles synchronisées mot à mot</string>
+    <string name="licenses_desc_gramophone">Lecteur de musique pour Android riche en fonctionnalités et axé sur la confidentialité</string>
+    <string name="licenses_desc_pixelplayer">« Offline-first », Material 3 : un lecteur de musique expressif pour Android</string>
+    <string name="licenses_desc_vivi_music">Bien plus que de la musique — Votre expérience audio ultime</string>
+    <string name="licenses_desc_zenith">Une application « Bien-être numérique » expressive, conçue selon les principes du Material Design 3</string>
+    <string name="licenses_desc_autoeq">Égalisation automatique des écouteurs à partir des réponses en fréquence</string>
+    <string name="licenses_desc_jetpack_compose">La boîte à outils moderne d\'Android pour la création d\'interfaces utilisateur natives</string>
+    <string name="licenses_desc_material3_components">Composants Material Design 3 pour Android</string>
+    <string name="licenses_desc_media3_exoplayer">Bibliothèque moderne de lecture multimédia pour Android</string>
+    <string name="licenses_desc_kotlin_coroutines">Framework de programmation asynchrone pour Kotlin</string>
+    <string name="licenses_desc_coil">Bibliothèque de chargement d\'images pour Android s\'appuyant sur les coroutines Kotlin</string>
 </resources>
