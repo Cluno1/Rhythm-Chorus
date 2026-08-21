@@ -302,7 +302,9 @@ fun AboutScreen(
                     detailCards.chunked(2).forEachIndexed { rowIndex, rowCards ->
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Max)
                         ) {
                             rowCards.forEachIndexed { colIndex, card ->
                                 ProjectDetailCard(
@@ -311,7 +313,9 @@ fun AboutScreen(
                                     value = card.value,
                                     shape = getDetailCardShape(rowIndex * 2 + colIndex, detailCards.size),
                                     onClick = { copyToClipboard(card.label, card.value) },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
                                 )
                             }
                         }
@@ -967,11 +971,11 @@ private fun ProjectDetailCard(
     Card(
         modifier = modifier,
         shape = shape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .clickable {
                     HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onClick()
