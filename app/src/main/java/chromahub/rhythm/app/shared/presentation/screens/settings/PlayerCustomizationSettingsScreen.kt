@@ -828,7 +828,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "100%",
+                        text = "50%",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
