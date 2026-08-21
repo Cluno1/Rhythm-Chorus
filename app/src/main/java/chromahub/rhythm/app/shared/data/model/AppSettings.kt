@@ -207,6 +207,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_LAST_AUDIO_DEVICE = "last_audio_device"
         private const val KEY_AUTO_CONNECT_DEVICE = "auto_connect_device"
         private const val KEY_USE_SYSTEM_VOLUME = "use_system_volume"
+        private const val KEY_APP_VOLUME = "app_volume"
         private const val KEY_STOP_PLAYBACK_ON_ZERO_VOLUME = "stop_playback_on_zero_volume"
         private const val KEY_DISMISSED_AUTOEQ_SUGGESTIONS = "dismissed_autoeq_suggestions"
         
@@ -1020,8 +1021,11 @@ class AppSettings private constructor(context: Context) {
     private val _autoConnectDevice = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CONNECT_DEVICE, true))
     val autoConnectDevice: StateFlow<Boolean> = _autoConnectDevice.asStateFlow()
     
-    private val _useSystemVolume = MutableStateFlow(prefs.getBoolean(KEY_USE_SYSTEM_VOLUME, false))
+    private val _useSystemVolume = MutableStateFlow(prefs.getBoolean(KEY_USE_SYSTEM_VOLUME, true))
     val useSystemVolume: StateFlow<Boolean> = _useSystemVolume.asStateFlow()
+    
+    private val _appVolume = MutableStateFlow(prefs.getFloat(KEY_APP_VOLUME, 1.0f))
+    val appVolume: StateFlow<Float> = _appVolume.asStateFlow()
     
     private val _stopPlaybackOnZeroVolume = MutableStateFlow(prefs.getBoolean(KEY_STOP_PLAYBACK_ON_ZERO_VOLUME, false))
     val stopPlaybackOnZeroVolume: StateFlow<Boolean> = _stopPlaybackOnZeroVolume.asStateFlow()
@@ -2636,6 +2640,12 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setUseSystemVolume(enable: Boolean) {
         prefs.edit { putBoolean(KEY_USE_SYSTEM_VOLUME, enable) }
         _useSystemVolume.value = enable
+    }
+    
+    fun setAppVolume(volume: Float) {
+        val clamped = volume.coerceIn(0f, 1f)
+        prefs.edit { putFloat(KEY_APP_VOLUME, clamped) }
+        _appVolume.value = clamped
     }
     
     fun setStopPlaybackOnZeroVolume(enable: Boolean) {
@@ -4950,7 +4960,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         // Audio Device Settings
         _lastAudioDevice.value = prefs.getString(KEY_LAST_AUDIO_DEVICE, null)
         _autoConnectDevice.value = prefs.getBoolean(KEY_AUTO_CONNECT_DEVICE, true)
-        _useSystemVolume.value = prefs.getBoolean(KEY_USE_SYSTEM_VOLUME, false)
+        _useSystemVolume.value = prefs.getBoolean(KEY_USE_SYSTEM_VOLUME, true)
+        _appVolume.value = prefs.getFloat(KEY_APP_VOLUME, 1.0f)
         _stopPlaybackOnZeroVolume.value = prefs.getBoolean(KEY_STOP_PLAYBACK_ON_ZERO_VOLUME, false)
         
         // Cache Settings

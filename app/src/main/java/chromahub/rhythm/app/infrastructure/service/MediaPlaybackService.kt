@@ -1247,6 +1247,9 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
         equalizerVolumeTransitionJob?.cancel()
         equalizerVolumeRestoreTarget = restoreVolume
 
+        // Flag internal volume adjustment so engine doesn't overwrite userVolume with ducked values
+        rhythmPlayerEngine.isInternalVolumeAdjustment = true
+
         // 1. Duck the player volume to 0.0f to completely silence any transient audio during the hardware transition
         player.volume = 0.0f
         var actualState = enabled
@@ -1293,6 +1296,7 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                 if (equalizerVolumeRestoreTarget == restoreVolume) {
                     equalizerVolumeRestoreTarget = null
                 }
+                rhythmPlayerEngine.isInternalVolumeAdjustment = false
             }
         }
 
@@ -2697,6 +2701,8 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
     }
 
     // Sleep Timer functionality
+    private var sleepTimerOriginalVolume: Float? = null
+
     private fun launchTimerCoroutine(startTime: Long, durationMs: Long, fadeOut: Boolean, pauseOnly: Boolean): Job {
         return serviceScope.launch {
             val localStartTime = startTime
@@ -2714,6 +2720,8 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                     }
 
                     val originalVolume = player.volume
+                    sleepTimerOriginalVolume = originalVolume
+                    rhythmPlayerEngine.isInternalVolumeAdjustment = true
                     val fadeSteps = 100
                     val fadeInterval = 10000L / fadeSteps
 
@@ -2744,17 +2752,21 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                 }
 
                 if (localFadeOut) {
-                    player.volume = 1.0f
+                    sleepTimerOriginalVolume?.let { player.volume = it }
                 }
+                rhythmPlayerEngine.isInternalVolumeAdjustment = false
 
                 resetSleepTimer()
 
             } catch (e: CancellationException) {
                 Log.d(TAG, "Sleep timer was cancelled")
+                rhythmPlayerEngine.isInternalVolumeAdjustment = false
             } catch (e: Exception) {
                 Log.e(TAG, "Error in sleep timer", e)
+                rhythmPlayerEngine.isInternalVolumeAdjustment = false
                 resetSleepTimer()
             } finally {
+                rhythmPlayerEngine.isInternalVolumeAdjustment = false
                 broadcastSleepTimerStatus()
             }
         }
@@ -2795,6 +2807,7 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
 
         sleepTimerJob?.cancel()
         sleepTimerJob = null
+        rhythmPlayerEngine.isInternalVolumeAdjustment = false
 
         sleepTimerStartTime = now
         sleepTimerJob = launchTimerCoroutine(now, duration, fadeOut, pauseOnly)
@@ -2807,8 +2820,9 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
         sleepTimerJob = null
 
         if (fadeOutEnabled) {
-            player.volume = 1.0f
+            sleepTimerOriginalVolume?.let { player.volume = it }
         }
+        rhythmPlayerEngine.isInternalVolumeAdjustment = false
 
         resetSleepTimer()
         broadcastSleepTimerStatus()

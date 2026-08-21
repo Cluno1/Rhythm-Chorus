@@ -919,13 +919,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val isSeeking: StateFlow<Boolean> = _isSeeking.asStateFlow()
 
     // Volume control
-    private val _volume = MutableStateFlow(0.7f)
+    private val _volume = MutableStateFlow(if (appSettings.useSystemVolume.value) 1.0f else appSettings.appVolume.value)
     val volume: StateFlow<Float> = _volume.asStateFlow()
     
     private val _isMuted = MutableStateFlow(false)
     val isMuted: StateFlow<Boolean> = _isMuted.asStateFlow()
     
-    private var _previousVolume = 0.7f
+    private var _previousVolume = if (appSettings.useSystemVolume.value) 1.0f else appSettings.appVolume.value
 
     private val _showZeroVolumePauseDialog = MutableStateFlow(false)
     val showZeroVolumePauseDialog = _showZeroVolumePauseDialog.asStateFlow()
@@ -3786,6 +3786,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             }
                         })")
 
+                            // Sync initial volume from controller if not using system volume
+                            if (!appSettings.useSystemVolume.value) {
+                                _volume.value = controller.volume
+                                if (controller.volume > 0f) {
+                                    _isMuted.value = false
+                                }
+                            }
+
                             // Sync playback state with controller when app is reopened
                             val isActuallyPlaying = controller.isPlaying
                             _isPlaying.value = isActuallyPlaying
@@ -4024,6 +4032,19 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 startProgressUpdates()
             } else {
                 progressUpdateJob?.cancel()
+            }
+        }
+
+        override fun onVolumeChanged(volume: Float) {
+            Log.d(TAG, "onVolumeChanged from controller: $volume")
+            if (!appSettings.useSystemVolume.value) {
+                if (_volume.value != volume) {
+                    _volume.value = volume
+                }
+                if (volume > 0f) {
+                    _isMuted.value = false
+                    appSettings.setAppVolume(volume)
+                }
             }
         }
 
@@ -7786,6 +7807,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             if (clampedVolume > 0f) {
                 _isMuted.value = false
             }
+            if (!appSettings.useSystemVolume.value && clampedVolume > 0f) {
+                appSettings.setAppVolume(clampedVolume)
+            }
             // Stop playback if volume reaches 0 and setting is enabled
             // Gate on !useSystemVolume: when system volume mode is ON, the system-volume
             // ContentObserver in MaterialPlayerScreen handles pausing and the dialog trigger.
@@ -7826,9 +7850,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * - When disabling system volume mode: restores the previously saved app volume.
      */
     fun setUseSystemVolumeMode(enable: Boolean) {
-        val prevAppVolume = _volume.value
+        val prevAppVolume = if (_volume.value > 0f) _volume.value else appSettings.appVolume.value
         appSettings.setUseSystemVolume(enable)
         if (enable) {
+            // Save current app volume before pinning to 1.0f
+            if (prevAppVolume > 0f) {
+                appSettings.setAppVolume(prevAppVolume)
+            }
             // Pin app (ExoPlayer) volume to full so system volume is sole audio knob.
             // Use the raw controller call to bypass the zero-volume dialog guard.
             mediaController?.volume = 1f
@@ -7836,8 +7864,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             _isMuted.value = false
             Log.d(TAG, "System volume mode ON — ExoPlayer volume pinned to 1.0f")
         } else {
-            // Restore a reasonable app volume (use previous, but at least 30% so no silence burst).
-            val restore = prevAppVolume.coerceAtLeast(0.3f)
+            // Restore the previously saved app volume
+            val restore = appSettings.appVolume.value.coerceIn(0.01f, 1f)
             mediaController?.volume = restore
             _volume.value = restore
             Log.d(TAG, "System volume mode OFF — ExoPlayer volume restored to $restore")

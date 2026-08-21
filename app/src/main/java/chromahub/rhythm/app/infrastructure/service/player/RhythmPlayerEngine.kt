@@ -83,6 +83,9 @@ class RhythmPlayerEngine(
     private lateinit var playerAReplayGain: ReplayGainAudioProcessor
     private lateinit var playerBReplayGain: ReplayGainAudioProcessor
     private var activeReplayGainProcessor: ReplayGainAudioProcessor? = null
+    private var userVolume: Float = 1.0f
+    @Volatile
+    var isInternalVolumeAdjustment: Boolean = false
 
     private val onPlayerSwappedListeners = mutableListOf<(Player) -> Unit>()
 
@@ -145,7 +148,23 @@ class RhythmPlayerEngine(
                 activeReplayGainProcessor?.setRootFormat(format)
             }
         }
+
+        override fun onVolumeChanged(volume: Float) {
+            if (!transitionRunning && !isInternalVolumeAdjustment) {
+                userVolume = volume
+                Log.d(TAG, "User volume updated: $userVolume")
+            }
+        }
     }
+
+    fun setUserVolume(volume: Float) {
+        userVolume = volume.coerceIn(0f, 1f)
+        if (::playerA.isInitialized) {
+            playerA.volume = userVolume
+        }
+    }
+
+    fun getUserVolume(): Float = userVolume
 
     fun addPlayerSwapListener(listener: (Player) -> Unit) {
         onPlayerSwappedListeners.add(listener)
@@ -208,13 +227,17 @@ class RhythmPlayerEngine(
         playerA = buildPlayer(handleAudioFocus = false, bassProcessor = aBass, spatialProcessor = aSpatial, monoProcessor = aMono, replayGainProcessor = aReplayGain)
         playerB = buildPlayer(handleAudioFocus = false, bassProcessor = bBass, spatialProcessor = bSpatial, monoProcessor = bMono, replayGainProcessor = bReplayGain)
 
+        val initVolume = if (appSettings.useSystemVolume.value) 1.0f else appSettings.appVolume.value
+        userVolume = initVolume
+        playerA.volume = initVolume
+
         playerA.addListener(masterPlayerListener)
         activeReplayGainProcessor = aReplayGain
 
         _activeAudioSessionId.value = playerA.audioSessionId
 
         isReleased = false
-        Log.d(TAG, "RhythmPlayerEngine initialized. SessionA=${playerA.audioSessionId}")
+        Log.d(TAG, "RhythmPlayerEngine initialized. SessionA=${playerA.audioSessionId}, initialVolume=$initVolume")
 
         // Reactively update track selection parameters when settings change
         scope.launch {
@@ -433,6 +456,7 @@ class RhythmPlayerEngine(
      */
     fun cancelNext() {
         transitionJob?.cancel()
+        val wasTransitioning = transitionRunning
         transitionRunning = false
         if (::playerB.isInitialized && playerB.mediaItemCount > 0) {
             Log.d(TAG, "Cancelling next player")
@@ -440,7 +464,9 @@ class RhythmPlayerEngine(
             playerB.clearMediaItems()
         }
         if (::playerA.isInitialized) {
-            playerA.volume = 1f
+            if (wasTransitioning) {
+                playerA.volume = userVolume
+            }
             setPauseAtEndOfMediaItems(false)
         }
     }
@@ -463,7 +489,7 @@ class RhythmPlayerEngine(
                 Log.d(TAG, "Transition cancelled before completion.")
             } catch (e: Exception) {
                 Log.e(TAG, "Error performing transition", e)
-                playerA.volume = 1f
+                playerA.volume = userVolume
                 setPauseAtEndOfMediaItems(false)
                 playerB.stop()
             } finally {
@@ -483,13 +509,14 @@ class RhythmPlayerEngine(
      */
     private suspend fun performOverlapTransition(settings: TransitionSettings) {
         if (playerB.mediaItemCount == 0) {
-            playerA.volume = 1f
+            playerA.volume = userVolume
             setPauseAtEndOfMediaItems(false)
             return
         }
 
         val outgoingPlayer = playerA
         val incomingPlayer = playerB
+        val targetVolume = userVolume
 
         val isSelfTransition = outgoingPlayer.currentMediaItem?.mediaId == incomingPlayer.currentMediaItem?.mediaId
         val outgoingMediaItemCount = outgoingPlayer.mediaItemCount
@@ -521,8 +548,8 @@ class RhythmPlayerEngine(
             timelineTargetIndex in 0 until outgoingMediaItemCount && 
                 outgoingPlayer.getMediaItemAt(timelineTargetIndex).mediaId == incomingMediaId -> timelineTargetIndex
             incomingMediaId != null -> (0 until outgoingMediaItemCount)
-                .firstOrNull { index -> outgoingPlayer.getMediaItemAt(index).mediaId == incomingMediaId }
-                ?: currentOutgoingIndex
+            .firstOrNull { index -> outgoingPlayer.getMediaItemAt(index).mediaId == incomingMediaId }
+            ?: currentOutgoingIndex
             else -> currentOutgoingIndex
         }
 
@@ -592,7 +619,7 @@ class RhythmPlayerEngine(
 
         if (incomingReady || settings.isManualSkip) {
             playerA.volume = 0f
-            playerB.volume = 1f
+            playerB.volume = targetVolume
             if (!playerB.isPlaying && playerB.playbackState == Player.STATE_READY) {
                 playerB.play()
             }
@@ -620,11 +647,11 @@ class RhythmPlayerEngine(
 
             while (elapsed <= duration) {
                 val progress = (elapsed.toFloat() / duration).coerceIn(0f, 1f)
-                val volIn = envelope(progress, settings.curveIn)
-                val volOut = 1f - envelope(progress, settings.curveOut)
+                val volIn = envelope(progress, settings.curveIn) * targetVolume
+                val volOut = (1f - envelope(progress, settings.curveOut)) * targetVolume
 
-                playerA.volume = volIn
-                playerB.volume = volOut.coerceIn(0f, 1f)
+                playerA.volume = volIn.coerceIn(0f, targetVolume)
+                playerB.volume = volOut.coerceIn(0f, targetVolume)
 
                 if (playerA.playbackState == Player.STATE_ENDED || playerB.playbackState == Player.STATE_ENDED) {
                     break
@@ -634,7 +661,7 @@ class RhythmPlayerEngine(
                 elapsed += stepMs
             }
         } else {
-            playerA.volume = 1f
+            playerA.volume = targetVolume
             if (playerA.playbackState == Player.STATE_READY) {
                 playerA.play()
             } else {
@@ -643,7 +670,7 @@ class RhythmPlayerEngine(
         }
 
         playerB.volume = 0f
-        playerA.volume = 1f
+        playerA.volume = targetVolume
 
         playerB.pause()
         playerB.stop()
