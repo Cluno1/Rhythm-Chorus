@@ -121,7 +121,13 @@ object RhythmLyricsParser {
                 }
             }
 
-            mergeSupplementalLines(parsedLines)
+            val sortedInitial = parsedLines.sortedWith(
+                compareBy<WordByWordLyricLine> { it.lineTimestamp }
+                    .thenBy { it.lineEndtime }
+                    .thenByDescending { lineQualityScore(it) }
+            )
+
+            mergeSupplementalLines(sortedInitial)
                 .sortedWith(compareBy<WordByWordLyricLine> { it.lineTimestamp }.thenBy { it.lineEndtime })
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing Rhythm word-by-word lyrics", e)
@@ -178,16 +184,13 @@ object RhythmLyricsParser {
         first: WordByWordLyricLine,
         second: WordByWordLyricLine
     ): WordByWordLyricLine {
-        if (first.background != second.background) {
-            return if (!first.background) first else second
-        }
-
         val firstScore = lineQualityScore(first)
         val secondScore = lineQualityScore(second)
 
         return when {
             secondScore > firstScore -> second
             firstScore > secondScore -> first
+            first.background != second.background -> if (!first.background) first else second
             lineTimingSpan(second) > lineTimingSpan(first) -> second
             else -> first
         }
@@ -246,6 +249,9 @@ object RhythmLyricsParser {
 
         val nonBlankWords = line.words.count { it.text.isNotBlank() }
         val distinctWordStarts = line.words.map { it.timestamp }.distinct().size
+        val hasTrueWordTiming = (line.words.size > 1 && distinctWordStarts > 1) ||
+            line.words.any { it.isPart } ||
+            (line.words.any { it.endtime > it.timestamp } && (distinctWordStarts > 1 || line.words.size > 1))
         val advancingStarts = line.words.zipWithNext().count { (first, second) ->
             second.timestamp > first.timestamp
         }
@@ -253,7 +259,8 @@ object RhythmLyricsParser {
         val partWords = line.words.count { it.isPart }
         val hasSupplementalMeta = !line.translation.isNullOrBlank() || !line.romanization.isNullOrBlank()
 
-        return (if (!line.background) 20 else 0) +
+        return (if (hasTrueWordTiming) 10000 else 0) +
+            (if (!line.background) 20 else 0) +
             (distinctWordStarts * 32) +
             (advancingStarts * 24) +
             (partWords * 16) +
@@ -502,11 +509,14 @@ object RhythmLyricsParser {
     /**
      * Parse TTML (Timed Text Markup Language) formatted synchronized lyrics.
      * Extracts lines (<p>) and word-by-word timestamps (<span>).
+     * Attaches translated lines (e.g. from iTunes translations) to their corresponding original lines.
      */
     fun parseTtmlLyrics(ttmlContent: String): List<RhythmLyricsLine> {
         val parsed = parseTtml(audioMimeType = null, lyricText = ttmlContent)
         if (parsed is SemanticLyrics.SyncedLyrics) {
-            return parsed.text.map { semanticLine ->
+            val result = mutableListOf<RhythmLyricsLine>()
+
+            for (semanticLine in parsed.text) {
                 val slWords = semanticLine.words
                 val rhythmLyricsWords = slWords?.mapIndexed { idx, word ->
                     val rawText = semanticLine.text.substring(word.charRange)
@@ -547,17 +557,22 @@ object RhythmLyricsParser {
                         endtime = semanticLine.end.toLong()
                     )
                 )
+
+                val bgText = if (semanticLine.isTranslated) listOf("(${semanticLine.text.trim()})") else null
                 
-                RhythmLyricsLine(
-                    text = rhythmLyricsWords,
-                    background = semanticLine.speaker?.isBackground ?: false,
-                    backgroundText = if (semanticLine.isTranslated) listOf(semanticLine.text) else null,
-                    oppositeTurn = semanticLine.speaker?.isVoice2,
-                    timestamp = semanticLine.start.toLong(),
-                    endtime = semanticLine.end.toLong(),
-                    endIsImplicit = semanticLine.endIsImplicit
+                result.add(
+                    RhythmLyricsLine(
+                        text = rhythmLyricsWords,
+                        background = semanticLine.speaker?.isBackground ?: false,
+                        backgroundText = bgText,
+                        oppositeTurn = semanticLine.speaker?.isVoice2,
+                        timestamp = semanticLine.start.toLong(),
+                        endtime = semanticLine.end.toLong(),
+                        endIsImplicit = semanticLine.endIsImplicit
+                    )
                 )
             }
+            return result
         }
         return emptyList()
     }

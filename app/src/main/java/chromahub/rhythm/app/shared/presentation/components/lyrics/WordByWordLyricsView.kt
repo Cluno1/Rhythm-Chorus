@@ -500,13 +500,15 @@ private fun WordByWordLyricLineItem(
     
     val wordRanges = remember(line.words) {
         val ranges = mutableListOf<IntRange>()
-        var currentLen = 0
-        line.words.forEachIndexed { idx, word ->
-            val prefix = if (idx > 0 && !word.isPart) 1 else 0
-            val start = currentLen + prefix
-            val end = start + word.text.length
-            ranges.add(start until end)
-            currentLen = end
+        var currentPos = 0
+        line.words.forEachIndexed { index, word ->
+            if (index > 0 && !word.isPart) {
+                currentPos += 1 // Space
+            }
+            val start = currentPos
+            val end = currentPos + word.text.length
+            ranges.add(start..end)
+            currentPos = end
         }
         ranges
     }
@@ -515,15 +517,6 @@ private fun WordByWordLyricLineItem(
         line.words.forEachIndexed { wordIndex, word ->
             val isWordActive = isCurrentLine && wordIndex == activeWordIndex
             
-            val wordAlpha = when {
-                isWordActive -> 1f
-                isCurrentLine -> 0.95f
-                distanceFromCurrent == 1 -> 0.75f
-                distanceFromCurrent == 2 -> 0.60f
-                distanceFromCurrent == 3 -> 0.45f
-                else -> 0.32f
-            }
-
             val baseColor = when (line.voiceTag) {
                 "v2" -> activeColor ?: MaterialTheme.colorScheme.secondary
                 "v3" -> activeColor ?: MaterialTheme.colorScheme.tertiary
@@ -563,14 +556,9 @@ private fun WordByWordLyricLineItem(
                         brush = activeBrush,
                         fontWeight = if (lyricBold) FontWeight.Black else FontWeight.Bold
                     )
-                } else if (sweepProgress >= 1f) {
-                    SpanStyle(
-                        color = baseColor,
-                        fontWeight = if (lyricBold) FontWeight.Black else FontWeight.Bold
-                    )
                 } else {
                     SpanStyle(
-                        color = inactiveWordColor,
+                        color = baseColor,
                         fontWeight = if (lyricBold) FontWeight.Black else FontWeight.Bold
                     )
                 }
@@ -598,11 +586,8 @@ private fun WordByWordLyricLineItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                if (onTapLyricsView != null) {
-                    onTapLyricsView()
-                } else {
-                    onSeek?.invoke(line.lineTimestamp)
-                }
+                onSeek?.invoke(line.lineTimestamp)
+                onTapLyricsView?.invoke()
             }
             .padding(vertical = 12.dp, horizontal = 16.dp)
             .graphicsLayer {

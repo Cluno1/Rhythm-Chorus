@@ -393,6 +393,17 @@ fun PlayerScreen(
             onRetryLyrics = onRetryLyrics,
             onShowLyricsEditor = { showLyricsEditorDialog = true },
             onPickLyricsFile = onPickLyricsFile,
+            onNavigateToLyricsSettings = {
+                try {
+                    navController.navigate(Screen.TunerLyrics.route) {
+                        popUpTo(Screen.Player.route) {
+                            inclusive = true
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("PlayerScreen", "Failed to navigate to lyrics settings", e)
+                }
+            },
             isMediaLoading = isMediaLoading,
             isSeeking = isSeeking,
             onPlayPause = onPlayPause,

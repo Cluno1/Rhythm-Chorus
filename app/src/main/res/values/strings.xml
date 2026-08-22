@@ -726,6 +726,8 @@
     <string name="playback_settings">Playback Settings</string>
     <string name="lyrics_placeholder">Enter lyrics here…\n\nYou can use LRC format:\n[00:12.00] Line one\n[00:17.00] Line two</string>
     <string name="lyrics_editor_title">Lyrics Editor</string>
+    <string name="lyrics_editor_short">Editor</string>
+    <string name="lyrics_settings_short">Settings</string>
 <string name="song_info_title">Song Information</string>
     <string name="rhythm_stats">Rhythm Stats</string>
     <string name="file_info">File Info</string>

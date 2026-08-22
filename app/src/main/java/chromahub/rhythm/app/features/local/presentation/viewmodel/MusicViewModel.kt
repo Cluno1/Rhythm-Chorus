@@ -5968,10 +5968,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun seekTo(positionMs: Long) {
-        Log.d(TAG, "Seek to position: $positionMs ms")
+    fun seekTo(positionMs: Long, autoPlayIfPaused: Boolean = false) {
+        Log.d(TAG, "Seek to position: $positionMs ms (autoPlay=$autoPlayIfPaused)")
         _isSeeking.value = true
-        mediaController?.seekTo(positionMs)
+        mediaController?.let { controller ->
+            controller.seekTo(positionMs)
+            if (autoPlayIfPaused && !controller.isPlaying) {
+                controller.play()
+            }
+        }
         updateProgress() // Immediately update progress after seeking
         
         // Reset seeking state after a delay

@@ -493,11 +493,8 @@ private fun SyncedLyricItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                if (onTapLyricsView != null) {
-                    onTapLyricsView()
-                } else {
-                    onSeek?.invoke(line.timestamp)
-                }
+                onSeek?.invoke(line.timestamp)
+                onTapLyricsView?.invoke()
             }
             .padding(vertical = 14.dp, horizontal = 20.dp)
             .graphicsLayer {

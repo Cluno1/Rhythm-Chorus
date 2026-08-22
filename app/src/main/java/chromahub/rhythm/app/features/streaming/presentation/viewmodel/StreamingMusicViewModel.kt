@@ -933,8 +933,11 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
         seekProgressHandler?.invoke(progress)
     }
 
-    fun seekTo(positionMs: Long) {
+    fun seekTo(positionMs: Long, autoPlayIfPaused: Boolean = false) {
         seekPositionHandler?.invoke(positionMs)
+        if (autoPlayIfPaused && _isPlaying.value != true) {
+            togglePlayPause()
+        }
     }
 
     /**

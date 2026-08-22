@@ -4537,7 +4537,7 @@ class MusicRepository(context: Context) {
 
         // Define source fetchers
         val fetchFromLocal: suspend () -> LyricsData? = {
-            findLocalLyrics(artist, title, songId)
+            findLocalLyrics(artist, title, songId, songUri)
         }
         
         val fetchFromEmbedded: suspend () -> LyricsData? = {
@@ -5112,20 +5112,20 @@ class MusicRepository(context: Context) {
 
     /**
      * Finds local lyrics file in app's files directory OR next to the music file
-     * Supports both .lrc files (in music folder) and .json cache files (in app folder)
+     * Supports both .lrc/.ttml/.srt files (in music folder) and .json cache files (in app folder)
      */
-    private fun findLocalLyrics(artist: String, title: String, songId: String? = null): LyricsData? {
-        Log.d(TAG, "===== findLocalLyrics START: $artist - $title (songId=$songId) =====")
+    private fun findLocalLyrics(artist: String, title: String, songId: String? = null, songUri: Uri? = null): LyricsData? {
+        Log.d(TAG, "===== findLocalLyrics START: $artist - $title (songId=$songId, songUri=$songUri) =====")
         
-        // First, check for .lrc file next to the music file
+        // First, check for .lrc / .ttml / .srt file next to the music file
         try {
-            val lrcLyrics = findLrcFileForSong(artist, title, songId)
+            val lrcLyrics = findLrcFileForSong(artist, title, songId, songUri)
             if (lrcLyrics != null) {
-                Log.d(TAG, "===== FOUND LOCAL .LRC FILE =====")
+                Log.d(TAG, "===== FOUND LOCAL LYRICS FILE: ${lrcLyrics.source} =====")
                 return lrcLyrics
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Error checking for .lrc file: ${e.message}")
+            Log.w(TAG, "Error checking for local lyrics file: ${e.message}")
         }
         
         // Second, check for cached JSON lyrics in app's files directory
@@ -5194,66 +5194,119 @@ class MusicRepository(context: Context) {
     }
     
     /**
-     * Searches for .lrc file next to the music file
+     * Searches for .lrc/.ttml/.srt file next to the music file
      * Looks for files with same name as the song or generic patterns
      */
-    private fun findLrcFileForSong(artist: String, title: String, songId: String? = null): LyricsData? {
+    private fun findLrcFileForSong(artist: String, title: String, songId: String? = null, songUri: Uri? = null): LyricsData? {
         try {
-            // Find the song in MediaStore to get its path
-            val projection = arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.DATA)
-            val selection = "${MediaStore.Audio.Media.TITLE} = ? AND ${MediaStore.Audio.Media.ARTIST} = ?"
-            val selectionArgs = arrayOf(title, artist)
-            
-            context.contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                selection,
-                selectionArgs,
-                null
-            )?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val dataIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-                    val songPath = cursor.getString(dataIndex)
-                    
-                    if (songPath != null) {
-                        val songFile = File(songPath)
-                        val directory = songFile.parentFile
-                        val songNameWithoutExt = songFile.nameWithoutExtension
-                        
-                        if (directory != null && directory.exists()) {
-                            // Check for custom tagged LRC file name
-                            val appSettings = AppSettings.getInstance(context)
-                            val customLrcName = songId?.let { appSettings.getSongCustomLrcFile(it) }
-                            if (customLrcName != null) {
-                                val lyricFile = File(directory, customLrcName)
-                                if (lyricFile.exists() && lyricFile.canRead()) {
-                                    val ext = lyricFile.extension.lowercase()
-                                    val content = lyricFile.readText()
-                                    val parsed = parseLocalLyricsFile(content, ext)
-                                    if (parsed != null) return parsed
-                                }
-                            }
+            var songPath: String? = null
 
-                            val extensions = listOf("lrc", "elrc", "ttml", "srt")
-                            for (ext in extensions) {
-                                val lyricFile = File(directory, "$songNameWithoutExt.$ext")
-                                if (lyricFile.exists() && lyricFile.canRead()) {
-                                    val content = lyricFile.readText()
-                                    val parsed = parseLocalLyricsFile(content, ext)
-                                    if (parsed != null) return parsed
-                                }
+            // 1. Direct resolution from songUri
+            if (songUri != null) {
+                if (songUri.scheme == "file") {
+                    songPath = songUri.path
+                } else if (songUri.scheme == "content") {
+                    try {
+                        val projection = arrayOf(MediaStore.Audio.Media.DATA)
+                        context.contentResolver.query(songUri, projection, null, null, null)?.use { cursor ->
+                            if (cursor.moveToFirst()) {
+                                val dataIdx = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+                                if (dataIdx >= 0) songPath = cursor.getString(dataIdx)
                             }
-                            
-                            // Also try with artist - title pattern
-                            val cleanArtist = artist.replace(Regex("[^a-zA-Z0-9]"), "_")
-                            val cleanTitle = title.replace(Regex("[^a-zA-Z0-9]"), "_")
-                            for (ext in extensions) {
-                                val lyricFile = File(directory, "${cleanArtist}_${cleanTitle}.$ext")
-                                if (lyricFile.exists() && lyricFile.canRead()) {
-                                    val content = lyricFile.readText()
-                                    val parsed = parseLocalLyricsFile(content, ext)
-                                    if (parsed != null) return parsed
-                                }
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
+
+            // 2. Query MediaStore by songId if available
+            if (songPath == null && songId != null) {
+                try {
+                    val projection = arrayOf(MediaStore.Audio.Media.DATA)
+                    val selection = "${MediaStore.Audio.Media._ID} = ?"
+                    val selectionArgs = arrayOf(songId)
+                    context.contentResolver.query(
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null
+                    )?.use { cursor ->
+                        if (cursor.moveToFirst()) {
+                            val dataIdx = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+                            if (dataIdx >= 0) songPath = cursor.getString(dataIdx)
+                        }
+                    }
+                } catch (_: Exception) {}
+            }
+
+            // 3. Fallback query by title and artist
+            if (songPath == null && title.isNotBlank() && artist.isNotBlank()) {
+                try {
+                    val projection = arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.DATA)
+                    val selection = "${MediaStore.Audio.Media.TITLE} = ? AND ${MediaStore.Audio.Media.ARTIST} = ?"
+                    val selectionArgs = arrayOf(title, artist)
+                    context.contentResolver.query(
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null
+                    )?.use { cursor ->
+                        if (cursor.moveToFirst()) {
+                            val dataIdx = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+                            if (dataIdx >= 0) songPath = cursor.getString(dataIdx)
+                        }
+                    }
+                } catch (_: Exception) {}
+            }
+
+            if (songPath != null) {
+                val songFile = File(songPath)
+                val directory = songFile.parentFile
+                val songNameWithoutExt = songFile.nameWithoutExtension
+                
+                if (directory != null && directory.exists()) {
+                    // Check for custom tagged LRC file name
+                    val appSettings = AppSettings.getInstance(context)
+                    val customLrcName = songId?.let { appSettings.getSongCustomLrcFile(it) }
+                    if (customLrcName != null) {
+                        val lyricFile = File(directory, customLrcName)
+                        if (lyricFile.exists() && lyricFile.canRead()) {
+                            val ext = lyricFile.extension.lowercase()
+                            val content = lyricFile.readText()
+                            val parsed = parseLocalLyricsFile(content, ext)
+                            if (parsed != null) return parsed
+                        }
+                    }
+
+                    val extensions = listOf("lrc", "elrc", "ttml", "srt", "xml")
+                    for (ext in extensions) {
+                        val lyricFile = File(directory, "$songNameWithoutExt.$ext")
+                        if (lyricFile.exists() && lyricFile.canRead()) {
+                            val content = lyricFile.readText()
+                            val parsed = parseLocalLyricsFile(content, ext)
+                            if (parsed != null) return parsed
+                        }
+                    }
+                    
+                    // Also try with artist - title pattern and clean variations
+                    val cleanArtist = artist.replace(Regex("[^a-zA-Z0-9]"), "_")
+                    val cleanTitle = title.replace(Regex("[^a-zA-Z0-9]"), "_")
+                    val candidates = listOf(
+                        "${cleanArtist}_${cleanTitle}",
+                        "$artist - $title",
+                        "$cleanArtist - $cleanTitle",
+                        title,
+                        cleanTitle
+                    )
+                    for (candidate in candidates) {
+                        if (candidate.isBlank()) continue
+                        for (ext in extensions) {
+                            val lyricFile = File(directory, "$candidate.$ext")
+                            if (lyricFile.exists() && lyricFile.canRead()) {
+                                val content = lyricFile.readText()
+                                val parsed = parseLocalLyricsFile(content, ext)
+                                if (parsed != null) return parsed
                             }
                         }
                     }
@@ -5272,9 +5325,20 @@ class MusicRepository(context: Context) {
             if (ext.equals("lrc", ignoreCase = true) || ext.equals("elrc", ignoreCase = true)) {
                 return parseLrcFile(content)
             }
+
+            if (ext.equals("ttml", ignoreCase = true) || ext.equals("xml", ignoreCase = true)) {
+                val parsedLines = RhythmLyricsParser.parseTtmlLyrics(content)
+                if (parsedLines.isNotEmpty()) {
+                    val wordByWordJson = Gson().toJson(parsedLines)
+                    val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
+                    val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
+                    val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
+                    return LyricsData(plainLyrics = plain, syncedLyrics = lrc, wordByWordLyrics = wordByWordJson, source = "Local File", isCorrected = true)
+                }
+            }
             
             val semanticLyrics = when (ext.lowercase()) {
-                "ttml" -> chromahub.rhythm.app.util.parseTtml(null, content)
+                "ttml", "xml" -> chromahub.rhythm.app.util.parseTtml(null, content)
                 "srt" -> chromahub.rhythm.app.util.parseSrt(content, true)
                 else -> null
             } ?: return null

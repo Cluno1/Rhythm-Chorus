@@ -188,9 +188,6 @@ object LrcUtils {
 
     fun convertSemanticLyricsToWordByWord(syncedLyrics: SyncedLyrics): String? {
         val rhythmWordLines = syncedLyrics.text.mapNotNull { line ->
-            // Skip translated/romanization lines — only process primary lines
-            if (line.isTranslated) return@mapNotNull null
-
             // Skip instrumental / gap lines — leave them as timing gaps
             if (isInstrumentalLine(line.text)) return@mapNotNull null
 
@@ -210,8 +207,6 @@ object LrcUtils {
                     )
                 }
             } else {
-                // auto-sync skipped this line (e.g. single-word line or no duration).
-                // Synthesise a single word entry spanning the whole line so it still renders.
                 val trimmed = line.text.trim()
                 if (trimmed.isBlank()) return@mapNotNull null
                 listOf(
@@ -227,15 +222,16 @@ object LrcUtils {
 
             if (wordMaps.isEmpty()) return@mapNotNull null
 
-            // Use the actual last word's endtime as line endtime so WordByWordLyricsView's
-            // gap detection measures singing-end → next-line-start, not implicit-next-start.
             val lineEndtime = wordMaps.maxOfOrNull {
                 (it["endtime"] as? Long) ?: 0L
             } ?: line.end.toLong()
 
-            mutableMapOf<String, Any>(
+            val bgList = if (line.isTranslated) listOf("(${line.text.trim()})") else null
+
+            mutableMapOf<String, Any?>(
                 "text" to wordMaps,
                 "background" to false,
+                "backgroundText" to bgList,
                 "timestamp" to line.start.toLong(),
                 "endtime" to lineEndtime,
                 "endIsImplicit" to line.endIsImplicit

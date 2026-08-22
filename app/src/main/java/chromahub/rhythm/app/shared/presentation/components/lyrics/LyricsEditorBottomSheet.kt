@@ -96,6 +96,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.res.stringResource
+import com.google.gson.Gson
 
 enum class LyricFormat {
     SOURCE,
@@ -404,6 +405,14 @@ fun LyricsEditorBottomSheet(
             (loadedTrimmed.contains("\"timestamp\"") || loadedTrimmed.contains("\"words\""))
             
         val isLrc = loadedLyrics.contains(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]"))
+
+        val isTtml = loadedTrimmed.startsWith("<") && (
+            loadedTrimmed.contains("<tt") ||
+            loadedTrimmed.contains("http://www.w3.org/ns/ttml") ||
+            loadedTrimmed.contains("<p ") ||
+            loadedTrimmed.contains("<p>") ||
+            loadedTrimmed.contains("<span ")
+        )
         
         if (isWordByWordJson) {
             editedWordByWord = loadedLyrics
@@ -414,14 +423,40 @@ fun LyricsEditorBottomSheet(
             } catch (_: Exception) {
                 editedLineByLine = ""
             }
+            selectedFormat = LyricFormat.WORD_BY_WORD
+        } else if (isTtml) {
+            val parsedLines = RhythmLyricsParser.parseTtmlLyrics(loadedLyrics)
+            if (parsedLines.isNotEmpty()) {
+                val wordByWordJson = Gson().toJson(parsedLines)
+                val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
+                editedWordByWord = wordByWordJson
+                editedLineByLine = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
+                editedSource = loadedLyrics
+                selectedFormat = LyricFormat.WORD_BY_WORD
+            } else {
+                val semanticLyrics = chromahub.rhythm.app.util.parseTtml(null, loadedLyrics)
+                val plain = when (semanticLyrics) {
+                    is chromahub.rhythm.app.util.SemanticLyrics.UnsyncedLyrics ->
+                        semanticLyrics.unsyncedText.joinToString("\n") { it.first }
+                    is chromahub.rhythm.app.util.SemanticLyrics.SyncedLyrics ->
+                        semanticLyrics.text.joinToString("\n") { it.text }
+                    else -> loadedLyrics
+                }
+                editedSource = loadedLyrics
+                editedLineByLine = plain
+                editedWordByWord = ""
+                selectedFormat = LyricFormat.LINE_BY_LINE
+            }
         } else if (isLrc) {
             editedLineByLine = loadedLyrics
             editedSource = loadedLyrics
             editedWordByWord = ""
+            selectedFormat = LyricFormat.LINE_BY_LINE
         } else {
             editedSource = loadedLyrics
             editedLineByLine = loadedLyrics
             editedWordByWord = ""
+            selectedFormat = LyricFormat.SOURCE
         }
         Toast.makeText(context, R.string.lyrics_loaded_success, Toast.LENGTH_SHORT).show()
     }
@@ -519,16 +554,16 @@ fun LyricsEditorBottomSheet(
             .takeIf { it.isNotEmpty() } ?: "lyrics"  // Fallback to "lyrics" if empty
     }
 
-    val defaultLyricsFileName = remember(song, sanitizedTitle, selectedFormat) {
+    val defaultLyricsFileName = remember(song, sanitizedTitle, selectedFormat, editedSource) {
         val baseName = if (song != null && !song.path.isNullOrBlank()) {
             File(song.path).nameWithoutExtension
         } else {
             sanitizedTitle
         }
-        if (selectedFormat == LyricFormat.WORD_BY_WORD) {
-            "$baseName.json"
-        } else {
-            "$baseName.lrc"
+        when {
+            selectedFormat == LyricFormat.WORD_BY_WORD -> "$baseName.json"
+            selectedFormat == LyricFormat.SOURCE && editedSource.trim().startsWith("<") -> "$baseName.ttml"
+            else -> "$baseName.lrc"
         }
     }
 
@@ -564,6 +599,7 @@ fun LyricsEditorBottomSheet(
                 color = MaterialTheme.colorScheme.primary
             )
         },
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onBackground,
         tonalElevation = 0.dp
@@ -681,6 +717,7 @@ fun LyricsEditorBottomSheet(
                                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                                 appSettings.setSongLyricsPreference(songId, prefValue)
                                                 dropdownExpanded = false
+                                                onRefresh()
                                             },
                                             shape = itemShape,
                                             color = MaterialTheme.colorScheme.surfaceContainer,
@@ -1130,6 +1167,9 @@ fun LyricsEditorBottomSheet(
                                         "text/x-lrc",
                                         "application/x-lrc",
                                         "application/json",
+                                        "application/xml",
+                                        "text/xml",
+                                        "application/ttml+xml",
                                         "application/octet-stream",
                                         "*/*"
                                     )
@@ -1146,7 +1186,11 @@ fun LyricsEditorBottomSheet(
                             onClick = {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                 if (editedLyrics.isNotBlank()) {
-                                    val mimeType = if (selectedFormat == LyricFormat.WORD_BY_WORD) "application/json" else "application/octet-stream"
+                                    val mimeType = when {
+                                        selectedFormat == LyricFormat.WORD_BY_WORD -> "application/json"
+                                        selectedFormat == LyricFormat.SOURCE && editedSource.trim().startsWith("<") -> "application/xml"
+                                        else -> "application/octet-stream"
+                                    }
                                     val initialUri = getInitialFolderUri(song?.path)
                                     saveLyricsLauncher.launch(
                                         SaveLyricsInput(

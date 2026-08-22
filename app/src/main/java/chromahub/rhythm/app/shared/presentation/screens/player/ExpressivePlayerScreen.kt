@@ -72,7 +72,9 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -333,7 +335,8 @@ fun ExpressivePlayerScreen(
     onOpenFullScreenLyrics: () -> Unit = {},
     isStreamingMode: Boolean = false,
     swipeToDismissEnabled: Boolean = true,
-    expansionFraction: Float = 1f
+    expansionFraction: Float = 1f,
+    onNavigateToLyricsSettings: (() -> Unit)? = null
 ) {
     val artworkScale by animateFloatAsState(
         targetValue = if (isPlaying) 1.0f else 0.85f,
@@ -364,21 +367,69 @@ fun ExpressivePlayerScreen(
     val showLyricsRomanization by appSettings.showLyricsRomanization.collectAsState()
     val playerLyricsTransition by appSettings.playerLyricsTransition.collectAsState()
     val tapLyricsToFullScreen by appSettings.tapLyricsToFullScreen.collectAsState()
+    val autoHideLyricsControls by appSettings.autoHideLyricsControls.collectAsState()
     val playerLyricsAlignment by appSettings.playerLyricsAlignment.collectAsState()
     val keepScreenOnLyrics by appSettings.keepScreenOnLyrics.collectAsState()
 
     val postureState by rememberDevicePosture()
     val isFlexMode = postureState is DevicePosture.TableTop
 
-    val onTapLyricsView = if (tapLyricsToFullScreen) onOpenFullScreenLyrics else null
+    var lyricsControlsVisible by remember { mutableStateOf(true) }
+    var lastLyricsInteractionTime by remember { mutableStateOf(System.currentTimeMillis()) }
+
+    fun showLyricsControls() {
+        lyricsControlsVisible = true
+        lastLyricsInteractionTime = System.currentTimeMillis()
+    }
+
+    fun toggleLyricsControls() {
+        lyricsControlsVisible = !lyricsControlsVisible
+        if (lyricsControlsVisible) {
+            lastLyricsInteractionTime = System.currentTimeMillis()
+        }
+    }
+
+    val lyricsVisible = showLyricsView && showLyrics
+    val lyricsNestedScrollConnection = remember(lyricsVisible, autoHideLyricsControls) {
+        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+            override fun onPreScroll(
+                available: androidx.compose.ui.geometry.Offset,
+                source: androidx.compose.ui.input.nestedscroll.NestedScrollSource
+            ): androidx.compose.ui.geometry.Offset {
+                if (lyricsVisible) {
+                    showLyricsControls()
+                }
+                return androidx.compose.ui.geometry.Offset.Zero
+            }
+        }
+    }
+
+    // Do not launch full screen lyrics view when on expressive player; tapping toggles/shows controls
+    val onTapLyricsView: () -> Unit = {
+        toggleLyricsControls()
+    }
     var isScrubbing by remember { mutableStateOf(false) }
     var scrubProgress by remember { mutableFloatStateOf(0f) }
     val progressValue = progress().coerceIn(0f, 1f)
     val resolvedDurationMs = musicViewModel?.duration?.collectAsState()?.value ?: 0L
     val totalTimeMs = song?.duration?.takeIf { it > 0 } ?: resolvedDurationMs.takeIf { it > 0 } ?: 0L
     val currentTimeMs = (progressValue * totalTimeMs).toLong()
-    val lyricsVisible = showLyricsView && showLyrics
     val showBuffering = isMediaLoading || isSeeking
+
+    LaunchedEffect(lyricsVisible, lyricsControlsVisible, lastLyricsInteractionTime, autoHideLyricsControls) {
+        if (lyricsVisible && autoHideLyricsControls && lyricsControlsVisible) {
+            delay(5000L) // Auto hide after 5 seconds of inactivity
+            lyricsControlsVisible = false
+        } else if (!lyricsVisible) {
+            lyricsControlsVisible = true
+        }
+    }
+
+    LaunchedEffect(expansionFraction >= 0.5f, lyricsVisible) {
+        if (expansionFraction >= 0.5f || !lyricsVisible) {
+            showLyricsControls()
+        }
+    }
 
     val debouncedSong = remember { mutableStateOf(song) }
     var previousQueuePosition by remember { mutableIntStateOf(queuePosition) }
@@ -448,7 +499,6 @@ fun ExpressivePlayerScreen(
     val accentFg = accentArtScheme.value?.second ?: MaterialTheme.colorScheme.onPrimary
     val accentGlass = accentFg.copy(alpha = 0.15f)
     val accentGlassStrong = accentFg.copy(alpha = 0.28f)
-    val useLightModeOnDarkBg = lyricsVisible && showDarkBg && !isDarkTheme
     val lyricsTextAlign = when (playerLyricsAlignment) {
         "START" -> TextAlign.Start; "END" -> TextAlign.End; else -> TextAlign.Center
     }
@@ -459,12 +509,13 @@ fun ExpressivePlayerScreen(
         if (shouldKeepScreenOn && activity != null) activity.window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         onDispose { activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
     }
-    // showAlbumArt: hide center artwork card only when ambient mode is active AND artwork is valid
-    // (the blurred background fills the view). For no-art songs we still need the card area so the
-    // Music Note icon renders. Derived synchronously — no LaunchedEffect delay.
-    val showAlbumArt = !(showDarkBg && hasValidArtwork)
-    val showPlayerControls = true
-    val showBottomButtons = true
+    
+    val showPlayerControls = if (lyricsVisible) {
+        !autoHideLyricsControls || lyricsControlsVisible
+    } else {
+        true
+    }
+    val showBottomButtons = showPlayerControls
 
     // Slow, smooth staggered entrance: a long linear drive so the cascade is even, with
     // per-element FastOutSlowIn motion so each piece decelerates gently into place.
@@ -520,6 +571,7 @@ fun ExpressivePlayerScreen(
     val line2TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line2Fraction) }
     val line3Alpha = line3Fraction
     val line3TranslationY = with(LocalDensity.current) { 44.dp.toPx() * (1f - line3Fraction) }
+    val showAlbumArt = !(showDarkBg && hasValidArtwork)
     val line4Alpha = line4Fraction
     val line4TranslationY = with(LocalDensity.current) { 40.dp.toPx() * (1f - line4Fraction) }
     val line6Alpha = line6Fraction
@@ -527,7 +579,7 @@ fun ExpressivePlayerScreen(
 
     val artworkClipShape = if (lyricsVisible) RoundedCornerShape(artworkCornerRadius) else playerArtworkShape
 
-    val needsDarkSurfaces = showDarkBg && !useLightModeOnDarkBg
+    val needsDarkSurfaces = showDarkBg
     val darkScheme = remember { darkColorScheme() }
     val darkSurfaceHigh = darkScheme.surfaceContainerHigh
     val darkSurface = darkScheme.surfaceContainer
@@ -562,10 +614,7 @@ fun ExpressivePlayerScreen(
         } else null
     }
     val artColor = artworkColor.value ?: defaultSongColor
-    // Adaptive text color over the artwork backdrop: dark art → white text, bright art →
-    // black text, so the title/artist marquee never disappears on light album covers.
-    // Threshold 0.65 accounts for the black overlay gradient darkening the area behind
-    // the text (effective backdrop luminance ≈ 70% of the raw artwork luminance).
+    // Ambient contrast handling: maintain visibility against backdrop
     val ambientTextColor = if ((artColor?.luminance() ?: 0f) > 0.65f) Color.Black else Color.White
 
     val ambientAlpha = if (isBackdropEnabled) playerAmbientBackdropIntensity else 1f
@@ -590,7 +639,6 @@ fun ExpressivePlayerScreen(
     val outerBoxBgColor by animateColorAsState(
         targetValue = when {
             useAccentBackground -> accentBg
-            useLightModeOnDarkBg -> Color.White
             showDarkBg && hasValidArtwork -> Color.Black
             showDarkBg && !hasValidArtwork -> Color.Transparent
             else -> MaterialTheme.colorScheme.surface
@@ -602,11 +650,11 @@ fun ExpressivePlayerScreen(
         animationSpec = tween(600), label = "lyricsScrimColor"
     )
     val onSurfaceColor by animateColorAsState(
-        targetValue = if (useAccentBackground) accentFg else if (useLightModeOnDarkBg) Color.Black else if (isBackdropEnabled) ambientTextColor else MaterialTheme.colorScheme.onSurface,
+        targetValue = if (useAccentBackground) accentFg else if (isBackdropEnabled) ambientTextColor else MaterialTheme.colorScheme.onSurface,
         animationSpec = tween(400), label = "onSurfaceColor"
     )
     val onSurfaceVariantColor by animateColorAsState(
-        targetValue = if (useAccentBackground) accentFg.copy(alpha = 0.8f) else if (useLightModeOnDarkBg) Color.Black.copy(alpha = 0.65f) else if (isBackdropEnabled) ambientTextColor.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (useAccentBackground) accentFg.copy(alpha = 0.8f) else if (isBackdropEnabled) ambientTextColor.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(400), label = "onSurfaceVariantColor"
     )
     val surfaceContainerColor by animateColorAsState(
@@ -624,7 +672,7 @@ fun ExpressivePlayerScreen(
         animationSpec = tween(400), label = "surfaceContainerColor"
     )
     val primaryColor by animateColorAsState(
-        targetValue = if (useAccentBackground) accentFg else if (useLightModeOnDarkBg) MaterialTheme.colorScheme.primary else if (isBackdropEnabled) Color.White else MaterialTheme.colorScheme.primary,
+        targetValue = if (useAccentBackground) accentFg else if (isBackdropEnabled) Color.White else MaterialTheme.colorScheme.primary,
         animationSpec = tween(400), label = "canvasPrimaryColor"
     )
     val clearArtworkAlpha by animateFloatAsState(
@@ -851,7 +899,7 @@ fun ExpressivePlayerScreen(
 
     val unifiedBackground = @Composable { modifier: Modifier ->
         val currentArtworkUri = debouncedSong.value?.artworkUri
-        val gc = if (useLightModeOnDarkBg) Color.White else Color.Black
+        val gc = Color.Black
         // Crossfade the artwork↔gradient switch to prevent the gradient from flashing
         // momentarily when skipping to a song whose artwork is not yet validated.
         AnimatedContent(
@@ -942,7 +990,22 @@ fun ExpressivePlayerScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(outerBoxBgColor)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(outerBoxBgColor)
+            .nestedScroll(lyricsNestedScrollConnection)
+            .pointerInput(autoHideLyricsControls, lyricsVisible) {
+                if (autoHideLyricsControls && lyricsVisible) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            awaitPointerEvent(PointerEventPass.Initial)
+                            if (lyricsVisible) {
+                                showLyricsControls()
+                            }
+                        }
+                    }
+                }
+            }
     ) {
         AnimatedVisibility(visible = showBg, enter = fadeIn(tween(600)), exit = fadeOut(tween(600))) {
             val bgZoom = 1f + 0.04f * (1f - localEntranceFraction)
@@ -1003,6 +1066,7 @@ fun ExpressivePlayerScreen(
                                         buttonContainerColor = if (useAccentBackground) accentFg else null,
                                         buttonContentColor = if (useAccentBackground) accentBg else null,
                                         fadeColor = if (isBackdropEnabled) null else lyricsScrimColor,
+                                        onNavigateToLyricsSettings = onNavigateToLyricsSettings,
                                         modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(horizontal = if (isCompactWidth) 16.dp else 24.dp))
                                 } else {
                                     Box(Modifier.padding(horizontal = if (isCompactWidth) 12.dp else 24.dp)
@@ -1118,11 +1182,11 @@ fun ExpressivePlayerScreen(
                                         Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth(),
                                             horizontalAlignment = if (playerMergeControlsToBottom) Alignment.CenterHorizontally else Alignment.Start) {
                                             AutoScrollingTextOnDemand(text = targetTitle, style = targetTextStyle.copy(color = onSurfaceColor),
-                                                gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> outerBoxBgColor },
+                                                gradientEdgeColor = when { showDarkBg -> Color.Black; else -> outerBoxBgColor },
                                                 modifier = Modifier.fillMaxWidth().clickable { onSongInfoClick() }, respectGlobalSetting = true,
                                                 textAlign = if (playerMergeControlsToBottom) TextAlign.Center else TextAlign.Start)
                                             AutoScrollingTextOnDemand(text = targetArtist, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium, color = onSurfaceVariantColor),
-                                                gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> outerBoxBgColor },
+                                                gradientEdgeColor = when { showDarkBg -> Color.Black; else -> outerBoxBgColor },
                                                 modifier = Modifier.fillMaxWidth().clickable { onShowArtistBottomSheet() }, respectGlobalSetting = true,
                                                 textAlign = if (playerMergeControlsToBottom) TextAlign.Center else TextAlign.Start)
                                         }
@@ -1544,7 +1608,6 @@ fun ExpressivePlayerScreen(
                             padding = 6.dp,
                             autoHideAfterMs = 5000,
                             tint = when {
-                                useLightModeOnDarkBg -> Color.Black
                                 showDarkBg -> Color.White
                                 useAccentBackground -> accentFg
                                 else -> null
@@ -1574,6 +1637,7 @@ private fun RhythmPlayerLyricsPanel(
     textAlignment: TextAlign,
     modifier: Modifier = Modifier,
     onTapLyricsView: (() -> Unit)? = null,
+    onNavigateToLyricsSettings: (() -> Unit)? = null,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
     subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     activeColor: Color = MaterialTheme.colorScheme.primary,
@@ -1621,17 +1685,17 @@ private fun RhythmPlayerLyricsPanel(
                                 isFirst = false,
                                 isLast = false,
                                 icon = RhythmIcons.Player.Lyrics,
-                                text = stringResource(R.string.button_add),
+                                text = stringResource(R.string.lyrics_editor_short),
                                 containerColor = buttonContainerColor,
                                 contentColor = buttonContentColor
                             )
                             RhythmButtonWeighted(
-                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onPickLyricsFile() },
+                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onNavigateToLyricsSettings?.invoke() },
                                 weight = 1f,
                                 isFirst = false,
                                 isLast = true,
-                                icon = MaterialSymbolIcon("file_open", filled = true),
-                                text = stringResource(R.string.expressiveplayerscreen_load),
+                                icon = MaterialSymbolIcon("settings", filled = true),
+                                text = stringResource(R.string.lyrics_settings_short),
                                 containerColor = buttonContainerColor,
                                 contentColor = buttonContentColor
                             )

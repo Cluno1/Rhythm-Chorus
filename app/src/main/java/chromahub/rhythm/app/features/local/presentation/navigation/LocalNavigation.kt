@@ -502,9 +502,9 @@ fun LocalNavigation(
     val onSkipPrevious = { viewModel.skipToPrevious() }
     val onSeek = { value: Float -> viewModel.seekTo(value) }
     val onLyricsSeek: (Long) -> Unit = { timestampMs ->
-        // Use the timestamp-based seekTo method directly for lyrics
+        // Use the timestamp-based seekTo method directly for lyrics and auto-play if paused
         Log.d("RhythmNavigation", "Lyrics seek: timestampMs=$timestampMs")
-        viewModel.seekTo(timestampMs)
+        viewModel.seekTo(timestampMs, autoPlayIfPaused = true)
     }
     val onPlaySong = { song: chromahub.rhythm.app.shared.data.model.Song -> viewModel.playSong(song) }
     val onPlayAlbum = { album: chromahub.rhythm.app.shared.data.model.Album -> viewModel.playAlbum(album) }

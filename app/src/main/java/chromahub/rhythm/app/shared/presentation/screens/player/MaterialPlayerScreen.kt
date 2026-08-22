@@ -2166,7 +2166,7 @@ fun MaterialPlayerScreen(
                                                                         Text(stringResource(R.string.updates_retry))
                                                                     }
 
-                                                                    // Edit manually button
+                                                                    // Lyrics Editor button
                                                                     ExpressiveGroupButton(
                                                                         onClick = {
                                                                             HapticUtils.performHapticFeedback(
@@ -2185,10 +2185,10 @@ fun MaterialPlayerScreen(
                                                                             modifier = Modifier.size(18.dp)
                                                                         )
                                                                         Spacer(modifier = Modifier.width(8.dp))
-                                                                        Text(stringResource(R.string.button_add))
+                                                                        Text(stringResource(R.string.lyrics_editor_short))
                                                                     }
 
-                                                                    // Load lyrics button
+                                                                    // Lyrics Settings button
                                                                     ExpressiveGroupButton(
                                                                         onClick = {
                                                                             HapticUtils.performHapticFeedback(
@@ -2196,27 +2196,26 @@ fun MaterialPlayerScreen(
                                                                                 haptic,
                                                                                 HapticType.HEAVY
                                                                             )
-                                                                            loadLyricsLauncher.launch(
-                                                                                arrayOf(
-                                                                                    "text/plain",
-                                                                                    "text/*",
-                                                                                    "text/x-lrc",
-                                                                                    "application/x-lrc",
-                                                                                    "application/octet-stream",
-                                                                                    "*/*"
-                                                                                )
-                                                                            )
+                                                                            try {
+                                                                                navController.navigate(Screen.TunerLyrics.route) {
+                                                                                    popUpTo(Screen.Player.route) {
+                                                                                        inclusive = true
+                                                                                    }
+                                                                                }
+                                                                            } catch (e: Exception) {
+                                                                                android.util.Log.e("MaterialPlayerScreen", "Failed to navigate to lyrics settings", e)
+                                                                            }
                                                                         },
                                                                         isStart = false,
                                                                         isEnd = true
                                                                     ) {
                                                                         Icon(
-                                                                            imageVector = MaterialSymbolIcon("file_open", filled = true),
+                                                                            imageVector = MaterialSymbolIcon("settings", filled = true),
                                                                             contentDescription = null,
                                                                             modifier = Modifier.size(18.dp)
                                                                         )
                                                                         Spacer(modifier = Modifier.width(8.dp))
-                                                                        Text(stringResource(R.string.expressiveplayerscreen_load))
+                                                                        Text(stringResource(R.string.lyrics_settings_short))
                                                                     }
                                                                 }
                                                             }

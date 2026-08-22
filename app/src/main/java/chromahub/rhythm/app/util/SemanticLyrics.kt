@@ -1099,32 +1099,34 @@ private class TtmlTimeTracker(private val parser: XmlPullParser, private val isA
         if (input?.isEmpty() != false) return null
         val multiplier = if (negative && input.startsWith('-')) -1 else 1
         val cleanInput = if (multiplier == -1) input.substring(1) else input
-        if (isApple) {
-            val appleMatch = appleTimeRegex.matchEntire(cleanInput)
-            if (appleMatch != null) {
-                val hours = if (appleMatch.groupValues[2].isNotEmpty())
-                    appleMatch.groupValues[1].toDoubleOrNull() ?: 0.0 else 0.0
-                val minutes = if (appleMatch.groupValues[2].isNotEmpty())
-                    appleMatch.groupValues[2].toDoubleOrNull() ?: 0.0 else
-                    appleMatch.groupValues[1].toDoubleOrNull() ?: 0.0
-                val seconds = appleMatch.groupValues[3].toDouble()
-                return ((hours * 3600000 + minutes * 60000 + seconds * 1000).toLong() + (audioOffset
-                    ?: 0L)) * multiplier
-            }
-        } else {
-            val clockMatch = clockTimeRegex.matchEntire(cleanInput)
-            if (clockMatch != null) {
-                val hours = clockMatch.groupValues[1].toDouble()
-                val minutes = clockMatch.groupValues[2].toDouble()
-                val seconds = (clockMatch.groupValues[3] + clockMatch.groupValues[4]).toDouble()
-                val frameSecs = clockMatch.groupValues[5].toDoubleOrNull()
-                    ?.div(effectiveFrameRate) ?: 0.0
-                val subFrameSecs = clockMatch.groupValues[6].toDoubleOrNull()
-                    ?.div(subFrameRate)?.div(effectiveFrameRate) ?: 0.0
-                return ((hours * 3600000 + minutes * 60000 + (seconds + frameSecs +
-                        subFrameSecs) * 1000).toLong() + offset + (audioOffset ?: 0L)) * multiplier
-            }
+        
+        // Try clock time (HH:MM:SS.mmm)
+        val clockMatch = clockTimeRegex.matchEntire(cleanInput)
+        if (clockMatch != null) {
+            val hours = clockMatch.groupValues[1].toDouble()
+            val minutes = clockMatch.groupValues[2].toDouble()
+            val seconds = (clockMatch.groupValues[3] + clockMatch.groupValues[4]).toDouble()
+            val frameSecs = clockMatch.groupValues[5].toDoubleOrNull()
+                ?.div(effectiveFrameRate) ?: 0.0
+            val subFrameSecs = clockMatch.groupValues[6].toDoubleOrNull()
+                ?.div(subFrameRate)?.div(effectiveFrameRate) ?: 0.0
+            return ((hours * 3600000 + minutes * 60000 + (seconds + frameSecs +
+                    subFrameSecs) * 1000).toLong() + offset + (audioOffset ?: 0L)) * multiplier
         }
+
+        // Try apple/simple time (MM:SS.mmm or HH:MM:SS.mmm or SS.mmm)
+        val appleMatch = appleTimeRegex.matchEntire(cleanInput)
+        if (appleMatch != null && appleMatch.groupValues[3].isNotEmpty()) {
+            val hours = if (appleMatch.groupValues[2].isNotEmpty())
+                appleMatch.groupValues[1].toDoubleOrNull() ?: 0.0 else 0.0
+            val minutes = if (appleMatch.groupValues[2].isNotEmpty())
+                appleMatch.groupValues[2].toDoubleOrNull() ?: 0.0 else
+                appleMatch.groupValues[1].toDoubleOrNull() ?: 0.0
+            val seconds = appleMatch.groupValues[3].toDoubleOrNull() ?: 0.0
+            return ((hours * 3600000 + minutes * 60000 + seconds * 1000).toLong() + (if (isApple) 0L else offset) + (audioOffset ?: 0L)) * multiplier
+        }
+
+        // Try offset time with metric suffix (e.g. 5.5s, 500ms)
         val offsetMatch = offsetTimeRegex.matchEntire(cleanInput)
         if (offsetMatch != null) {
             var time = offsetMatch.groupValues[1].toDouble()
@@ -1141,7 +1143,15 @@ private class TtmlTimeTracker(private val parser: XmlPullParser, private val isA
             }
             return (time.toLong() + offset + (audioOffset ?: 0L)) * multiplier
         }
-        throw XmlPullParserException("can't understand this TTML timestamp: $input")
+
+        // Try raw seconds or milliseconds string
+        val num = cleanInput.toDoubleOrNull()
+        if (num != null) {
+            val ms = if (num > 100000) num.toLong() else (num * 1000).toLong()
+            return (ms + offset + (audioOffset ?: 0L)) * multiplier
+        }
+
+        return null
     }
 
     private fun parseRange(offset: ULong): ULongRange? {
@@ -1159,13 +1169,12 @@ private class TtmlTimeTracker(private val parser: XmlPullParser, private val isA
             return null
         if (begin == null && dur != null)
             begin = (end ?: 0uL) - dur
-        else if (end == null && dur != null)
-            end = begin!! + dur
-        return begin!!..end!!
+        if (end == null && dur != null)
+            end = (begin ?: 0uL) + dur
+        return (begin ?: 0uL)..(end ?: 0uL)
     }
 
     private class TtmlLevel(val time: ULongRange?, val level: Int, var seq: ULong?)
-
     private val stack = mutableListOf<TtmlLevel>()
     fun beginBlock() {
         val isSeq = parser.getAttributeValue("", "timeContainer").let {

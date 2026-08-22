@@ -11,13 +11,16 @@ object LyricsFileUtils {
     private const val TAG = "LyricsFileUtils"
     private const val MAX_LYRICS_FILE_BYTES = 512 * 1024 // 512 KB
     private const val MAX_LYRICS_TEXT_CHARS = 200_000
-    private val ALLOWED_LYRICS_EXTENSIONS = setOf("lrc", "txt", "json")
+    private val ALLOWED_LYRICS_EXTENSIONS = setOf("lrc", "txt", "json", "ttml", "xml", "elrc", "srt")
     private val ALLOWED_LYRICS_MIME_TYPES = setOf(
         "application/octet-stream",
         "application/x-lrc",
         "text/plain",
         "text/x-lrc",
-        "application/json"
+        "application/json",
+        "application/xml",
+        "text/xml",
+        "application/ttml+xml"
     )
 
     data class LoadResult(
@@ -41,7 +44,7 @@ object LyricsFileUtils {
                     ?.takeIf { it.isNotBlank() }
 
             if (!isSupportedLyricsDocument(mimeType, extension)) {
-                return LoadResult(errorMessage = "Please select a .lrc, .txt, or .json lyrics file")
+                return LoadResult(errorMessage = "Please select a .lrc, .ttml, .json, or .txt lyrics file")
             }
 
             val size = metadata.size
