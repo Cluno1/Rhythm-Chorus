@@ -370,8 +370,9 @@ class RhythmPlayerEngine(
             val isReplayGainEnabled = appSettings.replayGain.value
             val isBassBoostEnabled = appSettings.bassBoostEnabled.value
             val isVirtualizerEnabled = appSettings.virtualizerEnabled.value
+            val isMonoAudioEnabled = appSettings.monoAudioEnabled.value
             val isOffloadSupported = appSettings.isAudioOffloadActive.value &&
-                (!isCrossfadeEnabled && !isEqualizerEnabled && !isReplayGainEnabled && !isBassBoostEnabled && !isVirtualizerEnabled)
+                (!isCrossfadeEnabled && !isEqualizerEnabled && !isReplayGainEnabled && !isBassBoostEnabled && !isVirtualizerEnabled && !isMonoAudioEnabled)
             val audioOffloadPreferences = TrackSelectionParameters.AudioOffloadPreferences.Builder()
                 .setAudioOffloadMode(
                     if (isOffloadSupported) {

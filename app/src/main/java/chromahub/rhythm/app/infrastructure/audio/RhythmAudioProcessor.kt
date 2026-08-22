@@ -101,6 +101,12 @@ abstract class RhythmAudioProcessor : AudioProcessor {
     override fun configure(inputAudioFormat: AudioProcessor.AudioFormat): AudioProcessor.AudioFormat {
         Log.d(TAG, "configure() - sampleRate=${inputAudioFormat.sampleRate}, channels=${inputAudioFormat.channelCount}, encoding=${inputAudioFormat.encoding}")
         
+        if (inputAudioFormat.encoding != C.ENCODING_PCM_16BIT) {
+            this.inputAudioFormat = AudioProcessor.AudioFormat.NOT_SET
+            this.outputAudioFormat = AudioProcessor.AudioFormat.NOT_SET
+            throw AudioProcessor.UnhandledAudioFormatException(inputAudioFormat)
+        }
+        
         this.inputAudioFormat = inputAudioFormat
         this.sampleRate = inputAudioFormat.sampleRate
         this.channelCount = inputAudioFormat.channelCount
@@ -111,18 +117,12 @@ abstract class RhythmAudioProcessor : AudioProcessor {
     }
     
     override fun isActive(): Boolean {
-        val active = inputAudioFormat != AudioProcessor.AudioFormat.NOT_SET &&
+        return inputAudioFormat != AudioProcessor.AudioFormat.NOT_SET &&
             encoding == C.ENCODING_PCM_16BIT
-        return active && !isBypassed()
     }
     
     override fun queueInput(inputBuffer: ByteBuffer) {
         if (!inputBuffer.hasRemaining()) {
-            return
-        }
-        
-        if (!isActive() || isBypassed()) {
-            outputBuffer = inputBuffer
             return
         }
         
@@ -134,6 +134,11 @@ abstract class RhythmAudioProcessor : AudioProcessor {
         buffer.clear()
         buffer.put(inputBuffer)
         buffer.flip()
+        
+        if (isBypassed()) {
+            outputBuffer = buffer
+            return
+        }
         
         val sampleCount = size / 2
         val samples = acquireShortArray(sampleCount)

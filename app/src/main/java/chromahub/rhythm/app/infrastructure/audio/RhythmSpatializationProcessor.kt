@@ -28,10 +28,13 @@ class RhythmSpatializationProcessor : RhythmAudioProcessor() {
     }
     
     // Parent processor for dynamic configuration sharing (crossfade thread safety)
+    @Volatile
     private var parentProcessor: RhythmSpatializationProcessor? = null
 
     // Spatialization strength (0-1000)
+    @Volatile
     private var strength: Short = 0
+    @Volatile
     private var enabled: Boolean = false
     
     /**

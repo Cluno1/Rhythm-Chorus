@@ -17,7 +17,9 @@ class RhythmMonoAudioProcessor : RhythmAudioProcessor() {
         private const val TAG = "RhythmMonoAudio"
     }
 
+    @Volatile
     private var parentProcessor: RhythmMonoAudioProcessor? = null
+    @Volatile
     private var enabled: Boolean = false
 
     /**

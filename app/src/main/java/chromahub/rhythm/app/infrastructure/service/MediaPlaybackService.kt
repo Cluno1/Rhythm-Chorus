@@ -573,12 +573,20 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         
         // Initialize Rhythm audio processors early (before player creation)
         try {
-            rhythmBassBoostProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmBassBoostProcessor()
-            rhythmSpatializationProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmSpatializationProcessor()
-            rhythmMonoAudioProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmMonoAudioProcessor()
+            rhythmBassBoostProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmBassBoostProcessor().apply {
+                setEnabled(appSettings.bassBoostEnabled.value)
+                setStrength(appSettings.bassBoostStrength.value.toShort())
+            }
+            rhythmSpatializationProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmSpatializationProcessor().apply {
+                setEnabled(appSettings.virtualizerEnabled.value)
+                setStrength(appSettings.virtualizerStrength.value.toShort())
+            }
+            rhythmMonoAudioProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmMonoAudioProcessor().apply {
+                setEnabled(appSettings.monoAudioEnabled.value)
+            }
             isBassBoostAvailable = true
             appSettings.setBassBoostAvailable(true)
-            Log.d(TAG, "Rhythm audio processors initialized early")
+            Log.d(TAG, "Rhythm audio processors initialized early with saved settings (mono=${appSettings.monoAudioEnabled.value}, bass=${appSettings.bassBoostEnabled.value}, spatial=${appSettings.virtualizerEnabled.value})")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize Rhythm processors", e)
             rhythmBassBoostProcessor = null
@@ -3360,13 +3368,8 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
     
     fun setBassBoostEnabled(enabled: Boolean) {
         if (rhythmBassBoostProcessor == null) {
-            Log.w(TAG, "Attempting to enable bass boost but Rhythm processor is null. Will reinitialize.")
-            if (getPlayerAudioSessionId() != 0) {
-                initializeAudioEffects()
-            } else {
-                Log.e(TAG, "Cannot enable bass boost: invalid audio session ID")
-                return
-            }
+            Log.w(TAG, "Attempting to enable bass boost but Rhythm processor is null. Reinitializing.")
+            initializeRhythmProcessors()
         }
         
         rhythmBassBoostProcessor?.setEnabled(enabled)
@@ -3394,9 +3397,9 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
     }
     
     fun setVirtualizerEnabled(enabled: Boolean) {
-        if (rhythmSpatializationProcessor == null && getPlayerAudioSessionId() != 0) {
-            Log.w(TAG, "Rhythm spatialization processor is null, attempting reinitialization")
-            initializeAudioEffects()
+        if (rhythmSpatializationProcessor == null) {
+            Log.w(TAG, "Rhythm spatialization processor is null, reinitializing")
+            initializeRhythmProcessors()
         }
         
         rhythmSpatializationProcessor?.setEnabled(enabled)
@@ -3436,13 +3439,8 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
 
     fun setMonoAudioEnabled(enabled: Boolean) {
         if (rhythmMonoAudioProcessor == null) {
-            Log.w(TAG, "Attempting to enable mono audio but Rhythm processor is null. Will reinitialize.")
-            if (getPlayerAudioSessionId() != 0) {
-                initializeAudioEffects()
-            } else {
-                Log.e(TAG, "Cannot enable mono audio: invalid audio session ID")
-                return
-            }
+            Log.w(TAG, "Attempting to enable mono audio but Rhythm processor is null. Reinitializing.")
+            initializeRhythmProcessors()
         }
         
         rhythmMonoAudioProcessor?.setEnabled(enabled)
