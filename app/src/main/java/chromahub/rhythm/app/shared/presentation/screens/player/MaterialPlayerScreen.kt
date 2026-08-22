@@ -686,19 +686,27 @@ fun MaterialPlayerScreen(
             // and calling popBackStack on a missing entry causes an
             // "Cannot transition entry that is not in the back stack" crash.
             val playerInStack = try {
-                navController.getBackStackEntry("streaming_player")
+                navController.getBackStackEntry(Screen.Player.route)
                 true
             } catch (_: IllegalArgumentException) {
                 false
             }
             if (playerInStack) {
-                navController.popBackStack("streaming_player", inclusive = true)
+                navController.popBackStack(Screen.Player.route, inclusive = true)
             }
-            navController.navigate("streaming_album/${android.net.Uri.encode(id)}?albumName=${android.net.Uri.encode(title)}") {
-                launchSingleTop = true
+            try {
+                navController.navigate("streaming_album/${android.net.Uri.encode(id)}?albumName=${android.net.Uri.encode(title)}") {
+                    launchSingleTop = true
+                }
+            } catch (e: Exception) {
+                Log.e("MaterialPlayerScreen", "Failed to navigate to streaming album", e)
             }
         } else {
-            navController.navigate(Screen.AlbumDetail.createRoute(id, title))
+            try {
+                navController.navigate(Screen.AlbumDetail.createRoute(id, title))
+            } catch (e: Exception) {
+                Log.e("MaterialPlayerScreen", "Failed to navigate to album detail", e)
+            }
         }
     }
     var showCompactChipsSheet by remember { mutableStateOf(false) }
@@ -1014,19 +1022,31 @@ fun MaterialPlayerScreen(
             appSettings = appSettings,
             onNavigateToSettings = {
                 showDeviceOutputSheet = false
-                navController.navigate(Screen.TunerPlayback.route)
+                try {
+                    navController.navigate(Screen.TunerPlayback.route)
+                } catch (e: Exception) {
+                    Log.e("MaterialPlayerScreen", "Failed to navigate to playback settings", e)
+                }
             },
             onNavigateToGoMode = if (appMode == "STREAMING") {
                 {
                     showDeviceOutputSheet = false
-                    navController.navigate("streaming_go_settings")
+                    try {
+                        navController.navigate("streaming_go_settings")
+                    } catch (e: Exception) {
+                        Log.e("MaterialPlayerScreen", "Failed to navigate to go settings", e)
+                    }
                 }
             } else {
                 null
             },
             onNavigateToEqualizer = {
                 showDeviceOutputSheet = false
-                navController.navigate(Screen.Equalizer.route)
+                try {
+                    navController.navigate(Screen.Equalizer.route)
+                } catch (e: Exception) {
+                    Log.e("MaterialPlayerScreen", "Failed to navigate to equalizer", e)
+                }
             },
             sheetState = deviceOutputSheetState
         )

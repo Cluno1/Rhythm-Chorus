@@ -490,19 +490,27 @@ fun PlayerScreen(
                 appSettings = appSettings,
                 onNavigateToSettings = {
                     showDeviceOutputSheet = false
-                    navController.navigate(Screen.TunerPlayback.route) {
-                        popUpTo(Screen.Player.route) {
-                            inclusive = true
+                    try {
+                        navController.navigate(Screen.TunerPlayback.route) {
+                            popUpTo(Screen.Player.route) {
+                                inclusive = true
+                            }
                         }
+                    } catch (e: Exception) {
+                        android.util.Log.e("PlayerScreen", "Failed to navigate to playback settings", e)
                     }
                 },
                 onNavigateToGoMode = null,
                 onNavigateToEqualizer = {
                     showDeviceOutputSheet = false
-                    navController.navigate(Screen.Equalizer.route) {
-                        popUpTo(Screen.Player.route) {
-                            inclusive = true
+                    try {
+                        navController.navigate(Screen.Equalizer.route) {
+                            popUpTo(Screen.Player.route) {
+                                inclusive = true
+                            }
                         }
+                    } catch (e: Exception) {
+                        android.util.Log.e("PlayerScreen", "Failed to navigate to equalizer", e)
                     }
                 },
                 sheetState = deviceOutputSheetState
@@ -618,10 +626,14 @@ fun PlayerScreen(
                 onPlaybackSpeed = { showPlaybackSpeedDialog = true },
                 onPlaybackPitch = { showPlaybackPitchDialog = true },
                 onEqualizer = {
-                    navController.navigate(Screen.Equalizer.route) {
-                        popUpTo(Screen.Player.route) {
-                            inclusive = true
+                    try {
+                        navController.navigate(Screen.Equalizer.route) {
+                            popUpTo(Screen.Player.route) {
+                                inclusive = true
+                            }
                         }
+                    } catch (e: Exception) {
+                        android.util.Log.e("PlayerScreen", "Failed to navigate to equalizer", e)
                     }
                 },
                 onSleepTimer = { showSleepTimerBottomSheet = true },
@@ -890,10 +902,14 @@ fun PlayerScreen(
             onClose = { showFullScreenLyrics = false },
             onShowLyricsEditor = { showLyricsEditorDialog = true },
             onNavigateToLyricsSettings = {
-                navController.navigate(Screen.TunerLyrics.route) {
-                    popUpTo(Screen.Player.route) {
-                        inclusive = true
+                try {
+                    navController.navigate(Screen.TunerLyrics.route) {
+                        popUpTo(Screen.Player.route) {
+                            inclusive = true
+                        }
                     }
+                } catch (e: Exception) {
+                    android.util.Log.e("PlayerScreen", "Failed to navigate to lyrics settings", e)
                 }
             },
             canvasArtwork = canvasArtwork,
