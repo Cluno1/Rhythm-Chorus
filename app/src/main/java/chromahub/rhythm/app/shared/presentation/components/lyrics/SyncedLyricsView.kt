@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.components.lyrics
 
 import androidx.compose.animation.core.*
@@ -315,10 +320,10 @@ private fun SyncedVocalGapItem(
     val isCurrentGap = currentPlaybackTime >= item.startTime &&
         currentPlaybackTime < item.startTime + item.duration
 
-    val gapHeight = (item.duration / 1000f).coerceIn(18f, 66f)
+    val gapPadding = (item.duration / 1000f).coerceIn(8f, 20f)
 
     val iconScale by animateFloatAsState(
-        targetValue = if (isCurrentGap) 1.4f else 1f,
+        targetValue = if (isCurrentGap) 1.3f else 1f,
         animationSpec = if (noAnimation) snap() else spring(
             dampingRatio = Spring.DampingRatioLowBouncy,
             stiffness = Spring.StiffnessVeryLow
@@ -335,22 +340,15 @@ private fun SyncedVocalGapItem(
         label = "syncedGapAlpha"
     )
 
-    Spacer(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(gapHeight.dp)
-            .padding(horizontal = 28.dp)
-    )
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = gapPadding.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "♪",
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.titleMedium,
             color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(alpha = iconAlpha),
             modifier = Modifier.graphicsLayer {
                 scaleX = iconScale
@@ -359,19 +357,12 @@ private fun SyncedVocalGapItem(
         )
         Text(
             text = stringResource(R.string.lyrics_instrumental),
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.labelMedium,
             color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(
                 alpha = if (isCurrentGap) 0.6f else 0.25f
             )
         )
     }
-
-    Spacer(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(gapHeight.dp)
-            .padding(horizontal = 28.dp)
-    )
 }
 
 /**

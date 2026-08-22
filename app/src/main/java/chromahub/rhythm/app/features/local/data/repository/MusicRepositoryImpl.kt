@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.features.local.data.repository
 import chromahub.rhythm.app.shared.data.model.ScanProgress
 import chromahub.rhythm.app.core.domain.scan.MediaScanEngine

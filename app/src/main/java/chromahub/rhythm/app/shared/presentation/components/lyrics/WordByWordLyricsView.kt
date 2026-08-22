@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.components.lyrics
 
 import androidx.compose.animation.core.*
@@ -164,10 +169,10 @@ fun WordByWordLyricsView(
                 val gapDuration = nextLine.lineTimestamp - line.effectiveLineEndtime()
                 val isExplicit = !line.endIsImplicit
                 val shouldAddGap = if (isExplicit) {
-                    gapDuration >= 3000L
+                    gapDuration >= 4500L
                 } else {
                     val intervalToNext = nextLine.lineTimestamp - line.lineTimestamp
-                    intervalToNext >= longGapThreshold && gapDuration >= 3000L
+                    intervalToNext >= longGapThreshold && gapDuration >= 3500L
                 }
                 if (shouldAddGap) {
                     items.add(LyricsItem.Gap(gapDuration, line.effectiveLineEndtime()))
@@ -331,7 +336,7 @@ fun WordByWordLyricsView(
                         val isCurrentGap = adjustedPlaybackTime >= item.startTime &&
                             adjustedPlaybackTime < item.startTime + item.duration
                         
-                        val gapHeight = (item.duration / 1000f).coerceIn(20f, 80f)
+                        val gapPadding = (item.duration / 1000f).coerceIn(8f, 20f)
                         val iconAlpha by animateFloatAsState(
                             targetValue = if (isCurrentGap) 0.85f else 0.3f,
                             animationSpec = if (lyricNoAnimationVal) snap() else spring(
@@ -341,7 +346,7 @@ fun WordByWordLyricsView(
                             label = "gapAlpha"
                         )
                         val iconScale by animateFloatAsState(
-                            targetValue = if (isCurrentGap) 1.5f else 1f,
+                            targetValue = if (isCurrentGap) 1.3f else 1f,
                             animationSpec = if (lyricNoAnimationVal) snap() else spring<Float>(
                                 dampingRatio = Spring.DampingRatioLowBouncy,
                                 stiffness = Spring.StiffnessVeryLow
@@ -349,22 +354,15 @@ fun WordByWordLyricsView(
                             label = "iconScale"
                         )
                         
-                        Spacer(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(gapHeight.dp)
-                                .padding(horizontal = 32.dp)
-                        )
-                        
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = gapPadding.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
                                 text = "♪",
-                                style = MaterialTheme.typography.headlineMedium,
+                                style = MaterialTheme.typography.titleMedium,
                                 color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(alpha = iconAlpha),
                                 modifier = Modifier.graphicsLayer {
                                     scaleX = iconScale
@@ -373,19 +371,12 @@ fun WordByWordLyricsView(
                             )
                             Text(
                                 text = stringResource(R.string.lyrics_instrumental),
-                                style = MaterialTheme.typography.labelLarge,
+                                style = MaterialTheme.typography.labelMedium,
                                 color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(
                                     alpha = if (isCurrentGap) 0.6f else 0.25f
                                 )
                             )
                         }
-                        
-                        Spacer(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(gapHeight.dp)
-                                .padding(horizontal = 32.dp)
-                        )
                     }
                 }
             }

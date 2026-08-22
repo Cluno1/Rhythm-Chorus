@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.util
 
 import android.util.Log
@@ -35,9 +40,11 @@ object RhythmLyricsParser {
             val rhythmLyricsLines: List<RhythmLyricsLine> = gson.fromJson(jsonContent, listType)
             
             val parsedLines = rhythmLyricsLines.mapNotNull { line ->
-                var words = line.text?.map { word ->
+                var words = line.text?.mapNotNull { word ->
+                    val text = word.text.orEmpty().trim()
+                    if (text.isEmpty()) return@mapNotNull null
                     WordByWordWord(
-                        text = word.text.orEmpty(),
+                        text = text,
                         isPart = word.part ?: false,
                         timestamp = word.timestamp,
                         endtime = word.endtime
@@ -104,7 +111,9 @@ object RhythmLyricsParser {
                     val firstWordTimestamp = words.firstOrNull()?.timestamp ?: 0L
                     val lastWordEndtime = words.maxOfOrNull { it.endtime } ?: firstWordTimestamp
                     val lineStart = maxOf(0L, line.timestamp ?: firstWordTimestamp)
-                    val lineEnd = maxOf(line.endtime ?: 0L, lastWordEndtime, lineStart)
+                    val rawEnd = line.endtime ?: 0L
+                    val safeRawEnd = if (rawEnd > 86_400_000L) lastWordEndtime else rawEnd
+                    val lineEnd = maxOf(safeRawEnd, lastWordEndtime, lineStart)
 
                     WordByWordLyricLine(
                         words = words,
