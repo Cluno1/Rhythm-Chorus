@@ -507,13 +507,38 @@ object RhythmLyricsParser {
     }
 
     /**
+     * Checks if the provided text looks like TTML formatted lyrics
+     */
+    fun isTtmlContent(text: String?): Boolean {
+        if (text.isNullOrBlank()) return false
+        val trimmed = text.trim()
+        if (!trimmed.startsWith("<")) return false
+        val lower = trimmed.lowercase()
+        return lower.contains("<tt") ||
+                lower.contains("http://www.w3.org/ns/ttml") ||
+                lower.contains("http://music.apple.com/lyric-ttml-internal") ||
+                lower.contains("http://itunes.apple.com/lyric-ttml-extensions") ||
+                lower.contains("xmlns:ttm") ||
+                lower.contains("xmlns:itunes") ||
+                (lower.contains("<p ") && (lower.contains("begin=") || lower.contains("dur=") || lower.contains("end="))) ||
+                (lower.contains("<span ") && (lower.contains("begin=") || lower.contains("dur=") || lower.contains("end="))) ||
+                (lower.contains("<body>") && lower.contains("<p"))
+    }
+
+    /**
      * Parse TTML (Timed Text Markup Language) formatted synchronized lyrics.
      * Extracts lines (<p>) and word-by-word timestamps (<span>).
      * Attaches translated lines (e.g. from iTunes translations) to their corresponding original lines.
      */
     fun parseTtmlLyrics(ttmlContent: String): List<RhythmLyricsLine> {
-        val parsed = parseTtml(audioMimeType = null, lyricText = ttmlContent)
-        if (parsed is SemanticLyrics.SyncedLyrics) {
+        val parsed = try {
+            parseTtml(audioMimeType = null, lyricText = ttmlContent)
+        } catch (e: Exception) {
+            Log.w(TAG, "SemanticLyrics.parseTtml threw exception: ${e.message}")
+            null
+        }
+
+        if (parsed is SemanticLyrics.SyncedLyrics && parsed.text.isNotEmpty()) {
             val result = mutableListOf<RhythmLyricsLine>()
 
             for (semanticLine in parsed.text) {
@@ -572,9 +597,129 @@ object RhythmLyricsParser {
                     )
                 )
             }
-            return result
+            if (result.isNotEmpty()) {
+                return result
+            }
         }
+
+        // Fallback to regex-based TTML extraction if XML parsing produced no lines
+        val fallback = parseTtmlFallback(ttmlContent)
+        if (fallback.isNotEmpty()) {
+            Log.d(TAG, "Successfully parsed TTML via fallback parser (${fallback.size} lines)")
+            return fallback
+        }
+
         return emptyList()
+    }
+
+    /**
+     * Regex-based fallback parser for TTML lyrics when XML pull parser cannot parse the document.
+     */
+    fun parseTtmlFallback(ttmlContent: String): List<RhythmLyricsLine> {
+        if (ttmlContent.isBlank()) return emptyList()
+
+        try {
+            // Extract translations if available
+            val translationsMap = mutableMapOf<String, String>()
+            val translationRegex = Regex("<text[^>]*?\\bfor=[\"']([^\"']+)[\"'][^>]*>(.*?)</text>", RegexOption.DOT_MATCHES_ALL)
+            for (match in translationRegex.findAll(ttmlContent)) {
+                val key = match.groupValues[1].trim()
+                val text = match.groupValues[2].replace(Regex("<[^>]*>"), "").trim()
+                if (key.isNotEmpty() && text.isNotEmpty()) {
+                    translationsMap[key] = text
+                }
+            }
+
+            val pRegex = Regex("<p\\s+([^>]*?)>(.*?)</p>|<p\\s+([^>]*?)/>", RegexOption.DOT_MATCHES_ALL)
+            val attrRegex = Regex("([\\w:-]+)=[\"']([^\"']*)[\"']")
+            val spanRegex = Regex("<span\\s+([^>]*?)>(.*?)</span>", RegexOption.DOT_MATCHES_ALL)
+
+            val lines = mutableListOf<RhythmLyricsLine>()
+            var lineIdx = 1
+
+            for (pMatch in pRegex.findAll(ttmlContent)) {
+                val attrsStr = if (pMatch.groupValues[1].isNotEmpty()) pMatch.groupValues[1] else pMatch.groupValues[3]
+                val innerContent = if (pMatch.groupValues[2].isNotEmpty()) pMatch.groupValues[2] else ""
+
+                val attrs = mutableMapOf<String, String>()
+                for (attrMatch in attrRegex.findAll(attrsStr)) {
+                    val key = attrMatch.groupValues[1].substringAfterLast(':').lowercase()
+                    attrs[key] = attrMatch.groupValues[2]
+                }
+
+                val beginStr = attrs["begin"]
+                val endStr = attrs["end"]
+                val durStr = attrs["dur"]
+                val key = attrs["key"] ?: "L$lineIdx"
+                lineIdx++
+
+                val beginMs = parseTtmlTime(beginStr) ?: continue
+                val durMs = parseTtmlTime(durStr)
+                val endMs = parseTtmlTime(endStr) ?: (if (durMs != null) beginMs + durMs else beginMs + 3000L)
+
+                // Check for spans inside <p>
+                val spans = spanRegex.findAll(innerContent).toList()
+                val words = mutableListOf<RhythmLyricsWord>()
+
+                if (spans.isNotEmpty()) {
+                    for ((spanIdx, spanMatch) in spans.withIndex()) {
+                        val spanAttrsStr = spanMatch.groupValues[1]
+                        val spanText = spanMatch.groupValues[2].replace(Regex("<[^>]*>"), "").trim()
+                        if (spanText.isEmpty()) continue
+
+                        val spanAttrs = mutableMapOf<String, String>()
+                        for (attrMatch in attrRegex.findAll(spanAttrsStr)) {
+                            val k = attrMatch.groupValues[1].substringAfterLast(':').lowercase()
+                            spanAttrs[k] = attrMatch.groupValues[2]
+                        }
+
+                        val sBegin = parseTtmlTime(spanAttrs["begin"]) ?: beginMs
+                        val sEnd = parseTtmlTime(spanAttrs["end"]) ?: (sBegin + 500L)
+
+                        words.add(
+                            RhythmLyricsWord(
+                                text = spanText,
+                                part = spanIdx > 0 && !spanMatch.groupValues[2].startsWith(" "),
+                                timestamp = sBegin,
+                                endtime = sEnd
+                            )
+                        )
+                    }
+                }
+
+                val cleanText = innerContent.replace(Regex("<[^>]*>"), "").trim()
+                if (cleanText.isEmpty() && words.isEmpty()) continue
+
+                val finalWords = if (words.isNotEmpty()) words else listOf(
+                    RhythmLyricsWord(
+                        text = cleanText,
+                        part = false,
+                        timestamp = beginMs,
+                        endtime = endMs
+                    )
+                )
+
+                val translation = translationsMap[key]
+                val bgText = if (translation != null) listOf("($translation)") else null
+
+                lines.add(
+                    RhythmLyricsLine(
+                        text = finalWords,
+                        background = false,
+                        backgroundText = bgText,
+                        oppositeTurn = null,
+                        timestamp = beginMs,
+                        endtime = endMs,
+                        endIsImplicit = false
+                    )
+                )
+            }
+
+            return lines
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in parseTtmlFallback: ${e.message}", e)
+            return emptyList()
+        }
     }
 }
 

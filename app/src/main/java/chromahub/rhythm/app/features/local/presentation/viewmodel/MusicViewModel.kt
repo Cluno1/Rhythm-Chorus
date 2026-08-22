@@ -7686,12 +7686,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     _lyricsTimeOffset.value = timeOffset
                     
                     // Determine what format to treat the lyrics as
+                    val isTtml = RhythmLyricsParser.isTtmlContent(sanitizedLyrics)
                     val isWordByWord = format == "WORD_BY_WORD" || 
                         (sanitizedLyrics.trim().startsWith("[") && 
                          (sanitizedLyrics.contains("\"timestamp\"") || sanitizedLyrics.contains("\"words\"")))
                     
                     val isSynced = format == "LINE_BY_LINE" || 
-                        (!isWordByWord && sanitizedLyrics.contains(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]")))
+                        (!isWordByWord && !isTtml && sanitizedLyrics.contains(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]")))
                     
                     // Load existing cache if exists to preserve other formats
                     val fileName = "${artist}_${title}.json".replace(Regex("[^a-zA-Z0-9._-]"), "_")
@@ -7719,7 +7720,32 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         sanitizedLyrics
                     }
                     
-                    val lyricsData = if (isWordByWord) {
+                    val lyricsData = if (isTtml) {
+                        val parsed = try {
+                            RhythmLyricsParser.parseTtmlLyrics(sanitizedLyrics)
+                        } catch (e: Exception) {
+                            emptyList()
+                        }
+                        if (parsed.isNotEmpty()) {
+                            val wordByWordJson = Gson().toJson(parsed)
+                            val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
+                            val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
+                            val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
+                            LyricsData(
+                                plainLyrics = plain,
+                                syncedLyrics = lrc,
+                                wordByWordLyrics = wordByWordJson,
+                                source = "Local File",
+                                isCorrected = true
+                            )
+                        } else {
+                            LyricsData(
+                                plainLyrics = sanitizedLyrics,
+                                syncedLyrics = existingLyricsData?.syncedLyrics,
+                                wordByWordLyrics = existingLyricsData?.wordByWordLyrics
+                            )
+                        }
+                    } else if (isWordByWord) {
                         // Parse JSON to generate synced and plain versions
                         val parsed = try {
                             RhythmLyricsParser.parseWordByWordLyrics(sanitizedLyrics)

@@ -3995,6 +3995,28 @@ class MusicRepository(context: Context) {
                 Log.e(TAG, "Error parsing embedded word-by-word JSON", e)
             }
         }
+
+        if (RhythmLyricsParser.isTtmlContent(lyrics)) {
+            try {
+                val parsedLines = RhythmLyricsParser.parseTtmlLyrics(lyrics)
+                if (parsedLines.isNotEmpty()) {
+                    val wordByWordJson = Gson().toJson(parsedLines)
+                    val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
+                    val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
+                    val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
+                    Log.d(TAG, "Successfully parsed embedded TTML lyrics (${parsedLines.size} lines)")
+                    return LyricsData(
+                        plainLyrics = plain,
+                        syncedLyrics = lrc,
+                        wordByWordLyrics = wordByWordJson,
+                        source = "Embedded",
+                        isCorrected = true
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing embedded TTML lyrics", e)
+            }
+        }
         
         val customTimedLyrics = parseCustomTimedLyrics(lyrics)
         if (customTimedLyrics != null) {
@@ -5279,7 +5301,7 @@ class MusicRepository(context: Context) {
                         }
                     }
 
-                    val extensions = listOf("lrc", "elrc", "ttml", "srt", "xml")
+                    val extensions = listOf("lrc", "elrc", "ttml", "srt", "xml", "txt")
                     for (ext in extensions) {
                         val lyricFile = File(directory, "$songNameWithoutExt.$ext")
                         if (lyricFile.exists() && lyricFile.canRead()) {
@@ -5322,11 +5344,8 @@ class MusicRepository(context: Context) {
         try {
             if (content.isBlank()) return null
             
-            if (ext.equals("lrc", ignoreCase = true) || ext.equals("elrc", ignoreCase = true)) {
-                return parseLrcFile(content)
-            }
-
-            if (ext.equals("ttml", ignoreCase = true) || ext.equals("xml", ignoreCase = true)) {
+            // Check for TTML content regardless of file extension
+            if (RhythmLyricsParser.isTtmlContent(content) || ext.equals("ttml", ignoreCase = true) || ext.equals("xml", ignoreCase = true)) {
                 val parsedLines = RhythmLyricsParser.parseTtmlLyrics(content)
                 if (parsedLines.isNotEmpty()) {
                     val wordByWordJson = Gson().toJson(parsedLines)
@@ -5335,6 +5354,11 @@ class MusicRepository(context: Context) {
                     val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
                     return LyricsData(plainLyrics = plain, syncedLyrics = lrc, wordByWordLyrics = wordByWordJson, source = "Local File", isCorrected = true)
                 }
+            }
+
+            if (ext.equals("lrc", ignoreCase = true) || ext.equals("elrc", ignoreCase = true) || ext.equals("txt", ignoreCase = true)) {
+                val lrcParsed = parseLrcFile(content)
+                if (lrcParsed != null) return lrcParsed
             }
             
             val semanticLyrics = when (ext.lowercase()) {
@@ -5405,6 +5429,17 @@ class MusicRepository(context: Context) {
     private fun parseLrcFile(lrcContent: String): LyricsData? {
         try {
             if (lrcContent.isBlank()) return null
+
+            if (RhythmLyricsParser.isTtmlContent(lrcContent)) {
+                val parsedLines = RhythmLyricsParser.parseTtmlLyrics(lrcContent)
+                if (parsedLines.isNotEmpty()) {
+                    val wordByWordJson = Gson().toJson(parsedLines)
+                    val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
+                    val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
+                    val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
+                    return LyricsData(plainLyrics = plain, syncedLyrics = lrc, wordByWordLyrics = wordByWordJson, source = "Local File", isCorrected = true)
+                }
+            }
             
             val syncedLines = mutableListOf<String>()
             val plainLines = mutableListOf<String>()
