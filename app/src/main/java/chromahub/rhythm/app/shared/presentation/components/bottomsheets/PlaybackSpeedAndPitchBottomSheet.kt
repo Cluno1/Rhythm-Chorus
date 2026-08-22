@@ -50,7 +50,10 @@ fun PlaybackSpeedAndPitchBottomSheet(
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
-    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
 
     val minVal = 0.25f
     val maxVal = 3.0f
@@ -99,7 +102,7 @@ fun PlaybackSpeedAndPitchBottomSheet(
         dragHandle = {
             BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
         },
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier
             .widthIn(max = 640.dp)

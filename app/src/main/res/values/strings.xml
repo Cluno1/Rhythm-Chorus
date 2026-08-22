@@ -2365,6 +2365,8 @@
     <string name="library_no_artists_yet_desc">Artists appear here after you add music</string>
     <string name="library_no_dated_songs">No dated songs found</string>
     <string name="library_no_dated_songs_desc">Songs with release dates will appear here</string>
+    <string name="library_no_liked_songs">No liked songs yet</string>
+    <string name="library_no_liked_songs_desc">Favorite songs to see them appear here</string>
     <string name="library_action_add_to_playlist">Add to playlist</string>
     <plurals name="library_selected_count_format">
         <item quantity="one">%1$d Selected</item>

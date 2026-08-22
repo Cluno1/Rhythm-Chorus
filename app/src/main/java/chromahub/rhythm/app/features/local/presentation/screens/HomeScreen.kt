@@ -3060,7 +3060,7 @@ private fun ModernRecommendedSection(
                         color = onCardBgColor,
                         modifier = Modifier
                             .align(Alignment.TopStart)
-                            .fillMaxWidth(0.55f)
+                            .fillMaxWidth()
                     )
 
                     Box(

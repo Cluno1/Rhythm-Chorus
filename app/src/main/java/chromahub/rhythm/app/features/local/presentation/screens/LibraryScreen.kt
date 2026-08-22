@@ -1893,7 +1893,10 @@ fun LibraryScreen(
                                             onShowMultiSelectionSheet = { showMultiSelectionSheet = true },
                                             onRefreshClick = onRefreshClick,
                                             bottomPadding = adjustedSongsBottomPadding,
-                                            sortOrder = sortOrder
+                                            sortOrder = sortOrder,
+                                            emptyMessage = context.getString(R.string.library_no_liked_songs),
+                                            emptySubtitle = context.getString(R.string.library_no_liked_songs_desc),
+                                            showEmptyRefresh = false
                                         )
                                     "PLAYLISTS" -> SingleCardPlaylistsContent(
                                         playlists = playlists,
@@ -2417,7 +2420,10 @@ fun SingleCardSongsContent(
     onRefreshClick: (() -> Unit)? = null,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     songMenuContent: (@Composable (song: Song, dismissMenu: () -> Unit) -> Unit)? = null,
-    sortOrder: MusicViewModel.SortOrder = MusicViewModel.SortOrder.TITLE_ASC
+    sortOrder: MusicViewModel.SortOrder = MusicViewModel.SortOrder.TITLE_ASC,
+    emptyMessage: String? = null,
+    emptySubtitle: String? = null,
+    showEmptyRefresh: Boolean = true
 ) {
     val context = LocalContext.current
     val appSettings = remember { AppSettings.getInstance(context) }
@@ -2532,10 +2538,10 @@ fun SingleCardSongsContent(
 
     if (preparedSongs.isEmpty()) {
         EmptyState(
-            message = context.getString(R.string.library_no_songs),
-            subtitle = context.getString(R.string.library_start_collection),
+            message = emptyMessage ?: context.getString(R.string.library_no_songs),
+            subtitle = emptySubtitle ?: context.getString(R.string.library_start_collection),
             icon = RhythmIcons.Music.Song,
-            onRefresh = onRefreshClick
+            onRefresh = if (showEmptyRefresh) onRefreshClick else null
         )
     } else {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -3287,14 +3293,31 @@ fun LibrarySongItem(
     val isCurrentSong = currentSong?.id == song.id
 
     val titleColor by animateColorAsState(
-        targetValue = if (isCurrentSong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+        targetValue = if (isCurrentSong && !isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
         animationSpec = tween(300),
         label = "titleColor"
     )
     val supportingColor by animateColorAsState(
-        targetValue = if (isCurrentSong) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (isCurrentSong && !isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.75f) else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(300),
         label = "supportingColor"
+    )
+
+    val moreButtonContainerColor by animateColorAsState(
+        targetValue = if (isCurrentSong && !isSelected)
+            MaterialTheme.colorScheme.onPrimary
+        else
+            MaterialTheme.colorScheme.primaryContainer,
+        animationSpec = tween(300),
+        label = "moreButtonContainerColor"
+    )
+    val moreButtonContentColor by animateColorAsState(
+        targetValue = if (isCurrentSong && !isSelected)
+            MaterialTheme.colorScheme.primary
+        else
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        animationSpec = tween(300),
+        label = "moreButtonContentColor"
     )
 
     val selectionScale by animateFloatAsState(
@@ -3309,7 +3332,7 @@ fun LibrarySongItem(
     val containerColorForSelection by animateColorAsState(
         targetValue = when {
             isSelected -> MaterialTheme.colorScheme.secondaryContainer
-            isCurrentSong -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
+            isCurrentSong -> MaterialTheme.colorScheme.primary
             else -> Color.Transparent
         },
         animationSpec = tween(durationMillis = 300),
@@ -3332,7 +3355,7 @@ fun LibrarySongItem(
                     fallbackShape = MaterialTheme.shapes.large
                 ),
                 modifier = Modifier.size(60.dp),
-                border = if (isCurrentSong && !isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+                border = if (isCurrentSong && !isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.onPrimary) else null
             ) {
                 M3ImageUtils.TrackImage(
                     imageUrl = song.artworkUri,
@@ -3378,7 +3401,7 @@ fun LibrarySongItem(
                         .size(20.dp)
                         .offset(x = 4.dp, y = 4.dp),
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     shadowElevation = 0.dp
                 ) {
                     Box(
@@ -3387,7 +3410,7 @@ fun LibrarySongItem(
                     ) {
                         PlayingEqIcon(
                             modifier = Modifier.size(width = 12.dp, height = 10.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            color = MaterialTheme.colorScheme.primary,
                             isPlaying = isPlaying,
                             bars = 3
                         )
@@ -3436,8 +3459,8 @@ fun LibrarySongItem(
                         .height(44.dp),
                     shape = RoundedCornerShape(50),
                     colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        containerColor = moreButtonContainerColor,
+                        contentColor = moreButtonContentColor
                     )
                 ) {
                     Icon(
@@ -3558,7 +3581,7 @@ fun LibrarySongItemWrapper(
     val containerColor by animateColorAsState(
         targetValue = when {
             isSelected -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f)
-            isCurrentSong -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
+            isCurrentSong -> MaterialTheme.colorScheme.primary
             else -> MaterialTheme.colorScheme.surfaceContainer
         },
         animationSpec = tween(300),
@@ -4848,12 +4871,13 @@ fun SingleCardArtistsContent(
         ModalBottomSheet(
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
             onDismissRequest = { showSortOptions = false },
-            sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden),
+            sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
             dragHandle = { 
                 BottomSheetDefaults.DragHandle(
                     color = MaterialTheme.colorScheme.primary
                 )
-            }
+            },
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(

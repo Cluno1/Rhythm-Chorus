@@ -649,7 +649,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
             dragHandle = {
                 BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
             },
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
             modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
         ) {
@@ -755,7 +755,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
             dragHandle = {
                 BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
             },
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
             modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
         ) {
@@ -1002,7 +1002,7 @@ fun ProgressStyleBottomSheet(
         dragHandle = {
             BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
         },
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
     ) {
@@ -1175,7 +1175,7 @@ fun ThumbStyleBottomSheet(
         dragHandle = {
             BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
         },
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
     ) {
@@ -1309,7 +1309,7 @@ fun PlayerTextAlignmentBottomSheet(
         dragHandle = {
             BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
         },
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
     ) {
