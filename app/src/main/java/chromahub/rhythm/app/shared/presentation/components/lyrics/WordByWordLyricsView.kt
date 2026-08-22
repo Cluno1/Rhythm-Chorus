@@ -635,7 +635,11 @@ private fun WordByWordLyricLineItem(
             )
         }
 
-        if (showRomanization && !line.romanization.isNullOrBlank()) {
+        val hasDistinctRomanization = showRomanization &&
+            !line.romanization.isNullOrBlank() &&
+            (line.translation.isNullOrBlank() || line.romanization.trim().lowercase() != line.translation.trim().lowercase())
+
+        if (hasDistinctRomanization) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = line.romanization,

@@ -1659,13 +1659,11 @@ fun parseTtml(audioMimeType: String?, lyricText: String): SemanticLyrics? {
             isBg -> SpeakerEntity.VoiceBackground
             else -> SpeakerEntity.Voice
         }
-        if (it.time == null) {
-            throw IllegalArgumentException("it.time == null but some other P has non-null time")
-        }
+        val effectiveTime = it.time ?: paragraphs.getOrNull(j - 1)?.time ?: 0uL..0uL
         val next = paragraphs.getOrNull(j + 1)?.time?.first
         SemanticLyrics.LyricLine(
-            text.toString(), it.time.first, it.time.last, theWords == null
-                    && next != null && (it.time.last == next || it.time.last == next - 1uL),
+            text.toString(), effectiveTime.first, effectiveTime.last, theWords == null
+                    && next != null && (effectiveTime.last == next || effectiveTime.last == next - 1uL),
             theWords, speaker, it.translated
         )
     }).also { splitBidirectionalWords(it) }

@@ -537,8 +537,12 @@ private fun SyncedLyricItem(
             )
         }
         
+        val hasDistinctRomanization = showRomanization &&
+            !line.romanization.isNullOrBlank() &&
+            (line.translation.isNullOrBlank() || line.romanization.trim().lowercase() != line.translation.trim().lowercase())
+
         // Romanization text (if available and enabled)
-        if (showRomanization && !line.romanization.isNullOrBlank()) {
+        if (hasDistinctRomanization) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = line.romanization,

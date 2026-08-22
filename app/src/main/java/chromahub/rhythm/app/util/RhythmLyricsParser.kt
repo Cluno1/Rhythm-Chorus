@@ -184,6 +184,11 @@ object RhythmLyricsParser {
         first: WordByWordLyricLine,
         second: WordByWordLyricLine
     ): WordByWordLyricLine {
+        val firstHasNonAscii = first.asDisplayText().any { it.code > 127 }
+        val secondHasNonAscii = second.asDisplayText().any { it.code > 127 }
+        if (firstHasNonAscii && !secondHasNonAscii) return first
+        if (!firstHasNonAscii && secondHasNonAscii) return second
+
         val firstScore = lineQualityScore(first)
         val secondScore = lineQualityScore(second)
 
@@ -220,6 +225,10 @@ object RhythmLyricsParser {
             }
         }
 
+        if (romanization != null && translation != null && canonicalText(romanization) == canonicalText(translation)) {
+            romanization = null
+        }
+
         return main.copy(
             lineTimestamp = minOf(main.lineTimestamp, supplemental.lineTimestamp),
             lineEndtime = maxLineEnd(main, supplemental),
@@ -234,13 +243,19 @@ object RhythmLyricsParser {
         val preferred = if (lineQualityScore(candidate) > lineQualityScore(previous)) candidate else previous
         val secondary = if (preferred === previous) candidate else previous
 
+        var trans = mergeSupplementalField(preferred.translation, secondary.translation)
+        var rom = mergeSupplementalField(preferred.romanization, secondary.romanization)
+        if (rom != null && trans != null && canonicalText(rom) == canonicalText(trans)) {
+            rom = null
+        }
+
         return preferred.copy(
             lineTimestamp = minOf(previous.lineTimestamp, candidate.lineTimestamp),
             lineEndtime = maxLineEnd(previous, candidate),
             background = preferred.background && secondary.background,
             voiceTag = preferred.voiceTag ?: secondary.voiceTag,
-            translation = mergeSupplementalField(preferred.translation, secondary.translation),
-            romanization = mergeSupplementalField(preferred.romanization, secondary.romanization)
+            translation = trans,
+            romanization = rom
         )
     }
 
@@ -310,18 +325,18 @@ object RhythmLyricsParser {
             return SupplementalLineKind.ROMANIZATION
         }
 
+        if (candidateBackground) {
+            return SupplementalLineKind.TRANSLATION
+        }
+
         val mainHasNonAscii = mainText.any { it.code > 127 }
         val candidateHasNonAscii = trimmed.any { it.code > 127 }
 
         if (mainHasNonAscii && !candidateHasNonAscii) {
-            return SupplementalLineKind.ROMANIZATION
-        }
-
-        if (!mainHasNonAscii && candidateHasNonAscii) {
             return SupplementalLineKind.TRANSLATION
         }
 
-        if (candidateBackground) {
+        if (!mainHasNonAscii && candidateHasNonAscii) {
             return SupplementalLineKind.TRANSLATION
         }
 
@@ -347,14 +362,15 @@ object RhythmLyricsParser {
         val incomingTrimmed = incoming.trim()
         if (incomingTrimmed.isEmpty()) return existing.orEmpty()
 
-        val existingLines = existing
+        val incomingCanonical = canonicalText(incomingTrimmed)
+        val existingCanonicals = existing
             ?.lineSequence()
-            ?.map { it.trim() }
+            ?.map { canonicalText(it) }
             ?.filter { it.isNotEmpty() }
-            ?.toMutableSet()
-            ?: mutableSetOf()
+            ?.toSet()
+            ?: emptySet()
 
-        if (incomingTrimmed in existingLines) {
+        if (incomingCanonical.isNotEmpty() && incomingCanonical in existingCanonicals) {
             return existing.orEmpty().ifEmpty { incomingTrimmed }
         }
 
@@ -542,6 +558,23 @@ object RhythmLyricsParser {
             val result = mutableListOf<RhythmLyricsLine>()
 
             for (semanticLine in parsed.text) {
+                if (semanticLine.isTranslated) {
+                    // This is a translation line from SemanticLyrics; attach to previous original line
+                    val prev = result.lastOrNull()
+                    if (prev != null) {
+                        val transText = semanticLine.text.trim()
+                        if (transText.isNotEmpty()) {
+                            val bgList = prev.backgroundText?.toMutableList() ?: mutableListOf()
+                            val formattedTrans = "($transText)"
+                            if (!bgList.contains(transText) && !bgList.contains(formattedTrans)) {
+                                bgList.add(formattedTrans)
+                                result[result.lastIndex] = prev.copy(backgroundText = bgList)
+                            }
+                        }
+                    }
+                    continue
+                }
+
                 val slWords = semanticLine.words
                 val rhythmLyricsWords = slWords?.mapIndexed { idx, word ->
                     val rawText = semanticLine.text.substring(word.charRange)
@@ -582,14 +615,12 @@ object RhythmLyricsParser {
                         endtime = semanticLine.end.toLong()
                     )
                 )
-
-                val bgText = if (semanticLine.isTranslated) listOf("(${semanticLine.text.trim()})") else null
                 
                 result.add(
                     RhythmLyricsLine(
                         text = rhythmLyricsWords,
                         background = semanticLine.speaker?.isBackground ?: false,
-                        backgroundText = bgText,
+                        backgroundText = null,
                         oppositeTurn = semanticLine.speaker?.isVoice2,
                         timestamp = semanticLine.start.toLong(),
                         endtime = semanticLine.end.toLong(),
