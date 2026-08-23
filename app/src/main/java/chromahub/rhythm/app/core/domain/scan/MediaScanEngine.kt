@@ -176,40 +176,13 @@ class MediaScanEngine(
 
                     // Differential check: reuse existing DB record if unmodified
                     val existing = existingDbSongs[id]
-                    val preferSongArtwork = appSettings.preferSongArtwork.value
-                    val losslessArtwork = appSettings.isLosslessArtworkActive.value
 
                     if (existing != null && existing.dateModified == dateModified) {
-                        val existingArt = existing.artworkUri ?: ""
-                        val isLosslessArt = existingArt.contains("embedded_art_lossless_")
-                        val isFileExist = if (existingArt.startsWith("file:") || existingArt.startsWith("/")) {
-                            try {
-                                val artPath = if (existingArt.startsWith("file:")) (existingArt).toUri().path else existingArt
-                                artPath?.let { File(it).exists() && File(it).length() > 0L } == true
-                            } catch (e: Exception) {
-                                false
-                            }
-                        } else true
-
-                        val needsArtUpgrade = preferSongArtwork && (existingArt.isEmpty() || !isFileExist || (losslessArtwork && !isLosslessArt))
-
-                        if (needsArtUpgrade) {
-                            val parsedUri = (existing.uri).toUri()
-                            val embeddedUri = try {
-                                chromahub.rhythm.app.util.MediaUtils.extractEmbeddedAlbumArt(
-                                    context, parsedUri, context.filesDir, losslessArtwork
-                                )?.toString()
-                            } catch (e: Exception) {
-                                null
-                            }
-                            if (embeddedUri != null && embeddedUri != existing.artworkUri) {
-                                scannedSongs.add(existing.copy(artworkUri = embeddedUri))
-                            } else {
-                                scannedSongs.add(existing)
-                            }
-                        } else {
-                            scannedSongs.add(existing)
-                        }
+                        val existingArt = existing.artworkUri ?: Uri.withAppendedPath(
+                            ("content://media/external/audio/albumart").toUri(),
+                            existing.albumId
+                        ).toString()
+                        scannedSongs.add(existing.copy(artworkUri = existingArt))
                         seenIds.add(id)
                     } else {
                         val rawTitle = cursor.getString(colTitle) ?: "Unknown Title"
@@ -308,20 +281,6 @@ class MediaScanEngine(
                             albumId
                         ).toString()
 
-                        val finalArtworkUri = if (preferSongArtwork) {
-                            try {
-                                val parsedUri = (contentUri).toUri()
-                                val embeddedUri = chromahub.rhythm.app.util.MediaUtils.extractEmbeddedAlbumArt(
-                                    context, parsedUri, context.filesDir, losslessArtwork
-                                )
-                                embeddedUri?.toString() ?: defaultArtworkUri
-                            } catch (e: Exception) {
-                                defaultArtworkUri
-                            }
-                        } else {
-                            defaultArtworkUri
-                        }
-
                         val entity = SongEntity(
                             id = id,
                             title = title,
@@ -330,7 +289,7 @@ class MediaScanEngine(
                             albumId = albumId,
                             duration = duration,
                             uri = contentUri,
-                            artworkUri = finalArtworkUri,
+                            artworkUri = defaultArtworkUri,
                             trackNumber = trackNumber,
                             year = year,
                             genre = genre,
@@ -372,8 +331,6 @@ class MediaScanEngine(
             }
 
             appSettings.setLastScanTimestamp(System.currentTimeMillis())
-            appSettings.setEmbeddedArtworkExtractionCompleted(true)
-            appSettings.setEmbeddedArtworkExtractionLosslessStatus(appSettings.isLosslessArtworkActive.value)
             try {
                 context.getSharedPreferences("library_scan_metadata", Context.MODE_PRIVATE)
                     .edit { putInt("last_scan_mediastore_count", rawMediaStoreCount) }

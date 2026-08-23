@@ -114,6 +114,8 @@ object MediaUtils {
     @Volatile
     private var lastEmbeddedArtworkCleanupMs: Long = 0L
 
+    private val folderCoverCache = java.util.concurrent.ConcurrentHashMap<String, File?>()
+
     private fun applyArtworkToTag(
         context: Context,
         tag: Tag,
@@ -2412,101 +2414,106 @@ object MediaUtils {
         context: Context,
         songUri: Uri,
         cacheDir: File,
-        lossless: Boolean = false
+        lossless: Boolean = false,
+        filePath: String? = null
     ): Uri? {
-        val retriever = MediaMetadataRetriever()
-        try {
-            retriever.setDataSource(context, songUri)
+        getCachedEmbeddedAlbumArtUri(cacheDir, songUri, lossless)?.let {
+            return it
+        }
 
-            var embeddedArt = retriever.embeddedPicture
-            var filePath: String? = null
-            if (embeddedArt == null || embeddedArt.isEmpty()) {
-                // Try jaudiotagger fallback
-                filePath = when (songUri.scheme) {
-                    "content" -> {
-                        val projection = arrayOf(MediaStore.Audio.Media.DATA)
-                        context.contentResolver.query(songUri, projection, null, null, null)
-                            ?.use { cursor ->
-                                if (cursor.moveToFirst()) {
-                                    val dataIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-                                    if (dataIndex != -1) cursor.getString(dataIndex) else null
-                                } else null
-                            }
+        var embeddedArt: ByteArray? = null
+        val resolvedFilePath = filePath ?: when (songUri.scheme) {
+            "file" -> songUri.path
+            "content" -> {
+                val projection = arrayOf(MediaStore.Audio.Media.DATA)
+                try {
+                    context.contentResolver.query(songUri, projection, null, null, null)?.use { cursor ->
+                        if (cursor.moveToFirst()) {
+                            val dataIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+                            if (dataIndex != -1) cursor.getString(dataIndex) else null
+                        } else null
                     }
-                    "file" -> songUri.path
-                    else -> null
-                }
-                if (filePath != null) {
-                    try {
-                        val file = File(filePath)
-                        if (file.exists() && isSupportedByJaudiotagger(file.extension)) {
-                            val audioFile = org.jaudiotagger.audio.AudioFileIO.read(file)
-                            val tag = audioFile.tag
-                            if (tag != null) {
-                                val artwork = tag.firstArtwork
-                                if (artwork != null) {
-                                    val artworkBytes = artwork.binaryData
-                                    if (artworkBytes != null && artworkBytes.isNotEmpty()) {
-                                        embeddedArt = artworkBytes
-                                    }
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Failed to extract embedded art via jaudiotagger fallback: ${e.message}")
-                    }
+                } catch (_: Exception) {
+                    null
                 }
             }
+            else -> null
+        }
 
-            // Fallback to folder cover discovery if embeddedArt is still not found
-            if (embeddedArt == null || embeddedArt.isEmpty()) {
-                if (filePath == null) {
-                    filePath = when (songUri.scheme) {
-                        "content" -> {
-                            val projection = arrayOf(MediaStore.Audio.Media.DATA)
-                            context.contentResolver.query(songUri, projection, null, null, null)
-                                ?.use { cursor ->
-                                    if (cursor.moveToFirst()) {
-                                        val dataIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-                                        if (dataIndex != -1) cursor.getString(dataIndex) else null
-                                    } else null
-                                }
-                        }
-                        "file" -> songUri.path
-                        else -> null
-                    }
-                }
-                if (filePath != null) {
-                    try {
-                        val file = File(filePath)
-                        val parentFolder = file.parentFile
-                        if (parentFolder != null && parentFolder.exists() && parentFolder.isDirectory) {
-                            val coverFile = findBestCover(parentFolder)
-                            if (coverFile != null && coverFile.exists()) {
-                                val coverBytes = coverFile.readBytes()
-                                if (coverBytes.isNotEmpty()) {
-                                    embeddedArt = coverBytes
-                                    Log.d(TAG, "Found folder cover art: ${coverFile.absolutePath}")
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Failed to find folder cover artwork: ${e.message}")
-                    }
-                }
-            }
-
-            if (embeddedArt != null && embeddedArt.isNotEmpty()) {
-                return cacheEmbeddedArtworkBytes(songUri, cacheDir, embeddedArt, lossless)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to extract embedded album art", e)
-        } finally {
+        if (resolvedFilePath != null) {
             try {
-                retriever.release()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error releasing MediaMetadataRetriever", e)
+                val file = File(resolvedFilePath)
+                if (file.exists() && file.canRead()) {
+                    ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                        val metadata = TagLib.getMetadata(fd.detachFd())
+                        val pictures = metadata?.pictures
+                        if (!pictures.isNullOrEmpty()) {
+                            val firstPic = pictures.firstOrNull { it.pictureType.equals("Front Cover", ignoreCase = true) } ?: pictures.first()
+                            if (firstPic.data.isNotEmpty()) {
+                                embeddedArt = firstPic.data
+                            }
+                        }
+                    }
+                }
+            } catch (_: Throwable) {
+                // TagLib fallback
             }
+        }
+
+        if (embeddedArt == null || embeddedArt.isEmpty()) {
+            var retriever: MediaMetadataRetriever? = null
+            try {
+                retriever = MediaMetadataRetriever()
+                retriever.setDataSource(context, songUri)
+                val pic = retriever.embeddedPicture
+                if (pic != null && pic.isNotEmpty()) {
+                    embeddedArt = pic
+                }
+            } catch (_: Exception) {
+            } finally {
+                try {
+                    retriever?.release()
+                } catch (_: Exception) {}
+            }
+        }
+
+        if ((embeddedArt == null || embeddedArt.isEmpty()) && resolvedFilePath != null) {
+            try {
+                val file = File(resolvedFilePath)
+                if (file.exists() && isSupportedByJaudiotagger(file.extension)) {
+                    val audioFile = org.jaudiotagger.audio.AudioFileIO.read(file)
+                    val tag = audioFile.tag
+                    val artwork = tag?.firstArtwork
+                    val artworkBytes = artwork?.binaryData
+                    if (artworkBytes != null && artworkBytes.isNotEmpty()) {
+                        embeddedArt = artworkBytes
+                    }
+                }
+            } catch (_: Exception) {
+            }
+        }
+
+        if ((embeddedArt == null || embeddedArt.isEmpty()) && resolvedFilePath != null) {
+            try {
+                val file = File(resolvedFilePath)
+                val parentFolder = file.parentFile
+                if (parentFolder != null && parentFolder.exists() && parentFolder.isDirectory) {
+                    val coverFile = folderCoverCache.getOrPut(parentFolder.absolutePath) {
+                        findBestCover(parentFolder)
+                    }
+                    if (coverFile != null && coverFile.exists()) {
+                        val coverBytes = coverFile.readBytes()
+                        if (coverBytes.isNotEmpty()) {
+                            embeddedArt = coverBytes
+                        }
+                    }
+                }
+            } catch (_: Exception) {
+            }
+        }
+
+        if (embeddedArt != null && embeddedArt.isNotEmpty()) {
+            return cacheEmbeddedArtworkBytes(songUri, cacheDir, embeddedArt, lossless)
         }
         return null
     }

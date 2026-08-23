@@ -5773,7 +5773,7 @@ class MusicRepository(context: Context) {
                 async(Dispatchers.IO) {
                     try {
                         val embeddedUri = chromahub.rhythm.app.util.MediaUtils.extractEmbeddedAlbumArt(
-                            context, song.uri, context.filesDir, lossless
+                            context, song.uri, context.filesDir, lossless, song.path
                         )
                         if (embeddedUri != null && embeddedUri != song.artworkUri) {
                             val updatedSong = song.copy(artworkUri = embeddedUri)

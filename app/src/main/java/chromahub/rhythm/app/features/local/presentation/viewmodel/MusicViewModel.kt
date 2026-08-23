@@ -2384,8 +2384,36 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         Log.e(TAG, "Error restarting background audio metadata extraction", e)
                     } finally {
                         _isExtractingMetadata.value = false
-                }
                     }
+                }
+
+                // Trigger background embedded album art extraction for new/updated songs
+                if (appSettings.preferSongArtwork.value) {
+                    launch(Dispatchers.IO) {
+                        try {
+                            delay(1200)
+                            val currentSongs = _songs.value
+                            val losslessArtwork = appSettings.isLosslessArtworkActive.value
+                            val songsNeedingExtraction = currentSongs.count { song ->
+                                song.artworkUri == null ||
+                                !repository.isEmbeddedArtworkCacheUri(song.artworkUri) ||
+                                !repository.hasArtworkMatchingLossless(song, losslessArtwork)
+                            }
+                            if (songsNeedingExtraction > 0) {
+                                Log.d(TAG, "Starting post-refresh background embedded artwork extraction for $songsNeedingExtraction songs")
+                                val updatedSongs = repository.extractEmbeddedArtworkForSongs(currentSongs, losslessArtwork)
+                                withContext(Dispatchers.Main) {
+                                    _songs.value = updatedSongs
+                                }
+                                repository.updateAndPersistSongs(updatedSongs)
+                                appSettings.setEmbeddedArtworkExtractionLosslessStatus(losslessArtwork)
+                                appSettings.setEmbeddedArtworkExtractionCompleted(true)
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error in post-refresh embedded artwork extraction", e)
+                        }
+                    }
+                }
 
                 val duration = System.currentTimeMillis() - startTime
                 appSettings.setLastScanTimestamp(System.currentTimeMillis())
