@@ -464,7 +464,7 @@ class MusicRepository(context: Context) {
     private suspend fun loadSongsFromRoom(): List<Song>? {
         return try {
             val entities = songDao.getAllSongs()
-            if (entities.isEmpty()) return null
+            if (entities.isEmpty()) return emptyList()
             val appSettings = AppSettings.getInstance(context)
             val useEmbeddedArt = appSettings.preferSongArtwork.value
             val losslessArtwork = appSettings.isLosslessArtworkActive.value
@@ -911,18 +911,16 @@ class MusicRepository(context: Context) {
         // On cold start (no in-memory cache), try loading from Room cache
         if (!shouldForceRefresh && cachedSongs == null) {
             val diskCached = loadSongsFromRoom()
-            if (diskCached != null && diskCached.isNotEmpty()) {
-                if (isLibraryStale(appSettings.lastScanTimestamp.value, diskCached.size)) {
-                    Log.d(TAG, "Newer files found in MediaStore, invalidating Room cache and rescanning")
-                    invalidatePersistentLibraryCachesForForcedRescan()
-                    shouldForceRefresh = true
-                } else {
-                    cachedSongs = diskCached
-                    cacheTimestamp = System.currentTimeMillis()
-                    Log.d(TAG, "Restored ${diskCached.size} songs from Room cache")
-                    return@withContext diskCached
-                }
+            if (diskCached != null) {
+                cachedSongs = diskCached
+                cacheTimestamp = System.currentTimeMillis()
+                Log.d(TAG, "Restored ${diskCached.size} songs from Room cache")
+                return@withContext diskCached
             }
+            cachedSongs = emptyList()
+            cacheTimestamp = System.currentTimeMillis()
+            Log.d(TAG, "No Room cache found on startup, returning empty list for non-blocking startup")
+            return@withContext emptyList()
         }
         
         val startTime = System.currentTimeMillis()

@@ -1782,6 +1782,21 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
         
+        // Startup staleness check: If MediaStore has changes, run background differential sync
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(1200) // Allow UI transition to complete smoothly
+            try {
+                val lastScan = appSettings.lastScanTimestamp.value
+                val cachedCount = _songs.value.size
+                if (cachedCount == 0 || repository.isLibraryStale(lastScan, cachedCount)) {
+                    Log.d(TAG, "Library is empty or stale on startup (count=$cachedCount), triggering background refresh")
+                    performMediaStoreRefresh()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during startup staleness check", e)
+            }
+        }
+        
         // Register ContentObserver for automatic MediaStore updates
         // Use a full refresh instead of incremental scan to detect removed/re-added songs.
         // Cancel any pending refresh job before scheduling a new one (debounce pattern).
@@ -2118,6 +2133,21 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             _folderTree.value = repository.buildFolderTree(mergedSongs)
             repository.updateAndPersistSongs(mergedSongs)
             appSettings.setLastScanTimestamp(System.currentTimeMillis())
+
+            if (appSettings.defaultPlaylistsEnabled.value) {
+                try {
+                    populateRecentlyAddedPlaylist()
+                    populateMostPlayedPlaylist()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error updating default playlists after MediaStore refresh", e)
+                }
+            }
+            try {
+                refreshPlaylists(preserveMissingSongs = true)
+            } catch (e: Exception) {
+                Log.w(TAG, "Error refreshing playlists after MediaStore refresh", e)
+            }
+
             // Only invalidate the embedded artwork extraction flag when new songs have appeared.
             // Resetting it unconditionally caused extraction to re-run on every launch because the
             // MediaStore observer fires on startup, triggering this refresh and clearing the flag.
