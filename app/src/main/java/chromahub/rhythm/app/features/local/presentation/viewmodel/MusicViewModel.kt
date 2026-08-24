@@ -1493,7 +1493,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             _songs.value = songs
             _albums.value = albums
             _artists.value = artists
-            _folderTree.value = repository.buildFolderTree(songs)
+            viewModelScope.launch(Dispatchers.IO) {
+                _folderTree.value = repository.buildFolderTree(songs)
+            }
             
             InitializationResult(true)
         } catch (e: Exception) {

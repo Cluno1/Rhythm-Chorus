@@ -467,7 +467,6 @@ class MusicRepository(context: Context) {
             if (entities.isEmpty()) return emptyList()
             val appSettings = AppSettings.getInstance(context)
             val useEmbeddedArt = appSettings.preferSongArtwork.value
-            val losslessArtwork = appSettings.isLosslessArtworkActive.value
 
             // Batch-read artwork overrides to avoid per-song SharedPreferences IPC calls
             val artworkAll = artworkPrefs.all
@@ -490,59 +489,6 @@ class MusicRepository(context: Context) {
                     val artworkRemovedOverride = removedOverrides[entity.id] ?: false
                     val artworkUriOverride = uriOverrides[entity.id]
 
-                    val savedArtworkUri = entity.artworkUri?.let { it.toUri() }
-                    val savedArtworkUsable = when (savedArtworkUri?.scheme) {
-                        "file", null -> savedArtworkUri?.path?.let { File(it).exists() } == true
-                        else -> true
-                    }
-                    val savedArtworkIsEmbeddedCache = isEmbeddedArtworkCacheUri(savedArtworkUri)
-                    val shouldUseSavedArtwork = savedArtworkUsable && (useEmbeddedArt || !savedArtworkIsEmbeddedCache)
-
-                    val embeddedCachedArtwork = if (useEmbeddedArt) {
-                        if (savedArtworkIsEmbeddedCache && savedArtworkUsable) {
-                            val fileName = savedArtworkUri?.path?.let { File(it).name } ?: ""
-                            val isLosslessFile = fileName.startsWith("embedded_art_lossless_")
-                            if (isLosslessFile == losslessArtwork) {
-                                savedArtworkUri
-                            } else {
-                                val savedFile = savedArtworkUri?.path?.let { File(it) }
-                                val parentDir = savedFile?.parentFile ?: File(context.filesDir, "embedded_artwork")
-                                val baseName = fileName
-                                    .removePrefix("embedded_art_lossless_")
-                                    .removePrefix("embedded_art_")
-                                    .substringBefore('.')
-                                
-                                val extensions = listOf("jpg", "png", "webp")
-                                var preferredFile: File? = null
-                                for (ext in extensions) {
-                                    val candidate = File(parentDir, if (losslessArtwork) {
-                                        "embedded_art_lossless_${baseName}.${ext}"
-                                    } else {
-                                        "embedded_art_${baseName}.${ext}"
-                                    })
-                                    if (candidate.exists() && candidate.length() > 0L) {
-                                        preferredFile = candidate
-                                        break
-                                    }
-                                }
-                                
-                                if (preferredFile != null) {
-                                    Uri.fromFile(preferredFile)
-                                } else {
-                                    savedArtworkUri
-                                }
-                            }
-                        } else {
-                            chromahub.rhythm.app.util.MediaUtils.getCachedEmbeddedAlbumArtUri(
-                                cacheDir = context.filesDir,
-                                songUri = songUri,
-                                lossless = losslessArtwork
-                            )
-                        }
-                    } else {
-                        null
-                    }
-
                     val fallbackAlbumArt = entity.albumId.toLongOrNull()?.let { albumId ->
                         ContentUris.withAppendedId(
                             "content://media/external/audio/albumart".toUri(),
@@ -550,27 +496,16 @@ class MusicRepository(context: Context) {
                         )
                     }
 
-                    val effectiveArtUri = when {
-                        embeddedCachedArtwork != null -> embeddedCachedArtwork
-                        shouldUseSavedArtwork -> savedArtworkUri
-                        fallbackAlbumArt != null -> fallbackAlbumArt
-                        else -> null
+                    val entityArtUri = entity.artworkUri?.let { it.toUri() }
+                    val effectiveArtUri = if (useEmbeddedArt) {
+                        entityArtUri ?: fallbackAlbumArt
+                    } else {
+                        if (isEmbeddedArtworkCacheUri(entityArtUri)) fallbackAlbumArt else (entityArtUri ?: fallbackAlbumArt)
                     }
 
                     val resolvedArtworkUri = when {
                         artworkRemovedOverride -> null
-                        artworkUriOverride != null -> {
-                            val isUsable = when (artworkUriOverride.scheme) {
-                                "file", null -> artworkUriOverride.path?.let { File(it).exists() } == true
-                                else -> true
-                            }
-                            if (isUsable) {
-                                artworkUriOverride
-                            } else {
-                                artworkPrefs.edit { remove("uri_${entity.id}") }
-                                effectiveArtUri
-                            }
-                        }
+                        artworkUriOverride != null -> artworkUriOverride
                         else -> effectiveArtUri
                     }
 
@@ -618,21 +553,14 @@ class MusicRepository(context: Context) {
         }
 
         val path = uri.path ?: return false
-        val file = File(path)
-        val embeddedCacheDir = File(context.cacheDir, "embedded_artwork")
-        val embeddedFilesDir = File(context.filesDir, "embedded_artwork")
-
-        if (file.parentFile?.absolutePath == embeddedCacheDir.absolutePath ||
-            file.parentFile?.absolutePath == embeddedFilesDir.absolutePath) {
-            return file.name.startsWith("embedded_art_") || file.name.startsWith("embedded_art_lossless_")
+        val fileName = path.substringAfterLast('/')
+        if (!fileName.startsWith("embedded_art_") && !fileName.startsWith("embedded_art_lossless_")) {
+            return false
         }
 
-        if (file.parentFile?.absolutePath == context.cacheDir.absolutePath ||
-            file.parentFile?.absolutePath == context.filesDir.absolutePath) {
-            return file.name.startsWith("embedded_art_") || file.name.startsWith("embedded_art_lossless_")
-        }
-
-        return false
+        return path.contains("/embedded_artwork/") ||
+               path.startsWith(context.cacheDir.absolutePath) ||
+               path.startsWith(context.filesDir.absolutePath)
     }
 
     /**
@@ -797,6 +725,9 @@ class MusicRepository(context: Context) {
         private const val MAX_ARTIST_CACHE_SIZE = 100
         private const val MAX_ALBUM_CACHE_SIZE = 200
         private const val MAX_LYRICS_CACHE_SIZE = 150
+        
+        // Precompiled regex for primary artist extraction
+        private val PRIMARY_ARTIST_REGEX = Regex("""(?i)\s+(feat\.|ft\.|featuring|with|and|&)\s+.*""")
         
         // API rate limiting constants
         private const val DEEZER_MIN_DELAY = 200L
@@ -1979,8 +1910,7 @@ class MusicRepository(context: Context) {
     private fun extractPrimaryArtist(artistStr: String): String {
         val trimmed = artistStr.trim()
         if (trimmed.isBlank() || trimmed.equals("<unknown>", ignoreCase = true)) return "Unknown Artist"
-        val regex = Regex("""(?i)\s+(feat\.|ft\.|featuring|with|and|&)\s+.*""")
-        val main = trimmed.replace(regex, "").trim()
+        val main = trimmed.replace(PRIMARY_ARTIST_REGEX, "").trim()
         return if (main.isNotBlank()) main else trimmed
     }
 
@@ -2000,7 +1930,7 @@ class MusicRepository(context: Context) {
             return "mediastore_${normAlbumId}|${normAlbum}"
         }
 
-        val parentFolder = song.path?.let { File(it).parent }?.lowercase(Locale.ROOT)
+        val parentFolder = song.path?.substringBeforeLast('/', "")?.lowercase(Locale.ROOT)?.takeIf { it.isNotBlank() }
         if (!parentFolder.isNullOrBlank()) {
             return "folder_${parentFolder}|${normAlbum}"
         }
@@ -2109,14 +2039,8 @@ class MusicRepository(context: Context) {
         // Try to load from Room cache first
         val cachedArtists = loadArtistsFromRoom(groupByAlbumArtist)
         if (cachedArtists != null && cachedArtists.isNotEmpty()) {
-            val cachedTotalTracks = cachedArtists.sumOf { it.numberOfTracks }
-            // Validate that Room cache is reasonably complete compared to current songs
-            if (cachedTotalTracks >= currentSongs.size) {
-                Log.d(TAG, "Loaded ${cachedArtists.size} artists from Room cache (cached tracks=$cachedTotalTracks, songs=${currentSongs.size}, groupByAlbumArtist=$groupByAlbumArtist)")
-                return@withContext cachedArtists
-            } else {
-                Log.w(TAG, "Room cached artists stale/incomplete (cached tracks=$cachedTotalTracks vs songs=${currentSongs.size}), recomputing...")
-            }
+            Log.d(TAG, "Loaded ${cachedArtists.size} artists from Room cache (groupByAlbumArtist=$groupByAlbumArtist)")
+            return@withContext cachedArtists
         }
 
         Log.d(TAG, "Recomputing artists for ${currentSongs.size} songs (groupByAlbumArtist=$groupByAlbumArtist)")
@@ -6881,10 +6805,11 @@ class MusicRepository(context: Context) {
 
         fun buildNode(name: String, builderNode: FolderTreeBuilderNode): FolderNode {
             val sortedSongs = builderNode.songList.sortedBy { it.trackNumber }
-            val coverUri = findBestCover(File(builderNode.path))?.let { Uri.fromFile(it) }
             val subFolders = builderNode.children.map { (childName, childNode) ->
                 childName to buildNode(childName, childNode)
             }.toMap()
+            val coverUri = builderNode.songList.firstOrNull { it.artworkUri != null }?.artworkUri
+                ?: subFolders.values.firstOrNull { it.coverUri != null }?.coverUri
 
             val totalCount = sortedSongs.size + subFolders.values.sumOf { it.totalSongCount }
 

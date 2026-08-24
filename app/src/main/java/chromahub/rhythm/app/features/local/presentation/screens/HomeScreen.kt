@@ -158,6 +158,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -365,9 +366,7 @@ fun HomeScreen(
     }
 
     // Select featured content from all albums (enhanced selection)
-    val featuredContent = remember(albums) {
-        albums.shuffled()
-    }
+    val featuredContent = albums
 
     // Get all unique artists
     val availableArtists = remember(artists) {
@@ -1444,21 +1443,49 @@ private fun ModernScrollableContent(
         }
     }
 
-    // Featured albums with auto-refresh
-    var currentFeaturedAlbums by remember(featuredContent, discoverItemCount) {
-        mutableStateOf(
-            if (featuredContent.isEmpty()) listOf()
-            else featuredContent.take(discoverItemCount)
-        )
+    // Featured albums with stable ID preservation across library & background metadata updates
+    var currentFeaturedAlbums by remember { mutableStateOf<List<Album>>(emptyList()) }
+
+    // Synchronize currentFeaturedAlbums when library/albums change without reshuffling
+    LaunchedEffect(albums, discoverItemCount) {
+        if (albums.isEmpty()) {
+            currentFeaturedAlbums = emptyList()
+            return@LaunchedEffect
+        }
+        val targetCount = discoverItemCount.coerceAtLeast(1)
+        if (currentFeaturedAlbums.isEmpty()) {
+            currentFeaturedAlbums = albums.shuffled().take(targetCount)
+        } else {
+            val albumsById = albums.associateBy { it.id }
+            val updated = currentFeaturedAlbums.mapNotNull { albumsById[it.id] }
+            if (updated.size < targetCount && albums.size > updated.size) {
+                val existingIds = updated.map { it.id }.toSet()
+                val remaining = albums.filter { it.id !in existingIds }.shuffled()
+                currentFeaturedAlbums = (updated + remaining).take(targetCount)
+            } else if (updated.size > targetCount) {
+                currentFeaturedAlbums = updated.take(targetCount)
+            } else if (updated.isNotEmpty()) {
+                currentFeaturedAlbums = updated
+            } else {
+                currentFeaturedAlbums = albums.shuffled().take(targetCount)
+            }
+        }
     }
 
-    LaunchedEffect(albums, discoverItemCount) {
+    // Auto-refresh featured content periodically every 45s (stable loop, decoupled from album list emissions)
+    val latestAlbums by rememberUpdatedState(albums)
+    val latestDiscoverItemCount by rememberUpdatedState(discoverItemCount)
+    LaunchedEffect(Unit) {
         while (true) {
             delay(45000)
-            if (albums.size > discoverItemCount) {
-                currentFeaturedAlbums = albums.shuffled().take(discoverItemCount)
-            } else if (albums.isNotEmpty()) {
-                currentFeaturedAlbums = albums.shuffled()
+            val currentList = latestAlbums
+            val targetCount = latestDiscoverItemCount.coerceAtLeast(1)
+            if (currentList.isNotEmpty()) {
+                currentFeaturedAlbums = if (currentList.size > targetCount) {
+                    currentList.shuffled().take(targetCount)
+                } else {
+                    currentList.shuffled()
+                }
             }
         }
     }
@@ -2244,7 +2271,7 @@ private fun ModernFeaturedSection(
                     .fillMaxWidth()
                     .height(carouselHeight)
             ) { page ->
-                val album = albums[page]
+                val album = albums.getOrNull(page) ?: return@HorizontalMultiBrowseCarousel
                 Card(
                     onClick = {
                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
@@ -2423,7 +2450,7 @@ private fun ModernFeaturedSection(
                 flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(state = carouselState),
                 modifier = Modifier.fillMaxSize()
             ) { page ->
-                val album = albums[page]
+                val album = albums.getOrNull(page) ?: return@HorizontalUncontainedCarousel
 
                 Box(
                     modifier = Modifier
