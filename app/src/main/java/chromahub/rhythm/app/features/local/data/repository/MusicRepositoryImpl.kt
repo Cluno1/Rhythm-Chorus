@@ -467,6 +467,7 @@ class MusicRepository(context: Context) {
             if (entities.isEmpty()) return emptyList()
             val appSettings = AppSettings.getInstance(context)
             val useEmbeddedArt = appSettings.preferSongArtwork.value
+            val losslessArtwork = appSettings.isLosslessArtworkActive.value
 
             // Batch-read artwork overrides to avoid per-song SharedPreferences IPC calls
             val artworkAll = artworkPrefs.all
@@ -480,6 +481,14 @@ class MusicRepository(context: Context) {
                         uriOverrides[id] = (value as? String)?.let { runCatching { it.toUri() }.getOrNull() }
                     }
                 }
+            }
+
+            // Quick single-syscall directory list for fast in-memory lossless reconciliation (0 per-song disk I/O)
+            val embeddedDir = File(context.filesDir, "embedded_artwork")
+            val embeddedFileNames: Set<String> = if (embeddedDir.exists()) {
+                embeddedDir.list()?.toSet() ?: emptySet()
+            } else {
+                emptySet()
             }
 
             val songs = entities.mapNotNull { entity ->
@@ -496,7 +505,25 @@ class MusicRepository(context: Context) {
                         )
                     }
 
-                    val entityArtUri = entity.artworkUri?.let { it.toUri() }
+                    var entityArtUri = entity.artworkUri?.let { it.toUri() }
+
+                    // Reconcile lossless vs lossy cached artwork variant in memory
+                    if (entityArtUri != null && isEmbeddedArtworkCacheUri(entityArtUri) && embeddedFileNames.isNotEmpty()) {
+                        val currentFileName = entityArtUri.path?.substringAfterLast('/') ?: ""
+                        val isLosslessFile = currentFileName.startsWith("embedded_art_lossless_")
+                        if (isLosslessFile != losslessArtwork) {
+                            val baseKey = currentFileName
+                                .removePrefix("embedded_art_lossless_")
+                                .removePrefix("embedded_art_")
+                                .substringBefore('.')
+                            val targetPrefix = if (losslessArtwork) "embedded_art_lossless_$baseKey" else "embedded_art_$baseKey"
+                            val matchingFile = embeddedFileNames.firstOrNull { it.startsWith("$targetPrefix.") }
+                            if (matchingFile != null) {
+                                entityArtUri = Uri.fromFile(File(embeddedDir, matchingFile))
+                            }
+                        }
+                    }
+
                     val effectiveArtUri = if (useEmbeddedArt) {
                         entityArtUri ?: fallbackAlbumArt
                     } else {

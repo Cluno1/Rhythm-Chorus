@@ -1947,11 +1947,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     val currentSongs = _songs.value
                     if (currentSongs.isNotEmpty()) {
                         val updatedSongs = repository.extractEmbeddedArtworkForSongs(currentSongs, losslessArtwork)
+                        repository.updateAndPersistSongs(updatedSongs)
+                        val freshAlbums = repository.loadAlbums()
+                        val freshArtists = repository.loadArtists()
                         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                             _songs.value = updatedSongs
+                            _albums.value = freshAlbums
+                            _artists.value = freshArtists
                         }
-                        // Persist the updated song snapshot so the repository cache stays aligned.
-                        repository.updateAndPersistSongs(updatedSongs)
                         appSettings.setEmbeddedArtworkExtractionLosslessStatus(losslessArtwork)
                         appSettings.setEmbeddedArtworkExtractionCompleted(true)
                         Log.d(TAG, "Background embedded art extraction complete for ${currentSongs.size} songs")
@@ -2404,10 +2407,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             if (songsNeedingExtraction > 0) {
                                 Log.d(TAG, "Starting post-refresh background embedded artwork extraction for $songsNeedingExtraction songs")
                                 val updatedSongs = repository.extractEmbeddedArtworkForSongs(currentSongs, losslessArtwork)
+                                repository.updateAndPersistSongs(updatedSongs)
+                                val freshAlbums = repository.loadAlbums()
+                                val freshArtists = repository.loadArtists()
                                 withContext(Dispatchers.Main) {
                                     _songs.value = updatedSongs
+                                    _albums.value = freshAlbums
+                                    _artists.value = freshArtists
                                 }
-                                repository.updateAndPersistSongs(updatedSongs)
                                 appSettings.setEmbeddedArtworkExtractionLosslessStatus(losslessArtwork)
                                 appSettings.setEmbeddedArtworkExtractionCompleted(true)
                             }

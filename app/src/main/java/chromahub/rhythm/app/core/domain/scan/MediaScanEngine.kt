@@ -174,14 +174,29 @@ class MediaScanEngine(
 
                     val dateModified = cursor.getLong(colDateModified)
 
+                    val preferSongArtwork = appSettings.preferSongArtwork.value
+                    val losslessArtwork = appSettings.isLosslessArtworkActive.value
+
                     // Differential check: reuse existing DB record if unmodified
                     val existing = existingDbSongs[id]
 
                     if (existing != null && existing.dateModified == dateModified) {
-                        val existingArt = existing.artworkUri ?: Uri.withAppendedPath(
-                            ("content://media/external/audio/albumart").toUri(),
-                            existing.albumId
-                        ).toString()
+                        val existingArt = if (preferSongArtwork) {
+                            chromahub.rhythm.app.util.MediaUtils.getCachedEmbeddedAlbumArtUri(
+                                cacheDir = context.filesDir,
+                                songUri = (existing.uri).toUri(),
+                                lossless = losslessArtwork,
+                                exactMatchOnly = false
+                            )?.toString() ?: (existing.artworkUri ?: Uri.withAppendedPath(
+                                ("content://media/external/audio/albumart").toUri(),
+                                existing.albumId
+                            ).toString())
+                        } else {
+                            existing.artworkUri ?: Uri.withAppendedPath(
+                                ("content://media/external/audio/albumart").toUri(),
+                                existing.albumId
+                            ).toString()
+                        }
                         scannedSongs.add(existing.copy(artworkUri = existingArt))
                         seenIds.add(id)
                     } else {
@@ -281,6 +296,17 @@ class MediaScanEngine(
                             albumId
                         ).toString()
 
+                        val initialArtworkUri = if (preferSongArtwork) {
+                            chromahub.rhythm.app.util.MediaUtils.getCachedEmbeddedAlbumArtUri(
+                                cacheDir = context.filesDir,
+                                songUri = (contentUri).toUri(),
+                                lossless = losslessArtwork,
+                                exactMatchOnly = false
+                            )?.toString() ?: defaultArtworkUri
+                        } else {
+                            defaultArtworkUri
+                        }
+
                         val entity = SongEntity(
                             id = id,
                             title = title,
@@ -289,7 +315,7 @@ class MediaScanEngine(
                             albumId = albumId,
                             duration = duration,
                             uri = contentUri,
-                            artworkUri = defaultArtworkUri,
+                            artworkUri = initialArtworkUri,
                             trackNumber = trackNumber,
                             year = year,
                             genre = genre,

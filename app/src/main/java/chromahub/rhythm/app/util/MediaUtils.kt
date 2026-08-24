@@ -2417,16 +2417,34 @@ object MediaUtils {
         lossless: Boolean = false,
         filePath: String? = null
     ): Uri? {
-        getCachedEmbeddedAlbumArtUri(cacheDir, songUri, lossless)?.let {
+        getCachedEmbeddedAlbumArtUri(cacheDir, songUri, lossless, exactMatchOnly = true)?.let {
             return it
         }
 
+        val embeddedArt = extractRawEmbeddedArtworkBytes(context, songUri, filePath)
+        if (embeddedArt != null && embeddedArt.isNotEmpty()) {
+            return cacheEmbeddedArtworkBytes(songUri, cacheDir, embeddedArt, lossless)
+        }
+        return null
+    }
+
+    /**
+     * Extracts raw embedded artwork bytes on-demand without writing loose cache files.
+     * Tries TagLib -> MediaMetadataRetriever -> jaudiotagger -> folder cover.
+     */
+    fun extractRawEmbeddedArtworkBytes(
+        context: Context,
+        songUri: Uri,
+        filePath: String? = null
+    ): ByteArray? {
         var embeddedArt: ByteArray? = null
-        val resolvedFilePath = filePath ?: when (songUri.scheme) {
-            "file" -> songUri.path
-            "content" -> {
-                val projection = arrayOf(MediaStore.Audio.Media.DATA)
+
+        val resolvedFilePath = when {
+            filePath != null && filePath.isNotBlank() -> filePath
+            songUri.scheme == "file" -> songUri.path
+            songUri.scheme == "content" -> {
                 try {
+                    val projection = arrayOf(MediaStore.Audio.Media.DATA)
                     context.contentResolver.query(songUri, projection, null, null, null)?.use { cursor ->
                         if (cursor.moveToFirst()) {
                             val dataIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
@@ -2512,20 +2530,23 @@ object MediaUtils {
             }
         }
 
-        if (embeddedArt != null && embeddedArt.isNotEmpty()) {
-            return cacheEmbeddedArtworkBytes(songUri, cacheDir, embeddedArt, lossless)
-        }
-        return null
+        return embeddedArt
     }
 
     /**
      * Looks up cached embedded album artwork for a song URI.
      * Supports both the current cache layout and legacy file names.
      */
-    fun getCachedEmbeddedAlbumArtUri(cacheDir: File, songUri: Uri, lossless: Boolean = false): Uri? {
+    fun getCachedEmbeddedAlbumArtUri(
+        cacheDir: File,
+        songUri: Uri,
+        lossless: Boolean = false,
+        exactMatchOnly: Boolean = false
+    ): Uri? {
         val songKey = buildArtworkCacheKey(songUri)
         val primaryPrefix = if (lossless) "embedded_art_lossless_$songKey" else "embedded_art_$songKey"
         val fallbackPrefix = if (lossless) "embedded_art_$songKey" else "embedded_art_lossless_$songKey"
+        val searchPrefixes = if (exactMatchOnly) listOf(primaryPrefix) else listOf(primaryPrefix, fallbackPrefix)
 
         val directoriesToSearch = mutableListOf(File(cacheDir, EMBEDDED_ARTWORK_CACHE_DIR))
         val parent = cacheDir.parentFile
@@ -2538,7 +2559,7 @@ object MediaUtils {
         for (dir in directoriesToSearch) {
             val modernCandidate = findFirstExistingArtworkFile(
                 directory = dir,
-                prefixes = listOf(primaryPrefix, fallbackPrefix),
+                prefixes = searchPrefixes,
                 extensions = extensions
             )
             if (modernCandidate != null) {
@@ -2557,10 +2578,11 @@ object MediaUtils {
         } else {
             "embedded_art_lossless_$legacyHash"
         }
+        val searchLegacyPrefixes = if (exactMatchOnly) listOf(primaryLegacyPrefix) else listOf(primaryLegacyPrefix, fallbackLegacyPrefix)
 
         val legacyCandidate = findFirstExistingArtworkFile(
             directory = cacheDir,
-            prefixes = listOf(primaryLegacyPrefix, fallbackLegacyPrefix),
+            prefixes = searchLegacyPrefixes,
             extensions = extensions
         )
         if (legacyCandidate != null) {
@@ -2594,7 +2616,7 @@ object MediaUtils {
     ): Uri? {
         if (embeddedArt.isEmpty()) return null
 
-        getCachedEmbeddedAlbumArtUri(cacheDir, songUri, lossless)?.let {
+        getCachedEmbeddedAlbumArtUri(cacheDir, songUri, lossless, exactMatchOnly = true)?.let {
             maybePruneArtworkCache(cacheDir)
             return it
         }

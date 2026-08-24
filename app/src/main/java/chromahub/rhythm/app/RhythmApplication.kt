@@ -127,12 +127,16 @@ class RhythmApplication : Application(), ImageLoaderFactory {
     }
 
     /**
-     * Bounded Coil ImageLoader used app-wide. The factory defaults keep the disk
-     * cache at ~2% of total disk space and the memory cache at 25% of heap, which
-     * is far too large for an offline music app — bound both explicitly.
+     * Bounded Coil ImageLoader used app-wide with on-demand audio artwork decoding.
+     * The factory defaults keep the disk cache at ~2% of total disk space and the memory
+     * cache at 25% of heap, which is far too large for an offline music app — bound both explicitly.
      */
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
+            .components {
+                add(chromahub.rhythm.app.util.coil.AudioArtworkKeyer())
+                add(chromahub.rhythm.app.util.coil.AudioArtworkFetcher.Factory(applicationContext))
+            }
             .memoryCache {
                 MemoryCache.Builder(this)
                     .maxSizePercent(0.15) // 15% of app heap (default is 25%)
