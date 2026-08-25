@@ -2654,6 +2654,8 @@
     <string name="player_ambient_backdrop">Ambient Background</string>
     <string name="player_ambient_intensity">Ambient Intensity</string>
     <string name="player_ambient_desc">Blurred album art behind the controls</string>
+    <string name="player_ambient_motion_zoom">Infinite Ambient Motion</string>
+    <string name="player_ambient_motion_zoom_desc">Slowly zoom and animate ambient artwork continuously</string>
     <string name="player_accent_background">Accent Background</string>
     <string name="player_accent_background_desc">Exact album art color as the background</string>
     <string name="player_merge_controls">Merge Lyrics &amp; Favorite into Bottom Bar</string>
@@ -2912,5 +2914,7 @@
     <string name="unresolved_track">Unresolved Track</string>
     <string name="unknown_artist_name">Unknown Artist</string>
     <string name="unknown_album_name">Unknown Album</string>
+    <string name="settings_floating_navigation">Floating Navigation Bar</string>
+    <string name="settings_floating_navigation_desc">Float navigation bar above content on phone and tablet, or dock it to screen edges</string>
 </resources>
 

@@ -181,6 +181,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
     val expressiveShapesEnabled by appSettings.expressiveShapesEnabled.collectAsState()
     val playerAmbientBackdropEnabled by appSettings.playerAmbientBackdropEnabled.collectAsState()
     val playerAmbientBackdropIntensity by appSettings.playerAmbientBackdropIntensity.collectAsState()
+    val playerAmbientInfiniteZoom by appSettings.playerAmbientInfiniteZoom.collectAsState()
     val playerAccentBackgroundEnabled by appSettings.playerAccentBackgroundEnabled.collectAsState()
     val playerMergeControlsToBottom by appSettings.playerMergeControlsToBottom.collectAsState()
     val playerGlassIntensity by appSettings.playerGlassIntensity.collectAsState()
@@ -347,6 +348,18 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 description = context.getString(R.string.player_ambient_desc),
                                 toggleState = playerAmbientBackdropEnabled,
                                 onToggleChange = { appSettings.setPlayerAmbientBackdropEnabled(it) }
+                            )
+                        ),
+                        toMaterial3SettingsItem(
+                            context = context,
+                            hapticFeedback = haptics,
+                            item = SettingItem(
+                                icon = MaterialSymbolIcon("zoom_out_map"),
+                                title = context.getString(R.string.player_ambient_motion_zoom),
+                                description = context.getString(R.string.player_ambient_motion_zoom_desc),
+                                toggleState = playerAmbientInfiniteZoom,
+                                onToggleChange = { appSettings.setPlayerAmbientInfiniteZoom(it) },
+                                enabled = playerAmbientBackdropEnabled
                             )
                         ),
                         toMaterial3SettingsItem(

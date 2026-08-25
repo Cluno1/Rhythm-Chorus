@@ -129,6 +129,7 @@ fun UniversalSearchScreen(
     val haptics = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
     val isTablet = windowScreenWidthDp() >= 600
+    val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
     val horizontalPadding = if (isTablet) 32.dp else 24.dp
 
     var query by remember { mutableStateOf("") }
@@ -337,7 +338,7 @@ fun UniversalSearchScreen(
             modifier = Modifier.fillMaxSize()
         ) { isBlank ->
             if (isBlank) {
-                if (isTablet && searchHistory.isNotEmpty()) {
+                if (isLandscapeTablet && searchHistory.isNotEmpty()) {
                     Row(
                         modifier = Modifier
                             .fillMaxSize()
@@ -621,7 +622,7 @@ fun UniversalSearchScreen(
                             }
                         }
                     }
-                } else if (isTablet) {
+                } else if (isLandscapeTablet) {
                     Row(
                         modifier = Modifier
                             .fillMaxSize()

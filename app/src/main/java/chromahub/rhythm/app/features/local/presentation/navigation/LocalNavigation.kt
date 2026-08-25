@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +39,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.ime
@@ -45,6 +48,11 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -489,6 +497,7 @@ fun LocalNavigation(
     
     // Default landing screen
     val defaultScreen by appSettings.defaultScreen.collectAsState()
+    val floatingNavigationBar by appSettings.floatingNavigationBar.collectAsState()
     val startDestination = when (defaultScreen) {
         "library" -> Screen.Library.createRoute(firstVisibleLibraryTab)
         else -> Screen.Home.route
@@ -594,20 +603,32 @@ fun LocalNavigation(
             currentRoute == Screen.Settings.route ||
             currentRoute == Screen.RhythmStats.route
     }
-    val showBottomNav = remember(currentRoute) {
-        currentRoute == Screen.Home.route || isLibraryRoute
+    val showBottomNav = remember(currentRoute, floatingNavigationBar) {
+        if (floatingNavigationBar) {
+            currentRoute == Screen.Home.route || isLibraryRoute
+        } else {
+            currentRoute == Screen.Home.route ||
+                isLibraryRoute ||
+                currentRoute == Screen.Settings.route
+        }
     }
     
     val systemNavBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    // Calculate content bottom padding based on visible UI elements
-    // System insets are handled separately via windowInsetsPadding on the bottomBar
     val miniPlayerBottomPadding by animateDpAsState(
         targetValue = if (!isTablet) {
             val miniPlayerHeight = if (miniPlayerThemeId == "EXPRESSIVE") 84.dp else 96.dp
-            val bottomNavigationHeight = MusicDimensions.bottomNavigationHeight
+            val bottomNavigationHeight = if (floatingNavigationBar) MusicDimensions.bottomNavigationHeight else 80.dp
             val basePadding = when {
-                showBottomNav && showMiniPlayer -> bottomNavigationHeight + 16.dp + miniPlayerHeight + 16.dp
-                showBottomNav -> bottomNavigationHeight + 16.dp
+                showBottomNav && showMiniPlayer -> {
+                    if (floatingNavigationBar) {
+                        bottomNavigationHeight + 16.dp + miniPlayerHeight + 16.dp
+                    } else {
+                        bottomNavigationHeight + miniPlayerHeight + 16.dp
+                    }
+                }
+                showBottomNav -> {
+                    if (floatingNavigationBar) bottomNavigationHeight + 16.dp else bottomNavigationHeight
+                }
                 showMiniPlayer -> miniPlayerHeight + 16.dp
                 else -> 0.dp
             }
@@ -626,10 +647,12 @@ fun LocalNavigation(
         ),
         label = "local_miniplayer_bottom_padding"
     )
-    val miniPlayerPaddingValues = PaddingValues(bottom = miniPlayerBottomPadding.coerceAtLeast(0.dp))
-
     val tabletContentStartPadding by animateDpAsState(
-        targetValue = if (showNavBar) 96.dp else 0.dp,
+        targetValue = if (isTablet && showNavBar) {
+            if (floatingNavigationBar) 96.dp else 84.dp
+        } else {
+            0.dp
+        },
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
             stiffness = Spring.StiffnessLow
@@ -639,53 +662,27 @@ fun LocalNavigation(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val miniPlayerPaddingValues = PaddingValues(bottom = miniPlayerBottomPadding.coerceAtLeast(0.dp))
 
     CompositionLocalProvider(LocalMiniPlayerPadding provides miniPlayerPaddingValues) {
         if (isTablet) {
-            // Tablet layout with NavigationRail
-            Box(modifier = Modifier.fillMaxSize()) {
-                // Navigation rail for tablets
-                AnimatedVisibility(
-                    visible = showNavBar,
-                    enter = slideInHorizontally(
-                        initialOffsetX = { -it / 2 },
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ) + fadeIn(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ),
-                    exit = slideOutHorizontally(
-                        targetOffsetX = { -it / 2 },
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ) + fadeOut(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    )
-                ) {
-                    LocalNavigationRail(
-                        currentRoute = currentRoute,
-                        navController = navController,
-                        firstVisibleLibraryTab = firstVisibleLibraryTab,
-                        context = context,
-                        haptic = haptic
-                    )
-                }
-                
+            val showDockedRail = showNavBar && !floatingNavigationBar
+            val tabletContainerColor = MaterialTheme.colorScheme.surfaceContainer
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(if (showDockedRail) tabletContainerColor else Color.Transparent)
+            ) {
                 // Main content wrapped in Scaffold (without bottom nav)
                 LocalNavigationContent(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(start = tabletContentStartPadding),
+                        .padding(start = tabletContentStartPadding)
+                        .then(
+                            if (showDockedRail) {
+                                Modifier.clip(RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp))
+                            } else Modifier
+                        ),
                     navController = navController,
                     viewModel = viewModel,
                     themeViewModel = themeViewModel,
@@ -708,7 +705,7 @@ fun LocalNavigation(
                         viewModel.clearQueue()
                     },
                     showMiniPlayer = showMiniPlayer,
-                    showBottomNav = false, // Hide nav bar in content for tablet
+                    showBottomNav = false,
                     isTablet = true,
                     startDestination = startDestination,
                     songs = songs,
@@ -745,10 +742,48 @@ fun LocalNavigation(
                     onSeek = onSeek,
                     onLyricsSeek = onLyricsSeek
                 )
+
+                AnimatedVisibility(
+                    visible = showNavBar,
+                    enter = slideInHorizontally(
+                        initialOffsetX = { -it },
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    ) + fadeIn(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    ),
+                    exit = slideOutHorizontally(
+                        targetOffsetX = { -it },
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    ) + fadeOut(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    )
+                ) {
+                    LocalNavigationRail(
+                        currentRoute = currentRoute,
+                        navController = navController,
+                        firstVisibleLibraryTab = firstVisibleLibraryTab,
+                        context = context,
+                        haptic = haptic,
+                        isFloating = floatingNavigationBar
+                    )
+                }
             }
         } else {
-            // Phone layout with original bottom navigation
+            // Main content wrapped in Scaffold for phone
             LocalNavigationContent(
+                modifier = Modifier.fillMaxSize(),
                 navController = navController,
                 viewModel = viewModel,
                 themeViewModel = themeViewModel,
@@ -763,13 +798,13 @@ fun LocalNavigation(
                 onPlayerClick = onPlayerClick,
                 onSkipNext = onSkipNext,
                 onSkipPrevious = onSkipPrevious,
-                    onMiniPlayerDismiss = {
-                        isMiniPlayerDismissed = true
-                        if (isPlaying) {
-                            onPlayPause()
-                        }
-                        viewModel.clearQueue()
-                    },
+                onMiniPlayerDismiss = {
+                    isMiniPlayerDismissed = true
+                    if (isPlaying) {
+                        onPlayPause()
+                    }
+                    viewModel.clearQueue()
+                },
                 showMiniPlayer = showMiniPlayer,
                 showBottomNav = showBottomNav,
                 isTablet = false,
@@ -792,7 +827,7 @@ fun LocalNavigation(
                 isMediaScanning = isMediaScanning,
                 useSystemTheme = useSystemTheme,
                 darkMode = darkMode,
-                    useExperimentalPlayerUi = useExperimentalPlayerUi,
+                useExperimentalPlayerUi = useExperimentalPlayerUi,
                 libraryTabOrder = libraryTabOrder,
                 hiddenLibraryTabs = hiddenLibraryTabs,
                 firstVisibleLibraryTab = firstVisibleLibraryTab,
@@ -889,6 +924,7 @@ private fun LocalNavigationContent(
 
     val appMode by appSettings.appMode.collectAsState()
     val isStreamingMode = appMode == "STREAMING"
+    val floatingNavigationBar by appSettings.floatingNavigationBar.collectAsState()
     val streamingMusicViewModel: StreamingMusicViewModel = viewModel()
     val streamingSessions by streamingMusicViewModel.serviceSessions.collectAsState()
     val streamingLikedSongs by streamingMusicViewModel.likedSongs.collectAsState()
@@ -1326,9 +1362,7 @@ private fun LocalNavigationContent(
                 // Navigation bar shown only on specific routes with spring animation
                 AnimatedVisibility(
                     visible = showBottomNav,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .windowInsetsPadding(WindowInsets.navigationBars),
+                    modifier = Modifier.align(Alignment.BottomCenter),
                     enter = slideInVertically(
                         initialOffsetY = { fullHeight -> fullHeight / 2 },
                         animationSpec = spring(
@@ -1354,250 +1388,378 @@ private fun LocalNavigationContent(
                         )
                     )
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp, bottom = 8.dp)
-                    ) {
-                        Row(
+                    if (floatingNavigationBar) {
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                                .align(Alignment.BottomCenter),
-                            verticalAlignment = Alignment.Bottom
+                                .windowInsetsPadding(WindowInsets.navigationBars)
+                                .padding(top = 8.dp, bottom = 8.dp)
                         ) {
-                            // Expressive Navigation bar Surface with pill shape
-                            Surface(
-                                color = MaterialTheme.colorScheme.surfaceContainer,
-                                shape = ExpressiveShapes.Full, // Full pill shape for expressive design
-                                tonalElevation = 3.dp,
-                                shadowElevation = 0.dp,
+                            Row(
                                 modifier = Modifier
-                                    .height(MusicDimensions.bottomNavigationHeight)
-                                    .weight(1f) // Make it take up available space
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .align(Alignment.BottomCenter),
+                                verticalAlignment = Alignment.Bottom
                             ) {
-                                Row(
-                                    modifier = Modifier.fillMaxSize(),
-                                    horizontalArrangement = Arrangement.SpaceEvenly,
-                                    verticalAlignment = Alignment.CenterVertically
+                                // Expressive Navigation bar Surface with pill shape
+                                Surface(
+                                    color = MaterialTheme.colorScheme.surfaceContainer,
+                                    shape = ExpressiveShapes.Full, // Full pill shape for expressive design
+                                    tonalElevation = 3.dp,
+                                    shadowElevation = 0.dp,
+                                    modifier = Modifier
+                                        .height(MusicDimensions.bottomNavigationHeight)
+                                        .weight(1f) // Make it take up available space
                                 ) {
-                                    // Use first visible library tab based on user's tab order
-                                    val libraryRoute =
-                                        Screen.Library.createRoute(firstVisibleLibraryTab)
-                                    val items = listOf(
-                                         Triple(
-                                             Screen.Home.route, context.getString(R.string.common_home),
-                                             Pair(RhythmIcons.HomeFilled, RhythmIcons.Home)
-                                         ),
-                                         Triple(
-                                             libraryRoute, context.getString(R.string.common_library),
-                                             Pair(RhythmIcons.Navigation.Library, RhythmIcons.Navigation.LibraryOutlined)
+                                    Row(
+                                        modifier = Modifier.fillMaxSize(),
+                                        horizontalArrangement = Arrangement.SpaceEvenly,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        // Use first visible library tab based on user's tab order
+                                        val libraryRoute =
+                                            Screen.Library.createRoute(firstVisibleLibraryTab)
+                                        val items = listOf(
+                                             Triple(
+                                                 Screen.Home.route, context.getString(R.string.common_home),
+                                                 Pair(RhythmIcons.HomeFilled, RhythmIcons.Home)
+                                             ),
+                                             Triple(
+                                                 libraryRoute, context.getString(R.string.common_library),
+                                                 Pair(RhythmIcons.Navigation.Library, RhythmIcons.Navigation.LibraryOutlined)
+                                             )
                                          )
-                                     )
 
-                                     items.forEachIndexed { index, (route, title, icons) ->
-                                         val isSelected = when (route) {
-                                             Screen.Home.route -> currentRoute == Screen.Home.route
-                                             libraryRoute -> currentRoute.startsWith("library")
-                                             else -> false
-                                         }
+                                         items.forEachIndexed { index, (route, title, icons) ->
+                                             val isSelected = when (route) {
+                                                 Screen.Home.route -> currentRoute == Screen.Home.route
+                                                 libraryRoute -> currentRoute.startsWith("library")
+                                                 else -> false
+                                             }
 
-                                        val (selectedIcon, unselectedIcon) = icons
+                                            val (selectedIcon, unselectedIcon) = icons
 
-                                        // Enhanced animation values with spring physics
-                                        val animatedScale by animateFloatAsState(
-                                            targetValue = if (isSelected) 1.05f else 1.0f,
-                                            animationSpec = spring(
-                                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                stiffness = Spring.StiffnessLow
-                                            ),
-                                            label = "scale_$title"
-                                        )
+                                            // Enhanced animation values with spring physics
+                                            val animatedScale by animateFloatAsState(
+                                                targetValue = if (isSelected) 1.05f else 1.0f,
+                                                animationSpec = spring(
+                                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                    stiffness = Spring.StiffnessLow
+                                                ),
+                                                label = "scale_$title"
+                                            )
 
-                                        val animatedAlpha by animateFloatAsState(
-                                            targetValue = if (isSelected) 1f else 0.7f,
-                                            animationSpec = spring(
-                                                dampingRatio = Spring.DampingRatioNoBouncy,
-                                                stiffness = Spring.StiffnessLow
-                                            ),
-                                            label = "alpha_$title"
-                                        )
+                                            val animatedAlpha by animateFloatAsState(
+                                                targetValue = if (isSelected) 1f else 0.7f,
+                                                animationSpec = spring(
+                                                    dampingRatio = Spring.DampingRatioNoBouncy,
+                                                    stiffness = Spring.StiffnessLow
+                                                ),
+                                                label = "alpha_$title"
+                                            )
 
-                                        // Background pill animation with spring
-                                        val pillWidth by animateDpAsState(
-                                            targetValue = if (isSelected) 120.dp else 0.dp,
-                                            animationSpec = spring(
-                                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                stiffness = Spring.StiffnessLow
-                                            ),
-                                            label = "pillWidth_$title"
-                                        )
+                                            // Background pill animation with spring
+                                            val pillWidth by animateDpAsState(
+                                                targetValue = if (isSelected) 120.dp else 0.dp,
+                                                animationSpec = spring(
+                                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                    stiffness = Spring.StiffnessLow
+                                                ),
+                                                label = "pillWidth_$title"
+                                            )
 
-                                        // Icon color animation
-                                        val iconColor by animateColorAsState(
-                                            targetValue = if (isSelected)
-                                                MaterialTheme.colorScheme.onPrimaryContainer
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant,
-                                            animationSpec = tween(300),
-                                            label = "iconColor_$title"
-                                        )
+                                            // Icon color animation
+                                            val iconColor by animateColorAsState(
+                                                targetValue = if (isSelected)
+                                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                                else
+                                                    MaterialTheme.colorScheme.onSurfaceVariant,
+                                                animationSpec = tween(300),
+                                                label = "iconColor_$title"
+                                            )
 
-                                        val haptic = LocalHapticFeedback.current
+                                            val haptic = LocalHapticFeedback.current
 
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .fillMaxHeight()
-                                                .clickable {
-                                                    HapticUtils.performHapticFeedback(
-                                                        context,
-                                                        haptic,
-                                                        HapticType.HEAVY
-                                                    )
-                                                    navController.navigate(route) {
-                                                        popUpTo(navController.graph.findStartDestination().id) {
-                                                            saveState = true
-                                                        }
-                                                        launchSingleTop = true
-                                                        restoreState = true
-                                                    }
-                                                },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            // Horizontal layout for icon and text with animated pill background
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.Center,
+                                            Box(
                                                 modifier = Modifier
-                                                    .graphicsLayer {
-                                                        scaleX = animatedScale
-                                                        scaleY = animatedScale
-                                                        alpha = animatedAlpha
-                                                    }
-                                                    .then(
-                                                        if (isSelected) Modifier
-                                                            .clip(ExpressiveShapes.Full) // Expressive pill shape
-                                                            .background(MaterialTheme.colorScheme.primaryContainer)
-                                                            .height(48.dp)
-                                                            .widthIn(min = pillWidth) // Animated width
-                                                            .padding(horizontal = 18.dp)
-                                                        else Modifier.padding(horizontal = 16.dp)
-                                                    )
+                                                    .weight(1f)
+                                                    .fillMaxHeight()
+                                                    .clickable {
+                                                        HapticUtils.performHapticFeedback(
+                                                            context,
+                                                            haptic,
+                                                            HapticType.HEAVY
+                                                        )
+                                                        navController.navigate(route) {
+                                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                                saveState = true
+                                                            }
+                                                            launchSingleTop = true
+                                                            restoreState = true
+                                                        }
+                                                    },
+                                                contentAlignment = Alignment.Center
                                             ) {
-                                                // Animated icon with crossfade
-                                                androidx.compose.animation.Crossfade(
-                                                    targetState = isSelected,
-                                                    animationSpec = spring(
-                                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                        stiffness = Spring.StiffnessVeryLow
-                                                    ),
-                                                    label = "iconCrossfade_$title"
-                                                ) { selected ->
-                                                    Icon(
-                                                        imageVector = if (selected) selectedIcon else unselectedIcon,
-                                                        contentDescription = title,
-                                                        tint = iconColor,
-                                                        modifier = Modifier.size(24.dp)
-                                                    )
-                                                }
-
-                                                AnimatedVisibility(
-                                                    visible = isSelected,
-                                                    enter = fadeIn(
-                                                        animationSpec = spring(
-                                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                            stiffness = Spring.StiffnessMedium
+                                                // Horizontal layout for icon and text with animated pill background
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.Center,
+                                                    modifier = Modifier
+                                                        .graphicsLayer {
+                                                            scaleX = animatedScale
+                                                            scaleY = animatedScale
+                                                            alpha = animatedAlpha
+                                                        }
+                                                        .then(
+                                                            if (isSelected) Modifier
+                                                                .clip(ExpressiveShapes.Full) // Expressive pill shape
+                                                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                                                .height(48.dp)
+                                                                .widthIn(min = pillWidth) // Animated width
+                                                                .padding(horizontal = 18.dp)
+                                                            else Modifier.padding(horizontal = 16.dp)
                                                         )
-                                                    ) + expandHorizontally(
-                                                        animationSpec = spring(
-                                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                            stiffness = Spring.StiffnessLow
-                                                        )
-                                                    ),
-                                                    exit = fadeOut(
-                                                        animationSpec = spring(
-                                                            dampingRatio = Spring.DampingRatioNoBouncy,
-                                                            stiffness = Spring.StiffnessLow
-                                                        )
-                                                    ) + shrinkHorizontally(
-                                                        animationSpec = spring(
-                                                            dampingRatio = Spring.DampingRatioNoBouncy,
-                                                            stiffness = Spring.StiffnessLow
-                                                        )
-                                                    )
                                                 ) {
-                                                    Row {
-                                                        Spacer(modifier = Modifier.width(8.dp))
-                                                        Text(
-                                                            text = title,
-                                                            style = MaterialTheme.typography.labelMedium,
-                                                            color = iconColor,
-                                                            maxLines = 1,
-                                                            overflow = TextOverflow.Ellipsis
+                                                    // Animated icon with crossfade
+                                                    androidx.compose.animation.Crossfade(
+                                                        targetState = isSelected,
+                                                        animationSpec = spring(
+                                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                            stiffness = Spring.StiffnessVeryLow
+                                                        ),
+                                                        label = "iconCrossfade_$title"
+                                                    ) { selected ->
+                                                        Icon(
+                                                            imageVector = if (selected) selectedIcon else unselectedIcon,
+                                                            contentDescription = title,
+                                                            tint = iconColor,
+                                                            modifier = Modifier.size(24.dp)
                                                         )
+                                                    }
+
+                                                    AnimatedVisibility(
+                                                        visible = isSelected,
+                                                        enter = fadeIn(
+                                                            animationSpec = spring(
+                                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                                stiffness = Spring.StiffnessMedium
+                                                            )
+                                                        ) + expandHorizontally(
+                                                            animationSpec = spring(
+                                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                                stiffness = Spring.StiffnessLow
+                                                            )
+                                                        ),
+                                                        exit = fadeOut(
+                                                            animationSpec = spring(
+                                                                dampingRatio = Spring.DampingRatioNoBouncy,
+                                                                stiffness = Spring.StiffnessLow
+                                                            )
+                                                        ) + shrinkHorizontally(
+                                                            animationSpec = spring(
+                                                                dampingRatio = Spring.DampingRatioNoBouncy,
+                                                                stiffness = Spring.StiffnessLow
+                                                            )
+                                                        )
+                                                    ) {
+                                                        Row {
+                                                            Spacer(modifier = Modifier.width(8.dp))
+                                                            Text(
+                                                                text = title,
+                                                                style = MaterialTheme.typography.labelMedium,
+                                                                color = iconColor,
+                                                                maxLines = 1,
+                                                                overflow = TextOverflow.Ellipsis
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                     }
                                 }
+
+                                Spacer(modifier = Modifier.width(12.dp)) // Gap between nav bar and search icon
+
+                                // Expressive Search Icon Button with bouncy animation
+                                val searchInteractionSource = remember { MutableInteractionSource() }
+                                val isSearchPressed by searchInteractionSource.collectIsPressedAsState()
+                                val searchScale by animateFloatAsState(
+                                    targetValue = if (isSearchPressed) 0.88f else 1f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessMedium
+                                    ),
+                                    label = "search_scale"
+                                )
+                                
+                                FilledIconButton(
+                                    onClick = {
+                                        HapticUtils.performHapticFeedback(
+                                            context,
+                                            haptic,
+                                            HapticType.HEAVY
+                                        )
+                                        navController.navigate(Screen.Search.route) {
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    },
+                                    colors = IconButtonDefaults.filledIconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    shape = ExpressiveShapes.Full,
+                                    interactionSource = searchInteractionSource,
+                                    modifier = Modifier
+                                        .size(MusicDimensions.bottomNavigationHeight) // Match height of navigation bar
+                                        .graphicsLayer {
+                                            scaleX = searchScale
+                                            scaleY = searchScale
+                                        }
+                                ) {
+                                    Icon(
+                                        imageVector = RhythmIcons.Search,
+                                        contentDescription = stringResource(R.string.cd_search),
+                                        modifier = Modifier.size(25.dp)
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        // Docked navigation bar
+                        val libraryRoute = Screen.Library.createRoute(firstVisibleLibraryTab)
+                        val dockedItems = listOf(
+                            Triple(
+                                Screen.Home.route,
+                                context.getString(R.string.common_home),
+                                Pair(RhythmIcons.HomeFilled, RhythmIcons.Home)
+                            ),
+                            Triple(
+                                libraryRoute,
+                                context.getString(R.string.common_library),
+                                Pair(RhythmIcons.Navigation.Library, RhythmIcons.Navigation.LibraryOutlined)
+                            ),
+                            Triple(
+                                Screen.Search.route,
+                                stringResource(R.string.cd_search),
+                                Pair(RhythmIcons.SearchFilled, RhythmIcons.Search)
+                            ),
+                            Triple(
+                                Screen.Settings.route,
+                                context.getString(R.string.settings_title),
+                                Pair(RhythmIcons.SettingsFilled, RhythmIcons.Settings)
+                            )
+                        )
+
+                        val navContainerColor = MaterialTheme.colorScheme.surfaceContainer
+                        val cornerRadius = 24.dp
+
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            // Left inverted corner fillet
+                            Canvas(
+                                modifier = Modifier
+                                    .size(cornerRadius)
+                                    .align(Alignment.TopStart)
+                                    .offset(y = -cornerRadius)
+                            ) {
+                                val path = Path().apply {
+                                    moveTo(0f, 0f)
+                                    lineTo(0f, size.height)
+                                    lineTo(size.width, size.height)
+                                    arcTo(
+                                        rect = Rect(0f, -size.height, size.width * 2, size.height),
+                                        startAngleDegrees = 90f,
+                                        sweepAngleDegrees = 90f,
+                                        forceMoveTo = false
+                                    )
+                                    close()
+                                }
+                                drawPath(path, color = navContainerColor)
                             }
 
-                            Spacer(modifier = Modifier.width(12.dp)) // Gap between nav bar and search icon
-
-                            // Expressive Search Icon Button with bouncy animation
-                            val searchInteractionSource = remember { MutableInteractionSource() }
-                            val isSearchPressed by searchInteractionSource.collectIsPressedAsState()
-                            val searchScale by animateFloatAsState(
-                                targetValue = if (isSearchPressed) 0.88f else 1f,
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                                    stiffness = Spring.StiffnessMedium
-                                ),
-                                label = "search_scale"
-                            )
-                            
-                            FilledIconButton(
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(
-                                        context,
-                                        haptic,
-                                        HapticType.HEAVY
-                                    )
-                                    navController.navigate(Screen.Search.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                colors = IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                ),
-                                shape = ExpressiveShapes.Full,
-                                interactionSource = searchInteractionSource,
+                            // Right inverted corner fillet
+                            Canvas(
                                 modifier = Modifier
-                                    .size(MusicDimensions.bottomNavigationHeight) // Match height of navigation bar
-                                    .graphicsLayer {
-                                        scaleX = searchScale
-                                        scaleY = searchScale
-                                    }
+                                    .size(cornerRadius)
+                                    .align(Alignment.TopEnd)
+                                    .offset(y = -cornerRadius)
                             ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Search,
-                                    contentDescription = stringResource(R.string.cd_search),
-                                    modifier = Modifier.size(25.dp)
-                                )
+                                val path = Path().apply {
+                                    moveTo(size.width, 0f)
+                                    lineTo(size.width, size.height)
+                                    lineTo(0f, size.height)
+                                    arcTo(
+                                        rect = Rect(-size.width, -size.height, size.width, size.height),
+                                        startAngleDegrees = 90f,
+                                        sweepAngleDegrees = -90f,
+                                        forceMoveTo = false
+                                    )
+                                    close()
+                                }
+                                drawPath(path, color = navContainerColor)
+                            }
+
+                            NavigationBar(
+                                modifier = Modifier.fillMaxWidth(),
+                                containerColor = navContainerColor,
+                                windowInsets = WindowInsets.navigationBars
+                            ) {
+                                Spacer(Modifier.width(8.dp))
+                                dockedItems.forEach { (route, title, icons) ->
+                                    val isSelected = when (route) {
+                                        Screen.Home.route -> currentRoute == Screen.Home.route
+                                        libraryRoute -> currentRoute.startsWith("library")
+                                        Screen.Search.route -> currentRoute == Screen.Search.route
+                                        Screen.Settings.route -> currentRoute == Screen.Settings.route
+                                        else -> false
+                                    }
+                                    val (selectedIcon, unselectedIcon) = icons
+
+                                    NavigationBarItem(
+                                        selected = isSelected,
+                                        onClick = {
+                                            HapticUtils.performHapticFeedback(
+                                                context,
+                                                haptic,
+                                                HapticType.HEAVY
+                                            )
+                                            navController.navigate(route) {
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
+                                        },
+                                        icon = {
+                                            Icon(
+                                                imageVector = if (isSelected) selectedIcon else unselectedIcon,
+                                                contentDescription = title,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        },
+                                        label = {
+                                            Text(
+                                                text = title,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+                                    )
+                                }
+                                Spacer(Modifier.width(8.dp))
                             }
                         }
                     }
                 }
-                }
             }
         }
+    }
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
             // Main content
@@ -4061,10 +4223,10 @@ private fun LocalNavigationContent(
             }
         )
     }
-    }
+}
 
 /**
- * Navigation rail for tablets with Material 3 design - Local Navigation
+ * Navigation rail for tablets with Material 3 Expressive design - Local Navigation
  */
 @Composable
 private fun LocalNavigationRail(
@@ -4072,7 +4234,8 @@ private fun LocalNavigationRail(
     navController: NavHostController,
     firstVisibleLibraryTab: LibraryTab,
     context: android.content.Context,
-    haptic: androidx.compose.ui.hapticfeedback.HapticFeedback
+    haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
+    isFloating: Boolean = true
 ) {
     val navigateToTopLevel: (String) -> Unit = { route ->
         navController.navigate(route) {
@@ -4084,95 +4247,154 @@ private fun LocalNavigationRail(
         }
     }
 
-    // Calculate rail height based on number of items (5 items * 64dp + padding)
-    val railHeight = (5 * 64 + 32).dp // Increased padding from 24 to 32
-    
-    Box(
-        modifier = Modifier
-            .fillMaxHeight()
-            .padding(8.dp),
-        contentAlignment = Alignment.Center // Vertically center the rail
-    ) {
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            tonalElevation = 3.dp,
+    val libraryRoute = Screen.Library.createRoute(firstVisibleLibraryTab)
+    val coreItems = listOf(
+        LocalNavRailItem(
+            route = Screen.Home.route,
+            title = stringResource(R.string.home),
+            selectedIcon = RhythmIcons.HomeFilled,
+            unselectedIcon = RhythmIcons.Home,
+            onClick = {
+                navigateToTopLevel(Screen.Home.route)
+            }
+        ),
+        LocalNavRailItem(
+            route = libraryRoute,
+            title = stringResource(R.string.library),
+            selectedIcon = RhythmIcons.Navigation.Library,
+            unselectedIcon = RhythmIcons.Navigation.LibraryOutlined,
+            onClick = {
+                navigateToTopLevel(libraryRoute)
+            }
+        ),
+        LocalNavRailItem(
+            route = Screen.RhythmStats.route,
+            title = stringResource(R.string.localnavigation_stats),
+            selectedIcon = MaterialSymbolIcon("auto_graph", filled = true),
+            unselectedIcon = MaterialSymbolIcon("auto_graph"),
+            onClick = {
+                navigateToTopLevel(Screen.RhythmStats.route)
+            }
+        ),
+        LocalNavRailItem(
+            route = Screen.Search.route,
+            title = stringResource(R.string.search),
+            selectedIcon = RhythmIcons.SearchFilled,
+            unselectedIcon = RhythmIcons.Search,
+            onClick = {
+                navigateToTopLevel(Screen.Search.route)
+            }
+        )
+    )
+
+    val settingsItem = LocalNavRailItem(
+        route = Screen.Settings.route,
+        title = stringResource(R.string.settings_backup_settings),
+        selectedIcon = RhythmIcons.SettingsFilled,
+        unselectedIcon = RhythmIcons.Settings,
+        onClick = {
+            navigateToTopLevel(Screen.Settings.route)
+        }
+    )
+
+    if (isFloating) {
+        val floatingItems = coreItems + settingsItem
+        Box(
             modifier = Modifier
-                .height(railHeight)
-                .width(80.dp)
-                .clip(RoundedCornerShape(24.dp))
+                .fillMaxHeight()
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Vertical + WindowInsetsSides.Start))
+                .padding(start = 12.dp, top = 16.dp, bottom = 16.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Column(
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 3.dp,
+                shadowElevation = 4.dp,
+                shape = RoundedCornerShape(28.dp),
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 16.dp), // Increased from 12.dp to 16.dp
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)
+                    .wrapContentHeight()
+                    .width(80.dp)
             ) {
-            val libraryRoute = Screen.Library.createRoute(firstVisibleLibraryTab)
-            val items = listOf(
-                LocalNavRailItem(
-                    route = Screen.Home.route,
-                    title = stringResource(R.string.settings_home_screen),
-                    selectedIcon = RhythmIcons.HomeFilled,
-                    unselectedIcon = RhythmIcons.Home,
-                    onClick = {
-                        navigateToTopLevel(Screen.Home.route)
+                Column(
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .padding(vertical = 16.dp, horizontal = 2.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
+                ) {
+                    floatingItems.forEach { item ->
+                        val isSelected = when {
+                            item.route == Screen.Home.route -> currentRoute == Screen.Home.route
+                            item.route.substringBefore("?") == Screen.Library.route.substringBefore("?") -> currentRoute.startsWith("library")
+                            item.route == Screen.Search.route -> currentRoute == Screen.Search.route
+                            item.route == Screen.RhythmStats.route -> currentRoute == Screen.RhythmStats.route
+                            item.route == Screen.Settings.route -> currentRoute == Screen.Settings.route
+                            else -> false
+                        }
+                        LocalNavigationRailItemWithAnimation(
+                            item = item,
+                            isSelected = isSelected,
+                            haptic = haptic,
+                            context = context
+                        )
                     }
-                ),
-                LocalNavRailItem(
-                    route = libraryRoute,
-                    title = stringResource(R.string.option_library),
-                    selectedIcon = RhythmIcons.Navigation.Library,
-                    unselectedIcon = RhythmIcons.Navigation.LibraryOutlined,
-                    onClick = {
-                        navigateToTopLevel(libraryRoute)
-                    }
-                ),
-                LocalNavRailItem(
-                    route = Screen.RhythmStats.route,
-                    title = stringResource(R.string.localnavigation_stats),
-                    selectedIcon = MaterialSymbolIcon("auto_graph", filled = true),
-                    unselectedIcon = MaterialSymbolIcon("auto_graph"),
-                    onClick = {
-                        navigateToTopLevel(Screen.RhythmStats.route)
-                    }
-                ),
-                LocalNavRailItem(
-                    route = Screen.Search.route,
-                    title = stringResource(R.string.cd_search),
-                    selectedIcon = RhythmIcons.SearchFilled,
-                    unselectedIcon = RhythmIcons.Search,
-                    onClick = {
-                        navigateToTopLevel(Screen.Search.route)
-                    }
-                ),
-                LocalNavRailItem(
-                    route = Screen.Settings.route,
-                    title = stringResource(R.string.settings_backup_settings),
-                    selectedIcon = RhythmIcons.SettingsFilled,
-                    unselectedIcon = RhythmIcons.Settings,
-                    onClick = {
-                        navigateToTopLevel(Screen.Settings.route)
-                    }
-                )
-            )
-            
-            items.forEach { item ->
-                LocalNavigationRailItemWithAnimation(
-                    item = item,
-                    isSelected = when {
-                        item.route == Screen.Home.route -> currentRoute == Screen.Home.route
-                        item.route.substringBefore("?") == Screen.Library.route.substringBefore("?") -> currentRoute.substringBefore("?") == Screen.Library.route.substringBefore("?")
-                        item.route == Screen.Search.route -> currentRoute == Screen.Search.route
-                        item.route.contains("settings") -> currentRoute.contains("settings")
-                        item.route == Screen.RhythmStats.route -> currentRoute == Screen.RhythmStats.route
-                        else -> false
-                    },
-                    haptic = haptic,
-                    context = context
-                )
+                }
             }
         }
+    } else {
+        val railContainerColor = MaterialTheme.colorScheme.surfaceContainer
+        val railWidth = 84.dp
+
+        Surface(
+            color = railContainerColor,
+            tonalElevation = 1.dp,
+            shadowElevation = 0.dp,
+            shape = RectangleShape,
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(railWidth)
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Vertical + WindowInsetsSides.Start))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 16.dp, horizontal = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .wrapContentHeight(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
+                ) {
+                    coreItems.forEach { item ->
+                        val isSelected = when {
+                            item.route == Screen.Home.route -> currentRoute == Screen.Home.route
+                            item.route.substringBefore("?") == Screen.Library.route.substringBefore("?") -> currentRoute.startsWith("library")
+                            item.route == Screen.Search.route -> currentRoute == Screen.Search.route
+                            item.route == Screen.RhythmStats.route -> currentRoute == Screen.RhythmStats.route
+                            else -> false
+                        }
+                        LocalNavigationRailItemWithAnimation(
+                            item = item,
+                            isSelected = isSelected,
+                            haptic = haptic,
+                            context = context
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                ) {
+                    LocalNavigationRailItemWithAnimation(
+                        item = settingsItem,
+                        isSelected = currentRoute == Screen.Settings.route,
+                        haptic = haptic,
+                        context = context
+                    )
+                }
+            }
         }
     }
 }
@@ -4189,7 +4411,7 @@ private data class LocalNavRailItem(
 )
 
 /**
- * Local navigation rail item with animated selection indicator
+ * Local navigation rail item with animated selection indicator and spring physics
  */
 @Composable
 private fun LocalNavigationRailItemWithAnimation(
@@ -4198,123 +4420,104 @@ private fun LocalNavigationRailItemWithAnimation(
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
     context: android.content.Context
 ) {
-    // Enhanced animation values with spring physics
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
     val animatedScale by animateFloatAsState(
-        targetValue = if (isSelected) 1.08f else 1.0f,
+        targetValue = when {
+            isPressed -> 0.90f
+            isSelected -> 1.02f
+            else -> 1.0f
+        },
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+            stiffness = Spring.StiffnessMedium
         ),
         label = "scale_${item.title}"
     )
 
-    val animatedAlpha by animateFloatAsState(
-        targetValue = if (isSelected) 1f else 0.7f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "alpha_${item.title}"
-    )
-
-    // Icon color animation
     val iconColor by animateColorAsState(
         targetValue = if (isSelected)
             MaterialTheme.colorScheme.onPrimaryContainer
         else
             MaterialTheme.colorScheme.onSurfaceVariant,
-        animationSpec = tween(300),
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = "iconColor_${item.title}"
     )
 
-    // Indicator pill animation
-    val indicatorHeight by animateDpAsState(
+    val textColor by animateColorAsState(
+        targetValue = if (isSelected)
+            MaterialTheme.colorScheme.onSurface
+        else
+            MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "textColor_${item.title}"
+    )
+
+    val pillWidth by animateDpAsState(
         targetValue = if (isSelected) 56.dp else 0.dp,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
         ),
-        label = "indicatorHeight_${item.title}"
+        label = "pillWidth_${item.title}"
     )
 
-    Box(
+    Column(
         modifier = Modifier
-            .size(64.dp)
+            .width(76.dp)
+            .graphicsLayer {
+                scaleX = animatedScale
+                scaleY = animatedScale
+            }
             .clip(RoundedCornerShape(16.dp))
-            .clickable {
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                 item.onClick()
-            },
-        contentAlignment = Alignment.Center
+            }
+            .padding(vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+        Box(
             modifier = Modifier
-                .graphicsLayer {
-                    scaleX = animatedScale
-                    scaleY = animatedScale
-                    alpha = animatedAlpha
-                }
-                .then(
-                    if (isSelected) Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .size(64.dp, indicatorHeight.coerceAtLeast(0.dp))
-                        .padding(vertical = 8.dp)
-                    else Modifier.padding(8.dp)
-                )
+                .height(32.dp)
+                .width(56.dp),
+            contentAlignment = Alignment.Center
         ) {
-            // Animated icon with crossfade
-            androidx.compose.animation.Crossfade(
-                targetState = isSelected,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessVeryLow
-                ),
-                label = "iconCrossfade_${item.title}"
-            ) { selected ->
-                Icon(
-                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                    contentDescription = item.title,
-                    tint = iconColor,
-                    modifier = Modifier.size(24.dp)
+            if (isSelected) {
+                Box(
+                    modifier = Modifier
+                        .width(pillWidth)
+                        .height(32.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = CircleShape
+                        )
                 )
             }
 
-            AnimatedVisibility(
-                visible = isSelected,
-                enter = fadeIn(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    )
-                ) + expandVertically(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
-                ),
-                exit = fadeOut(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
-                ) + shrinkVertically(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
-                )
-            ) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = iconColor
-                )
-            }
+            Icon(
+                imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                contentDescription = item.title,
+                tint = iconColor,
+                modifier = Modifier.size(24.dp)
+            )
         }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = item.title,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+            color = textColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

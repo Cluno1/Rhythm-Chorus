@@ -1415,6 +1415,16 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             parentScreen = "Theme",
             settingKey = "festiveShowBottomSnow"
         ))
+        add(SearchableSettingItem(
+            id = "theme_floating_navigation",
+            title = context.getString(R.string.settings_floating_navigation),
+            description = context.getString(R.string.settings_floating_navigation_desc),
+            keywords = listOf("floating", "docked", "navigation", "navigation bar", "bottom bar", "rail", "dock", "float"),
+            icon = MaterialSymbolIcon("dock_to_left"),
+            route = SettingsRoutes.THEME_CUSTOMIZATION,
+            parentScreen = "Theme",
+            settingKey = "floatingNavigationBar"
+        ))
         
         // ======================== PLAYER CUSTOMIZATION SCREEN ========================
         add(SearchableSettingItem(
@@ -1667,6 +1677,26 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             route = SettingsRoutes.PLAYER_CUSTOMIZATION,
             parentScreen = "Player",
             settingKey = "playerShowGradientOverlay"
+        ))
+        add(SearchableSettingItem(
+            id = "player_ambient_backdrop",
+            title = context.getString(R.string.player_ambient_backdrop),
+            description = context.getString(R.string.player_ambient_desc),
+            keywords = listOf("ambient", "backdrop", "blur", "artwork background", "player background", "glass"),
+            icon = MaterialSymbolIcon("blur_on"),
+            route = SettingsRoutes.PLAYER_CUSTOMIZATION,
+            parentScreen = "Player",
+            settingKey = "playerAmbientBackdropEnabled"
+        ))
+        add(SearchableSettingItem(
+            id = "player_ambient_motion_zoom",
+            title = context.getString(R.string.player_ambient_motion_zoom),
+            description = context.getString(R.string.player_ambient_motion_zoom_desc),
+            keywords = listOf("ambient", "motion", "zoom", "infinite zoom", "ken burns", "breathing", "animation"),
+            icon = MaterialSymbolIcon("zoom_out_map"),
+            route = SettingsRoutes.PLAYER_CUSTOMIZATION,
+            parentScreen = "Player",
+            settingKey = "playerAmbientInfiniteZoom"
         ))
         
         // ======================== MINIPLAYER CUSTOMIZATION SCREEN ========================

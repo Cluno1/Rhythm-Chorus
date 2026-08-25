@@ -6,6 +6,7 @@
 package chromahub.rhythm.app.shared.presentation.screens.player
 
 import androidx.activity.compose.BackHandler
+import androidx.core.view.WindowCompat
 import androidx.core.graphics.get
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.EaseInOut
@@ -166,6 +167,11 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.EaseInOutSine
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -364,6 +370,7 @@ fun ExpressivePlayerScreen(
     val enhancedSeekingEnabled by appSettings.enhancedSeekingEnabled.collectAsState()
     val playerAmbientBackdropEnabled by appSettings.playerAmbientBackdropEnabled.collectAsState()
     val playerAmbientBackdropIntensity by appSettings.playerAmbientBackdropIntensity.collectAsState()
+    val playerAmbientInfiniteZoom by appSettings.playerAmbientInfiniteZoom.collectAsState()
     val playerAccentBackgroundEnabled by appSettings.playerAccentBackgroundEnabled.collectAsState()
     val playerMergeControlsToBottom by appSettings.playerMergeControlsToBottom.collectAsState()
     val playerShowAudioQualityBadges by appSettings.playerShowAudioQualityBadges.collectAsState()
@@ -582,7 +589,7 @@ fun ExpressivePlayerScreen(
     val line6Alpha = line6Fraction
     val line6TranslationY = with(LocalDensity.current) { 48.dp.toPx() * (1f - line6Fraction) }
 
-    val artworkClipShape = if (lyricsVisible) RoundedCornerShape(artworkCornerRadius) else playerArtworkShape
+    val artworkClipShape = playerArtworkShape
 
     val needsDarkSurfaces = showDarkBg
     val darkScheme = remember { darkColorScheme() }
@@ -621,6 +628,28 @@ fun ExpressivePlayerScreen(
     val artColor = artworkColor.value ?: defaultSongColor
     // Ambient contrast handling: maintain visibility against backdrop
     val ambientTextColor = if ((artColor?.luminance() ?: 0f) > 0.65f) Color.Black else Color.White
+
+    val isPlayerActive = if (swipeToDismissEnabled) true else expansionFraction > 0.5f
+    val isStatusLight = when {
+        useAccentBackground -> accentBg.luminance() > 0.5f
+        isBackdropEnabled -> (artColor?.luminance() ?: 0f) > 0.65f
+        else -> !isDarkTheme
+    }
+
+    DisposableEffect(activity, isPlayerActive, isStatusLight, isDarkTheme) {
+        val window = activity?.window
+        val decorView = window?.decorView
+        if (window != null && decorView != null && isPlayerActive) {
+            val insetsController = WindowCompat.getInsetsController(window, decorView)
+            insetsController.isAppearanceLightStatusBars = isStatusLight
+        }
+        onDispose {
+            if (window != null && decorView != null) {
+                val insetsController = WindowCompat.getInsetsController(window, decorView)
+                insetsController.isAppearanceLightStatusBars = !isDarkTheme
+            }
+        }
+    }
 
     val ambientAlpha = if (isBackdropEnabled) playerAmbientBackdropIntensity else 1f
     val ambientPlayContainer = Color.White
@@ -680,18 +709,22 @@ fun ExpressivePlayerScreen(
         targetValue = if (useAccentBackground) accentFg else if (isBackdropEnabled) Color.White else MaterialTheme.colorScheme.primary,
         animationSpec = tween(400), label = "canvasPrimaryColor"
     )
-    val clearArtworkAlpha by animateFloatAsState(
-        targetValue = if (lyricsVisible) 0f else 1f, animationSpec = tween(500), label = "clearArtworkAlpha"
-    )
-    val lyricsOverlayAlpha by animateFloatAsState(
-        targetValue = if (lyricsVisible && showDarkBg) 1f else 0f, animationSpec = tween(600), label = "lyricsOverlayAlpha"
-    )
-
-
     val isCompactWidth = windowScreenWidthDp() < 360
     val isCompactHeight = windowScreenHeightDp() < 640
     val isTablet = windowScreenWidthDp() >= 600
     val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
+    val isTabletImmersiveLyrics = isTablet && lyricsVisible && !showPlayerControls
+
+    val clearArtworkAlpha by animateFloatAsState(
+        targetValue = if (lyricsVisible && !isTabletImmersiveLyrics) 0f else 1f,
+        animationSpec = tween(500),
+        label = "clearArtworkAlpha"
+    )
+    val lyricsOverlayAlpha by animateFloatAsState(
+        targetValue = if (lyricsVisible && showDarkBg && !isTabletImmersiveLyrics) 1f else 0f,
+        animationSpec = tween(600),
+        label = "lyricsOverlayAlpha"
+    )
     val coroutineScope = rememberCoroutineScope()
     val screenHeightPx = with(LocalDensity.current) { windowScreenHeightDp().dp.toPx() }
 
@@ -928,15 +961,14 @@ fun ExpressivePlayerScreen(
                             contentDescription = null, contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize().blur(150.dp)
                         )
-                        // Phone: vertical gradient (top to bottom, fades at ~65%)
-                        // Tablet landscape: horizontal gradient (left to right, artwork on left)
+                        val useHorizontalBackdrop = isLandscapeTablet || isTabletImmersiveLyrics
                         Box(
-                            modifier = (if (isLandscapeTablet) Modifier.fillMaxWidth(0.5f).fillMaxHeight()
+                            modifier = (if (useHorizontalBackdrop) Modifier.fillMaxWidth(0.5f).fillMaxHeight()
                                 else Modifier.fillMaxWidth().fillMaxHeight(0.58f)).alpha(clearArtworkAlpha)
                             .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
                             .drawWithContent {
                                 drawContent()
-                                val brush = if (isLandscapeTablet) Brush.horizontalGradient(
+                                val brush = if (useHorizontalBackdrop) Brush.horizontalGradient(
                                     0.00f to gc, 0.55f to gc, 0.70f to gc.copy(alpha = 0.65f),
                                     0.85f to gc.copy(alpha = 0.25f), 1.00f to Color.Transparent
                                 ) else Brush.verticalGradient(
@@ -955,10 +987,10 @@ fun ExpressivePlayerScreen(
                             }
                         }
                         Box(modifier = Modifier.fillMaxSize().background(
-                            if (isLandscapeTablet) Brush.horizontalGradient(listOf(gc.copy(alpha = 0.03f), gc.copy(alpha = 0.35f)))
+                            if (useHorizontalBackdrop) Brush.horizontalGradient(listOf(gc.copy(alpha = 0.03f), gc.copy(alpha = 0.35f)))
                             else Brush.verticalGradient(listOf(gc.copy(alpha = 0.05f), gc.copy(alpha = 0.4f)))))
                         Box(modifier = Modifier.fillMaxSize().alpha(lyricsOverlayAlpha).background(
-                            if (isLandscapeTablet) Brush.horizontalGradient(
+                            if (useHorizontalBackdrop) Brush.horizontalGradient(
                                 colors = listOf(gc.copy(alpha = 0.65f), gc.copy(alpha = 0.50f), gc.copy(alpha = 0.72f)))
                             else Brush.verticalGradient(
                                 colors = listOf(gc.copy(alpha = 0.72f), gc.copy(alpha = 0.52f), gc.copy(alpha = 0.78f)))))
@@ -994,6 +1026,17 @@ fun ExpressivePlayerScreen(
         }
     }
 
+    val infiniteZoomTransition = rememberInfiniteTransition(label = "ambientInfiniteZoomTransition")
+    val ambientInfiniteScale by infiniteZoomTransition.animateFloat(
+        initialValue = 1.00f,
+        targetValue = 1.07f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 18000, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "ambientInfiniteScale"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -1013,7 +1056,9 @@ fun ExpressivePlayerScreen(
             }
     ) {
         AnimatedVisibility(visible = showBg, enter = fadeIn(tween(600)), exit = fadeOut(tween(600))) {
-            val bgZoom = 1f + 0.04f * (1f - localEntranceFraction)
+            val entranceZoom = 1f + 0.04f * (1f - localEntranceFraction)
+            val continuousZoom = if (isBackdropEnabled && playerAmbientInfiniteZoom) ambientInfiniteScale else 1f
+            val bgZoom = entranceZoom * continuousZoom
             unifiedBackground(Modifier.fillMaxSize().graphicsLayer { scaleX = bgZoom; scaleY = bgZoom })
         }
 
@@ -1039,107 +1084,195 @@ fun ExpressivePlayerScreen(
                     label = "artworkTranslationX"
                 )
 
+                val artworkView = @Composable { modifier: Modifier, isSmall: Boolean ->
+                    Box(
+                        modifier = modifier,
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            Modifier
+                                .padding(horizontal = if (isCompactWidth) 12.dp else 24.dp)
+                                .fillMaxSize(if (isSmall) 0.75f else if (isTablet && !isLandscapeTablet) 0.55f else if (isCompactHeight) 0.78f else 0.88f)
+                                .aspectRatio(1f)
+                                .graphicsLayer {
+                                    scaleX = artworkScale
+                                    scaleY = artworkScale
+                                    translationX = artworkTranslationX
+                                    shape = artworkClipShape
+                                    clip = true
+                                }
+                                .pointerInput(showLyrics, lyricsVisible) {
+                                    detectTapGestures(
+                                        onDoubleTap = {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                            onPlayPause()
+                                        },
+                                        onTap = {
+                                            if (showLyrics) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                onToggleLyrics()
+                                            }
+                                        }
+                                    )
+                                }
+                                .pointerInput(Unit) {
+                                    detectDragGestures(
+                                        onDragEnd = {
+                                            if (artworkOffsetX < -artworkSwipeThreshold) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                onSkipNext()
+                                            } else if (artworkOffsetX > artworkSwipeThreshold) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                onSkipPrevious()
+                                            }
+                                            artworkOffsetX = 0f
+                                        },
+                                        onDragCancel = { artworkOffsetX = 0f },
+                                        onDrag = { change, dragAmount ->
+                                            change.consume()
+                                            artworkOffsetX += dragAmount.x
+                                        }
+                                    )
+                                }
+                        ) {
+                            val currentSongArt = debouncedSong.value?.artworkUri
+
+                            AnimatedContent(
+                                targetState = hasValidArtwork,
+                                transitionSpec = { fadeIn(tween(800)).togetherWith(fadeOut(tween(600))) },
+                                label = "artworkIconTransition",
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) { validArtwork ->
+                                if (validArtwork) {
+                                    M3ImageUtils.M3MediaImage(
+                                        data = currentSongArt,
+                                        contentDescription = stringResource(R.string.content_desc_album_artwork),
+                                        modifier = Modifier.fillMaxSize(),
+                                        shape = artworkClipShape,
+                                        type = M3PlaceholderType.TRACK,
+                                        name = debouncedSong.value?.title,
+                                        expressiveShape = playerArtworkShape
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.MusicNote,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(if (isSmall) 96.dp else 144.dp),
+                                            tint = when {
+                                                showDarkBg -> Color.White.copy(alpha = 0.85f)
+                                                useAccentBackground -> accentFg
+                                                else -> monoFg
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (canvasArtwork?.preferredAnimationUrl != null) {
+                                CanvasArtworkPlayer(
+                                    primaryUrl = canvasArtwork.animated,
+                                    fallbackUrl = canvasArtwork.videoUrl,
+                                    isPlaying = isPlaying,
+                                    alwaysPlay = true,
+                                    modifier = Modifier.fillMaxSize().clip(artworkClipShape)
+                                )
+                            }
+                            if (canvasLoading && canvasArtwork == null) {
+                                Box(
+                                    Modifier.align(Alignment.TopEnd).padding(10.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    M3CircularLoader(
+                                        modifier = Modifier.size(16.dp),
+                                        color = primaryColor,
+                                        strokeWidth = 2.5f
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                val lyricsView = @Composable { modifier: Modifier ->
+                    RhythmPlayerLyricsPanel(
+                        lyrics = lyrics,
+                        isLoadingLyrics = isLoadingLyrics,
+                        onlineOnlyLyrics = onlineOnlyLyrics,
+                        currentTimeMs = currentTimeMs,
+                        onLyricsSeek = onLyricsSeek,
+                        onTapLyricsView = onTapLyricsView,
+                        textSizeMultiplier = playerLyricsTextSize,
+                        onRetryLyrics = onRetryLyrics,
+                        onShowLyricsEditor = onShowLyricsEditor,
+                        onPickLyricsFile = onPickLyricsFile,
+                        showTranslation = showLyricsTranslation,
+                        showRomanization = showLyricsRomanization,
+                        textAlignment = lyricsTextAlign,
+                        textColor = onSurfaceColor,
+                        subtitleColor = onSurfaceVariantColor,
+                        activeColor = if (isBackdropEnabled) ambientTextColor else primaryColor,
+                        buttonContainerColor = if (useAccentBackground) accentFg else null,
+                        buttonContentColor = if (useAccentBackground) accentBg else null,
+                        fadeColor = if (isBackdropEnabled) null else lyricsScrimColor,
+                        onNavigateToLyricsSettings = onNavigateToLyricsSettings,
+                        modifier = modifier
+                    )
+                }
+
                 // Use fully qualified AnimatedVisibility to avoid ColumnScope receiver capture
                 val artworkContent = @Composable { modifier: Modifier ->
-                    androidx.compose.animation.AnimatedVisibility(visible = showAlbumArt || lyricsVisible,
-                        enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }, modifier = modifier) {
-                        Box(Modifier.fillMaxSize().graphicsLayer { alpha = line2Alpha; translationY = line2TranslationY; scaleX = line2Pop; scaleY = line2Pop }, contentAlignment = Alignment.Center) {
-                            AnimatedContent(targetState = lyricsVisible, transitionSpec = {
-                                val e = when (playerLyricsTransition) {
-                                    1 -> fadeIn(tween(400, easing = EaseInOut))
-                                    2 -> fadeIn(tween(350, easing = EaseInOut)) + scaleIn(tween(350, easing = EaseInOut), initialScale = 0.92f)
-                                    3 -> fadeIn(tween(350, easing = EaseInOut)) + slideInVertically(tween(350, easing = EaseInOut)) { it / 2 }
-                                    else -> fadeIn(tween(350, easing = EaseInOut)) + slideInVertically(tween(350, easing = EaseInOut)) { -it / 2 }
-                                }
-                                val x = when (playerLyricsTransition) {
-                                    1 -> fadeOut(tween(300, easing = EaseInOut))
-                                    2 -> fadeOut(tween(250, easing = EaseInOut)) + scaleOut(tween(250, easing = EaseInOut), targetScale = 0.92f)
-                                    3 -> fadeOut(tween(250, easing = EaseInOut)) + slideOutVertically(tween(250, easing = EaseInOut)) { it / 2 }
-                                    else -> fadeOut(tween(250, easing = EaseInOut)) + slideOutVertically(tween(250, easing = EaseInOut)) { -it / 2 }
-                                }
-                                e togetherWith x
-                            }, label = "lyricsViewTransition", modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { tl ->
-                                if (tl) {
-                                    RhythmPlayerLyricsPanel(lyrics = lyrics, isLoadingLyrics = isLoadingLyrics,
-                                        onlineOnlyLyrics = onlineOnlyLyrics, currentTimeMs = currentTimeMs,
-                                        onLyricsSeek = onLyricsSeek, onTapLyricsView = onTapLyricsView,
-                                        textSizeMultiplier = playerLyricsTextSize, onRetryLyrics = onRetryLyrics,
-                                        onShowLyricsEditor = onShowLyricsEditor, onPickLyricsFile = onPickLyricsFile,
-                                        showTranslation = showLyricsTranslation, showRomanization = showLyricsRomanization,
-                                        textAlignment = lyricsTextAlign, textColor = onSurfaceColor, subtitleColor = onSurfaceVariantColor,
-                                        activeColor = if (isBackdropEnabled) ambientTextColor else primaryColor,
-                                        buttonContainerColor = if (useAccentBackground) accentFg else null,
-                                        buttonContentColor = if (useAccentBackground) accentBg else null,
-                                        fadeColor = if (isBackdropEnabled) null else lyricsScrimColor,
-                                        onNavigateToLyricsSettings = onNavigateToLyricsSettings,
-                                        modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(horizontal = if (isCompactWidth) 16.dp else 24.dp))
-                                } else {
-                                    Box(Modifier.padding(horizontal = if (isCompactWidth) 12.dp else 24.dp)
-                                        .fillMaxSize(if (isTablet && !isLandscapeTablet) 0.55f else if (isCompactHeight) 0.78f else 0.88f).aspectRatio(1f)
-                                        .graphicsLayer { scaleX = artworkScale; scaleY = artworkScale; translationX = artworkTranslationX; shape = artworkClipShape; clip = true }
-                                        .pointerInput(showLyrics, lyricsVisible) {
-                                            detectTapGestures(onDoubleTap = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onPlayPause() },
-                                                onTap = { if (showLyrics) { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleLyrics() } })
-                                        }
-                                        .pointerInput(Unit) {
-                                            detectDragGestures(
-                                                onDragEnd = {
-                                                    if (artworkOffsetX < -artworkSwipeThreshold) { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onSkipNext() }
-                                                    else if (artworkOffsetX > artworkSwipeThreshold) { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onSkipPrevious() }
-                                                    artworkOffsetX = 0f
-                                                }, onDragCancel = { artworkOffsetX = 0f },
-                                                onDrag = { change, dragAmount -> change.consume(); artworkOffsetX += dragAmount.x })
-                                        }) {                                        val currentSongArt = debouncedSong.value?.artworkUri
-
-                                        // Crossfade artwork ↔ music-note icon using the same
-                                        // AnimatedContent pattern as the background gradient switch,
-                                        // so the icon never snaps in/out abruptly on track change.
-                                        AnimatedContent(
-                                            targetState = hasValidArtwork,
-                                            transitionSpec = { fadeIn(tween(800)).togetherWith(fadeOut(tween(600))) },
-                                            label = "artworkIconTransition",
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center
-                                        ) { validArtwork ->
-                                            if (validArtwork) {
-                                                M3ImageUtils.M3MediaImage(
-                                                    data = currentSongArt,
-                                                    contentDescription = stringResource(R.string.content_desc_album_artwork),
-                                                    modifier = Modifier.fillMaxSize(),
-                                                    shape = artworkClipShape,
-                                                    type = M3PlaceholderType.TRACK,
-                                                    name = debouncedSong.value?.title,
-                                                    expressiveShape = playerArtworkShape
-                                                )
-                                            } else {
-                                                Box(
-                                                    modifier = Modifier.fillMaxSize(),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Icon(
-                                                        imageVector = RhythmIcons.MusicNote,
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(144.dp),
-                                                        tint = when {
-                                                            showDarkBg -> Color.White.copy(alpha = 0.85f)
-                                                            useAccentBackground -> accentFg
-                                                            else -> monoFg
-                                                        }
-                                                    )
-                                                }
-                                            }
-                                        }
-
-                                        if (canvasArtwork?.preferredAnimationUrl != null) {
-                                            CanvasArtworkPlayer(primaryUrl = canvasArtwork.animated, fallbackUrl = canvasArtwork.videoUrl, isPlaying = isPlaying, alwaysPlay = true, modifier = Modifier.fillMaxSize().clip(artworkClipShape))
-                                        }
-                                        if (canvasLoading && canvasArtwork == null) {
-                                            Box(Modifier.align(Alignment.TopEnd).padding(10.dp),
-                                                contentAlignment = Alignment.Center) {
-                                                M3CircularLoader(modifier = Modifier.size(16.dp), color = primaryColor, strokeWidth = 2.5f)
-                                            }
-                                        }
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = showAlbumArt || lyricsVisible,
+                        enter = fadeIn() + slideInVertically { it / 2 },
+                        exit = fadeOut() + slideOutVertically { it / 2 },
+                        modifier = modifier
+                    ) {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    alpha = line2Alpha
+                                    translationY = line2TranslationY
+                                    scaleX = line2Pop
+                                    scaleY = line2Pop
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            AnimatedContent(
+                                targetState = lyricsVisible,
+                                transitionSpec = {
+                                    val e = when (playerLyricsTransition) {
+                                        1 -> fadeIn(tween(400, easing = EaseInOut))
+                                        2 -> fadeIn(tween(350, easing = EaseInOut)) + scaleIn(tween(350, easing = EaseInOut), initialScale = 0.92f)
+                                        3 -> fadeIn(tween(350, easing = EaseInOut)) + slideInVertically(tween(350, easing = EaseInOut)) { it / 2 }
+                                        else -> fadeIn(tween(350, easing = EaseInOut)) + slideInVertically(tween(350, easing = EaseInOut)) { -it / 2 }
                                     }
+                                    val x = when (playerLyricsTransition) {
+                                        1 -> fadeOut(tween(300, easing = EaseInOut))
+                                        2 -> fadeOut(tween(250, easing = EaseInOut)) + scaleOut(tween(250, easing = EaseInOut), targetScale = 0.92f)
+                                        3 -> fadeOut(tween(250, easing = EaseInOut)) + slideOutVertically(tween(250, easing = EaseInOut)) { it / 2 }
+                                        else -> fadeOut(tween(250, easing = EaseInOut)) + slideOutVertically(tween(250, easing = EaseInOut)) { -it / 2 }
+                                    }
+                                    e togetherWith x
+                                },
+                                label = "lyricsViewTransition",
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) { tl ->
+                                if (tl) {
+                                    lyricsView(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .fillMaxHeight()
+                                            .padding(horizontal = if (isCompactWidth) 16.dp else 24.dp)
+                                    )
+                                } else {
+                                    artworkView(Modifier.fillMaxSize(), false)
                                 }
                             }
                         }
@@ -1567,37 +1700,174 @@ fun ExpressivePlayerScreen(
                         }
                     }
                 } else if (isLandscapeTablet) {
-                    Row(Modifier.fillMaxSize().navigationBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1.1f).fillMaxHeight().padding(horizontal = 24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            Box(Modifier.fillMaxSize()) { artworkContent(Modifier.fillMaxSize()) }
+                    Row(
+                        Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            Modifier
+                                .weight(1.1f)
+                                .fillMaxHeight()
+                                .padding(horizontal = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            AnimatedContent(
+                                targetState = lyricsVisible && showPlayerControls,
+                                transitionSpec = {
+                                    if (targetState) {
+                                        (slideInHorizontally(tween(400, easing = EaseInOut)) { it } + fadeIn(tween(350, easing = EaseInOut))) togetherWith
+                                            (slideOutHorizontally(tween(350, easing = EaseInOut)) { -it } + fadeOut(tween(250, easing = EaseInOut)))
+                                    } else {
+                                        (slideInHorizontally(tween(400, easing = EaseInOut)) { -it } + fadeIn(tween(350, easing = EaseInOut))) togetherWith
+                                            (slideOutHorizontally(tween(350, easing = EaseInOut)) { it } + fadeOut(tween(250, easing = EaseInOut)))
+                                    }
+                                },
+                                label = "tabletLandscapeLeftTransition"
+                            ) { showLyricsOnLeft ->
+                                if (showLyricsOnLeft) {
+                                    lyricsView(Modifier.fillMaxSize().padding(horizontal = 24.dp))
+                                } else if (showAlbumArt) {
+                                    Box(Modifier.fillMaxSize()) {
+                                        artworkView(Modifier.fillMaxSize(), false)
+                                    }
+                                }
+                            }
                         }
-                        Column(Modifier.weight(0.9f).fillMaxHeight().padding(horizontal = 24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            Box { controlsContent() }
-                            Box { bottomButtonsContent() }
+                        Column(
+                            Modifier
+                                .weight(0.9f)
+                                .fillMaxHeight()
+                                .padding(horizontal = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            AnimatedContent(
+                                targetState = lyricsVisible && !showPlayerControls,
+                                transitionSpec = {
+                                    if (targetState) {
+                                        (slideInHorizontally(tween(400, easing = EaseInOut)) { it } + fadeIn(tween(350, easing = EaseInOut))) togetherWith
+                                            (slideOutHorizontally(tween(350, easing = EaseInOut)) { it } + fadeOut(tween(250, easing = EaseInOut)))
+                                    } else {
+                                        (slideInHorizontally(tween(350, easing = EaseInOut)) { it } + fadeIn(tween(300, easing = EaseInOut))) togetherWith
+                                            (slideOutHorizontally(tween(300, easing = EaseInOut)) { it } + fadeOut(tween(200, easing = EaseInOut)))
+                                    }
+                                },
+                                label = "tabletLandscapeRightTransition"
+                            ) { showLyricsOnRight ->
+                                if (showLyricsOnRight) {
+                                    lyricsView(Modifier.fillMaxSize().padding(horizontal = 24.dp))
+                                } else {
+                                    Column(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Box { controlsContent() }
+                                        Box { bottomButtonsContent() }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (isTablet) {
+                    AnimatedContent(
+                        targetState = lyricsVisible && !showPlayerControls,
+                        transitionSpec = {
+                            fadeIn(tween(350, easing = EaseInOut)) togetherWith fadeOut(tween(250, easing = EaseInOut))
+                        },
+                        label = "tabletPortraitLayoutTransition"
+                    ) { isImmersive ->
+                        if (isImmersive) {
+                            if (showAlbumArt) {
+                                Row(Modifier.fillMaxSize().navigationBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
+                                    Column(
+                                        Modifier.weight(0.9f).fillMaxHeight().padding(horizontal = 16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Box(Modifier.fillMaxSize()) {
+                                            artworkView(Modifier.fillMaxSize(), true)
+                                        }
+                                    }
+                                    Column(
+                                        Modifier.weight(1.1f).fillMaxHeight().padding(horizontal = 16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        lyricsView(Modifier.fillMaxSize().padding(horizontal = 16.dp))
+                                    }
+                                }
+                            } else {
+                                Box(
+                                    Modifier
+                                        .fillMaxSize()
+                                        .navigationBarsPadding()
+                                        .padding(horizontal = 32.dp, vertical = 24.dp)
+                                ) {
+                                    lyricsView(Modifier.fillMaxSize())
+                                }
+                            }
+                        } else {
+                            Column(
+                                Modifier.fillMaxSize().navigationBarsPadding(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Box(Modifier.weight(1f)) {
+                                    AnimatedContent(
+                                        targetState = lyricsVisible,
+                                        transitionSpec = {
+                                            if (targetState) {
+                                                (slideInHorizontally(tween(400, easing = EaseInOut)) { it } + fadeIn(tween(350, easing = EaseInOut))) togetherWith
+                                                    (slideOutHorizontally(tween(350, easing = EaseInOut)) { -it } + fadeOut(tween(250, easing = EaseInOut)))
+                                            } else {
+                                                (slideInHorizontally(tween(400, easing = EaseInOut)) { -it } + fadeIn(tween(350, easing = EaseInOut))) togetherWith
+                                                    (slideOutHorizontally(tween(350, easing = EaseInOut)) { it } + fadeOut(tween(250, easing = EaseInOut)))
+                                            }
+                                        },
+                                        label = "tabletPortraitTopContent"
+                                    ) { isLyrics ->
+                                        if (isLyrics) {
+                                            lyricsView(Modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 16.dp))
+                                        } else if (showAlbumArt) {
+                                            artworkView(Modifier.fillMaxSize().padding(bottom = 32.dp), false)
+                                        }
+                                    }
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 48.dp)
+                                        .padding(bottom = 24.dp)
+                                ) {
+                                    controlsContent()
+                                }
+                                Box(
+                                    modifier = Modifier.padding(horizontal = 48.dp)
+                                ) {
+                                    bottomButtonsContent()
+                                }
+                            }
                         }
                     }
                 } else {
                     Column(
                         Modifier.fillMaxSize().navigationBarsPadding(),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = if (isTablet && !isLandscapeTablet) Arrangement.Center else Arrangement.Bottom
+                        verticalArrangement = Arrangement.Bottom
                     ) {
                         Box(Modifier.weight(1f)) {
-                            artworkContent(Modifier.fillMaxSize().padding(bottom = if (isCompactHeight) 12.dp else if (isTablet && !isLandscapeTablet) 32.dp else 24.dp))
+                            artworkContent(Modifier.fillMaxSize().padding(bottom = if (isCompactHeight) 12.dp else 24.dp))
                         }
                         Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .then(if (isTablet && !isLandscapeTablet) Modifier.padding(horizontal = 48.dp).padding(bottom = 24.dp) else Modifier)
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             controlsContent()
                         }
-                        Box(
-                            modifier = Modifier
-                                .then(if (isTablet && !isLandscapeTablet) Modifier.padding(horizontal = 48.dp) else Modifier)
-                        ) {
+                        Box {
                             bottomButtonsContent()
                         }
                     }

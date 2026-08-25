@@ -171,6 +171,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_USE_SYSTEM_THEME = "use_system_theme"
         private const val KEY_DARK_MODE = "dark_mode"
         private const val KEY_AMOLED_THEME = "amoled_theme"
+        private const val KEY_FLOATING_NAVIGATION_BAR = "floating_navigation_bar"
         private const val KEY_USE_DYNAMIC_COLORS = "use_dynamic_colors"
         private const val KEY_CUSTOM_COLOR_SCHEME = "custom_color_scheme"
         private const val KEY_CUSTOM_FONT = "custom_font"
@@ -560,6 +561,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_LYRICS_OVERLAY_INTENSITY = "player_lyrics_overlay_intensity" // Float 0.0-1.0
         private const val KEY_PLAYER_AMBIENT_BACKDROP_ENABLED = "player_ambient_backdrop_enabled" // Ambient backdrop from artwork
         private const val KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY = "player_ambient_backdrop_intensity" // Float 0.0-1.0, controls container transparency
+        private const val KEY_PLAYER_AMBIENT_INFINITE_ZOOM = "player_ambient_infinite_zoom" // Boolean, continuous slow zoom on ambient backdrop
         private const val KEY_PLAYER_ACCENT_BACKGROUND_ENABLED = "player_accent_background_enabled" // Use accent color as player bg (normal mode)
         private const val KEY_PLAYER_MERGE_CONTROLS_TO_BOTTOM = "player_merge_controls_to_bottom" // Merge lyrics/favorite into centered bottom icon controls
         private const val KEY_PLAYER_GLASS_INTENSITY = "player_glass_intensity" // Float 0.0-2.0, glass effect opacity multiplier
@@ -771,6 +773,9 @@ class AppSettings private constructor(context: Context) {
     
     private val _amoledTheme = MutableStateFlow(prefs.getBoolean(KEY_AMOLED_THEME, false))
     val amoledTheme: StateFlow<Boolean> = _amoledTheme.asStateFlow()
+
+    private val _floatingNavigationBar = MutableStateFlow(prefs.getBoolean(KEY_FLOATING_NAVIGATION_BAR, true))
+    val floatingNavigationBar: StateFlow<Boolean> = _floatingNavigationBar.asStateFlow()
     
     private val _useDynamicColors = MutableStateFlow(prefs.getBoolean(KEY_USE_DYNAMIC_COLORS, true))
     val useDynamicColors: StateFlow<Boolean> = _useDynamicColors.asStateFlow()
@@ -2298,6 +2303,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setAmoledTheme(amoled: Boolean) {
         prefs.edit { putBoolean(KEY_AMOLED_THEME, amoled) }
         _amoledTheme.value = amoled
+    }
+
+    fun setFloatingNavigationBar(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_FLOATING_NAVIGATION_BAR, enabled) }
+        _floatingNavigationBar.value = enabled
     }
     
     // Artist Separator Settings Methods
@@ -4941,6 +4951,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _useSystemTheme.value = prefs.getBoolean(KEY_USE_SYSTEM_THEME, true)
         _darkMode.value = prefs.getBoolean(KEY_DARK_MODE, true)
         _amoledTheme.value = prefs.getBoolean(KEY_AMOLED_THEME, false)
+        _floatingNavigationBar.value = prefs.getBoolean(KEY_FLOATING_NAVIGATION_BAR, true)
         _useDynamicColors.value = prefs.getBoolean(KEY_USE_DYNAMIC_COLORS, false)
         _customColorScheme.value = prefs.getString(KEY_CUSTOM_COLOR_SCHEME, "Default") ?: "Default"
         _customFont.value = prefs.getString(KEY_CUSTOM_FONT, "Geom") ?: "Geom"
@@ -5203,6 +5214,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _playerLyricsTransition.value = prefs.getInt(KEY_PLAYER_LYRICS_TRANSITION, 2) // 2 = Scale
         _playerAmbientBackdropEnabled.value = prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, false)
         _playerAmbientBackdropIntensity.value = prefs.getFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, 0.85f)
+        _playerAmbientInfiniteZoom.value = prefs.getBoolean(KEY_PLAYER_AMBIENT_INFINITE_ZOOM, true)
         _playerAccentBackgroundEnabled.value = prefs.getBoolean(KEY_PLAYER_ACCENT_BACKGROUND_ENABLED, true)
         // Normalize legacy state: ambient and accent cannot both be on — ambient wins.
         if (_playerAmbientBackdropEnabled.value && _playerAccentBackgroundEnabled.value) {
@@ -5682,6 +5694,13 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setPlayerAmbientBackdropIntensity(value: Float) {
         _playerAmbientBackdropIntensity.value = value.coerceIn(0f, 1f)
         prefs.edit { putFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, _playerAmbientBackdropIntensity.value) }
+    }
+
+    private val _playerAmbientInfiniteZoom = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_AMBIENT_INFINITE_ZOOM, true))
+    val playerAmbientInfiniteZoom: StateFlow<Boolean> = _playerAmbientInfiniteZoom.asStateFlow()
+    fun setPlayerAmbientInfiniteZoom(enabled: Boolean) {
+        _playerAmbientInfiniteZoom.value = enabled
+        prefs.edit { putBoolean(KEY_PLAYER_AMBIENT_INFINITE_ZOOM, enabled) }
     }
 
     private val _playerGlassIntensity = MutableStateFlow(prefs.getFloat(KEY_PLAYER_GLASS_INTENSITY, 1.0f))

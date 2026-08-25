@@ -242,6 +242,7 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
     val colorSource by appSettings.colorSource.collectAsState()
     val extractedAlbumColors by appSettings.extractedAlbumColors.collectAsState()
     val useExactArtworkColors by appSettings.useExactArtworkColors.collectAsState()
+    val floatingNavigationBar by appSettings.floatingNavigationBar.collectAsState()
 
     // Font states
     val fontSource by appSettings.fontSource.collectAsState()
@@ -661,6 +662,19 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             )
                             fontPickerLauncher.launch("font/*")
                         }
+                    )
+                )
+            ),
+
+            SettingGroup(
+                title = context.getString(R.string.settings_floating_navigation),
+                items = listOf(
+                    SettingItem(
+                        MaterialSymbolIcon("dock_to_left"),
+                        context.getString(R.string.settings_floating_navigation),
+                        context.getString(R.string.settings_floating_navigation_desc),
+                        toggleState = floatingNavigationBar,
+                        onToggleChange = { appSettings.setFloatingNavigationBar(it) }
                     )
                 )
             ),

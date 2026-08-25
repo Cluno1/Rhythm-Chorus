@@ -294,12 +294,15 @@ fun HomeScreen(
     val coroutineScope = rememberCoroutineScope()
     val haptics = LocalHapticFeedback.current
     val context = LocalContext.current
+    val isTablet = windowScreenWidthDp() >= 600
+    val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
     val appSettings = remember { AppSettings.getInstance(context) }
 
     // Home header customization
     val headerDisplayMode by appSettings.homeHeaderDisplayMode.collectAsState()
     val showAppIcon by appSettings.homeShowAppIcon.collectAsState()
     val iconVisibilityMode by appSettings.homeAppIconVisibility.collectAsState()
+    val floatingNavigationBar by appSettings.floatingNavigationBar.collectAsState()
     val streamingDisconnected = isStreamingMode && !streamingServiceConnected && !streamingIsLoading
 
     // State for AddToPlaylist bottom sheet
@@ -534,7 +537,10 @@ fun HomeScreen(
         showAppIcon = showAppIcon,
         iconVisibilityMode = iconVisibilityMode,
         actions = {
-            if (!streamingDisconnected) {
+            val showReorder = !isLandscapeTablet && !streamingDisconnected
+            val showSettings = !isTablet && floatingNavigationBar
+
+            if (showReorder) {
                 ExpressiveFilledTonalIconButton(
                     onClick = {
                         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
@@ -544,7 +550,7 @@ fun HomeScreen(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     ),
-                    modifier = Modifier.padding(end = 8.dp)
+                    modifier = Modifier.padding(end = if (showSettings) 8.dp else 16.dp)
                 ) {
                     Icon(
                         imageVector = MaterialSymbolIcon("reorder", filled = true),
@@ -553,22 +559,24 @@ fun HomeScreen(
                     )
                 }
             }
-            ExpressiveFilledIconButton(
-                onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                    onSettingsClick()
-                },
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                modifier = Modifier.padding(end = 16.dp)
-            ) {
-                Icon(
-                    imageVector = RhythmIcons.Settings,
-                    contentDescription = context.getString(R.string.home_settings_cd),
-                    modifier = Modifier.size(25.dp)
-                )
+            if (showSettings) {
+                ExpressiveFilledIconButton(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        onSettingsClick()
+                    },
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    modifier = Modifier.padding(end = 16.dp)
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.Settings,
+                        contentDescription = context.getString(R.string.home_settings_cd),
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
             }
         }
     ) { modifier ->
@@ -878,7 +886,8 @@ private fun StreamingHomeBody(
             playlists.isNotEmpty() ||
             recentlyPlayed.isNotEmpty()
 
-        val isTablet = widthSizeClass != WindowWidthSizeClass.Compact
+        val isTablet = widthSizeClass != WindowWidthSizeClass.Compact || windowScreenWidthDp() >= 600
+        val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
         val sectionOrder by appSettings.homeSectionOrder.collectAsState()
 
         @Composable
@@ -1060,7 +1069,7 @@ private fun StreamingHomeBody(
             else -> false
         }
 
-        if (isTablet) {
+        if (isLandscapeTablet) {
             val visibleSections = sectionOrder.filter { it != "DISCOVER" && isStreamingSectionVisible(it) }
             val leftSections = visibleSections.filterIndexed { index, _ -> index % 2 == 0 }
             val rightSections = visibleSections.filterIndexed { index, _ -> index % 2 == 1 }
@@ -1491,6 +1500,8 @@ private fun ModernScrollableContent(
     }
 
     val lazyListState = rememberLazyListState()
+    val isTablet = widthSizeClass != WindowWidthSizeClass.Compact || windowScreenWidthDp() >= 600
+    val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
 
     val horizontalPadding = when (widthSizeClass) {
         WindowWidthSizeClass.Compact -> 20.dp
@@ -1540,8 +1551,6 @@ private fun ModernScrollableContent(
             verticalArrangement = Arrangement.spacedBy(sectionSpacing),
             contentPadding = PaddingValues(bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding())
         ) {
-        val isTablet = widthSizeClass != WindowWidthSizeClass.Compact
-
         @Composable
         fun RenderLocalSection(sectionId: String) {
             when (sectionId) {
@@ -1782,7 +1791,7 @@ private fun ModernScrollableContent(
             else -> false
         }
 
-        if (isTablet) {
+        if (isLandscapeTablet) {
             if (showDiscoverCarousel && sectionOrder.contains("DISCOVER")) {
                 item(key = "section_discover") {
                     if (currentFeaturedAlbums.isNotEmpty()) {
