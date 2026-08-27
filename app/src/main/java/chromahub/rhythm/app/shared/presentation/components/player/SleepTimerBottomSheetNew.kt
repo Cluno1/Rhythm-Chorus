@@ -737,15 +737,15 @@ private fun InlineTimePickerContent(
                     selectorColor = MaterialTheme.colorScheme.primary,
                     containerColor = MaterialTheme.colorScheme.surface,
                     clockDialSelectedContentColor = MaterialTheme.colorScheme.onPrimary,
-                    clockDialContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    clockDialUnselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     periodSelectorSelectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    periodSelectorContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    periodSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                     periodSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    periodSelectorContentColor = MaterialTheme.colorScheme.onSurface,
+                    periodSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurface,
                     timeSelectorSelectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    timeSelectorContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                     timeSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    timeSelectorContentColor = MaterialTheme.colorScheme.onSurface
+                    timeSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }

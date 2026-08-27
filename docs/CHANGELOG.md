@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
-## [5.4.466.1228] - 2026-08-27
+## [5.4.466.1229] - 2026-08-27
 
 ### Added
 - Docked navigation bar mode option alongside floating navigation bar
