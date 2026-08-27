@@ -968,8 +968,8 @@ private fun ProjectDetailCard(
     label: String,
     value: String,
     onClick: () -> Unit,
-    shape: RoundedCornerShape = RoundedCornerShape(20.dp),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    shape: RoundedCornerShape = RoundedCornerShape(20.dp)
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current

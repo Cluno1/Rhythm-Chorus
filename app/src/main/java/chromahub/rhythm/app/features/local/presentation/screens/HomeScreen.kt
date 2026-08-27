@@ -88,6 +88,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.draw.shadow
 import androidx.compose.material3.carousel.CarouselDefaults
 import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
@@ -815,7 +816,7 @@ private fun StreamingHomeBody(
     }
 
     val pullToRefreshState = rememberPullToRefreshState()
-    val isListAtTop = scrollState.value == 0
+    val isListAtTop by remember { derivedStateOf { scrollState.value == 0 } }
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
@@ -1322,11 +1323,12 @@ private fun StreamingHomePlaylistCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
+            val songCount = playlist.songs.size
             Text(
-                text = context.resources.getQuantityString(
+                text = pluralStringResource(
                     R.plurals.streaming_home_widget_playlist_track_count,
-                    playlist.songs.size,
-                    playlist.songs.size
+                    songCount,
+                    songCount
                 ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1530,7 +1532,7 @@ private fun ModernScrollableContent(
         color = MaterialTheme.colorScheme.background
     ) {
         val pullToRefreshState = rememberPullToRefreshState()
-        val isListAtTop = lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0
+        val isListAtTop by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0 } }
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = onRefresh,

@@ -60,6 +60,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -387,7 +388,7 @@ fun ExpressivePlayerScreen(
     val isFlexMode = postureState is DevicePosture.TableTop
 
     var lyricsControlsVisible by remember { mutableStateOf(true) }
-    var lastLyricsInteractionTime by remember { mutableStateOf(System.currentTimeMillis()) }
+    var lastLyricsInteractionTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     fun showLyricsControls() {
         lyricsControlsVisible = true
@@ -790,7 +791,7 @@ fun ExpressivePlayerScreen(
     var showAutoFetchEmbedDialog by remember { mutableStateOf(false) }
     var pendingAutoFetchSong by remember { mutableStateOf<Song?>(null) }
     val autoFetchPromptedSongIds = remember { mutableStateOf<Set<String>>(emptySet()) }
-    var lastNoArtworkToastTime by remember { mutableStateOf(0L) }
+    var lastNoArtworkToastTime by remember { mutableLongStateOf(0L) }
 
     // Auto-fetch in both modes, but only after validation confirms the song has no
     // artwork (null = still checking). Each song is prompted at most once per session.
