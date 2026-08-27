@@ -10,6 +10,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.4.465.1226] - 2026-08-27
+
+### Added
+- Docked navigation bar mode option alongside floating navigation bar
+- Ambient infinite background zoom animation toggle in Player Customization
+- On-demand Coil AudioArtworkFetcher and AudioArtworkKeyer for efficient cover art decoding
+- Lossless embedded artwork extraction and folder cover reconciliation pipeline
+- Direct audio file artwork embedding dialog for fetched covers
+
+### Changed
+- Refined synchronized lyrics background gradient in accent color mode
+- Updated translations
+
+### Fixed
+- Fix OutOfMemoryError during Room playlist transactions and Canvas ExoPlayer playback
+- Fix controller player commands permission mask in MediaPlaybackService restricting external controls
+- Fix storage write permission handling when embedding artwork from the player
+- Resolve compiler deprecations and Jetpack Compose lint warnings
+
+### Performance
+- Optimize cold startup performance for large libraries by eliminating blocking disk I/O
+- Optimize media scanning and artwork extraction with native TagLib routines and folder cover caching
+- Stabilize Discover carousel state across background metadata emissions
+
 ## [5.4.462.1216] - 2026-08-23
 
 ### Added
