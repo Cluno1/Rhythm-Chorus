@@ -2330,7 +2330,7 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
             availableCommands.add(SessionCommand("UPDATE_LYRICS_DATA", Bundle.EMPTY))
             return MediaSession.ConnectionResult.accept(
                 availableCommands.build(),
-                session.player.availableCommands
+                MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS
             )
         }
 
