@@ -825,8 +825,6 @@
     <string name="now_playing">ЗАРАЗ ГРАЄТЬСЯ</string>
     <string name="install_update_now">Установіть оновлення зараз</string>
     <string name="audio_settings">Параметри звуку</string>
-    <string name="browse_library">Огляд бібліотеки</string>
-    <string name="add_more_songs">Додати більше пісень</string>
     <string name="edit_metadata">Редагувати трек</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Оновлення програм вимкнено в налаштуваннях</string>

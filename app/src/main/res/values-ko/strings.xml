@@ -786,8 +786,6 @@
     <string name="now_playing">지금 재생 중</string>
     <string name="install_update_now">지금 업데이트 설치</string>
     <string name="audio_settings">오디오 설정</string>
-    <string name="browse_library">라이브러리 찾아보기</string>
-    <string name="add_more_songs">더 많은 노래 추가</string>
     <string name="edit_metadata">트랙 편집</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">설정에서 앱 업데이트가 비활성화되었습니다.</string>

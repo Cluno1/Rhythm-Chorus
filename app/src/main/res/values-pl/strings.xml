@@ -825,8 +825,6 @@
     <string name="now_playing">TERAZ ODTWARZANE</string>
     <string name="install_update_now">Zainstaluj aktualizację teraz</string>
     <string name="audio_settings">Ustawienia dźwięku</string>
-    <string name="browse_library">Przeglądaj bibliotekę</string>
-    <string name="add_more_songs">Dodaj więcej utworów</string>
     <string name="edit_metadata">Edytuj utwór</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Aktualizacje aplikacji zostały wyłączone w ustawieniach</string>

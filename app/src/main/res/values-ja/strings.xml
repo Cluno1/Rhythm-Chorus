@@ -786,8 +786,6 @@
     <string name="now_playing">プレイ中</string>
     <string name="install_update_now">今すぐアップデートをインストールする</string>
     <string name="audio_settings">オーディオ設定</string>
-    <string name="browse_library">ライブラリを参照する</string>
-    <string name="add_more_songs">曲を追加する</string>
     <string name="edit_metadata">トラックの編集</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">アプリのアップデートが設定で無効になっています</string>

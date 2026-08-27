@@ -825,8 +825,6 @@
     <string name="now_playing">ВОСПРОИЗВОДИТСЯ</string>
     <string name="install_update_now">Установите обновление сейчас</string>
     <string name="audio_settings">Настройки звука</string>
-    <string name="browse_library">Просмотр библиотеки</string>
-    <string name="add_more_songs">Добавить больше песен</string>
     <string name="edit_metadata">Редактировать трек</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Обновления приложения отключены в настройках</string>

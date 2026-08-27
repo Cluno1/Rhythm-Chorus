@@ -799,8 +799,6 @@
     <string name="now_playing">JETZT SPIELEN</string>
     <string name="install_update_now">Update jetzt installieren</string>
     <string name="audio_settings">Audioeinstellungen</string>
-    <string name="browse_library">Bibliothek durchsuchen</string>
-    <string name="add_more_songs">Weitere Lieder hinzufügen</string>
     <string name="edit_metadata">Spur bearbeiten</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">App-Updates wurden in den Einstellungen deaktiviert</string>

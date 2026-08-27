@@ -200,8 +200,13 @@ class RhythmApplication : Application(), ImageLoaderFactory {
         super.onTrimMemory(level)
         
         val levelName = when (level) {
+            ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE -> "RUNNING_MODERATE"
+            ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW -> "RUNNING_LOW"
+            ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> "RUNNING_CRITICAL"
             ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> "UI_HIDDEN"
             ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> "BACKGROUND"
+            ComponentCallbacks2.TRIM_MEMORY_MODERATE -> "MODERATE"
+            ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> "COMPLETE"
             else -> "UNKNOWN($level)"
         }
         

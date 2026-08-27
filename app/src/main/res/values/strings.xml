@@ -759,8 +759,6 @@
 <string name="now_playing">NOW PLAYING</string>
     <string name="install_update_now">Install Update Now</string>
     <string name="audio_settings">Audio Settings</string>
-    <string name="browse_library">Browse Library</string>
-    <string name="add_more_songs">Add more songs</string>
     <string name="edit_metadata">Edit Track</string>
 <string name="updates_disabled_message">App updates have been disabled in settings</string>
     <string name="updates_auto_disabled">Automatic update checking is disabled. You can still check manually.</string>
@@ -2825,7 +2823,7 @@
     <string name="gosettingsscreen_not_connected">Not connected</string>
     <string name="gosettingsscreen_server_format">Server: %1$s</string>
     <string name="gosettingsscreen_not_set">Not set</string>
-    <string name="streamingservicesetup_establishing_connection">Establishing connection with the provider...</string>
+    <string name="streamingservicesetup_establishing_connection">Establishing connection with the provider&#8230;</string>
     <string name="streaming_placeholder_track_format">Track %1$d</string>
     <string name="notification_streaming_auth_channel_desc">Authentication and connection status</string>
     <!-- Quick settings tile -->
@@ -2851,7 +2849,7 @@
     <string name="onboarding_configure_desc">Configure Rhythm as a local offline music player for audio files stored on your device, or connect to your self-hosted streaming services.</string>
     <string name="onboarding_connected_to_format">Connected to %1$s as %2$s</string>
     <!-- Final sweep: remaining hardcoded strings -->
-    <string name="mainactivity_preparing">Preparing...</string>
+    <string name="mainactivity_preparing">Preparing&#8230;</string>
     <string name="playlistsongoptions_local_song">Local Song</string>
     <string name="playlistsongoptions_streaming_song">Streaming Song</string>
     <string name="dialog_close">Close</string>

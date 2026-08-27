@@ -2624,10 +2624,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 }
         
                 val currentSongsMap = currentSongs.associateBy { it.id }
-                val currentSongsByStableKey = currentSongs.associateBy { playlistSongStableKey(it) }
-                val currentSongsByStableKeyMed = currentSongs.associateBy { playlistSongStableKeyMed(it) }
-                val currentSongsByStableKeyLight = currentSongs.associateBy { playlistSongStableKeyLight(it) }
-                val currentSongsByStableKeyBasic = currentSongs.associateBy { playlistSongStableKeyBasic(it) }
+                val currentSongsByStableKey = lazy(LazyThreadSafetyMode.NONE) { currentSongs.associateBy { playlistSongStableKey(it) } }
+                val currentSongsByStableKeyMed = lazy(LazyThreadSafetyMode.NONE) { currentSongs.associateBy { playlistSongStableKeyMed(it) } }
+                val currentSongsByStableKeyLight = lazy(LazyThreadSafetyMode.NONE) { currentSongs.associateBy { playlistSongStableKeyLight(it) } }
+                val currentSongsByStableKeyBasic = lazy(LazyThreadSafetyMode.NONE) { currentSongs.associateBy { playlistSongStableKeyBasic(it) } }
         
                 val filteredSongsValue = filteredSongs.value
                 val filteredSongsSet: Set<String> = if (filteredSongsValue.isEmpty()) {
@@ -2741,20 +2741,20 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun resolveSongByStableKeys(
         song: Song,
-        fullMap: Map<String, Song>,
-        medMap: Map<String, Song>,
-        lightMap: Map<String, Song>,
-        basicMap: Map<String, Song>
+        fullMap: Lazy<Map<String, Song>>,
+        medMap: Lazy<Map<String, Song>>,
+        lightMap: Lazy<Map<String, Song>>,
+        basicMap: Lazy<Map<String, Song>>
     ): Song? {
         val title = song.title.trim()
         val artist = song.artist.trim()
         if (title.isEmpty()) return null
         
-        return fullMap[playlistSongStableKey(song)]
-            ?: medMap[playlistSongStableKeyMed(song)]
-            ?: lightMap[playlistSongStableKeyLight(song)]
+        return fullMap.value[playlistSongStableKey(song)]
+            ?: medMap.value[playlistSongStableKeyMed(song)]
+            ?: lightMap.value[playlistSongStableKeyLight(song)]
             ?: if (artist.isNotEmpty() && artist.lowercase() != "unknown artist") {
-                basicMap[playlistSongStableKeyBasic(song)]
+                basicMap.value[playlistSongStableKeyBasic(song)]
             } else null
     }
     
@@ -3143,6 +3143,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Log.w(TAG, "ensurePlaylistsSaved skipped because playlists are not loaded")
                 return
             }
+            savePlaylistsJob?.cancel()
             runBlocking(Dispatchers.IO) {
                 savePlaylistsToRoom(_playlists.value)
             }
@@ -3189,10 +3190,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 
                 val playlists = if (dbPlaylists.isNotEmpty()) {
                     val songMap = _songs.value.associateBy { it.id }
-                    val songStableKeyMap = _songs.value.associateBy { playlistSongStableKey(it) }
-                    val songStableKeyMedMap = _songs.value.associateBy { playlistSongStableKeyMed(it) }
-                    val songStableKeyLightMap = _songs.value.associateBy { playlistSongStableKeyLight(it) }
-                    val songStableKeyBasicMap = _songs.value.associateBy { playlistSongStableKeyBasic(it) }
+                    val songStableKeyMap = lazy(LazyThreadSafetyMode.NONE) { _songs.value.associateBy { playlistSongStableKey(it) } }
+                    val songStableKeyMedMap = lazy(LazyThreadSafetyMode.NONE) { _songs.value.associateBy { playlistSongStableKeyMed(it) } }
+                    val songStableKeyLightMap = lazy(LazyThreadSafetyMode.NONE) { _songs.value.associateBy { playlistSongStableKeyLight(it) } }
+                    val songStableKeyBasicMap = lazy(LazyThreadSafetyMode.NONE) { _songs.value.associateBy { playlistSongStableKeyBasic(it) } }
                     dbPlaylists.map { entity ->
                         val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
                         val playlistSongs = songIds.map { songId ->
@@ -3480,10 +3481,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private var savePlaylistsJob: Job? = null
+
     private fun savePlaylists() {
-        val currentPlaylists = _playlists.value
-        viewModelScope.launch(Dispatchers.IO) {
-            savePlaylistsToRoom(currentPlaylists)
+        savePlaylistsJob?.cancel()
+        savePlaylistsJob = viewModelScope.launch(Dispatchers.IO) {
+            delay(200) // Debounce rapid consecutive mutations
+            savePlaylistsToRoom(_playlists.value)
         }
     }
 
@@ -3523,16 +3527,26 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         )
                         playlistDao.insertPlaylist(entity)
                         
-                        val songEntities = playlist.songs.mapIndexed { index, song ->
-                            PlaylistSongEntity(
-                                playlistId = playlist.id,
-                                songId = song.id,
-                                orderIndex = index
-                            )
+                        playlistDao.deleteSongsFromPlaylist(playlist.id)
+                        if (playlist.songs.isNotEmpty()) {
+                            val songEntities = playlist.songs.mapIndexed { index, song ->
+                                PlaylistSongEntity(
+                                    playlistId = playlist.id,
+                                    songId = song.id,
+                                    orderIndex = index
+                                )
+                            }
+                            songEntities.chunked(500).forEach { chunk ->
+                                playlistDao.insertPlaylistSongs(chunk)
+                            }
                         }
-                        playlistDao.updatePlaylistSongs(playlist.id, songEntities)
+                    }
 
-                        val dbSongEntities = playlist.songs.map { song ->
+                    // Persist distinct songs across all playlists in chunks to avoid redundant allocations
+                    val distinctDbSongEntities = currentPlaylists.asSequence()
+                        .flatMap { it.songs.asSequence() }
+                        .distinctBy { it.id }
+                        .map { song ->
                             chromahub.rhythm.app.features.local.data.database.entity.SongEntity(
                                 id = song.id,
                                 title = song.title,
@@ -3556,8 +3570,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                                 path = song.path
                             )
                         }
-                        if (dbSongEntities.isNotEmpty()) {
-                            repository.songDao.upsertAll(dbSongEntities)
+                        .toList()
+
+                    if (distinctDbSongEntities.isNotEmpty()) {
+                        distinctDbSongEntities.chunked(500).forEach { chunk ->
+                            repository.songDao.upsertAll(chunk)
                         }
                     }
                 }

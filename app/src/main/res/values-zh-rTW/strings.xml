@@ -787,8 +787,6 @@
     <string name="now_playing">正在播放</string>
     <string name="install_update_now">立即安裝更新</string>
     <string name="audio_settings">音訊設定</string>
-    <string name="browse_library">瀏覽音樂庫</string>
-    <string name="add_more_songs">增加更多歌曲</string>
     <string name="edit_metadata">編輯曲目</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">應用程式更新已在設定中停用</string>

@@ -799,8 +799,6 @@
     <string name="now_playing">ŞİMDİ OYNANIYOR</string>
     <string name="install_update_now">Güncellemeyi Şimdi Yükleyin</string>
     <string name="audio_settings">Ses Ayarları</string>
-    <string name="browse_library">Kitaplığa Göz Atın</string>
-    <string name="add_more_songs">Daha fazla şarkı ekle</string>
     <string name="edit_metadata">Parçayı Düzenle</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Uygulama güncellemeleri ayarlarda devre dışı bırakıldı</string>

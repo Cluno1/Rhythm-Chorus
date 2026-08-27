@@ -799,8 +799,6 @@
     <string name="now_playing">SPELAR NU</string>
     <string name="install_update_now">Installera uppdatering nu</string>
     <string name="audio_settings">Ljudinställningar</string>
-    <string name="browse_library">Bläddra i biblioteket</string>
-    <string name="add_more_songs">Lägg till fler låtar</string>
     <string name="edit_metadata">Redigera spår</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Appuppdateringar har inaktiverats i inställningarna</string>

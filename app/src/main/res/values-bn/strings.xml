@@ -799,8 +799,6 @@
     <string name="now_playing">এখন খেলা</string>
     <string name="install_update_now">এখনই আপডেট ইনস্টল করুন</string>
     <string name="audio_settings">অডিও সেটিংস</string>
-    <string name="browse_library">লাইব্রেরি ব্রাউজ করুন</string>
-    <string name="add_more_songs">আরো গান যোগ করুন</string>
     <string name="edit_metadata">ট্র্যাক সম্পাদনা করুন</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">অ্যাপ আপডেট সেটিংসে অক্ষম করা হয়েছে</string>

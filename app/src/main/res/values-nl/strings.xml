@@ -799,8 +799,6 @@
     <string name="now_playing">NU SPEELT</string>
     <string name="install_update_now">Update nu installeren</string>
     <string name="audio_settings">Audio-instellingen</string>
-    <string name="browse_library">Blader door de bibliotheek</string>
-    <string name="add_more_songs">Voeg meer nummers toe</string>
     <string name="edit_metadata">Track bewerken</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">App-updates zijn uitgeschakeld in de instellingen</string>

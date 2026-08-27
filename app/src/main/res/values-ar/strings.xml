@@ -851,8 +851,6 @@
     <string name="now_playing">يتم عرضه الآن</string>
     <string name="install_update_now">قم بتثبيت التحديث الآن</string>
     <string name="audio_settings">إعدادات الصوت</string>
-    <string name="browse_library">تصفح المكتبة</string>
-    <string name="add_more_songs">إضافة المزيد من الأغاني</string>
     <string name="edit_metadata">تحرير المسار</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">تم تعطيل تحديثات التطبيق في الإعدادات</string>

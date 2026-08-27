@@ -786,8 +786,6 @@
     <string name="now_playing">SEKARANG BERMAIN</string>
     <string name="install_update_now">Instal Pembaruan Sekarang</string>
     <string name="audio_settings">Pengaturan Audio</string>
-    <string name="browse_library">Telusuri Perpustakaan</string>
-    <string name="add_more_songs">Tambahkan lebih banyak lagu</string>
     <string name="edit_metadata">Edit Lagu</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Pembaruan aplikasi telah dinonaktifkan di pengaturan</string>

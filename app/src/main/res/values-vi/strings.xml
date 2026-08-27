@@ -786,8 +786,6 @@
     <string name="now_playing">ĐANG CHƠI</string>
     <string name="install_update_now">Cài đặt Cập nhật ngay</string>
     <string name="audio_settings">Cài đặt âm thanh</string>
-    <string name="browse_library">Duyệt thư viện</string>
-    <string name="add_more_songs">Thêm nhiều bài hát hơn</string>
     <string name="edit_metadata">Chỉnh sửa bản nhạc</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Cập nhật ứng dụng đã bị tắt trong cài đặt</string>

@@ -812,8 +812,6 @@
     <string name="now_playing">ORA IN RIPRODUZIONE</string>
     <string name="install_update_now">Installa l\'aggiornamento adesso</string>
     <string name="audio_settings">Impostazioni audio</string>
-    <string name="browse_library">Sfoglia la libreria</string>
-    <string name="add_more_songs">Aggiungi altri brani</string>
     <string name="edit_metadata">Modifica traccia</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Gli aggiornamenti delle app sono stati disabilitati nelle impostazioni</string>

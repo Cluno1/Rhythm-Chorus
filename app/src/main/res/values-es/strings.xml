@@ -812,8 +812,6 @@
     <string name="now_playing">AHORA JUGANDO</string>
     <string name="install_update_now">Instalar la actualización ahora</string>
     <string name="audio_settings">Configuración de audio</string>
-    <string name="browse_library">Explorar biblioteca</string>
-    <string name="add_more_songs">Agregar más canciones</string>
     <string name="edit_metadata">Editar pista</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Las actualizaciones de la aplicación se han deshabilitado en la configuración</string>

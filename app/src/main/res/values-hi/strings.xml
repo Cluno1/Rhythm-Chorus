@@ -799,8 +799,6 @@
     <string name="now_playing">अभी चल रहा है</string>
     <string name="install_update_now">अभी अपडेट इंस्टॉल करें</string>
     <string name="audio_settings">ऑडियो सेटिंग्स</string>
-    <string name="browse_library">लाइब्रेरी ब्राउज़ करें</string>
-    <string name="add_more_songs">और गाने जोड़ें</string>
     <string name="edit_metadata">ट्रैक संपादित करें</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">ऐप अपडेट को सेटिंग्स में अक्षम कर दिया गया है</string>

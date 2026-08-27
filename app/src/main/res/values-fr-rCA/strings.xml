@@ -812,8 +812,6 @@
     <string name="now_playing">JOUER MAINTENANT</string>
     <string name="install_update_now">Installer la mise à jour maintenant</string>
     <string name="audio_settings">Paramètres audio</string>
-    <string name="browse_library">Parcourir la bibliothèque</string>
-    <string name="add_more_songs">Ajouter plus de chansons</string>
     <string name="edit_metadata">Modifier la piste</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">Les mises à jour de l\'application ont été désactivées dans les paramètres</string>

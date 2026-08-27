@@ -786,8 +786,6 @@
     <string name="now_playing">กำลังเล่นอยู่</string>
     <string name="install_update_now">ติดตั้งอัปเดตทันที</string>
     <string name="audio_settings">การตั้งค่าเสียง</string>
-    <string name="browse_library">เรียกดูห้องสมุด</string>
-    <string name="add_more_songs">เพิ่มเพลงเพิ่มเติม</string>
     <string name="edit_metadata">แก้ไขแทร็ก</string>
     <!-- Updates Messages -->
     <string name="updates_disabled_message">การอัปเดตแอปถูกปิดใช้งานในการตั้งค่า</string>
