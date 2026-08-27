@@ -5769,10 +5769,9 @@ fun EnhancedUpdaterContent(
     val context = LocalContext.current
     val autoCheckForUpdates by appSettings.autoCheckForUpdates.collectAsState()
     val updateNotificationsEnabled by appSettings.updateNotificationsEnabled.collectAsState()
-    val useSmartUpdatePolling by appSettings.useSmartUpdatePolling.collectAsState()
     val updateChannel by appSettings.updateChannel.collectAsState()
     val updateCheckIntervalHours by appSettings.updateCheckIntervalHours.collectAsState()
-    val updatesEnabled by appSettings.updatesEnabled.collectAsState() // NEW
+    val updatesEnabled by appSettings.updatesEnabled.collectAsState()
     val scope = rememberCoroutineScope()
 
     // Collect updater states
@@ -5785,15 +5784,7 @@ fun EnhancedUpdaterContent(
     val downloadedFile by updaterViewModel.downloadedFile.collectAsState()
     val error by updaterViewModel.error.collectAsState()
 
-    // Auto-check for updates once when this step is opened and updates are enabled
-    var hasCheckedOnce by remember { mutableStateOf(false) }
     var showFdroidWarningDialog by remember { mutableStateOf(false) }
-    LaunchedEffect(updatesEnabled) {
-        if (updatesEnabled && !hasCheckedOnce) {
-            hasCheckedOnce = true
-            updaterViewModel.checkForUpdates(force = true)
-        }
-    }
     val scrollState = rememberScrollState()
 
     // Infinite transition for continuous animations
@@ -6100,25 +6091,7 @@ fun EnhancedUpdaterContent(
                                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                         scope.launch { appSettings.setUpdateNotificationsEnabled(!updateNotificationsEnabled) }
                                     }
-                                ),
-                                Material3SettingsItem(
-                                    icon = MaterialSymbolIcon("cloud_sync", filled = true),
-                                    title = { Text(context.getString(R.string.onboarding_smart_polling_title)) },
-                                    description = { Text(context.getString(R.string.onboarding_smart_polling_desc)) },
-                                    trailingContent = {
-                                        OnboardingAnimatedSwitch(
-                                            checked = useSmartUpdatePolling,
-                                            onCheckedChange = { enabled ->
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                                scope.launch { appSettings.setUseSmartUpdatePolling(enabled) }
-                                            }
-                                        )
-                                    },
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                        scope.launch { appSettings.setUseSmartUpdatePolling(!useSmartUpdatePolling) }
-                                    }
-                                )
+                                 )
                             ),
                             containerColor = MaterialTheme.colorScheme.surface
                         )
@@ -6373,25 +6346,7 @@ fun EnhancedUpdaterContent(
                                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                         scope.launch { appSettings.setUpdateNotificationsEnabled(!updateNotificationsEnabled) }
                                     }
-                                ),
-                                Material3SettingsItem(
-                                    icon = MaterialSymbolIcon("cloud_sync", filled = true),
-                                    title = { Text(context.getString(R.string.onboarding_smart_polling_title)) },
-                                    description = { Text(context.getString(R.string.onboarding_smart_polling_desc)) },
-                                    trailingContent = {
-                                        OnboardingAnimatedSwitch(
-                                            checked = useSmartUpdatePolling,
-                                            onCheckedChange = { enabled ->
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                                scope.launch { appSettings.setUseSmartUpdatePolling(enabled) }
-                                            }
-                                        )
-                                    },
-                                    onClick = {
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                        scope.launch { appSettings.setUseSmartUpdatePolling(!useSmartUpdatePolling) }
-                                    }
-                                )
+                                 )
                             ),
                             containerColor = MaterialTheme.colorScheme.surface
                         )

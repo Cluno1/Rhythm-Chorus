@@ -2521,8 +2521,10 @@
     <string name="settings_metadata_editing">Metadata Editing</string>
     <string name="settings_enable_album_editing">Enable Album Editing</string>
     <string name="settings_enable_album_editing_desc">Allow batch editing of metadata and artwork for entire albums.</string>
-<string name="fdroid_update_warning_title">Security Warning</string>
+    <string name="fdroid_update_warning_title">Security Warning</string>
     <string name="fdroid_update_warning_message">Enabling in-app updates on an F-Droid build bypasses F-Droid\'s security checks. Updates will be downloaded directly from the publisher. Do you want to proceed?</string>
+    <string name="downgrade_update_warning_title">Version Code Notice</string>
+    <string name="downgrade_update_warning_message">Your currently installed build has a higher internal build number (versionCode) than this release. Android security prevents installing a lower versionCode directly over a higher one without uninstalling first.\n\nYou can continue downloading, but direct installation may fail unless the existing build is uninstalled first.</string>
     <string name="replay_gain_mode_title">ReplayGain Mode</string>
     <string name="replay_gain_mode_desc">Adjust volume levels based on track metadata or album metadata.</string>
     <string name="replay_gain_mode_track">Track</string>

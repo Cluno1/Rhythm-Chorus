@@ -108,9 +108,9 @@ jobs:
             VERSION_NAME="5.2.421.1101 Beta"
           fi
           
-          # Git commit count for increasing version code
+          # Use base versionCode from build.gradle.kts to prevent inflating beyond future release builds
           COMMIT_COUNT=$(git rev-list --count HEAD)
-          NEW_VERSION_CODE=$((VERSION_CODE + COMMIT_COUNT))
+          NEW_VERSION_CODE=$VERSION_CODE
           
           # Extract short commit hash
           SHORT_SHA=$(git rev-parse --short HEAD)

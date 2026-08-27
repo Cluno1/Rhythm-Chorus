@@ -336,7 +336,6 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_UPDATES_ENABLED = "updates_enabled" // Master switch for updates
         private const val KEY_UPDATE_NOTIFICATIONS_ENABLED = "update_notifications_enabled" // Push-style notifications
         private const val KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED = "update_status_notifications_enabled" // Notify for no-update/error states
-        private const val KEY_USE_SMART_UPDATE_POLLING = "use_smart_update_polling" // Use ETag/conditional requests
         private const val KEY_MEDIA_SCAN_MODE = "media_scan_mode" // Mode for media scanning: "blacklist" or "whitelist"
         private const val KEY_INCLUDE_HIDDEN_WHITELISTED_MEDIA = "include_hidden_whitelisted_media"
         private const val KEY_UPDATE_CHECK_INTERVAL_HOURS = "update_check_interval_hours" // Configurable interval
@@ -1648,9 +1647,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
 
     private val _updateStatusNotificationsEnabled = MutableStateFlow(prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false))
     val updateStatusNotificationsEnabled: StateFlow<Boolean> = _updateStatusNotificationsEnabled.asStateFlow()
-    
-    private val _useSmartUpdatePolling = MutableStateFlow(prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, BuildConfig.FLAVOR != "fdroid"))
-    val useSmartUpdatePolling: StateFlow<Boolean> = _useSmartUpdatePolling.asStateFlow()
 
     // Media Scan Mode
     private val _mediaScanMode = MutableStateFlow(
@@ -2029,8 +2025,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                 (
                     prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, false) ||
                         prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false)
-                    ) &&
-                prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, false)) {
+                    )) {
                 scheduleUpdateNotificationWorker()
             }
             if (prefs.getBoolean(KEY_RHYTHM_PULSE_NOTIFICATIONS_ENABLED, false)) {
@@ -3457,18 +3452,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         }
     }
 
-    fun setUseSmartUpdatePolling(enable: Boolean) {
-        prefs.edit { putBoolean(KEY_USE_SMART_UPDATE_POLLING, enable) }
-        _useSmartUpdatePolling.value = enable
-        
-        // Update WorkManager scheduling
-        if (shouldRunUpdateNotificationWorker()) {
-            scheduleUpdateNotificationWorker()
-        } else {
-            cancelUpdateNotificationWorker()
-        }
-    }
-
     fun setMediaScanMode(mode: MediaScanMode) {
         val changed = _mediaScanMode.value != mode
         prefs.edit { putString(KEY_MEDIA_SCAN_MODE, mode.value) }
@@ -4106,7 +4089,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     private fun shouldRunUpdateNotificationWorker(): Boolean {
         return _updatesEnabled.value &&
             _autoCheckForUpdates.value &&
-            _useSmartUpdatePolling.value &&
             (_updateNotificationsEnabled.value || _updateStatusNotificationsEnabled.value)
     }
 
@@ -5109,7 +5091,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _updatesEnabled.value = prefs.getBoolean(KEY_UPDATES_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _updateNotificationsEnabled.value = prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _updateStatusNotificationsEnabled.value = prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false)
-        _useSmartUpdatePolling.value = prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, BuildConfig.FLAVOR != "fdroid")
         _mediaScanMode.value = MediaScanMode.fromValue(prefs.getString(KEY_MEDIA_SCAN_MODE, "blacklist") ?: "blacklist")
         _includeHiddenWhitelistedMedia.value = prefs.getBoolean(KEY_INCLUDE_HIDDEN_WHITELISTED_MEDIA, true)
         _updateCheckIntervalHours.value = prefs.getInt(KEY_UPDATE_CHECK_INTERVAL_HOURS, 6)

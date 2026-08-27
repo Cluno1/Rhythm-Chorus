@@ -1135,16 +1135,6 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             settingKey = "autoCheckForUpdates"
         ))
         add(SearchableSettingItem(
-            id = "updates_smart_polling",
-            title = context.getString(R.string.updates_smart_polling),
-            description = context.getString(R.string.updates_smart_polling_desc),
-            keywords = listOf("update", "smart polling", "battery", "adaptive", "frequency"),
-            icon = MaterialSymbolIcon("tips_and_updates"),
-            route = SettingsRoutes.UPDATES,
-            parentScreen = context.getString(R.string.settings_updates_title),
-            settingKey = "useSmartUpdatePolling"
-        ))
-        add(SearchableSettingItem(
             id = "updates_manual_check",
             title = context.getString(R.string.updates_manual_check),
             description = context.getString(R.string.settings_updates_manual_check_desc),
