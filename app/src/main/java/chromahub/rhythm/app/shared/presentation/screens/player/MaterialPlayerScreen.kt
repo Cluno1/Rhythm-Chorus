@@ -127,7 +127,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.produceState
+import androidx.core.net.toUri
+import androidx.activity.result.IntentSenderRequest
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -630,6 +633,57 @@ fun MaterialPlayerScreen(
             showLyricsView = false
             isLyricsContentVisible = false
             isSongInfoVisible = true  // Ensure song info is shown when lyrics are disabled
+        }
+    }
+
+    val autoFetchArtwork by appSettings.autoFetchArtwork.collectAsState()
+    val artworkValidation = rememberArtworkValidation(song?.artworkUri, context)
+    var isAutoFetchingMissingArtwork by remember { mutableStateOf(false) }
+    var fetchedAutoArtworkUriStr by remember { mutableStateOf<String?>(null) }
+    var showAutoFetchEmbedDialog by remember { mutableStateOf(false) }
+    var pendingAutoFetchSong by remember { mutableStateOf<Song?>(null) }
+    val autoFetchPromptedSongIds = remember { mutableStateOf<Set<String>>(emptySet()) }
+    var lastNoArtworkToastTime by remember { mutableLongStateOf(0L) }
+
+    // Auto-fetch in both modes, but only after validation confirms the song has no
+    // artwork (null = still checking). Each song is prompted at most once per session.
+    LaunchedEffect(song?.id, autoFetchArtwork, artworkValidation) {
+        val currentSong = song
+        val alreadyPrompted = currentSong != null && currentSong.id in autoFetchPromptedSongIds.value
+        if (autoFetchArtwork && currentSong != null && artworkValidation == false && !isAutoFetchingMissingArtwork && !alreadyPrompted) {
+            autoFetchPromptedSongIds.value = autoFetchPromptedSongIds.value + currentSong.id
+            isAutoFetchingMissingArtwork = true
+            musicViewModel.autoFetchArtworkForSong(currentSong) { success, uriStr ->
+                isAutoFetchingMissingArtwork = false
+                if (success && uriStr != null) {
+                    if (isStreamingMode) {
+                        // Go mode: no file to embed — apply to the in-memory song (session-only).
+                        if (song.id == currentSong.id) {
+                            val artUri = uriStr.toUri()
+                            musicViewModel.updateCurrentSongMetadata(currentSong.copy(artworkUri = artUri))
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.expressiveplayerscreen_artwork_applied),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } else {
+                        pendingAutoFetchSong = currentSong
+                        fetchedAutoArtworkUriStr = uriStr
+                        showAutoFetchEmbedDialog = true
+                    }
+                } else {
+                    val now = android.os.SystemClock.elapsedRealtime()
+                    if (now - lastNoArtworkToastTime > 5000) {
+                        lastNoArtworkToastTime = now
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.expressiveplayerscreen_no_artwork_found),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
         }
     }
 
@@ -4186,6 +4240,122 @@ fun MaterialPlayerScreen(
         chromahub.rhythm.app.shared.presentation.components.bottomsheets.DeviceConfigurationBottomSheet(
             musicViewModel = musicViewModel,
             onDismiss = { showDeviceConfig = false }
+        )
+    }
+
+    if (showAutoFetchEmbedDialog) {
+        val dialogSong = pendingAutoFetchSong ?: song
+        AlertDialog(
+            onDismissRequest = {
+                showAutoFetchEmbedDialog = false
+                pendingAutoFetchSong = null
+            },
+            icon = {
+                Icon(
+                    imageVector = MaterialSymbolIcon("cloud_download", filled = true),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(R.string.expressiveplayerscreen_artwork_auto_fetched),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.expressiveplayerscreen_artwork_auto_fetched_msg, dialogSong?.title ?: ""),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            showAutoFetchEmbedDialog = false
+                            pendingAutoFetchSong = null
+                            dialogSong?.let { currentSong ->
+                                val artUri = fetchedAutoArtworkUriStr?.let { it.toUri() }
+                                musicViewModel.saveMetadataChanges(
+                                    song = currentSong,
+                                    title = currentSong.title,
+                                    artist = currentSong.artist,
+                                    album = currentSong.album,
+                                    genre = currentSong.genre ?: "",
+                                    year = currentSong.year,
+                                    trackNumber = currentSong.trackNumber,
+                                    artworkUri = artUri,
+                                    onSuccess = { fileWritten ->
+                                        if (fileWritten) {
+                                            Toast.makeText(context, context.getString(R.string.expressiveplayerscreen_artwork_embedded_toast), Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            Toast.makeText(context, context.getString(R.string.expressiveplayerscreen_artwork_applied_toast), Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    onError = { err ->
+                                        Toast.makeText(context, err, Toast.LENGTH_SHORT).show()
+                                    },
+                                    onPermissionRequired = { pendingRequest ->
+                                        try {
+                                            val intentSenderRequest = IntentSenderRequest.Builder(
+                                                pendingRequest.intentSender
+                                            ).build()
+                                            writePermissionLauncher.launch(intentSenderRequest)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.failed_to_request_permission, e.message ?: ""),
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                            musicViewModel.cancelPendingMetadataWrite()
+                                        }
+                                    }
+                                )
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon("cloud_download", filled = true),
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.expressiveplayerscreen_embed_in_file))
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            showAutoFetchEmbedDialog = false
+                            pendingAutoFetchSong = null
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon("library_music", filled = true),
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.expressiveplayerscreen_keep_library_only))
+                    }
+                }
+            },
+            dismissButton = {}
         )
     }
 }

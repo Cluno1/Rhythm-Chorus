@@ -6,6 +6,9 @@
 package chromahub.rhythm.app.shared.presentation.screens.player
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.IntentSenderRequest
 import androidx.core.view.WindowCompat
 import androidx.core.graphics.get
 import androidx.compose.animation.core.Spring
@@ -149,8 +152,6 @@ import chromahub.rhythm.app.util.LrcUtils
 import chromahub.rhythm.app.network.CanvasArtwork
 import chromahub.rhythm.app.shared.presentation.components.player.CanvasArtworkPlayer
 import chromahub.rhythm.app.util.SemanticLyrics
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.widget.Toast
@@ -187,7 +188,8 @@ import androidx.core.net.toUri
 import chromahub.rhythm.app.util.windowScreenWidthDp
 import chromahub.rhythm.app.util.windowScreenHeightDp
 
-private val artworkValidationCache = java.util.concurrent.ConcurrentHashMap<android.net.Uri, Boolean>()
+internal val artworkValidationCache = java.util.concurrent.ConcurrentHashMap<android.net.Uri, Boolean>()
+internal val accentSchemeCache = java.util.concurrent.ConcurrentHashMap<String, Pair<Color, Color>>()
 
 /**
  * Decode a bitmap from a song's artwork URI.
@@ -261,7 +263,7 @@ private fun calculateInSampleSize(srcW: Int, srcH: Int, maxSize: Int): Int {
 }
 
 @Composable
-private fun rememberArtworkValidation(uri: android.net.Uri?, context: android.content.Context): Boolean? {
+internal fun rememberArtworkValidation(uri: android.net.Uri?, context: android.content.Context): Boolean? {
     if (uri == null || uri == android.net.Uri.EMPTY) return false
     val str = uri.toString().trim()
     if (str.isEmpty() || str == "null" || str == "content://media/external/audio/albumart/0") return false
@@ -387,6 +389,42 @@ fun ExpressivePlayerScreen(
     val postureState by rememberDevicePosture()
     val isFlexMode = postureState is DevicePosture.TableTop
 
+    val context = LocalContext.current
+
+    // Write permission launcher for Android 11+ metadata editing (e.g. auto-fetched artwork embedding)
+    val writePermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            if (musicViewModel?.pendingBatchWriteRequest?.value != null) {
+                musicViewModel.completeBatchMetadataWriteAfterPermission(
+                    onSuccess = {
+                        Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                )
+            } else {
+                musicViewModel?.completeMetadataWriteAfterPermission(
+                    onSuccess = {
+                        Toast.makeText(context, R.string.expressiveplayerscreen_artwork_embedded_toast, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                )
+            }
+        } else {
+            if (musicViewModel?.pendingBatchWriteRequest?.value != null) {
+                musicViewModel.cancelPendingBatchMetadataWrite()
+            } else {
+                musicViewModel?.cancelPendingMetadataWrite()
+            }
+            Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, Toast.LENGTH_LONG).show()
+        }
+    }
+
     var lyricsControlsVisible by remember { mutableStateOf(true) }
     var lastLyricsInteractionTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
@@ -468,7 +506,6 @@ fun ExpressivePlayerScreen(
     }
 
     val haptic = LocalHapticFeedback.current
-    val context = LocalContext.current
 
     val artworkValidation = rememberArtworkValidation(debouncedSong.value?.artworkUri, context)
     val hasValidArtwork = artworkValidation == true
@@ -483,14 +520,22 @@ fun ExpressivePlayerScreen(
     val monoFg = if (isDarkTheme) Color(0xFFFFFFFF) else Color(0xFF000000)
     val monoVariant = monoFg.copy(alpha = 0.72f)
     val useAccentBackground = !isBackdropEnabled && playerAccentBackgroundEnabled
+    val currentArtworkUri = song?.artworkUri
     val accentArtScheme = produceState<Pair<Color, Color>?>(
-        null, debouncedSong.value?.artworkUri, useAccentBackground, isDarkTheme
+        initialValue = currentArtworkUri?.let { uri -> accentSchemeCache["${uri}_${isDarkTheme}"] },
+        key1 = currentArtworkUri,
+        key2 = useAccentBackground,
+        key3 = isDarkTheme
     ) {
-        if (!useAccentBackground) return@produceState
-        val artworkUri = debouncedSong.value?.artworkUri ?: return@produceState
-        value = withContext(Dispatchers.IO) {
+        if (!useAccentBackground || currentArtworkUri == null) return@produceState
+        val cacheKey = "${currentArtworkUri}_${isDarkTheme}"
+        accentSchemeCache[cacheKey]?.let { cached ->
+            value = cached
+            return@produceState
+        }
+        val scheme = withContext(Dispatchers.IO) {
             try {
-                val bitmap = loadArtworkBitmap(context, artworkUri, 512)
+                val bitmap = loadArtworkBitmap(context, currentArtworkUri, 128)
                 val extracted = if (bitmap != null) {
                     ColorExtractor.extractColorsFromBitmap(bitmap)
                 } else null
@@ -500,12 +545,16 @@ fun ExpressivePlayerScreen(
                 else {
                     val sourceHct = Hct.fromInt(seedArgb)
                     val schemeType = if (sourceHct.chroma > 12.0) "CONTENT" else "TONAL_SPOT"
-                    val scheme = ColorExtractor.createDynamicScheme(sourceHct, schemeType, isDarkTheme)
-                    scheme.primary to scheme.onPrimary
+                    val dynamicScheme = ColorExtractor.createDynamicScheme(sourceHct, schemeType, isDarkTheme)
+                    dynamicScheme.primary to dynamicScheme.onPrimary
                 }
             } catch (e: Exception) {
                 null
             }
+        }
+        if (scheme != null) {
+            accentSchemeCache[cacheKey] = scheme
+            value = scheme
         }
     }
     val accentBg = accentArtScheme.value?.first ?: MaterialTheme.colorScheme.primary
@@ -669,7 +718,7 @@ fun ExpressivePlayerScreen(
             needsDarkSurfaces -> darkSurfaceHigh.copy(alpha = ambientAlpha)
             else -> monoBg
         },
-        animationSpec = tween(600), label = "controlsContainerColor"
+        animationSpec = tween(400, easing = FastOutSlowInEasing), label = "controlsContainerColor"
     )
     val outerBoxBgColor by animateColorAsState(
         targetValue = when {
@@ -678,11 +727,11 @@ fun ExpressivePlayerScreen(
             showDarkBg && !hasValidArtwork -> Color.Transparent
             else -> MaterialTheme.colorScheme.surface
         },
-        animationSpec = tween(600), label = "outerBoxBgColor"
+        animationSpec = tween(400, easing = FastOutSlowInEasing), label = "outerBoxBgColor"
     )
     val lyricsScrimColor by animateColorAsState(
         targetValue = if (useAccentBackground) accentBg else MaterialTheme.colorScheme.surface,
-        animationSpec = tween(600), label = "lyricsScrimColor"
+        animationSpec = tween(400, easing = FastOutSlowInEasing), label = "lyricsScrimColor"
     )
     val onSurfaceColor by animateColorAsState(
         targetValue = if (useAccentBackground) accentFg else if (isBackdropEnabled) ambientTextColor else MaterialTheme.colorScheme.onSurface,
@@ -896,6 +945,21 @@ fun ExpressivePlayerScreen(
                                     },
                                     onError = { err ->
                                         Toast.makeText(context, err, Toast.LENGTH_SHORT).show()
+                                    },
+                                    onPermissionRequired = { pendingRequest ->
+                                        try {
+                                            val intentSenderRequest = IntentSenderRequest.Builder(
+                                                pendingRequest.intentSender
+                                            ).build()
+                                            writePermissionLauncher.launch(intentSenderRequest)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.failed_to_request_permission, e.message ?: ""),
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                            musicViewModel.cancelPendingMetadataWrite()
+                                        }
                                     }
                                 )
                             }
@@ -948,7 +1012,7 @@ fun ExpressivePlayerScreen(
         ) { validArtwork ->
             if (!isBackdropEnabled) {
                 // Normal (non-ambient) mode: themed surface or accent background
-                Box(modifier = modifier.fillMaxSize().background(if (useAccentBackground) accentBg else MaterialTheme.colorScheme.surface))
+                Box(modifier = modifier.fillMaxSize().background(outerBoxBgColor))
             } else if (validArtwork) {
                 // Smooth crossfade when track artwork changes (1200ms motion canvas style)
                 AnimatedContent(
