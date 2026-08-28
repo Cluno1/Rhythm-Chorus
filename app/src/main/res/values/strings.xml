@@ -1208,6 +1208,20 @@
     <string name="delimiter_comma">Comma</string>
     <string name="delimiter_plus">Plus</string>
     <string name="delimiter_ampersand">Ampersand</string>
+    <string name="preset_standard">Standard (Recommended)</string>
+    <string name="preset_minimal">Minimal (Safe)</string>
+    <string name="preset_featured">Featured &amp; Collabs</string>
+    <string name="preset_extended">Extended</string>
+    <string name="preset_cjk">Asian / CJK</string>
+    <string name="preset_custom">Custom</string>
+    <string name="delimiter_presets_title">Presets</string>
+    <string name="delimiter_active_title">Active Delimiters</string>
+    <string name="delimiter_add_custom">Add Custom Delimiter</string>
+    <string name="delimiter_custom_hint">Enter delimiter (e.g. feat., //, x)</string>
+    <string name="delimiter_add_button">Add</string>
+    <string name="delimiter_quick_suggestions">Quick Add</string>
+    <string name="delimiter_preview_title">Live Preview</string>
+    <string name="delimiter_empty_warning">At least one delimiter is required</string>
 
 <string name="sleep_timer_set_control">Pause or stop playback after a set time</string>
 <string name="home_section_recently_played">Recently Played</string>

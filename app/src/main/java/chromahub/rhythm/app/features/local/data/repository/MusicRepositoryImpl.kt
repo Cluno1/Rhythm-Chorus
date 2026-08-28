@@ -425,7 +425,7 @@ class MusicRepository(context: Context) {
         val appSettings = AppSettings.getInstance(context)
         val artistSeparatorEnabled = appSettings.artistSeparatorEnabled.value
         val preloadedCharDelimiters: List<String> = if (artistSeparatorEnabled) {
-            appSettings.artistSeparatorDelimiters.value.toList().map { it.toString() }
+            chromahub.rhythm.app.util.ArtistSeparator.parseDelimiters(appSettings.artistSeparatorDelimiters.value)
         } else {
             emptyList()
         }
@@ -2162,7 +2162,7 @@ class MusicRepository(context: Context) {
         val appSettings = AppSettings.getInstance(context)
         val artistSeparatorEnabled = appSettings.artistSeparatorEnabled.value
         val charDelimiters: List<String> = if (artistSeparatorEnabled) {
-            appSettings.artistSeparatorDelimiters.value.toList().map { it.toString() }
+            chromahub.rhythm.app.util.ArtistSeparator.parseDelimiters(appSettings.artistSeparatorDelimiters.value)
         } else {
             emptyList()
         }
@@ -2265,7 +2265,7 @@ class MusicRepository(context: Context) {
         val appSettings = AppSettings.getInstance(context)
         val artistSeparatorEnabled = appSettings.artistSeparatorEnabled.value
         val preloadedCharDelimiters: List<String> = if (artistSeparatorEnabled) {
-            appSettings.artistSeparatorDelimiters.value.toList().map { it.toString() }
+            chromahub.rhythm.app.util.ArtistSeparator.parseDelimiters(appSettings.artistSeparatorDelimiters.value)
         } else {
             emptyList()
         }
@@ -2566,7 +2566,7 @@ class MusicRepository(context: Context) {
             val appSettings = AppSettings.getInstance(context)
             val groupByAlbumArtist = appSettings.groupByAlbumArtist.value
             val preloadedCharDelimiters: List<String> = if (appSettings.artistSeparatorEnabled.value) {
-                appSettings.artistSeparatorDelimiters.value.toList().map { it.toString() }
+                chromahub.rhythm.app.util.ArtistSeparator.parseDelimiters(appSettings.artistSeparatorDelimiters.value)
             } else {
                 emptyList()
             }

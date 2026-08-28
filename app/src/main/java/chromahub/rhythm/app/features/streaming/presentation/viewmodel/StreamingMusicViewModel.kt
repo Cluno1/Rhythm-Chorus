@@ -553,7 +553,7 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
                 val resolvedArtists = if (followedArtists.isNotEmpty()) {
                     val catalogArtistsByName = catalogArtists.associateBy { it.name.lowercase() }
                     val separatorEnabled = appSettings.artistSeparatorEnabled.value
-                    val separatorDelimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
+                    val separatorDelimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
                     followedArtists
                         .flatMap { followedArtist ->
                             val splitNames = ArtistSeparator.splitArtistNames(
@@ -1311,7 +1311,7 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
         }
 
         val separatorEnabled = appSettings.artistSeparatorEnabled.value
-        val separatorDelimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
+        val separatorDelimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
 
         return songs
             .filter { it.artist.isNotBlank() }

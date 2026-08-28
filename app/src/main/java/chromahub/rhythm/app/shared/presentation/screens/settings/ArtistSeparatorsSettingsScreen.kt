@@ -7,162 +7,76 @@
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
-
-
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import androidx.compose.foundation.layout.PaddingValues
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 
-import android.app.Activity
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
-import android.provider.DocumentsContract
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
 import chromahub.rhythm.app.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.border
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.*
-import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.LinearWavyProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Slider
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import chromahub.rhythm.app.BuildConfig
 import chromahub.rhythm.app.shared.data.model.AppSettings
-import chromahub.rhythm.app.shared.data.model.Playlist
-import chromahub.rhythm.app.shared.data.model.Song
-import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository
-import chromahub.rhythm.app.shared.data.repository.StatsTimeRange
 import chromahub.rhythm.app.util.ArtistSeparator
-import chromahub.rhythm.app.util.GsonUtils
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
-import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
-import kotlin.system.exitProcess
 import chromahub.rhythm.app.shared.presentation.components.common.CollapsibleHeaderScreen
-import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveScrollBar
+import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveFilterChip
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonSize
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonWeighted
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
-import chromahub.rhythm.app.shared.presentation.components.common.StyledProgressBar
-import chromahub.rhythm.app.shared.presentation.components.common.ProgressStyle
-import chromahub.rhythm.app.shared.presentation.components.common.ThumbStyle
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.LicensesBottomSheet
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.UpdateBottomSheet
 import chromahub.rhythm.app.ui.utils.LazyListStateSaver
-import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
-import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeProvider
-import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapes
-import chromahub.rhythm.app.shared.presentation.components.common.buildSplashBackdropShapes
-import chromahub.rhythm.app.shared.presentation.components.common.SplashBackgroundOrbs
-import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
-import chromahub.rhythm.app.shared.presentation.viewmodel.AppVersion
-import chromahub.rhythm.app.ui.theme.getFontPreviewStyle
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.io.File
-import chromahub.rhythm.app.utils.FontLoader
-import chromahub.rhythm.app.ui.theme.parseCustomColorScheme
-import androidx.compose.ui.viewinterop.AndroidView
-import android.widget.TextView
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import androidx.core.text.HtmlCompat
-import chromahub.rhythm.app.shared.presentation.components.common.M3FourColorCircularLoader
-import chromahub.rhythm.app.shared.presentation.components.player.PlayingEqIcon
-import chromahub.rhythm.app.shared.presentation.components.dialogs.CreatePlaylistDialog
-import chromahub.rhythm.app.shared.presentation.components.dialogs.BulkPlaylistExportDialog
-import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistImportDialog
-import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShape
-import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOperationProgressDialog
-import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOperationResultDialog
-import chromahub.rhythm.app.shared.presentation.components.dialogs.AppRestartDialog
-import chromahub.rhythm.app.shared.presentation.components.player.PlayerChipOrderBottomSheet
-import chromahub.rhythm.app.features.local.presentation.components.settings.HomeSectionOrderBottomSheet
-import chromahub.rhythm.app.features.local.presentation.components.settings.LibraryTabOrderBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
+import kotlinx.coroutines.launch
 
-import chromahub.rhythm.app.shared.presentation.screens.settings.TunerSettingRow
-import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
-import chromahub.rhythm.app.shared.presentation.screens.settings.TunerSettingCard
-import chromahub.rhythm.app.shared.presentation.screens.settings.SettingItem
-import chromahub.rhythm.app.shared.presentation.screens.settings.SettingGroup
+private enum class DelimiterSheetPage {
+    Main,
+    AddCustom
+}
 
+private data class ArtistDelimiterPreset(
+    val nameRes: Int,
+    val delimiters: List<String>
+)
+
+private data class DelimiterCardItem(
+    val token: String,
+    val displayName: String,
+    val isCustom: Boolean = false
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -176,7 +90,10 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
     val artistSeparatorDelimiters by appSettings.artistSeparatorDelimiters.collectAsState()
 
     var showDelimiterBottomSheet by remember { mutableStateOf(false) }
-    var tempDelimiters by remember { mutableStateOf(artistSeparatorDelimiters) }
+
+    val currentDelimitersList = remember(artistSeparatorDelimiters) {
+        ArtistSeparator.parseDelimiters(artistSeparatorDelimiters)
+    }
 
     CollapsibleHeaderScreen(
         title = context.getString(R.string.artists_title),
@@ -203,10 +120,9 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
                     SettingItem(
                         RhythmIcons.Settings,
                         context.getString(R.string.artist_configure_delimiters),
-                        context.getString(R.string.artist_current_delimiters, artistSeparatorDelimiters.toCharArray().joinToString(", ")),
+                        context.getString(R.string.artist_current_delimiters, currentDelimitersList.joinToString(", ")),
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            tempDelimiters = artistSeparatorDelimiters
                             showDelimiterBottomSheet = true
                         }
                     )
@@ -302,14 +218,51 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
     }
 
     if (showDelimiterBottomSheet) {
-        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-        val commonDelimiters = listOf(
-            '/' to context.getString(R.string.delimiter_slash),
-            ';' to context.getString(R.string.delimiter_semicolon),
-            ',' to context.getString(R.string.delimiter_comma),
-            '+' to context.getString(R.string.delimiter_plus),
-            '&' to context.getString(R.string.delimiter_ampersand)
+        val sheetState = rememberBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
         )
+
+        var currentPage by remember { mutableStateOf(DelimiterSheetPage.Main) }
+
+        val presets = remember {
+            listOf(
+                ArtistDelimiterPreset(R.string.preset_standard, listOf(";", "/")),
+                ArtistDelimiterPreset(R.string.preset_minimal, listOf(";")),
+                ArtistDelimiterPreset(R.string.preset_featured, listOf(";", "/", "feat.", "ft.", "featuring")),
+                ArtistDelimiterPreset(R.string.preset_extended, listOf(";", "/", ",", "+", "&")),
+                ArtistDelimiterPreset(R.string.preset_cjk, listOf("、", "／", "・", "•"))
+            )
+        }
+
+        // Active tokens currently selected/saved
+        var activeTokens by remember {
+            mutableStateOf(ArtistSeparator.parseDelimiters(artistSeparatorDelimiters))
+        }
+
+        // Known built-in delimiters with localized display names
+        val baseDelimiters = remember {
+            listOf(
+                DelimiterCardItem("/", context.getString(R.string.delimiter_slash)),
+                DelimiterCardItem(";", context.getString(R.string.delimiter_semicolon)),
+                DelimiterCardItem(",", context.getString(R.string.delimiter_comma)),
+                DelimiterCardItem("+", context.getString(R.string.delimiter_plus)),
+                DelimiterCardItem("&", context.getString(R.string.delimiter_ampersand))
+            )
+        }
+
+        // Dynamic list of custom delimiters that the user has added
+        var customTokens by remember {
+            val initialCustom = ArtistSeparator.parseDelimiters(artistSeparatorDelimiters)
+                .filterNot { token -> token in listOf("/", ";", ",", "+", "&") }
+            mutableStateOf(initialCustom)
+        }
+
+        var customInputText by remember { mutableStateOf("") }
+
+        val quickSuggestions = remember {
+            listOf("feat.", "ft.", "featuring", "//", " x ", "with", "vs.", "、", "／", "・", "•")
+        }
 
         LaunchedEffect(Unit) {
             sheetState.expand()
@@ -328,318 +281,632 @@ fun ArtistSeparatorsSettingsScreen(onBackClick: () -> Unit) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 12.dp)
+                    .fillMaxHeight(0.85f)
             ) {
-                Text(
-                    text = context.getString(R.string.settings_configure_delimiters),
-                    style = MaterialTheme.typography.displayMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 8.dp),
-                    modifier = Modifier.height(120.dp * 3 + 12.dp * 2)
-                ) {
-                    items(commonDelimiters.size, key = { index -> "delimiter_$index" }) { index ->
-                        val (char, name) = commonDelimiters[index]
-                        val isSelected = tempDelimiters.contains(char)
-
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(120.dp),
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                else
-                                    MaterialTheme.colorScheme.surfaceContainerHigh
-                            ),
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                tempDelimiters = if (tempDelimiters.contains(char)) {
-                                    tempDelimiters.replace(char.toString(), "")
-                                } else {
-                                    tempDelimiters + char
-                                }
-                            }
-                        ) {
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(start = 16.dp, top = 12.dp, end = 16.dp)
-                                        .height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = char.toString(),
-                                        style = MaterialTheme.typography.headlineLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isSelected)
-                                            MaterialTheme.colorScheme.primaryContainer
-                                        else
-                                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                    )
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomStart)
-                                        .fillMaxWidth()
-                                        .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
-                                ) {
-                                    Text(
-                                        text = name,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isSelected)
-                                            MaterialTheme.colorScheme.primaryContainer
-                                        else
-                                            MaterialTheme.colorScheme.onSurface,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Clip,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(
-                                                RoundedCornerShape(
-                                                    topStart = 0.dp,
-                                                    topEnd = 20.dp,
-                                                    bottomEnd = 20.dp,
-                                                    bottomStart = 0.dp
-                                                )
-                                            )
-                                    )
-                                }
-                            }
+                // Fixed Header Area per page
+                AnimatedContent(
+                    targetState = currentPage,
+                    transitionSpec = {
+                        val floatSpring = spring<Float>(stiffness = Spring.StiffnessMediumLow)
+                        val offsetSpring = spring<IntOffset>(stiffness = Spring.StiffnessMediumLow)
+                        if (targetState == DelimiterSheetPage.AddCustom) {
+                            (slideInHorizontally(animationSpec = offsetSpring, initialOffsetX = { it }) + fadeIn(animationSpec = floatSpring))
+                                .togetherWith(slideOutHorizontally(animationSpec = offsetSpring, targetOffsetX = { -it / 2 }) + fadeOut(animationSpec = floatSpring))
+                        } else {
+                            (slideInHorizontally(animationSpec = offsetSpring, initialOffsetX = { -it }) + fadeIn(animationSpec = floatSpring))
+                                .togetherWith(slideOutHorizontally(animationSpec = offsetSpring, targetOffsetX = { it / 2 }) + fadeOut(animationSpec = floatSpring))
                         }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                val liveSamples = remember(tempDelimiters) {
-                    listOf(
-                        "Artist1/Artist2" to ArtistSeparator.splitArtistNames("Artist1/Artist2", tempDelimiters, tempDelimiters.isNotEmpty()).joinToString(", "),
-                        "Artist1; Artist2" to ArtistSeparator.splitArtistNames("Artist1; Artist2", tempDelimiters, tempDelimiters.isNotEmpty()).joinToString(", "),
-                        "Artist1 & Artist2" to ArtistSeparator.splitArtistNames("Artist1 & Artist2", tempDelimiters, tempDelimiters.isNotEmpty()).joinToString(", "),
-                        "AC\\/DC ft. Brian" to ArtistSeparator.splitArtistNames("AC\\/DC ft. Brian", tempDelimiters, tempDelimiters.isNotEmpty()).joinToString(", ")
-                    )
-                }
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 240.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(rememberScrollState())
-                            .padding(20.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = MaterialSymbolIcon("lightbulb"),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = context.getString(R.string.settings_examples),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        liveSamples.forEach { (original, result) ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
+                    },
+                    label = "delimiter_sheet_header_transition",
+                    modifier = Modifier.fillMaxWidth()
+                ) { page ->
+                    when (page) {
+                        DelimiterSheetPage.Main -> {
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 3.dp)
+                                    .padding(horizontal = 24.dp)
+                                    .padding(top = 8.dp, bottom = 4.dp)
                             ) {
                                 Text(
-                                    text = original,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.75f),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f)
+                                    text = context.getString(R.string.settings_configure_delimiters),
+                                    style = MaterialTheme.typography.displayMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(bottom = 12.dp)
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Icon(
-                                    imageVector = RhythmIcons.Forward,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.4f),
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
+
+                                // Preset filter chips (Fixed row)
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 8.dp)
+                                ) {
+                                    items(presets, key = { it.nameRes }) { preset ->
+                                        val isSelected = activeTokens.toSet() == preset.delimiters.toSet()
+                                        ExpressiveFilterChip(
+                                            selected = isSelected,
+                                            onClick = {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                activeTokens = preset.delimiters
+                                                val newCustom = preset.delimiters.filterNot { it in listOf("/", ";", ",", "+", "&") }
+                                                customTokens = (customTokens + newCustom).distinct()
+                                            },
+                                            label = { Text(stringResource(preset.nameRes)) },
+                                            leadingIcon = if (isSelected) ({
+                                                Icon(
+                                                    imageVector = RhythmIcons.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }) else null
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        DelimiterSheetPage.AddCustom -> {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 24.dp)
+                                    .padding(top = 8.dp, bottom = 4.dp)
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                        currentPage = DelimiterSheetPage.Main
+                                    },
+                                    modifier = Modifier.offset(x = (-8).dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.Back,
+                                            contentDescription = stringResource(R.string.common_back),
+                                            tint = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.size(25.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = result,
-                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    text = stringResource(R.string.delimiter_add_custom),
+                                    style = MaterialTheme.typography.displayMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(bottom = 12.dp)
                                 )
                             }
                         }
                     }
                 }
-            }
 
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                tonalElevation = 3.dp
-            ) {
-                RhythmGroupedButton(
+                // Scrollable Content Area (Weighted to eliminate remeasurement jitter during dragging)
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 16.dp),
-                    size = RhythmButtonSize.Large
+                        .weight(1f)
                 ) {
-                    RhythmButtonWeighted(
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            tempDelimiters = artistSeparatorDelimiters
-                        },
-                        weight = 1f,
-                        isFirst = true,
-                        icon = MaterialSymbolIcon("restart_alt"),
-                        text = context.getString(R.string.bottomsheet_reset)
-                    )
-                    RhythmButtonWeighted(
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                            scope.launch {
-                                appSettings.setArtistSeparatorDelimiters(tempDelimiters)
-                                showDelimiterBottomSheet = false
+                    AnimatedContent(
+                        targetState = currentPage,
+                        transitionSpec = {
+                            val floatSpring = spring<Float>(stiffness = Spring.StiffnessMediumLow)
+                            val offsetSpring = spring<IntOffset>(stiffness = Spring.StiffnessMediumLow)
+                            if (targetState == DelimiterSheetPage.AddCustom) {
+                                (slideInHorizontally(animationSpec = offsetSpring, initialOffsetX = { it }) + fadeIn(animationSpec = floatSpring))
+                                    .togetherWith(slideOutHorizontally(animationSpec = offsetSpring, targetOffsetX = { -it / 2 }) + fadeOut(animationSpec = floatSpring))
+                            } else {
+                                (slideInHorizontally(animationSpec = offsetSpring, initialOffsetX = { -it }) + fadeIn(animationSpec = floatSpring))
+                                    .togetherWith(slideOutHorizontally(animationSpec = offsetSpring, targetOffsetX = { it / 2 }) + fadeOut(animationSpec = floatSpring))
                             }
                         },
-                        weight = 1f,
-                        isLast = true,
-                        icon = RhythmIcons.Check,
-                        text = context.getString(R.string.bottomsheet_save),
-                        enabled = tempDelimiters.isNotEmpty()
-                    )
+                        label = "delimiter_sheet_body_transition",
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        when (page) {
+                            DelimiterSheetPage.Main -> {
+                                val mainScrollState = rememberScrollState()
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(mainScrollState)
+                                        .padding(horizontal = 24.dp)
+                                        .padding(bottom = 12.dp)
+                                ) {
+                                    // 2-column card grid in the previous UI style
+                                    val allDisplayCards = buildList {
+                                        addAll(baseDelimiters)
+                                        customTokens.forEach { token ->
+                                            add(DelimiterCardItem(token, token, isCustom = true))
+                                        }
+                                    }
+
+                                    val totalSlots = allDisplayCards.size + 1
+                                    val rows = (totalSlots + 1) / 2
+
+                                    for (rowIndex in 0 until rows) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(bottom = 12.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            val leftIndex = rowIndex * 2
+                                            val rightIndex = leftIndex + 1
+
+                                            // Left Card
+                                            if (leftIndex < allDisplayCards.size) {
+                                                val item = allDisplayCards[leftIndex]
+                                                val isSelected = activeTokens.contains(item.token)
+                                                DelimiterGridCard(
+                                                    modifier = Modifier.weight(1f),
+                                                    symbol = item.token,
+                                                    label = item.displayName,
+                                                    isSelected = isSelected,
+                                                    onClick = {
+                                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                        activeTokens = if (isSelected) {
+                                                            activeTokens.filterNot { it == item.token }
+                                                        } else {
+                                                            activeTokens + item.token
+                                                        }
+                                                    }
+                                                )
+                                            } else if (leftIndex == allDisplayCards.size) {
+                                                AddCustomGridCard(
+                                                    modifier = Modifier.weight(1f),
+                                                    onClick = {
+                                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                        currentPage = DelimiterSheetPage.AddCustom
+                                                    }
+                                                )
+                                            } else {
+                                                Spacer(modifier = Modifier.weight(1f))
+                                            }
+
+                                            // Right Card
+                                            if (rightIndex < allDisplayCards.size) {
+                                                val item = allDisplayCards[rightIndex]
+                                                val isSelected = activeTokens.contains(item.token)
+                                                DelimiterGridCard(
+                                                    modifier = Modifier.weight(1f),
+                                                    symbol = item.token,
+                                                    label = item.displayName,
+                                                    isSelected = isSelected,
+                                                    onClick = {
+                                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                        activeTokens = if (isSelected) {
+                                                            activeTokens.filterNot { it == item.token }
+                                                        } else {
+                                                            activeTokens + item.token
+                                                        }
+                                                    }
+                                                )
+                                            } else if (rightIndex == allDisplayCards.size) {
+                                                AddCustomGridCard(
+                                                    modifier = Modifier.weight(1f),
+                                                    onClick = {
+                                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                        currentPage = DelimiterSheetPage.AddCustom
+                                                    }
+                                                )
+                                            } else {
+                                                Spacer(modifier = Modifier.weight(1f))
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    // Live preview card in previous UI style
+                                    val currentSerialized = remember(activeTokens) {
+                                        ArtistSeparator.serializeDelimiters(activeTokens)
+                                    }
+
+                                    val liveSamples = remember(currentSerialized) {
+                                        listOf(
+                                            "Kendrick Lamar; SZA" to ArtistSeparator.splitArtistNames("Kendrick Lamar; SZA", currentSerialized, true).joinToString(", "),
+                                            "AC\\/DC" to ArtistSeparator.splitArtistNames("AC\\/DC", currentSerialized, true).joinToString(", "),
+                                            "Tyler, The Creator" to ArtistSeparator.splitArtistNames("Tyler, The Creator", currentSerialized, true).joinToString(", "),
+                                            "Simon & Garfunkel" to ArtistSeparator.splitArtistNames("Simon & Garfunkel", currentSerialized, true).joinToString(", "),
+                                            "Daft Punk feat. Pharrell Williams" to ArtistSeparator.splitArtistNames("Daft Punk feat. Pharrell Williams", currentSerialized, true).joinToString(", "),
+                                            "Artist 1 / Artist 2" to ArtistSeparator.splitArtistNames("Artist 1 / Artist 2", currentSerialized, true).joinToString(", ")
+                                        )
+                                    }
+
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(24.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
+                                        )
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(20.dp)
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    imageVector = MaterialSymbolIcon("lightbulb"),
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(12.dp))
+                                                Text(
+                                                    text = context.getString(R.string.settings_examples),
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(12.dp))
+                                            liveSamples.forEach { (original, result) ->
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(vertical = 3.dp)
+                                                ) {
+                                                    Text(
+                                                        text = original,
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.75f),
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Icon(
+                                                        imageVector = RhythmIcons.Forward,
+                                                        contentDescription = null,
+                                                        tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.4f),
+                                                        modifier = Modifier.size(14.dp)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text(
+                                                        text = result,
+                                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            DelimiterSheetPage.AddCustom -> {
+                                val addScrollState = rememberScrollState()
+                                val onAddToken = {
+                                    val trimmed = customInputText.trim()
+                                    if (trimmed.isNotEmpty()) {
+                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                        customTokens = (customTokens + trimmed).distinct()
+                                        activeTokens = (activeTokens + trimmed).distinct()
+                                        customInputText = ""
+                                        currentPage = DelimiterSheetPage.Main
+                                    }
+                                }
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(addScrollState)
+                                        .padding(horizontal = 24.dp)
+                                        .padding(bottom = 12.dp)
+                                ) {
+                                    OutlinedTextField(
+                                        value = customInputText,
+                                        onValueChange = { customInputText = it },
+                                        placeholder = {
+                                            Text(
+                                                text = stringResource(R.string.delimiter_custom_hint),
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                        },
+                                        singleLine = true,
+                                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                        keyboardActions = KeyboardActions(onDone = { onAddToken() }),
+                                        shape = RoundedCornerShape(16.dp),
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                                    )
+
+                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    // Quick Suggestions
+                                    Text(
+                                        text = stringResource(R.string.delimiter_quick_suggestions),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(bottom = 16.dp)
+                                    ) {
+                                        quickSuggestions.forEach { suggestion ->
+                                            val isSelected = activeTokens.contains(suggestion)
+                                            SuggestionChip(
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                    customTokens = (customTokens + suggestion).distinct()
+                                                    activeTokens = (activeTokens + suggestion).distinct()
+                                                    currentPage = DelimiterSheetPage.Main
+                                                },
+                                                label = {
+                                                    Text(
+                                                        text = suggestion,
+                                                        fontWeight = FontWeight.Medium
+                                                    )
+                                                },
+                                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                                    containerColor = if (isSelected)
+                                                        MaterialTheme.colorScheme.primaryContainer
+                                                    else
+                                                        MaterialTheme.colorScheme.surfaceContainerHigh,
+                                                    labelColor = if (isSelected)
+                                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                                    else
+                                                        MaterialTheme.colorScheme.onSurface
+                                                )
+                                            )
+                                        }
+                                    }
+
+                                    if (customTokens.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.delimiter_active_title),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.padding(bottom = 8.dp)
+                                        )
+
+                                        FlowRow(
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(bottom = 16.dp)
+                                        ) {
+                                            customTokens.forEach { token ->
+                                                InputChip(
+                                                    selected = activeTokens.contains(token),
+                                                    onClick = {
+                                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                        activeTokens = if (activeTokens.contains(token)) {
+                                                            activeTokens.filterNot { it == token }
+                                                        } else {
+                                                            activeTokens + token
+                                                        }
+                                                    },
+                                                    label = { Text(token) },
+                                                    trailingIcon = {
+                                                        Icon(
+                                                            imageVector = RhythmIcons.Close,
+                                                            contentDescription = stringResource(R.string.ui_close),
+                                                            modifier = Modifier
+                                                                .size(16.dp)
+                                                                .clickable {
+                                                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                                    customTokens = customTokens.filterNot { it == token }
+                                                                    activeTokens = activeTokens.filterNot { it == token }
+                                                                }
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Sticky action buttons at bottom (Fixed)
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    tonalElevation = 3.dp
+                ) {
+                    RhythmGroupedButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                        size = RhythmButtonSize.Large
+                    ) {
+                        if (currentPage == DelimiterSheetPage.Main) {
+                            RhythmButtonWeighted(
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    activeTokens = ArtistSeparator.parseDelimiters(AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS)
+                                },
+                                weight = 1f,
+                                isFirst = true,
+                                icon = MaterialSymbolIcon("restart_alt"),
+                                text = context.getString(R.string.bottomsheet_reset)
+                            )
+                            RhythmButtonWeighted(
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    scope.launch {
+                                        val serialized = ArtistSeparator.serializeDelimiters(activeTokens)
+                                        appSettings.setArtistSeparatorDelimiters(serialized)
+                                        showDelimiterBottomSheet = false
+                                    }
+                                },
+                                weight = 1f,
+                                isLast = true,
+                                icon = RhythmIcons.Check,
+                                text = context.getString(R.string.bottomsheet_save),
+                                enabled = activeTokens.isNotEmpty()
+                            )
+                        } else {
+                            val onAddToken = {
+                                val trimmed = customInputText.trim()
+                                if (trimmed.isNotEmpty()) {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    customTokens = (customTokens + trimmed).distinct()
+                                    activeTokens = (activeTokens + trimmed).distinct()
+                                    customInputText = ""
+                                    currentPage = DelimiterSheetPage.Main
+                                }
+                            }
+
+                            RhythmButtonWeighted(
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                    currentPage = DelimiterSheetPage.Main
+                                },
+                                weight = 1f,
+                                isFirst = true,
+                                icon = RhythmIcons.Back,
+                                text = stringResource(R.string.common_back)
+                            )
+                            RhythmButtonWeighted(
+                                onClick = onAddToken,
+                                weight = 1f,
+                                isLast = true,
+                                icon = RhythmIcons.Add,
+                                text = stringResource(R.string.delimiter_add_button),
+                                enabled = customInputText.isNotBlank()
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-
 @Composable
-fun ApiServiceRow(
-    title: String,
-    description: String,
-    status: String,
-    isConfigured: Boolean,
-    icon: ImageVector,
-    isEnabled: Boolean = true,
-    showToggle: Boolean = false,
-    onToggle: ((Boolean) -> Unit)? = null,
-    onClick: () -> Unit
+private fun DelimiterGridCard(
+    symbol: String,
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
-    val context = LocalContext.current
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp)
+    Card(
+        modifier = modifier.height(120.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected)
+                MaterialTheme.colorScheme.onPrimaryContainer
+            else
+                MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        onClick = onClick
     ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(
-                    when {
-                        !isEnabled -> MaterialTheme.colorScheme.surfaceVariant
-                        isConfigured -> MaterialTheme.colorScheme.primaryContainer
-                        else -> MaterialTheme.colorScheme.errorContainer
-                    }
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = when {
-                    !isEnabled -> MaterialTheme.colorScheme.onSurfaceVariant
-                    isConfigured -> MaterialTheme.colorScheme.onPrimaryContainer
-                    else -> MaterialTheme.colorScheme.onErrorContainer
-                },
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 12.dp, end = 16.dp)
+                    .height(48.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (isEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                    text = symbol,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isSelected)
+                        MaterialTheme.colorScheme.primaryContainer
+                    else
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Surface(
-                    color = when {
-                        !isEnabled -> MaterialTheme.colorScheme.surfaceVariant
-                        isConfigured -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                        else -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-                    },
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        text = if (!isEnabled) context.getString(R.string.status_disabled) else status,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = when {
-                            !isEnabled -> MaterialTheme.colorScheme.onSurfaceVariant
-                            isConfigured -> MaterialTheme.colorScheme.primary
-                            else -> MaterialTheme.colorScheme.onErrorContainer
-                        },
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
             }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (isEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-            )
-        }
 
-        if (showToggle && onToggle != null) {
-            TunerAnimatedSwitch(
-                checked = isEnabled,
-                onCheckedChange = { enabled ->
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                    onToggle(enabled)
-                }
-            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isSelected)
+                        MaterialTheme.colorScheme.primaryContainer
+                    else
+                        MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddCustomGridCard(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.height(120.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        onClick = onClick
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 12.dp, end = 16.dp)
+                    .height(48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = RhythmIcons.Add,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.delimiter_add_custom),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }

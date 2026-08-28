@@ -548,8 +548,9 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_ALBUM_HIDE_ABOUT = "album_hide_about"
         
         // Artist Separator Settings
+        const val DEFAULT_ARTIST_SEPARATOR_DELIMITERS = ";/"
         private const val KEY_ARTIST_SEPARATOR_ENABLED = "artist_separator_enabled"
-        private const val KEY_ARTIST_SEPARATOR_DELIMITERS = "artist_separator_delimiters" // Comma-separated string of delimiters
+        private const val KEY_ARTIST_SEPARATOR_DELIMITERS = "artist_separator_delimiters" // Delimiter string or JSON array
         private const val KEY_ARTIST_SEPARATOR_CACHE_SIGNATURE = "artist_separator_cache_signature"
         
         // Player Screen Customization Settings
@@ -783,9 +784,9 @@ class AppSettings private constructor(context: Context) {
     private val _artistSeparatorEnabled = MutableStateFlow(prefs.getBoolean(KEY_ARTIST_SEPARATOR_ENABLED, true))
     val artistSeparatorEnabled: StateFlow<Boolean> = _artistSeparatorEnabled.asStateFlow()
     
-    // Default delimiters: / ; , + &
+    // Default delimiters: ; /
     private val _artistSeparatorDelimiters = MutableStateFlow(
-        prefs.getString(KEY_ARTIST_SEPARATOR_DELIMITERS, "/;,+&") ?: "/;,+&"
+        prefs.getString(KEY_ARTIST_SEPARATOR_DELIMITERS, DEFAULT_ARTIST_SEPARATOR_DELIMITERS) ?: DEFAULT_ARTIST_SEPARATOR_DELIMITERS
     )
     val artistSeparatorDelimiters: StateFlow<String> = _artistSeparatorDelimiters.asStateFlow()
     
@@ -2312,7 +2313,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
     
     fun setArtistSeparatorDelimiters(delimiters: String) {
-        val sanitized = delimiters.filterNot { it.isWhitespace() }.toSet().joinToString("")
+        val sanitized = delimiters.trim().ifEmpty { DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
         prefs.edit { putString(KEY_ARTIST_SEPARATOR_DELIMITERS, sanitized) }
         _artistSeparatorDelimiters.value = sanitized
     }

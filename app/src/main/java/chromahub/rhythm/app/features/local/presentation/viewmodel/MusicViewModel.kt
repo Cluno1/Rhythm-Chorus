@@ -827,7 +827,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         appSettings.artistSeparatorDelimiters
     ) { artists, filteredSongs, groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters ->
         val charDelimiters = if (artistSeparatorEnabled) {
-            artistSeparatorDelimiters.map { it.toString() }
+            chromahub.rhythm.app.util.ArtistSeparator.parseDelimiters(artistSeparatorDelimiters)
         } else {
             emptyList()
         }
@@ -5394,7 +5394,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 
                 // Update weekly top artists
                 val currentArtists = appSettings.weeklyTopArtists.value.toMutableMap()
-                currentArtists[song.artist] = (currentArtists[song.artist] ?: 0) + 1
+                val splitArtists = repository.splitArtistNames(song.artist).ifEmpty { listOf(song.artist.trim()) }
+                splitArtists.forEach { artistName ->
+                    if (artistName.isNotBlank() && !artistName.equals("<unknown>", ignoreCase = true)) {
+                        currentArtists[artistName] = (currentArtists[artistName] ?: 0) + 1
+                    }
+                }
                 appSettings.updateWeeklyTopArtists(currentArtists)
                 
                 // Update favorite genres

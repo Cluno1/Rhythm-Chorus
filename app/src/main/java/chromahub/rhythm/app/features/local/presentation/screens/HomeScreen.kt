@@ -3039,7 +3039,7 @@ private fun ModernRecommendedSection(
     val appSettings = remember { AppSettings.getInstance(context) }
     val artistSeparatorEnabled by appSettings.artistSeparatorEnabled.collectAsState()
     val artistSeparatorDelimiters by appSettings.artistSeparatorDelimiters.collectAsState()
-    val effectiveDelimiters = artistSeparatorDelimiters.ifBlank { "/;,+&" }
+    val effectiveDelimiters = artistSeparatorDelimiters.ifBlank { AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
 
     Column(
         modifier = Modifier.fillMaxWidth()

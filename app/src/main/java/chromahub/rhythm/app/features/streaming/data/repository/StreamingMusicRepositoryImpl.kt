@@ -1448,7 +1448,7 @@ class StreamingMusicRepositoryImpl(
         // Apply artist separator settings to split collaborations, matching ViewModel behavior
         val separatorEnabled = appSettings.artistSeparatorEnabled.value
         val separatorDelimiters = if (separatorEnabled) {
-            appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
+            appSettings.artistSeparatorDelimiters.value.ifBlank { AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
         } else {
             ""
         }
@@ -1548,7 +1548,7 @@ class StreamingMusicRepositoryImpl(
                 } else {
                     val artistNames = ArtistSeparator.splitArtistNames(
                         song.artist,
-                        delimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" },
+                        delimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS },
                         enabled = appSettings.artistSeparatorEnabled.value
                     )
 

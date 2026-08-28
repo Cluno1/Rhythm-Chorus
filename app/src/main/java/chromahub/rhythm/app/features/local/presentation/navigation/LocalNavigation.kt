@@ -3445,7 +3445,7 @@ private fun LocalNavigationContent(
                             },
                             onGoToArtist = { song ->
                                 val separatorEnabled = appSettings.artistSeparatorEnabled.value
-                                val delimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
+                                val delimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { chromahub.rhythm.app.shared.data.model.AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
                                 val candidates = ArtistSeparator.splitArtistNames(
                                     song.artist,
                                     delimiters = delimiters,
@@ -3844,7 +3844,7 @@ private fun LocalNavigationContent(
                         },
                         onGoToArtist = { song ->
                             val separatorEnabled = appSettings.artistSeparatorEnabled.value
-                            val delimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
+                            val delimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { chromahub.rhythm.app.shared.data.model.AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
                             val candidates = chromahub.rhythm.app.util.ArtistSeparator.splitArtistNames(
                                 song.artist,
                                 delimiters = delimiters,

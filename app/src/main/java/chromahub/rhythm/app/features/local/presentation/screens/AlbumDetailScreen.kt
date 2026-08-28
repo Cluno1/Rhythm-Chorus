@@ -253,7 +253,7 @@ fun AlbumDetailScreen(
     var artistPickerCandidates by remember { mutableStateOf<List<Artist>>(emptyList()) }
     var artistPickerSong by remember { mutableStateOf<Song?>(null) }
 
-    val effectiveDelimiters = artistSeparatorDelimiters.ifBlank { "/;,+&" }
+    val effectiveDelimiters = artistSeparatorDelimiters.ifBlank { AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
 
     fun handleArtistTap(song: Song) {
         val candidates = ArtistSeparator.splitArtistNames(

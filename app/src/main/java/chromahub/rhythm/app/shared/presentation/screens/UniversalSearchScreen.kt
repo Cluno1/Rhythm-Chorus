@@ -1465,7 +1465,7 @@ fun UniversalSearchScreen(
                     showSongOptionsSheet = false
                     if (isLocal) {
                         val separatorEnabled = appSettings.artistSeparatorEnabled.value
-                        val delimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
+                        val delimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
                         val songArtistNames = chromahub.rhythm.app.util.ArtistSeparator.splitArtistNames(
                             artistName = songObj.artist,
                             delimiters = delimiters,
