@@ -592,6 +592,19 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             settingKey = "allowedFormats"
         ))
         add(SearchableSettingItem(
+            id = "media_minimum_duration",
+            title = context.getString(R.string.settings_min_duration),
+            description = context.getString(R.string.settings_min_duration_desc),
+            keywords = listOf(
+                "duration", "minimum duration", "filter", "short tracks", "opera", "ringtones",
+                "length", "song duration", "media scan", "filter duration", "scan filter"
+            ),
+            icon = RhythmIcons.Player.Timer,
+            route = SettingsRoutes.MEDIA_SCAN,
+            parentScreen = context.getString(R.string.settings_media_scan_title),
+            settingKey = "minimumDuration"
+        ))
+        add(SearchableSettingItem(
             id = "artist_parsing",
             title = context.getString(R.string.settings_artist_parsing),
             description = context.getString(R.string.settings_artist_parsing_desc),

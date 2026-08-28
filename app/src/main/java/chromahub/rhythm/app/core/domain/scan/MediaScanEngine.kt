@@ -46,8 +46,14 @@ class MediaScanEngine(
         private const val TAG = "MediaScanEngine"
         private const val BATCH_SIZE = 100
 
-        fun mediaScanSelection(): String =
-            "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/mp4' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/x-matroska' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'application/x-matroska') AND ${MediaStore.Audio.Media.DURATION} > 10000"
+        fun mediaScanSelection(minimumDuration: Long = 0L): String {
+            val baseSelection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/mp4' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/x-matroska' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'application/x-matroska')"
+            return if (minimumDuration > 0L) {
+                "$baseSelection AND ${MediaStore.Audio.Media.DURATION} >= $minimumDuration"
+            } else {
+                baseSelection
+            }
+        }
     }
 
     private val _scanProgress = MutableStateFlow(ScanProgress(0, 0, ScanPhase.Idle))
@@ -62,7 +68,7 @@ class MediaScanEngine(
         minimumDuration: Long = 0L
     ): List<Song> = withContext(Dispatchers.IO) {
         val startTime = System.currentTimeMillis()
-        Log.d(TAG, "Starting media scan (forceRefresh=$forceRefresh)")
+        Log.d(TAG, "Starting media scan (forceRefresh=$forceRefresh, minimumDuration=${minimumDuration}ms)")
         _scanProgress.value = ScanProgress(0, 0, ScanPhase.Songs, 0)
 
         // Query existing DB entries into an O(1) Map by ID
@@ -106,7 +112,7 @@ class MediaScanEngine(
             }
         }.toTypedArray()
 
-        val selection = mediaScanSelection()
+        val selection = mediaScanSelection(minimumDuration)
         val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
 
         val scannedSongs = mutableListOf<SongEntity>()

@@ -85,6 +85,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -222,6 +223,7 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
     val mediaScanMode by appSettings.mediaScanMode.collectAsState()
     val includeHiddenWhitelistedMedia by appSettings.includeHiddenWhitelistedMedia.collectAsState()
     val allowedFormats by appSettings.allowedFormats.collectAsState()
+    val minimumDuration by appSettings.minimumDuration.collectAsState()
 
     val enabledKnownCount = allowedFormats.count { it in ALL_KNOWN_FORMATS }
 
@@ -246,6 +248,7 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
     var showSongsBottomSheet by remember { mutableStateOf(false) }
     var showFoldersBottomSheet by remember { mutableStateOf(false) }
     var showFormatsBottomSheet by remember { mutableStateOf(false) }
+    var showDurationBottomSheet by remember { mutableStateOf(false) }
 
     // File picker launcher for folder selection
     val folderPickerLauncher = rememberLauncherForActivityResult(
@@ -519,6 +522,19 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                             description = context.getString(R.string.settings_include_hidden_whitelisted_media_desc),
                             toggleState = includeHiddenWhitelistedMedia,
                             onToggleChange = { appSettings.setIncludeHiddenWhitelistedMedia(it) }
+                        )
+                    ),
+                    toMaterial3SettingsItem(
+                        context = context,
+                        hapticFeedback = haptic,
+                        item = SettingItem(
+                            icon = RhythmIcons.Player.Timer,
+                            title = context.getString(R.string.settings_min_duration),
+                            description = formatMinimumDuration(context, minimumDuration),
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                showDurationBottomSheet = true
+                            }
                         )
                     )
                 )
@@ -1481,9 +1497,311 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
             }
         }
     }
+
+    if (showDurationBottomSheet) {
+        val sheetState = rememberBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+        )
+
+        var showContent by remember { mutableStateOf(false) }
+        val contentAlpha by animateFloatAsState(
+            targetValue = if (showContent) 1f else 0f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            ),
+            label = "durationContentAlpha"
+        )
+
+        var currentSeconds by remember(minimumDuration) {
+            mutableFloatStateOf((minimumDuration / 1000L).toFloat().coerceIn(0f, 300f))
+        }
+
+        LaunchedEffect(Unit) {
+            sheetState.expand()
+        }
+
+        LaunchedEffect(Unit) {
+            delay(100)
+            showContent = true
+        }
+
+        ModalBottomSheet(
+            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
+            onDismissRequest = { showDurationBottomSheet = false },
+            sheetState = sheetState,
+            dragHandle = {
+                BottomSheetDefaults.DragHandle(
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp)
+                    .graphicsLayer(alpha = contentAlpha)
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = context.getString(R.string.settings_min_duration),
+                            style = MaterialTheme.typography.displayMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 6.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    color = if (currentSeconds > 0f) MaterialTheme.colorScheme.primaryContainer
+                                    else MaterialTheme.colorScheme.surfaceContainerHigh
+                                )
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelLarge,
+                                text = if (currentSeconds > 0f) "Filtering < ${formatMinimumDuration(context, (currentSeconds * 1000L).toLong())}" else context.getString(R.string.settings_min_duration_none),
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1,
+                                color = if (currentSeconds > 0f) MaterialTheme.colorScheme.onPrimaryContainer
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // ── Grouped Cards: Slider (Top) + Preset Chips (Bottom) ───
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    // Top Card: Slider
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Slider(
+                                value = currentSeconds,
+                                onValueChange = { value ->
+                                    val stepped = kotlin.math.round(value / 5f) * 5f
+                                    if (stepped != currentSeconds) {
+                                        currentSeconds = stepped
+                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    }
+                                },
+                                valueRange = 0f..300f,
+                                steps = 59, // 0 to 300 in steps of 5
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "0s (All)",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "2m 30s",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "5m",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
+                    // Bottom Card: Preset buttons using RhythmGroupedButton
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            val row1 = listOf(
+                                0L to "0s",
+                                5_000L to "5s",
+                                10_000L to "10s",
+                                15_000L to "15s"
+                            )
+                            val row2 = listOf(
+                                30_000L to "30s",
+                                60_000L to "1m",
+                                120_000L to "2m",
+                                300_000L to "5m"
+                            )
+
+                            RhythmGroupedButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                size = RhythmButtonSize.Medium
+                            ) {
+                                row1.forEachIndexed { index, (durationMs, label) ->
+                                    val isSelected = (currentSeconds * 1000L).toLong() == durationMs
+                                    RhythmButtonWeighted(
+                                        onClick = {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                            currentSeconds = (durationMs / 1000L).toFloat()
+                                        },
+                                        weight = 1f,
+                                        isFirst = index == 0,
+                                        isLast = index == row1.lastIndex,
+                                        selected = isSelected,
+                                        type = if (isSelected) RhythmButtonType.Filled else RhythmButtonType.Tonal,
+                                        containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest,
+                                        contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                        text = label
+                                    )
+                                }
+                            }
+
+                            RhythmGroupedButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                size = RhythmButtonSize.Medium
+                            ) {
+                                row2.forEachIndexed { index, (durationMs, label) ->
+                                    val isSelected = (currentSeconds * 1000L).toLong() == durationMs
+                                    RhythmButtonWeighted(
+                                        onClick = {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                            currentSeconds = (durationMs / 1000L).toFloat()
+                                        },
+                                        weight = 1f,
+                                        isFirst = index == 0,
+                                        isLast = index == row2.lastIndex,
+                                        selected = isSelected,
+                                        type = if (isSelected) RhythmButtonType.Filled else RhythmButtonType.Tonal,
+                                        containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest,
+                                        contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                        text = label
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Tip Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon("lightbulb", filled = true),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = context.getString(R.string.settings_min_duration_tip),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Apply + Reset buttons using RhythmGroupedButton and RhythmButtonWeighted
+                RhythmGroupedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    size = RhythmButtonSize.Large
+                ) {
+                    RhythmButtonWeighted(
+                        onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            currentSeconds = 0f
+                        },
+                        weight = 1f,
+                        isFirst = true,
+                        icon = MaterialSymbolIcon("restart_alt"),
+                        text = context.getString(R.string.bottomsheet_reset)
+                    )
+                    RhythmButtonWeighted(
+                        onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                            val newDuration = (currentSeconds * 1000L).toLong()
+                            val changed = appSettings.minimumDuration.value != newDuration
+                            appSettings.setMinimumDuration(newDuration)
+                            if (changed) {
+                                musicViewModel.refreshLibrary(showMediaScanLoader = false)
+                            }
+                            showDurationBottomSheet = false
+                        },
+                        weight = 1f,
+                        isLast = true,
+                        icon = RhythmIcons.Check,
+                        text = context.getString(R.string.ui_apply)
+                    )
+                }
+            }
+        }
+    }
 }
 
+private fun formatMinimumDuration(context: Context, durationMs: Long): String {
+    if (durationMs <= 0L) {
+        return context.getString(R.string.settings_min_duration_none)
+    }
+    val totalSeconds = durationMs / 1000L
+    val minutes = totalSeconds / 60L
+    val remainingSeconds = totalSeconds % 60L
 
+    return when {
+        minutes > 0 && remainingSeconds > 0 -> context.getString(R.string.settings_min_duration_minutes, minutes, remainingSeconds)
+        minutes > 0 -> context.getString(R.string.settings_min_duration_minutes_only, minutes)
+        else -> context.getString(R.string.settings_min_duration_seconds, remainingSeconds)
+    }
+}
 
 @Composable
 fun MediaScanTipItem(

@@ -6195,7 +6195,7 @@ class MusicRepository(context: Context) {
             }
 
             // 1. Get the current count of eligible audio files in MediaStore to check for additions/deletions
-            val selection = MediaScanEngine.mediaScanSelection()
+            val selection = MediaScanEngine.mediaScanSelection(appSettings.minimumDuration.value)
             val countCursor = context.contentResolver.query(
                 collection,
                 arrayOf(MediaStore.Audio.Media._ID),
