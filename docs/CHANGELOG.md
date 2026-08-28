@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.4.468.1233] - 2026-08-28
+
+### Added
+- Overhauled onboarding tour with interactive setup for shape presets and artist delimiters
+- Enhanced multi-artist splitting with custom delimiter creation, presets, and protected artist names
+- Integrated multi-artist splitting into playback stats, play counts, and top artists
+- Minimum song duration filter in media scan settings to ignore short audio clips
+
+### Changed
+- Clear and user-friendly error messages when Jellyfin connection fails #561
+- Updated Material 3 design components and improved navigation stability
+
 ## [5.4.466.1229] - 2026-08-27
 
 ### Added
