@@ -262,12 +262,6 @@ fun ExperimentalFeaturesScreen(
                             onToggleChange = { appSettings.setAudioDeviceLoggingEnabled(it) }
                         ),
                         SettingItem(
-                            MaterialSymbolIcon("restart_alt"),
-                            context.getString(R.string.exp_launch_onboarding),
-                            context.getString(R.string.exp_launch_onboarding_desc),
-                            onClick = { appSettings.setOnboardingCompleted(false) }
-                        ),
-                        SettingItem(
                             RhythmIcons.BugReport,
                             context.getString(R.string.exp_test_crash),
                             context.getString(R.string.exp_test_crash_desc),

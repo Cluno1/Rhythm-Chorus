@@ -517,11 +517,28 @@
     <string name="onboarding_full_tour_prompt_title">Continue Full Setup Tour?</string>
     <string name="onboarding_full_tour_prompt_desc">Core setup is done. Continue for advanced customization, or finish now and explore the rest later from Settings.</string>
     <string name="onboarding_full_tour_prompt_tip_1">Full tour includes playback, theme, gesture, and media scan options.</string>
-    <string name="onboarding_full_tour_prompt_tip_2">You can reopen Rhythm Tour anytime from Settings > Developer &amp; Debugging.</string>
+    <string name="onboarding_full_tour_prompt_tip_2">You can reopen Rhythm Tour anytime from About.</string>
     <string name="onboarding_full_tour_prompt_tip_3">Nothing here is permanent. All choices can be changed later.</string>
     <string name="onboarding_continue_full_tour">Continue Full Tour</string>
     <string name="onboarding_finish_now">Finish Setup Now</string>
     <string name="onboarding_step_progress">%1$d of %2$d</string>
+
+    <string name="about_replay_tour">Replay Setup Tour</string>
+    <string name="about_replay_tour_desc">Take the guided tour again anytime to reconfigure preferences</string>
+    <string name="onboarding_expressive_shapes_title">Expressive Shapes</string>
+    <string name="onboarding_expressive_shapes_desc">Apply Material 3 expressive organic shapes to albums, cards, and UI components</string>
+    <string name="onboarding_autoeq_title">AutoEQ Headphone Profiles</string>
+    <string name="onboarding_autoeq_desc">Calibrate audio for thousands of headphone models</string>
+    <string name="onboarding_replaygain_title">ReplayGain Normalization</string>
+    <string name="onboarding_replaygain_desc">Automatically balance volume levels between tracks</string>
+    <string name="onboarding_gapless_crossfade_title">Gapless &amp; Crossfade</string>
+    <string name="onboarding_gapless_crossfade_desc">Seamless transitions and smooth fading between songs</string>
+    <string name="onboarding_multi_artist_title">Multi-Artist Parsing</string>
+    <string name="onboarding_multi_artist_desc">Split collaborating artists (feat., ft., &amp;, /) into individual pages</string>
+    <string name="onboarding_lossless_artwork_title">Lossless Artwork</string>
+    <string name="onboarding_lossless_artwork_desc">Prefer high-resolution embedded album art over system thumbnails</string>
+    <string name="onboarding_library_tab_order_title">Library Tab Arrangement</string>
+    <string name="onboarding_library_tab_order_desc">Customize and reorder your library navigation tabs</string>
     
     <string name="onboarding_media_scan_title">Filter Your Music Library</string>
     <string name="onboarding_media_scan_desc">Control which audio files appear in your library. Use Blacklist mode to hide unwanted files (ringtones, notifications), or Whitelist mode to only show specific music folders.</string>

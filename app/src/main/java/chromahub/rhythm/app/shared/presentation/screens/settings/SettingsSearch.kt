@@ -2169,13 +2169,13 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             settingKey = "trackErrorCheckerEnabled"
         ))
         add(SearchableSettingItem(
-            id = "exp_launch_onboarding",
-            title = context.getString(R.string.settings_exp_launch_onboarding),
-            description = context.getString(R.string.settings_exp_launch_onboarding_desc),
-            keywords = listOf("rhythm tour", "tour", "reset", "restart", "welcome", "setup", "intro", "onboarding"),
+            id = "app_launch_onboarding",
+            title = context.getString(R.string.about_replay_tour),
+            description = context.getString(R.string.about_replay_tour_desc),
+            keywords = listOf("rhythm tour", "tour", "reset", "restart", "welcome", "setup", "intro", "onboarding", "guide"),
             icon = MaterialSymbolIcon("restart_alt"),
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental"
+            route = SettingsRoutes.ABOUT,
+            parentScreen = "About"
         ))
         add(SearchableSettingItem(
             id = "exp_test_crash",

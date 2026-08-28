@@ -157,8 +157,8 @@ import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerSettingRow
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerSettingCard
-import chromahub.rhythm.app.shared.presentation.screens.settings.SettingItem
 import chromahub.rhythm.app.shared.presentation.screens.settings.SettingGroup
+import chromahub.rhythm.app.shared.data.model.AppSettings
 import androidx.core.net.toUri
 
 
@@ -171,6 +171,7 @@ fun AboutScreen(
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val appUpdaterViewModel: AppUpdaterViewModel = rememberAppUpdaterViewModel()
+    val appSettings = remember { AppSettings.getInstance(context) }
     var showLicensesSheet by remember { mutableStateOf(false) }
 
     val openUrl: (String) -> Unit = { url ->
@@ -532,6 +533,18 @@ fun AboutScreen(
                             title = stringResource(R.string.cd_telegram_support),
                             description = "t.me/RhythmSupport",
                             onClick = { openUrl("https://t.me/RhythmSupport") }
+                        )
+                    ),
+                    toMaterial3SettingsItem(
+                        context = context,
+                        hapticFeedback = haptics,
+                        item = SettingItem(
+                            icon = MaterialSymbolIcon("restart_alt", filled = true),
+                            title = stringResource(R.string.about_replay_tour),
+                            description = stringResource(R.string.about_replay_tour_desc),
+                            onClick = {
+                                appSettings.setOnboardingCompleted(false)
+                            }
                         )
                     )
                 )
