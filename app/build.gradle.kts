@@ -32,11 +32,11 @@ android {
         
         val overrideVersionCode = project.findProperty("versionCodeOverride")?.toString()?.toIntOrNull()
         val overrideVersionName = project.findProperty("versionNameOverride")?.toString()
-        versionCode = overrideVersionCode ?: 544661229
-        versionName = overrideVersionName ?: "5.4.466.1229"
+        versionCode = overrideVersionCode ?: 544681232
+        versionName = overrideVersionName ?: "5.4.468.1232 Beta"
 
         val overrideReleaseDate = project.findProperty("releaseDateOverride")?.toString()
-        buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-08-27"}\"")
+        buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-08-28"}\"")
 
         val isNightly = project.findProperty("nightly")?.toString() == "true"
         buildConfigField("boolean", "IS_NIGHTLY", isNightly.toString())
