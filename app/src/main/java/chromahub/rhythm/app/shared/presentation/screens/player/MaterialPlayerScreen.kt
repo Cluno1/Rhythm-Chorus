@@ -4381,11 +4381,9 @@ private fun filterPlainLyricsByPreference(
 
         val isBracketTranslation = trimmed.startsWith("(") && trimmed.endsWith(")") && trimmed.length > 2
         val isBracketRomanization = trimmed.startsWith("[") && trimmed.endsWith("]") && trimmed.length > 2
-        val hasLettersOrDigits = trimmed.any { it.isLetterOrDigit() }
-        val isAsciiOnly = trimmed.all { char ->
-            char.code <= 127 || char.isWhitespace()
-        }
-        val inferredRomanization = hasLettersOrDigits && isAsciiOnly && previousMainLineWasNonAscii
+        val hasLetters = trimmed.any { it.isLetter() }
+        val isLatin = chromahub.rhythm.app.util.LyricsParser.isLatinBased(trimmed)
+        val inferredRomanization = hasLetters && isLatin && previousMainLineWasNonAscii
 
         val shouldHide =
             (!showTranslation && isBracketTranslation) ||
@@ -4398,7 +4396,7 @@ private fun filterPlainLyricsByPreference(
         filteredLines += line
 
         if (!isBracketTranslation && !isBracketRomanization && !inferredRomanization) {
-            previousMainLineWasNonAscii = trimmed.any { it.code > 127 }
+            previousMainLineWasNonAscii = chromahub.rhythm.app.util.LyricsParser.hasNonLatinScript(trimmed)
         }
     }
 

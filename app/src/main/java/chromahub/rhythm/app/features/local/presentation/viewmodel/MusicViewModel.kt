@@ -7825,10 +7825,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
                             val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
                             val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
+                            val hasWordTiming = RhythmLyricsParser.hasWordTiming(parsedWordByWordLines)
                             LyricsData(
                                 plainLyrics = plain,
                                 syncedLyrics = lrc,
-                                wordByWordLyrics = wordByWordJson,
+                                wordByWordLyrics = if (hasWordTiming) wordByWordJson else null,
                                 source = "Local File",
                                 isCorrected = true
                             )

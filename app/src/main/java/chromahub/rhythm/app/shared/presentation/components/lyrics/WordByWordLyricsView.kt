@@ -470,6 +470,10 @@ private fun WordByWordLyricLineItem(
         label = "translationAlpha"
     )
 
+    val isWordTimed = remember(line) {
+        RhythmLyricsParser.isLineWordTimed(line)
+    }
+
     val activeWord = if (isCurrentLine) line.words.getOrNull(activeWordIndex) else null
     val duration = remember(activeWord) {
         activeWord?.let { (it.endtime - it.timestamp).toInt() } ?: 0
@@ -477,7 +481,7 @@ private fun WordByWordLyricLineItem(
     
     val animatedProgress = remember(activeWord) { Animatable(0f) }
     LaunchedEffect(activeWord) {
-        if (duration > 0 && !noAnimation) {
+        if (duration > 0 && !noAnimation && isWordTimed) {
             animatedProgress.animateTo(
                 targetValue = 1f,
                 animationSpec = tween(durationMillis = duration, easing = LinearEasing)
@@ -526,7 +530,7 @@ private fun WordByWordLyricLineItem(
                 val range = wordRanges.getOrNull(wordIndex)
                 val layout = textLayoutResult
                 val sweepProgress = animatedProgress.value
-                if (range != null && layout != null && !noAnimation && sweepProgress < 1f) {
+                if (isWordTimed && range != null && layout != null && !noAnimation && sweepProgress < 1f) {
                     val startChar = range.first
                     val endChar = (range.last).coerceAtMost(layout.layoutInput.text.length - 1)
                     val startRect = layout.getBoundingBox(startChar)
@@ -555,7 +559,7 @@ private fun WordByWordLyricLineItem(
                 }
             } else {
                 SpanStyle(
-                    color = if (isWordPassed) baseColor else inactiveWordColor,
+                    color = if (isWordPassed || (!isWordTimed && isCurrentLine)) baseColor else inactiveWordColor,
                     fontWeight = if (isCurrentLine) {
                         if (lyricBold) FontWeight.ExtraBold else FontWeight.SemiBold
                     } else {

@@ -3958,11 +3958,12 @@ class MusicRepository(context: Context) {
                     val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
                     val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
                     val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
-                    Log.d(TAG, "Successfully parsed embedded TTML lyrics (${parsedLines.size} lines)")
+                    val hasWordTiming = RhythmLyricsParser.hasWordTiming(parsedWordByWordLines)
+                    Log.d(TAG, "Successfully parsed embedded TTML lyrics (${parsedLines.size} lines, hasWordTiming=$hasWordTiming)")
                     return LyricsData(
                         plainLyrics = plain,
                         syncedLyrics = lrc,
-                        wordByWordLyrics = wordByWordJson,
+                        wordByWordLyrics = if (hasWordTiming) wordByWordJson else null,
                         source = "Embedded",
                         isCorrected = true
                     )
@@ -4634,8 +4635,9 @@ class MusicRepository(context: Context) {
                                 val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
                                 val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
                                 val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
-                                Log.d(TAG, "Better Lyrics: Syllable-synced lyrics found and parsed successfully")
-                                LyricsData(plain, lrc, wordByWordJson, "Better Lyrics", isCorrected = true)
+                                val hasWordTiming = RhythmLyricsParser.hasWordTiming(parsedWordByWordLines)
+                                Log.d(TAG, "Better Lyrics: TTML lyrics found and parsed successfully (hasWordTiming=$hasWordTiming)")
+                                LyricsData(plain, lrc, if (hasWordTiming) wordByWordJson else null, "Better Lyrics", isCorrected = true)
                             } else null
                         } else null
                     }
@@ -4986,7 +4988,9 @@ class MusicRepository(context: Context) {
                 val parsedTtml = RhythmLyricsParser.parseTtmlLyrics(lyricsResponse.ttmlContent)
                 if (parsedTtml.isNotEmpty()) {
                     content = parsedTtml
-                    isSyllable = true
+                    val wordByWordJson = Gson().toJson(parsedTtml)
+                    val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
+                    isSyllable = RhythmLyricsParser.hasWordTiming(parsedWordByWordLines)
                 }
             }
 
@@ -5306,7 +5310,8 @@ class MusicRepository(context: Context) {
                     val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
                     val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
                     val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
-                    return LyricsData(plainLyrics = plain, syncedLyrics = lrc, wordByWordLyrics = wordByWordJson, source = "Local File", isCorrected = true)
+                    val hasWordTiming = RhythmLyricsParser.hasWordTiming(parsedWordByWordLines)
+                    return LyricsData(plainLyrics = plain, syncedLyrics = lrc, wordByWordLyrics = if (hasWordTiming) wordByWordJson else null, source = "Local File", isCorrected = true)
                 }
             }
 
@@ -5336,36 +5341,42 @@ class MusicRepository(context: Context) {
                         "[$timestamp]${line.text}"
                     }
                     
-                    val rhythmWordLines = semanticLyrics.text.map { line ->
-                        val words = line.words?.map { word ->
-                            val wordText = try {
-                                line.text.substring(word.charRange.first, word.charRange.last + 1)
-                            } catch (e: Exception) {
-                                ""
-                            }
-                            mapOf(
-                                "text" to wordText,
-                                "part" to false,
-                                "timestamp" to word.begin.toLong(),
-                                "endtime" to (word.endInclusive?.toLong() ?: word.begin.toLong())
+                    val hasWordTiming = semanticLyrics.text.any { line ->
+                        val words = line.words
+                        words != null && words.isNotEmpty() && (words.size > 1 || words.any { it.begin != line.start || (it.endInclusive != null && it.endInclusive != line.end) })
+                    }
+                    val wordByWordJson = if (hasWordTiming) {
+                        val rhythmWordLines = semanticLyrics.text.map { line ->
+                            val words = line.words?.map { word ->
+                                val wordText = try {
+                                    line.text.substring(word.charRange.first, word.charRange.last + 1)
+                                } catch (e: Exception) {
+                                    ""
+                                }
+                                mapOf(
+                                    "text" to wordText,
+                                    "part" to false,
+                                    "timestamp" to word.begin.toLong(),
+                                    "endtime" to (word.endInclusive?.toLong() ?: word.begin.toLong())
+                                )
+                            } ?: listOf(
+                                mapOf(
+                                    "text" to line.text,
+                                    "part" to false,
+                                    "timestamp" to line.start.toLong(),
+                                    "endtime" to line.end.toLong()
+                                )
                             )
-                        } ?: listOf(
+                            
                             mapOf(
-                                "text" to line.text,
-                                "part" to false,
+                                "text" to words,
+                                "background" to false,
                                 "timestamp" to line.start.toLong(),
                                 "endtime" to line.end.toLong()
                             )
-                        )
-                        
-                        mapOf(
-                            "text" to words,
-                            "background" to false,
-                            "timestamp" to line.start.toLong(),
-                            "endtime" to line.end.toLong()
-                        )
-                    }
-                    val wordByWordJson = com.google.gson.Gson().toJson(rhythmWordLines)
+                        }
+                        com.google.gson.Gson().toJson(rhythmWordLines)
+                    } else null
                     
                     LyricsData(plainLyrics, syncedLyrics, wordByWordJson, source = "Local File")
                 }
@@ -5391,7 +5402,8 @@ class MusicRepository(context: Context) {
                     val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
                     val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
                     val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
-                    return LyricsData(plainLyrics = plain, syncedLyrics = lrc, wordByWordLyrics = wordByWordJson, source = "Local File", isCorrected = true)
+                    val hasWordTiming = RhythmLyricsParser.hasWordTiming(parsedWordByWordLines)
+                    return LyricsData(plainLyrics = plain, syncedLyrics = lrc, wordByWordLyrics = if (hasWordTiming) wordByWordJson else null, source = "Local File", isCorrected = true)
                 }
             }
             

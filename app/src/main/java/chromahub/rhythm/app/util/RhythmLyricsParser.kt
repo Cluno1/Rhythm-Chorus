@@ -318,6 +318,23 @@ object RhythmLyricsParser {
             .filter { it.isLetterOrDigit() }
     }
 
+    fun hasNonLatinScript(text: String): Boolean {
+        return text.any { c ->
+            if (!c.isLetter()) return@any false
+            val script = Character.UnicodeScript.of(c.code)
+            script != Character.UnicodeScript.LATIN && script != Character.UnicodeScript.COMMON && script != Character.UnicodeScript.INHERITED
+        }
+    }
+
+    fun isLatinBased(text: String): Boolean {
+        val letters = text.filter { it.isLetter() }
+        if (letters.isEmpty()) return false
+        return letters.all { c ->
+            val script = Character.UnicodeScript.of(c.code)
+            script == Character.UnicodeScript.LATIN
+        }
+    }
+
     private fun inferSupplementalKind(
         mainText: String,
         candidateText: String,
@@ -338,11 +355,19 @@ object RhythmLyricsParser {
             return SupplementalLineKind.TRANSLATION
         }
 
+        if (hasNonLatinScript(mainText) && isLatinBased(trimmed)) {
+            return SupplementalLineKind.ROMANIZATION
+        }
+
+        if (isLatinBased(mainText) && hasNonLatinScript(trimmed)) {
+            return SupplementalLineKind.TRANSLATION
+        }
+
         val mainHasNonAscii = mainText.any { it.code > 127 }
         val candidateHasNonAscii = trimmed.any { it.code > 127 }
 
         if (mainHasNonAscii && !candidateHasNonAscii) {
-            return SupplementalLineKind.TRANSLATION
+            return SupplementalLineKind.ROMANIZATION
         }
 
         if (!mainHasNonAscii && candidateHasNonAscii) {
@@ -659,6 +684,10 @@ object RhythmLyricsParser {
         if (ttmlContent.isBlank()) return emptyList()
 
         try {
+            val ttTimingMatch = Regex("<tt[^>]*?\\b(?:[\\w:-]+:)?timing=[\"']([^\"']+)[\"']", RegexOption.IGNORE_CASE).find(ttmlContent)
+            val ttTiming = ttTimingMatch?.groupValues?.get(1)
+            val isLineOrNoneTiming = ttTiming.equals("Line", ignoreCase = true) || ttTiming.equals("None", ignoreCase = true)
+
             // Extract translations if available
             val translationsMap = mutableMapOf<String, String>()
             val translationRegex = Regex("<text[^>]*?\\bfor=[\"']([^\"']+)[\"'][^>]*>(.*?)</text>", RegexOption.DOT_MATCHES_ALL)
@@ -698,7 +727,7 @@ object RhythmLyricsParser {
                 val endMs = parseTtmlTime(endStr) ?: (if (durMs != null) beginMs + durMs else beginMs + 3000L)
 
                 // Check for spans inside <p>
-                val spans = spanRegex.findAll(innerContent).toList()
+                val spans = if (!isLineOrNoneTiming) spanRegex.findAll(innerContent).toList() else emptyList()
                 val words = mutableListOf<RhythmLyricsWord>()
 
                 if (spans.isNotEmpty()) {
@@ -760,6 +789,32 @@ object RhythmLyricsParser {
             Log.e(TAG, "Error in parseTtmlFallback: ${e.message}", e)
             return emptyList()
         }
+    }
+
+    /**
+     * Checks if the parsed word-by-word lines actually contain real word-level timing information.
+     * Returns false if the lyrics are line-timed only (e.g. from TTML with itunes:timing="Line",
+     * plain LRC, or lines containing only a single word spanning the entire line).
+     */
+    fun hasWordTiming(lines: List<WordByWordLyricLine>): Boolean {
+        if (lines.isEmpty()) return false
+        return lines.any { line ->
+            isLineWordTimed(line)
+        }
+    }
+
+    /**
+     * Checks if a single lyric line has genuine word-level timing.
+     */
+    fun isLineWordTimed(line: WordByWordLyricLine): Boolean {
+        if (line.words.size > 1) {
+            val distinctTimestamps = line.words.map { it.timestamp }.distinct().size
+            if (distinctTimestamps > 1) return true
+            if (line.words.any { it.isPart }) return true
+            val distinctEndtimes = line.words.map { it.endtime }.distinct().size
+            if (distinctEndtimes > 1) return true
+        }
+        return false
     }
 }
 

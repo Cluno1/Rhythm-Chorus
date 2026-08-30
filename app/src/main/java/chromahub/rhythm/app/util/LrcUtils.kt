@@ -180,6 +180,12 @@ object LrcUtils {
     }
 
     fun convertSemanticLyricsToWordByWord(syncedLyrics: SyncedLyrics): String? {
+        val hasRealWordTiming = syncedLyrics.text.any { line ->
+            val words = line.words
+            words != null && words.isNotEmpty() && (words.size > 1 || words.any { it.begin != line.start || (it.endInclusive != null && it.endInclusive != line.end) })
+        }
+        if (!hasRealWordTiming) return null
+
         val rhythmWordLines = syncedLyrics.text.mapNotNull { line ->
             // Skip instrumental / gap lines — leave them as timing gaps
             if (isInstrumentalLine(line.text)) return@mapNotNull null

@@ -434,10 +434,11 @@ fun LyricsEditorBottomSheet(
             if (parsedLines.isNotEmpty()) {
                 val wordByWordJson = Gson().toJson(parsedLines)
                 val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
-                editedWordByWord = wordByWordJson
+                val hasWordTiming = RhythmLyricsParser.hasWordTiming(parsedWordByWordLines)
+                editedWordByWord = if (hasWordTiming) wordByWordJson else ""
                 editedLineByLine = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
                 editedSource = loadedLyrics
-                selectedFormat = LyricFormat.WORD_BY_WORD
+                selectedFormat = if (hasWordTiming) LyricFormat.WORD_BY_WORD else LyricFormat.LINE_BY_LINE
             } else {
                 val semanticLyrics = chromahub.rhythm.app.util.parseTtml(null, loadedLyrics)
                 val plain = when (semanticLyrics) {

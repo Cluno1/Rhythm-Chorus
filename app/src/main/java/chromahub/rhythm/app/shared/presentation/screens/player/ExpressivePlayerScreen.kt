@@ -2115,17 +2115,17 @@ private fun RhythmPlayerLyricsPanel(
 private fun filterPlainLyricsByPreference(rawLyrics: String, showTranslation: Boolean, showRomanization: Boolean): String {
     if (rawLyrics.isBlank() || (showTranslation && showRomanization)) return rawLyrics
     val filteredLines = mutableListOf<String>()
-    var prevNonAscii = false
+    var prevNonLatin = false
     rawLyrics.lineSequence().forEach { line ->
         val t = line.trim()
         if (t.isEmpty()) { filteredLines += line; return@forEach }
         val isBracketTrans = t.startsWith("(") && t.endsWith(")") && t.length > 2
         val isBracketRoman = t.startsWith("[") && t.endsWith("]") && t.length > 2
-        val hasLetters = t.any { it.isLetterOrDigit() }
-        val isAscii = t.all { it.code <= 127 || it.isWhitespace() }
-        if ((!showTranslation && isBracketTrans) || (!showRomanization && (isBracketRoman || (hasLetters && isAscii && prevNonAscii)))) return@forEach
+        val hasLetters = t.any { it.isLetter() }
+        val isLatin = chromahub.rhythm.app.util.LyricsParser.isLatinBased(t)
+        if ((!showTranslation && isBracketTrans) || (!showRomanization && (isBracketRoman || (hasLetters && isLatin && prevNonLatin)))) return@forEach
         filteredLines += line
-        if (!isBracketTrans && !isBracketRoman) prevNonAscii = t.any { it.code > 127 }
+        if (!isBracketTrans && !isBracketRoman) prevNonLatin = chromahub.rhythm.app.util.LyricsParser.hasNonLatinScript(t)
     }
     return filteredLines.joinToString("\n")
 }
