@@ -1020,7 +1020,8 @@ class MusicRepository(context: Context) {
     }
 
     private fun resolveStableDateAdded(filePath: String?, observedDateAddedMs: Long): Long {
-        val normalizedObservedDate = observedDateAddedMs.takeIf { it > 0L } ?: System.currentTimeMillis()
+        val normalizedObservedDate = (if (observedDateAddedMs in 1..99_999_999_999L) observedDateAddedMs * 1000L else observedDateAddedMs)
+            .takeIf { it > 0L } ?: System.currentTimeMillis()
         val resolvedPath = filePath?.trim()?.takeIf { it.isNotBlank() } ?: return normalizedObservedDate
 
         val key = try {
@@ -1030,10 +1031,11 @@ class MusicRepository(context: Context) {
             return normalizedObservedDate
         }
 
-        val cachedDate = pendingDateAddedWrites[key] ?: dateAddedPrefs.getLong(key, -1L)
+        val rawCachedDate = pendingDateAddedWrites[key] ?: dateAddedPrefs.getLong(key, -1L)
+        val cachedDate = if (rawCachedDate in 1..99_999_999_999L) rawCachedDate * 1000L else rawCachedDate
         if (cachedDate > 0L) {
             val stableDate = minOf(cachedDate, normalizedObservedDate)
-            if (stableDate != cachedDate) {
+            if (stableDate != rawCachedDate) {
                 pendingDateAddedWrites[key] = stableDate
             }
             return stableDate

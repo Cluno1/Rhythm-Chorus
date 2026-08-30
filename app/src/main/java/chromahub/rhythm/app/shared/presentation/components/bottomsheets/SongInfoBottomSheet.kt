@@ -2757,8 +2757,9 @@ private fun formatFileSize(bytes: Long): String {
 }
 
 private fun formatDate(context: android.content.Context, timestamp: Long): String {
-    return if (timestamp > 0) {
-        val date = java.util.Date(timestamp)
+    val normalizedTimestamp = if (timestamp in 1..99_999_999_999L) timestamp * 1000L else timestamp
+    return if (normalizedTimestamp > 0) {
+        val date = java.util.Date(normalizedTimestamp)
         val formatter = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
         formatter.format(date)
     } else {

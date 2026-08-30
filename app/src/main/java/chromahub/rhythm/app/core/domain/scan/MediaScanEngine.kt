@@ -178,15 +178,16 @@ class MediaScanEngine(
                     val duration = cursor.getLong(colDuration)
                     if (minimumDuration > 0 && duration < minimumDuration) continue
 
-                    val dateModified = cursor.getLong(colDateModified)
+                    val rawDateModified = cursor.getLong(colDateModified)
+                    val dateModified = if (rawDateModified in 1..99_999_999_999L) rawDateModified * 1000L else rawDateModified
 
                     val preferSongArtwork = appSettings.preferSongArtwork.value
                     val losslessArtwork = appSettings.isLosslessArtworkActive.value
 
-                    // Differential check: reuse existing DB record if unmodified
+                    // Differential check: reuse existing DB record if unmodified and timestamps are in ms
                     val existing = existingDbSongs[id]
 
-                    if (existing != null && existing.dateModified == dateModified) {
+                    if (existing != null && existing.dateModified == dateModified && existing.dateAdded >= 100_000_000_000L) {
                         val existingArt = if (preferSongArtwork) {
                             chromahub.rhythm.app.util.MediaUtils.getCachedEmbeddedAlbumArtUri(
                                 cacheDir = context.filesDir,
@@ -214,7 +215,15 @@ class MediaScanEngine(
                         val cdTrack = if (colCdTrackNumber >= 0) cursor.getInt(colCdTrackNumber) else 0
                         val discFromStore = if (colDiscNumber >= 0) cursor.getInt(colDiscNumber) else 0
                         val rawYear = cursor.getInt(colYear)
-                        val dateAdded = cursor.getLong(colDateAdded)
+                        val rawDateAdded = cursor.getLong(colDateAdded)
+                        val dateAdded = if (rawDateAdded in 1..99_999_999_999L) {
+                            rawDateAdded * 1000L
+                        } else if (rawDateAdded > 0L) {
+                            rawDateAdded
+                        } else {
+                            System.currentTimeMillis()
+                        }
+                        val finalDateModified = dateModified.takeIf { it > 0L } ?: dateAdded
                         val rawGenre = if (colGenre >= 0) cursor.getString(colGenre) else null
                         val rawAlbumArtist = if (colAlbumArtist >= 0) cursor.getString(colAlbumArtist) else null
 
@@ -326,7 +335,7 @@ class MediaScanEngine(
                             year = year,
                             genre = genre,
                             dateAdded = dateAdded,
-                            dateModified = dateModified,
+                            dateModified = finalDateModified,
                             albumArtist = albumArtist,
                             bitrate = null,
                             sampleRate = null,
