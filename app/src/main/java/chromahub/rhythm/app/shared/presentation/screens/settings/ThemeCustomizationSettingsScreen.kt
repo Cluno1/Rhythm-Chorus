@@ -30,6 +30,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.animation.core.Spring
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import chromahub.rhythm.app.R
@@ -123,7 +124,6 @@ import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShap
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapes
 import chromahub.rhythm.app.shared.presentation.components.common.buildSplashBackdropShapes
 import chromahub.rhythm.app.shared.presentation.components.common.SplashBackgroundOrbs
-import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppVersion
 import chromahub.rhythm.app.ui.theme.getFontPreviewStyle
 import kotlinx.coroutines.launch
@@ -154,23 +154,15 @@ import chromahub.rhythm.app.features.local.presentation.components.settings.Home
 import chromahub.rhythm.app.features.local.presentation.components.settings.LibraryTabOrderBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
-
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerSettingRow
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerSettingCard
 import chromahub.rhythm.app.shared.presentation.screens.settings.SettingItem
 import chromahub.rhythm.app.shared.presentation.screens.settings.SettingGroup
-
+import chromahub.rhythm.app.ui.theme.ColorSchemeOption
+import chromahub.rhythm.app.ui.theme.getPresetColorSchemeOptions
 
 // Data classes and enums for theme customization
-data class ColorSchemeOption(
-    val name: String,
-    val displayName: String,
-    val description: String,
-    val primaryColor: Color,
-    val secondaryColor: Color,
-    val tertiaryColor: Color
-)
 
 data class FontOption(
     val name: String,
@@ -307,114 +299,10 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
         }
     }
 
-    // Color schemes - expanded list matching bottomsheet
-    val colorSchemes = remember(context) {
-        listOf(
-            ColorSchemeOption(
-                name = "Default",
-                displayName = context.getString(R.string.color_scheme_default_title),
-                description = context.getString(R.string.color_scheme_default_desc),
-                primaryColor = Color(0xFF6750A4),
-                secondaryColor = Color(0xFF625B71),
-                tertiaryColor = Color(0xFF7D5260)
-            ),
-            ColorSchemeOption(
-                name = "Warm",
-                displayName = context.getString(R.string.color_scheme_warm_title),
-                description = context.getString(R.string.color_scheme_warm_desc),
-                primaryColor = Color(0xFFFF6B35),
-                secondaryColor = Color(0xFFF7931E),
-                tertiaryColor = Color(0xFFFFC857)
-            ),
-            ColorSchemeOption(
-                name = "Cool",
-                displayName = context.getString(R.string.color_scheme_cool_title),
-                description = context.getString(R.string.color_scheme_cool_desc),
-                primaryColor = Color(0xFF1E88E5),
-                secondaryColor = Color(0xFF00897B),
-                tertiaryColor = Color(0xFF80DEEA)
-            ),
-            ColorSchemeOption(
-                name = "Forest",
-                displayName = context.getString(R.string.color_scheme_forest_title),
-                description = context.getString(R.string.color_scheme_forest_desc),
-                primaryColor = Color(0xFF2E7D32),
-                secondaryColor = Color(0xFF558B2F),
-                tertiaryColor = Color(0xFF9CCC65)
-            ),
-            ColorSchemeOption(
-                name = "Rose",
-                displayName = context.getString(R.string.color_scheme_rose_title),
-                description = context.getString(R.string.color_scheme_rose_desc),
-                primaryColor = Color(0xFFE91E63),
-                secondaryColor = Color(0xFFC2185B),
-                tertiaryColor = Color(0xFFF8BBD0)
-            ),
-            ColorSchemeOption(
-                name = "Monochrome",
-                displayName = context.getString(R.string.color_scheme_monochrome_title),
-                description = context.getString(R.string.color_scheme_monochrome_desc),
-                primaryColor = Color(0xFF424242),
-                secondaryColor = Color(0xFF616161),
-                tertiaryColor = Color(0xFF9E9E9E)
-            ),
-            ColorSchemeOption(
-                name = "Lavender",
-                displayName = context.getString(R.string.color_scheme_lavender_title),
-                description = context.getString(R.string.color_scheme_lavender_desc),
-                primaryColor = Color(0xFF7C4DFF),
-                secondaryColor = Color(0xFF9575CD),
-                tertiaryColor = Color(0xFFBA68C8)
-            ),
-            ColorSchemeOption(
-                name = "Ocean",
-                displayName = context.getString(R.string.color_scheme_ocean_title),
-                description = context.getString(R.string.color_scheme_ocean_desc),
-                primaryColor = Color(0xFF006064),
-                secondaryColor = Color(0xFF00838F),
-                tertiaryColor = Color(0xFF00ACC1)
-            ),
-            ColorSchemeOption(
-                name = "Aurora",
-                displayName = context.getString(R.string.color_scheme_aurora_title),
-                description = context.getString(R.string.color_scheme_aurora_desc),
-                primaryColor = Color(0xFF00C853),
-                secondaryColor = Color(0xFF00E676),
-                tertiaryColor = Color(0xFF69F0AE)
-            ),
-            ColorSchemeOption(
-                name = "Amber",
-                displayName = context.getString(R.string.color_scheme_amber_title),
-                description = context.getString(R.string.color_scheme_amber_desc),
-                primaryColor = Color(0xFFFF6F00),
-                secondaryColor = Color(0xFFFF8F00),
-                tertiaryColor = Color(0xFFFFC107)
-            ),
-            ColorSchemeOption(
-                name = "Crimson",
-                displayName = context.getString(R.string.color_scheme_crimson_title),
-                description = context.getString(R.string.color_scheme_crimson_desc),
-                primaryColor = Color(0xFFB71C1C),
-                secondaryColor = Color(0xFFC62828),
-                tertiaryColor = Color(0xFFD32F2F)
-            ),
-            ColorSchemeOption(
-                name = "Emerald",
-                displayName = context.getString(R.string.color_scheme_emerald_title),
-                description = context.getString(R.string.color_scheme_emerald_desc),
-                primaryColor = Color(0xFF2E7D32),
-                secondaryColor = Color(0xFF388E3C),
-                tertiaryColor = Color(0xFF4CAF50)
-            ),
-            ColorSchemeOption(
-                name = "Mint",
-                displayName = context.getString(R.string.color_scheme_mint_title),
-                description = context.getString(R.string.color_scheme_mint_desc),
-                primaryColor = Color(0xFF0097A7),
-                secondaryColor = Color(0xFF00ACC1),
-                tertiaryColor = Color(0xFF00BCD4)
-            )
-        )
+    // Color schemes - dynamic Material 3 preset schemes
+    val isCurrentDarkTheme = if (useSystemTheme) isSystemInDarkTheme() else darkMode
+    val colorSchemes = remember(context, isCurrentDarkTheme) {
+        getPresetColorSchemeOptions(context, isCurrentDarkTheme)
     }
 
     // Font options - matching bottomsheet

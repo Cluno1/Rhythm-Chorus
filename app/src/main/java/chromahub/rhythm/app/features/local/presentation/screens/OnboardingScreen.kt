@@ -47,6 +47,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.layout.Arrangement
@@ -67,6 +68,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -137,6 +139,8 @@ import chromahub.rhythm.app.shared.presentation.components.common.Initialization
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveButtonGroup
 import chromahub.rhythm.app.shared.presentation.components.common.M3LinearLoader
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
+import chromahub.rhythm.app.shared.presentation.components.SettingsBadgePalette
+import chromahub.rhythm.app.shared.presentation.components.SettingsPalettes
 import chromahub.rhythm.app.features.local.presentation.components.settings.LanguageSwitcherDialog
 import chromahub.rhythm.app.features.local.presentation.components.settings.LibraryTabOrderBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AutoEQPresetPickerBottomSheet
@@ -152,7 +156,8 @@ import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
 import chromahub.rhythm.app.features.streaming.presentation.components.bottomsheets.NearbyServerDiscoverySheet
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
-import chromahub.rhythm.app.shared.presentation.screens.settings.ColorSchemeOption
+import chromahub.rhythm.app.ui.theme.ColorSchemeOption
+import chromahub.rhythm.app.ui.theme.getPresetColorSchemeOptions
 import chromahub.rhythm.app.shared.presentation.screens.settings.ColorSchemePaletteRow
 import chromahub.rhythm.app.shared.presentation.screens.settings.ActionPickerSheet
 import chromahub.rhythm.app.shared.presentation.screens.settings.ColorSource
@@ -9119,11 +9124,13 @@ private fun tourToggleItem(
     checked: Boolean,
     context: Context,
     enabled: Boolean = true,
+    palette: SettingsBadgePalette? = null,
     onCheckedChange: (Boolean) -> Unit
 ): Material3SettingsItem {
     val haptic = LocalHapticFeedback.current
     return Material3SettingsItem(
         icon = icon,
+        palette = palette,
         title = { Text(title) },
         description = { Text(description) },
         enabled = enabled,
@@ -9151,11 +9158,13 @@ private fun tourSheetRow(
     description: String,
     context: Context,
     enabled: Boolean = true,
+    palette: SettingsBadgePalette? = null,
     onClick: () -> Unit
 ): Material3SettingsItem {
     val haptic = LocalHapticFeedback.current
     return Material3SettingsItem(
         icon = icon,
+        palette = palette,
         title = { Text(title) },
         description = { Text(description) },
         enabled = enabled,
@@ -9573,23 +9582,10 @@ private fun ThemingCustomizationSection(
     val customColorScheme by appSettings.customColorScheme.collectAsState()
     val customFont by appSettings.customFont.collectAsState()
 
-    // Color schemes - same list as Theme Customization settings screen
-    val colorSchemes = remember(context) {
-        listOf(
-            ColorSchemeOption("Default", context.getString(R.string.color_scheme_default_title), context.getString(R.string.color_scheme_default_desc), Color(0xFF6750A4), Color(0xFF625B71), Color(0xFF7D5260)),
-            ColorSchemeOption("Warm", context.getString(R.string.color_scheme_warm_title), context.getString(R.string.color_scheme_warm_desc), Color(0xFFFF6B35), Color(0xFFF7931E), Color(0xFFFFC857)),
-            ColorSchemeOption("Cool", context.getString(R.string.color_scheme_cool_title), context.getString(R.string.color_scheme_cool_desc), Color(0xFF1E88E5), Color(0xFF00897B), Color(0xFF80DEEA)),
-            ColorSchemeOption("Forest", context.getString(R.string.color_scheme_forest_title), context.getString(R.string.color_scheme_forest_desc), Color(0xFF2E7D32), Color(0xFF558B2F), Color(0xFF9CCC65)),
-            ColorSchemeOption("Rose", context.getString(R.string.color_scheme_rose_title), context.getString(R.string.color_scheme_rose_desc), Color(0xFFE91E63), Color(0xFFC2185B), Color(0xFFF8BBD0)),
-            ColorSchemeOption("Monochrome", context.getString(R.string.color_scheme_monochrome_title), context.getString(R.string.color_scheme_monochrome_desc), Color(0xFF424242), Color(0xFF616161), Color(0xFF9E9E9E)),
-            ColorSchemeOption("Lavender", context.getString(R.string.color_scheme_lavender_title), context.getString(R.string.color_scheme_lavender_desc), Color(0xFF7C4DFF), Color(0xFF9575CD), Color(0xFFBA68C8)),
-            ColorSchemeOption("Ocean", context.getString(R.string.color_scheme_ocean_title), context.getString(R.string.color_scheme_ocean_desc), Color(0xFF006064), Color(0xFF00838F), Color(0xFF00ACC1)),
-            ColorSchemeOption("Aurora", context.getString(R.string.color_scheme_aurora_title), context.getString(R.string.color_scheme_aurora_desc), Color(0xFF00C853), Color(0xFF00E676), Color(0xFF69F0AE)),
-            ColorSchemeOption("Amber", context.getString(R.string.color_scheme_amber_title), context.getString(R.string.color_scheme_amber_desc), Color(0xFFFF6F00), Color(0xFFFF8F00), Color(0xFFFFC107)),
-            ColorSchemeOption("Crimson", context.getString(R.string.color_scheme_crimson_title), context.getString(R.string.color_scheme_crimson_desc), Color(0xFFB71C1C), Color(0xFFC62828), Color(0xFFD32F2F)),
-            ColorSchemeOption("Emerald", context.getString(R.string.color_scheme_emerald_title), context.getString(R.string.color_scheme_emerald_desc), Color(0xFF2E7D32), Color(0xFF388E3C), Color(0xFF4CAF50)),
-            ColorSchemeOption("Mint", context.getString(R.string.color_scheme_mint_title), context.getString(R.string.color_scheme_mint_desc), Color(0xFF0097A7), Color(0xFF00ACC1), Color(0xFF00BCD4))
-        )
+    // Color schemes - dynamic Material 3 preset schemes
+    val isSystemDark = isSystemInDarkTheme()
+    val colorSchemes = remember(context, isSystemDark) {
+        getPresetColorSchemeOptions(context, isSystemDark)
     }
 
     val fontOptions = remember(context) {
@@ -11393,12 +11389,20 @@ private fun StreamingSetupSelectionAndForm(
 private fun Material3SettingsGroup(
     title: String? = null,
     items: List<Material3SettingsItem>,
-    containerColor: Color = MaterialTheme.colorScheme.surface
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    palette: SettingsBadgePalette? = null,
+    itemShape: Shape? = null,
+    lastItemShape: Shape? = null,
+    iconShape: Shape? = null
 ) {
     chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup(
         title = title,
         items = items,
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = containerColor,
+        palette = palette,
+        itemShape = itemShape,
+        lastItemShape = lastItemShape,
+        iconShape = iconShape
     )
 }
 

@@ -385,6 +385,7 @@ fun ExpressivePlayerScreen(
     val autoHideLyricsControls by appSettings.autoHideLyricsControls.collectAsState()
     val playerLyricsAlignment by appSettings.playerLyricsAlignment.collectAsState()
     val keepScreenOnLyrics by appSettings.keepScreenOnLyrics.collectAsState()
+    val useExactArtworkColors by appSettings.useExactArtworkColors.collectAsState()
 
     val postureState by rememberDevicePosture()
     val isFlexMode = postureState is DevicePosture.TableTop
@@ -522,13 +523,14 @@ fun ExpressivePlayerScreen(
     val useAccentBackground = !isBackdropEnabled && playerAccentBackgroundEnabled
     val currentArtworkUri = song?.artworkUri
     val accentArtScheme = produceState<Pair<Color, Color>?>(
-        initialValue = currentArtworkUri?.let { uri -> accentSchemeCache["${uri}_${isDarkTheme}"] },
-        key1 = currentArtworkUri,
-        key2 = useAccentBackground,
-        key3 = isDarkTheme
+        initialValue = currentArtworkUri?.let { uri -> accentSchemeCache["${uri}_${isDarkTheme}_${useExactArtworkColors}"] },
+        currentArtworkUri,
+        useAccentBackground,
+        isDarkTheme,
+        useExactArtworkColors
     ) {
         if (!useAccentBackground || currentArtworkUri == null) return@produceState
-        val cacheKey = "${currentArtworkUri}_${isDarkTheme}"
+        val cacheKey = "${currentArtworkUri}_${isDarkTheme}_${useExactArtworkColors}"
         accentSchemeCache[cacheKey]?.let { cached ->
             value = cached
             return@produceState
@@ -544,9 +546,19 @@ fun ExpressivePlayerScreen(
                 if (seedArgb == null) null
                 else {
                     val sourceHct = Hct.fromInt(seedArgb)
-                    val schemeType = if (sourceHct.chroma > 12.0) "CONTENT" else "TONAL_SPOT"
-                    val dynamicScheme = ColorExtractor.createDynamicScheme(sourceHct, schemeType, isDarkTheme)
-                    dynamicScheme.primary to dynamicScheme.onPrimary
+                    val isMonochrome = extracted?.isMonochrome == true ||
+                        sourceHct.chroma <= 8.0 ||
+                        ColorExtractor.isArgbNearGrayscale(seedArgb)
+
+                    if (isMonochrome) {
+                        val bg = if (isDarkTheme) Color(0xFF1E1E1E) else Color(0xFFE5E5E5)
+                        val fg = if (isDarkTheme) Color.White else Color.Black
+                        bg to fg
+                    } else {
+                        val schemeType = if (useExactArtworkColors) "CONTENT" else if (sourceHct.chroma > 18.0) "VIBRANT" else "TONAL_SPOT"
+                        val dynamicScheme = ColorExtractor.createDynamicScheme(sourceHct, schemeType, isDarkTheme)
+                        dynamicScheme.primary to dynamicScheme.onPrimary
+                    }
                 }
             } catch (e: Exception) {
                 null
