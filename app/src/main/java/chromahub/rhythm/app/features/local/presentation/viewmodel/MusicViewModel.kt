@@ -4278,6 +4278,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             Log.d(TAG, "Repeat mode changed: $repeatMode")
             _repeatMode.value = repeatMode
         }
+
+        override fun onTimelineChanged(timeline: androidx.media3.common.Timeline, reason: Int) {
+            if (appSettings.shuffleUsesExoplayer.value && mediaController?.shuffleModeEnabled == true) {
+                syncQueueWithMediaController()
+            }
+        }
     }
     
     private fun startProgressUpdates() {
@@ -8242,6 +8248,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 if (controller.mediaItemCount != _currentQueue.value.songs.size) {
                     Log.w(TAG, "Queue size mismatch after playNext - MediaController: ${controller.mediaItemCount}, ViewModel: ${_currentQueue.value.songs.size}")
                 }
+                // Save queue to persistence
+                saveQueueToPersistence()
+
                 val toastContext = getApplication<android.app.Application>().applicationContext
                 android.widget.Toast.makeText(toastContext, toastContext.getString(R.string.playing_next_simple, song.title), android.widget.Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
@@ -8496,9 +8505,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     // Add items in batches to prevent ANR
                     val batchSize = 50
                     mediaItems.chunked(batchSize).forEach { batch ->
-                        batch.forEach { mediaItem ->
-                            controller.addMediaItem(mediaItem)
-                        }
+                        controller.addMediaItems(batch)
                         // Small delay between batches to keep UI responsive
                         if (mediaItems.size > batchSize) {
                             kotlinx.coroutines.delay(10)

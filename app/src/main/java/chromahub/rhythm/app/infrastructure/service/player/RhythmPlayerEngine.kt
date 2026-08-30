@@ -395,6 +395,7 @@ class RhythmPlayerEngine(
             .setLoadControl(loadControl)
             .setMediaSourceFactory(mediaSourceFactory)
             .build().apply {
+                setShuffleOrder(RhythmShuffleOrder(0))
                 this.trackSelectionParameters = trackSelectionParameters
                 setAudioAttributes(audioAttributes, handleAudioFocus)
                 setHandleAudioBecomingNoisy(true)
@@ -579,6 +580,23 @@ class RhythmPlayerEngine(
 
         if (futureToTransfer.isNotEmpty()) {
             incomingPlayer.addMediaItems(futureToTransfer)
+        }
+
+        if (outgoingPlayer.shuffleModeEnabled && outgoingMediaItemCount > 0) {
+            val count = outgoingMediaItemCount
+            val shuffledIndices = IntArray(count)
+            val timeline = outgoingPlayer.currentTimeline
+            var idx = 0
+            var windowIndex = timeline.getFirstWindowIndex(true)
+            val visited = BooleanArray(count)
+            while (windowIndex != C.INDEX_UNSET && windowIndex in visited.indices && !visited[windowIndex] && idx < count) {
+                shuffledIndices[idx++] = windowIndex
+                visited[windowIndex] = true
+                windowIndex = timeline.getNextWindowIndex(windowIndex, Player.REPEAT_MODE_OFF, true)
+            }
+            if (idx == count) {
+                incomingPlayer.setShuffleOrder(RhythmShuffleOrder(shuffledIndices))
+            }
         }
 
         incomingPlayer.seekTo(incomingQueueIndex, 0)
