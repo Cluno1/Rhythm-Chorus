@@ -195,7 +195,7 @@
     <string name="notification_streaming_quality_title">Calidad de transmisión</string>
     <string name="notification_streaming_quality_switched">La calidad cambió a %1$s debido a cambios en la red</string>
     <string name="notification_streaming_buffering">Almacenamiento en búfer… Reproducción desde %1$s</string>
-    <string name="notification_streaming_buffering_complete">¡Listo para jugar!</string>
+    <string name="notification_streaming_buffering_complete">¡Listo para escuchar!</string>
     <!-- Streaming Offline -->
     <string name="notification_streaming_offline_title">Modo sin conexión</string>
     <string name="notification_streaming_offline_sync">Sincronizando caché sin conexión con %1$s…</string>
@@ -522,7 +522,8 @@
     <string name="onboarding_library_3">Opciones avanzadas de visualización y clasificación disponibles en Configuración &gt; Configuración de biblioteca</string>
     <string name="onboarding_library_4">Las listas de reproducción predeterminadas (agregadas recientemente, más reproducidas) se pueden alternar en Configuración &gt; Listas de reproducción</string>
     <string name="onboarding_theme_title">Haz tuyo Rhythm</string>
-    <string name="onboarding_theme_desc">Personaliza la apariencia de Rhythm para que coincida con tu estilo. Elija el tema, la fuente o los Material colores dinámicos de su sistema (Android 12+).</string>    <string name="onboarding_more_tuner">Más personalización en la configuración</string>
+    <string name="onboarding_theme_desc">Personaliza la apariencia de Rhythm para que coincida con tu estilo. Elija el tema, la fuente o los Material colores dinámicos de su sistema (Android 12+).</string>
+    <string name="onboarding_more_tuner">Más personalización en la configuración</string>
     <string name="onboarding_tuner_1">Esquemas de color personalizados y extracción de color de carátula del álbum</string>
     <string name="onboarding_tuner_2">Personalización de fuentes y configuración de tipografía</string>
     <string name="onboarding_tuner_3">Opciones avanzadas de tema disponibles en Configuración &gt; Personalización del tema</string>
@@ -548,7 +549,7 @@
     <string name="onboarding_media_scan_whitelist">Modo de lista blanca: muestra solo canciones de carpetas seleccionadas</string>
     <string name="onboarding_media_scan_configure_in_tuner">Configure el escaneo en Configuración &gt; Escaneo de medios</string>
     <string name="onboarding_complete_title">¡Ya está todo listo!</string>
-    <string name="onboarding_complete_desc">¡Rhythm está listo para jugar! Tu biblioteca de música se está escaneando en segundo plano. Esto es lo que está configurado:</string>
+    <string name="onboarding_complete_desc">¡Rhythm está listo para reproducir música! Tu biblioteca de música se está escaneando en segundo plano. Esto es lo que está configurado:</string>
     <string name="onboarding_whats_next">¿Qué sigue?</string>
     <string name="onboarding_next_browse">Explora tus canciones, álbumes y artistas</string>
     <string name="onboarding_next_create">Crea tu primera lista de reproducción</string>
@@ -889,7 +890,7 @@
     <string name="action_export_all">Exportar todo</string>
     <string name="action_browse_files">Explorar archivos</string>
     <string name="action_choose">Elige</string>
-    <string name="action_play">Jugar</string>
+    <string name="action_play">Escuchar</string>
     <string name="action_shuffle">Mezclar</string>
     <string name="action_share">Compartir</string>
     <!-- Settings Screen -->
@@ -994,7 +995,7 @@
     <string name="cd_reorder_tabs">Reordenar pestañas</string>
     <string name="cd_toggle_view_type">Alternar tipo de vista</string>
     <string name="cd_open_playlist">Abrir lista de reproducción</string>
-    <string name="cd_play_artist">Jugar %1$s</string>
+    <string name="cd_play_artist">Escuchar %1$s</string>
     <string name="cd_storage">Almacenamiento</string>
     <string name="cd_pinned">Fijado</string>
     <string name="cd_folder">Carpeta</string>
@@ -2115,7 +2116,7 @@
     <string name="betaprogrampopup_direct_feedback">Comentarios directos</string>
     <string name="betaprogrampopup_youre_part_of_an">Eres parte de un grupo exclusivo que ayuda a dar forma al futuro del reproductor de música Rhythm</string>
     <string name="betaprogrampopup_start_exploring">Comience a explorar</string>
-    <string name="switchmodedialog_switch_play">Cambiar y jugar</string>
+    <string name="switchmodedialog_switch_play">Cambiar y Reproducir</string>
     <string name="fullscreenlyricsview_cover_artwork">Portada</string>
     <string name="fullscreenlyricsview_loading_synced_lyrics">Cargando letras sincronizadas…</string>
     <string name="fullscreenlyricsview_lyrics_arent_available_for">Letras no disponibles para esta canción</string>
@@ -2245,8 +2246,8 @@
         <item quantity="many">Se importaron correctamente %1$d listas de reproducción.\n%2$s\n\nReinicie la aplicación para aplicar los cambios.</item>
         <item quantity="other">Se importaron correctamente %1$d listas de reproducción.\n%2$s\n\nReinicie la aplicación para aplicar los cambios.</item>
     </plurals>
-    <string name="play_artist">Jugar %1$s</string>
-    <string name="will_play_next">%1$s jugará a continuación</string>
+    <string name="play_artist">Reproducir %1$s</string>
+    <string name="will_play_next">%1$s se reproducirá a continuación</string>
     <string name="added_to_queue">%1$s agregado a la cola</string>
     <string name="added_to_queue_simple">Agregado a la cola: %1$s</string>
     <string name="playing_next_simple">Reproduciendo a continuación: %1$s</string>

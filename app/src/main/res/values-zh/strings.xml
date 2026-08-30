@@ -6,10 +6,10 @@
     <string name="library">曲库</string>
     <string name="search">搜索</string>
     <!-- Media3 notification configuration -->
-    <string name="media3_notification_channel_name">Rhythm 音乐</string>
-    <string name="media3_notification_channel_description">媒体播放控件</string>
+    <string name="media3_notification_channel_name">Rhythm 正在播放</string>
+    <string name="media3_notification_channel_description">前台播放控制、搜索操作和专辑封面</string>
     <!-- Widget strings -->
-    <string name="widget_description_glance">Rhythm 音乐 - 通过 9 种响应式布局、Material 3 设计和实时状态更新控制播放</string>
+    <string name="widget_description_glance">在主页上查看正在播放的音乐并控制音乐——播放、暂停、跳过等。</string>
     <string name="widget_name_glance">Rhythm 音乐</string>
     <string name="unknown_artist">未知艺术家</string>
     <string name="play_pause">播放/暂停</string>
@@ -496,7 +496,8 @@
     <string name="onboarding_library_3">设置 &gt; 库设置中提供高级显示和排序选项</string>
     <string name="onboarding_library_4">默认播放列表（最近添加、最常播放）可以在“设置”&gt;“播放列表”中切换</string>
     <string name="onboarding_theme_title">让 Rhythm 专属于你</string>
-    <string name="onboarding_theme_desc">个性化Rhythm的外观以符合您的风格。选择您的系统主题、字体或 Material You 动态颜色 (Android 12+)。</string>    <string name="onboarding_more_tuner">设置中更多自定义</string>
+    <string name="onboarding_theme_desc">个性化Rhythm的外观以符合您的风格。选择您的系统主题、字体或 Material You 动态颜色 (Android 12+)。</string>
+    <string name="onboarding_more_tuner">设置中更多自定义</string>
     <string name="onboarding_tuner_1">自定义配色方案和专辑封面颜色提取</string>
     <string name="onboarding_tuner_2">字体定制和排版设置</string>
     <string name="onboarding_tuner_3">设置 &gt; 主题自定义中提供了高级主题选项</string>
@@ -2727,4 +2728,6 @@
     <string name="lyrically_sources_title">Lyrically 来源</string>
     <string name="lyrically_sources_desc">在 Lyrically 内配置并设置歌词数据源的优先级。程序会优先逐字匹配歌词源，匹配失败后再依次降级调用同步歌词源、纯文本歌词源。</string>
     <string name="error_no_document_app">未找到用于选定文件夹的系统文件选择器。</string>
+    <string name="widget_tip_resize_settings">长按小部件可调整大小或打开设置</string>
+    <string name="widget_tip_cookie_corners">选择小部件底部角落的功能来跳过、随机播放、重复播放、收藏或隐藏它们</string>
 </resources>
