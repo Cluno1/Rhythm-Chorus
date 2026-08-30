@@ -7870,16 +7870,47 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             wordByWordLyrics = sanitizedLyrics
                         )
                     } else if (isSynced) {
-                        // Generate plain text by removing LRC timestamps
-                        val generatedPlain = normalizedLyrics.lines().joinToString("\n") { line ->
-                            line.replace(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]"), "").trim()
+                        val hasWordTimestamps = chromahub.rhythm.app.util.LyricsParser.hasWordTimestamps(sanitizedLyrics)
+                        if (hasWordTimestamps) {
+                            val parsedWordByWordLines = try {
+                                RhythmLyricsParser.parseEnhancedLRCtoWordByWord(sanitizedLyrics)
+                            } catch (e: Exception) {
+                                emptyList()
+                            }
+                            if (parsedWordByWordLines.isNotEmpty()) {
+                                val wordByWordJson = Gson().toJson(parsedWordByWordLines)
+                                val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
+                                val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
+                                val hasWordTiming = RhythmLyricsParser.hasWordTiming(parsedWordByWordLines)
+                                LyricsData(
+                                    plainLyrics = plain,
+                                    syncedLyrics = lrc,
+                                    wordByWordLyrics = if (hasWordTiming) wordByWordJson else null,
+                                    source = "Local File",
+                                    isCorrected = true
+                                )
+                            } else {
+                                val generatedPlain = normalizedLyrics.lines().joinToString("\n") { line ->
+                                    line.replace(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]"), "").trim()
+                                }
+                                LyricsData(
+                                    plainLyrics = generatedPlain,
+                                    syncedLyrics = normalizedLyrics,
+                                    wordByWordLyrics = existingLyricsData?.wordByWordLyrics
+                                )
+                            }
+                        } else {
+                            // Generate plain text by removing LRC timestamps
+                            val generatedPlain = normalizedLyrics.lines().joinToString("\n") { line ->
+                                line.replace(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]"), "").trim()
+                            }
+                            
+                            LyricsData(
+                                plainLyrics = generatedPlain,
+                                syncedLyrics = normalizedLyrics,
+                                wordByWordLyrics = existingLyricsData?.wordByWordLyrics
+                            )
                         }
-                        
-                        LyricsData(
-                            plainLyrics = generatedPlain,
-                            syncedLyrics = normalizedLyrics,
-                            wordByWordLyrics = existingLyricsData?.wordByWordLyrics
-                        )
                     } else {
                         LyricsData(
                             plainLyrics = sanitizedLyrics,

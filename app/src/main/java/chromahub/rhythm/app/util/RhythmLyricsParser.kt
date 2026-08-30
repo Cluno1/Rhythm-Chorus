@@ -451,12 +451,153 @@ object RhythmLyricsParser {
             "[$timestamp]$text"
         }
     }
-    
-    private fun formatLRCTimestamp(milliseconds: Long): String {
-        val totalSeconds = milliseconds / 1000
+
+    /**
+     * Convert word-by-word lyrics to Enhanced LRC format (ELRC) with word-level timestamps <mm:ss.xx>
+     */
+    fun toEnhancedLRCFormat(wordByWordLines: List<WordByWordLyricLine>): String {
+        return wordByWordLines.joinToString("\n") { line ->
+            val timestamp = formatLRCTimestamp(line.lineTimestamp)
+            val isWordTimed = isLineWordTimed(line)
+            val wordsText = if (isWordTimed) {
+                line.words.joinToString("") { word ->
+                    val wordTime = formatLRCTimestamp(word.timestamp)
+                    if (word.isPart && word.text.isNotEmpty()) {
+                        "<$wordTime>${word.text}"
+                    } else {
+                        " <$wordTime>${word.text}"
+                    }
+                }.trimStart()
+            } else {
+                line.words.joinToString("") { word ->
+                    if (word.isPart && word.text.isNotEmpty()) {
+                        word.text
+                    } else {
+                        " ${word.text}"
+                    }
+                }.trim()
+            }
+
+            buildString {
+                append("[$timestamp]$wordsText")
+                if (!line.romanization.isNullOrBlank()) {
+                    if (hasNonLatinScript(wordsText)) {
+                        append("\n[$timestamp]${line.romanization}")
+                    } else {
+                        append("\n[$timestamp][${line.romanization}]")
+                    }
+                }
+                if (!line.translation.isNullOrBlank()) {
+                    append("\n[$timestamp](${line.translation})")
+                }
+            }
+        }
+    }
+
+    /**
+     * Convert word-by-word lyrics to standard TTML XML format
+     */
+    fun toTtmlFormat(
+        wordByWordLines: List<WordByWordLyricLine>,
+        title: String? = null,
+        artist: String? = null
+    ): String {
+        val hasWords = hasWordTiming(wordByWordLines)
+        val timingAttr = if (hasWords) "Word" else "Line"
+
+        return buildString {
+            appendLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+            appendLine("<tt xmlns=\"http://www.w3.org/ns/ttml\" xmlns:ttm=\"http://www.w3.org/ns/ttml#metadata\" xmlns:itunes=\"http://music.apple.com/lyric-ttml-internal\" itunes:timing=\"$timingAttr\">")
+            appendLine("  <head>")
+            appendLine("    <metadata>")
+            if (!title.isNullOrBlank() || !artist.isNullOrBlank()) {
+                appendLine("      <iTunesMetadata>")
+                if (!title.isNullOrBlank()) {
+                    appendLine("        <songTitle>${escapeXml(title)}</songTitle>")
+                }
+                if (!artist.isNullOrBlank()) {
+                    appendLine("        <artist>${escapeXml(artist)}</artist>")
+                }
+                appendLine("      </iTunesMetadata>")
+            }
+            appendLine("    </metadata>")
+            appendLine("  </head>")
+            appendLine("  <body>")
+            appendLine("    <div>")
+            for (line in wordByWordLines) {
+                val begin = formatTtmlTimestamp(line.lineTimestamp)
+                val effectiveEnd = line.lineEndtime.takeIf { it > line.lineTimestamp }
+                    ?: line.words.maxOfOrNull { it.endtime }?.takeIf { it > line.lineTimestamp }
+                    ?: (line.lineTimestamp + 3000L)
+                val end = formatTtmlTimestamp(effectiveEnd)
+
+                if (isLineWordTimed(line)) {
+                    appendLine("      <p begin=\"$begin\" end=\"$end\">")
+                    for (word in line.words) {
+                        val wBegin = formatTtmlTimestamp(word.timestamp)
+                        val wEnd = formatTtmlTimestamp(word.endtime.coerceAtLeast(word.timestamp))
+                        val wordText = escapeXml(word.text + if (!word.isPart) " " else "")
+                        appendLine("        <span begin=\"$wBegin\" end=\"$wEnd\">$wordText</span>")
+                    }
+                    appendLine("      </p>")
+                } else {
+                    val lineText = escapeXml(line.words.joinToString("") { if (it.isPart) it.text else " " + it.text }.trim())
+                    appendLine("      <p begin=\"$begin\" end=\"$end\">$lineText</p>")
+                }
+            }
+            appendLine("    </div>")
+            appendLine("  </body>")
+            appendLine("</tt>")
+        }
+    }
+
+    /**
+     * Parse Enhanced LRC content with word-level timestamps directly into a list of WordByWordLyricLine
+     */
+    fun parseEnhancedLRCtoWordByWord(lrcContent: String): List<WordByWordLyricLine> {
+        val enhanced = LyricsParser.parseEnhancedLRC(lrcContent)
+        return enhanced.map { line ->
+            WordByWordLyricLine(
+                words = line.words.map {
+                    WordByWordWord(
+                        text = it.text,
+                        isPart = it.isPart,
+                        timestamp = it.timestamp,
+                        endtime = it.endtime
+                    )
+                },
+                lineTimestamp = line.lineTimestamp,
+                lineEndtime = line.lineEndtime,
+                translation = line.translation,
+                romanization = line.romanization
+            )
+        }
+    }
+
+    fun escapeXml(text: String): String {
+        return text
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&apos;")
+    }
+
+    fun formatTtmlTimestamp(milliseconds: Long): String {
+        val clamped = milliseconds.coerceAtLeast(0L)
+        val totalSeconds = clamped / 1000
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
-        val millis = (milliseconds % 1000) / 10
+        val millis = clamped % 1000
+        return String.format(Locale.ROOT, "%02d:%02d.%03d", minutes, seconds, millis)
+    }
+
+    private fun formatLRCTimestamp(milliseconds: Long): String {
+        val clamped = milliseconds.coerceAtLeast(0L)
+        val totalSeconds = clamped / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        val millis = (clamped % 1000) / 10
         return String.format(Locale.ROOT, "%02d:%02d.%02d", minutes, seconds, millis)
     }
 

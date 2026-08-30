@@ -4055,12 +4055,16 @@ class MusicRepository(context: Context) {
                         
                         // Also extract plain text and line-synced LRC
                         val plainText = enhancedLines.joinToString("\n") { line: EnhancedLyricLine ->
-                            line.words.joinToString(" ") { word: EnhancedWord -> word.text }
+                            line.words.joinToString("") { word: EnhancedWord ->
+                                if (word.isPart && word.text.isNotEmpty()) word.text else " ${word.text}"
+                            }.trim()
                         }
                         
                         val syncedLrc = enhancedLines.joinToString("\n") { line: EnhancedLyricLine ->
                             val timestamp = formatLRCTimestamp(line.lineTimestamp)
-                            val text = line.words.joinToString(" ") { word: EnhancedWord -> word.text }
+                            val text = line.words.joinToString("") { word: EnhancedWord ->
+                                if (word.isPart && word.text.isNotEmpty()) word.text else " ${word.text}"
+                            }.trim()
                             "[$timestamp]$text"
                         }
                         
@@ -4153,7 +4157,9 @@ class MusicRepository(context: Context) {
 
         val wordByWordJson = convertEnhancedLRCToWordByWord(enhancedLines)
         val plainText = enhancedLines.joinToString("\n") { line ->
-            line.words.joinToString(" ") { it.text }
+            line.words.joinToString("") { word: EnhancedWord ->
+                if (word.isPart && word.text.isNotEmpty()) word.text else " ${word.text}"
+            }.trim()
         }
 
         Log.d(TAG, "Parsed ${wordTimestamps.size} word timestamps across ${enhancedLines.size} lines")
@@ -5434,12 +5440,16 @@ class MusicRepository(context: Context) {
                     
                     // Also extract plain text and line-synced LRC
                     val plainText = enhancedLines.joinToString("\n") { line: EnhancedLyricLine ->
-                        line.words.joinToString(" ") { word: EnhancedWord -> word.text }
+                        line.words.joinToString("") { word: EnhancedWord ->
+                            if (word.isPart && word.text.isNotEmpty()) word.text else " ${word.text}"
+                        }.trim()
                     }
                     
                     val syncedLrc = enhancedLines.joinToString("\n") { line: EnhancedLyricLine ->
                         val timestamp = formatLRCTimestamp(line.lineTimestamp)
-                        val text = line.words.joinToString(" ") { word: EnhancedWord -> word.text }
+                        val text = line.words.joinToString("") { word: EnhancedWord ->
+                            if (word.isPart && word.text.isNotEmpty()) word.text else " ${word.text}"
+                        }.trim()
                         "[$timestamp]$text"
                     }
                     

@@ -145,6 +145,10 @@ object LrcUtils {
             parserOptions.errorText
         )?.let { parseLyrics(it, audioMimeType, parserOptions, LyricFormat.TTML) }
             ?: loadTextFile(
+                musicFile?.let { File(it.parentFile, it.nameWithoutExtension + ".elrc") },
+                parserOptions.errorText
+            )?.let { parseLyrics(it, audioMimeType, parserOptions, LyricFormat.LRC) }
+            ?: loadTextFile(
                 musicFile?.let { File(it.parentFile, it.nameWithoutExtension + ".srt") },
                 parserOptions.errorText
             )?.let { parseLyrics(it, audioMimeType, parserOptions, LyricFormat.SRT) }
