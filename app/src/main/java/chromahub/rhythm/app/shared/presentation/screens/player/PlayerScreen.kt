@@ -468,6 +468,35 @@ fun PlayerScreen(
             },
             onDeviceClick = { showDeviceOutputSheet = true },
             onQueueClick = { showQueueSheet = true },
+            onPlaybackSpeed = { showPlaybackSpeedDialog = true },
+            onPlaybackPitch = { showPlaybackPitchDialog = true },
+            onEqualizer = {
+                try {
+                    navController.navigate(Screen.Equalizer.route) {
+                        popUpTo(Screen.Player.route) {
+                            inclusive = true
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("PlayerScreen", "Failed to navigate to equalizer", e)
+                }
+            },
+            onSleepTimer = { showSleepTimerBottomSheet = true },
+            onAddToPlaylist = { showAddToPlaylistSheetInternal = true },
+            onShareFile = {
+                song?.let { currentSong ->
+                    try {
+                        val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                            type = "audio/*"
+                            putExtra(android.content.Intent.EXTRA_STREAM, currentSong.uri)
+                            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        context.startActivity(android.content.Intent.createChooser(shareIntent, "Share ${currentSong.title}"))
+                    } catch (_: Exception) {
+                        Toast.makeText(context, R.string.materialplayerscreen_unable_to_share_file, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
             onBack = onBack,
             location = location,
             appSettings = appSettings,

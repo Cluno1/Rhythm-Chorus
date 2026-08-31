@@ -2954,5 +2954,29 @@
     <string name="unknown_album_name">Unknown Album</string>
     <string name="settings_floating_navigation">Floating Navigation Bar</string>
     <string name="settings_floating_navigation_desc">Float navigation bar above content on phone and tablet, or dock it to screen edges</string>
+    <string name="expressive_bottom_buttons_title">Expressive Bottom Buttons</string>
+    <string name="expressive_bottom_buttons_desc">Customize and reorder bottom action buttons</string>
+    <string name="expressive_bottom_buttons_normal_tab">Normal Mode</string>
+    <string name="expressive_bottom_buttons_merge_tab">Merge Mode</string>
+    <string name="expressive_bottom_buttons_saved">Bottom buttons configuration saved</string>
+    <string name="expressive_bottom_buttons_reset">Reset to default button order and visibility</string>
+    <string name="expressive_bottom_buttons_at_least_one">At least one button must be visible</string>
+    <string name="settings_expressive_bottom_buttons">Customize Bottom Buttons</string>
+    <string name="settings_expressive_bottom_buttons_desc">Reorder and toggle bottom action buttons for Normal and Merge modes</string>
+    <string name="expressive_button_lyrics_desc">Toggle synchronized or plain lyrics</string>
+    <string name="expressive_button_favorite_desc">Like or favorite current track</string>
+    <string name="expressive_button_device_desc">Audio output route and device picker</string>
+    <string name="expressive_button_queue_desc">Queue list and track counter</string>
+    <string name="expressive_button_more_desc">More playback actions and options</string>
+    <string name="expressive_button_shuffle_desc">Toggle shuffle playback</string>
+    <string name="expressive_button_repeat_desc">Cycle repeat mode</string>
+    <string name="expressive_button_equalizer_desc">Audio equalizer and presets</string>
+    <string name="expressive_button_speed_desc">Playback speed and pitch adjustment</string>
+    <string name="expressive_button_sleep_timer_desc">Sleep timer countdown</string>
+    <string name="expressive_button_add_to_playlist_desc">Add track to a playlist</string>
+    <string name="expressive_button_album_desc">Go to album details</string>
+    <string name="expressive_button_artist_desc">Go to artist details</string>
+    <string name="expressive_button_song_info_desc">View and edit song metadata</string>
+    <string name="expressive_button_share_desc">Share audio file</string>
 </resources>
 

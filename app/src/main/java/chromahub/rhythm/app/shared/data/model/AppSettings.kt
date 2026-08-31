@@ -200,6 +200,10 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_CHIP_ORDER = "player_chip_order"
         private const val KEY_HIDDEN_LIBRARY_TABS = "hidden_library_tabs"
         private const val KEY_HIDDEN_PLAYER_CHIPS = "hidden_player_chips"
+        private const val KEY_EXPRESSIVE_BOTTOM_BUTTONS_NORMAL = "expressive_bottom_buttons_normal"
+        private const val KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_NORMAL = "expressive_hidden_bottom_buttons_normal"
+        private const val KEY_EXPRESSIVE_BOTTOM_BUTTONS_MERGE = "expressive_bottom_buttons_merge"
+        private const val KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_MERGE = "expressive_hidden_bottom_buttons_merge"
         private const val KEY_LYRICALLY_SOURCES_ORDER = "lyrically_sources_order"
         private const val KEY_DISABLED_LYRICALLY_SOURCES = "disabled_lyrically_sources"
         private const val KEY_GROUP_BY_ALBUM_ARTIST = "group_by_album_artist" // New setting for album artist grouping
@@ -928,6 +932,57 @@ class AppSettings private constructor(context: Context) {
             ?: emptySet()
     )
     val hiddenPlayerChips: StateFlow<Set<String>> = _hiddenPlayerChips.asStateFlow()
+
+    // Expressive Player Bottom Buttons
+    val defaultExpressiveBottomButtonsNormal = listOf("DEVICE", "QUEUE", "MORE")
+    val defaultExpressiveBottomButtonsMerge = listOf("LYRICS", "FAVORITE", "DEVICE", "QUEUE", "MORE")
+    val allExpressiveBottomButtons = listOf(
+        "LYRICS", "FAVORITE", "DEVICE", "QUEUE", "MORE",
+        "SHUFFLE", "REPEAT", "EQUALIZER", "SPEED", "SLEEP_TIMER",
+        "ADD_TO_PLAYLIST", "ALBUM", "ARTIST", "SONG_INFO", "SHARE"
+    )
+
+    private val _expressiveBottomButtonsNormal = MutableStateFlow(
+        prefs.getString(KEY_EXPRESSIVE_BOTTOM_BUTTONS_NORMAL, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.distinct()
+            ?.filter { it in allExpressiveBottomButtons }
+            ?.takeIf { it.isNotEmpty() }
+            ?: defaultExpressiveBottomButtonsNormal
+    )
+    val expressiveBottomButtonsNormal: StateFlow<List<String>> = _expressiveBottomButtonsNormal.asStateFlow()
+
+    private val _expressiveHiddenBottomButtonsNormal = MutableStateFlow(
+        prefs.getString(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_NORMAL, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.filter { it in allExpressiveBottomButtons }
+            ?.toSet()
+            ?: emptySet()
+    )
+    val expressiveHiddenBottomButtonsNormal: StateFlow<Set<String>> = _expressiveHiddenBottomButtonsNormal.asStateFlow()
+
+    private val _expressiveBottomButtonsMerge = MutableStateFlow(
+        prefs.getString(KEY_EXPRESSIVE_BOTTOM_BUTTONS_MERGE, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.distinct()
+            ?.filter { it in allExpressiveBottomButtons }
+            ?.takeIf { it.isNotEmpty() }
+            ?: defaultExpressiveBottomButtonsMerge
+    )
+    val expressiveBottomButtonsMerge: StateFlow<List<String>> = _expressiveBottomButtonsMerge.asStateFlow()
+
+    private val _expressiveHiddenBottomButtonsMerge = MutableStateFlow(
+        prefs.getString(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_MERGE, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.filter { it in allExpressiveBottomButtons }
+            ?.toSet()
+            ?: emptySet()
+    )
+    val expressiveHiddenBottomButtonsMerge: StateFlow<Set<String>> = _expressiveHiddenBottomButtonsMerge.asStateFlow()
     
     // Lyrically Sources Order
     val defaultLyricallySources = listOf(
@@ -2458,6 +2513,52 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         val hiddenString = sanitizedHiddenChips.joinToString(",")
         prefs.edit { putString(KEY_HIDDEN_PLAYER_CHIPS, hiddenString) }
         _hiddenPlayerChips.value = sanitizedHiddenChips
+    }
+
+    fun setExpressiveBottomButtonsNormal(order: List<String>) {
+        val sanitized = order.filter { it in allExpressiveBottomButtons }
+        val orderString = sanitized.joinToString(",")
+        prefs.edit { putString(KEY_EXPRESSIVE_BOTTOM_BUTTONS_NORMAL, orderString) }
+        _expressiveBottomButtonsNormal.value = sanitized
+    }
+
+    fun setExpressiveHiddenBottomButtonsNormal(hidden: Set<String>) {
+        val sanitized = hidden.filter { it in allExpressiveBottomButtons }.toSet()
+        val hiddenString = sanitized.joinToString(",")
+        prefs.edit { putString(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_NORMAL, hiddenString) }
+        _expressiveHiddenBottomButtonsNormal.value = sanitized
+    }
+
+    fun resetExpressiveBottomButtonsNormal() {
+        prefs.edit {
+            remove(KEY_EXPRESSIVE_BOTTOM_BUTTONS_NORMAL)
+            remove(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_NORMAL)
+        }
+        _expressiveBottomButtonsNormal.value = defaultExpressiveBottomButtonsNormal
+        _expressiveHiddenBottomButtonsNormal.value = emptySet()
+    }
+
+    fun setExpressiveBottomButtonsMerge(order: List<String>) {
+        val sanitized = order.filter { it in allExpressiveBottomButtons }
+        val orderString = sanitized.joinToString(",")
+        prefs.edit { putString(KEY_EXPRESSIVE_BOTTOM_BUTTONS_MERGE, orderString) }
+        _expressiveBottomButtonsMerge.value = sanitized
+    }
+
+    fun setExpressiveHiddenBottomButtonsMerge(hidden: Set<String>) {
+        val sanitized = hidden.filter { it in allExpressiveBottomButtons }.toSet()
+        val hiddenString = sanitized.joinToString(",")
+        prefs.edit { putString(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_MERGE, hiddenString) }
+        _expressiveHiddenBottomButtonsMerge.value = sanitized
+    }
+
+    fun resetExpressiveBottomButtonsMerge() {
+        prefs.edit {
+            remove(KEY_EXPRESSIVE_BOTTOM_BUTTONS_MERGE)
+            remove(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_MERGE)
+        }
+        _expressiveBottomButtonsMerge.value = defaultExpressiveBottomButtonsMerge
+        _expressiveHiddenBottomButtonsMerge.value = emptySet()
     }
 
     fun setLyricallySourcesOrder(order: List<String>) {

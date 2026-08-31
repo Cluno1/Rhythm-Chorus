@@ -350,7 +350,13 @@ fun ExpressivePlayerScreen(
     isStreamingMode: Boolean = false,
     swipeToDismissEnabled: Boolean = true,
     expansionFraction: Float = 1f,
-    onNavigateToLyricsSettings: (() -> Unit)? = null
+    onNavigateToLyricsSettings: (() -> Unit)? = null,
+    onPlaybackSpeed: () -> Unit = {},
+    onPlaybackPitch: () -> Unit = {},
+    onEqualizer: () -> Unit = {},
+    onSleepTimer: () -> Unit = {},
+    onAddToPlaylist: () -> Unit = {},
+    onShareFile: () -> Unit = {}
 ) {
     val artworkScale by animateFloatAsState(
         targetValue = if (isPlaying) 1.0f else 0.85f,
@@ -377,6 +383,10 @@ fun ExpressivePlayerScreen(
     val playerAccentBackgroundEnabled by appSettings.playerAccentBackgroundEnabled.collectAsState()
     val playerMergeControlsToBottom by appSettings.playerMergeControlsToBottom.collectAsState()
     val playerShowAudioQualityBadges by appSettings.playerShowAudioQualityBadges.collectAsState()
+    val expressiveBottomButtonsNormal by appSettings.expressiveBottomButtonsNormal.collectAsState()
+    val expressiveHiddenBottomButtonsNormal by appSettings.expressiveHiddenBottomButtonsNormal.collectAsState()
+    val expressiveBottomButtonsMerge by appSettings.expressiveBottomButtonsMerge.collectAsState()
+    val expressiveHiddenBottomButtonsMerge by appSettings.expressiveHiddenBottomButtonsMerge.collectAsState()
     val playerLyricsTextSize by appSettings.playerLyricsTextSize.collectAsState()
     val showLyricsTranslation by appSettings.showLyricsTranslation.collectAsState()
     val showLyricsRomanization by appSettings.showLyricsRomanization.collectAsState()
@@ -1581,97 +1591,304 @@ fun ExpressivePlayerScreen(
                                 location?.id == "speaker" -> RhythmIcons.SpeakerFilled
                                 else -> RhythmIcons.Location
                             }
-                            if (playerMergeControlsToBottom) {
+
+                            val defaultContentColor = when {
+                                needsDarkSurfaces -> ambientControlContent
+                                useAccentBackground -> accentFg
+                                else -> monoFg
+                            }
+
+                            val activeButtons = remember(
+                                playerMergeControlsToBottom,
+                                expressiveBottomButtonsMerge,
+                                expressiveHiddenBottomButtonsMerge,
+                                expressiveBottomButtonsNormal,
+                                expressiveHiddenBottomButtonsNormal
+                            ) {
+                                if (playerMergeControlsToBottom) {
+                                    val filtered = expressiveBottomButtonsMerge.filter { !expressiveHiddenBottomButtonsMerge.contains(it) }
+                                    if (filtered.isEmpty()) appSettings.defaultExpressiveBottomButtonsMerge else filtered
+                                } else {
+                                    val filtered = expressiveBottomButtonsNormal.filter { !expressiveHiddenBottomButtonsNormal.contains(it) }
+                                    if (filtered.isEmpty()) appSettings.defaultExpressiveBottomButtonsNormal else filtered
+                                }
+                            }
+
+                            val isCompactButtons = playerMergeControlsToBottom || activeButtons.size > 3
+
+                            if (isCompactButtons) {
+                                val pillMaxWidth = (activeButtons.size * 56 + 24).dp.coerceIn(200.dp, 400.dp)
                                 RhythmGroupedButton(
                                     size = RhythmButtonSize.Small,
                                     isFillMaxWidth = false,
-                                    modifier = Modifier.widthIn(max = 260.dp)
+                                    modifier = Modifier.widthIn(max = pillMaxWidth)
                                 ) {
-                                    RhythmDetailActionButton(
-                                        onClick = onToggleLyrics,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = true,
-                                        isLast = false,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = RhythmIcons.Player.Lyrics,
-                                        iconSize = 20.dp,
-                                        text = null,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_lyrics),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
-                                    RhythmDetailActionButton(
-                                        onClick = onToggleFavorite,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = false,
-                                        isLast = false,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
-                                        iconSize = 20.dp,
-                                        text = null,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_favorite),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
-                                    RhythmDetailActionButton(
-                                        onClick = onDeviceClick,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = false,
-                                        isLast = false,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = deviceIcon,
-                                        iconSize = 20.dp,
-                                        text = null,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_device),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
-                                    RhythmDetailActionButton(
-                                        onClick = onQueueClick,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = false,
-                                        isLast = false,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = RhythmIcons.Queue,
-                                        iconSize = 20.dp,
-                                        text = null,
-                                        textContent = {
-                                            if (queueTotal > 1) {
-                                                Box(
-                                                    modifier = Modifier.size(18.dp).clip(CircleShape).background(primaryColor.copy(alpha = 0.22f)),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Text(
-                                                        text = debouncedQueuePosition.coerceIn(1, queueTotal).toString(),
-                                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                                        fontSize = 9.sp,
-                                                        color = primaryColor
-                                                    )
-                                                }
+                                    activeButtons.forEachIndexed { index, buttonId ->
+                                        val isFirst = index == 0
+                                        val isLast = index == activeButtons.size - 1
+                                        when (buttonId) {
+                                            "LYRICS" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onToggleLyrics,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Player.Lyrics,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_lyrics),
+                                                    containerColor = if (showLyricsView) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (showLyricsView) primaryColor else defaultContentColor
+                                                )
                                             }
-                                        },
-                                        contentDescription = stringResource(R.string.bottomsheet_queue),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
-                                    RhythmDetailActionButton(
-                                        onClick = onMoreClick,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = false,
-                                        isLast = true,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = RhythmIcons.More,
-                                        iconSize = 22.dp,
-                                        text = null,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_more),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
+                                            "FAVORITE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onToggleFavorite,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_favorite),
+                                                    containerColor = if (isFavorite) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f) else controlsContainerColor,
+                                                    contentColor = if (isFavorite) MaterialTheme.colorScheme.error else defaultContentColor
+                                                )
+                                            }
+                                            "DEVICE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onDeviceClick,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = deviceIcon,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_device),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "QUEUE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onQueueClick,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Queue,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    textContent = {
+                                                        if (queueTotal > 1) {
+                                                            Box(
+                                                                modifier = Modifier.size(18.dp).clip(CircleShape).background(primaryColor.copy(alpha = 0.22f)),
+                                                                contentAlignment = Alignment.Center
+                                                            ) {
+                                                                Text(
+                                                                    text = debouncedQueuePosition.coerceIn(1, queueTotal).toString(),
+                                                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                                                    fontSize = 9.sp,
+                                                                    color = primaryColor
+                                                                )
+                                                            }
+                                                        }
+                                                    },
+                                                    contentDescription = stringResource(R.string.bottomsheet_queue),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "MORE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onMoreClick,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.More,
+                                                    iconSize = 22.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_more),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SHUFFLE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onToggleShuffle,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Player.Shuffle,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.action_shuffle),
+                                                    containerColor = if (isShuffleEnabled) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (isShuffleEnabled) primaryColor else defaultContentColor
+                                                )
+                                            }
+                                            "REPEAT" -> {
+                                                val repeatIcon = when (repeatMode) {
+                                                    2 -> RhythmIcons.Player.RepeatOne
+                                                    1 -> RhythmIcons.Player.Repeat
+                                                    else -> RhythmIcons.Player.Repeat
+                                                }
+                                                RhythmDetailActionButton(
+                                                    onClick = onToggleRepeat,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = repeatIcon,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.player_chip_repeat),
+                                                    containerColor = if (repeatMode != 0) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (repeatMode != 0) primaryColor else defaultContentColor
+                                                )
+                                            }
+                                            "EQUALIZER" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onEqualizer,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = MaterialSymbolIcon("graphic_eq", filled = true),
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.equalizer),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SPEED" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onPlaybackSpeed,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = MaterialSymbolIcon("tune", filled = true),
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.player_chip_speed),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SLEEP_TIMER" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onSleepTimer,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.AccessTime,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.sleep_timer),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ADD_TO_PLAYLIST" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onAddToPlaylist,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.AddToPlaylist,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.bottomsheet_add_to_playlist),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ALBUM" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onShowAlbumBottomSheet,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Music.Album,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.player_chip_album),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ARTIST" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onShowArtistBottomSheet,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Music.Artist,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.player_chip_artist),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SONG_INFO" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onSongInfoClick,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Info,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.action_song_info),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SHARE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onShareFile,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Share,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.extrasheet_share_file),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             } else {
                                 RhythmGroupedButton(
@@ -1684,60 +1901,257 @@ fun ExpressivePlayerScreen(
                                         else -> MaterialTheme.typography.titleMedium
                                     }.copy(fontWeight = FontWeight.Bold)
 
-                                    RhythmDetailActionButton(
-                                        onClick = onDeviceClick,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = true,
-                                        isLast = false,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = deviceIcon,
-                                        iconSize = 20.dp,
-                                        text = deviceName,
-                                        textStyle = deviceTextStyle,
-                                        gradientEdgeColor = when { needsDarkSurfaces -> Color.Black; useAccentBackground -> accentFg; else -> monoBg },
-                                        respectMarqueeGlobalSetting = false,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_device),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
-                                    RhythmDetailActionButton(
-                                        onClick = onQueueClick,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = false,
-                                        isLast = false,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = RhythmIcons.Queue,
-                                        iconSize = 20.dp,
-                                        text = null,
-                                        textContent = {
-                                            val queueText = if (queueTotal > 0) stringResource(R.string.player_queue_format, debouncedQueuePosition.coerceIn(1, queueTotal), queueTotal) else stringResource(R.string.player_queue)
-                                            AnimatedDigitTickerText(
-                                                text = queueText,
-                                                style = MaterialTheme.typography.titleSmall,
-                                                color = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
-                                                fontWeight = FontWeight.Bold,
-                                                prefix = "queueCounter"
-                                            )
-                                        },
-                                        contentDescription = stringResource(R.string.bottomsheet_queue),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
-                                    RhythmDetailActionButton(
-                                        onClick = onMoreClick,
-                                        weight = 0.3f,
-                                        height = 44.dp,
-                                        isFirst = false,
-                                        isLast = true,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = RhythmIcons.More,
-                                        iconSize = 22.dp,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_more),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
+                                    activeButtons.forEachIndexed { index, buttonId ->
+                                        val isFirst = index == 0
+                                        val isLast = index == activeButtons.size - 1
+                                        when (buttonId) {
+                                            "DEVICE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onDeviceClick,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = deviceIcon,
+                                                    iconSize = 20.dp,
+                                                    text = deviceName,
+                                                    textStyle = deviceTextStyle,
+                                                    gradientEdgeColor = when { needsDarkSurfaces -> Color.Black; useAccentBackground -> accentFg; else -> monoBg },
+                                                    respectMarqueeGlobalSetting = false,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_device),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "QUEUE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onQueueClick,
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Queue,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    textContent = {
+                                                        val queueText = if (queueTotal > 0) stringResource(R.string.player_queue_format, debouncedQueuePosition.coerceIn(1, queueTotal), queueTotal) else stringResource(R.string.player_queue)
+                                                        AnimatedDigitTickerText(
+                                                            text = queueText,
+                                                            style = MaterialTheme.typography.titleSmall,
+                                                            color = defaultContentColor,
+                                                            fontWeight = FontWeight.Bold,
+                                                            prefix = "queueCounter"
+                                                        )
+                                                    },
+                                                    contentDescription = stringResource(R.string.bottomsheet_queue),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "MORE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onMoreClick,
+                                                    weight = 0.35f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.More,
+                                                    iconSize = 22.dp,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_more),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "LYRICS" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onToggleLyrics,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Player.Lyrics,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_lyrics),
+                                                    containerColor = if (showLyricsView) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (showLyricsView) primaryColor else defaultContentColor
+                                                )
+                                            }
+                                            "FAVORITE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onToggleFavorite,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_favorite),
+                                                    containerColor = if (isFavorite) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f) else controlsContainerColor,
+                                                    contentColor = if (isFavorite) MaterialTheme.colorScheme.error else defaultContentColor
+                                                )
+                                            }
+                                            "SHUFFLE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onToggleShuffle,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Player.Shuffle,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.action_shuffle),
+                                                    containerColor = if (isShuffleEnabled) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (isShuffleEnabled) primaryColor else defaultContentColor
+                                                )
+                                            }
+                                            "REPEAT" -> {
+                                                val repeatIcon = when (repeatMode) {
+                                                    2 -> RhythmIcons.Player.RepeatOne
+                                                    1 -> RhythmIcons.Player.Repeat
+                                                    else -> RhythmIcons.Player.Repeat
+                                                }
+                                                RhythmDetailActionButton(
+                                                    onClick = onToggleRepeat,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = repeatIcon,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.player_chip_repeat),
+                                                    containerColor = if (repeatMode != 0) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (repeatMode != 0) primaryColor else defaultContentColor
+                                                )
+                                            }
+                                            "EQUALIZER" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onEqualizer,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = MaterialSymbolIcon("graphic_eq", filled = true),
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.equalizer),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SPEED" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onPlaybackSpeed,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = MaterialSymbolIcon("tune", filled = true),
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.player_chip_speed),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SLEEP_TIMER" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onSleepTimer,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.AccessTime,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.sleep_timer),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ADD_TO_PLAYLIST" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onAddToPlaylist,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.AddToPlaylist,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.bottomsheet_add_to_playlist),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ALBUM" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onShowAlbumBottomSheet,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Music.Album,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.player_chip_album),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ARTIST" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onShowArtistBottomSheet,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Music.Artist,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.player_chip_artist),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SONG_INFO" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onSongInfoClick,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Info,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.action_song_info),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SHARE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = onShareFile,
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Share,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.extrasheet_share_file),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

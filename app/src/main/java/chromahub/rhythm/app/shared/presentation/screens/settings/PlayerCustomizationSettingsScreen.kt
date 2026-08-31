@@ -155,6 +155,7 @@ import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOpera
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOperationResultDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.AppRestartDialog
 import chromahub.rhythm.app.shared.presentation.components.player.PlayerChipOrderBottomSheet
+import chromahub.rhythm.app.shared.presentation.components.player.ExpressiveBottomButtonsOrderBottomSheet
 import chromahub.rhythm.app.features.local.presentation.components.settings.HomeSectionOrderBottomSheet
 import chromahub.rhythm.app.features.local.presentation.components.settings.LibraryTabOrderBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
@@ -197,6 +198,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
     val playerProgressThumbRotate by appSettings.playerProgressThumbRotate.collectAsState()
 
     var showChipOrderBottomSheet by remember { mutableStateOf(false) }
+    var showExpressiveBottomButtonsSheet by remember { mutableStateOf(false) }
     var showTextAlignmentSheet by remember { mutableStateOf(false) }
     var showCornerRadiusSheet by remember { mutableStateOf(false) }
     var showPlayerProgressStyleSheet by remember { mutableStateOf(false) }
@@ -387,6 +389,16 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 description = context.getString(R.string.player_merge_controls_desc),
                                 toggleState = playerMergeControlsToBottom,
                                 onToggleChange = { appSettings.setPlayerMergeControlsToBottom(it) }
+                            )
+                        ),
+                        toMaterial3SettingsItem(
+                            context = context,
+                            hapticFeedback = haptics,
+                            item = SettingItem(
+                                icon = MaterialSymbolIcon("reorder"),
+                                title = context.getString(R.string.settings_expressive_bottom_buttons),
+                                description = context.getString(R.string.settings_expressive_bottom_buttons_desc),
+                                onClick = { showExpressiveBottomButtonsSheet = true }
                             )
                         ),
                         toMaterial3SettingsItem(
@@ -614,6 +626,15 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
             onDismiss = { showChipOrderBottomSheet = false },
             appSettings = appSettings,
             haptics = haptics
+        )
+    }
+
+    if (showExpressiveBottomButtonsSheet) {
+        ExpressiveBottomButtonsOrderBottomSheet(
+            onDismiss = { showExpressiveBottomButtonsSheet = false },
+            appSettings = appSettings,
+            haptics = haptics,
+            initialModeIndex = if (playerMergeControlsToBottom) 1 else 0
         )
     }
 

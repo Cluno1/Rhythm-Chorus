@@ -46,6 +46,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.zIndex
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveScrollBar

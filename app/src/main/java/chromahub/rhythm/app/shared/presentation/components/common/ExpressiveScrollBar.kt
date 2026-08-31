@@ -38,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -263,8 +264,6 @@ fun ExpressiveScrollBar(
 
     BoxWithConstraints(
         modifier = modifier
-            .fillMaxHeight()
-            .width(animatedOuterWidth)
     ) {
         if (!canScroll) return@BoxWithConstraints
 
@@ -574,23 +573,9 @@ fun ExpressiveScrollBar(
 
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(listState, gridState, scrollState) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            if (event.type == PointerEventType.Scroll) {
-                                val deltaY = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f
-                                if (deltaY != 0f) {
-                                    val scrollAmount = deltaY * 64.dp.toPx()
-                                    scrollState?.dispatchRawDelta(scrollAmount)
-                                    listState?.dispatchRawDelta(scrollAmount)
-                                    gridState?.dispatchRawDelta(scrollAmount)
-                                }
-                            }
-                        }
-                    }
-                }
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight()
+                .width(animatedOuterWidth)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = {
@@ -648,7 +633,8 @@ fun ExpressiveScrollBar(
                     )
                 }
         ) {
-            val rightAnchorX = with(density) { (constraintsMaxWidth - paddingEnd).toPx() }
+            val trackContainerWidth = animatedOuterWidth
+            val rightAnchorX = with(density) { (trackContainerWidth - paddingEnd).toPx() }
             val trackX = rightAnchorX - with(density) { thickness.toPx() / 2 }
 
             Canvas(modifier = Modifier.fillMaxSize()) {
@@ -723,9 +709,9 @@ fun ExpressiveScrollBar(
                            val iconSizePx = with(density) { 24.dp.toPx() }
                            val paddingEndPx = with(density) { paddingEnd.toPx() }
                            val animatedWidthPx = with(density) { animatedWidth.toPx() }
-                           val maxWidthPx = with(density) { constraintsMaxWidth.toPx() }
+                           val trackWidthPx = with(density) { trackContainerWidth.toPx() }
                            
-                           val x = maxWidthPx - paddingEndPx - (animatedWidthPx / 2) - (iconSizePx / 2)
+                           val x = trackWidthPx - paddingEndPx - (animatedWidthPx / 2) - (iconSizePx / 2)
                            val y = handleY + (handleHeightPx / 2) - (iconSizePx / 2)
                            
                            androidx.compose.ui.unit.IntOffset(x.toInt(), y.toInt())
@@ -762,9 +748,9 @@ fun ExpressiveScrollBar(
                             val dragLabelSlidePx = with(density) { dragLabelSlide.toPx() }
                             val paddingEndPx = with(density) { paddingEnd.toPx() }
                             val animatedWidthPx = with(density) { animatedWidth.toPx() }
-                            val maxWidthPx = with(density) { constraintsMaxWidth.toPx() }
+                            val trackWidthPx = with(density) { trackContainerWidth.toPx() }
 
-                            val indicatorX = maxWidthPx - paddingEndPx - animatedWidthPx
+                            val indicatorX = trackWidthPx - paddingEndPx - animatedWidthPx
                             val x = indicatorX - dragLabelSizePx - dragLabelGapPx - dragLabelSlidePx
                             val y = handleY + (handleHeightPx / 2f) - (dragLabelSizePx / 2f)
 
