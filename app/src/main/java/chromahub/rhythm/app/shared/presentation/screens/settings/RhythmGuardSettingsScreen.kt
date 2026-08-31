@@ -7,6 +7,10 @@
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
+
 
 
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
@@ -88,7 +92,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import chromahub.rhythm.app.BuildConfig
@@ -1443,28 +1446,14 @@ fun BackupRestoreSectionPickerBottomSheet(
 ) {
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val context = LocalContext.current
-    var showContent by remember { mutableStateOf(false) }
-    val contentAlpha by animateFloatAsState(
-        targetValue = if (showContent) 1f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "backup_restore_picker_alpha"
-    )
-
-    LaunchedEffect(Unit) {
-        delay(80)
-        showContent = true
-    }
-
     val selectedSectionCount = listOf(
         sections.includeGeneralSettings,
         sections.includeLibraryData,
         sections.includeStatsAndRhythmGuard
     ).count { it }
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -1472,32 +1461,26 @@ fun BackupRestoreSectionPickerBottomSheet(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(bottom = 20.dp)
-                .graphicsLayer(alpha = contentAlpha)
-        ) {
-            StandardBottomSheetHeader(
-                title = title,
-                subtitle = subtitle,
-                visible = showContent,
-                modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp)
-            )
+        StandardBottomSheetHeader(
+            title = title,
+            subtitle = subtitle,
+            visible = true
+        )
 
-            Spacer(modifier = Modifier.height(8.dp))
+        val scrollState = rememberScrollState()
 
-            Box(
+        AdaptiveSheetScrollContainer(
+            scrollState = scrollState,
+            modifier = Modifier.fillMaxWidth()
+        ) { endPadding ->
+            Column(
                 modifier = Modifier
-                    .weight(1f, fill = false)
                     .fillMaxWidth()
+                    .verticalScroll(scrollState)
+                    .padding(end = endPadding)
+                    .navigationBarsPadding()
+                    .padding(bottom = 20.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                ) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1783,13 +1766,6 @@ fun BackupRestoreSectionPickerBottomSheet(
             }
         }
     }
-}
-
-
-
-
-
-
 
 // ============ Guard dashboard components ============
 

@@ -215,13 +215,8 @@ import androidx.compose.ui.unit.sp
 import chromahub.rhythm.app.features.local.presentation.screens.LibraryTab
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.foundation.shape.CircleShape

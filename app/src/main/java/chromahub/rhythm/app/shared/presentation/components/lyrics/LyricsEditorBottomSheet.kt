@@ -5,6 +5,9 @@
 
 package chromahub.rhythm.app.shared.presentation.components.lyrics
 
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
+
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -315,30 +318,7 @@ fun LyricsEditorBottomSheet(
     }
 
     // Animation states
-    var showContent by remember { mutableStateOf(false) }
-
-    val contentAlpha by animateFloatAsState(
-        targetValue = if (showContent) 1f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "contentAlpha"
-    )
-
-    val contentTranslation by animateFloatAsState(
-        targetValue = if (showContent) 0f else 30f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "contentTranslation"
-    )
-
-    LaunchedEffect(Unit) {
-        delay(100)
-        showContent = true
-    }
+    var showContent by remember { mutableStateOf(true) }
 
     // Function to adjust LRC timestamps or word-by-word JSON timestamps
     fun adjustLyricsTimestamps(lyrics: String, offsetMs: Int): String {
@@ -663,7 +643,8 @@ fun LyricsEditorBottomSheet(
         }
     }
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.TWO_PANE_DIALOG,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,

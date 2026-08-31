@@ -94,7 +94,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.derivedStateOf
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
@@ -147,7 +146,6 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfo
 import kotlinx.coroutines.delay // Import delay
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateDpAsState

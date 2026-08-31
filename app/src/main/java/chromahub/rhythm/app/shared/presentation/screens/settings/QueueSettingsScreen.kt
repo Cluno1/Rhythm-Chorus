@@ -7,6 +7,13 @@
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import androidx.compose.foundation.layout.PaddingValues
@@ -323,24 +330,9 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
         val scope = rememberCoroutineScope()
         val playlistSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
-        var showContent by remember { mutableStateOf(false) }
-
-        val contentAlpha by animateFloatAsState(
-            targetValue = if (showContent) 1f else 0f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioNoBouncy,
-                stiffness = Spring.StiffnessLow
-            ),
-            label = "contentAlpha"
-        )
-
-        LaunchedEffect(Unit) {
-            delay(100)
-            showContent = true
-        }
-
-        ModalBottomSheet(
-        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
+        RhythmAdaptiveModalSheet(
+            adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
             onDismissRequest = { showPlaylistBehaviorDialog = false },
             sheetState = playlistSheetState,
             dragHandle = {
@@ -350,51 +342,25 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
             },
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp)
-                    .graphicsLayer(alpha = contentAlpha)
-            ) {
-                // Header
-                Row(
+            StandardBottomSheetHeader(
+                title = context.getString(R.string.playlist_action_title),
+                subtitle = context.getString(R.string.playlist_action_desc),
+                visible = true
+            )
+
+            val scrollState = rememberScrollState()
+
+            AdaptiveSheetScrollContainer(
+                scrollState = scrollState,
+                modifier = Modifier.fillMaxWidth()
+            ) { endPadding ->
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 0.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .verticalScroll(scrollState)
+                        .padding(start = 24.dp, end = 24.dp + endPadding, bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = context.getString(R.string.playlist_action_title),
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 6.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                                text = context.getString(R.string.playlist_action_desc),
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 1,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     // Option 1: Ask each time
                     Card(
                         onClick = {
@@ -651,24 +617,9 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
         val scope = rememberCoroutineScope()
         val listQueueSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
-        var showContent by remember { mutableStateOf(false) }
-
-        val contentAlpha by animateFloatAsState(
-            targetValue = if (showContent) 1f else 0f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            ),
-            label = "contentAlpha"
-        )
-
-        LaunchedEffect(Unit) {
-            delay(100)
-            showContent = true
-        }
-
-        ModalBottomSheet(
-        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
+        RhythmAdaptiveModalSheet(
+            adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
             onDismissRequest = { showListQueueBehaviorDialog = false },
             sheetState = listQueueSheetState,
             dragHandle = {
@@ -678,50 +629,25 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
             },
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp)
-                    .graphicsLayer(alpha = contentAlpha)
-            ) {
-                Row(
+            StandardBottomSheetHeader(
+                title = context.getString(R.string.list_queue_behavior_title),
+                subtitle = context.getString(R.string.list_queue_behavior_desc),
+                visible = true
+            )
+
+            val scrollState = rememberScrollState()
+
+            AdaptiveSheetScrollContainer(
+                scrollState = scrollState,
+                modifier = Modifier.fillMaxWidth()
+            ) { endPadding ->
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 0.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .verticalScroll(scrollState)
+                        .padding(start = 24.dp, end = 24.dp + endPadding, bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = context.getString(R.string.list_queue_behavior_title),
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 6.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                                text = context.getString(R.string.list_queue_behavior_desc),
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 1,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     val options = listOf(
                         "replace" to Triple(
                             context.getString(R.string.list_queue_behavior_replace_title),
@@ -840,24 +766,9 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
         val scope = rememberCoroutineScope()
         val queueSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
-        var showContent by remember { mutableStateOf(false) }
-
-        val contentAlpha by animateFloatAsState(
-            targetValue = if (showContent) 1f else 0f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            ),
-            label = "contentAlpha"
-        )
-
-        LaunchedEffect(Unit) {
-            delay(100)
-            showContent = true
-        }
-
-        ModalBottomSheet(
-        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
+        RhythmAdaptiveModalSheet(
+            adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
             onDismissRequest = { showQueueDialogSettingDialog = false },
             sheetState = queueSheetState,
             dragHandle = {
@@ -867,51 +778,25 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
             },
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp)
-                    .graphicsLayer(alpha = contentAlpha)
-            ) {
-                // Header
-                Row(
+            StandardBottomSheetHeader(
+                title = context.getString(R.string.queue_action_title),
+                subtitle = context.getString(R.string.queue_action_choose),
+                visible = true
+            )
+
+            val scrollState = rememberScrollState()
+
+            AdaptiveSheetScrollContainer(
+                scrollState = scrollState,
+                modifier = Modifier.fillMaxWidth()
+            ) { endPadding ->
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 0.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .verticalScroll(scrollState)
+                        .padding(start = 24.dp, end = 24.dp + endPadding, bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = context.getString(R.string.queue_action_title),
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 6.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                                text = context.getString(R.string.queue_action_choose),
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 1,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     // Option 1: Ask each time (show dialog)
                     Card(
                         onClick = {
@@ -994,7 +879,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                         }
                     }
 
-                    // Option 2: Always add to queue
+                    // Option 2: Always play selected song
                     Card(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
@@ -1031,7 +916,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                     modifier = Modifier.fillMaxSize()
                                 ) {
                                     Icon(
-                                        imageVector = RhythmIcons.AddToPlaylist,
+                                        imageVector = RhythmIcons.Play,
                                         contentDescription = null,
                                         tint = if (!showQueueDialog)
                                             MaterialTheme.colorScheme.onPrimary

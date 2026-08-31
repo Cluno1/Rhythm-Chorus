@@ -4,6 +4,7 @@
  */
 
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -139,12 +140,7 @@ fun ExtraControlBottomSheet(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    var showContent by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        delay(100)
-        showContent = true
-    }
+    var showContent by remember { mutableStateOf(true) }
 
     fun dismissAndDo(action: () -> Unit) {
         scope.launch {
@@ -307,7 +303,11 @@ fun ExtraControlBottomSheet(
         ))
     }
 
-    ModalBottomSheet(
+    val scrollState = rememberScrollState()
+
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.WIDE_DIALOG,
+        scrollState = scrollState,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -322,7 +322,7 @@ fun ExtraControlBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
+                .padding(bottom = 16.dp)
         ) {
             // Header — matches SongOptionsBottomSheet style
             AnimatedVisibility(
@@ -365,12 +365,19 @@ fun ExtraControlBottomSheet(
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it }
             ) {
-                Column(
+                AdaptiveSheetScrollContainer(
+                    scrollState = scrollState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                        .weight(1f, fill = false)
+                ) { endPadding ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 24.dp, end = 24.dp + endPadding, top = 8.dp, bottom = 8.dp)
+                            .verticalScroll(scrollState),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                     actions.chunked(2).forEachIndexed { rowIndex, rowActions ->
                         Row(
                             modifier = Modifier
@@ -407,6 +414,7 @@ fun ExtraControlBottomSheet(
             }
         }
     }
+}
 }
 
 @Composable

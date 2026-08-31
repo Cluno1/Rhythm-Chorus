@@ -6,6 +6,7 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import android.content.Context
 import androidx.compose.animation.*
@@ -141,7 +142,8 @@ fun ArtistDelimitersBottomSheet(
         sheetState.expand()
     }
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
         onDismissRequest = {
             if (activeTokens.isNotEmpty()) {
                 saveTokens(activeTokens)
@@ -294,13 +296,17 @@ fun ArtistDelimitersBottomSheet(
                     when (page) {
                         DelimiterSheetPage.Main -> {
                             val mainScrollState = rememberScrollState()
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .verticalScroll(mainScrollState)
-                                    .padding(horizontal = 24.dp)
-                                    .padding(bottom = 12.dp)
-                            ) {
+                            AdaptiveSheetScrollContainer(
+                                scrollState = mainScrollState,
+                                modifier = Modifier.fillMaxSize()
+                            ) { endPadding ->
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(mainScrollState)
+                                        .padding(start = 24.dp, end = 24.dp + endPadding)
+                                        .padding(bottom = 12.dp)
+                                ) {
                                 val allDisplayCards = buildList {
                                     addAll(baseDelimiters)
                                     customTokens.forEach { token ->
@@ -469,17 +475,22 @@ fun ArtistDelimitersBottomSheet(
                                 }
                             }
                         }
+                    }
 
                         DelimiterSheetPage.AddCustom -> {
                             val addScrollState = rememberScrollState()
 
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .verticalScroll(addScrollState)
-                                    .padding(horizontal = 24.dp)
-                                    .padding(bottom = 12.dp)
-                            ) {
+                            AdaptiveSheetScrollContainer(
+                                scrollState = addScrollState,
+                                modifier = Modifier.fillMaxSize()
+                            ) { endPadding ->
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(addScrollState)
+                                        .padding(start = 24.dp, end = 24.dp + endPadding)
+                                        .padding(bottom = 12.dp)
+                                ) {
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -653,6 +664,7 @@ fun ArtistDelimitersBottomSheet(
                     }
                 }
             }
+        }
 
             // Sticky action buttons at bottom
             Surface(

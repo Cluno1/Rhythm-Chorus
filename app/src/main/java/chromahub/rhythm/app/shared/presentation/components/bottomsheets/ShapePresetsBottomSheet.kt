@@ -4,6 +4,7 @@
  */
 
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import android.content.Context
 import androidx.compose.animation.*
@@ -68,16 +69,15 @@ fun ShapePresetsBottomSheet(
         )
     }
 
-    LaunchedEffect(Unit) {
-        delay(100)
-        showPresetContent = true
-    }
-
     LaunchedEffect(sheetState) {
         sheetState.expand()
     }
 
-    ModalBottomSheet(
+    val scrollState = rememberScrollState()
+
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.COMPACT_DIALOG,
+        scrollState = scrollState,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = {
@@ -89,25 +89,21 @@ fun ShapePresetsBottomSheet(
             .widthIn(max = 640.dp)
             .fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 24.dp)
-        ) {
-            StandardBottomSheetHeader(
-                title = stringResource(R.string.expressiveshapessettingsscreen_choose_a_preset),
-                subtitle = stringResource(R.string.expressiveshapessettingsscreen_select_a_theme_for),
-                visible = showPresetContent
-            )
+        StandardBottomSheetHeader(
+            title = stringResource(R.string.expressiveshapessettingsscreen_choose_a_preset),
+            subtitle = stringResource(R.string.expressiveshapessettingsscreen_select_a_theme_for),
+            visible = true
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
+        AdaptiveSheetScrollContainer(
+            scrollState = scrollState,
+            modifier = Modifier.fillMaxWidth()
+        ) { endPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .verticalScroll(scrollState)
+                    .padding(start = 24.dp, end = 24.dp + endPadding, bottom = 24.dp)
             ) {
                 presets.forEach { preset ->
                     val isSelected = preset.id == currentPreset

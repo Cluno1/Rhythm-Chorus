@@ -5,6 +5,10 @@
 
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
+
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
@@ -56,7 +60,8 @@ fun UpdateBottomSheet(
     val downloadedFile by updaterViewModel.downloadedFile.collectAsState()
     val error by updaterViewModel.error.collectAsState()
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -70,13 +75,18 @@ fun UpdateBottomSheet(
         contentColor = MaterialTheme.colorScheme.onBackground,
         tonalElevation = 0.dp
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        val updateListState = rememberLazyListState()
+
+        AdaptiveSheetScrollContainer(
+            lazyListState = updateListState,
+            modifier = Modifier.fillMaxWidth()
+        ) { endPadding ->
+            LazyColumn(
+                state = updateListState,
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(start = 24.dp, end = 24.dp + endPadding, top = 8.dp, bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
             // Big card with icon/name in top right and update available text
             item {
                 Card(
@@ -324,4 +334,5 @@ fun UpdateBottomSheet(
             }
         }
     }
+}
 }

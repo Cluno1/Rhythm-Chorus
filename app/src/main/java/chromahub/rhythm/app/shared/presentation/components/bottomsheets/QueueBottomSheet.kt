@@ -4,6 +4,7 @@
  */
 
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -96,7 +97,6 @@ import kotlinx.coroutines.delay
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.derivedStateOf
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.data.model.AppSettings
@@ -158,30 +158,7 @@ fun QueueBottomSheet(
     val hidePlayedQueueSongs by appSettings.hidePlayedQueueSongs.collectAsState()
     val showAlreadyPlayedSongsInQueue = !hidePlayedQueueSongs
     // Animation states
-    var showContent by remember { mutableStateOf(false) }
-    
-    val contentAlpha by animateFloatAsState(
-        targetValue = if (showContent) 1f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "contentAlpha"
-    )
-    
-    val contentTranslation by animateFloatAsState(
-        targetValue = if (showContent) 0f else 30f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "contentTranslation"
-    )
-
-    LaunchedEffect(Unit) {
-        delay(50) // Reduced delay for faster appearance
-        showContent = true
-    }
+    var showContent by remember { mutableStateOf(true) }
 
     // Use the queue directly for display, create mutable version only for reordering operations
     val displayQueue = queue
@@ -198,7 +175,8 @@ fun QueueBottomSheet(
         }
     }
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.WIDE_DIALOG,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -354,28 +332,75 @@ fun QueueBottomSheet(
                         }
                     }
 
+                    val canScrollBackward by remember(lazyListState) {
+                        derivedStateOf { lazyListState.canScrollBackward }
+                    }
+                    val canScrollForward by remember(lazyListState) {
+                        derivedStateOf { lazyListState.canScrollForward }
+                    }
+                    val topBlendAlpha by animateFloatAsState(
+                        targetValue = if (canScrollBackward) 1f else 0f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMedium
+                        ),
+                        label = "QueueTopBlendAlpha"
+                    )
+                    val bottomBlendAlpha by animateFloatAsState(
+                        targetValue = if (canScrollForward) 1f else 0f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMedium
+                        ),
+                        label = "QueueBottomBlendAlpha"
+                    )
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f, fill = false)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(24.dp)
-                                .align(Alignment.TopCenter)
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.surfaceContainer,
-                                            MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.72f),
-                                            MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.32f),
-                                            Color.Transparent
+                        if (topBlendAlpha > 0f) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(24.dp)
+                                    .align(Alignment.TopCenter)
+                                    .graphicsLayer { alpha = topBlendAlpha }
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.surfaceContainer,
+                                                MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.72f),
+                                                MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.32f),
+                                                Color.Transparent
+                                            )
                                         )
                                     )
-                                )
-                                .zIndex(5f)
-                        )
+                                    .zIndex(5f)
+                            )
+                        }
+
+                        if (bottomBlendAlpha > 0f) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(24.dp)
+                                    .align(Alignment.BottomCenter)
+                                    .graphicsLayer { alpha = bottomBlendAlpha }
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.32f),
+                                                MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.72f),
+                                                MaterialTheme.colorScheme.surfaceContainer
+                                            )
+                                        )
+                                    )
+                                    .zIndex(5f)
+                            )
+                        }
 
                         if (isShuffleEnabled) {
                             // When shuffle is enabled, show queue but disable reordering
@@ -486,7 +511,7 @@ fun QueueBottomSheet(
 
                         ExpressiveScrollBar(
                             modifier = Modifier
-                                .align(Alignment.CenterEnd)
+                                .matchParentSize()
                                 .padding(end = 4.dp, top = 8.dp, bottom = 8.dp),
                             listState = lazyListState,
                             visible = canScroll

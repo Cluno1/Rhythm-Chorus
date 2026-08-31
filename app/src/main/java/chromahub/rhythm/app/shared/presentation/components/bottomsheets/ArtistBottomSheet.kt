@@ -4,6 +4,7 @@
  */
 
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -337,17 +339,9 @@ fun ArtistBottomSheet(
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
-                                    IconButton(
-                                        onClick = onDismiss,
-                                        colors = IconButtonDefaults.iconButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                                        )
-                                    ) {
-                                        Icon(
-                                            imageVector = RhythmIcons.Close,
-                                            contentDescription = stringResource(R.string.ui_close)
-                                        )
-                                    }
+                                    AdaptiveSheetCloseButton(
+                                        onClick = onDismiss
+                                    )
                                 }
                             }
 
@@ -562,27 +556,33 @@ fun ArtistBottomSheet(
             }
         }
     } else {
-        ModalBottomSheet(
+        val artistListState = rememberLazyListState()
+
+        RhythmAdaptiveModalSheet(
+            adaptiveType = SheetAdaptiveType.TWO_PANE_DIALOG,
+            lazyListState = artistListState,
             onDismissRequest = onDismiss,
             sheetState = sheetState,
             dragHandle = null,
             containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
-                .fillMaxHeight()
-                .imePadding()
         ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 32.dp)
-            ) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(390.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
+            AdaptiveSheetScrollContainer(
+                lazyListState = artistListState,
+                modifier = Modifier.fillMaxSize()
+            ) { endPadding ->
+                LazyColumn(
+                    state = artistListState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(end = endPadding, bottom = 32.dp)
+                ) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(390.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                         if (currentArtworkUri != null) {
                             AsyncImage(
                                 model = ImageRequest.Builder(context)
@@ -967,6 +967,7 @@ fun ArtistBottomSheet(
             }
         }
     }
+}
 }
 
 @Composable

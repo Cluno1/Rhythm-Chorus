@@ -104,7 +104,6 @@ import androidx.compose.ui.text.font.FontWeight
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.input.pointer.pointerInput
@@ -120,7 +119,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.animation.expandVertically
@@ -128,7 +126,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import java.util.Locale
 import androidx.compose.material3.DropdownMenu

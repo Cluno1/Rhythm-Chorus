@@ -7,6 +7,11 @@
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
+
 
 
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
@@ -50,6 +55,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -87,7 +93,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -645,12 +650,6 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
     showShapePickerDialog?.let { targetId ->
         val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         val targetName = shapeTargets.find { it.first == targetId }?.second?.first ?: targetId
-        var showShapeContent by remember { mutableStateOf(false) }
-
-        LaunchedEffect(Unit) {
-            delay(100)
-            showShapeContent = true
-        }
 
         LaunchedEffect(sheetState) {
             sheetState.expand()
@@ -669,8 +668,10 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
 
         // Group shapes by category
         val groupedShapes = allShapes.groupBy { it.category }
+        val shapeGridState = rememberLazyGridState()
 
-        ModalBottomSheet(
+        RhythmAdaptiveModalSheet(
+            adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
             onDismissRequest = { showShapePickerDialog = null },
             sheetState = sheetState,
             dragHandle = {
@@ -680,30 +681,23 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
             modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .padding(bottom = 24.dp)
-            ) {
-                // Header with animation
-                StandardBottomSheetHeader(
-                                    title = stringResource(R.string.settings_shape_for, getLocalizedTargetName(targetId)),
-                                    subtitle = stringResource(R.string.expressiveshapessettingsscreen_choose_an_expressive_shape),
-                                    visible = showShapeContent
-                                )
+            StandardBottomSheetHeader(
+                title = stringResource(R.string.settings_shape_for, getLocalizedTargetName(targetId)),
+                subtitle = stringResource(R.string.expressiveshapessettingsscreen_choose_an_expressive_shape),
+                visible = true
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Shape options in a grid
+            AdaptiveSheetScrollContainer(
+                gridState = shapeGridState,
+                modifier = Modifier.fillMaxWidth()
+            ) { endPadding ->
                 LazyVerticalGrid(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+                    state = shapeGridState,
+                    modifier = Modifier.fillMaxWidth(),
                     columns = GridCells.Fixed(2),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp)
+                    contentPadding = PaddingValues(start = 24.dp, end = 24.dp + endPadding, top = 8.dp, bottom = 24.dp)
                 ) {
                     groupedShapes.forEach { (category, shapes) ->
                         item(key = "category_$category", span = { GridItemSpan(2) }) {

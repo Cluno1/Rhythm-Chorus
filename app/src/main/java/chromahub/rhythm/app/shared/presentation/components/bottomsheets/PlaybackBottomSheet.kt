@@ -4,6 +4,7 @@
  */
 
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -46,6 +47,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
@@ -131,7 +133,7 @@ fun PlaybackBottomSheet(
     val haptics = LocalHapticFeedback.current
     
     // Animation states
-    var showContent by remember { mutableStateOf(false) }
+    var showContent by remember { mutableStateOf(true) }
     
     // System volume state
     var systemVolume by remember { mutableFloatStateOf(0.5f) }
@@ -191,9 +193,6 @@ fun PlaybackBottomSheet(
 
     // Initialize system volume and monitor for changes
     LaunchedEffect(Unit) {
-        delay(100) // Reduced delay for faster appearance
-        showContent = true
-        
         // Get system volume
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
@@ -228,7 +227,11 @@ fun PlaybackBottomSheet(
         }
     }
 
-    ModalBottomSheet(
+    val lazyListState = rememberLazyListState()
+
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.WIDE_DIALOG,
+        lazyListState = lazyListState,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -260,13 +263,19 @@ fun PlaybackBottomSheet(
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Scrollable content
-            LazyColumn(
+            // Scrollable content inside AdaptiveSheetScrollContainer
+            AdaptiveSheetScrollContainer(
+                lazyListState = lazyListState,
                 modifier = Modifier
-                    .fillMaxWidth(),
-                contentPadding = PaddingValues(vertical = 0.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
+                    .fillMaxWidth()
+                    .weight(1f, fill = false)
+            ) { endPadding ->
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp, end = endPadding),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
                 // Volume + Active Device (merged)
                 item {
                     AnimateIn {
@@ -391,11 +400,10 @@ fun PlaybackBottomSheet(
                         )
                     }
                 }
-                
-
             }
         }
     }
+}
 
     // Quality selection bottom sheet
     if (showQualitySheet) {
@@ -1591,7 +1599,8 @@ private fun QualitySelectionBottomSheet(
 ) {
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.WIDE_DIALOG,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary) },

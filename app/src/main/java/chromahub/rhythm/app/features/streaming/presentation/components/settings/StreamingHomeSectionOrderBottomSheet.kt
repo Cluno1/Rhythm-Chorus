@@ -6,6 +6,10 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 package chromahub.rhythm.app.features.streaming.presentation.components.settings
 
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
+
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -67,6 +71,7 @@ import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
 
 private const val STREAMING_SECTION_DISCOVER = "DISCOVER"
 private const val STREAMING_SECTION_PLAYLISTS = "PLAYLISTS"
@@ -154,7 +159,11 @@ fun StreamingHomeSectionOrderBottomSheet(
         }
     }
 
-    ModalBottomSheet(
+    val lazyListState = rememberLazyListState()
+
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+        lazyListState = lazyListState,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = {
@@ -166,49 +175,13 @@ fun StreamingHomeSectionOrderBottomSheet(
     ) {
         val totalSectionCards = reorderableList.size + 1
 
-        Column(modifier = Modifier.fillMaxWidth()) {
-            // Header content (Fixed)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 16.dp, bottom = 8.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text(
-                            text = context.getString(R.string.bottomsheet_home_section_order),
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 6.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                                text = context.getString(R.string.bottomsheet_reorder_toggle_visibility),
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 1,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-            }
+        StandardBottomSheetHeader(
+            title = context.getString(R.string.bottomsheet_home_section_order),
+            subtitle = context.getString(R.string.bottomsheet_reorder_toggle_visibility),
+            visible = true
+        )
 
+        Column(modifier = Modifier.fillMaxWidth()) {
             // Fixed Discover Carousel section (always first, not reorderable)
             Column(
                 modifier = Modifier
@@ -295,15 +268,19 @@ fun StreamingHomeSectionOrderBottomSheet(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Reorderable list using DragDropLazyColumn
-            val lazyListState = rememberLazyListState()
-            DragDropLazyColumn(
-                items = reorderableList,
+            // Reorderable list using DragDropLazyColumn inside AdaptiveSheetScrollContainer
+            AdaptiveSheetScrollContainer(
+                lazyListState = lazyListState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(horizontal = 24.dp),
-                lazyListState = lazyListState,
+            ) { endPadding ->
+                DragDropLazyColumn(
+                    items = reorderableList,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp + endPadding),
+                    lazyListState = lazyListState,
                 onMove = { fromIndex, toIndex ->
                     val newList = reorderableList.toMutableList()
                     val item = newList.removeAt(fromIndex)
@@ -416,8 +393,9 @@ fun StreamingHomeSectionOrderBottomSheet(
                     }
                 }
             }
+        }
         
-            Surface(
+        Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surfaceContainer,
                 tonalElevation = 3.dp

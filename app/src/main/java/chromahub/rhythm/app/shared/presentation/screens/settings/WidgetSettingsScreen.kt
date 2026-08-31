@@ -5,6 +5,13 @@
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import androidx.compose.foundation.layout.PaddingValues
@@ -545,7 +552,8 @@ fun ActionPickerSheet(
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
     )
     
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.COMPACT_DIALOG,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = {
@@ -555,31 +563,25 @@ fun ActionPickerSheet(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 24.dp)
-        ) {
-            Row(
+        StandardBottomSheetHeader(
+            title = title,
+            subtitle = "",
+            visible = true
+        )
+
+        val scrollState = rememberScrollState()
+
+        AdaptiveSheetScrollContainer(
+            scrollState = scrollState,
+            modifier = Modifier.fillMaxWidth()
+        ) { endPadding ->
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 0.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .verticalScroll(scrollState)
+                    .padding(start = 24.dp, end = 24.dp + endPadding, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 options.forEach { option ->
                     val isSelected = selectedValue == option.value
                     Card(
@@ -661,8 +663,6 @@ fun ActionPickerSheet(
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -716,7 +716,8 @@ fun WidgetCornerRadiusSheet(
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     var tempRadius by remember { mutableIntStateOf(currentRadius) }
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.COMPACT_DIALOG,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = {
@@ -726,47 +727,18 @@ fun WidgetCornerRadiusSheet(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
     ) {
+        StandardBottomSheetHeader(
+            title = stringResource(R.string.settings_miniplayer_corner_radius),
+            subtitle = stringResource(R.string.unit_dp, tempRadius),
+            visible = true
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 24.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 0.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.settings_miniplayer_corner_radius),
-                        style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 6.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                shape = CircleShape
-                            )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                            text = stringResource(R.string.unit_dp, tempRadius),
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Slider(
                 value = tempRadius.toFloat(),
                 onValueChange = { tempRadius = it.toInt() },
@@ -829,21 +801,6 @@ fun WidgetThemeSheet(
     val hapticFeedback = LocalHapticFeedback.current
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
-    var showContent by remember { mutableStateOf(false) }
-    val contentAlpha by animateFloatAsState(
-        targetValue = if (showContent) 1f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "contentAlpha"
-    )
-
-    LaunchedEffect(Unit) {
-        delay(100)
-        showContent = true
-    }
-
     val themes = listOf(
         Triple(0, stringResource(R.string.widget_theme_dynamic_system), stringResource(R.string.widget_theme_dynamic_desc)),
         Triple(1, stringResource(R.string.widget_theme_solid_dark), stringResource(R.string.widget_theme_solid_dark_desc)),
@@ -851,7 +808,8 @@ fun WidgetThemeSheet(
         Triple(3, stringResource(R.string.widget_theme_solid_purple_signature), stringResource(R.string.widget_theme_solid_purple_desc))
     )
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.COMPACT_DIALOG,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = {
@@ -861,50 +819,25 @@ fun WidgetThemeSheet(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 24.dp)
-                .graphicsLayer(alpha = contentAlpha)
-        ) {
-            Row(
+        StandardBottomSheetHeader(
+            title = stringResource(R.string.widgetsettingsscreen_widget_theme),
+            subtitle = stringResource(R.string.widgetsettingsscreen_personalize_home_screen_widgets),
+            visible = true
+        )
+
+        val scrollState = rememberScrollState()
+
+        AdaptiveSheetScrollContainer(
+            scrollState = scrollState,
+            modifier = Modifier.fillMaxWidth()
+        ) { endPadding ->
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 0.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .verticalScroll(scrollState)
+                    .padding(start = 24.dp, end = 24.dp + endPadding, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.widgetsettingsscreen_widget_theme),
-                        style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 6.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                shape = CircleShape
-                            )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                            text = stringResource(R.string.widgetsettingsscreen_personalize_home_screen_widgets),
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 themes.forEach { (value, name, desc) ->
                     val isSelected = currentTheme == value
                     val icon = when (value) {
@@ -995,8 +928,6 @@ fun WidgetThemeSheet(
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

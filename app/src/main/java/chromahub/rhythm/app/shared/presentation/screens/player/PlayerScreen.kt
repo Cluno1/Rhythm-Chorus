@@ -58,7 +58,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
-import androidx.compose.foundation.layout.fillMaxSize
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType

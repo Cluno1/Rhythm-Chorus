@@ -5,16 +5,21 @@
 
 package chromahub.rhythm.app.features.streaming.presentation.components.bottomsheets
 
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
+
 import android.content.Context
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.net.wifi.WifiManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -47,9 +52,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingServiceId
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -361,7 +368,8 @@ fun NearbyServerDiscoverySheet(
         isScanning = false
     }
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary) },
@@ -523,16 +531,26 @@ fun NearbyServerDiscoverySheet(
                     }
                 }
 
-                LazyColumn(
+                val serverListState = rememberLazyListState()
+
+                AdaptiveSheetScrollContainer(
+                    lazyListState = serverListState,
+                    blendColor = MaterialTheme.colorScheme.surfaceContainerLow,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(280.dp) // Bound the height so it doesn't expand infinitely
-                ) {
-                    item {
-                        Material3SettingsGroup(
-                            items = serverItems,
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                        )
+                        .heightIn(max = 280.dp)
+                ) { endPadding ->
+                    LazyColumn(
+                        state = serverListState,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(end = endPadding)
+                    ) {
+                        item {
+                            Material3SettingsGroup(
+                                items = serverItems,
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                            )
+                        }
                     }
                 }
                 

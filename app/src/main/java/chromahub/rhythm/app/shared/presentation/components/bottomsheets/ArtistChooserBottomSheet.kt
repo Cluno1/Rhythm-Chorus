@@ -4,6 +4,7 @@
  */
 
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -41,7 +42,10 @@ fun ArtistChooserBottomSheet(
         initialValue = SheetValue.Hidden,
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
     )
-    ModalBottomSheet(
+    val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+        lazyListState = lazyListState,
         modifier = modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = chooserSheetState,
@@ -55,26 +59,23 @@ fun ArtistChooserBottomSheet(
         contentColor = MaterialTheme.colorScheme.onBackground,
         tonalElevation = 0.dp
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp)
-                .padding(bottom = 32.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.playerscreen_select_artist),
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = 20.dp)
-            )
+        StandardBottomSheetHeader(
+            title = stringResource(R.string.playerscreen_select_artist),
+            visible = true
+        )
 
-            val artistArtShape = rememberExpressiveShapeFor(
-                ExpressiveShapeTarget.ARTIST_ART,
-                fallbackShape = RoundedCornerShape(12.dp)
-            )
+        val artistArtShape = rememberExpressiveShapeFor(
+            ExpressiveShapeTarget.ARTIST_ART,
+            fallbackShape = RoundedCornerShape(12.dp)
+        )
 
+        AdaptiveSheetScrollContainer(
+            lazyListState = lazyListState,
+            modifier = Modifier.fillMaxWidth()
+        ) { endPadding ->
             LazyColumn(
+                state = lazyListState,
+                contentPadding = PaddingValues(start = 24.dp, end = 24.dp + endPadding, top = 4.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {

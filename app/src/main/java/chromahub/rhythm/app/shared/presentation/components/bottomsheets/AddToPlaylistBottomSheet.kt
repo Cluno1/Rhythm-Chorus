@@ -4,6 +4,7 @@
  */
 
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -33,6 +34,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
@@ -109,32 +111,12 @@ fun AddToPlaylistBottomSheet(
     val haptics = LocalHapticFeedback.current
     
     // Animation states
-    var showContent by remember { mutableStateOf(false) }
-    
-    val contentAlpha by animateFloatAsState(
-        targetValue = if (showContent) 1f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "contentAlpha"
-    )
-    
-    val contentTranslation by animateFloatAsState(
-        targetValue = if (showContent) 0f else 50f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "contentTranslation"
-    )
+    var showContent by remember { mutableStateOf(true) }
+    val playlistListState = rememberLazyListState()
 
-    LaunchedEffect(Unit) {
-        delay(100)
-        showContent = true
-    }
-
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+        lazyListState = playlistListState,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
@@ -194,10 +176,19 @@ fun AddToPlaylistBottomSheet(
                     enter = fadeIn() + slideInVertically { it },
                     exit = fadeOut() + slideOutVertically { it }
                 ) {
-                    Column {
+                    AdaptiveSheetScrollContainer(
+                        lazyListState = playlistListState,
+                        modifier = Modifier.fillMaxWidth()
+                    ) { endPadding ->
                         // List of existing playlists
                         LazyColumn(
-                            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
+                            state = playlistListState,
+                            contentPadding = PaddingValues(
+                                start = 24.dp,
+                                end = 24.dp + endPadding,
+                                top = 8.dp,
+                                bottom = 8.dp
+                            ),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             itemsIndexed(

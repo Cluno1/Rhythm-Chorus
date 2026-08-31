@@ -5,6 +5,13 @@
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -79,7 +86,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
@@ -120,8 +126,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.BuildConfig
@@ -133,7 +137,6 @@ import chromahub.rhythm.app.features.local.presentation.components.settings.Lang
 import chromahub.rhythm.app.shared.presentation.components.dialogs.FdroidUpdateWarningDialog
 import android.content.Context
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -614,7 +617,8 @@ fun SettingsScreen(
         if (showDefaultScreenDialog) {
             val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
             
-            ModalBottomSheet(
+            RhythmAdaptiveModalSheet(
+                adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
                 onDismissRequest = { showDefaultScreenDialog = false },
                 sheetState = sheetState,
                 dragHandle = { 
@@ -626,182 +630,158 @@ fun SettingsScreen(
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(bottom = 24.dp)
-                ) {
-                    // Header
-                    Row(
+                StandardBottomSheetHeader(
+                    title = context.getString(R.string.settings_default_screen),
+                    subtitle = context.getString(R.string.settings_default_screen_desc),
+                    visible = true
+                )
+
+                val scrollState = rememberScrollState()
+
+                AdaptiveSheetScrollContainer(
+                    scrollState = scrollState,
+                    modifier = Modifier.fillMaxWidth()
+                ) { endPadding ->
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 0.dp, vertical = 16.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
+                            .verticalScroll(scrollState)
+                            .padding(start = 24.dp, end = 24.dp + endPadding, bottom = 24.dp)
                     ) {
-                        Column {
-                            Text(
-                                text = context.getString(R.string.settings_default_screen),
-                                style = MaterialTheme.typography.displayMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Box(
+                        // Home option
+                        Card(
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                                appSettings.setDefaultScreen("home")
+                                showDefaultScreenDialog = false
+                            },
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (defaultScreen == "home") 
+                                    MaterialTheme.colorScheme.onPrimaryContainer 
+                                else 
+                                    MaterialTheme.colorScheme.surfaceContainerHigh
+                            ),
+                            shape = RoundedCornerShape(24.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                        ) {
+                            Row(
                                 modifier = Modifier
-                                    .padding(top = 6.dp)
-                                    .background(
-                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                        shape = CircleShape
-                                    )
+                                    .fillMaxWidth()
+                                    .padding(20.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    text = context.getString(R.string.settings_default_screen_desc),
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                Icon(
+                                    imageVector = RhythmIcons.Home,
+                                    contentDescription = null,
+                                    tint = if (defaultScreen == "home") 
+                                        MaterialTheme.colorScheme.primaryContainer
+                                    else 
+                                        MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(32.dp)
                                 )
+                                
+                                Spacer(modifier = Modifier.width(16.dp))
+                                
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = context.getString(R.string.common_home),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (defaultScreen == "home") 
+                                            MaterialTheme.colorScheme.primaryContainer 
+                                        else 
+                                            MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = context.getString(R.string.settings_home_desc),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = if (defaultScreen == "home") 
+                                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                                        else 
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                
+                                if (defaultScreen == "home") {
+                                    Icon(
+                                        imageVector = RhythmIcons.CheckCircle,
+                                        contentDescription = stringResource(R.string.streaming_selected),
+                                        tint = MaterialTheme.colorScheme.primaryContainer,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
                             }
                         }
-                    }
-                    
-                    // Home option
-                    Card(
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
-                            appSettings.setDefaultScreen("home")
-                            showDefaultScreenDialog = false
-                        },
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (defaultScreen == "home") 
-                                MaterialTheme.colorScheme.onPrimaryContainer 
-                            else 
-                                MaterialTheme.colorScheme.surfaceContainerHigh
-                        ),
-                        shape = RoundedCornerShape(24.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                    ) {
-                        Row(
+                        
+                        // Library option
+                        Card(
+                            onClick = {
+                                HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                                appSettings.setDefaultScreen("library")
+                                showDefaultScreenDialog = false
+                            },
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (defaultScreen == "library") 
+                                    MaterialTheme.colorScheme.onPrimaryContainer 
+                                else 
+                                    MaterialTheme.colorScheme.surfaceContainerHigh
+                            ),
+                            shape = RoundedCornerShape(24.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(20.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(vertical = 6.dp)
                         ) {
-                            Icon(
-                                imageVector = RhythmIcons.Home,
-                                contentDescription = null,
-                                tint = if (defaultScreen == "home") 
-                                    MaterialTheme.colorScheme.primaryContainer
-                                else
-                                    MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(32.dp)
-                            )
-                            
-                            Spacer(modifier = Modifier.width(16.dp))
-                            
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = context.getString(R.string.common_home),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (defaultScreen == "home") 
-                                        MaterialTheme.colorScheme.primaryContainer 
-                                    else 
-                                        MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = context.getString(R.string.settings_home_desc),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = if (defaultScreen == "home") 
-                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                                    else 
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            
-                            if (defaultScreen == "home") {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(20.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Icon(
-                                    imageVector = RhythmIcons.CheckCircle,
-                                    contentDescription = stringResource(R.string.streaming_selected),
-                                    tint = MaterialTheme.colorScheme.primaryContainer,
-                                    modifier = Modifier.size(24.dp)
+                                    imageVector = RhythmIcons.Library,
+                                    contentDescription = null,
+                                    tint = if (defaultScreen == "library") 
+                                        MaterialTheme.colorScheme.primaryContainer
+                                    else 
+                                        MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(32.dp)
                                 )
+                                
+                                Spacer(modifier = Modifier.width(16.dp))
+                                
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = context.getString(R.string.common_library),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (defaultScreen == "library") 
+                                            MaterialTheme.colorScheme.primaryContainer 
+                                        else 
+                                            MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = context.getString(R.string.settings_library_desc),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = if (defaultScreen == "library") 
+                                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                                        else 
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                
+                                if (defaultScreen == "library") {
+                                    Icon(
+                                        imageVector = RhythmIcons.CheckCircle,
+                                        contentDescription = stringResource(R.string.streaming_selected),
+                                        tint = MaterialTheme.colorScheme.primaryContainer,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
                             }
                         }
                     }
-                    
-                    // Library option
-                    Card(
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
-                            appSettings.setDefaultScreen("library")
-                            showDefaultScreenDialog = false
-                        },
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (defaultScreen == "library") 
-                                MaterialTheme.colorScheme.onPrimaryContainer 
-                            else 
-                                MaterialTheme.colorScheme.surfaceContainerHigh
-                        ),
-                        shape = RoundedCornerShape(24.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Library,
-                                contentDescription = null,
-                                tint = if (defaultScreen == "library")
-                                    MaterialTheme.colorScheme.primaryContainer
-                                else
-                                    MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(32.dp)
-                            )
-                            
-                            Spacer(modifier = Modifier.width(16.dp))
-                            
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = context.getString(R.string.common_library),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (defaultScreen == "library") 
-                                        MaterialTheme.colorScheme.primaryContainer 
-                                    else 
-                                        MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = context.getString(R.string.settings_library_desc),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = if (defaultScreen == "library") 
-                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                                    else 
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            
-                            if (defaultScreen == "library") {
-                                Icon(
-                                    imageVector = RhythmIcons.CheckCircle,
-                                    contentDescription = stringResource(R.string.streaming_selected),
-                                    tint = MaterialTheme.colorScheme.primaryContainer,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }

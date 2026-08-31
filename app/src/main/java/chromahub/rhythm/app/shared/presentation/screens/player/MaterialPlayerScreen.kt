@@ -66,7 +66,6 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Switch
@@ -81,8 +80,6 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.runtime.collectAsState
@@ -137,7 +134,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -145,7 +141,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -185,7 +180,6 @@ import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.LyricsFileUtils
 import chromahub.rhythm.app.util.LrcUtils
 import chromahub.rhythm.app.util.SemanticLyrics
-import androidx.compose.runtime.collectAsState
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import kotlinx.coroutines.Dispatchers
@@ -224,7 +218,6 @@ import chromahub.rhythm.app.shared.data.model.Artist
 import chromahub.rhythm.app.shared.data.model.findAlbumForSong
 import chromahub.rhythm.app.features.local.presentation.navigation.Screen
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
-import chromahub.rhythm.app.shared.presentation.components.player.formatDuration
 import chromahub.rhythm.app.shared.presentation.components.lyrics.WordByWordLyricsView
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ExtraControlBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaybackSpeedDialog
