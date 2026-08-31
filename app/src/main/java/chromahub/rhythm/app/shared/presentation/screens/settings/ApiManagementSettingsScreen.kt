@@ -357,7 +357,7 @@ fun ApiManagementSettingsScreen(onBackClick: () -> Unit) {
                 )
             }
 
-            item { Spacer(modifier = Modifier.height(24.dp)) }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
 
             item {
                 Card(

@@ -145,7 +145,7 @@ fun AdaptiveSheetScrollContainer(
     val canScroll = canScrollForward || canScrollBackward
 
     val animatedEndPadding by animateDpAsState(
-        targetValue = if (canScroll && enableScrollBar) 32.dp else 0.dp,
+        targetValue = if (canScroll && enableScrollBar) 12.dp else 0.dp,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
             stiffness = Spring.StiffnessMedium

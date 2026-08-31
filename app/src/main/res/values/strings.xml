@@ -798,8 +798,8 @@
 
 <string name="broadcast_status_enabled">Enable Status Broadcasting</string>
     <string name="broadcast_status_desc">Send playback info to Tasker, KWGT, and automation apps</string>
-    <string name="bluetooth_lyrics_enabled">Bluetooth Lyrics Mode</string>
-    <string name="bluetooth_lyrics_desc">Send synced lyric line as Bluetooth track title and move Song - Artist into artist metadata</string>
+    <string name="bluetooth_lyrics_enabled">Notification Lyrics</string>
+    <string name="bluetooth_lyrics_desc">Send synced lyric lines as track metadata to Bluetooth devices, wearables, and notification listeners</string>
 <string name="equalizer">Equalizer</string>
     <string name="frequency_bands">Frequency Bands</string>
     <string name="audio_effects">Audio Effects</string>
@@ -894,8 +894,10 @@
     <string name="settings_section_advanced">Advanced</string>
     <string name="settings_crash_log_history">Crash Log History</string>
     <string name="settings_crash_log_history_desc">View, export, and share crash reports</string>
-    <string name="settings_experimental_features">Experimental Features</string>
-    <string name="settings_experimental_features_desc">Cutting-edge features</string>
+    <string name="settings_labs">Labs</string>
+    <string name="settings_labs_desc">Experimental &amp; developer features</string>
+    <string name="settings_experimental_features">Labs</string>
+    <string name="settings_experimental_features_desc">Experimental &amp; developer features</string>
     <string name="settings_select_option">Rhythm Settings</string>
 <string name="playlist_no_songs_available">No Songs Available</string>
     <string name="playlist_all_in_playlist">All songs are already in this playlist.</string>
@@ -1673,8 +1675,8 @@
     <string name="settings_exp_test_crash_desc">Forcibly crash the app to test crash handling and reporting</string>
     <string name="settings_broadcast_status_enabled">Enable Status Broadcasting</string>
     <string name="settings_broadcast_status_enabled_desc">Send playback info to Tasker, KWGT, and automation apps</string>
-    <string name="settings_bluetooth_lyrics_enabled">Bluetooth Lyrics Mode</string>
-    <string name="settings_bluetooth_lyrics_enabled_desc">Send synced lyric line as Bluetooth track title and move Song - Artist into artist metadata</string>
+    <string name="settings_bluetooth_lyrics_enabled">Notification Lyrics</string>
+    <string name="settings_bluetooth_lyrics_enabled_desc">Send synced lyric lines as track metadata to Bluetooth devices, wearables, and notification listeners</string>
     <string name="exp_go_mode">Go Mode</string>
     <string name="exp_go_mode_desc">Switch to Rhythm Go streaming mode</string>
 <string name="settings_home_section_order">Section Order</string>
@@ -1800,7 +1802,7 @@
     <string name="settings_create_backup_desc">Export complete backup to a JSON file</string>
     <string name="settings_backup_action_short">Backup</string>
     <string name="settings_restore_action_short">Restore</string>
-    <string name="settings_experimental">Experimental Features</string>
+    <string name="settings_experimental">Labs</string>
     <string name="settings_left_aligned">Left aligned</string>
     <string name="settings_player">Player</string>
     <string name="settings_restore_completed">Restore Completed Successfully</string>
@@ -2664,9 +2666,13 @@
     <string name="lyrics_imported_success">Imported successfully</string>
     <string name="lyrics_import_failed">Import failed</string>
     <string name="lyrics_lrc_rename_behavior">LRC Rename Behavior</string>
+    <string name="lyrics_lrc_rename_behavior_desc">Choose whether to rename or tag .lrc files when editing song info</string>
     <string name="lyrics_rename_always">Always rename to match song</string>
+    <string name="lyrics_rename_always_desc">Automatically rename corresponding .lrc file to match song title</string>
     <string name="lyrics_rename_never">Never rename (always tag)</string>
+    <string name="lyrics_rename_never_desc">Keep existing .lrc file name and associate it as a custom tagged file</string>
     <string name="lyrics_rename_ask">Ask every time</string>
+    <string name="lyrics_rename_ask_desc">Prompt for confirmation whenever a song name differs from its .lrc file</string>
     <string name="lyrics_export_preferences">Export Lyrics Preferences</string>
     <string name="lyrics_export_preferences_desc">Backup song-specific source settings and custom tags to CSV</string>
     <string name="lyrics_import_preferences">Import Lyrics Preferences</string>

@@ -3677,6 +3677,8 @@ fun EnhancedAudioPlaybackContent(
     val lyricsSourcePreference by appSettings.lyricsSourcePreference.collectAsState()
     val replayGain by appSettings.replayGain.collectAsState()
     val gaplessPlayback by appSettings.gaplessPlayback.collectAsState()
+    val skipSilenceEnabled by appSettings.skipSilenceEnabled.collectAsState()
+    val isAudioOffloadActive by appSettings.isAudioOffloadActive.collectAsState()
     val autoEQProfile by appSettings.autoEQProfile.collectAsState()
     val scrollState = rememberScrollState()
 
@@ -3788,6 +3790,8 @@ fun EnhancedAudioPlaybackContent(
                     autoAddToQueue = autoAddToQueue,
                     showLyrics = showLyrics,
                     gaplessPlayback = gaplessPlayback,
+                    skipSilenceEnabled = skipSilenceEnabled,
+                    isAudioOffloadActive = isAudioOffloadActive,
                     replayGain = replayGain,
                     autoEQProfile = autoEQProfile,
                     onSystemVolumeChange = { appSettings.setUseSystemVolume(it) },
@@ -3796,6 +3800,7 @@ fun EnhancedAudioPlaybackContent(
                     onAutoQueueChange = { appSettings.setAutoAddToQueue(it) },
                     onShowLyricsChange = { appSettings.setShowLyrics(it) },
                     onGaplessChange = { appSettings.setGaplessPlayback(it) },
+                    onSkipSilenceChange = { appSettings.setSkipSilenceEnabled(it) },
                     onReplayGainChange = { appSettings.setReplayGain(it) },
                     onOpenAutoEQSelector = onOpenAutoEQSelector
                 )
@@ -3903,6 +3908,8 @@ fun EnhancedAudioPlaybackContent(
                     autoAddToQueue = autoAddToQueue,
                     showLyrics = showLyrics,
                     gaplessPlayback = gaplessPlayback,
+                    skipSilenceEnabled = skipSilenceEnabled,
+                    isAudioOffloadActive = isAudioOffloadActive,
                     replayGain = replayGain,
                     autoEQProfile = autoEQProfile,
                     onSystemVolumeChange = { appSettings.setUseSystemVolume(it) },
@@ -3911,6 +3918,7 @@ fun EnhancedAudioPlaybackContent(
                     onAutoQueueChange = { appSettings.setAutoAddToQueue(it) },
                     onShowLyricsChange = { appSettings.setShowLyrics(it) },
                     onGaplessChange = { appSettings.setGaplessPlayback(it) },
+                    onSkipSilenceChange = { appSettings.setSkipSilenceEnabled(it) },
                     onReplayGainChange = { appSettings.setReplayGain(it) },
                     onOpenAutoEQSelector = onOpenAutoEQSelector
                 )
@@ -4526,6 +4534,8 @@ private fun AudioPlaybackSettingsCard(
     autoAddToQueue: Boolean,
     showLyrics: Boolean,
     gaplessPlayback: Boolean,
+    skipSilenceEnabled: Boolean,
+    isAudioOffloadActive: Boolean,
     replayGain: Boolean,
     autoEQProfile: String,
     onSystemVolumeChange: (Boolean) -> Unit,
@@ -4534,6 +4544,7 @@ private fun AudioPlaybackSettingsCard(
     onAutoQueueChange: (Boolean) -> Unit,
     onShowLyricsChange: (Boolean) -> Unit,
     onGaplessChange: (Boolean) -> Unit,
+    onSkipSilenceChange: (Boolean) -> Unit,
     onReplayGainChange: (Boolean) -> Unit,
     onOpenAutoEQSelector: () -> Unit
 ) {
@@ -4614,6 +4625,32 @@ private fun AudioPlaybackSettingsCard(
                 onClick = {
                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                     onGaplessChange(!gaplessPlayback)
+                }
+            ),
+            Material3SettingsItem(
+                icon = MaterialSymbolIcon("hearing"),
+                title = { Text(context.getString(R.string.settings_skip_silence)) },
+                description = {
+                    Text(
+                        if (isAudioOffloadActive) "Disabled while Audio Offload is active" else context.getString(R.string.settings_skip_silence_desc)
+                    )
+                },
+                trailingContent = {
+                    OnboardingAnimatedSwitch(
+                        checked = if (isAudioOffloadActive) false else skipSilenceEnabled,
+                        onCheckedChange = {
+                            if (!isAudioOffloadActive) {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                onSkipSilenceChange(it)
+                            }
+                        }
+                    )
+                },
+                onClick = {
+                    if (!isAudioOffloadActive) {
+                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                        onSkipSilenceChange(!skipSilenceEnabled)
+                    }
                 }
             ),
             Material3SettingsItem(
@@ -9780,6 +9817,7 @@ fun EnhancedIntegrationsContent(
     val deezerApiEnabled by appSettings.deezerApiEnabled.collectAsState()
     val lrclibApiEnabled by appSettings.lrclibApiEnabled.collectAsState()
     val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
+    val betterLyricsApiEnabled by appSettings.betterLyricsApiEnabled.collectAsState()
     val ytMusicApiEnabled by appSettings.ytMusicApiEnabled.collectAsState()
     val spotifyApiEnabled by appSettings.spotifyApiEnabled.collectAsState()
     val wikipediaApiEnabled by appSettings.wikipediaApiEnabled.collectAsState()
@@ -9846,6 +9884,7 @@ fun EnhancedIntegrationsContent(
                     deezerApiEnabled = deezerApiEnabled,
                     lrclibApiEnabled = lrclibApiEnabled,
                     lyricallyApiEnabled = lyricallyApiEnabled,
+                    betterLyricsApiEnabled = betterLyricsApiEnabled,
                     ytMusicApiEnabled = ytMusicApiEnabled,
                     spotifyApiEnabled = spotifyApiEnabled,
                     wikipediaApiEnabled = wikipediaApiEnabled,
@@ -9856,6 +9895,7 @@ fun EnhancedIntegrationsContent(
                     onDeezerChange = { appSettings.setDeezerApiEnabled(it) },
                     onLrcLibChange = { appSettings.setLrcLibApiEnabled(it) },
                     onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
+                    onBetterLyricsChange = { appSettings.setBetterLyricsApiEnabled(it) },
                     onYtMusicChange = { appSettings.setYTMusicApiEnabled(it) },
                     onSpotifyChange = { appSettings.setSpotifyApiEnabled(it) },
                     onWikipediaChange = { appSettings.setWikipediaApiEnabled(it) },
@@ -9908,6 +9948,7 @@ fun EnhancedIntegrationsContent(
                 deezerApiEnabled = deezerApiEnabled,
                 lrclibApiEnabled = lrclibApiEnabled,
                 lyricallyApiEnabled = lyricallyApiEnabled,
+                betterLyricsApiEnabled = betterLyricsApiEnabled,
                 ytMusicApiEnabled = ytMusicApiEnabled,
                 spotifyApiEnabled = spotifyApiEnabled,
                 wikipediaApiEnabled = wikipediaApiEnabled,
@@ -9918,6 +9959,7 @@ fun EnhancedIntegrationsContent(
                 onDeezerChange = { appSettings.setDeezerApiEnabled(it) },
                 onLrcLibChange = { appSettings.setLrcLibApiEnabled(it) },
                 onLyricallyChange = { appSettings.setLyricallyApiEnabled(it) },
+                onBetterLyricsChange = { appSettings.setBetterLyricsApiEnabled(it) },
                 onYtMusicChange = { appSettings.setYTMusicApiEnabled(it) },
                 onSpotifyChange = { appSettings.setSpotifyApiEnabled(it) },
                 onWikipediaChange = { appSettings.setWikipediaApiEnabled(it) },
@@ -9947,6 +9989,7 @@ private fun IntegrationsSettingsCards(
     deezerApiEnabled: Boolean,
     lrclibApiEnabled: Boolean,
     lyricallyApiEnabled: Boolean,
+    betterLyricsApiEnabled: Boolean,
     ytMusicApiEnabled: Boolean,
     spotifyApiEnabled: Boolean,
     wikipediaApiEnabled: Boolean,
@@ -9957,6 +10000,7 @@ private fun IntegrationsSettingsCards(
     onDeezerChange: (Boolean) -> Unit,
     onLrcLibChange: (Boolean) -> Unit,
     onLyricallyChange: (Boolean) -> Unit,
+    onBetterLyricsChange: (Boolean) -> Unit,
     onYtMusicChange: (Boolean) -> Unit,
     onSpotifyChange: (Boolean) -> Unit,
     onWikipediaChange: (Boolean) -> Unit,
@@ -10045,6 +10089,18 @@ private fun IntegrationsSettingsCards(
                 )
             )
         }
+        if (chromahub.rhythm.app.BuildConfig.ENABLE_BETTERLYRICS) {
+            add(
+                onboardingToggleItem(
+                    MaterialSymbolIcon("music_note"),
+                    context.getString(R.string.onboarding_integration_betterlyrics),
+                    context.getString(R.string.api_betterlyrics_desc),
+                    betterLyricsApiEnabled,
+                    onBetterLyricsChange,
+                    null
+                )
+            )
+        }
         if (chromahub.rhythm.app.BuildConfig.ENABLE_LYRICALLY_API) {
             add(
                 onboardingToggleItem(
@@ -10098,16 +10154,16 @@ private fun IntegrationsSettingsCards(
     val socialItems = listOf(
         onboardingToggleItem(
             RhythmIcons.Share,
-            "Broadcast Status",
-            "Allow other music widgets and apps to see what is playing",
+            context.getString(R.string.broadcast_status_enabled),
+            context.getString(R.string.broadcast_status_desc),
             broadcastStatusEnabled,
             onBroadcastChange,
             null
         ),
         onboardingToggleItem(
             MaterialSymbolIcon("lyrics"),
-            "Bluetooth Lyrics",
-            "Show scrolling lyrics on connected car screens and accessories",
+            context.getString(R.string.bluetooth_lyrics_enabled),
+            context.getString(R.string.bluetooth_lyrics_desc),
             bluetoothLyricsEnabled,
             onBluetoothLyricsChange,
             null

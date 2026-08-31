@@ -247,7 +247,8 @@ sealed class Screen(val route: String) {
     
     // Tuner Settings Subroutes
     object TunerNotifications : Screen("tuner_notifications_settings")
-    object TunerExperimentalFeatures : Screen("tuner_experimental_features_settings")
+    object TunerLabs : Screen("tuner_labs_settings")
+    val TunerExperimentalFeatures = TunerLabs
     object TunerAbout : Screen("tuner_about_screen")
     object TunerUpdates : Screen("tuner_updates_screen")
     object TunerMediaScan : Screen("tuner_media_scan_settings")
@@ -2052,8 +2053,8 @@ private fun LocalNavigationContent(
                     NotificationsSettingsScreen(onBackClick = navigateBackOrToSettings)
                 }
 
-                composable(Screen.TunerExperimentalFeatures.route) {
-                    ExperimentalFeaturesScreen(onBackClick = navigateBackOrToSettings)
+                composable(Screen.TunerLabs.route) {
+                    chromahub.rhythm.app.shared.presentation.screens.settings.LabsSettingsScreen(onBackClick = navigateBackOrToSettings)
                 }
 
                 composable(Screen.TunerAbout.route) {

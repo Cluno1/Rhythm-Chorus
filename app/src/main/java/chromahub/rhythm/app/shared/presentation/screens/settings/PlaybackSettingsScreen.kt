@@ -59,6 +59,7 @@ fun PlaybackSettingsScreen(
     val musicViewModel: MusicViewModel = viewModel()
 
     val replayGain by appSettings.replayGain.collectAsState()
+    val skipSilenceEnabled by appSettings.skipSilenceEnabled.collectAsState()
     val repeatModePersistence by appSettings.repeatModePersistence.collectAsState()
     val shuffleModePersistence by appSettings.shuffleModePersistence.collectAsState()
     val useHoursInTimeFormat by appSettings.useHoursInTimeFormat.collectAsState()
@@ -156,6 +157,22 @@ fun PlaybackSettingsScreen(
                         context.getString(R.string.settings_gapless_playback_desc),
                         toggleState = gaplessEnabled,
                         onToggleChange = { appSettings.setGaplessPlayback(it) }
+                    ),
+                    SettingItem(
+                        MaterialSymbolIcon("hearing"),
+                        context.getString(R.string.settings_skip_silence),
+                        when {
+                            isOffloadEnforced -> "Disabled under Lite Mode to conserve battery."
+                            isAudioOffloadActive && !skipSilenceEnabled -> "${context.getString(R.string.settings_skip_silence_desc)}\n(Enabling will disable hardware Audio Offload)"
+                            else -> context.getString(R.string.settings_skip_silence_desc)
+                        },
+                        toggleState = if (isOffloadEnforced || isAudioOffloadActive) false else skipSilenceEnabled,
+                        onToggleChange = {
+                            if (!isOffloadEnforced && !isAudioOffloadActive) {
+                                appSettings.setSkipSilenceEnabled(it)
+                            }
+                        },
+                        enabled = !isOffloadEnforced && !isAudioOffloadActive
                     ),
                     SettingItem(
                         RhythmIcons.Tune,

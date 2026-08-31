@@ -74,6 +74,10 @@ import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.util.safeGetQuantityString
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.text.style.TextAlign
+import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShape
 
 /**
  * Represents a searchable setting item with its metadata for search indexing
@@ -394,6 +398,16 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             route = SettingsRoutes.LYRICS,
             parentScreen = context.getString(R.string.settings_lyrics_source),
             settingKey = "lyricsApiFallbackRetry"
+        ))
+        add(SearchableSettingItem(
+            id = "lyrics_lrc_rename_behavior",
+            title = context.getString(R.string.lyrics_lrc_rename_behavior),
+            description = context.getString(R.string.lyrics_lrc_rename_behavior_desc),
+            keywords = listOf("lyrics", "lrc", "rename", "behavior", "ask", "always", "never", "tag", "file"),
+            icon = MaterialSymbolIcon("drive_file_rename_outline"),
+            route = SettingsRoutes.LYRICS,
+            parentScreen = context.getString(R.string.settings_lyrics_source),
+            settingKey = "lrcRenameBehavior"
         ))
         add(SearchableSettingItem(
             id = "queue_settings",
@@ -1187,12 +1201,12 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             parentScreen = context.getString(R.string.settings_section_advanced)
         ))
         add(SearchableSettingItem(
-            id = "experimental_features",
-            title = context.getString(R.string.settings_experimental_features),
-            description = context.getString(R.string.settings_experimental_features_desc),
-            keywords = listOf("experimental", "beta", "testing", "new features", "labs", "festive", "christmas", "decoration"),
+            id = "labs",
+            title = context.getString(R.string.settings_labs),
+            description = context.getString(R.string.settings_labs_desc),
+            keywords = listOf("labs", "experimental", "beta", "testing", "new features", "developer", "debug", "advanced"),
             icon = MaterialSymbolIcon("science"),
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
+            route = SettingsRoutes.LABS,
             parentScreen = context.getString(R.string.settings_section_advanced)
         ))
         add(SearchableSettingItem(
@@ -1201,8 +1215,8 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             description = context.getString(R.string.exp_go_mode_desc),
             keywords = listOf("go mode", "rhythm go", "streaming mode", "streaming navigation", "integration"),
             icon = MaterialSymbolIcon("cloud_queue"),
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = context.getString(R.string.settings_experimental_features)
+            route = SettingsRoutes.LABS,
+            parentScreen = context.getString(R.string.settings_labs)
         ))
         add(SearchableSettingItem(
             id = "go_preferred_service",
@@ -2035,17 +2049,17 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             settingKey = "listQueueActionBehavior"
         ))
         
-        // ======================== EXPERIMENTAL FEATURES SCREEN ========================
+        // ======================== LABS & RELOCATED SETTINGS ========================
         
-        // Skip Silence
+        // Skip Silence (Moved to Playback Settings)
         add(SearchableSettingItem(
             id = "skip_silence",
             title = context.getString(R.string.settings_skip_silence),
             description = context.getString(R.string.settings_skip_silence_desc),
             keywords = listOf("skip silence", "silence", "cut silence", "audio effects", "smart play", "gapless", "playback"),
             icon = MaterialSymbolIcon("hearing"),
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental",
+            route = SettingsRoutes.PLAYBACK,
+            parentScreen = context.getString(R.string.settings_playback_title),
             settingKey = "skipSilenceEnabled"
         ))
         
@@ -2108,8 +2122,8 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             description = context.getString(R.string.settings_exp_festive_theme_desc),
             keywords = listOf("festive", "christmas", "new year", "decoration", "snow", "snowflake"),
             icon = MaterialSymbolIcon("celebration"),
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental"
+            route = SettingsRoutes.THEME_CUSTOMIZATION,
+            parentScreen = context.getString(R.string.settings_theme)
         ))
         add(SearchableSettingItem(
             id = "exp_auto_detect_holidays",
@@ -2117,8 +2131,8 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             description = context.getString(R.string.settings_exp_auto_detect_holidays_desc),
             keywords = listOf("auto detect", "holiday", "automatic", "festive", "seasonal"),
             icon = RhythmIcons.AutoAwesome,
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental"
+            route = SettingsRoutes.THEME_CUSTOMIZATION,
+            parentScreen = context.getString(R.string.settings_theme)
         ))
         add(SearchableSettingItem(
             id = "exp_ignore_mediastore",
@@ -2136,8 +2150,8 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             description = context.getString(R.string.settings_exp_codec_monitoring_desc),
             keywords = listOf("codec", "debug", "log", "monitoring", "audio format"),
             icon = RhythmIcons.Code,
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental"
+            route = SettingsRoutes.LABS,
+            parentScreen = context.getString(R.string.settings_labs)
         ))
         add(SearchableSettingItem(
             id = "exp_audio_device_logging",
@@ -2145,8 +2159,8 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             description = context.getString(R.string.settings_exp_audio_device_logging_desc),
             keywords = listOf("audio device", "bluetooth", "headphones", "log", "debug"),
             icon = RhythmIcons.Headphones,
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental"
+            route = SettingsRoutes.LABS,
+            parentScreen = context.getString(R.string.settings_labs)
         ))
         add(SearchableSettingItem(
             id = "exp_force_compact_mode",
@@ -2154,8 +2168,8 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             description = context.getString(R.string.exp_force_player_compact_mode_desc),
             keywords = listOf("compact mode", "force", "player", "expressive", "experimental"),
             icon = MaterialSymbolIcon("developer_mode"),
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental",
+            route = SettingsRoutes.LABS,
+            parentScreen = context.getString(R.string.settings_labs),
             settingKey = "forcePlayerCompactMode"
         ))
         add(SearchableSettingItem(
@@ -2164,8 +2178,8 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             description = context.getString(R.string.exp_track_error_checker_desc),
             keywords = listOf("track error", "checker", "validation", "debug", "experimental"),
             icon = MaterialSymbolIcon("bug_report"),
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental",
+            route = SettingsRoutes.LABS,
+            parentScreen = context.getString(R.string.settings_labs),
             settingKey = "trackErrorCheckerEnabled"
         ))
         add(SearchableSettingItem(
@@ -2183,8 +2197,8 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             description = context.getString(R.string.settings_exp_test_crash_desc),
             keywords = listOf("crash", "test", "debug", "error", "reporting"),
             icon = RhythmIcons.BugReport,
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental"
+            route = SettingsRoutes.LABS,
+            parentScreen = context.getString(R.string.settings_labs)
         ))
 
         add(SearchableSettingItem(
@@ -2193,18 +2207,18 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             description = context.getString(R.string.settings_broadcast_status_enabled_desc),
             keywords = listOf("broadcast", "status", "playback", "share", "other apps"),
             icon = RhythmIcons.Info,
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental",
+            route = SettingsRoutes.NOTIFICATIONS,
+            parentScreen = context.getString(R.string.settings_notifications),
             settingKey = "broadcastStatusEnabled"
         ))
         add(SearchableSettingItem(
             id = "bluetooth_lyrics_enabled",
             title = context.getString(R.string.settings_bluetooth_lyrics_enabled),
             description = context.getString(R.string.settings_bluetooth_lyrics_enabled_desc),
-            keywords = listOf("bluetooth", "lyrics", "avrcp", "metadata", "rokid", "smart glasses"),
+            keywords = listOf("notification lyrics", "lyrics", "notification", "bluetooth", "broadcast", "avrcp", "metadata", "rokid", "smart glasses", "wearables", "ticker", "smart watch"),
             icon = MaterialSymbolIcon("lyrics"),
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental",
+            route = SettingsRoutes.NOTIFICATIONS,
+            parentScreen = context.getString(R.string.settings_notifications),
             settingKey = "bluetoothLyricsEnabled"
         ))
         add(SearchableSettingItem(
@@ -2213,8 +2227,8 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             description = context.getString(R.string.settings_enable_album_editing_desc),
             keywords = listOf("album editing", "batch edit", "album metadata", "edit album", "artwork", "batch"),
             icon = MaterialSymbolIcon("edit"),
-            route = SettingsRoutes.EXPERIMENTAL_FEATURES,
-            parentScreen = "Experimental",
+            route = SettingsRoutes.LABS,
+            parentScreen = context.getString(R.string.settings_labs),
             settingKey = "enableAlbumEditing"
         ))
         add(SearchableSettingItem(
@@ -2668,30 +2682,95 @@ fun SettingsSearchResults(
     ) {
         if (results.isEmpty()) {
             item {
-                Column(
+                val cookieShape = rememberExpressiveShape("COOKIE_12")
+                val smallCookieShape = rememberExpressiveShape("COOKIE_6")
+                val containerColor = MaterialTheme.colorScheme.primaryContainer
+                val contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 48.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = RhythmIcons.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.size(64.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = context.getString(R.string.no_results_found),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = context.getString(R.string.try_different_search),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Box(
+                            modifier = Modifier.size(132.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Surface(
+                                shape = smallCookieShape,
+                                color = containerColor.copy(alpha = 0.45f),
+                                modifier = Modifier
+                                    .size(42.dp)
+                                    .align(Alignment.TopStart)
+                                    .offset(x = (-6).dp, y = 10.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                    Icon(
+                                        imageVector = RhythmIcons.Search,
+                                        contentDescription = null,
+                                        tint = contentColor.copy(alpha = 0.55f),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                            Surface(
+                                shape = smallCookieShape,
+                                color = containerColor.copy(alpha = 0.45f),
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .align(Alignment.BottomEnd)
+                                    .offset(x = 8.dp, y = (-6).dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                    Icon(
+                                        imageVector = RhythmIcons.Tune,
+                                        contentDescription = null,
+                                        tint = contentColor.copy(alpha = 0.55f),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
+                            Surface(
+                                shape = cookieShape,
+                                color = containerColor,
+                                shadowElevation = 6.dp,
+                                modifier = Modifier.size(96.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                    Icon(
+                                        imageVector = RhythmIcons.Search,
+                                        contentDescription = null,
+                                        tint = contentColor,
+                                        modifier = Modifier.size(44.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Text(
+                            text = context.getString(R.string.no_results_found),
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = context.getString(R.string.try_different_search),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 32.dp)
+                        )
+                    }
                 }
             }
         } else {

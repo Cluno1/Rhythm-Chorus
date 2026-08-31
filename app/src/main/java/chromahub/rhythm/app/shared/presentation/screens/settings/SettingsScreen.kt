@@ -160,7 +160,8 @@ import chromahub.rhythm.app.shared.presentation.components.SettingsPalettes
 // Define routes for navigation
 object SettingsRoutes {
     const val NOTIFICATIONS = "notifications_settings"
-    const val EXPERIMENTAL_FEATURES = "experimental_features_settings"
+    const val LABS = "labs_settings"
+    const val EXPERIMENTAL_FEATURES = LABS
     const val ABOUT = "about_screen"
     const val UPDATES = "updates_screen"
     const val MEDIA_SCAN = "media_scan_settings"
@@ -446,7 +447,7 @@ fun SettingsScreen(
                 title = context.getString(R.string.settings_section_advanced),
                 items = listOf(
                     SettingItem(RhythmIcons.BugReport, context.getString(R.string.settings_crash_log_history), context.getString(R.string.settings_crash_log_history_desc), palette = SettingsPalettes.Coral, onClick = { onNavigateTo(SettingsRoutes.CRASH_LOG_HISTORY) }),
-                    SettingItem(MaterialSymbolIcon("science"), context.getString(R.string.settings_experimental_features), context.getString(R.string.settings_experimental_features_desc), palette = SettingsPalettes.Purple, onClick = { onNavigateTo(SettingsRoutes.EXPERIMENTAL_FEATURES) })
+                    SettingItem(MaterialSymbolIcon("science"), context.getString(R.string.settings_labs), context.getString(R.string.settings_labs_desc), palette = SettingsPalettes.Purple, onClick = { onNavigateTo(SettingsRoutes.LABS) })
                 )
             )
         ).filterNotNull() // Filter out null groups (for streaming mode)
@@ -1137,7 +1138,7 @@ fun SettingsScreenWrapper(
                             onNavigateToUpdates = { currentRoute = SettingsRoutes.UPDATES }
                         )
                         SettingsRoutes.UPDATES -> UpdatesSettingsScreen(onBackClick = { currentRoute = null })
-                        SettingsRoutes.EXPERIMENTAL_FEATURES -> ExperimentalFeaturesScreen(
+                        SettingsRoutes.LABS, SettingsRoutes.EXPERIMENTAL_FEATURES -> LabsSettingsScreen(
                             onBackClick = { currentRoute = null },
                             onNavigateTo = { currentRoute = it },
                             onNavigateToGoSettings = { currentRoute = SettingsRoutes.GO_SETTINGS }
@@ -1272,7 +1273,7 @@ fun SettingsScreenWrapper(
                     onNavigateToUpdates = { currentRoute = SettingsRoutes.UPDATES }
                 )
                 SettingsRoutes.UPDATES -> UpdatesSettingsScreen(onBackClick = { currentRoute = null })
-                SettingsRoutes.EXPERIMENTAL_FEATURES -> ExperimentalFeaturesScreen(
+                SettingsRoutes.LABS, SettingsRoutes.EXPERIMENTAL_FEATURES -> LabsSettingsScreen(
                     onBackClick = { currentRoute = null },
                     onNavigateTo = { currentRoute = it },
                     onNavigateToGoSettings = { currentRoute = SettingsRoutes.GO_SETTINGS }

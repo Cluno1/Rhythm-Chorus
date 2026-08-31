@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.5.473.1246 Beta] - 2026-09-01
+
+### Added
+- Customizable bottom player action buttons with reordering and quick toggles
+- Adaptive bottom sheet architecture with responsive layouts and fluid scrollbar interactions
+- TTML and Enhanced LRC (.elrc) export, editing, and file discovery support
+
+### Fixed
+- Preserve playback queue order for Play Next and Add to Queue under Shuffle Engine
+- Normalize date added and modified timestamps to milliseconds with Room DB migration
+- Suppress lyrics auto-scroll during active user gestures and touch interactions
+- Improved TTML line-level timing and Unicode script detection for romanization
+- Updated translations from Weblate
+
 ## [5.4.468.1233] - 2026-08-28
 
 ### Added
