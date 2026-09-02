@@ -221,6 +221,7 @@ androidComponents {
 
 dependencies {
     implementation(libs.androidx.compose.ui.unit)
+    implementation(libs.alphatab)
     // Desugaring library
     coreLibraryDesugaring(libs.androidx.desugar.jdk.libs)
 

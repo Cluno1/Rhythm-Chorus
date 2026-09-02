@@ -122,6 +122,7 @@ import chromahub.rhythm.app.shared.presentation.components.player.RhythmPlayerSh
 import chromahub.rhythm.app.shared.presentation.components.player.SleepTimerBottomSheetNew
 import chromahub.rhythm.app.features.local.presentation.screens.LibraryScreen
 import chromahub.rhythm.app.features.local.presentation.screens.HomeScreen
+import chromahub.rhythm.app.features.scores.presentation.ScoreScreen
 import chromahub.rhythm.app.shared.presentation.screens.RhythmStatsScreen
 import chromahub.rhythm.app.features.local.presentation.screens.EqualizerScreen
 import chromahub.rhythm.app.shared.presentation.screens.player.PlayerScreen
@@ -226,6 +227,7 @@ sealed class Screen(val route: String) {
     }
     object Player : Screen("player")
     object Settings : Screen("settings")
+    object Score : Screen("score")
     object AddToPlaylist : Screen("add_to_playlist")
     object PlaylistDetail : Screen("playlist/{playlistId}") {
         fun createRoute(playlistId: String) = "playlist/$playlistId"
@@ -1709,6 +1711,11 @@ private fun LocalNavigationContent(
                             onSearchClick = {
                                 navigateToTopLevel(Screen.Search.route)
                             },
+                            onScoreClick = {
+                                navController.navigate(Screen.Score.route) {
+                                    launchSingleTop = true
+                                }
+                            },
                             onSettingsClick = {
                                 // Navigate to the settings screen
                                 navigateToTopLevel(Screen.Settings.route)
@@ -1791,6 +1798,16 @@ private fun LocalNavigationContent(
                                 streamingMusicViewModel.playQueue(queue, 0, true)
                             }
                         )
+                }
+
+                composable(Screen.Score.route) {
+                    ScoreScreen(
+                        onBackClick = {
+                            if (!navController.popBackStack()) {
+                                navigateToTopLevel(Screen.Home.route)
+                            }
+                        }
+                    )
                 }
 
                 composable(
@@ -4335,4 +4352,3 @@ fun androidx.compose.animation.AnimatedVisibilityScope.SlideUpCornerWrapper(
         content()
     }
 }
-

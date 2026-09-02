@@ -253,6 +253,7 @@ fun HomeScreen(
     onViewAllArtists: () -> Unit,
     onSkipNext: () -> Unit = {},
     onSearchClick: () -> Unit = {},
+    onScoreClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onNavigateToLibrary: () -> Unit = {},
     onAddToQueue: (Song) -> Unit = {},
@@ -545,6 +546,23 @@ fun HomeScreen(
                         modifier = Modifier.size(25.dp)
                     )
                 }
+            }
+            ExpressiveFilledTonalIconButton(
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    onScoreClick()
+                },
+                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ),
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
+                Icon(
+                    imageVector = MaterialSymbolIcon("score", filled = true),
+                    contentDescription = context.getString(R.string.score_open),
+                    modifier = Modifier.size(25.dp)
+                )
             }
             ExpressiveFilledIconButton(
                 onClick = {
