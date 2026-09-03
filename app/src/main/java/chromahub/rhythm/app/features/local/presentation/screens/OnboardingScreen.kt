@@ -3422,7 +3422,6 @@ private fun BackupRestoreSettingsSection(
                     OnboardingAnimatedSwitch(
                         checked = autoBackupEnabled,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
                             onAutoBackupChange(it)
                         }
                     )
@@ -4325,7 +4324,6 @@ private fun LibrarySettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = losslessArtwork,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onLosslessArtworkChange(it)
                         }
                     )
@@ -4343,7 +4341,6 @@ private fun LibrarySettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = preferSongArtwork,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onPreferSongArtworkChange(it)
                         }
                     )
@@ -4361,7 +4358,6 @@ private fun LibrarySettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = artistSeparatorEnabled,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onArtistSeparatorChange(it)
                         }
                     )
@@ -4561,7 +4557,6 @@ private fun AudioPlaybackSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = useSystemVolume,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onSystemVolumeChange(it)
                         }
                     )
@@ -4599,7 +4594,6 @@ private fun AudioPlaybackSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = replayGain,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onReplayGainChange(it)
                         }
                     )
@@ -4617,7 +4611,6 @@ private fun AudioPlaybackSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = gaplessPlayback,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onGaplessChange(it)
                         }
                     )
@@ -4640,7 +4633,6 @@ private fun AudioPlaybackSettingsCard(
                         checked = if (isAudioOffloadActive) false else skipSilenceEnabled,
                         onCheckedChange = {
                             if (!isAudioOffloadActive) {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                 onSkipSilenceChange(it)
                             }
                         }
@@ -4661,7 +4653,6 @@ private fun AudioPlaybackSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = stopPlaybackOnZeroVolume,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onStopPlaybackOnZeroVolumeChange(it)
                         }
                     )
@@ -4679,7 +4670,6 @@ private fun AudioPlaybackSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = resumeOnDeviceReconnect,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onResumeOnReconnectChange(it)
                         }
                     )
@@ -4697,7 +4687,6 @@ private fun AudioPlaybackSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = autoAddToQueue,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onAutoQueueChange(it)
                         }
                     )
@@ -4715,7 +4704,6 @@ private fun AudioPlaybackSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = showLyrics,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onShowLyricsChange(it)
                         }
                     )
@@ -5233,7 +5221,6 @@ fun EnhancedThemeOption(
             OnboardingAnimatedSwitch(
                 checked = isEnabled,
                 onCheckedChange = { enabled ->
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                     onToggle(enabled)
                 }
             )
@@ -6184,7 +6171,6 @@ fun EnhancedUpdaterContent(
                                 OnboardingAnimatedSwitch(
                                     checked = updatesEnabled,
                                     onCheckedChange = { enabled ->
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                         scope.launch {
                                             if (enabled) {
                                                 if (chromahub.rhythm.app.BuildConfig.FLAVOR == "fdroid") {
@@ -6265,7 +6251,6 @@ fun EnhancedUpdaterContent(
                                         OnboardingAnimatedSwitch(
                                             checked = autoCheckForUpdates,
                                             onCheckedChange = { enabled ->
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                                 scope.launch { appSettings.setAutoCheckForUpdates(enabled) }
                                             }
                                         )
@@ -6283,7 +6268,6 @@ fun EnhancedUpdaterContent(
                                         OnboardingAnimatedSwitch(
                                             checked = updateNotificationsEnabled,
                                             onCheckedChange = { enabled ->
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                                 scope.launch { appSettings.setUpdateNotificationsEnabled(enabled) }
                                             }
                                         )
@@ -6439,7 +6423,6 @@ fun EnhancedUpdaterContent(
                                 OnboardingAnimatedSwitch(
                                     checked = updatesEnabled,
                                     onCheckedChange = { enabled ->
-                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                         scope.launch {
                                             if (enabled) {
                                                 if (chromahub.rhythm.app.BuildConfig.FLAVOR == "fdroid") {
@@ -6520,7 +6503,6 @@ fun EnhancedUpdaterContent(
                                         OnboardingAnimatedSwitch(
                                             checked = autoCheckForUpdates,
                                             onCheckedChange = { enabled ->
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                                 scope.launch { appSettings.setAutoCheckForUpdates(enabled) }
                                             }
                                         )
@@ -6538,7 +6520,6 @@ fun EnhancedUpdaterContent(
                                         OnboardingAnimatedSwitch(
                                             checked = updateNotificationsEnabled,
                                             onCheckedChange = { enabled ->
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                                 scope.launch { appSettings.setUpdateNotificationsEnabled(enabled) }
                                             }
                                         )
@@ -6636,7 +6617,6 @@ fun EnhancedUpdateOption(
             OnboardingAnimatedSwitch(
                 checked = isEnabled,
                 onCheckedChange = { enabled ->
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                     onToggle(enabled)
                 }
             )
@@ -7301,7 +7281,6 @@ private fun MediaScanSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = isBlacklistMode,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onModeChange(it)
                         }
                     )
@@ -7319,7 +7298,6 @@ private fun MediaScanSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = !isBlacklistMode,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onModeChange(!it)
                         }
                     )
@@ -8476,7 +8454,6 @@ private fun GestureSettingsCards(
                     OnboardingAnimatedSwitch(
                         checked = isEnabled,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onToggle(it)
                         }
                     )
@@ -8864,7 +8841,6 @@ private fun WidgetSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = showArtist,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onArtistChange(it)
                         }
                     )
@@ -8882,7 +8858,6 @@ private fun WidgetSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = showAlbum,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onAlbumChange(it)
                         }
                     )
@@ -8900,7 +8875,6 @@ private fun WidgetSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = showFavorite,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onFavoriteChange(it)
                         }
                     )
@@ -9176,7 +9150,6 @@ private fun tourToggleItem(
                 checked = checked,
                 enabled = enabled,
                 onCheckedChange = {
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                     onCheckedChange(it)
                 }
             )
@@ -10039,7 +10012,6 @@ private fun IntegrationsSettingsCards(
                         OnboardingAnimatedSwitch(
                             checked = isEnabled,
                             onCheckedChange = {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                 onToggle(it)
                                 if (it && onConfigure != null) {
                                     onConfigure()
@@ -10378,7 +10350,6 @@ private fun StatsSettingsCard(
                     OnboardingAnimatedSwitch(
                         checked = showOnHome,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                             onShowOnHomeChange(it)
                         }
                     )

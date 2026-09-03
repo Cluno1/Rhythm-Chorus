@@ -555,7 +555,7 @@ fun MiniPlayerArtworkSizeSheet(
                 value = tempSize.toFloat(),
                 onValueChange = { tempSize = it.toInt() },
                 onValueChangeFinished = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onSizeSelected(tempSize)
                 },
                 valueRange = 40f..72f,
@@ -612,7 +612,7 @@ fun MiniPlayerCornerRadiusSheet(
                 value = tempRadius.toFloat(),
                 onValueChange = { tempRadius = it.toInt() },
                 onValueChangeFinished = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onRadiusSelected(tempRadius)
                 },
                 valueRange = 0f..28f,

@@ -75,6 +75,7 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfo
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaybackPitchDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaybackSpeedDialog
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.PlaybackSpeedAndPitchBottomSheet
+import chromahub.rhythm.app.shared.presentation.components.player.ExpressiveBottomButtonsOrderBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.player.SleepTimerBottomSheetNew
 import chromahub.rhythm.app.shared.presentation.components.lyrics.LyricsEditorBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.player.formatDuration
@@ -265,6 +266,7 @@ fun PlayerScreen(
         var showQueueSheet by remember { mutableStateOf(false) }
         var showSongInfoSheet by remember { mutableStateOf(false) }
         var showMoreSheet by remember { mutableStateOf(false) }
+        var showExpressiveBottomButtonsSheet by remember { mutableStateOf(false) }
         var showDeviceOutputSheet by remember { mutableStateOf(false) }
         var showAddToPlaylistSheetInternal by remember { mutableStateOf(false) }
         var showPlaybackSpeedDialog by remember { mutableStateOf(false) }
@@ -657,9 +659,8 @@ fun PlayerScreen(
                 sleepTimerActive = sleepTimerActive,
                 sleepTimerRemainingSeconds = sleepTimerRemainingSeconds,
                 lyrics = lyrics,
-                isFavorite = isFavorite,
                 onAddToPlaylist = { showAddToPlaylistSheetInternal = true },
-                onToggleFavorite = onToggleFavorite,
+                onEditControls = { showExpressiveBottomButtonsSheet = true },
                 onPlaybackSpeed = { showPlaybackSpeedDialog = true },
                 onPlaybackPitch = { showPlaybackPitchDialog = true },
                 onEqualizer = {
@@ -733,6 +734,14 @@ fun PlayerScreen(
                 haptic = haptic,
                 isExtraSmallWidth = false,
                 isCompactWidth = false
+            )
+        }
+
+        if (showExpressiveBottomButtonsSheet) {
+            ExpressiveBottomButtonsOrderBottomSheet(
+                onDismiss = { showExpressiveBottomButtonsSheet = false },
+                appSettings = appSettings,
+                haptics = haptic
             )
         }
 

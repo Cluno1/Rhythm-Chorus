@@ -98,7 +98,6 @@ fun WidgetSettingsScreen(
                 TunerAnimatedSwitch(
                     checked = checked,
                     onCheckedChange = {
-                        HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
                         onToggle(it)
                     }
                 )
@@ -743,7 +742,7 @@ fun WidgetCornerRadiusSheet(
                 value = tempRadius.toFloat(),
                 onValueChange = { tempRadius = it.toInt() },
                 onValueChangeFinished = {
-                    HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
                     appSettings.setWidgetCornerRadius(tempRadius)
                     updateAllWidgets(context)
                 },

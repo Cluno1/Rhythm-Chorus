@@ -442,7 +442,6 @@ fun DecorationToggleCard(
             TunerAnimatedSwitch(
                 checked = isEnabled,
                 onCheckedChange = {
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                     onToggle(it)
                 }
             )

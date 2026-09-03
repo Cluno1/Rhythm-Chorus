@@ -222,7 +222,6 @@ fun PerformanceSettingsScreen(onBackClick: () -> Unit) {
                         TunerAnimatedSwitch(
                             checked = batterySaverEnabled,
                             onCheckedChange = { enabled ->
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                 appSettings.setBatterySaverEnabled(enabled)
                             }
                         )

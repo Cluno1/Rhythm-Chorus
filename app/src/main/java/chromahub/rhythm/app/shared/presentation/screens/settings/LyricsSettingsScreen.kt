@@ -503,10 +503,12 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
                                         )
                                         Slider(
                                             value = playerLyricsTextSize,
-                                            onValueChange = { appSettings.setPlayerLyricsTextSize(it) },
-                                            valueRange = 0.5f..2.0f,
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
+                                            onValueChange = { appSettings.setPlayerLyricsTextSize(it) },                                                valueRange = 0.5f..2.0f,
+                                                modifier = Modifier.fillMaxWidth(),
+                                                onValueChangeFinished = {
+                                                    HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                                                }
+                                            )
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.SpaceBetween

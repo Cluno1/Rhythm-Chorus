@@ -189,7 +189,6 @@ fun PlaybackSpeedAndPitchBottomSheet(
                             TunerAnimatedSwitch(
                                 checked = syncEnabled,
                                 onCheckedChange = { enabled ->
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                                     onSyncChange(enabled)
                                     if (enabled) selectedPitch = selectedSpeed
                                 }
@@ -311,7 +310,10 @@ fun PlaybackSpeedAndPitchBottomSheet(
                                     colors = SliderDefaults.colors(
                                         thumbColor = MaterialTheme.colorScheme.primary,
                                         activeTrackColor = MaterialTheme.colorScheme.primary
-                                    )
+                                    ),
+                                    onValueChangeFinished = {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                    }
                                 )
                             }
 
@@ -435,7 +437,10 @@ fun PlaybackSpeedAndPitchBottomSheet(
                                     colors = SliderDefaults.colors(
                                         thumbColor = MaterialTheme.colorScheme.secondary,
                                         activeTrackColor = MaterialTheme.colorScheme.secondary
-                                    )
+                                    ),
+                                    onValueChangeFinished = {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                    }
                                 )
                             }
 

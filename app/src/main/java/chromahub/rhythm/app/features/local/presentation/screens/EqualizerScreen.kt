@@ -646,7 +646,6 @@ fun EqualizerScreen(
                         checked = if (isOffloadEnforced) false else isEqualizerEnabled,
                         onCheckedChange = { enabled ->
                             if (!isOffloadEnforced) {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                 isEqualizerEnabled = enabled
                                 viewModel.setEqualizerEnabled(enabled)
                             }

@@ -703,7 +703,6 @@ fun PlaylistDetailScreen(
         )
     }
     
-    // Song Options Bottom Sheet - matching search screen
     if (showSongOptionsSheet && selectedSongForOptions != null) {
         PlaylistSongOptionsBottomSheet(
             song = selectedSongForOptions!!,
@@ -744,6 +743,7 @@ fun PlaylistDetailScreen(
                 showSongOptionsSheet = false
             },
             showRemoveFromPlaylist = canEditPlaylist || isStreamingPlaylist,
+            showAddToPlaylist = false,
             isStreamingMode = isStreamingPlaylist,
             onDeleteSong = {
                 musicViewModel.deleteSong(selectedSongForOptions!!)

@@ -171,7 +171,6 @@ fun GoSettingsScreen(
                     TunerAnimatedSwitch(
                         checked = appMode == "STREAMING",
                         onCheckedChange = { enabled ->
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             if (enabled) appSettings.setAppMode("STREAMING") else appSettings.setAppMode("LOCAL")
                         }
                     )

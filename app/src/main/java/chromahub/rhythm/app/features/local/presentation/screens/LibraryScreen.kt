@@ -1996,7 +1996,7 @@ fun LibraryScreen(
                                         onSongClick = onSongClick,
                                         listState = explorerListState,
                                         onAddToPlaylist = { song ->
-                                            selectedSong = song
+                                            songsToAddToPlaylist = listOf(song)
                                             showAddToPlaylistSheet = true
                                         },
                                         onAddToQueue = onAddToQueue,

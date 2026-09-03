@@ -967,6 +967,7 @@
     <string name="cd_toggle_multi_select">Toggle multi-select</string>
     <string name="cd_add_song">Add song</string>
 <string name="bottomsheet_add_to_playlist">Add to playlist</string>
+    <string name="bottomsheet_edit_controls">Edit controls</string>
     <string name="bottomsheet_no_playlists">No playlists yet</string>
     <string name="bottomsheet_queue">Queue</string>
     <string name="bottomsheet_up_next">UP NEXT</string>
@@ -2961,8 +2962,8 @@
     <string name="unknown_album_name">Unknown Album</string>
     <string name="settings_floating_navigation">Floating Navigation Bar</string>
     <string name="settings_floating_navigation_desc">Float navigation bar above content on phone and tablet, or dock it to screen edges</string>
-    <string name="expressive_bottom_buttons_title">Expressive Bottom Buttons</string>
     <string name="expressive_bottom_buttons_desc">Customize and reorder bottom action buttons</string>
+    <string name="expressive_bottom_buttons_title">Edit Controls</string>
     <string name="expressive_bottom_buttons_normal_tab">Normal Mode</string>
     <string name="expressive_bottom_buttons_merge_tab">Merge Mode</string>
     <string name="expressive_bottom_buttons_saved">Bottom buttons configuration saved</string>

@@ -5,7 +5,7 @@
 
 package chromahub.rhythm.app.shared.presentation.components.common
 
-import androidx.compose.animation.core.Animatable
+import android.os.SystemClock
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -61,7 +62,6 @@ fun <T> DragDropLazyColumn(
     itemContent: @Composable (item: T, isDragging: Boolean, index: Int) -> Unit
 ) {
     val edgeThresholdPx = 84f
-    val maxAutoScrollSpeedPxPerFrame = 30f
 
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
@@ -78,14 +78,15 @@ fun <T> DragDropLazyColumn(
     var isDropping by remember { mutableStateOf(false) }
     var draggedIndex by remember { mutableIntStateOf(-1) }
     var draggedKey by remember { mutableStateOf<Any?>(null) }
-    var draggedItem by remember { mutableStateOf<T?>(null) }
     var dragRowHeightPx by remember { mutableFloatStateOf(0f) }
     var grabOffsetPx by remember { mutableFloatStateOf(0f) }
     var lastPointerY by remember { mutableFloatStateOf(0f) }
     var boxHeightPx by remember { mutableFloatStateOf(0f) }
     var reorderMoved by remember { mutableStateOf(false) }
-
-    val overlayTop = remember { Animatable(0f) }
+    var dragCardTopPx by remember { mutableFloatStateOf(0f) }
+    var draggedSlotTopPx by remember { mutableFloatStateOf(0f) }
+    var autoscrollSwapDistance by remember { mutableFloatStateOf(0f) }
+    var lastHopTimeMs by remember { mutableLongStateOf(0L) }
 
     fun isReorderableAt(index: Int): Boolean {
         val list = currentItems.value
@@ -99,6 +100,9 @@ fun <T> DragDropLazyColumn(
 
     fun visibleInfoOfIndex(index: Int): LazyListItemInfo? =
         lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
+
+    fun visibleInfoOfKey(key: Any?): LazyListItemInfo? =
+        lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == key }
 
     fun reorderableRange(): IntRange? {
         val list = currentItems.value
@@ -142,7 +146,8 @@ fun <T> DragDropLazyColumn(
         isDropping = false
         draggedIndex = -1
         draggedKey = null
-        draggedItem = null
+        dragCardTopPx = 0f
+        draggedSlotTopPx = 0f
         if (reorderMoved) {
             HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM)
             reorderMoved = false
@@ -169,12 +174,14 @@ fun <T> DragDropLazyColumn(
             topVisibleIndex != null && topVisibleIndex > range.first && draggedIndex > range.first
         val canScrollDown =
             bottomVisibleIndex != null && bottomVisibleIndex < range.last && draggedIndex < range.last
+        // Scroll stays near one row per hop so hops stay calm and the held row stays under the thumb.
+        val maxScrollPerFrame = dragRowHeightPx * 0.11f
         val scrollSpeed = when {
             pushUp > 0f && canScrollUp ->
-                -maxAutoScrollSpeedPxPerFrame * (pushUp / edgeThresholdPx).coerceIn(0f, 1f)
+                -maxScrollPerFrame * (pushUp / edgeThresholdPx).coerceIn(0f, 1f)
 
             pushDown > 0f && canScrollDown ->
-                maxAutoScrollSpeedPxPerFrame * (pushDown / edgeThresholdPx).coerceIn(0f, 1f)
+                maxScrollPerFrame * (pushDown / edgeThresholdPx).coerceIn(0f, 1f)
 
             else -> 0f
         }
@@ -188,16 +195,50 @@ fun <T> DragDropLazyColumn(
             if (scrollSpeed != 0f) clampEdges(freshVisible, range, containerBottomLimit)
             else topEdge to bottomEdge
         val cardTop = desiredTop.coerceIn(finalTopEdge, finalBottomEdge)
-        overlayTop.snapTo(cardTop)
+        dragCardTopPx = cardTop
+        if (scrollSpeed != 0f) autoscrollSwapDistance += abs(scrollSpeed)
 
         if (isDragLayoutSynced()) {
-            val hovered = visibleInfoAtY(cardTop + dragRowHeightPx / 2f)
-            if (hovered != null && hovered.index != draggedIndex && isReorderableAt(hovered.index)) {
-                reorderMoved = true
-                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                val fromIndex = draggedIndex
-                currentOnMove.value(fromIndex, hovered.index)
-                draggedIndex = hovered.index
+            val draggedInfo = visibleInfoOfKey(draggedKey)
+            if (draggedInfo != null) {
+                draggedSlotTopPx = draggedInfo.offset.toFloat()
+                val targetIndex = if (scrollSpeed != 0f) {
+                    // Hop in the scroll direction, paced by distance, only while the row is in view at the edge.
+                    val paced = autoscrollSwapDistance > dragRowHeightPx * 0.9f
+                    val inView = if (scrollSpeed < 0f) {
+                        draggedInfo.offset > dragRowHeightPx * 0.1f
+                    } else {
+                        draggedInfo.offset < boxHeightPx - dragRowHeightPx * 1.1f
+                    }
+                    if (paced && inView) {
+                        if (scrollSpeed < 0f) draggedIndex - 1 else draggedIndex + 1
+                    } else {
+                        draggedIndex
+                    }
+                } else {
+                    // Swap with the row under the card's center so the held row lands under the card.
+                    val hovered = visibleInfoAtY(cardTop + dragRowHeightPx / 2f)
+                    if (hovered != null && hovered.index != draggedIndex &&
+                        isReorderableAt(hovered.index)
+                    ) {
+                        hovered.index
+                    } else {
+                        draggedIndex
+                    }
+                }
+                // Manual hops at most once per 100ms to keep fast swipes calm.
+                val hopReady = scrollSpeed != 0f ||
+                    SystemClock.elapsedRealtime() - lastHopTimeMs >= 100L
+                if (targetIndex != draggedIndex && targetIndex in range &&
+                    isReorderableAt(targetIndex) && hopReady
+                ) {
+                    reorderMoved = true
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                    autoscrollSwapDistance = 0f
+                    lastHopTimeMs = SystemClock.elapsedRealtime()
+                    currentOnMove.value(draggedIndex, targetIndex)
+                    draggedIndex = targetIndex
+                }
             }
         }
     }
@@ -218,9 +259,17 @@ fun <T> DragDropLazyColumn(
                 withFrameNanos { }
                 if (!lazyListState.isScrollInProgress && isDragLayoutSynced()) break
             }
-            val slotTop = visibleInfoOfIndex(draggedIndex)?.offset?.toFloat()
-            if (slotTop != null && abs(slotTop - overlayTop.value) > 1f) {
-                overlayTop.animateTo(slotTop, animationSpec = tween(durationMillis = 140))
+            val slotTop = visibleInfoOfKey(draggedKey)?.offset?.toFloat()
+            if (slotTop != null && abs(dragCardTopPx - slotTop) > 1f) {
+                val startTop = dragCardTopPx
+                val durationNanos = 160_000_000L
+                val startNanos = withFrameNanos { it }
+                while (true) {
+                    val elapsed = withFrameNanos { it } - startNanos
+                    val fraction = (elapsed.toFloat() / durationNanos).coerceIn(0f, 1f)
+                    dragCardTopPx = startTop + (slotTop - startTop) * fraction
+                    if (fraction >= 1f) break
+                }
             }
             finishDrag()
         }
@@ -237,13 +286,14 @@ fun <T> DragDropLazyColumn(
                         if (!isReorderableAt(info.index)) return@detectDragGesturesAfterLongPress
                         draggedIndex = info.index
                         draggedKey = itemKey(currentItems.value[info.index])
-                        draggedItem = currentItems.value[info.index]
                         dragRowHeightPx = info.size.toFloat()
                         grabOffsetPx = (offset.y - info.offset).coerceIn(0f, info.size.toFloat())
                         lastPointerY = offset.y
                         reorderMoved = false
-                        scope.launch { overlayTop.snapTo(info.offset.toFloat()) }
                         HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                        dragCardTopPx = info.offset.toFloat()
+                        draggedSlotTopPx = info.offset.toFloat()
+                        autoscrollSwapDistance = 0f
                         isDragging = true
                     },
                     onDrag = { change, _ ->
@@ -275,20 +325,15 @@ fun <T> DragDropLazyColumn(
                     }
                 } else {
                     item(key = key) {
-                        val isHiddenInList = isDragging && index == draggedIndex
-                        val isCurrentlyDragged = isDragging && index == draggedIndex
+                        val isCurrentlyDragged = isDragging && key == draggedKey
 
-                        val placementModifier = if (animateItemPlacement) {
+                        val placementModifier = if (animateItemPlacement && !isCurrentlyDragged) {
                             Modifier.animateItem(
                                 fadeInSpec = tween(durationMillis = 0),
-                                placementSpec = if (isDragging) {
-                                    tween(durationMillis = 0)
-                                } else {
-                                    spring(
-                                        dampingRatio = Spring.DampingRatioNoBouncy,
-                                        stiffness = Spring.StiffnessMediumLow
-                                    )
-                                },
+                                placementSpec = spring(
+                                    dampingRatio = Spring.DampingRatioNoBouncy,
+                                    stiffness = Spring.StiffnessMediumLow
+                                ),
                                 fadeOutSpec = tween(durationMillis = 0)
                             )
                         } else {
@@ -300,7 +345,15 @@ fun <T> DragDropLazyColumn(
                                 .zIndex(if (isCurrentlyDragged) 1f else 0f)
                                 .then(placementModifier)
                                 .graphicsLayer {
-                                    alpha = if (isHiddenInList) 0f else 1f
+                                    // Draw-time translation against the live slot so a reorder can
+                                    // never leave a stale offset; falls back to the last slot seen.
+                                    if (isCurrentlyDragged) {
+                                        val slotTop = lazyListState.layoutInfo.visibleItemsInfo
+                                            .firstOrNull { it.key == draggedKey }?.offset?.toFloat()
+                                        translationY = dragCardTopPx - (slotTop ?: draggedSlotTopPx)
+                                    } else {
+                                        translationY = 0f
+                                    }
                                 }
                         ) {
                             itemContent(item, isCurrentlyDragged, index)
@@ -310,25 +363,5 @@ fun <T> DragDropLazyColumn(
             }
         }
 
-        val overlayItem = draggedItem
-        if (isDragging && overlayItem != null) {                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .zIndex(6f)
-                ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .zIndex(1f)
-                        .graphicsLayer {
-                            translationY = overlayTop.value
-                            scaleX = 1.02f
-                            scaleY = 1.02f
-                        }
-                ) {
-                    itemContent(overlayItem, true, draggedIndex)
-                }
-            }
-        }
     }
 }

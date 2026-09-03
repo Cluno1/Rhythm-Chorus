@@ -263,7 +263,6 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                                 TunerAnimatedSwitch(
                                     checked = item.toggleState,
                                     onCheckedChange = {
-                                        HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
                                         item.onToggleChange?.invoke(it)
                                     }
                                 )

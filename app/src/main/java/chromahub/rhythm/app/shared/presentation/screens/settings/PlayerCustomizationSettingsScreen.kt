@@ -714,7 +714,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                     value = tempRadius.toFloat(),
                     onValueChange = { tempRadius = it.toInt() },
                     onValueChangeFinished = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                         appSettings.setPlayerArtworkCornerRadius(tempRadius)
                     },
                     valueRange = 0f..40f,
@@ -791,7 +791,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                     value = tempIntensity,
                     onValueChange = { tempIntensity = it },
                     onValueChangeFinished = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                         appSettings.setPlayerAmbientBackdropIntensity(tempIntensity)
                     },
                     valueRange = 0.0f..1.0f,
@@ -914,7 +914,6 @@ fun SettingRow(
             TunerAnimatedSwitch(
                 checked = toggleState,
                 onCheckedChange = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onToggleChange(it)
                 }
             )

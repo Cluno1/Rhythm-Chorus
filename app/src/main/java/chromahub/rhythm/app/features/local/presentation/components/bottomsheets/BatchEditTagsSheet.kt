@@ -62,6 +62,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import chromahub.rhythm.app.util.HapticUtils
+import chromahub.rhythm.app.util.HapticType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import coil.compose.AsyncImage
@@ -170,6 +173,7 @@ fun BatchEditTagsSheet(
     ) -> Unit
 ) {
     val context = LocalContext.current
+    val hapticFeedback = LocalHapticFeedback.current
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     var editArtist by remember { mutableStateOf(false) }
@@ -436,6 +440,7 @@ fun BatchEditTagsSheet(
                                     Checkbox(
                                         checked = editArtwork,
                                         onCheckedChange = { enabled ->
+                                            HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
                                             editArtwork = enabled
                                             if (!enabled) {
                                                 selectedImageUri = null
@@ -765,6 +770,8 @@ private fun BatchEditField(
     onValueChange: (String) -> Unit,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
+    val context = LocalContext.current
+    val hapticFeedback = LocalHapticFeedback.current
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -780,7 +787,10 @@ private fun BatchEditField(
         trailingIcon = {
             Checkbox(
                 checked = enabled,
-                onCheckedChange = onEnabledChange
+                onCheckedChange = {
+                    HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                    onEnabledChange(it)
+                }
             )
         },
         enabled = enabled,

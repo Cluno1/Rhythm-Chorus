@@ -87,9 +87,26 @@ private fun groupedButtonItemShape(index: Int, totalCount: Int): RoundedCornerSh
 
 private data class ButtonDescriptor(
     val title: String,
-    val description: String,
     val icon: MaterialSymbolIcon
 )
+
+private val fixedBottomButtons = listOf("LYRICS", "FAVORITE")
+
+private fun restoreFixedButtons(original: List<String>, editable: List<String>): List<String> {
+    val result = editable.toMutableList()
+    var inserted = 0
+    original.forEach { item ->
+        if (item in fixedBottomButtons) {
+            val editableBefore = original.take(original.indexOf(item)).count { it !in fixedBottomButtons }
+            val insertAt = (editableBefore + inserted).coerceAtMost(result.size)
+            if (item !in result) {
+                result.add(insertAt, item)
+                inserted++
+            }
+        }
+    }
+    return result
+}
 
 @Composable
 fun ExpressiveBottomButtonsOrderBottomSheet(
@@ -106,18 +123,20 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
 
     var selectedModeIndex by remember { mutableIntStateOf(initialModeIndex.coerceIn(0, 1)) }
 
+    val editableBottomButtons = appSettings.allExpressiveBottomButtons.filterNot { it in fixedBottomButtons }
+
     // Build full list for normal mode (existing order + any unlisted buttons)
     val fullNormalList = remember(normalOrder) {
-        val list = normalOrder.toMutableList()
-        appSettings.allExpressiveBottomButtons.forEach { btn ->
+        val list = normalOrder.filterNot { it in fixedBottomButtons }.toMutableList()
+        editableBottomButtons.forEach { btn ->
             if (!list.contains(btn)) list.add(btn)
         }
         list
     }
     // Build full list for merge mode (existing order + any unlisted buttons)
     val fullMergeList = remember(mergeOrder) {
-        val list = mergeOrder.toMutableList()
-        appSettings.allExpressiveBottomButtons.forEach { btn ->
+        val list = mergeOrder.filterNot { it in fixedBottomButtons }.toMutableList()
+        editableBottomButtons.forEach { btn ->
             if (!list.contains(btn)) list.add(btn)
         }
         list
@@ -126,7 +145,7 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
     var reorderableNormalList by remember { mutableStateOf(fullNormalList) }
     var hiddenNormalSet by remember {
         val initiallyHidden = hiddenNormal.toMutableSet()
-        appSettings.allExpressiveBottomButtons.forEach { btn ->
+        editableBottomButtons.forEach { btn ->
             if (!normalOrder.contains(btn)) {
                 initiallyHidden.add(btn)
             }
@@ -137,7 +156,7 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
     var reorderableMergeList by remember { mutableStateOf(fullMergeList) }
     var hiddenMergeSet by remember {
         val initiallyHidden = hiddenMerge.toMutableSet()
-        appSettings.allExpressiveBottomButtons.forEach { btn ->
+        editableBottomButtons.forEach { btn ->
             if (!mergeOrder.contains(btn)) {
                 initiallyHidden.add(btn)
             }
@@ -153,84 +172,60 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
 
     fun getButtonDescriptor(buttonId: String): ButtonDescriptor {
         return when (buttonId) {
-            "LYRICS" -> ButtonDescriptor(
-                title = context.getString(R.string.player_chip_lyrics),
-                description = context.getString(R.string.expressive_button_lyrics_desc),
-                icon = RhythmIcons.Player.Lyrics
-            )
-            "FAVORITE" -> ButtonDescriptor(
-                title = context.getString(R.string.player_chip_favorite),
-                description = context.getString(R.string.expressive_button_favorite_desc),
-                icon = RhythmIcons.FavoriteFilled
-            )
             "DEVICE" -> ButtonDescriptor(
                 title = context.getString(R.string.expressiveplayerscreen_device),
-                description = context.getString(R.string.expressive_button_device_desc),
                 icon = RhythmIcons.SpeakerFilled
             )
             "QUEUE" -> ButtonDescriptor(
                 title = context.getString(R.string.bottomsheet_queue),
-                description = context.getString(R.string.expressive_button_queue_desc),
                 icon = RhythmIcons.Queue
             )
             "MORE" -> ButtonDescriptor(
                 title = context.getString(R.string.libraryscreen_more_actions),
-                description = context.getString(R.string.expressive_button_more_desc),
                 icon = RhythmIcons.More
             )
             "SHUFFLE" -> ButtonDescriptor(
                 title = context.getString(R.string.action_shuffle),
-                description = context.getString(R.string.expressive_button_shuffle_desc),
                 icon = RhythmIcons.Player.Shuffle
             )
             "REPEAT" -> ButtonDescriptor(
                 title = context.getString(R.string.player_chip_repeat),
-                description = context.getString(R.string.expressive_button_repeat_desc),
                 icon = RhythmIcons.Player.Repeat
             )
             "EQUALIZER" -> ButtonDescriptor(
                 title = context.getString(R.string.equalizer),
-                description = context.getString(R.string.expressive_button_equalizer_desc),
                 icon = MaterialSymbolIcon("graphic_eq", filled = true)
             )
             "SPEED" -> ButtonDescriptor(
                 title = context.getString(R.string.player_chip_speed),
-                description = context.getString(R.string.expressive_button_speed_desc),
                 icon = MaterialSymbolIcon("tune", filled = true)
             )
             "SLEEP_TIMER" -> ButtonDescriptor(
                 title = context.getString(R.string.sleep_timer),
-                description = context.getString(R.string.expressive_button_sleep_timer_desc),
                 icon = RhythmIcons.AccessTime
             )
             "ADD_TO_PLAYLIST" -> ButtonDescriptor(
                 title = context.getString(R.string.bottomsheet_add_to_playlist),
-                description = context.getString(R.string.expressive_button_add_to_playlist_desc),
                 icon = RhythmIcons.AddToPlaylist
             )
             "ALBUM" -> ButtonDescriptor(
                 title = context.getString(R.string.player_chip_album),
-                description = context.getString(R.string.expressive_button_album_desc),
                 icon = RhythmIcons.Music.Album
             )
             "ARTIST" -> ButtonDescriptor(
                 title = context.getString(R.string.player_chip_artist),
-                description = context.getString(R.string.expressive_button_artist_desc),
                 icon = RhythmIcons.Music.Artist
             )
             "SONG_INFO" -> ButtonDescriptor(
                 title = context.getString(R.string.action_song_info),
-                description = context.getString(R.string.expressive_button_song_info_desc),
                 icon = RhythmIcons.Info
             )
             "SHARE" -> ButtonDescriptor(
                 title = context.getString(R.string.extrasheet_share_file),
-                description = context.getString(R.string.expressive_button_share_desc),
                 icon = RhythmIcons.Share
             )
             else -> ButtonDescriptor(
                 title = buttonId,
-                description = "",
                 icon = RhythmIcons.Edit
             )
         }
@@ -337,7 +332,6 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
                                 horizontalArrangement = Arrangement.spacedBy(14.dp),
                                 modifier = Modifier.weight(1f)
                             ) {
-                                // Position indicator
                                 Surface(
                                     shape = CircleShape,
                                     color = if (isHidden)
@@ -359,7 +353,6 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
                                     }
                                 }
 
-                                // Button icon
                                 Icon(
                                     imageVector = descriptor.icon,
                                     contentDescription = null,
@@ -370,7 +363,6 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
                                     modifier = Modifier.size(24.dp)
                                 )
 
-                                // Button name and description
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = descriptor.title,
@@ -383,21 +375,9 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
-                                    if (descriptor.description.isNotBlank()) {
-                                        Text(
-                                            text = descriptor.description,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                                alpha = if (isHidden) 0.4f else 0.8f
-                                            ),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
                                 }
                             }
 
-                            // Visibility toggle and drag handle
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -440,7 +420,6 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
                                     )
                                 }
 
-                                // Drag Handle Icon
                                 Icon(
                                     imageVector = RhythmIcons.DragHandle,
                                     contentDescription = stringResource(R.string.drag_to_reorder),
@@ -473,18 +452,18 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             if (isNormalMode) {
                                 appSettings.resetExpressiveBottomButtonsNormal()
-                                val defaultNormal = appSettings.defaultExpressiveBottomButtonsNormal
+                                val defaultNormal = appSettings.defaultExpressiveBottomButtonsNormal.filterNot { it in fixedBottomButtons }
                                 val full = defaultNormal.toMutableList()
-                                appSettings.allExpressiveBottomButtons.forEach { if (!full.contains(it)) full.add(it) }
+                                editableBottomButtons.forEach { if (!full.contains(it)) full.add(it) }
                                 reorderableNormalList = full
-                                hiddenNormalSet = appSettings.allExpressiveBottomButtons.filter { !defaultNormal.contains(it) }.toSet()
+                                hiddenNormalSet = editableBottomButtons.filter { !defaultNormal.contains(it) }.toSet()
                             } else {
                                 appSettings.resetExpressiveBottomButtonsMerge()
-                                val defaultMerge = appSettings.defaultExpressiveBottomButtonsMerge
+                                val defaultMerge = appSettings.defaultExpressiveBottomButtonsMerge.filterNot { it in fixedBottomButtons }
                                 val full = defaultMerge.toMutableList()
-                                appSettings.allExpressiveBottomButtons.forEach { if (!full.contains(it)) full.add(it) }
+                                editableBottomButtons.forEach { if (!full.contains(it)) full.add(it) }
                                 reorderableMergeList = full
-                                hiddenMergeSet = appSettings.allExpressiveBottomButtons.filter { !defaultMerge.contains(it) }.toSet()
+                                hiddenMergeSet = editableBottomButtons.filter { !defaultMerge.contains(it) }.toSet()
                             }
                             Toast.makeText(context, R.string.expressive_bottom_buttons_reset, Toast.LENGTH_SHORT).show()
                         },
@@ -494,14 +473,13 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
                         text = context.getString(R.string.bottomsheet_reset)
                     )
 
-                    // Save button
                     RhythmButtonWeighted(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            appSettings.setExpressiveBottomButtonsNormal(reorderableNormalList)
-                            appSettings.setExpressiveHiddenBottomButtonsNormal(hiddenNormalSet)
-                            appSettings.setExpressiveBottomButtonsMerge(reorderableMergeList)
-                            appSettings.setExpressiveHiddenBottomButtonsMerge(hiddenMergeSet)
+                            appSettings.setExpressiveBottomButtonsNormal(restoreFixedButtons(fullNormalList, reorderableNormalList))
+                            appSettings.setExpressiveHiddenBottomButtonsNormal(hiddenNormalSet - fixedBottomButtons.toSet())
+                            appSettings.setExpressiveBottomButtonsMerge(restoreFixedButtons(fullMergeList, reorderableMergeList))
+                            appSettings.setExpressiveHiddenBottomButtonsMerge(hiddenMergeSet - fixedBottomButtons.toSet())
                             Toast.makeText(context, R.string.expressive_bottom_buttons_saved, Toast.LENGTH_SHORT).show()
                             scope.launch {
                                 sheetState.hide()

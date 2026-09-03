@@ -990,7 +990,10 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 value = festiveThemeIntensity,
                                 onValueChange = { appSettings.setFestiveThemeIntensity(it) },
                                 valueRange = 0.1f..1f,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                onValueChangeFinished = {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                }
                             )
 
                             Spacer(modifier = Modifier.height(16.dp))
@@ -1018,7 +1021,10 @@ fun ThemeCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                 value = festiveSnowflakeSize,
                                 onValueChange = { appSettings.setFestiveSnowflakeSize(it) },
                                 valueRange = 0.5f..2.0f,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                onValueChangeFinished = {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                }
                             )
 
                             Spacer(modifier = Modifier.height(16.dp))

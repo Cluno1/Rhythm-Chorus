@@ -40,7 +40,6 @@ import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.input.pointer.pointerInput
-//import kotlinx.coroutines.awaitRelease
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -173,7 +172,6 @@ import chromahub.rhythm.app.shared.presentation.components.common.ButtonGroupSty
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
 import chromahub.rhythm.app.ui.theme.PlayerButtonColor
-// import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
 import chromahub.rhythm.app.util.ImageUtils
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
@@ -196,7 +194,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBarsPadding
 import chromahub.rhythm.app.shared.presentation.components.player.formatDuration
-import java.util.concurrent.TimeUnit // Import TimeUnit for duration formatting
+import java.util.concurrent.TimeUnit
 import chromahub.rhythm.app.shared.presentation.components.common.PlaybackBufferingLoader
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistChooserBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.QueueBottomSheet
@@ -274,12 +272,10 @@ fun MaterialPlayerScreen(
     onEditLyrics: (String) -> Unit = {},
     onPickLyricsFile: () -> Unit = {},
     onSaveLyrics: (String, String) -> Unit = { _, _ -> },
-    // (lyrics, saveLocation)
     playlists: List<Playlist> = emptyList(),
     queue: List<Song> = emptyList(),
     onSongClick: (Song) -> Unit = {},
     onSongClickAtIndex: (Int) -> Unit = { _ -> },
-    // New parameter for index-based queue clicks
     onRemoveFromQueueAtIndex: (Int) -> Unit = { _ -> },
     onMoveQueueItem: (Int, Int) -> Unit = { _, _ -> },
     onAddSongsToQueue: () -> Unit = {},
@@ -290,7 +286,6 @@ fun MaterialPlayerScreen(
     onCreatePlaylist: (String) -> Unit = { _ -> },
     onShowCreatePlaylistDialog: (Song?) -> Unit = {},
     onClearQueue: () -> Unit = {},
-    // New parameters for loader control and bottom sheets
     isMediaLoading: Boolean = false,
     isSeeking: Boolean = false,
     onShowAlbumBottomSheet: () -> Unit = {},
@@ -1218,9 +1213,7 @@ fun MaterialPlayerScreen(
             sleepTimerActive = sleepTimerActive,
             sleepTimerRemainingSeconds = sleepTimerRemainingSeconds,
             lyrics = lyrics,
-            isFavorite = isFavorite,
             onAddToPlaylist = onAddToPlaylist,
-            onToggleFavorite = onToggleFavorite,
             onPlaybackSpeed = { showPlaybackSpeedDialog = true },
             onPlaybackPitch = { showPlaybackPitchDialog = true },
             onEqualizer = { navController.navigate(Screen.Equalizer.route) },
@@ -1957,10 +1950,6 @@ fun MaterialPlayerScreen(
                                                 AutoScrollingTextOnDemand(
                                                     text = buildString {
                                                         append(song.artist)
-                                                        if (!song.album.isNullOrBlank() && song.album != song.artist) {
-//                                                            append(" • ")
-//                                                            append(song.album)
-                                                        }
                                                     },
                                                     style = MaterialTheme.typography.titleMedium.copy(
                                                         fontWeight = FontWeight.Medium,
@@ -2387,10 +2376,6 @@ fun MaterialPlayerScreen(
                             AutoScrollingTextOnDemand(
                                 text = buildString {
                                     append(song.artist)
-                                    if (!song.album.isNullOrBlank() && song.album != song.artist) {
-//                                        append(" • ")
-//                                        append(song.album)
-                                    }
                                 },
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Medium,
@@ -2603,6 +2588,7 @@ fun MaterialPlayerScreen(
                                                 }
                                             },
                                             onValueChangeFinished = {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                                 if (canSeek && enhancedSeekingEnabled && isScrubbing) {
                                                     onSeek(scrubProgress)
                                                     isScrubbing = false

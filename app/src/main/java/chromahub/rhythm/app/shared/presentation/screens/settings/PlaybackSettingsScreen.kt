@@ -304,7 +304,10 @@ fun PlaybackSettingsScreen(
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Slider(
                                         value = crossfadeDuration,
-                                        onValueChange = { appSettings.setCrossfadeDuration(it) },
+                                        onValueChange = {
+                                            HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                                            appSettings.setCrossfadeDuration(it)
+                                        },
                                         valueRange = 0.5f..12f,
                                         steps = 22,
                                         modifier = Modifier.fillMaxWidth()
@@ -348,7 +351,6 @@ fun PlaybackSettingsScreen(
                                         TunerAnimatedSwitch(
                                             checked = item.toggleState,
                                             onCheckedChange = {
-                                                HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
                                                 item.onToggleChange?.invoke(it)
                                             }
                                         )
@@ -360,7 +362,6 @@ fun PlaybackSettingsScreen(
                                     TunerAnimatedSwitch(
                                         checked = item.toggleState,
                                         onCheckedChange = {
-                                            HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
                                             item.onToggleChange?.invoke(it)
                                         }
                                     )

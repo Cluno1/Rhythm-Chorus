@@ -1361,7 +1361,10 @@ fun LyricsEditorBottomSheet(
                         ) {
                             Checkbox(
                                 checked = rememberChoiceCheckbox,
-                                onCheckedChange = { rememberChoiceCheckbox = it }
+                                onCheckedChange = {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    rememberChoiceCheckbox = it
+                                }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(

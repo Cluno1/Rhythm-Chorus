@@ -132,6 +132,7 @@ fun PlaylistSongOptionsBottomSheet(
     onShare: () -> Unit,
     onDeleteSong: () -> Unit,
     showRemoveFromPlaylist: Boolean = true,
+    showAddToPlaylist: Boolean = true,
     showGoToAlbum: Boolean = true,
     isStreamingMode: Boolean = false,
     haptics: HapticFeedback
@@ -163,7 +164,6 @@ fun PlaylistSongOptionsBottomSheet(
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
         ) {
-            // Header with song info card
             AnimatedVisibility(
                 visible = showContent,
                 enter = fadeIn() + slideInVertically { it },
@@ -253,7 +253,6 @@ fun PlaylistSongOptionsBottomSheet(
                 }
             }
             
-            // Actions section with grouped grid layout
             AnimatedVisibility(
                 visible = showContent,
                 enter = fadeIn() + slideInVertically { it },
@@ -279,7 +278,7 @@ fun PlaylistSongOptionsBottomSheet(
                     val errorContainer = MaterialTheme.colorScheme.errorContainer
                     val errorColor = MaterialTheme.colorScheme.error
 
-                    val gridItems = remember(showGoToAlbum, showRemoveFromPlaylist, primaryContainer, onPrimaryContainer, secondaryContainer, onSecondaryContainer, errorContainer, errorColor) {
+                    val gridItems = remember(showGoToAlbum, showRemoveFromPlaylist, showAddToPlaylist, primaryContainer, onPrimaryContainer, secondaryContainer, onSecondaryContainer, errorContainer, errorColor) {
                         buildList {
                             add(
                                 OptionItem(
@@ -299,15 +298,17 @@ fun PlaylistSongOptionsBottomSheet(
                                     onClick = onAddToQueue
                                 )
                             )
-                            add(
-                                OptionItem(
-                                    icon = RhythmIcons.AddToPlaylist,
-                                    text = context.getString(R.string.content_desc_add_to_playlist),
-                                    containerColor = primaryContainer,
-                                    iconColor = onPrimaryContainer,
-                                    onClick = onAddToPlaylist
+                            if (showAddToPlaylist) {
+                                add(
+                                    OptionItem(
+                                        icon = RhythmIcons.AddToPlaylist,
+                                        text = context.getString(R.string.content_desc_add_to_playlist),
+                                        containerColor = primaryContainer,
+                                        iconColor = onPrimaryContainer,
+                                        onClick = onAddToPlaylist
+                                    )
                                 )
-                            )
+                            }
                             if (showGoToAlbum) {
                                 add(
                                     OptionItem(

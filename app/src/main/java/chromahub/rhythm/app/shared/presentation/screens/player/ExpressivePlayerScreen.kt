@@ -944,6 +944,7 @@ fun ExpressivePlayerScreen(
                 ) {
                     Button(
                         onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                             showAutoFetchEmbedDialog = false
                             pendingAutoFetchSong = null
                             dialogSong?.let { currentSong ->
@@ -1000,6 +1001,7 @@ fun ExpressivePlayerScreen(
 
                     OutlinedButton(
                         onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM)
                             showAutoFetchEmbedDialog = false
                             pendingAutoFetchSong = null
                         },
@@ -1407,11 +1409,11 @@ fun ExpressivePlayerScreen(
                                             horizontalAlignment = if (playerMergeControlsToBottom) Alignment.CenterHorizontally else Alignment.Start) {
                                             AutoScrollingTextOnDemand(text = targetTitle, style = targetTextStyle.copy(color = onSurfaceColor),
                                                 gradientEdgeColor = when { showDarkBg -> Color.Black; else -> outerBoxBgColor },
-                                                modifier = Modifier.fillMaxWidth().clickable { onSongInfoClick() }, respectGlobalSetting = true,
+                                                modifier = Modifier.fillMaxWidth().clickable { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSongInfoClick() }, respectGlobalSetting = true,
                                                 textAlign = if (playerMergeControlsToBottom) TextAlign.Center else TextAlign.Start)
                                             AutoScrollingTextOnDemand(text = targetArtist, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium, color = onSurfaceVariantColor),
                                                 gradientEdgeColor = when { showDarkBg -> Color.Black; else -> outerBoxBgColor },
-                                                modifier = Modifier.fillMaxWidth().clickable { onShowArtist() }, respectGlobalSetting = true,
+                                                modifier = Modifier.fillMaxWidth().clickable { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowArtist() }, respectGlobalSetting = true,
                                                 textAlign = if (playerMergeControlsToBottom) TextAlign.Center else TextAlign.Start)
                                         }
                                     }
@@ -1425,7 +1427,7 @@ fun ExpressivePlayerScreen(
                                         modifier = Modifier.widthIn(max = 100.dp)
                                     ) {
                                         RhythmButtonWeighted(
-                                            onClick = onToggleLyrics,
+                                            onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleLyrics() },
                                             weight = 1f,
                                             isFirst = true,
                                             isLast = false,
@@ -1434,7 +1436,7 @@ fun ExpressivePlayerScreen(
                                             icon = RhythmIcons.Player.Lyrics
                                         )
                                         RhythmButtonWeighted(
-                                            onClick = onToggleFavorite,
+                                            onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleFavorite() },
                                             weight = 1f,
                                             isFirst = false,
                                             isLast = true,
@@ -1460,7 +1462,7 @@ fun ExpressivePlayerScreen(
                                         RhythmPlayButton(
                                             isPlaying = isPlaying,
                                             showBuffering = showBuffering,
-                                            onClick = onPlayPause,
+                                            onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onPlayPause() },
                                             containerColor = when {
                                                 needsDarkSurfaces -> ambientPlayContainer
                                                 useAccentBackground -> accentFg
@@ -1475,7 +1477,7 @@ fun ExpressivePlayerScreen(
                                             modifier = Modifier.weight(1f)
                                         )
                                         RhythmControlButton(
-                                            onClick = onSkipNext,
+                                            onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSkipNext() },
                                             shape = playerControlShape,
                                             containerColor = when {
                                                 needsDarkSurfaces -> ambientControlContainer
@@ -1501,7 +1503,7 @@ fun ExpressivePlayerScreen(
                                     Row(Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
                                         RhythmControlButton(
-                                            onClick = onSkipPrevious,
+                                            onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSkipPrevious() },
                                             shape = playerControlShape,
                                             containerColor = when {
                                                 needsDarkSurfaces -> ambientControlContainer
@@ -1529,7 +1531,7 @@ fun ExpressivePlayerScreen(
                                             } else if (playerProgressStyle == "WAVY") {
                                                 WaveSlider(value = if (isScrubbing && enhancedSeekingEnabled) scrubProgress else progressValue,
                                                     onValueChange = { if (canSeek && enhancedSeekingEnabled) { isScrubbing = true; scrubProgress = it } else if (canSeek) onSeek(it) },
-                                                    onValueChangeFinished = { if (canSeek && enhancedSeekingEnabled && isScrubbing) { onSeek(scrubProgress); isScrubbing = false } },
+                                                    onValueChangeFinished = { if (canSeek && enhancedSeekingEnabled && isScrubbing) { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onSeek(scrubProgress); isScrubbing = false } },
                                                     modifier = Modifier.fillMaxWidth(), enabled = canSeek, isPlaying = isPlaying,
                                                     activeTrackColor = primaryColor, inactiveTrackColor = onSurfaceColor.copy(alpha = 0.2f), thumbColor = primaryColor)
                                             } else {
@@ -1541,6 +1543,7 @@ fun ExpressivePlayerScreen(
                                                         height = when (ps) { ProgressStyle.THIN -> 2.dp; ProgressStyle.THICK -> 12.dp; else -> 8.dp },
                                                         isPlaying = isPlaying, showThumb = ts != ThumbStyle.NONE, thumbStyle = ts, thumbSize = 14.dp, rotateThumbWhenPlaying = playerProgressThumbRotate, waveAmplitudeWhenPlaying = 3.dp, waveLength = 60.dp)
                                                     Slider(value = progressValue, onValueChange = { onSeek(it) }, modifier = Modifier.fillMaxWidth(), enabled = canSeek,
+                                                        onValueChangeFinished = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT) },
                                                         colors = SliderDefaults.colors(thumbColor = Color.Transparent, activeTrackColor = Color.Transparent, inactiveTrackColor = Color.Transparent))
                                                 }
                                             }
@@ -1555,7 +1558,7 @@ fun ExpressivePlayerScreen(
                                                     style = MaterialTheme.typography.labelMedium,
                                                     color = onSurfaceVariantColor,
                                                     modifier = Modifier
-                                                        .clickable { onTotalTimeClick() }
+                                                        .clickable { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onTotalTimeClick() }
                                                         .padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
                                                 )
                                             }
@@ -1628,7 +1631,7 @@ fun ExpressivePlayerScreen(
                                         when (buttonId) {
                                             "LYRICS" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onToggleLyrics,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleLyrics() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1644,7 +1647,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "FAVORITE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onToggleFavorite,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleFavorite() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1660,7 +1663,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "DEVICE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onDeviceClick,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onDeviceClick() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1676,7 +1679,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "QUEUE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onQueueClick,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onQueueClick() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1707,7 +1710,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "MORE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onMoreClick,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onMoreClick() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1723,7 +1726,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "SHUFFLE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onToggleShuffle,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleShuffle() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1744,7 +1747,7 @@ fun ExpressivePlayerScreen(
                                                     else -> RhythmIcons.Player.Repeat
                                                 }
                                                 RhythmDetailActionButton(
-                                                    onClick = onToggleRepeat,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleRepeat() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1760,7 +1763,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "EQUALIZER" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onEqualizer,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onEqualizer() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1776,7 +1779,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "SPEED" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onPlaybackSpeed,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onPlaybackSpeed() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1792,7 +1795,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "SLEEP_TIMER" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onSleepTimer,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSleepTimer() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1808,7 +1811,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "ADD_TO_PLAYLIST" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onAddToPlaylist,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onAddToPlaylist() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1824,7 +1827,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "ALBUM" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onShowAlbumBottomSheet,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowAlbumBottomSheet() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1840,7 +1843,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "ARTIST" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onShowArtist,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowArtist() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1856,7 +1859,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "SONG_INFO" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onSongInfoClick,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSongInfoClick() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1872,7 +1875,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "SHARE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onShareFile,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShareFile() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1906,7 +1909,7 @@ fun ExpressivePlayerScreen(
                                         when (buttonId) {
                                             "DEVICE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onDeviceClick,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onDeviceClick() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1925,7 +1928,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "QUEUE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onQueueClick,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onQueueClick() },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1951,7 +1954,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "MORE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onMoreClick,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onMoreClick() },
                                                     weight = 0.35f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1966,7 +1969,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "LYRICS" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onToggleLyrics,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleLyrics() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1981,7 +1984,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "FAVORITE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onToggleFavorite,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleFavorite() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1996,7 +1999,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "SHUFFLE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onToggleShuffle,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleShuffle() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2016,7 +2019,7 @@ fun ExpressivePlayerScreen(
                                                     else -> RhythmIcons.Player.Repeat
                                                 }
                                                 RhythmDetailActionButton(
-                                                    onClick = onToggleRepeat,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleRepeat() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2031,7 +2034,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "EQUALIZER" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onEqualizer,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onEqualizer() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2046,7 +2049,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "SPEED" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onPlaybackSpeed,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onPlaybackSpeed() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2061,7 +2064,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "SLEEP_TIMER" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onSleepTimer,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSleepTimer() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2076,7 +2079,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "ADD_TO_PLAYLIST" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onAddToPlaylist,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onAddToPlaylist() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2091,7 +2094,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "ALBUM" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onShowAlbumBottomSheet,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowAlbumBottomSheet() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2106,7 +2109,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "ARTIST" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onShowArtist,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowArtist() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2121,7 +2124,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "SONG_INFO" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onSongInfoClick,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSongInfoClick() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2136,7 +2139,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "SHARE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onShareFile,
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShareFile() },
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2435,7 +2438,7 @@ private fun RhythmPlayerLyricsPanel(
                             size = RhythmButtonSize.Small
                         ) {
                             RhythmButtonWeighted(
-                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onRetryLyrics() },
+                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onRetryLyrics() },
                                 weight = 1f,
                                 isFirst = true,
                                 isLast = false,
@@ -2445,7 +2448,7 @@ private fun RhythmPlayerLyricsPanel(
                                 contentColor = buttonContentColor
                             )
                             RhythmButtonWeighted(
-                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onShowLyricsEditor() },
+                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowLyricsEditor() },
                                 weight = 1f,
                                 isFirst = false,
                                 isLast = false,
@@ -2455,7 +2458,7 @@ private fun RhythmPlayerLyricsPanel(
                                 contentColor = buttonContentColor
                             )
                             RhythmButtonWeighted(
-                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onNavigateToLyricsSettings?.invoke() },
+                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onNavigateToLyricsSettings?.invoke() },
                                 weight = 1f,
                                 isFirst = false,
                                 isLast = true,

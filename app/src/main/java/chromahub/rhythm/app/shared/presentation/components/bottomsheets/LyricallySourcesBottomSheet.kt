@@ -243,7 +243,6 @@ fun LyricallySourcesBottomSheet(
                                         ).show()
                                         return@TunerAnimatedSwitch
                                     }
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                                     disabledSourcesSet = if (nowEnabled) {
                                         disabledSourcesSet - source
                                     } else {

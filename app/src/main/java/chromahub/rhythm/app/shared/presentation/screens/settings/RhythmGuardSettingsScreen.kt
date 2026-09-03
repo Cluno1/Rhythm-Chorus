@@ -412,7 +412,6 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                         TunerAnimatedSwitch(
                             checked = isRhythmGuardEnabled,
                             onCheckedChange = { enabled ->
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                 if (enabled) {
                                     val restoredMode = if (auraMode == AppSettings.RHYTHM_GUARD_MODE_MANUAL) {
                                         AppSettings.RHYTHM_GUARD_MODE_MANUAL
@@ -532,7 +531,10 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                             Spacer(modifier = Modifier.height(12.dp))
                             Slider(
                                 value = auraAge.toFloat(),
-                                onValueChange = { appSettings.setRhythmGuardAge(it.toInt()) },
+                                onValueChange = {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    appSettings.setRhythmGuardAge(it.toInt())
+                                },
                                 valueRange = 8f..80f,
                                 steps = 71
                             )
@@ -657,6 +659,7 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                     Slider(
                                         value = maxOf(alertThresholdMinutes, 15).toFloat(),
                                         onValueChange = {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                             appSettings.setRhythmGuardAlertThresholdMinutes(
                                                 it.toInt()
                                             )
@@ -717,6 +720,7 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                     Slider(
                                         value = warningTimeoutMinutes.toFloat(),
                                         onValueChange = {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                             appSettings.setRhythmGuardWarningTimeoutMinutes(
                                                 it.toInt()
                                             )
@@ -777,6 +781,7 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                     Slider(
                                         value = postTimeoutCooldownMinutes.toFloat(),
                                         onValueChange = {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                             appSettings.setRhythmGuardPostTimeoutCooldownMinutes(
                                                 it.toInt()
                                             )
@@ -837,6 +842,7 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                     Slider(
                                         value = breakResumeMinutes.toFloat(),
                                         onValueChange = {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                             appSettings.setRhythmGuardBreakResumeMinutes(
                                                 it.toInt()
                                             )
@@ -1036,7 +1042,10 @@ fun RhythmGuardSettingsScreen(onBackClick: () -> Unit) {
                                                 it
                                             )
                                         },
-                                        valueRange = 0.40f..0.95f
+                                        valueRange = 0.40f..0.95f,
+                                        onValueChangeFinished = {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                        }
                                     )
                                 }
                             }
@@ -1446,6 +1455,7 @@ fun BackupRestoreSectionPickerBottomSheet(
 ) {
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val selectedSectionCount = listOf(
         sections.includeGeneralSettings,
         sections.includeLibraryData,
@@ -1610,6 +1620,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                                 }
                             },
                             onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                 onSectionsChange(sections.copy(includeGeneralSettings = !sections.includeGeneralSettings))
                             }
                         ),
@@ -1655,6 +1666,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                                 }
                             },
                             onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                 onSectionsChange(sections.copy(includeLibraryData = !sections.includeLibraryData))
                             }
                         ),
@@ -1700,6 +1712,7 @@ fun BackupRestoreSectionPickerBottomSheet(
                                 }
                             },
                             onClick = {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                                 onSectionsChange(sections.copy(includeStatsAndRhythmGuard = !sections.includeStatsAndRhythmGuard))
                             }
                         )

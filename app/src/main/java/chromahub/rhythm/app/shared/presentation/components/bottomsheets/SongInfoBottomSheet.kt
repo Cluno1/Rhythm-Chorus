@@ -406,6 +406,24 @@ fun SongInfoBottomSheet(
             },
             text = {
                 Column {
+                    folderPath?.let { path ->
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = path,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                     Text(
                         if (isInBlacklistedFolder) stringResource(R.string.blacklist_remove_folder_desc) else stringResource(R.string.blacklist_add_folder_desc),
                         style = MaterialTheme.typography.bodyMedium

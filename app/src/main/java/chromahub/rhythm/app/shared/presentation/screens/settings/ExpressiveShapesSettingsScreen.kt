@@ -384,7 +384,6 @@ fun ExpressiveShapesSettingsScreen(onBackClick: () -> Unit) {
                     TunerAnimatedSwitch(
                         checked = expressiveShapesEnabled,
                         onCheckedChange = { enabled ->
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                             appSettings.setExpressiveShapesEnabled(enabled)
                         }
                     )

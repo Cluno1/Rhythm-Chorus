@@ -29,8 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
@@ -87,6 +89,7 @@ import kotlinx.coroutines.withContext
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.sp
+import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import chromahub.rhythm.app.util.windowScreenWidthDp
 import chromahub.rhythm.app.util.windowScreenHeightDp
 
@@ -669,6 +672,7 @@ fun AlbumDetailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(450.dp)
+                        .clipToBounds()
                         .graphicsLayer {
                             alpha = expandedAlpha
                             // Zoom in effect: art scales up as user scrolls down
@@ -676,53 +680,58 @@ fun AlbumDetailScreen(
                             scaleY = 1f + collapsedFraction * 0.15f
                         }
                 ) {
-                    if (displayArtworkUri != null) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context)
-                                .apply(ImageUtils.buildImageRequest(displayArtworkUri, albumName, context.cacheDir, M3PlaceholderType.ALBUM))
-                                .build(),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+                    ) {
+                        if (displayArtworkUri != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .apply(ImageUtils.buildImageRequest(displayArtworkUri, albumName, context.cacheDir, M3PlaceholderType.ALBUM))
+                                    .build(),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.linearGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.primaryContainer,
+                                                MaterialTheme.colorScheme.tertiaryContainer
+                                            )
+                                        )
+                                    )
+                            )
+                        }
+
+                        if (hasCanvas) {
+                            CanvasArtworkPlayer(
+                                primaryUrl = canvasArtwork?.animated,
+                                fallbackUrl = canvasArtwork?.videoUrl,
+                                alwaysPlay = true,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .background(
-                                    Brush.linearGradient(
+                                    Brush.verticalGradient(
                                         colors = listOf(
-                                            MaterialTheme.colorScheme.primaryContainer,
-                                            MaterialTheme.colorScheme.tertiaryContainer
+                                            Color.Transparent,
+                                            backgroundColor.copy(alpha = 0.6f),
+                                            backgroundColor
                                         )
                                     )
                                 )
                         )
                     }
-
-                    if (hasCanvas) {
-                        CanvasArtworkPlayer(
-                            primaryUrl = canvasArtwork?.animated,
-                            fallbackUrl = canvasArtwork?.videoUrl,
-                            alwaysPlay = true,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-
-                    // Gradient overlay
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        backgroundColor.copy(alpha = 0.6f),
-                                        backgroundColor
-                                    )
-                                )
-                            )
-                    )
 
                     // Album info — bottom aligned, slides up with collapse
                     Column(
@@ -974,14 +983,14 @@ fun AlbumDetailScreen(
                 // Interpolate content top padding between artwork height (expanded) and top bar height (collapsed)
                 val dynamicTopPadding = 450.dp + (collapsedTopPadding - 450.dp) * collapsedFraction
 
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(top = dynamicTopPadding)
                 ) {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 450.dp),
+                        contentPadding = PaddingValues(bottom = (LocalMiniPlayerPadding.current.calculateBottomPadding() + 24.dp).coerceAtLeast(100.dp)),
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         if (!isLoading) {
@@ -1123,6 +1132,29 @@ fun AlbumDetailScreen(
                             }
                         }
                     }
+
+                    val headerBlendAlpha by animateFloatAsState(
+                        targetValue = ((collapsedFraction - 0.65f) / 0.35f).coerceIn(0f, 1f),
+                        animationSpec = tween(250),
+                        label = "albumHeaderBlendAlpha"
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth()
+                            .height(24.dp)
+                            .graphicsLayer { alpha = headerBlendAlpha }
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        backgroundColor,
+                                        backgroundColor.copy(alpha = 0.72f),
+                                        backgroundColor.copy(alpha = 0.32f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
+                    )
                 }
             }
         }
@@ -1152,7 +1184,7 @@ fun AlbumDetailScreen(
                 onShare(selectedSongForOptions!!)
                 showSongOptionsSheet = false
             },
-            onRemoveFromPlaylist = { }, // Not applicable to Album screen
+            onRemoveFromPlaylist = { },
             onPlayNext = {
                 onPlayNext(selectedSongForOptions!!)
                 showSongOptionsSheet = false
@@ -1171,14 +1203,14 @@ fun AlbumDetailScreen(
                 onShowSongInfo(selectedSongForOptions!!)
                 showSongOptionsSheet = false
             },
-            onGoToAlbum = { /* Hidden for album screen */ },
+            onGoToAlbum = { },
             onGoToArtist = {
                 val song = selectedSongForOptions!!
                 showSongOptionsSheet = false
                 handleArtistTap(song)
             },
-            showRemoveFromPlaylist = false, // Always hide for albums
-            showGoToAlbum = false,         // Already on the album screen
+            showRemoveFromPlaylist = false,
+            showGoToAlbum = false,
             isStreamingMode = isStreamingMode,
             onDeleteSong = {
                 viewModel.deleteSong(selectedSongForOptions!!)

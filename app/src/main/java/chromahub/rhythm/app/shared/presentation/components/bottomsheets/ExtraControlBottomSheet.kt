@@ -121,9 +121,8 @@ fun ExtraControlBottomSheet(
     sleepTimerActive: Boolean,
     sleepTimerRemainingSeconds: Long,
     lyrics: LyricsData?,
-    isFavorite: Boolean = false,
     onAddToPlaylist: () -> Unit,
-    onToggleFavorite: () -> Unit = {},
+    onEditControls: (() -> Unit)? = null,
     onPlaybackSpeed: () -> Unit,
     onPlaybackPitch: () -> Unit = {},
     onEqualizer: () -> Unit,
@@ -150,42 +149,37 @@ fun ExtraControlBottomSheet(
         }
     }
 
-    val primary = MaterialTheme.colorScheme.primaryContainer
-    val onPrimary = MaterialTheme.colorScheme.onPrimaryContainer
     val secondary = MaterialTheme.colorScheme.secondaryContainer
     val onSecondary = MaterialTheme.colorScheme.onSecondaryContainer
     val tertiary = MaterialTheme.colorScheme.tertiaryContainer
     val onTertiary = MaterialTheme.colorScheme.onTertiaryContainer
-    val errorContainer = MaterialTheme.colorScheme.errorContainer
-    val error = MaterialTheme.colorScheme.error
 
     val actions = buildList {
-        // Add to Playlist (always shown)
+        onEditControls?.let { editControls ->
+            add(ControlAction(
+                icon = RhythmIcons.Edit,
+                label = context.getString(R.string.bottomsheet_edit_controls),
+                description = null,
+                containerColor = secondary,
+                iconColor = onSecondary,
+                onClick = {
+                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                    dismissAndDo { editControls() }
+                }
+            ))
+        }
+
         add(ControlAction(
             icon = RhythmIcons.AddToPlaylist,
             label = context.getString(R.string.bottomsheet_add_to_playlist),
             description = null,
-            containerColor = primary,
-            iconColor = onPrimary,
+            containerColor = secondary,
+            iconColor = onSecondary,
             onClick = {
                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                 dismissAndDo { onAddToPlaylist() }
             }
         ))
-
-        if ("FAVORITE" !in hiddenChips) {
-            add(ControlAction(
-                icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
-                label = if (isFavorite) context.getString(R.string.action_unfavorite) else context.getString(R.string.player_chip_favorite),
-                description = if (isFavorite) context.getString(R.string.extrasheet_saved) else null,
-                containerColor = if (isFavorite) errorContainer else primary,
-                iconColor = if (isFavorite) error else onPrimary,
-                onClick = {
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                    dismissAndDo { onToggleFavorite() }
-                }
-            ))
-        }
 
         if ("SPEED" !in hiddenChips || "PITCH" !in hiddenChips) {
             add(ControlAction(
@@ -276,7 +270,6 @@ fun ExtraControlBottomSheet(
             ))
         }
 
-        // Song Info (always shown)
         add(ControlAction(
             icon = RhythmIcons.Info,
             label = context.getString(R.string.action_song_info),
@@ -289,7 +282,6 @@ fun ExtraControlBottomSheet(
             }
         ))
 
-        // Share File (always shown)
         add(ControlAction(
             icon = RhythmIcons.Share,
             label = context.getString(R.string.extrasheet_share_file),

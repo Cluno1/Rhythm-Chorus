@@ -12,8 +12,8 @@ import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateFloat
@@ -37,7 +37,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -95,7 +94,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import coil.compose.AsyncImage
@@ -111,7 +109,6 @@ import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
 import chromahub.rhythm.app.shared.presentation.components.common.DragDropLazyColumn
-import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveClickableSurface
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveCookieEmptyState
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveFilledTonalIconButton
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
@@ -138,15 +135,26 @@ private fun LazyListState.shouldShowScrollbar(): Boolean {
     return lastItemBottom > layoutInfo.viewportEndOffset - 80
 }
 
-private fun groupedQueueItemShape(index: Int, totalCount: Int): RoundedCornerShape {
-    if (totalCount <= 1) return RoundedCornerShape(24.dp)
+private data class QueueItemCorners(
+    val topStart: Dp,
+    val topEnd: Dp,
+    val bottomStart: Dp,
+    val bottomEnd: Dp
+) {
+    fun toShape(): RoundedCornerShape =
+        RoundedCornerShape(topStart, topEnd, bottomEnd, bottomStart)
+}
+
+private fun groupedQueueItemCorners(index: Int, totalCount: Int): QueueItemCorners {
+    if (totalCount <= 1) return QueueItemCorners(24.dp, 24.dp, 24.dp, 24.dp)
 
     return when (index) {
-        0 -> RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
-        totalCount - 1 -> RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
-        else -> RoundedCornerShape(6.dp)
+        0 -> QueueItemCorners(24.dp, 24.dp, 6.dp, 6.dp)
+        totalCount - 1 -> QueueItemCorners(6.dp, 6.dp, 24.dp, 24.dp)
+        else -> QueueItemCorners(6.dp, 6.dp, 6.dp, 6.dp)
     }
 }
+
 
 private enum class QueueSectionLabel { PLAYED, UP_NEXT }
 
@@ -155,7 +163,7 @@ private data class QueueSongRow(
     val displayNumber: Int,
     val song: Song,
     val isPlayed: Boolean,
-    val itemShape: RoundedCornerShape,
+    val corners: QueueItemCorners,
     val stableKey: String
 )
 
@@ -192,7 +200,7 @@ private fun buildQueueListRows(
         played.forEachIndexed { index, (position, song) ->
             add(
                 QueueListRow.Song(
-                    QueueSongRow(position, 0, song, true, groupedQueueItemShape(index, played.size), queueEntryKey(queue, position))
+                    QueueSongRow(position, 0, song, true, groupedQueueItemCorners(index, played.size), queueEntryKey(queue, position))
                 )
             )
         }
@@ -202,7 +210,7 @@ private fun buildQueueListRows(
         upcoming.forEachIndexed { index, (position, song) ->
             add(
                 QueueListRow.Song(
-                    QueueSongRow(position, index + 1, song, false, groupedQueueItemShape(index, upcoming.size), queueEntryKey(queue, position))
+                    QueueSongRow(position, index + 1, song, false, groupedQueueItemCorners(index, upcoming.size), queueEntryKey(queue, position))
                 )
             )
         }
@@ -218,7 +226,7 @@ fun QueueBottomSheet(
     isShuffleEnabled: Boolean = false,
     repeatMode: Int = Player.REPEAT_MODE_OFF,
     onSongClick: (Song) -> Unit,
-    onSongClickAtIndex: (Int) -> Unit = { _ -> }, // New parameter for index-based clicking
+    onSongClickAtIndex: (Int) -> Unit = { _ -> },
     onDismiss: () -> Unit,
     onRemoveSongAtIndex: (Int) -> Unit = {},
     onMoveQueueItem: (Int, Int) -> Unit = { _, _ -> },
@@ -424,7 +432,7 @@ fun QueueBottomSheet(
                                 displayNumber = index + 1,
                                 song = queueItem.second,
                                 isPlayed = false,
-                                itemShape = groupedQueueItemShape(index, visibleQueue.size),
+                                corners = groupedQueueItemCorners(index, visibleQueue.size),
                                 stableKey = queueEntryKey(displayQueue, queueItem.first)
                             )
                         )
@@ -482,35 +490,20 @@ fun QueueBottomSheet(
                         }
                     }
 
-                    val canScrollBackward by remember(lazyListState) {
-                        derivedStateOf { lazyListState.canScrollBackward }
-                    }
                     val canScrollForward by remember(lazyListState) {
                         derivedStateOf { lazyListState.canScrollForward }
                     }
-                    val pinnedHeaderBottomPx by remember(lazyListState, queueListRows) {
-                        derivedStateOf {
-                            val listInfo = lazyListState.layoutInfo
-                            val topItem = listInfo.visibleItemsInfo
-                                .filter { it.index in queueListRows.indices }
-                                .minByOrNull { it.offset } ?: return@derivedStateOf -1f
-                            if (queueListRows[topItem.index] !is QueueListRow.Section) return@derivedStateOf -1f
-                            if (topItem.offset > 2) return@derivedStateOf -1f
-                            (topItem.offset + topItem.size).toFloat()
-                        }
+                    val canScrollBackward by remember(lazyListState) {
+                        derivedStateOf { lazyListState.canScrollBackward }
                     }
-                    val showTopBlend =
-                        if (hasPlayedSection) pinnedHeaderBottomPx >= 0f else true
                     val topBlendAlpha by animateFloatAsState(
-                        targetValue = if (canScrollBackward && showTopBlend) 1f else 0f,
+                        targetValue = if (canScrollBackward && !hasPlayedSection) 1f else 0f,
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioNoBouncy,
                             stiffness = Spring.StiffnessMedium
                         ),
                         label = "QueueTopBlendAlpha"
                     )
-                    val topBlendOffsetY =
-                        if (hasPlayedSection) pinnedHeaderBottomPx.coerceAtLeast(0f).toInt() else 0
                     val bottomBlendAlpha by animateFloatAsState(
                         targetValue = if (canScrollForward) 1f else 0f,
                         animationSpec = spring(
@@ -526,13 +519,12 @@ fun QueueBottomSheet(
                             .weight(1f, fill = false)
                             .graphicsLayer { alpha = clearFadeAlpha }
                     ) {
-                        if (topBlendAlpha > 0f) {
+                        if (!hasPlayedSection && topBlendAlpha > 0f) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(24.dp)
                                     .align(Alignment.TopCenter)
-                                    .offset { IntOffset(0, topBlendOffsetY) }
                                     .graphicsLayer { alpha = topBlendAlpha }
                                     .background(
                                         brush = Brush.verticalGradient(
@@ -916,7 +908,7 @@ private fun NowPlayingCard(
 private fun QueueItem(
     song: Song,
     displayNumber: Int,
-    itemShape: RoundedCornerShape = RoundedCornerShape(20.dp),
+    corners: QueueItemCorners,
     isPlayed: Boolean,
     isDragging: Boolean,
     onSongClick: () -> Unit,
@@ -926,72 +918,95 @@ private fun QueueItem(
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
 
-    val dragCardScale by animateFloatAsState(
-        targetValue = if (isDragging) 1.015f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "dragCardScale"
-    )
-
-    val dragCardOffsetY by animateFloatAsState(
-        targetValue = if (isDragging) -4f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "dragCardOffsetY"
-    )
+    // Primary drag fill like the Library Songs active row (flips a frame after drag so it animates from rest).
+    var dragActive by remember { mutableStateOf(false) }
+    LaunchedEffect(isDragging) {
+        dragActive = isDragging
+    }
 
     val cardColor by animateColorAsState(
         targetValue = when {
-            isDragging -> MaterialTheme.colorScheme.secondaryContainer
+            dragActive -> MaterialTheme.colorScheme.primary
             isPlayed -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.42f)
             else -> MaterialTheme.colorScheme.surfaceContainerLow
         },
-        animationSpec = tween(durationMillis = 180),
+        animationSpec = tween(durationMillis = 300),
         label = "queueItemCardColor"
     )
 
     val titleColor by animateColorAsState(
         targetValue = when {
-            isDragging -> MaterialTheme.colorScheme.onSecondaryContainer
+            dragActive -> MaterialTheme.colorScheme.onPrimary
             isPlayed -> MaterialTheme.colorScheme.onTertiaryContainer
             else -> MaterialTheme.colorScheme.onSurface
         },
-        animationSpec = tween(durationMillis = 180),
+        animationSpec = tween(durationMillis = 300),
         label = "queueItemTitleColor"
     )
 
     val subtitleColor by animateColorAsState(
         targetValue = when {
-            isDragging -> MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.75f)
+            dragActive -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.75f)
             isPlayed -> MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.75f)
             else -> MaterialTheme.colorScheme.onSurfaceVariant
         },
-        animationSpec = tween(durationMillis = 180),
+        animationSpec = tween(durationMillis = 300),
         label = "queueItemSubtitleColor"
     )
-    
+
+    val liftedCorner = 24.dp
+    // Ramp the shadow only after the drag morph settles so it isn't clipped mid-morph.
+    var liftShadowReady by remember { mutableStateOf(false) }
+    LaunchedEffect(dragActive) {
+        if (!dragActive) liftShadowReady = false
+    }
+    val animatedTopStart by animateDpAsState(
+        targetValue = if (dragActive) liftedCorner else corners.topStart,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow),
+        label = "queueItemTopStartCorner",
+        finishedListener = { if (dragActive) liftShadowReady = true }
+    )
+    val animatedTopEnd by animateDpAsState(
+        targetValue = if (dragActive) liftedCorner else corners.topEnd,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow),
+        label = "queueItemTopEndCorner"
+    )
+    val animatedBottomStart by animateDpAsState(
+        targetValue = if (dragActive) liftedCorner else corners.bottomStart,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow),
+        label = "queueItemBottomStartCorner"
+    )
+    val animatedBottomEnd by animateDpAsState(
+        targetValue = if (dragActive) liftedCorner else corners.bottomEnd,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow),
+        label = "queueItemBottomEndCorner"
+    )
+    val animatedShape = RoundedCornerShape(
+        topStart = animatedTopStart,
+        topEnd = animatedTopEnd,
+        bottomEnd = animatedBottomEnd,
+        bottomStart = animatedBottomStart
+    )
+
+    val animatedShadow by animateDpAsState(
+        targetValue = if (liftShadowReady) 12.dp else 0.dp,
+        animationSpec = tween(durationMillis = 400),
+        label = "queueItemShadowElevation"
+    )
+
     val songArtShape = rememberExpressiveShapeFor(
         ExpressiveShapeTarget.SONG_ART,
         fallbackShape = RoundedCornerShape(8.dp)
     )
 
-    ExpressiveClickableSurface(
+    Surface(
         onClick = onSongClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = animatedShape,
         color = cardColor,
-        tonalElevation = if (isDragging) 0.dp else 1.dp,
-        shadowElevation = 0.dp,
-        shape = itemShape,
-        modifier = Modifier
-            .fillMaxWidth()
-            .graphicsLayer {
-                scaleX = dragCardScale
-                scaleY = dragCardScale
-                translationY = dragCardOffsetY
-            }
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        tonalElevation = if (dragActive) 0.dp else 1.dp,
+        shadowElevation = animatedShadow
     ) {
         Row(
             modifier = Modifier
@@ -1001,10 +1016,10 @@ private fun QueueItem(
         ) {
             Surface(
                 shape = CircleShape,
-                color = if (isPlayed) {
-                    MaterialTheme.colorScheme.tertiaryContainer
-                } else {
-                    MaterialTheme.colorScheme.primaryContainer
+                color = when {
+                    isPlayed -> MaterialTheme.colorScheme.tertiaryContainer
+                    dragActive -> MaterialTheme.colorScheme.onPrimary
+                    else -> MaterialTheme.colorScheme.primaryContainer
                 },
                 modifier = Modifier.size(32.dp)
             ) {
@@ -1024,8 +1039,8 @@ private fun QueueItem(
                             text = "$displayNumber",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
-                            color = if (isDragging) {
-                                MaterialTheme.colorScheme.onSecondaryContainer
+                            color = if (dragActive) {
+                                MaterialTheme.colorScheme.primary
                             } else {
                                 MaterialTheme.colorScheme.onPrimaryContainer
                             }
@@ -1040,7 +1055,12 @@ private fun QueueItem(
             Surface(
                 modifier = Modifier.size(48.dp),
                 shape = songArtShape,
-                tonalElevation = 2.dp
+                tonalElevation = 2.dp,
+                border = if (dragActive) {
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.onPrimary)
+                } else {
+                    null
+                }
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(context)
@@ -1081,32 +1101,16 @@ private fun QueueItem(
                 )
             }
             
-            // Drag handle with improved visual feedback (only show if enabled)
             if (showDragHandle) {
-                val handleScale by animateFloatAsState(
-                    targetValue = if (isDragging) 1.3f else 1f,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    ),
-                    label = "handleScale"
-                )
-                
                 Icon(
                     imageVector = RhythmIcons.DragHandle,
                     contentDescription = stringResource(R.string.content_desc_drag_reorder),
-                    tint = if (isDragging)
-                        MaterialTheme.colorScheme.onSecondaryContainer
-                    else if (isPlayed)
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
-                    else 
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    modifier = Modifier
-                        .size(20.dp)
-                        .graphicsLayer {
-                            scaleX = handleScale
-                            scaleY = handleScale
-                        }
+                    tint = when {
+                        dragActive -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
+                        isPlayed -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    },
+                    modifier = Modifier.size(20.dp)
                 )
                         
                 Spacer(modifier = Modifier.width(8.dp))
@@ -1160,6 +1164,7 @@ private fun DismissibleQueueItem(
     isDragging: Boolean,
     showDragHandle: Boolean,
     itemShape: RoundedCornerShape,
+    corners: QueueItemCorners,
     endPadding: Dp,
     isRemoving: Boolean,
     onSongClickAtIndex: (Int) -> Unit,
@@ -1225,7 +1230,7 @@ private fun DismissibleQueueItem(
                 QueueItem(
                     song = song,
                     displayNumber = displayNumber,
-                    itemShape = itemShape,
+                    corners = corners,
                     isPlayed = isPlayed,
                     isDragging = isDragging,
                     onSongClick = {
@@ -1267,7 +1272,8 @@ private fun QueueListRowContent(
                 isPlayed = songRow.isPlayed,
                 isDragging = isDragging,
                 showDragHandle = reorderSupported && !songRow.isPlayed,
-                itemShape = songRow.itemShape,
+                itemShape = songRow.corners.toShape(),
+                corners = songRow.corners,
                 endPadding = endPadding,
                 isRemoving = isRemoving(itemKey),
                 onSongClickAtIndex = onSongClickAtIndex,
@@ -1285,16 +1291,33 @@ private fun QueueSectionHeader(label: QueueSectionLabel) {
         QueueSectionLabel.PLAYED -> context.getString(R.string.queue_section_played)
         QueueSectionLabel.UP_NEXT -> context.getString(R.string.bottomsheet_up_next)
     }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceContainer)
+    Column(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = text.uppercase(),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 18.dp, bottom = 8.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+        ) {
+            Text(
+                text = text.uppercase(),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 18.dp, bottom = 8.dp)
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(20.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.surfaceContainer,
+                            Color.Transparent
+                        )
+                    )
+                )
         )
     }
 }

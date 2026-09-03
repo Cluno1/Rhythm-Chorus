@@ -775,13 +775,12 @@ private fun PlaybackSpeedAndPitchCard(
                         chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch(
                             checked = syncEnabled,
                             onCheckedChange = {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                 onSyncChange(it)
                             }
                         )
                     },
                     onClick = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                         onSyncChange(!syncEnabled)
                     }
                 ),
@@ -857,13 +856,12 @@ private fun PlaybackQuickSettingsCard(
                     AnimatedAudioSwitch(
                         checked = useSystemVolume,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             onUseSystemVolumeChange(it)
                         }
                     )
                 },
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onUseSystemVolumeChange(!useSystemVolume)
                 }
             )
@@ -877,14 +875,13 @@ private fun PlaybackQuickSettingsCard(
                     AnimatedAudioSwitch(
                         checked = stopPlaybackOnZeroVolume,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             onStopPlaybackOnZeroVolumeChange(it)
                         }
                     )
                 },
                 scope = chromahub.rhythm.app.shared.presentation.components.SettingScope.BOTH,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onStopPlaybackOnZeroVolumeChange(!stopPlaybackOnZeroVolume)
                 }
             )
@@ -898,14 +895,13 @@ private fun PlaybackQuickSettingsCard(
                     AnimatedAudioSwitch(
                         checked = resumeOnDeviceReconnect,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             onResumeOnDeviceReconnectChange(it)
                         }
                     )
                 },
                 scope = chromahub.rhythm.app.shared.presentation.components.SettingScope.BOTH,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onResumeOnDeviceReconnectChange(!resumeOnDeviceReconnect)
                 }
             )
@@ -919,14 +915,13 @@ private fun PlaybackQuickSettingsCard(
                     AnimatedAudioSwitch(
                         checked = gaplessPlayback,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             onGaplessPlaybackChange(it)
                         }
                     )
                 },
                 scope = chromahub.rhythm.app.shared.presentation.components.SettingScope.BOTH,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onGaplessPlaybackChange(!gaplessPlayback)
                 }
             )
@@ -940,14 +935,13 @@ private fun PlaybackQuickSettingsCard(
                     AnimatedAudioSwitch(
                         checked = showPlayedQueueSongs,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             onShowPlayedQueueSongsChange(it)
                         }
                     )
                 },
                 scope = chromahub.rhythm.app.shared.presentation.components.SettingScope.BOTH,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onShowPlayedQueueSongsChange(!showPlayedQueueSongs)
                 }
             )
@@ -970,7 +964,6 @@ private fun PlaybackQuickSettingsCard(
                         checked = if (isOffloadEnforced) false else crossfadeEnabled,
                         onCheckedChange = {
                             if (!isOffloadEnforced) {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                 onCrossfadeEnabledChange(it)
                             }
                         },
@@ -981,7 +974,7 @@ private fun PlaybackQuickSettingsCard(
                 enabled = !isOffloadEnforced,
                 onClick = {
                     if (!isOffloadEnforced) {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                         onCrossfadeEnabledChange(!crossfadeEnabled)
                     }
                 }
@@ -1004,7 +997,10 @@ private fun PlaybackQuickSettingsCard(
                             Spacer(modifier = Modifier.height(8.dp))
                             Slider(
                                 value = crossfadeDuration,
-                                onValueChange = { onCrossfadeDurationChange(it) },
+                                onValueChange = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                    onCrossfadeDurationChange(it)
+                                },
                                 valueRange = 1f..10f,
                                 steps = 8,
                                 colors = SliderDefaults.colors(
@@ -1221,7 +1217,6 @@ private fun PlaybackPitchCard(
                 chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch(
                     checked = syncEnabled,
                     onCheckedChange = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                         onSyncChange(it)
                     }
                 )
@@ -1421,7 +1416,6 @@ private fun AudioEffectsCard(
                         checked = if (isOffloadEnforced) false else equalizerEnabled,
                         onCheckedChange = {
                             if (!isOffloadEnforced) {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                                 onEqualizerEnabledChange(it)
                             }
                         },
@@ -1467,7 +1461,10 @@ private fun AudioEffectsCard(
                                     thumbColor = MaterialTheme.colorScheme.primary,
                                     activeTrackColor = MaterialTheme.colorScheme.primary,
                                     inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
+                                ),
+                                onValueChangeFinished = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                }
                             )
                         }
                     }
@@ -1477,7 +1474,6 @@ private fun AudioEffectsCard(
                         checked = if (isOffloadEnforced) false else bassBoostEnabled,
                         onCheckedChange = {
                             if (!isOffloadEnforced) {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                                 onBassBoostEnabledChange(it)
                             }
                         },
@@ -1523,7 +1519,10 @@ private fun AudioEffectsCard(
                                     thumbColor = MaterialTheme.colorScheme.primary,
                                     activeTrackColor = MaterialTheme.colorScheme.primary,
                                     inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
+                                ),
+                                onValueChangeFinished = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                }
                             )
                         }
                     }
@@ -1533,7 +1532,6 @@ private fun AudioEffectsCard(
                         checked = if (isOffloadEnforced) false else virtualizerEnabled,
                         onCheckedChange = {
                             if (!isOffloadEnforced) {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                                 onVirtualizerEnabledChange(it)
                             }
                         },
