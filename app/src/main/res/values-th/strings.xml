@@ -496,7 +496,8 @@
     <string name="onboarding_library_3">ตัวเลือกการแสดงและการเรียงลำดับขั้นสูงมีอยู่ในการตั้งค่า &gt; การตั้งค่าห้องสมุด</string>
     <string name="onboarding_library_4">เพลย์ลิสต์เริ่มต้น (เพิ่มล่าสุด เล่นมากที่สุด) สามารถสลับได้ในการตั้งค่า &gt; เพลย์ลิสต์</string>
     <string name="onboarding_theme_title">ทำให้ Rhythm เป็นของคุณ</string>
-    <string name="onboarding_theme_desc">ปรับแต่งรูปลักษณ์ของ Rhythm ให้เข้ากับสไตล์ของคุณ เลือกธีมระบบ แบบอักษร หรือ Material สีไดนามิกของคุณ (Android 12+)</string>    <string name="onboarding_more_tuner">การปรับแต่งเพิ่มเติมในการตั้งค่า</string>
+    <string name="onboarding_theme_desc">ปรับแต่งรูปลักษณ์ของ Rhythm ให้เข้ากับสไตล์ของคุณ เลือกธีมระบบ แบบอักษร หรือ Material สีไดนามิกของคุณ (Android 12+)</string>
+    <string name="onboarding_more_tuner">การปรับแต่งเพิ่มเติมในการตั้งค่า</string>
     <string name="onboarding_tuner_1">โทนสีที่กำหนดเองและการแยกสีปกอัลบั้ม</string>
     <string name="onboarding_tuner_2">การปรับแต่งแบบอักษรและการตั้งค่าการพิมพ์</string>
     <string name="onboarding_tuner_3">ตัวเลือกธีมขั้นสูงมีอยู่ในการตั้งค่า &gt; การปรับแต่งธีม</string>

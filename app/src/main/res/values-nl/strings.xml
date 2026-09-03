@@ -509,7 +509,8 @@
     <string name="onboarding_library_3">Geavanceerde weergave- en sorteeropties beschikbaar in Instellingen &gt; Bibliotheekinstellingen</string>
     <string name="onboarding_library_4">Standaardafspeellijsten (recent toegevoegd, meest afgespeeld) kunnen worden gewijzigd in Instellingen &gt; Afspeellijsten</string>
     <string name="onboarding_theme_title">Maak Rhythm van jou</string>
-    <string name="onboarding_theme_desc">Personaliseer het uiterlijk van Rhythm zodat het bij jouw stijl past. Kies uw systeemthema, lettertype of Material uw dynamische kleuren (Android 12+).</string>    <string name="onboarding_more_tuner">Meer maatwerk in Instellingen</string>
+    <string name="onboarding_theme_desc">Personaliseer het uiterlijk van Rhythm zodat het bij jouw stijl past. Kies uw systeemthema, lettertype of Material uw dynamische kleuren (Android 12+).</string>
+    <string name="onboarding_more_tuner">Meer maatwerk in Instellingen</string>
     <string name="onboarding_tuner_1">Aangepaste kleurenschema\'s en kleurextractie van albumhoezen</string>
     <string name="onboarding_tuner_2">Lettertypeaanpassing en typografie-instellingen</string>
     <string name="onboarding_tuner_3">Geavanceerde thema-opties beschikbaar in Instellingen &gt; Thema-aanpassing</string>

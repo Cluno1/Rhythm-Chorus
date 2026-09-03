@@ -509,7 +509,8 @@
     <string name="onboarding_library_3">Erweiterte Anzeige- und Sortieroptionen verfügbar unter Einstellungen &gt; Bibliothekseinstellungen</string>
     <string name="onboarding_library_4">Standard-Wiedergabelisten (zuletzt hinzugefügt, am häufigsten gespielt) können unter „Einstellungen“ &gt; „Wiedergabelisten“ umgeschaltet werden</string>
     <string name="onboarding_theme_title">Machen Sie Rhythm zu Ihrem</string>
-    <string name="onboarding_theme_desc">Passen Sie das Erscheinungsbild von Rhythm an Ihren Stil an. Wählen Sie Ihr Systemdesign, Ihre Schriftart oder Material Ihre dynamischen Farben (Android 12+).</string>    <string name="onboarding_more_tuner">Weitere Anpassungsmöglichkeiten in den Einstellungen</string>
+    <string name="onboarding_theme_desc">Passen Sie das Erscheinungsbild von Rhythm an Ihren Stil an. Wählen Sie Ihr Systemdesign, Ihre Schriftart oder Material Ihre dynamischen Farben (Android 12+).</string>
+    <string name="onboarding_more_tuner">Weitere Anpassungsmöglichkeiten in den Einstellungen</string>
     <string name="onboarding_tuner_1">Benutzerdefinierte Farbschemata und Farbextraktion für Albumcover</string>
     <string name="onboarding_tuner_2">Schriftartanpassung und Typografieeinstellungen</string>
     <string name="onboarding_tuner_3">Erweiterte Designoptionen verfügbar unter Einstellungen &gt; Designanpassung</string>

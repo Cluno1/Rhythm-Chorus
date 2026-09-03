@@ -535,7 +535,8 @@
     <string name="onboarding_library_3">Розширені параметри відображення та сортування доступні в меню «Налаштування» &gt; «Налаштування бібліотеки».</string>
     <string name="onboarding_library_4">Списки відтворення за умовчанням (Нещодавно додані, Найчастіше відтворювані) можна перемикати в меню «Налаштування» &gt; «Списки відтворення»</string>
     <string name="onboarding_theme_title">Зробіть Rhythm своїм</string>
-    <string name="onboarding_theme_desc">Персоналізуйте зовнішність Rhythm відповідно до свого стилю. Виберіть тему системи, шрифт або Material динамічні кольори (Android 12+).</string>    <string name="onboarding_more_tuner">Більше налаштувань у налаштуваннях</string>
+    <string name="onboarding_theme_desc">Персоналізуйте зовнішність Rhythm відповідно до свого стилю. Виберіть тему системи, шрифт або Material динамічні кольори (Android 12+).</string>
+    <string name="onboarding_more_tuner">Більше налаштувань у налаштуваннях</string>
     <string name="onboarding_tuner_1">Користувальницькі колірні схеми та виділення кольорів обкладинок альбомів</string>
     <string name="onboarding_tuner_2">Налаштування шрифтів і типографіки</string>
     <string name="onboarding_tuner_3">Розширені параметри теми доступні в меню «Налаштування» &gt; «Налаштування теми».</string>

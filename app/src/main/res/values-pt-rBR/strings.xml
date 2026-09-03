@@ -522,7 +522,8 @@
     <string name="onboarding_library_3">Opções avançadas de exibição e classificação disponíveis em Configurações &gt; Configurações da biblioteca</string>
     <string name="onboarding_library_4">As listas de reprodução padrão (adicionadas recentemente, mais reproduzidas) podem ser alternadas em Configurações &gt; Listas de reprodução</string>
     <string name="onboarding_theme_title">Faça Rhythm seu</string>
-    <string name="onboarding_theme_desc">Personalize a aparência de Rhythm para combinar com seu estilo. Escolha o tema do sistema, fonte ou Material Suas cores dinâmicas (Android 12+).</string>    <string name="onboarding_more_tuner">Mais personalização nas configurações</string>
+    <string name="onboarding_theme_desc">Personalize a aparência de Rhythm para combinar com seu estilo. Escolha o tema do sistema, fonte ou Material Suas cores dinâmicas (Android 12+).</string>
+    <string name="onboarding_more_tuner">Mais personalização nas configurações</string>
     <string name="onboarding_tuner_1">Esquemas de cores personalizados e extração de cores da arte do álbum</string>
     <string name="onboarding_tuner_2">Personalização de fontes e configurações de tipografia</string>
     <string name="onboarding_tuner_3">Opções avançadas de tema disponíveis em Configurações &gt; Personalização do tema</string>

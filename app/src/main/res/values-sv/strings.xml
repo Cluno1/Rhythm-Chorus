@@ -509,7 +509,8 @@
     <string name="onboarding_library_3">Avancerade visnings- och sorteringsalternativ tillgängliga i Inställningar &gt; Biblioteksinställningar</string>
     <string name="onboarding_library_4">Standardspellistor (nyligen tillagda, mest spelade) kan växlas i Inställningar &gt; Spellistor</string>
     <string name="onboarding_theme_title">Gör Rhythm till din</string>
-    <string name="onboarding_theme_desc">Anpassa Rhythms utseende för att matcha din stil. Välj ditt systemtema, typsnitt eller Material dina dynamiska färger (Android 12+).</string>    <string name="onboarding_more_tuner">Mer anpassning i Inställningar</string>
+    <string name="onboarding_theme_desc">Anpassa Rhythms utseende för att matcha din stil. Välj ditt systemtema, typsnitt eller Material dina dynamiska färger (Android 12+).</string>
+    <string name="onboarding_more_tuner">Mer anpassning i Inställningar</string>
     <string name="onboarding_tuner_1">Anpassade färgscheman och färgextraktion för albumomslag</string>
     <string name="onboarding_tuner_2">Teckensnittsanpassning och typografiinställningar</string>
     <string name="onboarding_tuner_3">Avancerade temaalternativ tillgängliga i Inställningar &gt; Temaanpassning</string>

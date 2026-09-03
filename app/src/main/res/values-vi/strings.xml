@@ -496,7 +496,8 @@
     <string name="onboarding_library_3">Tùy chọn hiển thị và sắp xếp nâng cao có sẵn trong Cài đặt &gt; Cài đặt thư viện</string>
     <string name="onboarding_library_4">Bạn có thể bật tắt danh sách phát mặc định (Được thêm gần đây, Được phát nhiều nhất) trong Cài đặt &gt; Danh sách phát</string>
     <string name="onboarding_theme_title">Biến Rhythm thành của bạn</string>
-    <string name="onboarding_theme_desc">Cá nhân hóa ngoại hình của Rhythm để phù hợp với phong cách của bạn. Chọn chủ đề hệ thống, phông chữ hoặc Material Màu động của bạn (Android 12+).</string>    <string name="onboarding_more_tuner">Tùy chỉnh thêm trong Cài đặt</string>
+    <string name="onboarding_theme_desc">Cá nhân hóa ngoại hình của Rhythm để phù hợp với phong cách của bạn. Chọn chủ đề hệ thống, phông chữ hoặc Material Màu động của bạn (Android 12+).</string>
+    <string name="onboarding_more_tuner">Tùy chỉnh thêm trong Cài đặt</string>
     <string name="onboarding_tuner_1">Phối màu tùy chỉnh và trích xuất màu ảnh bìa album</string>
     <string name="onboarding_tuner_2">Cài đặt tùy chỉnh phông chữ và kiểu chữ</string>
     <string name="onboarding_tuner_3">Tùy chọn chủ đề nâng cao có sẵn trong Cài đặt &gt; Tùy chỉnh chủ đề</string>

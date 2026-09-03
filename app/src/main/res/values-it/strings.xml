@@ -522,7 +522,8 @@
     <string name="onboarding_library_3">Opzioni avanzate di visualizzazione e ordinamento disponibili in Impostazioni &gt; Impostazioni libreria</string>
     <string name="onboarding_library_4">Le playlist predefinite (Aggiunte di recente, Più ascoltate) possono essere attivate/disattivate in Impostazioni &gt; Playlist</string>
     <string name="onboarding_theme_title">Rendi Rhythm tuo</string>
-    <string name="onboarding_theme_desc">Personalizza l\'aspetto di Rhythm per adattarlo al tuo stile. Scegli il tema del sistema, il carattere o i colori dinamici Material You (Android 12+).</string>    <string name="onboarding_more_tuner">Maggiore personalizzazione nelle Impostazioni</string>
+    <string name="onboarding_theme_desc">Personalizza l\'aspetto di Rhythm per adattarlo al tuo stile. Scegli il tema del sistema, il carattere o i colori dinamici Material You (Android 12+).</string>
+    <string name="onboarding_more_tuner">Maggiore personalizzazione nelle Impostazioni</string>
     <string name="onboarding_tuner_1">Combinazioni di colori personalizzate ed estrazione dei colori dalle copertine degli album</string>
     <string name="onboarding_tuner_2">Personalizzazione dei caratteri e impostazioni tipografiche</string>
     <string name="onboarding_tuner_3">Opzioni avanzate del tema disponibili in Impostazioni &gt; Personalizzazione tema</string>

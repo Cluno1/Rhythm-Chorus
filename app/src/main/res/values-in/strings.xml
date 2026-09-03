@@ -496,7 +496,8 @@
     <string name="onboarding_library_3">Opsi tampilan dan penyortiran lanjutan tersedia di Pengaturan &gt; Pengaturan Perpustakaan</string>
     <string name="onboarding_library_4">Daftar putar default (Baru Ditambahkan, Paling Banyak Diputar) dapat diubah di Pengaturan &gt; Daftar Putar</string>
     <string name="onboarding_theme_title">Jadikan Rhythm milik Anda</string>
-    <string name="onboarding_theme_desc">Personalisasikan penampilan Rhythm agar sesuai dengan gaya Anda. Pilih tema sistem, font, atau Material warna dinamis Anda (Android 12+).</string>    <string name="onboarding_more_tuner">Lebih Banyak Kustomisasi di Pengaturan</string>
+    <string name="onboarding_theme_desc">Personalisasikan penampilan Rhythm agar sesuai dengan gaya Anda. Pilih tema sistem, font, atau Material warna dinamis Anda (Android 12+).</string>
+    <string name="onboarding_more_tuner">Lebih Banyak Kustomisasi di Pengaturan</string>
     <string name="onboarding_tuner_1">Skema warna khusus dan ekstraksi warna sampul album</string>
     <string name="onboarding_tuner_2">Kustomisasi font dan pengaturan tipografi</string>
     <string name="onboarding_tuner_3">Opsi tema lanjutan tersedia di Pengaturan &gt; Kustomisasi Tema</string>

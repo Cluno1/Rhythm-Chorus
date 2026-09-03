@@ -535,7 +535,8 @@
     <string name="onboarding_library_3">Zaawansowane opcje wyświetlania i sortowania dostępne w Ustawieniach &gt; Ustawienia biblioteki</string>
     <string name="onboarding_library_4">Domyślne listy odtwarzania (ostatnio dodane, najczęściej odtwarzane) można przełączać w Ustawieniach &gt; Listy odtwarzania</string>
     <string name="onboarding_theme_title">Spraw, by Rhythm był Twój</string>
-    <string name="onboarding_theme_desc">Spersonalizuj wygląd Rhythm, aby dopasować go do swojego stylu. Wybierz motyw systemu, czcionkę lub dynamiczne kolory (Android 12+).</string>    <string name="onboarding_more_tuner">Więcej personalizacji w Ustawieniach</string>
+    <string name="onboarding_theme_desc">Spersonalizuj wygląd Rhythm, aby dopasować go do swojego stylu. Wybierz motyw systemu, czcionkę lub dynamiczne kolory (Android 12+).</string>
+    <string name="onboarding_more_tuner">Więcej personalizacji w Ustawieniach</string>
     <string name="onboarding_tuner_1">Niestandardowe schematy kolorów i ekstrakcja kolorów okładek albumów</string>
     <string name="onboarding_tuner_2">Dostosowywanie czcionek i ustawienia typografii</string>
     <string name="onboarding_tuner_3">Zaawansowane opcje motywu dostępne w Ustawieniach &gt; Dostosowywanie motywu</string>

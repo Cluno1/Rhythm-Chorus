@@ -509,7 +509,8 @@
     <string name="onboarding_library_3">மேம்பட்ட காட்சி மற்றும் வரிசையாக்க விருப்பங்கள் அமைப்புகள் &gt; நூலக அமைப்புகளில் கிடைக்கும்</string>
     <string name="onboarding_library_4">இயல்புநிலை பிளேலிஸ்ட்கள் (சமீபத்தில் சேர்க்கப்பட்டவை, அதிகம் விளையாடியவை) அமைப்புகள் &gt; பிளேலிஸ்ட்களில் மாற்றலாம்</string>
     <string name="onboarding_theme_title">Rhythm ஐ உங்களுடையதாக ஆக்குங்கள்</string>
-    <string name="onboarding_theme_desc">உங்கள் பாணியைப் பொருத்த Rhythm இன் தோற்றத்தைத் தனிப்பயனாக்குங்கள். உங்கள் சிஸ்டம் தீம், எழுத்துரு அல்லது Material யூ டைனமிக் நிறங்களை (Android 12+) தேர்வு செய்யவும்.</string>    <string name="onboarding_more_tuner">அமைப்புகளில் மேலும் தனிப்பயனாக்கம்</string>
+    <string name="onboarding_theme_desc">உங்கள் பாணியைப் பொருத்த Rhythm இன் தோற்றத்தைத் தனிப்பயனாக்குங்கள். உங்கள் சிஸ்டம் தீம், எழுத்துரு அல்லது Material யூ டைனமிக் நிறங்களை (Android 12+) தேர்வு செய்யவும்.</string>
+    <string name="onboarding_more_tuner">அமைப்புகளில் மேலும் தனிப்பயனாக்கம்</string>
     <string name="onboarding_tuner_1">தனிப்பயன் வண்ணத் திட்டங்கள் மற்றும் ஆல்பம் கலை வண்ணப் பிரித்தெடுத்தல்</string>
     <string name="onboarding_tuner_2">எழுத்துரு தனிப்பயனாக்கம் மற்றும் அச்சுக்கலை அமைப்புகள்</string>
     <string name="onboarding_tuner_3">மேம்பட்ட தீம் விருப்பத்தேர்வுகள் அமைப்புகள் &gt; தீம் தனிப்பயனாக்கம்</string>

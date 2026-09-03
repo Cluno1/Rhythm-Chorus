@@ -509,7 +509,8 @@
     <string name="onboarding_library_3">सेटिंग्स &gt; लाइब्रेरी सेटिंग्स में उन्नत प्रदर्शन और सॉर्टिंग विकल्प उपलब्ध हैं</string>
     <string name="onboarding_library_4">डिफ़ॉल्ट प्लेलिस्ट (हाल ही में जोड़े गए, सबसे ज्यादा खेले गए) को सेटिंग्स&gt; प्लेलिस्ट में टॉगल किया जा सकता है</string>
     <string name="onboarding_theme_title">Rhythm को अपना बनाएं</string>
-    <string name="onboarding_theme_desc">अपनी शैली से मेल खाने के लिए Rhythm के स्वरूप को वैयक्तिकृत करें। अपना सिस्टम थीम, फ़ॉन्ट, या Material आप गतिशील रंग (Android 12+) चुनें।</string>    <string name="onboarding_more_tuner">सेटिंग्स में अधिक अनुकूलन</string>
+    <string name="onboarding_theme_desc">अपनी शैली से मेल खाने के लिए Rhythm के स्वरूप को वैयक्तिकृत करें। अपना सिस्टम थीम, फ़ॉन्ट, या Material आप गतिशील रंग (Android 12+) चुनें।</string>
+    <string name="onboarding_more_tuner">सेटिंग्स में अधिक अनुकूलन</string>
     <string name="onboarding_tuner_1">कस्टम रंग योजनाएं और एल्बम कला रंग निष्कर्षण</string>
     <string name="onboarding_tuner_2">फ़ॉन्ट अनुकूलन और टाइपोग्राफी सेटिंग्स</string>
     <string name="onboarding_tuner_3">उन्नत थीम विकल्प सेटिंग्स &gt; थीम अनुकूलन में उपलब्ध हैं</string>

@@ -509,7 +509,8 @@
     <string name="onboarding_library_3">Gelişmiş görüntüleme ve sıralama seçenekleri Ayarlar &gt; Kitaplık Ayarları\'nda mevcuttur</string>
     <string name="onboarding_library_4">Varsayılan çalma listeleri (En Son Eklenenler, En Çok Oynananlar) Ayarlar &gt; Çalma Listeleri bölümünden değiştirilebilir</string>
     <string name="onboarding_theme_title">Rhythm\'ı Kendinize Ait Yapın</string>
-    <string name="onboarding_theme_desc">Rhythm\'in görünümünü tarzınıza uyacak şekilde kişiselleştirin. Sistem temanızı, yazı tipinizi veya Material Dinamik renklerinizi (Android 12+) seçin.</string>    <string name="onboarding_more_tuner">Ayarlarda Daha Fazla Özelleştirme</string>
+    <string name="onboarding_theme_desc">Rhythm\'in görünümünü tarzınıza uyacak şekilde kişiselleştirin. Sistem temanızı, yazı tipinizi veya Material Dinamik renklerinizi (Android 12+) seçin.</string>
+    <string name="onboarding_more_tuner">Ayarlarda Daha Fazla Özelleştirme</string>
     <string name="onboarding_tuner_1">Özel renk şemaları ve albüm kapağı renk çıkarma</string>
     <string name="onboarding_tuner_2">Yazı tipi özelleştirme ve tipografi ayarları</string>
     <string name="onboarding_tuner_3">Gelişmiş tema seçenekleri Ayarlar &gt; Tema Özelleştirme bölümünde mevcuttur</string>

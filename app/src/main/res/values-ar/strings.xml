@@ -561,7 +561,8 @@
     <string name="onboarding_library_3">تتوفر خيارات العرض والفرز المتقدمة في الإعدادات &gt; إعدادات المكتبة</string>
     <string name="onboarding_library_4">يمكن تبديل قوائم التشغيل الافتراضية (التي تمت إضافتها مؤخرًا، والأكثر تشغيلًا) في الإعدادات &gt; قوائم التشغيل</string>
     <string name="onboarding_theme_title">اجعل Rhythm ملكًا لك</string>
-    <string name="onboarding_theme_desc">قم بتخصيص مظهر Rhythm ليتناسب مع أسلوبك. اختر سمة النظام أو الخط أو Material الألوان الديناميكية (Android 12+).</string>    <string name="onboarding_more_tuner">مزيد من التخصيص في الإعدادات</string>
+    <string name="onboarding_theme_desc">قم بتخصيص مظهر Rhythm ليتناسب مع أسلوبك. اختر سمة النظام أو الخط أو Material الألوان الديناميكية (Android 12+).</string>
+    <string name="onboarding_more_tuner">مزيد من التخصيص في الإعدادات</string>
     <string name="onboarding_tuner_1">أنظمة الألوان المخصصة واستخراج ألوان صورة الألبوم</string>
     <string name="onboarding_tuner_2">تخصيص الخط وإعدادات الطباعة</string>
     <string name="onboarding_tuner_3">تتوفر خيارات السمة المتقدمة في الإعدادات &gt; تخصيص السمة</string>

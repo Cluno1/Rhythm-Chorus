@@ -496,7 +496,8 @@
     <string name="onboarding_library_3">[設定] &gt; [ライブラリ設定] で使用できる高度な表示および並べ替えオプション</string>
     <string name="onboarding_library_4">デフォルトのプレイリスト (最近追加したもの、最も再生されたもの) は、[設定] &gt; [プレイリスト] で切り替えることができます。</string>
     <string name="onboarding_theme_title">Rhythm を自分のものにしましょう</string>
-    <string name="onboarding_theme_desc">Rhythm の外観を自分のスタイルに合わせてカスタマイズします。システム テーマ、フォント、または Material You ダイナミック カラー (Android 12+) を選択してください。</string>    <string name="onboarding_more_tuner">設定のさらなるカスタマイズ</string>
+    <string name="onboarding_theme_desc">Rhythm の外観を自分のスタイルに合わせてカスタマイズします。システム テーマ、フォント、または Material You ダイナミック カラー (Android 12+) を選択してください。</string>
+    <string name="onboarding_more_tuner">設定のさらなるカスタマイズ</string>
     <string name="onboarding_tuner_1">カスタム配色とアルバムアートの色の抽出</string>
     <string name="onboarding_tuner_2">フォントのカスタマイズとタイポグラフィの設定</string>
     <string name="onboarding_tuner_3">[設定] &gt; [テーマのカスタマイズ] で使用できる高度なテーマ オプション</string>
