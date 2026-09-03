@@ -497,6 +497,8 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         
         // Widget control actions
         const val ACTION_PLAY_PAUSE = "chromahub.rhythm.app.action.PLAY_PAUSE"
+        const val ACTION_PAUSE_FOR_IN_APP_AUDIO =
+            "chromahub.rhythm.app.action.PAUSE_FOR_IN_APP_AUDIO"
         const val ACTION_SKIP_NEXT = "chromahub.rhythm.app.action.SKIP_NEXT"
         const val ACTION_SKIP_PREVIOUS = "chromahub.rhythm.app.action.SKIP_PREVIOUS"
         const val ACTION_TOGGLE_FAVORITE = "chromahub.rhythm.app.action.TOGGLE_FAVORITE"
@@ -1867,6 +1869,11 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                     player.play()
                 }
                 // Update widget immediately after action
+                updateWidgetFromMediaItem(player.currentMediaItem)
+            }
+            ACTION_PAUSE_FOR_IN_APP_AUDIO -> {
+                Log.d(TAG, "Pausing media playback for in-app audio")
+                rhythmPlayerEngine.pauseForInAppAudio()
                 updateWidgetFromMediaItem(player.currentMediaItem)
             }
             ACTION_SKIP_NEXT -> {

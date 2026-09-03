@@ -13,7 +13,12 @@ import alphaTab.model.NoteStyle
 import alphaTab.model.NoteSubElement
 import alphaTab.model.Color as AlphaTabColor
 import alphaTab.synth.PlayerState
+import android.content.Context
+import android.content.Intent
 import android.graphics.Color as AndroidColor
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.view.View
 import android.widget.RelativeLayout
 import android.util.Log
@@ -66,6 +71,7 @@ import chromahub.rhythm.app.features.scores.data.LoadedScore
 import chromahub.rhythm.app.features.scores.data.ScoreEditSession
 import chromahub.rhythm.app.features.scores.data.ScoreNoteRef
 import chromahub.rhythm.app.features.scores.data.ScoreSourceMap
+import chromahub.rhythm.app.infrastructure.service.MediaPlaybackService
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
@@ -106,7 +112,7 @@ private data class MergedDisplayProjection(
     val scores: Map<BundledScoreVariant, Score>
 )
 
-private class ScorePlaybackController {
+private class ScorePlaybackController(private val context: Context) {
     private var view: AlphaTabView? = null
     private var score: Score? = null
     private var playerIsReady = false
@@ -115,6 +121,32 @@ private class ScorePlaybackController {
     private val displayBindings = mutableMapOf<AlphaTabView, ScorePlaybackDisplayBinding>()
     private var currentTick = 0.0
     private var activePositions: List<ScorePlaybackBeatPosition> = emptyList()
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private var audioFocusRequest: AudioFocusRequest? = null
+    private var isPlaying = false
+    private var resumeAfterTransientFocusLoss = false
+    private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { change ->
+        when (change) {
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                resumeAfterTransientFocusLoss = false
+                pauseForAudioFocusLoss()
+                abandonAudioFocus()
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                resumeAfterTransientFocusLoss = isPlaying
+                pauseForAudioFocusLoss()
+            }
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                if (resumeAfterTransientFocusLoss) {
+                    resumeAfterTransientFocusLoss = false
+                    view?.post {
+                        if (!isPlaying) view?.api?.playPause()
+                    }
+                }
+            }
+        }
+    }
 
     fun attach(view: AlphaTabView, score: Score) {
         this.view = view
@@ -129,7 +161,9 @@ private class ScorePlaybackController {
             this.view = null
             score = null
             playerIsReady = false
+            isPlaying = false
             completionTracker.reset()
+            abandonAudioFocus()
         }
     }
 
@@ -147,6 +181,10 @@ private class ScorePlaybackController {
 
     fun playPause() {
         val currentView = view ?: return
+        if (!isPlaying) {
+            pauseMainPlayer()
+            if (!requestAudioFocus()) return
+        }
         if (completionTracker.consumeFinished()) {
             // alphaTab's Android player runs commands on a FIFO worker queue. Queueing stop
             // before playPause guarantees that a naturally completed score returns to tick 0
@@ -161,13 +199,19 @@ private class ScorePlaybackController {
 
     fun stop() {
         completionTracker.reset()
+        isPlaying = false
+        resumeAfterTransientFocusLoss = false
         view?.api?.stop()
+        abandonAudioFocus()
         resetDisplayPosition()
     }
 
     fun onPlayerFinished(view: AlphaTabView) {
         if (this.view === view) {
             completionTracker.markFinished()
+            isPlaying = false
+            resumeAfterTransientFocusLoss = false
+            abandonAudioFocus()
             resetDisplayPosition()
         }
     }
@@ -175,6 +219,14 @@ private class ScorePlaybackController {
     fun onPlayerStarted(view: AlphaTabView) {
         if (this.view === view) {
             completionTracker.reset()
+            isPlaying = true
+        }
+    }
+
+    fun onPlayerPaused(view: AlphaTabView) {
+        if (this.view === view) {
+            isPlaying = false
+            if (!resumeAfterTransientFocusLoss) abandonAudioFocus()
         }
     }
 
@@ -260,6 +312,48 @@ private class ScorePlaybackController {
         currentView.api.changeTrackMute(mutedTracks, true)
         currentView.api.changeTrackMute(audibleTracks, false)
         Log.i(SCORE_PLAYBACK_TAG, "muted tracks=${mutedTrackIndexes.sorted()}")
+    }
+
+    private fun requestAudioFocus(): Boolean {
+        if (audioFocusRequest != null) return true
+        val attributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .build()
+        val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setAudioAttributes(attributes)
+            .setOnAudioFocusChangeListener(audioFocusChangeListener)
+            .build()
+        return if (audioManager.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            audioFocusRequest = request
+            Log.i(SCORE_PLAYBACK_TAG, "audio focus granted")
+            true
+        } else {
+            Log.w(SCORE_PLAYBACK_TAG, "audio focus request denied")
+            false
+        }
+    }
+
+    private fun pauseMainPlayer() {
+        val intent = Intent(context, MediaPlaybackService::class.java).apply {
+            action = MediaPlaybackService.ACTION_PAUSE_FOR_IN_APP_AUDIO
+        }
+        runCatching { context.startService(intent) }
+            .onFailure { Log.w(SCORE_PLAYBACK_TAG, "could not pause main player", it) }
+    }
+
+    private fun abandonAudioFocus() {
+        audioFocusRequest?.let(audioManager::abandonAudioFocusRequest)
+        audioFocusRequest = null
+    }
+
+    private fun pauseForAudioFocusLoss() {
+        val currentView = view ?: return
+        if (!isPlaying) return
+        isPlaying = false
+        currentView.post {
+            if (view === currentView) currentView.api.playPause()
+        }
     }
 }
 
@@ -573,7 +667,10 @@ private fun ScoreReadyContent(
     var mutedTracksByVariant by remember {
         mutableStateOf<Map<BundledScoreVariant, Set<Int>>>(emptyMap())
     }
-    val playbackController = remember { ScorePlaybackController() }
+    val context = LocalContext.current
+    val playbackController = remember(context) {
+        ScorePlaybackController(context.applicationContext)
+    }
     val coroutineScope = rememberCoroutineScope()
     var editSession by remember { mutableStateOf<ScoreEditSession?>(null) }
     var editVariant by remember { mutableStateOf<BundledScoreVariant?>(null) }
@@ -1804,12 +1901,23 @@ private fun ScorePlaybackEngine(
                     player.playerMode = PlayerMode.EnabledAutomatic
                     player.enableCursor = false
                     player.enableUserInteraction = false
+                    // alphaTab's 500 ms default only primes about 90 ms of stereo PCM on
+                    // Android. Bluetooth routes on real devices can need several times that,
+                    // otherwise the worker immediately underruns and the score is silent.
+                    player.bufferTimeInMilliseconds = SCORE_PLAYBACK_BUFFER_MS
                 }
                 settings = playbackSettings
                 api.playerReady.on {
                     playerIsReady = true
+                    api.masterVolume = 1.0
                     controller.onPlayerReady(playerView)
-                    Log.i(SCORE_PLAYBACK_TAG, "player ready")
+                    val trackMix = loadedScore.playbackScore.tracks.toList().joinToString {
+                        "${it.index.toInt()}:volume=${it.playbackInfo.volume},mute=${it.playbackInfo.isMute}"
+                    }
+                    Log.i(
+                        SCORE_PLAYBACK_TAG,
+                        "player ready: masterVolume=${api.masterVolume}, tracks=[$trackMix]"
+                    )
                     post { onStatusChange(ScorePlaybackStatus.READY) }
                 }
                 api.soundFontLoaded.on {
@@ -1822,6 +1930,7 @@ private fun ScorePlaybackEngine(
                             ScorePlaybackStatus.PLAYING
                         }
                         PlayerState.Paused -> if (playerIsReady) {
+                            controller.onPlayerPaused(playerView)
                             ScorePlaybackStatus.PAUSED
                         } else {
                             ScorePlaybackStatus.PREPARING
@@ -1907,3 +2016,4 @@ private const val SCORE_DISPLAY_TAG = "ScoreDisplay"
 private const val SCORE_EDIT_TAG = "ScoreEdit"
 private const val SOUND_FONT_PLAYER_MAX_ATTEMPTS = 60
 private const val SOUND_FONT_PLAYER_RETRY_MS = 500L
+private const val SCORE_PLAYBACK_BUFFER_MS = 1_500.0

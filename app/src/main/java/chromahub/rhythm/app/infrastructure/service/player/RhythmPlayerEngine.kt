@@ -163,6 +163,28 @@ class RhythmPlayerEngine(
 
     fun isTransitionRunning(): Boolean = transitionRunning || transitionJob?.isActive == true
 
+    /**
+     * Yields playback to an in-app audio source such as the score synthesizer.
+     * Cancelling the transition is essential: an active crossfade coroutine can otherwise
+     * call play() again after audio focus has moved to the other source.
+     */
+    fun pauseForInAppAudio() {
+        transitionJob?.cancel()
+        transitionJob = null
+        transitionRunning = false
+        isFocusLossPause = false
+        if (::playerA.isInitialized) {
+            playerA.playWhenReady = false
+            playerA.pause()
+        }
+        if (::playerB.isInitialized) {
+            playerB.playWhenReady = false
+            playerB.pause()
+        }
+        abandonAudioFocus()
+        Log.d(TAG, "Paused both players for in-app audio")
+    }
+
     fun getAudioSessionId(): Int = if (::playerA.isInitialized) playerA.audioSessionId else 0
 
     private var isReleased = false
