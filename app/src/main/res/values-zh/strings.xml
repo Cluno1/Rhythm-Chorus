@@ -2755,6 +2755,9 @@
     <string name="score_playback_playing">正在播放</string>
     <string name="score_playback_paused">已暂停</string>
     <string name="score_playback_error">无法准备乐谱音频</string>
+    <string name="score_playback_indicator">播放条</string>
+    <string name="score_playback_indicator_default">默认</string>
+    <string name="score_playback_indicator_pulse">跳动</string>
     <string name="score_staff_display">谱表</string>
     <string name="score_staff_all">全部谱表</string>
     <string name="score_staff_current">选中声部</string>

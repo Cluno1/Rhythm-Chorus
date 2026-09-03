@@ -2934,6 +2934,9 @@
     <string name="score_playback_playing">Playing</string>
     <string name="score_playback_paused">Paused</string>
     <string name="score_playback_error">Couldn’t prepare score audio</string>
+    <string name="score_playback_indicator">Playhead</string>
+    <string name="score_playback_indicator_default">Default</string>
+    <string name="score_playback_indicator_pulse">Pulse</string>
     <string name="score_staff_display">Display</string>
     <string name="score_staff_all">All staves</string>
     <string name="score_staff_current">Selected parts</string>

@@ -13,6 +13,9 @@ import alphaTab.model.NoteStyle
 import alphaTab.model.NoteSubElement
 import alphaTab.model.Color as AlphaTabColor
 import alphaTab.synth.PlayerState
+import android.graphics.Color as AndroidColor
+import android.view.View
+import android.widget.RelativeLayout
 import android.util.Log
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -92,6 +95,11 @@ private enum class ScorePlaybackStatus {
     ERROR
 }
 
+private enum class ScorePlaybackIndicatorMode {
+    LINE,
+    PULSE,
+}
+
 private data class MergedDisplayProjection(
     val trackIndexes: Set<Int>,
     val scores: Map<BundledScoreVariant, Score>
@@ -103,12 +111,16 @@ private class ScorePlaybackController {
     private var playerIsReady = false
     private var mutedTrackIndexes: Set<Int> = emptySet()
     private val completionTracker = ScorePlaybackCompletionTracker()
+    private val displayBindings = mutableMapOf<AlphaTabView, ScorePlaybackDisplayBinding>()
+    private var currentTick = 0.0
+    private var activePositions: List<ScorePlaybackBeatPosition> = emptyList()
 
     fun attach(view: AlphaTabView, score: Score) {
         this.view = view
         this.score = score
         playerIsReady = false
         completionTracker.reset()
+        resetDisplayPosition()
     }
 
     fun detach(view: AlphaTabView) {
@@ -149,17 +161,84 @@ private class ScorePlaybackController {
     fun stop() {
         completionTracker.reset()
         view?.api?.stop()
+        resetDisplayPosition()
     }
 
     fun onPlayerFinished(view: AlphaTabView) {
         if (this.view === view) {
             completionTracker.markFinished()
+            resetDisplayPosition()
         }
     }
 
     fun onPlayerStarted(view: AlphaTabView) {
         if (this.view === view) {
             completionTracker.reset()
+        }
+    }
+
+    fun onPlayerPositionChanged(view: AlphaTabView, tick: Double) {
+        if (this.view !== view) return
+        currentTick = tick
+        displayBindings.forEach { (displayView, binding) ->
+            displayView.post {
+                if (displayBindings[displayView] === binding) {
+                    // Pulse mode keeps alphaTab's cursor transparent, but still uses its
+                    // position internally so automatic scrolling follows the active beat.
+                    displayView.api.tickPosition = tick
+                }
+            }
+        }
+    }
+
+    fun onActiveBeatsChanged(view: AlphaTabView, positions: List<ScorePlaybackBeatPosition>) {
+        if (this.view !== view || positions == activePositions) return
+        activePositions = positions
+        displayBindings.forEach { (displayView, binding) ->
+            displayView.post {
+                if (displayBindings[displayView] !== binding) return@post
+                when (binding.mode) {
+                    ScorePlaybackIndicatorMode.LINE -> displayView.api.scrollToCursor()
+                    ScorePlaybackIndicatorMode.PULSE -> {
+                        binding.onPulsePositions(positions)
+                        displayView.api.scrollToCursor()
+                    }
+                }
+            }
+        }
+    }
+
+    fun attachDisplay(
+        view: AlphaTabView,
+        mode: ScorePlaybackIndicatorMode,
+        onPulsePositions: (List<ScorePlaybackBeatPosition>) -> Unit,
+    ) {
+        val binding = ScorePlaybackDisplayBinding(mode, onPulsePositions)
+        displayBindings[view] = binding
+        view.post {
+            if (displayBindings[view] !== binding) return@post
+            when (mode) {
+                ScorePlaybackIndicatorMode.LINE -> view.api.tickPosition = currentTick
+                ScorePlaybackIndicatorMode.PULSE -> onPulsePositions(activePositions)
+            }
+        }
+    }
+
+    fun detachDisplay(view: AlphaTabView) {
+        displayBindings.remove(view)
+    }
+
+    private fun resetDisplayPosition() {
+        currentTick = 0.0
+        activePositions = emptyList()
+        displayBindings.forEach { (displayView, binding) ->
+            displayView.post {
+                if (displayBindings[displayView] !== binding) return@post
+                when (binding.mode) {
+                    ScorePlaybackIndicatorMode.LINE -> displayView.api.tickPosition = 0.0
+                    ScorePlaybackIndicatorMode.PULSE -> binding.onPulsePositions(emptyList())
+                }
+            }
         }
     }
 
@@ -182,6 +261,11 @@ private class ScorePlaybackController {
         Log.i(SCORE_PLAYBACK_TAG, "muted tracks=${mutedTrackIndexes.sorted()}")
     }
 }
+
+private data class ScorePlaybackDisplayBinding(
+    val mode: ScorePlaybackIndicatorMode,
+    val onPulsePositions: (List<ScorePlaybackBeatPosition>) -> Unit,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -379,6 +463,9 @@ private fun ScoreReadyContent(
     val midiScore = checkNotNull(activeScores[BundledScoreVariant.MIDI])
     var playbackVariant by rememberSaveable { mutableStateOf(BundledScoreVariant.OCR) }
     var playbackStatus by remember { mutableStateOf(ScorePlaybackStatus.PREPARING) }
+    var playbackIndicatorMode by rememberSaveable {
+        mutableStateOf(ScorePlaybackIndicatorMode.LINE)
+    }
     // View-local on purpose: the previous release saved a single track index in this slot,
     // which is not compatible with the new multi-select bit mask after an app upgrade.
     var staffMode by remember { mutableStateOf(ScoreStaffMode.ALL_STAVES) }
@@ -572,7 +659,9 @@ private fun ScoreReadyContent(
             viewMode = viewMode,
             playbackVariant = playbackVariant,
             status = playbackStatus,
+            indicatorMode = playbackIndicatorMode,
             onPlaybackVariantChange = { playbackVariant = it },
+            onIndicatorModeChange = { playbackIndicatorMode = it },
             onPlayPause = { playbackController.playPause() },
             onStop = {
                 playbackController.stop()
@@ -671,6 +760,8 @@ private fun ScoreReadyContent(
                         staffMode = staffMode,
                         notationLayout = notationLayout,
                         partColorMode = partColorMode,
+                        playbackIndicatorMode = playbackIndicatorMode,
+                        playbackController = playbackController,
                         mergedDisplayScore = currentMergedScores?.get(BundledScoreVariant.OCR),
                         selectedTrackIndexes = selectedTrackIndexes,
                         editMode = editVariant == BundledScoreVariant.OCR,
@@ -702,6 +793,8 @@ private fun ScoreReadyContent(
                         staffMode = staffMode,
                         notationLayout = notationLayout,
                         partColorMode = partColorMode,
+                        playbackIndicatorMode = playbackIndicatorMode,
+                        playbackController = playbackController,
                         mergedDisplayScore = currentMergedScores?.get(BundledScoreVariant.MIDI),
                         selectedTrackIndexes = selectedTrackIndexes,
                         editMode = editVariant == BundledScoreVariant.MIDI,
@@ -725,6 +818,8 @@ private fun ScoreReadyContent(
                         staffMode = staffMode,
                         notationLayout = notationLayout,
                         partColorMode = partColorMode,
+                        playbackIndicatorMode = playbackIndicatorMode,
+                        playbackController = playbackController,
                         mergedDisplayScore = currentMergedScores?.get(BundledScoreVariant.OCR),
                         selectedTrackIndexes = selectedTrackIndexes,
                         modifier = Modifier
@@ -737,6 +832,8 @@ private fun ScoreReadyContent(
                         staffMode = staffMode,
                         notationLayout = notationLayout,
                         partColorMode = partColorMode,
+                        playbackIndicatorMode = playbackIndicatorMode,
+                        playbackController = playbackController,
                         mergedDisplayScore = currentMergedScores?.get(BundledScoreVariant.MIDI),
                         selectedTrackIndexes = selectedTrackIndexes,
                         modifier = Modifier
@@ -1171,7 +1268,9 @@ private fun ScorePlaybackControls(
     viewMode: ScoreViewMode,
     playbackVariant: BundledScoreVariant,
     status: ScorePlaybackStatus,
+    indicatorMode: ScorePlaybackIndicatorMode,
     onPlaybackVariantChange: (BundledScoreVariant) -> Unit,
+    onIndicatorModeChange: (ScorePlaybackIndicatorMode) -> Unit,
     onPlayPause: () -> Unit,
     onStop: () -> Unit,
     interactionEnabled: Boolean,
@@ -1206,6 +1305,30 @@ private fun ScorePlaybackControls(
                         label = stringResource(R.string.score_source_midi)
                     )
                 }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.score_playback_indicator),
+                    style = MaterialTheme.typography.labelLarge
+                )
+                ScoreModeChip(
+                    selected = indicatorMode == ScorePlaybackIndicatorMode.LINE,
+                    enabled = interactionEnabled,
+                    onClick = { onIndicatorModeChange(ScorePlaybackIndicatorMode.LINE) },
+                    label = stringResource(R.string.score_playback_indicator_default)
+                )
+                ScoreModeChip(
+                    selected = indicatorMode == ScorePlaybackIndicatorMode.PULSE,
+                    enabled = interactionEnabled,
+                    onClick = { onIndicatorModeChange(ScorePlaybackIndicatorMode.PULSE) },
+                    label = stringResource(R.string.score_playback_indicator_pulse)
+                )
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1283,6 +1406,8 @@ private fun ScoreComparePane(
     staffMode: ScoreStaffMode,
     notationLayout: ScoreNotationLayout,
     partColorMode: ScorePartColorMode,
+    playbackIndicatorMode: ScorePlaybackIndicatorMode,
+    playbackController: ScorePlaybackController,
     mergedDisplayScore: Score?,
     selectedTrackIndexes: Set<Int>,
     modifier: Modifier = Modifier
@@ -1311,6 +1436,8 @@ private fun ScoreComparePane(
                 staffMode = staffMode,
                 notationLayout = notationLayout,
                 partColorMode = partColorMode,
+                playbackIndicatorMode = playbackIndicatorMode,
+                playbackController = playbackController,
                 mergedDisplayScore = mergedDisplayScore,
                 selectedTrackIndexes = selectedTrackIndexes,
                 modifier = Modifier
@@ -1369,6 +1496,8 @@ private fun AlphaTabScore(
     staffMode: ScoreStaffMode,
     notationLayout: ScoreNotationLayout,
     partColorMode: ScorePartColorMode,
+    playbackIndicatorMode: ScorePlaybackIndicatorMode,
+    playbackController: ScorePlaybackController,
     mergedDisplayScore: Score?,
     selectedTrackIndexes: Set<Int>,
     editMode: Boolean = false,
@@ -1427,10 +1556,23 @@ private fun AlphaTabScore(
             modifier = Modifier.fillMaxSize(),
             factory = { context ->
                 AlphaTabView(context, null).apply {
-                    api.settings.player.playerMode = PlayerMode.Disabled
-                    api.settings.player.enableCursor = false
+                    val displayView = this
+                    val playbackOverlay = ScorePlaybackOverlayView(context)
+                    tag = playbackOverlay
+                    api.settings.player.playerMode = if (editMode) {
+                        PlayerMode.Disabled
+                    } else {
+                        PlayerMode.EnabledExternalMedia
+                    }
+                    api.settings.player.enableCursor =
+                        !editMode
+                    api.settings.player.enableAnimatedBeatCursor = false
+                    api.settings.player.enableElementHighlighting = false
                     api.settings.player.enableUserInteraction = editMode
-                    api.settings.core.includeNoteBounds = editMode
+                    // Playback pulse markers and edit hit-testing both need note-head bounds.
+                    api.settings.core.includeNoteBounds = true
+                    barCursorFillColor = AndroidColor.TRANSPARENT
+                    beatCursorFillColor = AndroidColor.rgb(225, 29, 72)
                     // alphaTab renders secondary voices with 100/255 alpha by default.
                     // Explicit per-voice styles carry enhanced colors; this fallback keeps
                     // any unstyled secondary glyph black instead of gray.
@@ -1469,11 +1611,70 @@ private fun AlphaTabScore(
                     }
                     api.updateSettings()
                     doOnLayout {
+                        if (!editMode) {
+                            val renderWrapper = findViewById<RelativeLayout>(net.alphatab.R.id.renderWrapper)
+                            val renderSurface = findViewById<View>(net.alphatab.R.id.renderSurface)
+                            api.postRenderFinished.on {
+                                // Adding a sibling while alphaTab creates its first render
+                                // surface can invalidate the lazy bitmap placeholders. Wait
+                                // until that surface is complete before installing the overlay.
+                                renderSurface.post {
+                                    val overlayLayout = RelativeLayout.LayoutParams(
+                                        renderSurface.width,
+                                        renderSurface.height,
+                                    )
+                                    if (playbackOverlay.parent == null) {
+                                        renderWrapper.addView(playbackOverlay, overlayLayout)
+                                    } else {
+                                        playbackOverlay.layoutParams = overlayLayout
+                                    }
+                                    playbackOverlay.refresh(displayView.api.renderer.boundsLookup)
+                                }
+                            }
+                        }
                         tracks = tracksToRender
                     }
                 }
             },
-            onRelease = { view -> view.api.destroy() }
+            update = { displayView ->
+                if (!editMode) {
+                    val cursorColor = if (playbackIndicatorMode == ScorePlaybackIndicatorMode.LINE) {
+                        AndroidColor.rgb(225, 29, 72)
+                    } else {
+                        AndroidColor.TRANSPARENT
+                    }
+                    if (displayView.beatCursorFillColor != cursorColor) {
+                        displayView.beatCursorFillColor = cursorColor
+                        displayView.api.updateSettings()
+                    }
+                    val playbackOverlay = displayView.tag as ScorePlaybackOverlayView
+                    if (playbackIndicatorMode == ScorePlaybackIndicatorMode.LINE) {
+                        playbackOverlay.showBeats(
+                            emptyList(),
+                            displayView.api.renderer.boundsLookup,
+                        )
+                    }
+                    playbackController.attachDisplay(
+                        view = displayView,
+                        mode = playbackIndicatorMode,
+                        onPulsePositions = { positions ->
+                            val pulseBeats = findScorePlaybackHighlightBeats(
+                                tracks = tracksToRender,
+                                notationLayout = notationLayout,
+                                activePositions = positions,
+                            )
+                            playbackOverlay.showBeats(
+                                pulseBeats,
+                                displayView.api.renderer.boundsLookup,
+                            )
+                        }
+                    )
+                }
+            },
+            onRelease = { view ->
+                playbackController.detachDisplay(view)
+                view.api.destroy()
+            }
         )
     }
 }
@@ -1529,6 +1730,15 @@ private fun ScorePlaybackEngine(
                     }
                     Log.i(SCORE_PLAYBACK_TAG, "state=${event.state}")
                     post { onStatusChange(nextStatus) }
+                }
+                api.playerPositionChanged.on { event ->
+                    controller.onPlayerPositionChanged(playerView, event.currentTick)
+                }
+                api.activeBeatsChanged.on { event ->
+                    controller.onActiveBeatsChanged(
+                        playerView,
+                        activeScorePlaybackPositions(event.activeBeats.toList())
+                    )
                 }
                 api.playerFinished.on {
                     controller.onPlayerFinished(playerView)
