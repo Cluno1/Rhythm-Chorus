@@ -5,6 +5,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import androidx.core.content.edit
+import chromahub.rhythm.app.features.catalog.data.remote.CatalogEndpoint
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -19,9 +20,8 @@ class CatalogCredentialsStore(context: Context) {
     )
 
     fun save(serverUrl: String, token: String) {
-        val normalizedUrl = serverUrl.trim().trimEnd('/')
+        val normalizedUrl = CatalogEndpoint.normalize(serverUrl)
         val normalizedToken = token.trim()
-        require(normalizedUrl.startsWith("http://") || normalizedUrl.startsWith("https://"))
         require(normalizedToken.isNotEmpty())
 
         val cipher = Cipher.getInstance(TRANSFORMATION).apply {

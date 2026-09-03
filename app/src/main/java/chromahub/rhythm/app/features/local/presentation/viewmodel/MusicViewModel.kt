@@ -43,6 +43,8 @@ import chromahub.rhythm.app.shared.data.model.MediaScanMode
 import chromahub.rhythm.app.shared.data.model.ScanPhase
 import chromahub.rhythm.app.features.local.data.repository.MusicRepository
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
+import chromahub.rhythm.app.features.catalog.domain.RhythmNowPlayingItem
+import chromahub.rhythm.app.features.catalog.domain.RhythmQueueEntry
 import chromahub.rhythm.app.features.local.data.database.entity.toSong
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
 import chromahub.rhythm.app.shared.data.model.Playlist
@@ -166,6 +168,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         private const val PLAYLIST_IMPORT_NOTIFICATION_ID = 1502
         private const val PLAYLIST_EXPORT_NOTIFICATION_ID = 1503
         private const val OPERATION_NOTIFICATION_AUTO_DISMISS_MS = 6000L
+
+        // Phase two is a private-catalog-only product. Keep the legacy ViewModel as the
+        // Media3 controller adapter, but never activate its MediaStore library pipeline.
+        private const val CATALOG_ONLY_PRODUCT = true
 
         private const val DEFAULT_BLUETOOTH_LYRIC_LINE = "No lyrics"
         private const val METADATA_EXTRA_ORIGINAL_TITLE = "chromahub.rhythm.app.extra.original_title"
@@ -902,6 +908,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _currentSong = MutableStateFlow<Song?>(null)
     val currentSong: StateFlow<Song?> = _currentSong.asStateFlow()
+    private val _catalogNowPlaying = MutableStateFlow<RhythmNowPlayingItem?>(null)
+    val catalogNowPlaying: StateFlow<RhythmNowPlayingItem?> = _catalogNowPlaying.asStateFlow()
+    private val _catalogQueue = MutableStateFlow<List<RhythmQueueEntry>>(emptyList())
+    val catalogQueue: StateFlow<List<RhythmQueueEntry>> = _catalogQueue.asStateFlow()
 
     private val _currentQueue = MutableStateFlow(Queue(emptyList(), -1))
     val currentQueue: StateFlow<Queue> = _currentQueue.asStateFlow()
@@ -1186,7 +1196,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         Log.d(TAG, "Initializing MusicViewModel")
-        startLibrarySetupCompletionMonitor()
+        if (!CATALOG_ONLY_PRODUCT) startLibrarySetupCompletionMonitor()
         
         // Single coroutine for main initialization to ensure proper ordering
         viewModelScope.launch {
@@ -1211,7 +1221,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             ) { preferSongArtwork, losslessArtwork ->
                 Pair(preferSongArtwork, losslessArtwork)
             }.collect { newState ->
-                if (!_isInitialized.value || newState == previousState) {
+                if (CATALOG_ONLY_PRODUCT || !_isInitialized.value || newState == previousState) {
                     return@collect
                 }
                 
@@ -1289,7 +1299,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Unit
             }.collect {
                 // Wait for initialization to complete before refreshing
-                if (_isInitialized.value) {
+                if (!CATALOG_ONLY_PRODUCT && _isInitialized.value) {
                     Log.d(TAG, "Blacklist/Whitelist or scan mode changed, refreshing library & playlists")
                     refreshLibrary(showMediaScanLoader = false)
                     removeBlacklistedSongsFromQueue()
@@ -1312,7 +1322,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             ) { groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters ->
                 Triple(groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters)
             }.collect { newState ->
-                if (!_isInitialized.value || newState == previousState) {
+                if (CATALOG_ONLY_PRODUCT || !_isInitialized.value || newState == previousState) {
                     return@collect
                 }
 
@@ -1400,7 +1410,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         val initStartTime = System.currentTimeMillis()
         
         // Step 1: Load core music data with PARALLEL loading for better performance
-        val initializationResults = initializeCoreDataParallel()
+        val initializationResults = if (CATALOG_ONLY_PRODUCT) {
+            _songs.value = emptyList()
+            _albums.value = emptyList()
+            _artists.value = emptyList()
+            _folderTree.value = null
+            InitializationResult(true)
+        } else {
+            initializeCoreDataParallel()
+        }
         if (!initializationResults.success) {
             throw Exception("Failed to load core music data: ${initializationResults.error}")
         }
@@ -1422,10 +1440,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // Step 4: Initialize from persistence (needs songs to be loaded)
-        try {
-            initializeFromPersistence()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error initializing from persistence", e)
+        if (!CATALOG_ONLY_PRODUCT) {
+            try {
+                initializeFromPersistence()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error initializing from persistence", e)
+            }
         }
 
         // Step 5: Start progress updates
@@ -1436,10 +1456,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         // Step 6: Wait for filteredSongs to be ready and populate playlists
-        populateDefaultPlaylistsSafely()
+        if (!CATALOG_ONLY_PRODUCT) populateDefaultPlaylistsSafely()
 
         // Step 7: Initialize queue state
-        initializeQueueState()
+        if (!CATALOG_ONLY_PRODUCT) initializeQueueState()
 
         // Step 8: Mark as initialized BEFORE starting background tasks
         // This allows UI to render immediately
@@ -1449,7 +1469,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         
         // Step 9: Start non-critical background tasks AFTER marking initialized
         // This defers heavy work until after UI is responsive
-        startBackgroundTasksDeferred()
+        if (!CATALOG_ONLY_PRODUCT) startBackgroundTasksDeferred()
     }
     
     private data class InitializationResult(val success: Boolean, val error: String? = null)
@@ -1712,6 +1732,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      */
     private fun saveQueueToPersistence() {
         try {
+            if (_catalogQueue.value.isNotEmpty()) {
+                val controller = mediaController
+                chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore(getApplication())
+                    .save(
+                        _catalogQueue.value,
+                        controller?.currentMediaItemIndex?.takeIf { it >= 0 }
+                            ?: _currentQueue.value.currentIndex.coerceAtLeast(0),
+                        controller?.currentPosition ?: 0L,
+                    )
+                appSettings.clearSavedQueue()
+                return
+            }
             // Check if queue persistence is enabled
             if (!appSettings.queuePersistenceEnabled.value) {
                 return
@@ -4056,12 +4088,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 
                 if (song != null) {
                     _currentSong.value = song
-                    
-                    // Start tracking the new song
-                    startPlaybackTracking(song.id)
-                    
-                    // Update recently played
-                    updateRecentlyPlayed(song)
+                    val catalogEntry = _catalogQueue.value.firstOrNull {
+                        it.playback.toMediaItem().mediaId == songId
+                    }
+                    _catalogNowPlaying.value = catalogEntry?.nowPlaying
+                    if (catalogEntry == null) {
+                        // Legacy user-state models are Song keyed and must not receive catalog IDs.
+                        startPlaybackTracking(song.id)
+                        updateRecentlyPlayed(song)
+                    }
 
                     // Apply default playback speed if enabled for new songs
                     if (appSettings.useDefaultPlaybackSpeed.value) {
@@ -5180,6 +5215,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun updateRecentlyPlayed(song: Song) {
+        if (song.id.startsWith("rhythm-catalog:")) return
         viewModelScope.launch {
             try {
                 val currentList = _recentlyPlayed.value.toMutableList()
@@ -5530,8 +5566,87 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Enters Media3 through the managed catalog boundary while keeping Work/Rendition/Asset as
+     * the authoritative identity. [Song] values below are display-only adapters for the legacy
+     * player shell and are never persisted as library entities.
+     */
+    fun playCatalogQueue(entries: List<RhythmQueueEntry>, startIndex: Int = 0) {
+        applyCatalogQueue(entries, startIndex, 0L, startPlayback = true)
+    }
+
+    fun restoreCatalogQueue(entries: List<RhythmQueueEntry>, startIndex: Int, positionMs: Long) {
+        if (_currentSong.value != null) return
+        applyCatalogQueue(entries, startIndex, positionMs, startPlayback = false)
+    }
+
+    private fun applyCatalogQueue(
+        entries: List<RhythmQueueEntry>,
+        startIndex: Int,
+        positionMs: Long,
+        startPlayback: Boolean,
+    ) {
+        if (entries.isEmpty() || !canStartPlayback("playCatalogQueue")) return
+        val serverUrl = chromahub.rhythm.app.features.catalog.data.CatalogCredentialsStore(getApplication())
+            .loadServerUrl()
+            ?: return
+        val accepted = entries.all { entry ->
+            val item = entry.playback.toMediaItem()
+            CatalogPlaybackPolicy.allows(
+                mediaId = item.mediaId,
+                uri = item.localConfiguration?.uri?.toString(),
+                customCacheKey = item.localConfiguration?.customCacheKey,
+                trustedServerUrl = serverUrl,
+            )
+        }
+        if (!accepted) {
+            Log.w(TAG, "Rejected catalog queue because one or more entries failed policy")
+            return
+        }
+        val validIndex = startIndex.coerceIn(entries.indices)
+        val displaySongs = entries.map { entry ->
+            val mediaItem = entry.playback.toMediaItem()
+            Song(
+                id = mediaItem.mediaId,
+                title = entry.nowPlaying.title,
+                artist = entry.nowPlaying.subtitle,
+                album = entry.playback.arrangementName,
+                albumId = entry.nowPlaying.arrangementId,
+                duration = 0L,
+                uri = Uri.parse(entry.playback.playbackUrl),
+                codec = entry.playback.mediaType,
+                path = null,
+            )
+        }
+        viewModelScope.launch(Dispatchers.Main) {
+            mediaController?.let { controller ->
+                controller.stop()
+                controller.clearMediaItems()
+                controller.shuffleModeEnabled = false
+                controller.addMediaItems(entries.map { it.playback.toMediaItem() })
+                controller.prepare()
+                controller.seekTo(validIndex, positionMs.coerceAtLeast(0L))
+                if (!canStartPlayback("playCatalogQueue.prepare")) return@let
+                if (startPlayback) controller.play()
+                _catalogQueue.value = entries
+                _catalogNowPlaying.value = entries[validIndex].nowPlaying
+                _currentQueue.value = Queue(displaySongs, validIndex)
+                _currentSong.value = displaySongs[validIndex]
+                _currentLyrics.value = null
+                _isFavorite.value = false
+                _isPlaying.value = startPlayback
+                chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore(getApplication())
+                    .save(entries, validIndex, positionMs)
+                if (startPlayback) startProgressUpdates()
+            } ?: Log.w(TAG, "MediaController unavailable for catalog playback")
+        }
+    }
+
     fun playQueue(songs: List<Song>, enableShuffle: Boolean? = null, startIndex: Int = 0, pinStartIndex: Boolean = false) {
         Log.d(TAG, "Playing queue with ${songs.size} songs, shuffle: $enableShuffle, startIndex: $startIndex, pinStartIndex: $pinStartIndex")
+
+        _catalogQueue.value = emptyList()
+        _catalogNowPlaying.value = null
 
         if (!canStartPlayback("playQueue")) {
             return
@@ -6322,6 +6437,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Toggle favorite status for a specific song
      */
     fun toggleFavorite(song: Song) {
+        if (song.id.startsWith("rhythm-catalog:")) {
+            Log.w(TAG, "Ignoring favorite mutation for catalog playback item")
+            return
+        }
         val songId = song.id
         val currentFavorites = _favoriteSongs.value.toMutableSet()
         
@@ -8729,6 +8848,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     // Enhanced play tracking with user preferences
     private fun updateListeningStats(song: Song) {
+        if (song.id.startsWith("rhythm-catalog:")) return
         viewModelScope.launch {
             // Update songs played count
             val newCount = _songsPlayed.value + 1

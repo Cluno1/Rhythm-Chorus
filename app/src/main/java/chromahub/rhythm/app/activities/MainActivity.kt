@@ -65,13 +65,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
+import chromahub.rhythm.app.BuildConfig
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.navigation.RhythmNavigation
 import chromahub.rhythm.app.ui.theme.RhythmTheme
 import chromahub.rhythm.app.ui.theme.festive.FestiveOverlayFromSettings
 import chromahub.rhythm.app.shared.presentation.viewmodel.ThemeViewModel
-import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
 import chromahub.rhythm.app.util.CrashReporter
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -147,7 +147,6 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
     private val musicViewModel: MusicViewModel by viewModels()
     private val themeViewModel: ThemeViewModel by viewModels()
-    private val appUpdaterViewModel: AppUpdaterViewModel by viewModels() // Inject AppUpdaterViewModel
     private lateinit var appSettings: AppSettings // Declare AppSettings
     
     companion object {
@@ -211,8 +210,6 @@ class MainActivity : AppCompatActivity() {
                         // Show the initialization loader first, then transition to the app
                         val hasShownBetaPopup by appSettings.hasShownBetaPopup.collectAsState()
                         var showBetaPopup by remember { mutableStateOf(false) }
-                        val currentAppVersion by appUpdaterViewModel.currentVersion.collectAsState() // Observe current version
-                        val updateChannel by appUpdaterViewModel.updateChannel.collectAsState() // Observe update channel
                         var showMediaScanLoader by rememberSaveable { mutableStateOf(false) }
 
                     // State for permission handling and app initialization.
@@ -257,7 +254,7 @@ class MainActivity : AppCompatActivity() {
                         isLoading = false // Stop initial loading after initialization
 
                         // Show beta popup if it hasn't been shown before AND the current version is a pre-release
-                        if (!hasShownBetaPopup && currentAppVersion.isPreRelease) {
+                        if (!hasShownBetaPopup && BuildConfig.VERSION_NAME.contains("Beta", ignoreCase = true)) {
                             showBetaPopup = true
                         }
 
@@ -289,43 +286,27 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                    // Show the initialization loader until the music library is ready.
-                    val isInitialized by musicViewModel.isInitialized.collectAsState()
-                    LaunchedEffect(isInitialized) {
-                        if (isInitialized) {
-                            onInitializationComplete()
-                        }
+                    // The private Work catalog owns startup. Legacy Song loading may finish in
+                    // the background but no longer gates entry or requests media permissions.
+                    LaunchedEffect(Unit) {
+                        onInitializationComplete()
                     }
                     val scanProgress by musicViewModel.scanProgress.collectAsState()
 
                     Box(modifier = Modifier.fillMaxSize()) {
                         AnimatedVisibility(
-                            visible = isInitialized,
+                            visible = true,
                             enter = fadeIn(animationSpec = tween(1000, easing = androidx.compose.animation.core.EaseOutCubic)) + 
                                    scaleIn(initialScale = 0.92f, animationSpec = tween(1000, easing = androidx.compose.animation.core.EaseOutCubic)),
                         ) {
-                            PermissionHandler(
-                                onPermissionsGranted = {
-                                    // RhythmNavigation handles mode switching between Local and Streaming
-                                    RhythmNavigation(
-                                        musicViewModel = musicViewModel,
-                                        themeViewModel = themeViewModel
-                                    )
-                                },
-                                themeViewModel = themeViewModel,
-                                appSettings = appSettings,
-                                isLoading = isLoading,
-                                isInitializingApp = isInitializingApp,
-                                onSetIsLoading = { isLoading = it },
-                                onSetIsInitializingApp = { isInitializingApp = it },
+                            RhythmNavigation(
                                 musicViewModel = musicViewModel,
-                                showMediaScanLoader = showMediaScanLoader,
-                                onShowMediaScanLoaderChange = { showMediaScanLoader = it }
+                                themeViewModel = themeViewModel
                             )
                         }
                         
                         AnimatedVisibility(
-                            visible = !isInitialized,
+                            visible = false,
                             exit = fadeOut(animationSpec = tween(600, easing = androidx.compose.animation.core.EaseInCubic))
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {

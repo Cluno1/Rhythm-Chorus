@@ -51,6 +51,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Surface
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import androidx.compose.foundation.layout.fillMaxSize
@@ -94,6 +99,75 @@ import chromahub.rhythm.app.network.AppleMusicCanvasProvider
 import chromahub.rhythm.app.network.CanvasArtwork
 import chromahub.rhythm.app.shared.data.model.CanvasNetworkMode
 import chromahub.rhythm.app.core.utils.NetworkUtils
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ManagedCatalogPlayer(
+    song: Song?,
+    isPlaying: Boolean,
+    progress: () -> Float,
+    queuePosition: Int,
+    queueTotal: Int,
+    onBack: () -> Unit,
+    onPlayPause: () -> Unit,
+    onSkipPrevious: () -> Unit,
+    onSkipNext: () -> Unit,
+    onSeek: (Float) -> Unit,
+    onOpenWork: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = { Text("受管播放") },
+                navigationIcon = { TextButton(onClick = onBack) { Text("返回") } },
+            )
+        },
+    ) { padding ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(padding).padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(song?.title.orEmpty(), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(
+                song?.artist.orEmpty(),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            Text(
+                "后端 Rendition · Asset 受管内容",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 16.dp),
+            )
+            Slider(
+                value = progress().coerceIn(0f, 1f),
+                onValueChange = onSeek,
+                modifier = Modifier.fillMaxWidth().padding(top = 28.dp),
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Button(onClick = onSkipPrevious, enabled = queuePosition > 1) { Text("上一首") }
+                Button(onClick = onPlayPause) { Text(if (isPlaying) "暂停" else "播放") }
+                Button(onClick = onSkipNext, enabled = queuePosition < queueTotal) { Text("下一首") }
+            }
+            Text("队列 $queuePosition / $queueTotal", modifier = Modifier.padding(top = 20.dp))
+            Button(onClick = onOpenWork, modifier = Modifier.padding(top = 16.dp)) {
+                Text("查看作品与谱面")
+            }
+            Text(
+                "收藏、旧播放列表、公共歌词和编辑发布在第二期保持关闭",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 12.dp),
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -166,9 +240,28 @@ fun PlayerScreen(
     onPlayArtistSongs: (List<Song>) -> Unit = {},
     onShuffleArtistSongs: (List<Song>) -> Unit = {},
     isStreamingMode: Boolean = false,
+    isCatalogItem: Boolean = false,
+    onCatalogOpenWork: () -> Unit = {},
     swipeToDismissEnabled: Boolean = true,
     expansionFraction: Float = 1f
 ) {
+    if (isCatalogItem) {
+        ManagedCatalogPlayer(
+            song = song,
+            isPlaying = isPlaying,
+            progress = progress,
+            queuePosition = queuePosition,
+            queueTotal = queueTotal,
+            onBack = onBack,
+            onPlayPause = onPlayPause,
+            onSkipPrevious = onSkipPrevious,
+            onSkipNext = onSkipNext,
+            onSeek = onSeek,
+            onOpenWork = onCatalogOpenWork,
+            modifier = modifier,
+        )
+        return
+    }
     val playerThemeId by appSettings.playerThemeId.collectAsState()
     var showFullScreenLyrics by remember { mutableStateOf(false) }
 

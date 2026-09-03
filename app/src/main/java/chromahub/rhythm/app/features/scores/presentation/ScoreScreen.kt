@@ -39,6 +39,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -368,6 +369,101 @@ fun ScoreScreen(
     }
 }
 
+/** Read-only projection of an immutable server ScoreRevision. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RemoteScoreScreen(
+    title: String,
+    canonicalMusicXml: ByteArray,
+    onBackClick: () -> Unit,
+    revisionLabel: String? = null,
+    canOpenNewerRevision: Boolean = false,
+    canOpenOlderRevision: Boolean = false,
+    onOpenNewerRevision: () -> Unit = {},
+    onOpenOlderRevision: () -> Unit = {},
+    expectedPartCount: Int? = null,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val loader = remember(context) { BundledScoreLoader(context) }
+    val miniPlayerPadding = LocalMiniPlayerPadding.current
+    var loaded by remember(canonicalMusicXml) { mutableStateOf<LoadedScore?>(null) }
+    var soundFont by remember(canonicalMusicXml) { mutableStateOf<ByteArray?>(null) }
+    var failed by remember(canonicalMusicXml) { mutableStateOf(false) }
+    var retryKey by remember(canonicalMusicXml) { mutableIntStateOf(0) }
+
+    LaunchedEffect(loader, canonicalMusicXml, retryKey) {
+        runCatching {
+            loader.loadVariant(BundledScoreVariant.OCR, canonicalMusicXml) to loader.loadSoundFont()
+        }.fold(
+            onSuccess = {
+                loaded = it.first
+                soundFont = it.second
+                failed = false
+            },
+            onFailure = { failed = true },
+        )
+    }
+
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = { Text(if (revisionLabel == null) title else "$title · $revisionLabel") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(RhythmIcons.Back, contentDescription = stringResource(R.string.score_back))
+                    }
+                },
+                actions = {
+                    if (revisionLabel != null) {
+                        TextButton(onClick = onOpenNewerRevision, enabled = canOpenNewerRevision) { Text("较新") }
+                        TextButton(onClick = onOpenOlderRevision, enabled = canOpenOlderRevision) { Text("较旧") }
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        Box(
+            Modifier.fillMaxSize().padding(padding).padding(miniPlayerPadding),
+            contentAlignment = Alignment.Center,
+        ) {
+            when {
+                failed -> ScoreError(onRetry = {
+                    loaded = null
+                    soundFont = null
+                    failed = false
+                    retryKey++
+                })
+                loaded == null || soundFont == null -> ScoreLoading(Modifier.fillMaxSize())
+                else -> Column(Modifier.fillMaxSize()) {
+                    val actualTrackCount = checkNotNull(loaded).displayScore.tracks.length.toInt()
+                    if (expectedPartCount != null && expectedPartCount != actualTrackCount) {
+                        Text(
+                            "提示：编配定义 $expectedPartCount 个声部，此修订包含 $actualTrackCount 条谱轨；将按谱面原始结构显示。",
+                            color = MaterialTheme.colorScheme.tertiary,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                        )
+                    }
+                    ScoreReadyContent(
+                        loader = loader,
+                        scores = mapOf(
+                            BundledScoreVariant.OCR to checkNotNull(loaded),
+                            BundledScoreVariant.MIDI to checkNotNull(loaded),
+                        ),
+                        soundFont = checkNotNull(soundFont),
+                        viewMode = ScoreViewMode.OCR,
+                        onEditingChange = {},
+                        allowEditing = false,
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun ScoreMetadata(
     viewMode: ScoreViewMode,
@@ -456,6 +552,7 @@ private fun ScoreReadyContent(
     soundFont: ByteArray,
     viewMode: ScoreViewMode,
     onEditingChange: (Boolean) -> Unit,
+    allowEditing: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     var activeScores by remember(scores) { mutableStateOf(scores) }
@@ -670,25 +767,27 @@ private fun ScoreReadyContent(
             interactionEnabled = editSession == null,
             modifier = Modifier.fillMaxWidth()
         )
-        ScoreEditControls(
-            editing = editSession != null,
-            canStart = viewMode != ScoreViewMode.COMPARE,
-            canUndo = editSession?.canUndo == true,
-            canRedo = editSession?.canRedo == true,
-            isDirty = editSession?.isDirty == true,
-            busy = editBusy,
-            message = editMessage,
-            onStart = ::startEditing,
-            onUndo = {
-                if (editSession?.undo() == true) rebuildEditedScore()
-            },
-            onRedo = {
-                if (editSession?.redo() == true) rebuildEditedScore()
-            },
-            onSave = ::saveEditing,
-            onCancel = ::cancelEditing,
-            modifier = Modifier.fillMaxWidth()
-        )
+        if (allowEditing) {
+            ScoreEditControls(
+                editing = editSession != null,
+                canStart = viewMode != ScoreViewMode.COMPARE,
+                canUndo = editSession?.canUndo == true,
+                canRedo = editSession?.canRedo == true,
+                isDirty = editSession?.isDirty == true,
+                busy = editBusy,
+                message = editMessage,
+                onStart = ::startEditing,
+                onUndo = {
+                    if (editSession?.undo() == true) rebuildEditedScore()
+                },
+                onRedo = {
+                    if (editSession?.redo() == true) rebuildEditedScore()
+                },
+                onSave = ::saveEditing,
+                onCancel = ::cancelEditing,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         if (editSession == null) {
             ScoreTrackControls(
                 trackOptions = trackOptions,

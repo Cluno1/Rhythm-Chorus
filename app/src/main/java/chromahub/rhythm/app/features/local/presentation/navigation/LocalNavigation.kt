@@ -112,7 +112,6 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AddToPla
 
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.UpdateBottomSheet
 import chromahub.rhythm.app.features.local.presentation.screens.AddToPlaylistScreen
 import chromahub.rhythm.app.shared.presentation.components.dialogs.CreatePlaylistDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.QueueActionDialog
@@ -122,6 +121,14 @@ import chromahub.rhythm.app.shared.presentation.components.player.RhythmPlayerSh
 import chromahub.rhythm.app.shared.presentation.components.player.SleepTimerBottomSheetNew
 import chromahub.rhythm.app.features.local.presentation.screens.LibraryScreen
 import chromahub.rhythm.app.features.local.presentation.screens.HomeScreen
+import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackItem
+import chromahub.rhythm.app.features.catalog.domain.RhythmNowPlayingItem
+import chromahub.rhythm.app.features.catalog.domain.RhythmQueueEntry
+import chromahub.rhythm.app.features.catalog.presentation.CatalogServerSettingsScreen
+import chromahub.rhythm.app.features.catalog.presentation.CatalogRemoteScoreScreen
+import chromahub.rhythm.app.features.catalog.presentation.CatalogViewModel
+import chromahub.rhythm.app.features.catalog.presentation.WorkCatalogScreen
+import chromahub.rhythm.app.features.catalog.presentation.WorkDetailScreen
 import chromahub.rhythm.app.features.scores.presentation.ScoreScreen
 import chromahub.rhythm.app.shared.presentation.screens.RhythmStatsScreen
 import chromahub.rhythm.app.features.local.presentation.screens.EqualizerScreen
@@ -158,8 +165,6 @@ import chromahub.rhythm.app.util.HapticType
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel.SortOrder
 import chromahub.rhythm.app.shared.presentation.viewmodel.ThemeViewModel
-import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
-import chromahub.rhythm.app.shared.presentation.viewmodel.rememberAppUpdaterViewModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -228,6 +233,14 @@ sealed class Screen(val route: String) {
     object Player : Screen("player")
     object Settings : Screen("settings")
     object Score : Screen("score")
+    object CatalogSettings : Screen("catalog_settings")
+    object CatalogWorkDetail : Screen("catalog_work/{workId}") {
+        fun createRoute(workId: String) = "catalog_work/${Uri.encode(workId)}"
+    }
+    object CatalogScore : Screen("catalog_score/{workId}/{scoreId}/{revisionId}?title={title}&parts={parts}") {
+        fun createRoute(workId: String, scoreId: String, revisionId: String, title: String, parts: Int) =
+            "catalog_score/${Uri.encode(workId)}/${Uri.encode(scoreId)}/${Uri.encode(revisionId)}?title=${Uri.encode(title)}&parts=$parts"
+    }
     object AddToPlaylist : Screen("add_to_playlist")
     object PlaylistDetail : Screen("playlist/{playlistId}") {
         fun createRoute(playlistId: String) = "playlist/$playlistId"
@@ -417,30 +430,6 @@ fun LocalNavigation(
     appSettings: chromahub.rhythm.app.shared.data.model.AppSettings // Add appSettings parameter
 ) {
     val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
-    // Update monitoring
-    val updaterViewModel: AppUpdaterViewModel = rememberAppUpdaterViewModel()
-    val updateAvailable by updaterViewModel.updateAvailable.collectAsState()
-    val updatesEnabled by appSettings.updatesEnabled.collectAsState()
-    val latestVersion by updaterViewModel.latestVersion.collectAsState()
-    var showUpdateBottomSheet by remember { mutableStateOf(false) }
-    
-    // Track the version we've shown to avoid re-showing for the same version
-    var lastShownVersion by remember { mutableStateOf<String?>(null) }
-    
-    // Monitor for updates and show bottom sheet automatically
-    LaunchedEffect(updateAvailable, updatesEnabled, latestVersion) {
-        if (updateAvailable && updatesEnabled) {
-            val currentVersion = latestVersion?.versionName
-            // Show if we haven't shown this version yet, or if the version changed
-            if (currentVersion != null && currentVersion != lastShownVersion) {
-                showUpdateBottomSheet = true
-                lastShownVersion = currentVersion
-            }
-        } else {
-            // Reset when update is no longer available
-            lastShownVersion = null
-        }
-    }
     // Collect state from ViewModel
     val songs by viewModel.filteredSongs.collectAsState() // Use filtered songs to exclude blacklisted ones
     val allSongs by viewModel.songs.collectAsState() // Keep all songs for specific cases
@@ -808,21 +797,6 @@ fun LocalNavigation(
         }
     }
     
-    // Global Update Bottom Sheet - shows automatically when update is available
-    val isOnUpdatesScreen = currentRoute == Screen.TunerUpdates.route
-    if (showUpdateBottomSheet && !isOnUpdatesScreen) {
-        UpdateBottomSheet(
-            updaterViewModel = updaterViewModel,
-            onDismiss = { showUpdateBottomSheet = false },
-            onUpdateClick = { immediate ->
-                showUpdateBottomSheet = false
-                // Navigate to update settings
-                navController.navigate(Screen.TunerUpdates.route) {
-                    launchSingleTop = true
-                }
-            }
-        )
-    }
 }
 
 @Composable
@@ -883,6 +857,17 @@ private fun LocalNavigationContent(
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val catalogViewModel: CatalogViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val catalogState by catalogViewModel.state.collectAsState()
+    val activeCatalogItem by viewModel.catalogNowPlaying.collectAsState()
+    LaunchedEffect(catalogState.configured) {
+        if (catalogState.configured && viewModel.currentSong.value == null) {
+            kotlinx.coroutines.delay(750)
+            catalogViewModel.restoreQueue().getOrNull()?.let { restored ->
+                viewModel.restoreCatalogQueue(restored.first, restored.second, restored.third)
+            }
+        }
+    }
 
     val appMode by appSettings.appMode.collectAsState()
     val isStreamingMode = appMode == "STREAMING"
@@ -1217,6 +1202,15 @@ private fun LocalNavigationContent(
                         isShuffleEnabled = isShuffleEnabled,
                         repeatMode = repeatMode,
                         isFavorite = if (isStreamingMode) streamingCurrentSong?.let { streamingLikedSongIds.contains(it.id) } ?: false else isFavorite,
+                        isCatalogItem = currentSong.id.startsWith("rhythm-catalog:"),
+                        onCatalogOpenWork = {
+                            activeCatalogItem?.let { item ->
+                                catalogViewModel.openWork(item.workId)
+                                navController.navigate(Screen.CatalogWorkDetail.createRoute(item.workId)) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
                         onToggleFavorite = if (isStreamingMode) {
                             {
                                 val s = streamingCurrentSong
@@ -1662,6 +1656,16 @@ private fun LocalNavigationContent(
                         fadeOut(animationSpec = tween(200))
                     }
                 ) {
+                    WorkCatalogScreen(
+                        state = catalogState,
+                        onRefresh = catalogViewModel::refreshWorks,
+                        onOpenWork = { workId ->
+                            catalogViewModel.openWork(workId)
+                            navController.navigate(Screen.CatalogWorkDetail.createRoute(workId))
+                        },
+                        onConfigure = { navController.navigate(Screen.CatalogSettings.route) },
+                    )
+                    return@composable
                     HomeScreen(
                             musicViewModel = viewModel,
                             songs = songs,
@@ -1810,6 +1814,105 @@ private fun LocalNavigationContent(
                     )
                 }
 
+                composable(Screen.CatalogSettings.route) {
+                    CatalogServerSettingsScreen(
+                        state = catalogState,
+                        onSave = catalogViewModel::saveConnection,
+                        onClear = catalogViewModel::clearConnection,
+                        onBack = {
+                            if (!navController.popBackStack()) navigateToTopLevel(Screen.Home.route)
+                        },
+                    )
+                }
+
+                composable(
+                    route = Screen.CatalogWorkDetail.route,
+                    arguments = listOf(navArgument("workId") { type = NavType.StringType }),
+                ) { backStackEntry ->
+                    val workId = backStackEntry.arguments?.getString("workId")?.let(Uri::decode).orEmpty()
+                    LaunchedEffect(workId) {
+                        if (catalogState.selectedBundle?.work?.id != workId) catalogViewModel.openWork(workId)
+                    }
+                    WorkDetailScreen(
+                        state = catalogState,
+                        onBack = {
+                            catalogViewModel.closeWork()
+                            if (!navController.popBackStack()) navigateToTopLevel(Screen.Home.route)
+                        },
+                        onPlay = { bundle, arrangement, rendition ->
+                            coroutineScope.launch {
+                                catalogViewModel.playback(rendition.id).fold(
+                                    onSuccess = { descriptor ->
+                                        val artist = bundle.work.credits.sortedBy { it.position }
+                                            .joinToString(" · ") { it.displayName }
+                                            .ifBlank { "私有作品库" }
+                                        val playback = CatalogPlaybackItem(
+                                            renditionId = descriptor.renditionId,
+                                            assetId = descriptor.assetId,
+                                            title = bundle.work.canonicalTitle,
+                                            artist = artist,
+                                            arrangementName = arrangement.name,
+                                            playbackUrl = descriptor.relativeUrl,
+                                            cacheKey = descriptor.cacheKey,
+                                            mediaType = descriptor.mediaType,
+                                        )
+                                        val nowPlaying = RhythmNowPlayingItem(
+                                            workId = bundle.work.id,
+                                            arrangementId = arrangement.id,
+                                            renditionId = rendition.id,
+                                            assetId = descriptor.assetId,
+                                            title = bundle.work.canonicalTitle,
+                                            subtitle = "${rendition.label} · ${arrangement.name}",
+                                        )
+                                        viewModel.playCatalogQueue(listOf(RhythmQueueEntry(nowPlaying, playback)))
+                                        navController.navigate(Screen.Player.route) { launchSingleTop = true }
+                                    },
+                                    onFailure = { error ->
+                                        snackbarHostState.showSnackbar(error.message ?: "无法播放此版本")
+                                    },
+                                )
+                            }
+                        },
+                        onOpenScore = { bundle, arrangement, score ->
+                            val revisionId = score.publishedRevisionId ?: score.headRevisionId
+                            if (revisionId == null) {
+                                coroutineScope.launch { snackbarHostState.showSnackbar("这份谱面没有可用修订") }
+                            } else {
+                                navController.navigate(
+                                    Screen.CatalogScore.createRoute(
+                                        bundle.work.id,
+                                        score.id,
+                                        revisionId,
+                                        "${bundle.work.canonicalTitle} · ${score.label}",
+                                        arrangement.parts.size,
+                                    ),
+                                ) { launchSingleTop = true }
+                            }
+                        },
+                    )
+                }
+
+                composable(
+                    route = Screen.CatalogScore.route,
+                    arguments = listOf(
+                        navArgument("workId") { type = NavType.StringType },
+                        navArgument("scoreId") { type = NavType.StringType },
+                        navArgument("revisionId") { type = NavType.StringType },
+                        navArgument("title") { type = NavType.StringType; defaultValue = "远程谱面" },
+                        navArgument("parts") { type = NavType.IntType; defaultValue = 0 },
+                    ),
+                ) { backStackEntry ->
+                    CatalogRemoteScoreScreen(
+                        revisionId = backStackEntry.arguments?.getString("revisionId")?.let(Uri::decode).orEmpty(),
+                        title = backStackEntry.arguments?.getString("title")?.let(Uri::decode) ?: "远程谱面",
+                        expectedPartCount = backStackEntry.arguments?.getInt("parts") ?: 0,
+                        viewModel = catalogViewModel,
+                        onBack = {
+                            if (!navController.popBackStack()) navigateToTopLevel(Screen.Home.route)
+                        },
+                    )
+                }
+
                 composable(
                     Screen.Search.route,
                     enterTransition = {
@@ -1830,6 +1933,18 @@ private fun LocalNavigationContent(
                                 )
                     }
                 ) {
+                    WorkCatalogScreen(
+                        state = catalogState,
+                        onRefresh = catalogViewModel::refreshWorks,
+                        onOpenWork = { workId ->
+                            catalogViewModel.openWork(workId)
+                            navController.navigate(Screen.CatalogWorkDetail.createRoute(workId))
+                        },
+                        onConfigure = { navController.navigate(Screen.CatalogSettings.route) },
+                        onBack = { navigateToLanding() },
+                        searchInitiallyVisible = true,
+                    )
+                    return@composable
                     val streamingViewModel: chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
                     SlideUpCornerWrapper {
@@ -2927,6 +3042,16 @@ private fun LocalNavigationContent(
                         }
                     }
                 ) {
+                    WorkCatalogScreen(
+                        state = catalogState,
+                        onRefresh = catalogViewModel::refreshWorks,
+                        onOpenWork = { workId ->
+                            catalogViewModel.openWork(workId)
+                            navController.navigate(Screen.CatalogWorkDetail.createRoute(workId))
+                        },
+                        onConfigure = { navController.navigate(Screen.CatalogSettings.route) },
+                    )
+                    return@composable
                     val tabArg = it.arguments?.getString("tab") ?: "songs"
                     val initialTab = when (tabArg) {
                         "playlists" -> LibraryTab.PLAYLISTS

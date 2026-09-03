@@ -1447,6 +1447,10 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
     
     private fun toggleCurrentSongFavorite() {
         val currentMediaItem = player.currentMediaItem
+        if (currentMediaItem?.mediaId?.startsWith("rhythm-catalog:") == true) {
+            Log.w(TAG, "Ignoring favorite mutation for managed catalog media")
+            return
+        }
         val songId = currentMediaItem?.mediaId?.takeIf { it.isNotEmpty() } ?: run {
             // FALLBACK: Read song_id from widget preferences if player has no active song
             val prefs = getSharedPreferences("widget_prefs", Context.MODE_PRIVATE)
