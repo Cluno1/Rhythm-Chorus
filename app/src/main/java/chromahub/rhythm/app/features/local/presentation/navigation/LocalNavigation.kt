@@ -423,6 +423,7 @@ fun LocalNavigation(
     appSettings: chromahub.rhythm.app.shared.data.model.AppSettings // Add appSettings parameter
 ) {
     val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
+    val respectAlbumOnPlay by appSettings.respectAlbumOnPlay.collectAsState()
     // Update monitoring
     val updaterViewModel: AppUpdaterViewModel = rememberAppUpdaterViewModel()
     val updateAvailable by updaterViewModel.updateAvailable.collectAsState()
@@ -1131,6 +1132,7 @@ private fun LocalNavigationContent(
 
 
     val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
+    val respectAlbumOnPlay by appSettings.respectAlbumOnPlay.collectAsState()
 
     Scaffold(
         modifier = modifier,
@@ -2390,7 +2392,7 @@ private fun LocalNavigationContent(
                             }
                         },
                         onSongClick = { localSong ->
-                            val queue = if (albumSongs.isNotEmpty()) albumSongs else {
+                            val queue = if (respectAlbumOnPlay && albumSongs.isNotEmpty()) albumSongs else {
                                 albumSongsById[localSong.id]?.let { listOf(it) }.orEmpty()
                             }
                             if (queue.isNotEmpty()) {
@@ -2615,7 +2617,7 @@ private fun LocalNavigationContent(
                             }
                         },
                         onSongClick = { localSong ->
-                            val queue = if (artistSongs.isNotEmpty()) artistSongs else {
+                            val queue = if (respectAlbumOnPlay && artistSongs.isNotEmpty()) artistSongs else {
                                 artistSongsById[localSong.id]?.let { listOf(it) }.orEmpty()
                             }
                             if (queue.isNotEmpty()) {
@@ -2810,13 +2812,23 @@ private fun LocalNavigationContent(
                             }
                         },
                         onSongClick = { localSong ->
-                            val index = playlistTracks.indexOfFirst { it.id == localSong.id }
-                            if (index >= 0) {
-                                streamingMusicViewModel.playQueue(
-                                    queue = playlistTracks,
-                                    startIndex = index,
-                                    shuffle = false
-                                )
+                            if (respectAlbumOnPlay) {
+                                val index = playlistTracks.indexOfFirst { it.id == localSong.id }
+                                if (index >= 0) {
+                                    streamingMusicViewModel.playQueue(
+                                        queue = playlistTracks,
+                                        startIndex = index,
+                                        shuffle = false
+                                    )
+                                }
+                            } else {
+                                playlistTracks.firstOrNull { it.id == localSong.id }?.let { single ->
+                                    streamingMusicViewModel.playQueue(
+                                        queue = listOf(single),
+                                        startIndex = 0,
+                                        shuffle = false
+                                    )
+                                }
                             }
                         },
                         onPlaySongFromPlaylist = { localSong, localQueue ->
@@ -3090,8 +3102,12 @@ private fun LocalNavigationContent(
                         isPlaying = isPlaying,
                         onSongClick = { song ->
                             if (isStreamingMode) {
-                                val index = streamingMappedSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
-                                playStreamingMappedQueue(streamingMappedSongs, index, false)
+                                if (respectAlbumOnPlay) {
+                                    val index = streamingMappedSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
+                                    playStreamingMappedQueue(streamingMappedSongs, index, false)
+                                } else {
+                                    playStreamingMappedQueue(listOf(song), 0, false)
+                                }
                             } else {
                                 onPlaySong(song)
                             }
@@ -3557,6 +3573,13 @@ private fun LocalNavigationContent(
                             navigateBackOrToLanding()
                         },
                         onSongClick = onPlaySong,
+                        onSongClickInContext = { song, contextSongs ->
+                            if (respectAlbumOnPlay) {
+                                viewModel.playSongFromContext(song, contextSongs, artistName)
+                            } else {
+                                viewModel.playSong(song)
+                            }
+                        },
                         onAlbumClick = { album ->
                             navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
                         },
@@ -3767,6 +3790,13 @@ private fun LocalNavigationContent(
                             navigateBackOrToLanding()
                         },
                         onSongClick = onPlaySong,
+                        onSongClickInContext = { song, contextSongs ->
+                            if (respectAlbumOnPlay) {
+                                viewModel.playSongFromContext(song, contextSongs, albumName)
+                            } else {
+                                viewModel.playSong(song)
+                            }
+                        },
                         onPlayAll = { songs ->
                             if (songs.isNotEmpty()) {
                                 viewModel.playSongs(songs)

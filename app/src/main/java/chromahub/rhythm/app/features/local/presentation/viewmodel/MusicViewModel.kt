@@ -100,8 +100,8 @@ import com.google.gson.reflect.TypeToken
 import java.util.Calendar
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
-import chromahub.rhythm.app.shared.data.model.LyricsData // Import LyricsData
-import chromahub.rhythm.app.util.PendingWriteRequest // Import for metadata write requests
+import chromahub.rhythm.app.shared.data.model.LyricsData
+import chromahub.rhythm.app.util.PendingWriteRequest
 import chromahub.rhythm.app.util.PendingBatchWriteRequest
 import chromahub.rhythm.app.util.PendingLyricsWriteRequest
 import chromahub.rhythm.app.util.PendingDeleteRequest
@@ -112,7 +112,7 @@ import chromahub.rhythm.app.util.LyricLine
 import chromahub.rhythm.app.util.LyricsParser
 import chromahub.rhythm.app.util.ServiceStartUtils
 import chromahub.rhythm.app.utils.StatusBroadcaster
-import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository // Import for enhanced stats tracking
+import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository
 
 class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -5000,24 +5000,31 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         val pref = appSettings.contextQueuePreference.value
         val maxSize = appSettings.contextQueueSize.value.coerceAtLeast(1)
 
-        // If the song appears in recently played, prefer that short recent list
-        if (_recentlyPlayed.value.any { it.id == song.id }) {
+        fun recentlyPlayedQueueOrNull(): List<Song>? {
+            if (!_recentlyPlayed.value.any { it.id == song.id }) return null
+            val startIndex = _recentlyPlayed.value.indexOfFirst { it.id == song.id }
+            if (startIndex == -1) return null
             val recentlyPlayedSongs = _recentlyPlayed.value.take(20)
-            val startIndex = recentlyPlayedSongs.indexOfFirst { it.id == song.id }
-            if (startIndex != -1) {
-                val reordered = listOf(song) + recentlyPlayedSongs.filter { it.id != song.id }
-                Log.d(TAG, "Created queue from recently played with ${reordered.size} songs")
-                return reordered.take(maxSize)
-            }
+            val reordered = listOf(song) + recentlyPlayedSongs.filter { it.id != song.id }
+            Log.d(TAG, "Created queue from recently played with ${reordered.size} songs")
+            return reordered.take(maxSize)
         }
 
-        // Album context (preserve natural ordering)
-        val albumSongs = _songs.value.filter { it.album == song.album && it.artist == song.artist }
-        if (albumSongs.size > 1) {
+        fun albumQueueOrNull(): List<Song>? {
+            val albumSongs = _songs.value.filter { it.album == song.album && it.artist == song.artist }
+            if (albumSongs.size <= 1) return null
             val sortedAlbumSongs = albumSongs.sortedWith { a, b -> compareByDiscThenTrack(a, b) }
             val reordered = listOf(song) + sortedAlbumSongs.filter { it.id != song.id }
             Log.d(TAG, "Created queue from album '${song.album}' with ${reordered.size} songs")
             return reordered.take(maxSize)
+        }
+
+        if (appSettings.respectAlbumOnPlay.value) {
+            albumQueueOrNull()?.let { return it }
+            recentlyPlayedQueueOrNull()?.let { return it }
+        } else {
+            recentlyPlayedQueueOrNull()?.let { return it }
+            albumQueueOrNull()?.let { return it }
         }
 
         // Gather candidate pools

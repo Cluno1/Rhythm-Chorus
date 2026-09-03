@@ -183,6 +183,7 @@ fun AlbumDetailScreen(
     albumName: String,
     onBack: () -> Unit,
     onSongClick: (Song) -> Unit,
+    onSongClickInContext: (Song, List<Song>) -> Unit = { song, _ -> onSongClick(song) },
     onPlayAll: (List<Song>) -> Unit,
     onShufflePlay: (List<Song>) -> Unit,
     onAddToQueue: (Song) -> Unit,
@@ -641,7 +642,7 @@ fun AlbumDetailScreen(
                                                 currentSong = currentSong,
                                                 isPlaying = isPlaying,
                                                 useHoursFormat = useHoursFormat,
-                                                onClick = { onSongClick(song) },
+                                                onClick = { onSongClickInContext(song, displaySongs) },
                                                 onMoreClick = {
                                                     selectedSongForOptions = song
                                                     showSongOptionsSheet = true
@@ -1122,7 +1123,7 @@ fun AlbumDetailScreen(
                                         currentSong = currentSong,
                                         isPlaying = isPlaying,
                                         useHoursFormat = useHoursFormat,
-                                        onClick = { onSongClick(song) },
+                                        onClick = { onSongClickInContext(song, displaySongs) },
                                         onMoreClick = {
                                             selectedSongForOptions = song
                                             showSongOptionsSheet = true

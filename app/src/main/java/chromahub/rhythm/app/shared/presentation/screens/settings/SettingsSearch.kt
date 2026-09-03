@@ -1842,19 +1842,19 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
         ))
         add(SearchableSettingItem(
             id = "queue_auto_add",
-            title = context.getString(R.string.settings_queue_auto_add),
-            description = context.getString(R.string.settings_queue_auto_add_desc),
-            keywords = listOf("auto queue", "add", "automatic", "playlist"),
-            icon = RhythmIcons.Queue,
+            title = context.getString(R.string.settings_auto_queue),
+            description = context.getString(R.string.settings_auto_queue_desc),
+            keywords = listOf("auto add", "auto queue", "add", "related", "similar songs", "automatic"),
+            icon = RhythmIcons.AddToQueue,
             route = SettingsRoutes.QUEUE,
             parentScreen = "Queue",
             settingKey = "autoAddToQueue"
         ))
         add(SearchableSettingItem(
             id = "queue_clear_on_new",
-            title = context.getString(R.string.settings_queue_clear_on_new),
-            description = context.getString(R.string.settings_queue_clear_on_new_desc),
-            keywords = listOf("clear queue", "new song", "replace", "reset"),
+            title = context.getString(R.string.settings_clear_queue_on_new_song),
+            description = context.getString(R.string.settings_clear_queue_on_new_song_desc),
+            keywords = listOf("clear queue", "new song", "replace", "reset", "empty", "fresh"),
             icon = RhythmIcons.Delete,
             route = SettingsRoutes.QUEUE,
             parentScreen = "Queue",
@@ -1874,8 +1874,8 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             id = "queue_action_dialog",
             title = context.getString(R.string.settings_queue_action_dialog),
             description = context.getString(R.string.settings_queue_action_dialog_desc),
-            keywords = listOf("queue dialog", "ask", "prompt", "action", "replace queue"),
-            icon = RhythmIcons.Queue,
+            keywords = listOf("queue", "new song", "playing", "ask", "prompt", "add", "dialog"),
+            icon = MaterialSymbolIcon("help", filled = true),
             route = SettingsRoutes.QUEUE,
             parentScreen = "Queue",
             settingKey = "showQueueDialog"
@@ -1903,9 +1903,9 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
         add(SearchableSettingItem(
             id = "queue_context_preference",
             title = context.getString(R.string.settings_context_queue_preference),
-            description = context.getString(R.string.settings_queue_context_preference_desc),
-            keywords = listOf("context queue", "preference", "artist first", "genre first", "auto queue", "sort"),
-            icon = MaterialSymbolIcon("tune"),
+            description = context.getString(R.string.settings_context_queue_preference_desc),
+            keywords = listOf("auto add", "similar", "related", "artist", "genre", "preference", "match"),
+            icon = MaterialSymbolIcon("tune", filled = true),
             route = SettingsRoutes.QUEUE,
             parentScreen = "Queue",
             settingKey = "contextQueuePreference"
@@ -2021,33 +2021,23 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
         ))
         add(SearchableSettingItem(
             id = "queue_persistence",
-            title = context.getString(R.string.settings_queue_persistence),
-            description = context.getString(R.string.settings_queue_persistence_desc),
-            keywords = listOf("queue", "remember", "save", "restore", "persistence", "restart", "app"),
+            title = context.getString(R.string.settings_remember_queue),
+            description = context.getString(R.string.settings_remember_queue_desc),
+            keywords = listOf("queue", "remember", "save", "restore", "persistence", "restart", "reopen", "app"),
             icon = RhythmIcons.Queue,
             route = SettingsRoutes.QUEUE,
             parentScreen = "Queue",
             settingKey = "queuePersistenceEnabled"
         ))
         add(SearchableSettingItem(
-            id = "playlist_action_dialog",
-            title = context.getString(R.string.settings_playlist_action_dialog),
-            description = context.getString(R.string.settings_playlist_action_dialog_desc),
-            keywords = listOf("playlist", "action", "dialog", "click", "behavior", "load", "play"),
-            icon = RhythmIcons.Queue,
+            id = "respect_album_on_play",
+            title = context.getString(R.string.settings_respect_album_on_play),
+            description = context.getString(R.string.settings_respect_album_on_play_desc),
+            keywords = listOf("album", "artist", "context", "queue", "play", "respect"),
+            icon = RhythmIcons.Album,
             route = SettingsRoutes.QUEUE,
             parentScreen = "Queue",
-            settingKey = "playlistClickBehavior"
-        ))
-        add(SearchableSettingItem(
-            id = "list_queue_action_dialog",
-            title = context.getString(R.string.settings_list_queue_action_dialog),
-            description = context.getString(R.string.settings_list_queue_action_dialog_desc),
-            keywords = listOf("queue", "play all", "section", "replace", "play next", "add to end", "behavior", "rule"),
-            icon = RhythmIcons.Queue,
-            route = SettingsRoutes.QUEUE,
-            parentScreen = "Queue",
-            settingKey = "listQueueActionBehavior"
+            settingKey = "respectAlbumOnPlay"
         ))
         
         // ======================== LABS & RELOCATED SETTINGS ========================

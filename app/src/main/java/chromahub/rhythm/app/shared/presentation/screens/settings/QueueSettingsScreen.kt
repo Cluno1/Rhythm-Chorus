@@ -67,6 +67,7 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
 
     val shuffleUsesExoplayer by appSettings.shuffleUsesExoplayer.collectAsState()
     val autoAddToQueue by appSettings.autoAddToQueue.collectAsState()
+    val respectAlbumOnPlay by appSettings.respectAlbumOnPlay.collectAsState()
     val clearQueueOnNewSong by appSettings.clearQueueOnNewSong.collectAsState()
     val hidePlayedQueueSongs by appSettings.hidePlayedQueueSongs.collectAsState()
     val contextQueuePreference by appSettings.contextQueuePreference.collectAsState()
@@ -78,11 +79,9 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
         "ARTIST_FIRST"
     }
     val showQueueDialog by appSettings.showQueueDialog.collectAsState()
-    val playlistClickBehavior by appSettings.playlistClickBehavior.collectAsState(initial = "ask")
     val listQueueActionBehavior by appSettings.listQueueActionBehavior.collectAsState(initial = "replace")
     val queuePersistenceEnabled by appSettings.queuePersistenceEnabled.collectAsState()
 
-    var showPlaylistBehaviorDialog by remember { mutableStateOf(false) }
     var showListQueueBehaviorDialog by remember { mutableStateOf(false) }
     var showQueueDialogSettingDialog by remember { mutableStateOf(false) }
     var showContextPrefBottomSheet by remember { mutableStateOf(false) }
@@ -98,6 +97,50 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                 items = buildList {
                     add(
                         SettingItem(
+                            MaterialSymbolIcon("album", filled = true),
+                            context.getString(R.string.settings_respect_album_on_play),
+                            context.getString(R.string.settings_respect_album_on_play_desc),
+                            toggleState = respectAlbumOnPlay,
+                            onToggleChange = { appSettings.setRespectAlbumOnPlay(it) }
+                        )
+                    )
+                    add(
+                        SettingItem(
+                            RhythmIcons.Sort,
+                            context.getString(R.string.settings_list_queue_action_dialog),
+                            when (listQueueActionBehavior) {
+                                "ask" -> context.getString(R.string.settings_list_queue_action_ask)
+                                "play_next" -> context.getString(R.string.settings_list_queue_action_play_next)
+                                "add_to_end" -> context.getString(R.string.settings_list_queue_action_add_to_end)
+                                else -> context.getString(R.string.settings_list_queue_action_replace)
+                            },
+                            onClick = { showListQueueBehaviorDialog = true }
+                        )
+                    )
+                    add(
+                        SettingItem(
+                            MaterialSymbolIcon("help", filled = true),
+                            context.getString(R.string.settings_queue_action_dialog),
+                            when {
+                                clearQueueOnNewSong -> context.getString(R.string.settings_queue_action_dialog_desc_disabled)
+                                showQueueDialog -> context.getString(R.string.settings_queue_action_dialog_desc_ask)
+                                else -> context.getString(R.string.settings_queue_action_dialog_desc_always)
+                            },
+                            onClick = { showQueueDialogSettingDialog = true },
+                            enabled = !clearQueueOnNewSong
+                        )
+                    )
+                    add(
+                        SettingItem(
+                            RhythmIcons.Delete,
+                            context.getString(R.string.settings_clear_queue_on_new_song),
+                            context.getString(R.string.settings_clear_queue_on_new_song_desc),
+                            toggleState = clearQueueOnNewSong,
+                            onToggleChange = { appSettings.setClearQueueOnNewSong(it) }
+                        )
+                    )
+                    add(
+                        SettingItem(
                             RhythmIcons.Shuffle,
                             context.getString(R.string.settings_use_exoplayer_shuffle),
                             context.getString(R.string.settings_use_exoplayer_shuffle_desc),
@@ -105,6 +148,11 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                             onToggleChange = { appSettings.setShuffleUsesExoplayer(it) }
                         )
                     )
+                }
+            ),
+            SettingGroup(
+                title = context.getString(R.string.settings_queue_autofill),
+                items = buildList {
                     add(
                         SettingItem(
                             RhythmIcons.AddToQueue,
@@ -135,69 +183,20 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                             enabled = autoAddToQueue
                         )
                     )
-                    add(
-                        SettingItem(
-                            RhythmIcons.Delete,
-                            context.getString(R.string.settings_clear_queue_on_new_song),
-                            context.getString(R.string.settings_clear_queue_on_new_song_desc),
-                            toggleState = clearQueueOnNewSong,
-                            onToggleChange = { appSettings.setClearQueueOnNewSong(it) }
-                        )
-                    )
-                    add(
-                        SettingItem(
-                            RhythmIcons.Queue,
-                            context.getString(R.string.settings_show_played_queue_songs),
-                            context.getString(R.string.settings_show_played_queue_songs_desc),
-                            toggleState = showAlreadyPlayedSongsInQueue,
-                            onToggleChange = { appSettings.setHidePlayedQueueSongs(!it) }
-                        )
-                    )
-                    add(
-                        SettingItem(
-                            MaterialSymbolIcon("help", filled = true),
-                            context.getString(R.string.settings_queue_action_dialog),
-                            when {
-                                clearQueueOnNewSong -> context.getString(R.string.settings_queue_action_dialog_desc_disabled)
-                                showQueueDialog -> context.getString(R.string.settings_queue_action_dialog_desc_ask)
-                                else -> context.getString(R.string.settings_queue_action_dialog_desc_always)
-                            },
-                            onClick = { showQueueDialogSettingDialog = true },
-                            enabled = !clearQueueOnNewSong
-                        )
-                    )
-                    add(
-                        SettingItem(
-                            RhythmIcons.Queue,
-                            context.getString(R.string.settings_playlist_action_dialog),
-                            when (playlistClickBehavior) {
-                                "play_all" -> context.getString(R.string.settings_playlist_action_play_all)
-                                "play_one" -> context.getString(R.string.settings_playlist_action_play_one)
-                                else -> context.getString(R.string.settings_playlist_action_ask)
-                            },
-                            onClick = { showPlaylistBehaviorDialog = true }
-                        )
-                    )
-                    add(
-                        SettingItem(
-                            RhythmIcons.Sort,
-                            context.getString(R.string.settings_list_queue_action_dialog),
-                            when (listQueueActionBehavior) {
-                                "ask" -> context.getString(R.string.settings_list_queue_action_ask)
-                                "play_next" -> context.getString(R.string.settings_list_queue_action_play_next)
-                                "add_to_end" -> context.getString(R.string.settings_list_queue_action_add_to_end)
-                                else -> context.getString(R.string.settings_list_queue_action_replace)
-                            },
-                            onClick = { showListQueueBehaviorDialog = true }
-                        )
-                    )
                 }
             ),
             SettingGroup(
-                title = context.getString(R.string.settings_playback_persistence),
+                title = context.getString(R.string.settings_queue_display),
                 items = listOf(
                     SettingItem(
                         RhythmIcons.Queue,
+                        context.getString(R.string.settings_show_played_queue_songs),
+                        context.getString(R.string.settings_show_played_queue_songs_desc),
+                        toggleState = showAlreadyPlayedSongsInQueue,
+                        onToggleChange = { appSettings.setHidePlayedQueueSongs(!it) }
+                    ),
+                    SettingItem(
+                        MaterialSymbolIcon("history", filled = true),
                         context.getString(R.string.settings_remember_queue),
                         context.getString(R.string.settings_remember_queue_desc),
                         toggleState = queuePersistenceEnabled,
@@ -323,294 +322,6 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
         )
     }
 
-    // Playlist Click Behavior Dialog
-    if (showPlaylistBehaviorDialog) {
-        val haptic = LocalHapticFeedback.current
-        val scope = rememberCoroutineScope()
-        val playlistSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-
-        RhythmAdaptiveModalSheet(
-            adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
-            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
-            onDismissRequest = { showPlaylistBehaviorDialog = false },
-            sheetState = playlistSheetState,
-            dragHandle = {
-                BottomSheetDefaults.DragHandle(
-                    color = MaterialTheme.colorScheme.primary
-                )
-            },
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        ) {
-            StandardBottomSheetHeader(
-                title = context.getString(R.string.playlist_action_title),
-                subtitle = context.getString(R.string.playlist_action_desc),
-                visible = true
-            )
-
-            val scrollState = rememberScrollState()
-
-            AdaptiveSheetScrollContainer(
-                scrollState = scrollState,
-                modifier = Modifier.fillMaxWidth()
-            ) { endPadding ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(scrollState)
-                        .padding(start = 24.dp, end = 24.dp + endPadding, bottom = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Option 1: Ask each time
-                    Card(
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            scope.launch {
-                                appSettings.setPlaylistClickBehavior("ask")
-                                showPlaylistBehaviorDialog = false
-                            }
-                        },
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (playlistClickBehavior == "ask")
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            else
-                                MaterialTheme.colorScheme.surfaceContainerHigh
-                        ),
-                        shape = RoundedCornerShape(24.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = if (playlistClickBehavior == "ask")
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.surfaceVariant,
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    Icon(
-                                        imageVector = MaterialSymbolIcon("help", filled = true),
-                                        contentDescription = null,
-                                        tint = if (playlistClickBehavior == "ask")
-                                            MaterialTheme.colorScheme.onPrimary
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.width(16.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = context.getString(R.string.playlist_ask_each_time),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (playlistClickBehavior == "ask")
-                                        MaterialTheme.colorScheme.primaryContainer
-                                    else
-                                        MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = context.getString(R.string.playlist_ask_each_time_desc),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = if (playlistClickBehavior == "ask")
-                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            if (playlistClickBehavior == "ask") {
-                                Icon(
-                                    imageVector = RhythmIcons.CheckCircle,
-                                    contentDescription = context.getString(R.string.ui_selected),
-                                    tint = MaterialTheme.colorScheme.primaryContainer,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    // Option 2: Load entire playlist
-                    Card(
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            scope.launch {
-                                appSettings.setPlaylistClickBehavior("play_all")
-                                showPlaylistBehaviorDialog = false
-                            }
-                        },
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (playlistClickBehavior == "play_all")
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            else
-                                MaterialTheme.colorScheme.surfaceContainerHigh
-                        ),
-                        shape = RoundedCornerShape(24.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = if (playlistClickBehavior == "play_all")
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.surfaceVariant,
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Queue,
-                                        contentDescription = null,
-                                        tint = if (playlistClickBehavior == "play_all")
-                                            MaterialTheme.colorScheme.onPrimary
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.width(16.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = context.getString(R.string.playlist_action_load_title),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (playlistClickBehavior == "play_all")
-                                        MaterialTheme.colorScheme.primaryContainer
-                                    else
-                                        MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = context.getString(R.string.playlist_action_load_desc),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = if (playlistClickBehavior == "play_all")
-                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            if (playlistClickBehavior == "play_all") {
-                                Icon(
-                                    imageVector = RhythmIcons.CheckCircle,
-                                    contentDescription = stringResource(R.string.streaming_selected),
-                                    tint = MaterialTheme.colorScheme.primaryContainer,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    // Option 3: Play only this song
-                    Card(
-                        onClick = {
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            scope.launch {
-                                appSettings.setPlaylistClickBehavior("play_one")
-                                showPlaylistBehaviorDialog = false
-                            }
-                        },
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (playlistClickBehavior == "play_one")
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            else
-                                MaterialTheme.colorScheme.surfaceContainerHigh
-                        ),
-                        shape = RoundedCornerShape(24.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = if (playlistClickBehavior == "play_one")
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.surfaceVariant,
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Play,
-                                        contentDescription = null,
-                                        tint = if (playlistClickBehavior == "play_one")
-                                            MaterialTheme.colorScheme.onPrimary
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.width(16.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = context.getString(R.string.playlist_action_single_title),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (playlistClickBehavior == "play_one")
-                                        MaterialTheme.colorScheme.primaryContainer
-                                    else
-                                        MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = context.getString(R.string.playlist_action_single_desc),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = if (playlistClickBehavior == "play_one")
-                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            if (playlistClickBehavior == "play_one") {
-                                Icon(
-                                    imageVector = RhythmIcons.CheckCircle,
-                                    contentDescription = stringResource(R.string.streaming_selected),
-                                    tint = MaterialTheme.colorScheme.primaryContainer,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // List Queue Behavior Dialog
     if (showListQueueBehaviorDialog) {
         val haptic = LocalHapticFeedback.current
         val scope = rememberCoroutineScope()
@@ -759,7 +470,6 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
         }
     }
 
-    // Show Queue Dialog Setting Dialog
     if (showQueueDialogSettingDialog) {
         val haptic = LocalHapticFeedback.current
         val scope = rememberCoroutineScope()
@@ -796,7 +506,6 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                         .padding(start = 24.dp, end = 24.dp + endPadding, bottom = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Option 1: Ask each time (show dialog)
                     Card(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
@@ -878,7 +587,6 @@ fun QueueSettingsScreen(onBackClick: () -> Unit) {
                         }
                     }
 
-                    // Option 2: Always play selected song
                     Card(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)

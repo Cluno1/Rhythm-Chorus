@@ -109,6 +109,7 @@ fun ArtistDetailScreen(
     artistName: String,
     onBack: () -> Unit,
     onSongClick: (Song) -> Unit,
+    onSongClickInContext: (Song, List<Song>) -> Unit = { song, _ -> onSongClick(song) },
     onAlbumClick: (Album) -> Unit,
     onPlayAll: (List<Song>) -> Unit,
     onShufflePlay: (List<Song>) -> Unit,
@@ -611,7 +612,7 @@ fun ArtistDetailScreen(
                                             totalCount = artistSongs.size,
                                             onClick = {
                                                 HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                                onSongClick(song)
+                                                onSongClickInContext(song, artistSongs)
                                                 onPlayerClick()
                                             },
                                             onAddToQueue = {
@@ -1031,7 +1032,7 @@ fun ArtistDetailScreen(
                                             totalCount = artistSongs.size,
                                             onClick = {
                                                 HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                                onSongClick(song)
+                                                onSongClickInContext(song, artistSongs)
                                                 onPlayerClick()
                                             },
                                             onAddToQueue = {

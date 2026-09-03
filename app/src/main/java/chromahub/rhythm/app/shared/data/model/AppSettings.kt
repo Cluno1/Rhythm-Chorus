@@ -410,7 +410,6 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PINNED_FOLDERS = "pinned_folders"
         
         // Playlist Playback Behavior
-        private const val KEY_PLAYLIST_CLICK_BEHAVIOR = "playlist_click_behavior" // "ask", "play_all", "play_one"
         
         // Backup and Restore
         private const val KEY_LAST_BACKUP_TIMESTAMP = "last_backup_timestamp"
@@ -451,6 +450,7 @@ class AppSettings private constructor(context: Context) {
         // Queue & Playback Behavior
         private const val KEY_SHUFFLE_USES_EXOPLAYER = "shuffle_uses_exoplayer"
         private const val KEY_AUTO_ADD_TO_QUEUE = "auto_add_to_queue"
+        private const val KEY_RESPECT_ALBUM_ON_PLAY = "respect_album_on_play"
         private const val KEY_CLEAR_QUEUE_ON_NEW_SONG = "clear_queue_on_new_song"
         private const val KEY_CONTEXT_QUEUE_PREFERENCE = "context_queue_preference" // ARTIST_FIRST | GENRE_FIRST | ARTIST_THEN_GENRE
         private const val KEY_CONTEXT_QUEUE_PERSISTENCE = "context_queue_persistence" // EPHEMERAL | PERSISTENT
@@ -1148,6 +1148,8 @@ class AppSettings private constructor(context: Context) {
     
     private val _autoAddToQueue = MutableStateFlow(prefs.getBoolean(KEY_AUTO_ADD_TO_QUEUE, true))
     val autoAddToQueue: StateFlow<Boolean> = _autoAddToQueue.asStateFlow()
+    private val _respectAlbumOnPlay = MutableStateFlow(prefs.getBoolean(KEY_RESPECT_ALBUM_ON_PLAY, true))
+    val respectAlbumOnPlay: StateFlow<Boolean> = _respectAlbumOnPlay.asStateFlow()
     
     private val _clearQueueOnNewSong = MutableStateFlow(prefs.getBoolean(KEY_CLEAR_QUEUE_ON_NEW_SONG, false))
     val clearQueueOnNewSong: StateFlow<Boolean> = _clearQueueOnNewSong.asStateFlow()
@@ -2025,10 +2027,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     )
     val pinnedFolders: StateFlow<List<String>> = _pinnedFolders.asStateFlow()
 
-    // Playlist Click Behavior
-    private val _playlistClickBehavior = MutableStateFlow(prefs.getString(KEY_PLAYLIST_CLICK_BEHAVIOR, "ask") ?: "ask")
-    val playlistClickBehavior: StateFlow<String> = _playlistClickBehavior.asStateFlow()
-
     // Backup and Restore Settings
     private val _lastBackupTimestamp = MutableStateFlow(safeLong(KEY_LAST_BACKUP_TIMESTAMP, 0L))
     val lastBackupTimestamp: StateFlow<Long> = _lastBackupTimestamp.asStateFlow()
@@ -2859,6 +2857,11 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     fun setAutoAddToQueue(autoAdd: Boolean) {
         prefs.edit { putBoolean(KEY_AUTO_ADD_TO_QUEUE, autoAdd) }
         _autoAddToQueue.value = autoAdd
+    }
+    
+    fun setRespectAlbumOnPlay(respect: Boolean) {
+        prefs.edit { putBoolean(KEY_RESPECT_ALBUM_ON_PLAY, respect) }
+        _respectAlbumOnPlay.value = respect
     }
     
     fun setClearQueueOnNewSong(clearQueue: Boolean) {
@@ -4044,13 +4047,6 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _pinnedFolders.value = emptyList()
     }
     
-    // Playlist Click Behavior Methods
-    fun setPlaylistClickBehavior(behavior: String) {
-        if (behavior in listOf("ask", "play_all", "play_one")) {
-            prefs.edit { putString(KEY_PLAYLIST_CLICK_BEHAVIOR, behavior) }
-            _playlistClickBehavior.value = behavior
-        }
-    }
     
     // Helper method to check if a song would be filtered by current whitelist rules
     fun isEffectivelyWhitelisted(songId: String, songPath: String?): Boolean {
