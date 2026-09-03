@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.features.catalog.domain.WorkSummary
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
@@ -110,13 +111,36 @@ private fun WorkCard(work: WorkSummary, onOpenWork: (String) -> Unit) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(work.canonicalTitle, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             val credits = work.credits.sortedBy { it.position }.joinToString(" · ") { it.displayName }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(credits.ifBlank { "未标注作者" }, style = MaterialTheme.typography.bodyMedium)
-                work.language?.let { Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Text(
+                    credits.ifBlank { "未标注作者" },
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                work.language.toDisplayLanguage()?.let {
+                    Text(
+                        it,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
             Text("修订 ${work.revision} · ${work.status}", style = MaterialTheme.typography.bodySmall)
         }
     }
+}
+
+private fun String?.toDisplayLanguage(): String? = when (this?.trim()?.lowercase()) {
+    "zh-hant", "zh-tw", "zh-hk" -> "繁中"
+    "zh-hans", "zh-cn", "zh-sg" -> "简中"
+    "zh" -> "中文"
+    "en" -> "English"
+    else -> null
 }
 
 @Composable
