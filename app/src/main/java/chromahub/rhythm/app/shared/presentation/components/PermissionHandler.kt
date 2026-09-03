@@ -64,6 +64,7 @@ import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
 import chromahub.rhythm.app.shared.presentation.viewmodel.rememberAppUpdaterViewModel
 import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
+import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 
@@ -101,6 +102,7 @@ fun PermissionHandler(
     // - Android 11 and below: READ_EXTERNAL_STORAGE
     // Note: READ_MEDIA_IMAGES is optional for album art and NOT required
     val storagePermissions = when {
+        !CatalogPlaybackPolicy.DEVICE_LIBRARY_ENABLED -> emptyList()
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
             // Android 13, 14, 15, 16+ (API 33+) - granular media permissions
             listOf(Manifest.permission.READ_MEDIA_AUDIO)

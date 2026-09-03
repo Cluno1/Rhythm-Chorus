@@ -61,6 +61,7 @@ import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository
 import chromahub.rhythm.app.shared.data.repository.StatsTimeRange
 import chromahub.rhythm.app.shared.presentation.screens.settings.rhythmGuardFormatDurationFromMinutes
 import chromahub.rhythm.app.activities.RhythmGuardTimeoutActivity
+import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import androidx.core.net.toUri
 
 @OptIn(UnstableApi::class)
@@ -2106,6 +2107,10 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
      * Play an external audio file
      */
     private fun playExternalFile(uri: Uri) {
+        if (!CatalogPlaybackPolicy.EXTERNAL_URI_PLAYBACK_ENABLED) {
+            Log.w(TAG, "Rejected external playback URI by private catalog policy: $uri")
+            return
+        }
         Log.d(TAG, "Playing external file: $uri")
 
         // Use service-scoped coroutine to handle operations without blocking the main thread
@@ -2456,17 +2461,28 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
         ): ListenableFuture<List<MediaItem>> {
             Log.d(TAG, "onAddMediaItems: ${mediaItems.size} items")
             
-            val updatedMediaItems = mediaItems.map { mediaItem ->
+            val updatedMediaItems = mediaItems.mapNotNull { mediaItem ->
                 if (mediaItem.requestMetadata.searchQuery != null) {
-                    // This is a search request
-                    Log.d(TAG, "Search request: ${mediaItem.requestMetadata.searchQuery}")
-                    mediaItem
-                } else if (mediaItem.mediaId.isNotEmpty()) {
-                    // Check if this is an external URI that we've cached
-                    val cachedItem = externalUriCache[mediaItem.mediaId]
-                    cachedItem ?: mediaItem
+                    Log.w(TAG, "Rejected search playback request: catalog selection is required")
+                    null
                 } else {
-                    mediaItem
+                    val resolved = externalUriCache[mediaItem.mediaId] ?: mediaItem
+                    val local = resolved.localConfiguration
+                    if (
+                        CatalogPlaybackPolicy.allows(
+                            resolved.mediaId,
+                            local?.uri?.toString(),
+                            local?.customCacheKey,
+                            chromahub.rhythm.app.features.catalog.data.CatalogCredentialsStore(
+                                this@MediaPlaybackService,
+                            ).loadServerUrl(),
+                        )
+                    ) {
+                        resolved
+                    } else {
+                        Log.w(TAG, "Rejected unmanaged media item: ${resolved.mediaId}")
+                        null
+                    }
                 }
             }
             

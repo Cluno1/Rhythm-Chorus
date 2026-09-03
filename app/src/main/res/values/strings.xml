@@ -413,6 +413,8 @@
 <string name="storage_permission_required">Storage Permission Required</string>
     <string name="storage_permission_desc">To browse your music files and explore your device\'s storage, Rhythm needs permission to access your files and media.</string>
     <string name="storage_permission_audio_only">This allows access only to audio files and folders containing music.</string>
+    <string name="local_library_disabled_title">Local music library disabled</string>
+    <string name="local_library_disabled_desc">Rhythm only plays managed audio from your private work catalog. The work list and rendition picker are being connected to the server.</string>
 <string name="player_loading_lyrics">Loading lyrics…</string>
     <string name="player_queue">Queue</string>
     <string name="player_speed_label">Speed</string>

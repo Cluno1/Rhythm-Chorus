@@ -81,6 +81,7 @@ import chromahub.rhythm.app.shared.data.model.LyricsApiPriority
 import chromahub.rhythm.app.shared.data.model.findAlbumForSong
 import chromahub.rhythm.app.core.domain.model.PlayableItem
 import chromahub.rhythm.app.core.domain.model.SourceType
+import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import java.lang.ref.WeakReference
 import chromahub.rhythm.app.util.AudioFormatDetector
 import chromahub.rhythm.app.util.LyricsParser
@@ -868,6 +869,12 @@ class MusicRepository(context: Context) {
         minimumBitrate: Int = 0,
         minimumDuration: Long = 0L
     ): List<Song> = withContext(Dispatchers.IO) {
+        if (!CatalogPlaybackPolicy.DEVICE_LIBRARY_ENABLED) {
+            cachedSongs = emptyList()
+            _scanProgress.value = ScanProgress(0, 0, ScanPhase.Complete)
+            Log.i(TAG, "Device library scan is disabled: Rhythm plays managed v2 Assets only")
+            return@withContext emptyList()
+        }
         // Check MediaStore permissions before scanning
         val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             // Android 13+ requires READ_MEDIA_AUDIO
@@ -950,6 +957,10 @@ class MusicRepository(context: Context) {
         minimumBitrate: Int = 0,
         minimumDuration: Long = 0L
     ): List<Song> = withContext(Dispatchers.IO) {
+        if (!CatalogPlaybackPolicy.DEVICE_LIBRARY_ENABLED) {
+            cachedSongs = emptyList()
+            return@withContext emptyList()
+        }
         Log.d(TAG, "Starting incremental scan via MediaScanEngine")
         val songs = mediaScanEngine.performScan(
             forceRefresh = false,

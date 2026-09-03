@@ -2,12 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <!-- Images permission is OPTIONAL - only needed for enhanced album art display -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" android:required="false" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <!-- Files are imported explicitly with SAF, then uploaded as managed v2 Assets. -->
+    <uses-permission
+        android:name="android.permission.READ_MEDIA_AUDIO"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:node="remove" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -222,7 +226,8 @@
         <!-- External playback activity for quick audio file playback -->
         <activity
             android:name=".activities.ExternalPlaybackActivity"
-            android:exported="true"
+            android:enabled="false"
+            android:exported="false"
             android:label="Play Audio"
             android:theme="@android:style/Theme.DeviceDefault.Dialog.NoActionBar"
             android:launchMode="singleTask"

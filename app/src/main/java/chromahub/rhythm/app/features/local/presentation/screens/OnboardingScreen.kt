@@ -2264,7 +2264,9 @@ fun EnhancedPermissionContent(
     val context = LocalContext.current
 
     // Define permissions based on Android version within the composable
-    val storagePermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    val storagePermissions = if (!chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy.DEVICE_LIBRARY_ENABLED) {
+        emptyList()
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         listOf(Manifest.permission.READ_MEDIA_AUDIO)
     } else {
         listOf(Manifest.permission.READ_EXTERNAL_STORAGE)

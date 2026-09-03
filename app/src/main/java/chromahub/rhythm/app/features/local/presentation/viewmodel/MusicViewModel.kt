@@ -42,6 +42,7 @@ import chromahub.rhythm.app.shared.data.model.LyricsSourcePreference
 import chromahub.rhythm.app.shared.data.model.MediaScanMode
 import chromahub.rhythm.app.shared.data.model.ScanPhase
 import chromahub.rhythm.app.features.local.data.repository.MusicRepository
+import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import chromahub.rhythm.app.features.local.data.database.entity.toSong
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
 import chromahub.rhythm.app.shared.data.model.Playlist
@@ -8494,6 +8495,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Plays an external audio file that was opened from outside the app
      */
     fun playExternalAudioFile(song: Song) {
+        if (!CatalogPlaybackPolicy.EXTERNAL_URI_PLAYBACK_ENABLED) {
+            Log.w(TAG, "Rejected external playback by private catalog policy: ${song.uri}")
+            return
+        }
         Log.d(TAG, "Playing external audio file: ${song.title}, URI: ${song.uri}")
         
         // Add to recently played list

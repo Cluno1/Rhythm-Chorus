@@ -15,6 +15,8 @@ import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.DataSpec
 import chromahub.rhythm.app.features.streaming.di.StreamingMusicModule
+import chromahub.rhythm.app.features.catalog.data.CatalogCredentialsStore
+import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ConcurrentHashMap
@@ -45,7 +47,24 @@ class PreloadController(
                 DefaultDataSource.Factory(context, DefaultHttpDataSource.Factory()),
                 object : ResolvingDataSource.Resolver {
                     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
-                        if (dataSpec.uri.scheme == "streaming") {
+                        if (
+                            CatalogPlaybackPolicy.allowsAssetRequest(
+                                dataSpec.uri.toString(),
+                                dataSpec.key,
+                                CatalogCredentialsStore(context).loadServerUrl(),
+                            )
+                        ) {
+                            val token = CatalogCredentialsStore(context).loadToken()
+                            if (!token.isNullOrBlank()) {
+                                return dataSpec.withAdditionalHeaders(
+                                    mapOf("Authorization" to "Bearer $token"),
+                                )
+                            }
+                        }
+                        if (
+                            CatalogPlaybackPolicy.THIRD_PARTY_STREAMING_ENABLED &&
+                            dataSpec.uri.scheme == "streaming"
+                        ) {
                             val trackId = dataSpec.uri.lastPathSegment
                             if (!trackId.isNullOrBlank()) {
                                 val repository = StreamingMusicModule.provideStreamingMusicRepository(context)

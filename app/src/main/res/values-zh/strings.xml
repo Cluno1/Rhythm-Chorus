@@ -412,6 +412,8 @@
     <string name="storage_permission_required">需要存储权限</string>
     <string name="storage_permission_desc">要浏览您的音乐文件并浏览设备的存储空间，Rhythm 需要访问您的文件和媒体的权限。</string>
     <string name="storage_permission_audio_only">这仅允许访问包含音乐的音频文件和文件夹。</string>
+    <string name="local_library_disabled_title">本地音乐库已禁用</string>
+    <string name="local_library_disabled_desc">Rhythm 仅播放私有作品库中的受管音源。作品列表和录音版本选择正在接入后端。</string>
     <!-- PlayerScreen -->
     <string name="player_loading_lyrics">加载歌词…</string>
     <string name="player_queue">队列</string>
