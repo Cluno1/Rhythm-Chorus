@@ -204,7 +204,6 @@ import chromahub.rhythm.app.features.local.presentation.screens.LibraryTab
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.PlaybackBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistBottomSheet
 
 import chromahub.rhythm.app.shared.presentation.components.player.PlayerChipOrderBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.lyrics.LyricsEditorBottomSheet
@@ -295,7 +294,6 @@ fun MaterialPlayerScreen(
     isMediaLoading: Boolean = false,
     isSeeking: Boolean = false,
     onShowAlbumBottomSheet: () -> Unit = {},
-    onShowArtistBottomSheet: () -> Unit = {},
     // Album and artist data for bottom sheets
     songs: List<Song> = emptyList(),
     albums: List<Album> = emptyList(),
@@ -722,14 +720,26 @@ fun MaterialPlayerScreen(
     val queueSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val addToPlaylistSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
     val deviceOutputSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-    val artistBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
     var showQueueSheet by remember { mutableStateOf(false) }
     var showDeviceOutputSheet by remember { mutableStateOf(false) }
     var showSongInfoSheet by remember { mutableStateOf(false) }
-    var showArtistSheet by remember { mutableStateOf(false) }
-    var selectedArtist by remember { mutableStateOf<Artist?>(null) }
     var candidateArtists by remember { mutableStateOf<List<Artist>>(emptyList()) }
     var showArtistChooserSheet by remember { mutableStateOf(false) }
+
+    val openArtistForSong: (Song) -> Unit = { currentSong ->
+        val artistNames = splitArtistNames(currentSong.artist)
+
+        if (artistNames.size <= 1) {
+            val artistName = artistNames.firstOrNull()?.trim() ?: currentSong.artist.trim()
+            navController.navigate(Screen.ArtistDetail.createRoute(artistName))
+        } else {
+            candidateArtists = artistNames.map { name ->
+                artists.firstOrNull { it.name.trim().equals(name.trim(), ignoreCase = true) }
+                    ?: Artist(id = name.trim(), name = name.trim())
+            }
+            showArtistChooserSheet = true
+        }
+    }
     
     val navigateToAlbum: (String, String) -> Unit = { id, title ->
         if (isStreamingMode) {
@@ -1005,7 +1015,6 @@ fun MaterialPlayerScreen(
             },
             onClearQueue = {
                 onClearQueue()
-                showQueueSheet = false
             },
             onToggleShuffle = onToggleShuffle,
             onToggleRepeat = onToggleRepeat,
@@ -1185,66 +1194,13 @@ fun MaterialPlayerScreen(
     }
 
 
-
-    // Artist Bottom Sheet
-    if (showArtistSheet && selectedArtist != null) {
-        ArtistBottomSheet(
-            artist = selectedArtist!!,
-            onDismiss = { 
-                showArtistSheet = false
-                selectedArtist = null
-            },
-            onSongClick = onSongClick,
-            onAlbumClick = { album -> 
-                showArtistSheet = false
-                selectedArtist = null
-                navigateToAlbum(album.id, album.title)
-            },
-            onPlayAll = { artistSongs -> 
-                if (artistSongs.isNotEmpty()) {
-                    onPlayArtistSongs(artistSongs)
-                }
-            },
-            onShufflePlay = { artistSongs -> 
-                if (artistSongs.isNotEmpty()) {
-                    onShuffleArtistSongs(artistSongs)
-                }
-            },
-            onAddToQueue = { song -> musicViewModel.addSongToQueue(song) },
-            onAddToQueueAll = { songs -> musicViewModel.addSongsToQueue(songs) },
-            onAddSongToPlaylist = { track -> 
-                selectedSongForPlaylist = track
-                showAddToPlaylistSheetInternal = true
-            },
-            onPlayerClick = { /* Already in player screen */ },
-            sheetState = artistBottomSheetState,
-            haptics = haptic,
-            onPlayNext = { song -> musicViewModel.playNext(song) },
-            onToggleFavorite = { song -> musicViewModel.toggleFavorite(song) },
-            favoriteSongs = musicViewModel.favoriteSongs.collectAsState().value,
-            onShowSongInfo = { song ->
-                // Song info can be shown via a toast or separate sheet if needed
-                Toast.makeText(context, context.getString(R.string.song_metadata_details, song.title, song.artist, song.album), Toast.LENGTH_SHORT).show()
-            },
-            onAddToBlacklist = { song ->
-                appSettings.addToBlacklist(song.id)
-                Toast.makeText(context, context.getString(R.string.song_added_to_blacklist_format, song.title), Toast.LENGTH_SHORT).show()
-            },
-            currentSong = song,
-            isPlaying = isPlaying,
-            songs = songs,
-            albums = albums
-        )
-    }
-
     if (showArtistChooserSheet && candidateArtists.isNotEmpty()) {
         ArtistChooserBottomSheet(
             candidateArtists = candidateArtists,
             onDismiss = { showArtistChooserSheet = false },
             onArtistSelected = { artist ->
-                selectedArtist = artist
                 showArtistChooserSheet = false
-                showArtistSheet = true
+                navController.navigate(Screen.ArtistDetail.createRoute(artist.name))
             },
             haptic = haptic
         )
@@ -1285,25 +1241,7 @@ fun MaterialPlayerScreen(
             },
             onArtist = {
                 song?.let { currentSong ->
-                    val artistNames = splitArtistNames(currentSong.artist)
-
-                    if (artistNames.size <= 1) {
-                        val matched = artistNames.firstNotNullOfOrNull { name ->
-                            artists.find { it.name.equals(name, ignoreCase = true) }
-                        } ?: artistNames.firstOrNull()?.trim()?.let { name ->
-                            Artist(id = name, name = name)
-                        }
-                        matched?.let {
-                            selectedArtist = it
-                            showArtistSheet = true
-                        }
-                    } else {
-                        candidateArtists = artistNames.map { name ->
-                            artists.firstOrNull { it.name.trim().equals(name.trim(), ignoreCase = true) }
-                                ?: Artist(id = name.trim(), name = name.trim())
-                        }
-                        showArtistChooserSheet = true
-                    }
+                    openArtistForSong(currentSong)
                 }
             },
             onSongInfo = { showSongInfoSheet = true },
@@ -1619,7 +1557,7 @@ fun MaterialPlayerScreen(
                                         haptic,
                                         HapticType.HEAVY
                                     )
-                                    onShowArtistBottomSheet()
+                                    song?.let { openArtistForSong(it) }
                                 }
                         )
                         
@@ -2469,7 +2407,7 @@ fun MaterialPlayerScreen(
                                             haptic,
                                             HapticType.HEAVY
                                         )
-                                        onShowArtistBottomSheet()
+                                        song?.let { openArtistForSong(it) }
                                     },
                                 enabled = true
                             )
@@ -3529,25 +3467,7 @@ fun MaterialPlayerScreen(
                                                             HapticType.HEAVY
                                                         )
                                                         song?.let { currentSong ->
-                                                            val artistNames = splitArtistNames(currentSong.artist)
-
-                                                            if (artistNames.size <= 1) {
-                                                                val matched = artistNames.firstNotNullOfOrNull { name ->
-                                                                    artists.find { it.name.equals(name, ignoreCase = true) }
-                                                                } ?: artistNames.firstOrNull()?.trim()?.let { name ->
-                                                                    Artist(id = name, name = name)
-                                                                }
-                                                                matched?.let {
-                                                                    selectedArtist = it
-                                                                    showArtistSheet = true
-                                                                }
-                                                            } else {
-                                                                candidateArtists = artistNames.map { name ->
-                                                                    artists.firstOrNull { it.name.trim().equals(name.trim(), ignoreCase = true) }
-                                                                        ?: Artist(id = name.trim(), name = name.trim())
-                                                                }
-                                                                showArtistChooserSheet = true
-                                                            }
+                                                            openArtistForSong(currentSong)
                                                         }
                                                     },
                                                     label = {

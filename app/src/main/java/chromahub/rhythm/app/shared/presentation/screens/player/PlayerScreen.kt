@@ -69,7 +69,6 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistCh
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ExtraControlBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
 
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.PlaybackBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.QueueBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
@@ -161,7 +160,6 @@ fun PlayerScreen(
     isMediaLoading: Boolean = false,
     isSeeking: Boolean = false,
     onShowAlbumBottomSheet: () -> Unit = {},
-    onShowArtistBottomSheet: () -> Unit = {},
     songs: List<Song> = emptyList(),
     albums: List<Album> = emptyList(),
     artists: List<Artist> = emptyList(),
@@ -273,9 +271,7 @@ fun PlayerScreen(
         var showPlaybackPitchDialog by remember { mutableStateOf(false) }
         var showSleepTimerBottomSheet by remember { mutableStateOf(false) }
         var showAlbumSheet by remember { mutableStateOf(false) }
-        var showArtistSheet by remember { mutableStateOf(false) }
         var selectedAlbum by remember { mutableStateOf<Album?>(null) }
-        var selectedArtist by remember { mutableStateOf<Artist?>(null) }
         var selectedSongForPlaylist by remember { mutableStateOf<Song?>(null) }
         var showLyricsView by remember { mutableStateOf(false) }
         var showArtistChooserSheet by remember { mutableStateOf(false) }
@@ -364,7 +360,6 @@ fun PlayerScreen(
         val deviceOutputSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         val addToPlaylistSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
         val albumBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
-        val artistBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
         val currentSongAlbumForSheet = remember(song, albums, songs) {
             song?.let { currentSong ->
                 resolveAlbumForSong(currentSong)
@@ -443,14 +438,13 @@ fun PlayerScreen(
                     }
                 }
             },
-            onShowArtistBottomSheet = {
+            onShowArtist = {
                 song?.let { currentSong ->
                     val artistNames = splitArtistNames(currentSong.artist)
 
                     if (artistNames.size <= 1) {
                         currentSongArtistForSheet?.let { artist ->
-                            selectedArtist = artist
-                            showArtistSheet = true
+                            navController.navigate(Screen.ArtistDetail.createRoute(artist.name))
                         }
                     } else {
                         val resolvedCandidates = artistNames.map { name ->
@@ -585,7 +579,6 @@ fun PlayerScreen(
                 },
                 onClearQueue = {
                     onClearQueue()
-                    showQueueSheet = false
                 },
                 onToggleShuffle = onToggleShuffle,
                 onToggleRepeat = onToggleRepeat,
@@ -711,8 +704,7 @@ fun PlayerScreen(
 
                         if (artistNames.size <= 1) {
                             currentSongArtistForSheet?.let { artist ->
-                                selectedArtist = artist
-                                showArtistSheet = true
+                                navController.navigate(Screen.ArtistDetail.createRoute(artist.name))
                             }
                         } else {
                             candidateArtists = artistNames.map { name ->
@@ -797,47 +789,13 @@ fun PlayerScreen(
 
 
 
-        if (showArtistSheet && selectedArtist != null && song != null) {
-            ArtistBottomSheet(
-                artist = selectedArtist!!,
-                onDismiss = { showArtistSheet = false },
-                onSongClick = onSongClick,
-                onAlbumClick = { album ->
-                    showArtistSheet = false
-                    if (isStreamingMode) {
-                        navController.navigate("streaming_album/${android.net.Uri.encode(album.id)}?albumName=${android.net.Uri.encode(album.title)}")
-                    } else {
-                        navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
-                    }
-                },
-                onPlayAll = onPlayArtistSongs,
-                onShufflePlay = onShuffleArtistSongs,
-                onAddToQueue = { onAddSongsToQueue() },
-                onAddToQueueAll = { songs -> musicViewModel.addSongsToQueue(songs) },
-                onAddSongToPlaylist = { track ->
-                    selectedSongForPlaylist = track
-                    showAddToPlaylistSheetInternal = true
-                },
-                onPlayerClick = { showArtistSheet = false },
-                sheetState = artistBottomSheetState,
-                haptics = LocalHapticFeedback.current,
-                onToggleFavorite = { onToggleFavorite() },
-                onShowSongInfo = { showSongInfoSheet = true },
-                currentSong = song,
-                isPlaying = isPlaying,
-                songs = songs,
-                albums = albums
-            )
-        }
-
         if (showArtistChooserSheet) {
             ArtistChooserBottomSheet(
                 candidateArtists = candidateArtists,
                 onDismiss = { showArtistChooserSheet = false },
                 onArtistSelected = { artist ->
-                    selectedArtist = artist
                     showArtistChooserSheet = false
-                    showArtistSheet = true
+                    navController.navigate(Screen.ArtistDetail.createRoute(artist.name))
                 },
                 haptic = haptic
             )
@@ -899,7 +857,6 @@ fun PlayerScreen(
             isMediaLoading = isMediaLoading,
             isSeeking = isSeeking,
             onShowAlbumBottomSheet = onShowAlbumBottomSheet,
-            onShowArtistBottomSheet = onShowArtistBottomSheet,
             songs = songs,
             albums = albums,
             artists = artists,

@@ -77,6 +77,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.text.style.TextAlign
+import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveCookieEmptyState
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShape
 
 /**
@@ -2682,96 +2683,18 @@ fun SettingsSearchResults(
     ) {
         if (results.isEmpty()) {
             item {
-                val cookieShape = rememberExpressiveShape("COOKIE_12")
-                val smallCookieShape = rememberExpressiveShape("COOKIE_6")
-                val containerColor = MaterialTheme.colorScheme.primaryContainer
-                val contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-
-                Box(
+                ExpressiveCookieEmptyState(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 48.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Box(
-                            modifier = Modifier.size(132.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Surface(
-                                shape = smallCookieShape,
-                                color = containerColor.copy(alpha = 0.45f),
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .align(Alignment.TopStart)
-                                    .offset(x = (-6).dp, y = 10.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Search,
-                                        contentDescription = null,
-                                        tint = contentColor.copy(alpha = 0.55f),
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
-                            }
-                            Surface(
-                                shape = smallCookieShape,
-                                color = containerColor.copy(alpha = 0.45f),
-                                modifier = Modifier
-                                    .size(34.dp)
-                                    .align(Alignment.BottomEnd)
-                                    .offset(x = 8.dp, y = (-6).dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Tune,
-                                        contentDescription = null,
-                                        tint = contentColor.copy(alpha = 0.55f),
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
-                            }
-                            Surface(
-                                shape = cookieShape,
-                                color = containerColor,
-                                shadowElevation = 6.dp,
-                                modifier = Modifier.size(96.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                    Icon(
-                                        imageVector = RhythmIcons.Search,
-                                        contentDescription = null,
-                                        tint = contentColor,
-                                        modifier = Modifier.size(44.dp)
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Text(
-                            text = context.getString(R.string.no_results_found),
-                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(
-                            text = context.getString(R.string.try_different_search),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 32.dp)
-                        )
-                    }
-                }
+                    title = context.getString(R.string.no_results_found),
+                    subtitle = context.getString(R.string.try_different_search),
+                    mainIcon = RhythmIcons.Search,
+                    accentIcon = RhythmIcons.Search,
+                    cornerIcon = RhythmIcons.Tune,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
         } else {
             // Group results by parent screen

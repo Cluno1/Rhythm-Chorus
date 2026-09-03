@@ -224,7 +224,6 @@ import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOpera
 import chromahub.rhythm.app.shared.presentation.components.dialogs.AppRestartDialog
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
 
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistBottomSheet
 import chromahub.rhythm.app.features.local.presentation.components.settings.LibraryTabOrderBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.BatchEditTagsSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.MultiSelectionBottomSheet

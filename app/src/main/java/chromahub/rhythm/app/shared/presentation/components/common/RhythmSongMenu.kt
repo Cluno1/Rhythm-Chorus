@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -33,6 +34,8 @@ import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolI
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.util.HapticType
+import chromahub.rhythm.app.util.HapticUtils
 
 private data class SongMenuItem(
     val title: String,
@@ -62,6 +65,7 @@ fun RhythmSongMenuContent(
     onShare: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val finalOnShare = onShare ?: song?.let { s ->
         {
             try {
@@ -241,7 +245,10 @@ fun RhythmSongMenuContent(
                 }
 
                 Surface(
-                    onClick = item.onClick,
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM)
+                        item.onClick()
+                    },
                     shape = itemShape,
                     color = MaterialTheme.colorScheme.surfaceContainer,
                     contentColor = MaterialTheme.colorScheme.onSurface,

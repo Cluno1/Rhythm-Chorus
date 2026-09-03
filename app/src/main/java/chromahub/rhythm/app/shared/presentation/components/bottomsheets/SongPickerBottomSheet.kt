@@ -41,6 +41,7 @@ import coil.request.ImageRequest
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderType
+import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveCookieEmptyState
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveScrollBar
 import chromahub.rhythm.app.util.HapticUtils
 import chromahub.rhythm.app.util.HapticType
@@ -352,17 +353,14 @@ private fun groupedSongItemShape(index: Int, totalCount: Int): RoundedCornerShap
 
 @Composable
 private fun EmptySongsState(hasSearch: Boolean, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-
-    Column(modifier = modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Surface(modifier = Modifier.size(72.dp), shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(imageVector = RhythmIcons.SearchFilled, contentDescription = null, modifier = Modifier.size(36.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = if (hasSearch) context.getString(R.string.nav_no_matching_songs) else "No songs available", style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = if (hasSearch) context.getString(R.string.nav_try_different) else "All songs are already in this playlist", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-    }
+    ExpressiveCookieEmptyState(
+        modifier = modifier.fillMaxWidth(),
+        title = if (hasSearch) stringResource(R.string.nav_no_matching_songs) else stringResource(R.string.playlist_no_songs_available),
+        subtitle = if (hasSearch) stringResource(R.string.nav_try_different) else stringResource(R.string.playlist_all_in_playlist),
+        mainIcon = if (hasSearch) RhythmIcons.Search else RhythmIcons.MusicNote,
+        accentIcon = if (hasSearch) RhythmIcons.Search else RhythmIcons.MusicNote,
+        cornerIcon = RhythmIcons.MusicNote,
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    )
 }

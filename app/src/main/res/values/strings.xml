@@ -733,6 +733,7 @@
 <string name="queue_empty">Your queue is empty</string>
     <string name="queue_add_songs">Add songs from your library to start listening</string>
     <string name="queue_no_more">No more songs in queue</string>
+    <string name="queue_section_played">Previously played</string>
     <string name="queue_add_more">Add more songs to keep the music playing</string>
 <string name="playlist_create">Create Playlist</string>
     <string name="playlist_name_empty">Playlist name cannot be empty</string>

@@ -123,7 +123,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
 
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.UpdateBottomSheet
 import chromahub.rhythm.app.features.local.presentation.screens.AddToPlaylistScreen

@@ -97,7 +97,6 @@ import androidx.navigation.NavController
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ExtraControlBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.PlaybackBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.QueueBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
@@ -334,7 +333,7 @@ fun ExpressivePlayerScreen(
     onToggleLyrics: () -> Unit,
     onSongInfoClick: () -> Unit,
     onShowAlbumBottomSheet: () -> Unit,
-    onShowArtistBottomSheet: () -> Unit,
+    onShowArtist: () -> Unit,
     onMoreClick: () -> Unit,
     onDeviceClick: () -> Unit,
     onQueueClick: () -> Unit,
@@ -1412,7 +1411,7 @@ fun ExpressivePlayerScreen(
                                                 textAlign = if (playerMergeControlsToBottom) TextAlign.Center else TextAlign.Start)
                                             AutoScrollingTextOnDemand(text = targetArtist, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium, color = onSurfaceVariantColor),
                                                 gradientEdgeColor = when { showDarkBg -> Color.Black; else -> outerBoxBgColor },
-                                                modifier = Modifier.fillMaxWidth().clickable { onShowArtistBottomSheet() }, respectGlobalSetting = true,
+                                                modifier = Modifier.fillMaxWidth().clickable { onShowArtist() }, respectGlobalSetting = true,
                                                 textAlign = if (playerMergeControlsToBottom) TextAlign.Center else TextAlign.Start)
                                         }
                                     }
@@ -1841,7 +1840,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "ARTIST" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onShowArtistBottomSheet,
+                                                    onClick = onShowArtist,
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2107,7 +2106,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "ARTIST" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = onShowArtistBottomSheet,
+                                                    onClick = onShowArtist,
                                                     weight = 0.6f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,

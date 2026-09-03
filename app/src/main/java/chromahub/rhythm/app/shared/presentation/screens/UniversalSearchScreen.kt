@@ -12,6 +12,7 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAda
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
+import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveCookieEmptyState
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShape
 
 import android.widget.Toast
@@ -646,93 +647,19 @@ fun UniversalSearchScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         item(key = "no_results") {
-                            val cookieShape = rememberExpressiveShape("COOKIE_12")
-                            val smallCookieShape = rememberExpressiveShape("COOKIE_6")
-                            val containerColor = MaterialTheme.colorScheme.primaryContainer
-                            val contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-
-                            Column(
+                            ExpressiveCookieEmptyState(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 48.dp)
                                     .animateItem(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Box(
-                                    modifier = Modifier.size(132.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Surface(
-                                        shape = smallCookieShape,
-                                        color = containerColor.copy(alpha = 0.45f),
-                                        modifier = Modifier
-                                            .size(42.dp)
-                                            .align(Alignment.TopStart)
-                                            .offset(x = (-6).dp, y = 10.dp)
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                            Icon(
-                                                imageVector = RhythmIcons.Search,
-                                                contentDescription = null,
-                                                tint = contentColor.copy(alpha = 0.55f),
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-                                    }
-                                    Surface(
-                                        shape = smallCookieShape,
-                                        color = containerColor.copy(alpha = 0.45f),
-                                        modifier = Modifier
-                                            .size(34.dp)
-                                            .align(Alignment.BottomEnd)
-                                            .offset(x = 8.dp, y = (-6).dp)
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                            Icon(
-                                                imageVector = RhythmIcons.MusicNote,
-                                                contentDescription = null,
-                                                tint = contentColor.copy(alpha = 0.55f),
-                                                modifier = Modifier.size(14.dp)
-                                            )
-                                        }
-                                    }
-                                    Surface(
-                                        shape = cookieShape,
-                                        color = containerColor,
-                                        shadowElevation = 6.dp,
-                                        modifier = Modifier.size(96.dp)
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                            Icon(
-                                                imageVector = RhythmIcons.Search,
-                                                contentDescription = null,
-                                                tint = contentColor,
-                                                modifier = Modifier.size(44.dp)
-                                            )
-                                        }
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(20.dp))
-
-                                Text(
-                                    text = stringResource(R.string.no_results_found),
-                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    textAlign = TextAlign.Center
-                                )
-
-                                Spacer(modifier = Modifier.height(6.dp))
-
-                                Text(
-                                    text = stringResource(R.string.search_no_results_query_format, query),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(horizontal = 32.dp)
-                                )
-                            }
+                                title = stringResource(R.string.no_results_found),
+                                subtitle = stringResource(R.string.search_no_results_query_format, query),
+                                mainIcon = RhythmIcons.Search,
+                                accentIcon = RhythmIcons.Search,
+                                cornerIcon = RhythmIcons.MusicNote,
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
                         }
                     }
                 } else if (isLandscapeTablet) {
