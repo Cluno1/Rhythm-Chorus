@@ -16,7 +16,7 @@ class CatalogDtoMapperTest {
     fun mapsAndValidatesPlaybackIdentity() {
         val result = CatalogDtoMapper.playback(
             PlaybackDto(
-                renditionId, assetId, "audio/midi", 12, "authenticated_url",
+                renditionId, assetId, "audio/mpeg", 12, "authenticated_url",
                 "/v2/assets/$assetId/content", "rhythm:asset:$assetId:$hash", "\"sha256:$hash\"", true, null,
             ),
         )
@@ -25,11 +25,23 @@ class CatalogDtoMapperTest {
     }
 
     @Test
-    fun rejectsPlaybackCacheKeyForAnotherAsset() {
+    fun rejectsMidiPlaybackDescriptor() {
         assertThrows(IllegalArgumentException::class.java) {
             CatalogDtoMapper.playback(
                 PlaybackDto(
                     renditionId, assetId, "audio/midi", 12, "authenticated_url",
+                    "/v2/assets/$assetId/content", "rhythm:asset:$assetId:$hash", "etag", true, null,
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun rejectsPlaybackCacheKeyForAnotherAsset() {
+        assertThrows(IllegalArgumentException::class.java) {
+            CatalogDtoMapper.playback(
+                PlaybackDto(
+                    renditionId, assetId, "audio/mpeg", 12, "authenticated_url",
                     "/v2/assets/$assetId/content",
                     "rhythm:asset:66666666-6666-4666-8666-666666666666:$hash", "etag", true, null,
                 ),
@@ -41,9 +53,9 @@ class CatalogDtoMapperTest {
     fun rejectsCrossArrangementRelationships() {
         val work = WorkDto(workId, "Title", null, "active", 1, emptyList(), emptyList(), "now", "now")
         val rendition = RenditionDto(
-            renditionId, "77777777-7777-4777-8777-777777777777", "MIDI", "midi", null, null, null,
+            renditionId, "77777777-7777-4777-8777-777777777777", "Recording", "audio", null, null, null,
             1000, 1,
-            listOf(RenditionAssetDto(renditionAssetId, assetId, "midi", null, null, hash, 12, "audio/midi")),
+            listOf(RenditionAssetDto(renditionAssetId, assetId, "stream", null, null, hash, 12, "audio/mpeg")),
         )
         val arrangement = ArrangementDto(
             arrangementId, workId, "Main", null, null, null, null, 1,

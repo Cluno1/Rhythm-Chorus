@@ -112,6 +112,7 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
                 mediaId = "rhythm-catalog:rendition:${descriptor.renditionId}:asset:${descriptor.assetId}",
                 uri = absoluteUrl,
                 customCacheKey = descriptor.cacheKey,
+                mediaType = descriptor.mediaType,
                 trustedServerUrl = connection().serverUrl,
             ),
         ) { "playback descriptor failed managed asset policy" }

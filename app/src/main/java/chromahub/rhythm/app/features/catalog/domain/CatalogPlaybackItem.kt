@@ -14,6 +14,12 @@ data class CatalogPlaybackItem(
     val cacheKey: String,
     val mediaType: String,
 ) {
+    init {
+        require(CatalogPlaybackPolicy.isPlayableMediaType(mediaType)) {
+            "Catalog playback accepts real audio only"
+        }
+    }
+
     fun toMediaItem(): MediaItem = MediaItem.Builder()
         .setMediaId("rhythm-catalog:rendition:$renditionId:asset:$assetId")
         .setUri(playbackUrl)

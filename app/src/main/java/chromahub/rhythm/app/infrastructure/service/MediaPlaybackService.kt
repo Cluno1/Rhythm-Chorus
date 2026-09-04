@@ -2484,6 +2484,7 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                             resolved.mediaId,
                             local?.uri?.toString(),
                             local?.customCacheKey,
+                            local?.mimeType,
                             chromahub.rhythm.app.features.catalog.data.CatalogCredentialsStore(
                                 this@MediaPlaybackService,
                             ).loadServerUrl(),

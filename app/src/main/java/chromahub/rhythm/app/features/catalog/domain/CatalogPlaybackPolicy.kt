@@ -1,6 +1,7 @@
 package chromahub.rhythm.app.features.catalog.domain
 
 import java.net.URI
+import java.util.Locale
 
 /**
  * Hard product boundary for the private Work catalog.
@@ -19,13 +20,33 @@ object CatalogPlaybackPolicy {
     private val mediaIdPattern = Regex("^rhythm-catalog:rendition:($uuid):asset:($uuid)$")
     private val assetPathPattern = Regex("(?:^|/)v2/assets/($uuid)/content/?$")
     private val cacheKeyPattern = Regex("^rhythm:asset:($uuid):([0-9a-f]{64})$")
+    private val playableRoles = setOf("stream", "mix", "master")
+    private val playableMediaTypes = setOf(
+        "audio/mpeg",
+        "audio/mp3",
+        "audio/mp4",
+        "audio/m4a",
+        "audio/x-m4a",
+        "audio/aac",
+        "audio/flac",
+        "audio/x-flac",
+        "audio/ogg",
+        "application/ogg",
+        "audio/opus",
+        "audio/wav",
+        "audio/wave",
+        "audio/x-wav",
+        "audio/vnd.wave",
+    )
 
     fun allows(
         mediaId: String,
         uri: String?,
         customCacheKey: String?,
+        mediaType: String?,
         trustedServerUrl: String?,
     ): Boolean {
+        if (!isPlayableMediaType(mediaType)) return false
         val mediaMatch = mediaIdPattern.matchEntire(mediaId) ?: return false
         val assetId = requestAssetId(uri, customCacheKey, trustedServerUrl) ?: return false
         return assetId.equals(mediaMatch.groupValues[2], ignoreCase = true)
@@ -37,6 +58,20 @@ object CatalogPlaybackPolicy {
         customCacheKey: String?,
         trustedServerUrl: String?,
     ): Boolean = requestAssetId(uri, customCacheKey, trustedServerUrl) != null
+
+    /** Explicit real-audio allowlist; a generic audio wildcard is insufficient because of MIDI. */
+    fun isPlayableMediaType(mediaType: String?): Boolean =
+        mediaType
+            ?.substringBefore(';')
+            ?.trim()
+            ?.lowercase(Locale.ROOT)
+            .let(playableMediaTypes::contains)
+
+    fun isPlayableRenditionAsset(asset: RenditionAsset): Boolean =
+        asset.role.lowercase(Locale.ROOT) in playableRoles && isPlayableMediaType(asset.mediaType)
+
+    fun isPlayableRendition(rendition: Rendition): Boolean =
+        rendition.assets.any(::isPlayableRenditionAsset)
 
     private fun requestAssetId(
         uri: String?,

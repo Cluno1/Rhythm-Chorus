@@ -17,6 +17,7 @@ class CatalogPlaybackPolicyTest {
                 mediaId,
                 "https://music.example/v2/assets/$assetId/content",
                 cacheKey,
+                "audio/mpeg",
                 "https://music.example",
             ),
         )
@@ -29,6 +30,7 @@ class CatalogPlaybackPolicyTest {
                 mediaId,
                 "content://media/audio/42",
                 cacheKey,
+                "audio/mpeg",
                 "https://music.example",
             ),
         )
@@ -37,6 +39,7 @@ class CatalogPlaybackPolicyTest {
                 mediaId,
                 "file:///sdcard/song.mp3",
                 cacheKey,
+                "audio/mpeg",
                 "https://music.example",
             ),
         )
@@ -45,6 +48,7 @@ class CatalogPlaybackPolicyTest {
                 mediaId,
                 "https://unrelated.example/song.mp3",
                 cacheKey,
+                "audio/mpeg",
                 "https://music.example",
             ),
         )
@@ -58,6 +62,7 @@ class CatalogPlaybackPolicyTest {
                 mediaId,
                 "https://music.example/v2/assets/$otherAsset/content",
                 cacheKey,
+                "audio/mpeg",
                 "https://music.example",
             ),
         )
@@ -66,6 +71,7 @@ class CatalogPlaybackPolicyTest {
                 "local-song-id",
                 "https://music.example/v2/assets/$assetId/content",
                 cacheKey,
+                "audio/mpeg",
                 "https://music.example",
             ),
         )
@@ -74,8 +80,54 @@ class CatalogPlaybackPolicyTest {
                 mediaId,
                 "https://evil.example/v2/assets/$assetId/content",
                 cacheKey,
+                "audio/mpeg",
                 "https://music.example",
             ),
         )
+    }
+
+    @Test
+    fun acceptsExplicitRealAudioFormatsAndParameters() {
+        assertTrue(CatalogPlaybackPolicy.isPlayableMediaType("audio/mpeg"))
+        assertTrue(CatalogPlaybackPolicy.isPlayableMediaType("audio/mp4; codecs=mp4a.40.2"))
+        assertTrue(CatalogPlaybackPolicy.isPlayableMediaType("audio/flac"))
+        assertTrue(CatalogPlaybackPolicy.isPlayableMediaType("audio/ogg; codecs=opus"))
+        assertTrue(CatalogPlaybackPolicy.isPlayableMediaType("audio/wav"))
+    }
+
+    @Test
+    fun rejectsMidiAndGenericOrUnknownAudioTypes() {
+        assertFalse(CatalogPlaybackPolicy.isPlayableMediaType("audio/midi"))
+        assertFalse(CatalogPlaybackPolicy.isPlayableMediaType("audio/x-midi"))
+        assertFalse(CatalogPlaybackPolicy.isPlayableMediaType("application/x-midi"))
+        assertFalse(CatalogPlaybackPolicy.isPlayableMediaType("audio/*"))
+        assertFalse(CatalogPlaybackPolicy.isPlayableMediaType("audio/unknown"))
+        assertFalse(CatalogPlaybackPolicy.isPlayableMediaType(null))
+        assertFalse(
+            CatalogPlaybackPolicy.allows(
+                mediaId,
+                "https://music.example/v2/assets/$assetId/content",
+                cacheKey,
+                "audio/midi",
+                "https://music.example",
+            ),
+        )
+    }
+
+    @Test
+    fun renditionRequiresPlayableRoleAndRealAudioMime() {
+        val mp3Master = RenditionAsset(
+            id = "33333333-3333-4333-8333-333333333333",
+            assetId = assetId,
+            role = "master",
+            partId = null,
+            codecProfile = "mp3",
+            sha256 = "a".repeat(64),
+            byteSize = 1024,
+            mediaType = "audio/mpeg",
+        )
+        assertTrue(CatalogPlaybackPolicy.isPlayableRenditionAsset(mp3Master))
+        assertFalse(CatalogPlaybackPolicy.isPlayableRenditionAsset(mp3Master.copy(role = "source")))
+        assertFalse(CatalogPlaybackPolicy.isPlayableRenditionAsset(mp3Master.copy(mediaType = "audio/midi")))
     }
 }

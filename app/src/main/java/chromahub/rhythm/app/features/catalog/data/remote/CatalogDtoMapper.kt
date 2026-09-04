@@ -4,6 +4,7 @@ import chromahub.rhythm.app.features.catalog.domain.Arrangement
 import chromahub.rhythm.app.features.catalog.domain.CatalogChange
 import chromahub.rhythm.app.features.catalog.domain.CatalogChanges
 import chromahub.rhythm.app.features.catalog.domain.CatalogPage
+import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import chromahub.rhythm.app.features.catalog.domain.Part
 import chromahub.rhythm.app.features.catalog.domain.PlaybackDescriptor
 import chromahub.rhythm.app.features.catalog.domain.Rendition
@@ -105,10 +106,14 @@ internal object CatalogDtoMapper {
             ?: error("playback.cache_key is missing")
         val expectedCacheKey = "rhythm:asset:$assetId:$normalizedHash"
         require(dto.cacheKey == expectedCacheKey) { "playback.cache_key does not match asset identity" }
+        val mediaType = text(dto.mediaType, "playback.media_type")
+        require(CatalogPlaybackPolicy.isPlayableMediaType(mediaType)) {
+            "playback.media_type is not an allowed real-audio format"
+        }
         return PlaybackDescriptor(
             renditionId = uuid(dto.renditionId, "playback.rendition_id"),
             assetId = assetId,
-            mediaType = text(dto.mediaType, "playback.media_type"),
+            mediaType = mediaType,
             byteSize = positiveLong(dto.byteSize, "playback.byte_size"),
             delivery = text(dto.delivery, "playback.delivery"),
             relativeUrl = text(dto.url, "playback.url"),

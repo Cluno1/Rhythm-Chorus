@@ -5596,6 +5596,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 mediaId = item.mediaId,
                 uri = item.localConfiguration?.uri?.toString(),
                 customCacheKey = item.localConfiguration?.customCacheKey,
+                mediaType = item.localConfiguration?.mimeType,
                 trustedServerUrl = serverUrl,
             )
         }
