@@ -54,7 +54,13 @@ class PreloadController(
                                 CatalogCredentialsStore(context).loadServerUrl(),
                             )
                         ) {
-                            val token = CatalogCredentialsStore(context).loadToken()
+                            // issue 11：COS presigned 直连自带签名，绝不把后端 Bearer 令牌发往对象存储。
+                            val token =
+                                if (CatalogPlaybackPolicy.isSignedObjectStoreUrl(dataSpec.uri.toString())) {
+                                    null
+                                } else {
+                                    CatalogCredentialsStore(context).loadToken()
+                                }
                             if (!token.isNullOrBlank()) {
                                 return dataSpec.withAdditionalHeaders(
                                     mapOf("Authorization" to "Bearer $token"),

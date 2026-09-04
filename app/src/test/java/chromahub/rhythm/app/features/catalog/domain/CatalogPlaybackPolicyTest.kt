@@ -130,4 +130,53 @@ class CatalogPlaybackPolicyTest {
         assertFalse(CatalogPlaybackPolicy.isPlayableRenditionAsset(mp3Master.copy(role = "source")))
         assertFalse(CatalogPlaybackPolicy.isPlayableRenditionAsset(mp3Master.copy(mediaType = "audio/midi")))
     }
+    private val cosSignedUrl =
+        "https://bible-1328751369.cos.ap-guangzhou.myqcloud.com/music/221.mp3" +
+            "?q-sign-algorithm=sha1&q-ak=AKIDx&q-sign-time=1;2&q-key-time=1;2" +
+            "&q-header-list=&q-url-param-list=&q-signature=deadbeef"
+
+    @Test
+    fun acceptsBackendSignedObjectStoreUrl() {
+        assertTrue(
+            CatalogPlaybackPolicy.allows(
+                mediaId,
+                cosSignedUrl,
+                cacheKey,
+                "audio/mpeg",
+                "https://music.example",
+            ),
+        )
+        assertTrue(CatalogPlaybackPolicy.isSignedObjectStoreUrl(cosSignedUrl))
+    }
+
+    @Test
+    fun rejectsUnsignedOrNonCosObjectStoreUrl() {
+        // 同为 COS 域名但缺签名查询串 -> 视为任意外链，拒绝。
+        val unsigned = "https://bible-1328751369.cos.ap-guangzhou.myqcloud.com/music/221.mp3"
+        assertFalse(CatalogPlaybackPolicy.isSignedObjectStoreUrl(unsigned))
+        assertFalse(
+            CatalogPlaybackPolicy.allows(mediaId, unsigned, cacheKey, "audio/mpeg", "https://music.example"),
+        )
+        // 冒充 COS 的其它域名 -> 拒绝。
+        val fakeHost =
+            "https://evil.example/music/221.mp3?q-sign-algorithm=sha1&q-signature=deadbeef"
+        assertFalse(CatalogPlaybackPolicy.isSignedObjectStoreUrl(fakeHost))
+        assertFalse(
+            CatalogPlaybackPolicy.allows(mediaId, fakeHost, cacheKey, "audio/mpeg", "https://music.example"),
+        )
+    }
+
+    @Test
+    fun rejectsSignedUrlWhenCacheIdentityMismatches() {
+        val otherAssetCacheKey = "rhythm:asset:33333333-3333-4333-8333-333333333333:${"a".repeat(64)}"
+        assertFalse(
+            CatalogPlaybackPolicy.allows(
+                mediaId,
+                cosSignedUrl,
+                otherAssetCacheKey,
+                "audio/mpeg",
+                "https://music.example",
+            ),
+        )
+    }
 }

@@ -106,7 +106,13 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         val apiClient = client()
         val descriptor = CatalogDtoMapper.playback(apiClient.api.playback(id, prefer).bodyOrThrow())
         require(descriptor.renditionId == id) { "playback rendition id does not match request" }
-        val absoluteUrl = apiClient.resolveAssetUrl(descriptor.relativeUrl).toString()
+        val absoluteUrl = if (descriptor.delivery == "signed_url") {
+            // issue 11：signed_url 已是后端签发的 COS 绝对签名 URL，不做后端同源解析，
+            // 由 CatalogPlaybackPolicy 校验其为 *.myqcloud.com 且带签名的受信 URL。
+            descriptor.relativeUrl
+        } else {
+            apiClient.resolveAssetUrl(descriptor.relativeUrl).toString()
+        }
         require(
             CatalogPlaybackPolicy.allows(
                 mediaId = "rhythm-catalog:rendition:${descriptor.renditionId}:asset:${descriptor.assetId}",

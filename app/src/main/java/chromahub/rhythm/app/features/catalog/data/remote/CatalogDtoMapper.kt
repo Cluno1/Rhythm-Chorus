@@ -106,6 +106,10 @@ internal object CatalogDtoMapper {
             ?: error("playback.cache_key is missing")
         val expectedCacheKey = "rhythm:asset:$assetId:$normalizedHash"
         require(dto.cacheKey == expectedCacheKey) { "playback.cache_key does not match asset identity" }
+        val delivery = text(dto.delivery, "playback.delivery")
+        require(delivery == "authenticated_url" || delivery == "signed_url") {
+            "playback.delivery is not a supported delivery mode"
+        }
         val mediaType = text(dto.mediaType, "playback.media_type")
         require(CatalogPlaybackPolicy.isPlayableMediaType(mediaType)) {
             "playback.media_type is not an allowed real-audio format"
@@ -115,7 +119,7 @@ internal object CatalogDtoMapper {
             assetId = assetId,
             mediaType = mediaType,
             byteSize = positiveLong(dto.byteSize, "playback.byte_size"),
-            delivery = text(dto.delivery, "playback.delivery"),
+            delivery = delivery,
             relativeUrl = text(dto.url, "playback.url"),
             cacheKey = expectedCacheKey,
             etag = text(dto.etag, "playback.etag"),

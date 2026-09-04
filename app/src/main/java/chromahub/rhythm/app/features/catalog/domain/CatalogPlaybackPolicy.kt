@@ -10,11 +10,21 @@ import java.util.Locale
  * MediaStore entries, arbitrary content/file URIs, and third-party streaming URLs are rejected.
  * Offline playback remains supported by Media3's managed cache: the logical URI and cache key stay
  * the backend Asset identity even when the bytes are served from the local cache.
+ *
+ * issue 11：新增"后端签发的 COS presigned 直连"通道——playback descriptor 的 delivery=signed_url
+ * 时，URL 指向腾讯 COS 对象存储（`*.myqcloud.com`）且自带短时签名。客户端据此绕过后端代理直连
+ * 下载音频。此通道只接受来自 descriptor、指向 COS 域名且带签名的 https URL（不接受任意外链），
+ * 身份绑定退回 cacheKey（`rhythm:asset:{uuid}:{sha256}`），后端 Bearer 令牌绝不发往 COS。
  */
 object CatalogPlaybackPolicy {
     const val DEVICE_LIBRARY_ENABLED = false
     const val EXTERNAL_URI_PLAYBACK_ENABLED = false
     const val THIRD_PARTY_STREAMING_ENABLED = false
+
+    /** issue 11：允许后端签发的 COS presigned 直连 URL。 */
+    const val SIGNED_OBJECT_STORE_ENABLED = true
+
+    private const val COS_HOST_SUFFIX = ".myqcloud.com"
 
     private val uuid = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"
     private val mediaIdPattern = Regex("^rhythm-catalog:rendition:($uuid):asset:($uuid)$")
@@ -59,6 +69,13 @@ object CatalogPlaybackPolicy {
         trustedServerUrl: String?,
     ): Boolean = requestAssetId(uri, customCacheKey, trustedServerUrl) != null
 
+    /**
+     * issue 11：判断某 URL 是否为后端签发的 COS presigned 直连 URL。用于播放数据源解析层决定
+     * **不**给该请求附带后端 Bearer 令牌（签名已在 URL 里，令牌不得泄露给对象存储）。
+     */
+    fun isSignedObjectStoreUrl(uri: String?): Boolean =
+        runCatching { URI(uri) }.getOrNull()?.let(::isSignedObjectStoreUri) ?: false
+
     /** Explicit real-audio allowlist; a generic audio wildcard is insufficient because of MIDI. */
     fun isPlayableMediaType(mediaType: String?): Boolean =
         mediaType
@@ -79,14 +96,31 @@ object CatalogPlaybackPolicy {
         trustedServerUrl: String?,
     ): String? {
         val cacheMatch = customCacheKey?.let(cacheKeyPattern::matchEntire) ?: return null
-        val parsedUri = runCatching { URI(uri) }.getOrNull() ?: return null
-        val trustedUri = runCatching { URI(trustedServerUrl) }.getOrNull() ?: return null
-        if (parsedUri.scheme !in setOf("http", "https")) return null
-        if (!sameOrigin(parsedUri, trustedUri)) return null
-        val pathAssetId = assetPathPattern.find(parsedUri.path.orEmpty())?.groupValues?.get(1)
-            ?: return null
         val cacheAssetId = cacheMatch.groupValues[1]
-        return pathAssetId.takeIf { it.equals(cacheAssetId, ignoreCase = true) }
+        val parsedUri = runCatching { URI(uri) }.getOrNull() ?: return null
+        if (parsedUri.scheme?.lowercase(Locale.ROOT) !in setOf("http", "https")) return null
+        // 1) 后端受管代理：同源 + /v2/assets/{id}/content，URL 内资产 UUID 必须与 cacheKey 一致。
+        val trustedUri = runCatching { URI(trustedServerUrl) }.getOrNull()
+        if (trustedUri != null && sameOrigin(parsedUri, trustedUri)) {
+            val pathAssetId = assetPathPattern.find(parsedUri.path.orEmpty())?.groupValues?.get(1)
+            if (pathAssetId != null && pathAssetId.equals(cacheAssetId, ignoreCase = true)) {
+                return cacheAssetId
+            }
+        }
+        // 2) issue 11：COS presigned 直连——身份绑定退回 cacheKey（URL 路径不含资产 UUID）。
+        if (isSignedObjectStoreUri(parsedUri)) {
+            return cacheAssetId
+        }
+        return null
+    }
+
+    private fun isSignedObjectStoreUri(uri: URI): Boolean {
+        if (!SIGNED_OBJECT_STORE_ENABLED) return false
+        if (!uri.scheme.equals("https", ignoreCase = true)) return false
+        val host = uri.host?.lowercase(Locale.ROOT) ?: return false
+        if (!host.endsWith(COS_HOST_SUFFIX)) return false
+        val query = uri.rawQuery ?: return false
+        return query.contains("q-signature=") && query.contains("q-sign-algorithm=")
     }
 
     private fun sameOrigin(left: URI, right: URI): Boolean =

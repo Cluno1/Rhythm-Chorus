@@ -65,4 +65,30 @@ class CatalogDtoMapperTest {
             CatalogDtoMapper.bundle(WorkBundleDto(work, listOf(arrangement), 1))
         }
     }
+    @Test
+    fun mapsSignedUrlDelivery() {
+        val cosUrl =
+            "https://bible-1328751369.cos.ap-guangzhou.myqcloud.com/music/221.mp3?q-signature=x"
+        val result = CatalogDtoMapper.playback(
+            PlaybackDto(
+                renditionId, assetId, "audio/mpeg", 12, "signed_url",
+                cosUrl, "rhythm:asset:$assetId:$hash", "\"sha256:$hash\"", true,
+                "2026-09-04T10:00:00Z",
+            ),
+        )
+        assertEquals("signed_url", result.delivery)
+        assertEquals(cosUrl, result.relativeUrl)
+    }
+
+    @Test
+    fun rejectsUnknownDeliveryMode() {
+        assertThrows(IllegalArgumentException::class.java) {
+            CatalogDtoMapper.playback(
+                PlaybackDto(
+                    renditionId, assetId, "audio/mpeg", 12, "public_link",
+                    "/v2/assets/$assetId/content", "rhythm:asset:$assetId:$hash", "etag", true, null,
+                ),
+            )
+        }
+    }
 }
