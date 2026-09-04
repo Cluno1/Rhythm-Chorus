@@ -28,6 +28,7 @@ object CatalogPlaybackPolicy {
 
     private val uuid = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"
     private val mediaIdPattern = Regex("^rhythm-catalog:rendition:($uuid):asset:($uuid)$")
+    private val deferredMediaIdPattern = Regex("^rhythm-catalog:rendition:($uuid)$")
     private val assetPathPattern = Regex("(?:^|/)v2/assets/($uuid)/content/?$")
     private val cacheKeyPattern = Regex("^rhythm:asset:($uuid):([0-9a-f]{64})$")
     private val playableRoles = setOf("stream", "mix", "master")
@@ -60,6 +61,26 @@ object CatalogPlaybackPolicy {
         val mediaMatch = mediaIdPattern.matchEntire(mediaId) ?: return false
         val assetId = requestAssetId(uri, customCacheKey, trustedServerUrl) ?: return false
         return assetId.equals(mediaMatch.groupValues[2], ignoreCase = true)
+    }
+
+    /** Stable queue identity. It is exchanged for a fresh delivery descriptor at DataSource.open. */
+    fun allowsDeferred(mediaId: String, uri: String?, mediaType: String?): Boolean {
+        if (!isPlayableMediaType(mediaType)) return false
+        val mediaRenditionId = deferredMediaIdPattern.matchEntire(mediaId)?.groupValues?.get(1) ?: return false
+        return deferredRenditionId(uri)?.equals(mediaRenditionId, ignoreCase = true) == true
+    }
+
+    fun deferredUri(renditionId: String): String {
+        require(Regex("^$uuid$").matches(renditionId)) { "renditionId is not a UUID" }
+        return "rhythm-catalog://rendition/${renditionId.lowercase(Locale.ROOT)}"
+    }
+
+    fun deferredRenditionId(uri: String?): String? {
+        val parsed = runCatching { URI(uri) }.getOrNull() ?: return null
+        if (!parsed.scheme.equals("rhythm-catalog", ignoreCase = true)) return null
+        if (!parsed.host.equals("rendition", ignoreCase = true)) return null
+        val id = parsed.path.orEmpty().removePrefix("/")
+        return id.takeIf { Regex("^$uuid$").matches(it) }?.lowercase(Locale.ROOT)
     }
 
     /** Checks the URI/cache identity available to Media3's DataSpec resolver. */

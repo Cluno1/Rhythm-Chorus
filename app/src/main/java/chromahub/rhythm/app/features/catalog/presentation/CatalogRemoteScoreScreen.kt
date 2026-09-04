@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.features.scores.presentation.RemoteScoreScreen
 import chromahub.rhythm.app.features.catalog.domain.ScoreRevision
+import chromahub.rhythm.app.features.catalog.domain.MusicXmlRuntimeSanitizer
 
 @Composable
 fun CatalogRemoteScoreScreen(
@@ -52,7 +53,12 @@ fun CatalogRemoteScoreScreen(
         bytes = null
         error = null
         viewModel.scoreBytes(revision).fold(
-            onSuccess = { bytes = it },
+            onSuccess = {
+                runCatching { MusicXmlRuntimeSanitizer.forAlphaTab(it) }.fold(
+                    onSuccess = { runtimeBytes -> bytes = runtimeBytes },
+                    onFailure = { failure -> error = failure.message ?: "谱面安全检查失败" },
+                )
+            },
             onFailure = { error = it.message ?: "谱面文件下载失败" },
         )
     }

@@ -7,6 +7,44 @@ internal data class WorkPageDto(
     @SerializedName("next_cursor") val nextCursor: String?,
 )
 
+internal data class LibrarySongPageDto(
+    val items: List<LibrarySongDto>?,
+    @SerializedName("next_cursor") val nextCursor: String?,
+)
+
+internal data class LibraryAlbumPageDto(
+    val items: List<LibraryAlbumDto>?,
+    @SerializedName("next_cursor") val nextCursor: String?,
+)
+
+internal data class LibraryAlbumDetailDto(
+    val album: LibraryAlbumDto?,
+    val songs: List<LibrarySongDto>?,
+)
+
+internal data class LibrarySongDto(
+    @SerializedName("work_id") val workId: String?,
+    @SerializedName("arrangement_id") val arrangementId: String?,
+    @SerializedName("rendition_id") val renditionId: String?,
+    @SerializedName("album_id") val albumId: String?,
+    val title: String?,
+    val artist: String?,
+    @SerializedName("album_title") val albumTitle: String?,
+    @SerializedName("duration_ms") val durationMs: Long?,
+    @SerializedName("track_no") val trackNo: Int?,
+    @SerializedName("cover_url") val coverUrl: String?,
+    val lyrics: String?,
+)
+
+internal data class LibraryAlbumDto(
+    val id: String?,
+    val key: String?,
+    val title: String?,
+    val artist: String?,
+    @SerializedName("cover_url") val coverUrl: String?,
+    @SerializedName("song_count") val songCount: Int?,
+)
+
 internal data class WorkAliasDto(val namespace: String?, @SerializedName("external_id") val externalId: String?)
 internal data class WorkCreditDto(
     val id: String?,
@@ -107,6 +145,19 @@ internal data class PlaybackDto(
     @SerializedName("media_type") val mediaType: String?,
     @SerializedName("byte_size") val byteSize: Long?,
     val delivery: String?, val url: String?,
+    @SerializedName("cache_key") val cacheKey: String?,
+    val etag: String?,
+    @SerializedName("supports_range") val supportsRange: Boolean?,
+    @SerializedName("expires_at") val expiresAt: String?,
+)
+
+internal data class AssetDeliveryDto(
+    @SerializedName("asset_id") val assetId: String?,
+    @SerializedName("media_type") val mediaType: String?,
+    @SerializedName("byte_size") val byteSize: Long?,
+    val sha256: String?,
+    val delivery: String?,
+    val url: String?,
     @SerializedName("cache_key") val cacheKey: String?,
     val etag: String?,
     @SerializedName("supports_range") val supportsRange: Boolean?,

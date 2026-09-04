@@ -119,6 +119,19 @@ data class PlaybackDescriptor(
     val expiresAt: String?,
 )
 
+data class AssetDeliveryDescriptor(
+    val assetId: String,
+    val mediaType: String,
+    val byteSize: Long,
+    val sha256: String,
+    val delivery: String,
+    val relativeUrl: String,
+    val cacheKey: String,
+    val etag: String,
+    val supportsRange: Boolean,
+    val expiresAt: String?,
+)
+
 data class CatalogPage(
     val items: List<WorkSummary>,
     val nextCursor: String?,
@@ -142,6 +155,38 @@ data class CatalogChanges(
     val hasMore: Boolean,
 )
 
+/** A real-audio rendition projected by the server into the native Songs library. */
+data class CatalogLibrarySong(
+    val workId: String,
+    val arrangementId: String,
+    val renditionId: String,
+    val albumId: String,
+    val title: String,
+    val artist: String?,
+    val albumTitle: String,
+    val durationMs: Long,
+    val trackNo: Int?,
+    val coverUrl: String?,
+    val lyrics: String?,
+)
+
+/** A server-owned album/release. Work remains hidden from the native browsing surface. */
+data class CatalogLibraryAlbum(
+    val id: String,
+    val key: String,
+    val title: String,
+    val artist: String?,
+    val coverUrl: String?,
+    val songCount: Int,
+    val songs: List<CatalogLibrarySong> = emptyList(),
+)
+
+data class CatalogLibrarySnapshot(
+    val songs: List<CatalogLibrarySong>,
+    val albums: List<CatalogLibraryAlbum>,
+    val fromCache: Boolean = false,
+)
+
 /** Stable projections consumed by Rhythm UI without turning catalog entities into legacy Songs. */
 data class RhythmBrowseItem(
     val workId: String,
@@ -153,9 +198,10 @@ data class RhythmNowPlayingItem(
     val workId: String,
     val arrangementId: String,
     val renditionId: String,
-    val assetId: String,
+    val assetId: String?,
     val title: String,
     val subtitle: String,
+    val lyrics: String? = null,
 )
 
 data class RhythmQueueEntry(

@@ -695,7 +695,7 @@ fun LibraryScreen(
             song = displaySong,
             onDismiss = { showSongInfoSheet = false },
             appSettings = appSettings,
-            isStreamingMode = isStreamingMode,
+            isStreamingMode = isStreamingMode || displaySong.id.startsWith("rhythm-catalog:"),
             onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                 pendingMetadataEditCompleteCallback = onComplete
                 musicViewModel.saveMetadataChanges(
@@ -915,7 +915,7 @@ fun LibraryScreen(
             onAddToBlacklist = if (isStreamingMode) null else {
                 {
                     selectedSongs.forEach { song ->
-                        appSettings.addToBlacklist(song.id)
+                        if (!song.id.startsWith("rhythm-catalog:")) appSettings.addToBlacklist(song.id)
                     }
                 }
             },
@@ -1824,7 +1824,7 @@ fun LibraryScreen(
                                             showSongInfoSheet = true
                                         },
                                         onAddToBlacklist = if (isStreamingMode) null else { song ->
-                                            appSettings.addToBlacklist(song.id)
+                                            if (!song.id.startsWith("rhythm-catalog:")) appSettings.addToBlacklist(song.id)
                                         },
                                         onDeleteSong = if (isStreamingMode) null else { song ->
                                             musicViewModel.deleteSong(song)
@@ -1874,7 +1874,7 @@ fun LibraryScreen(
                                             showSongInfoSheet = true
                                         },
                                         onAddToBlacklist = if (isStreamingMode) null else { song ->
-                                            appSettings.addToBlacklist(song.id)
+                                            if (!song.id.startsWith("rhythm-catalog:")) appSettings.addToBlacklist(song.id)
                                         },
                                         onDeleteSong = if (isStreamingMode) null else { song ->
                                             musicViewModel.deleteSong(song)
@@ -1975,7 +1975,7 @@ fun LibraryScreen(
                                         showSongInfoSheet = true
                                     },
                                     onAddToBlacklist = { song ->
-                                        appSettings.addToBlacklist(song.id)
+                                        if (!song.id.startsWith("rhythm-catalog:")) appSettings.addToBlacklist(song.id)
                                     },
                                     onDeleteSong = { musicViewModel.deleteSong(it) },
                                     onPlayQueue = onPlayQueue,
@@ -6699,7 +6699,5 @@ fun LibraryScanProgressBanner(
         }
     }
 }
-
-
 
 

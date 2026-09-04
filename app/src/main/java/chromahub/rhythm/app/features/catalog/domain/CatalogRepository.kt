@@ -18,6 +18,7 @@ interface CatalogRepository {
     fun connection(): CatalogConnection
     fun cachedWorks(): List<WorkSummary>
     fun cachedBundle(workId: String): WorkBundle?
+    fun cachedLibrary(): CatalogLibrarySnapshot?
     suspend fun testConnection(serverUrl: String, token: String): Result<Unit>
     suspend fun saveConnection(serverUrl: String, token: String): Result<Unit>
     fun clearConnection()
@@ -25,6 +26,8 @@ interface CatalogRepository {
     suspend fun getWorkBundle(workId: String, forceRefresh: Boolean = false): Result<WorkBundle>
     suspend fun getScoreRevision(revisionId: String): Result<ScoreRevision>
     suspend fun getPlayback(renditionId: String, prefer: String = "stream"): Result<PlaybackDescriptor>
+    suspend fun getLibrary(forceRefresh: Boolean = false): Result<CatalogLibrarySnapshot>
+    suspend fun getLibraryAlbum(albumId: String, forceRefresh: Boolean = false): Result<CatalogLibraryAlbum>
     suspend fun downloadAsset(assetId: String, expectedSha256: String, expectedSize: Long): Result<ByteArray>
     suspend fun syncChanges(): Result<CatalogChanges>
 }

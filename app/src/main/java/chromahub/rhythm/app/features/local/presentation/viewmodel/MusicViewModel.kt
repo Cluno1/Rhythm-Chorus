@@ -2815,6 +2815,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         onError: (String) -> Unit,
         onPermissionRequired: ((PendingWriteRequest) -> Unit)? = null
     ) {
+        if (song.id.startsWith("rhythm-catalog:")) {
+            onError("远程歌曲不支持修改本地文件元数据")
+            return
+        }
         metadataManagerHelper.saveMetadataChanges(
             song = song,
             title = title,
@@ -2858,6 +2862,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Uses MediaStore.createDeleteRequest on Android 11+ and RecoverableSecurityException handling on Android 10.
      */
     fun deleteSong(song: Song) {
+        if (song.id.startsWith("rhythm-catalog:")) {
+            Log.w(TAG, "Ignoring file deletion for catalog song")
+            return
+        }
         viewModelScope.launch {
             // First remove the song from active playback queue
             removeFromQueue(song)
@@ -2967,6 +2975,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         onComplete: (successCount: Int, failCount: Int) -> Unit,
         onPermissionRequired: ((PendingBatchWriteRequest) -> Unit)? = null
     ) {
+        if (songs.any { it.id.startsWith("rhythm-catalog:") }) {
+            onComplete(0, songs.size)
+            return
+        }
         metadataManagerHelper.batchEditMetadata(
             songs = songs,
             artist = artist,
@@ -4092,6 +4104,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         it.playback.toMediaItem().mediaId == songId
                     }
                     _catalogNowPlaying.value = catalogEntry?.nowPlaying
+                    if (catalogEntry != null) {
+                        _currentLyrics.value = catalogEntry.nowPlaying.lyrics?.let {
+                            LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
+                        }
+                    }
                     if (catalogEntry == null) {
                         // Legacy user-state models are Song keyed and must not receive catalog IDs.
                         startPlaybackTracking(song.id)
@@ -4787,6 +4804,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Play a song - finds it in the queue or adds it
      */
     fun playSong(song: Song) {
+        if (song.id.startsWith("rhythm-catalog:")) {
+            Log.w(TAG, "Catalog songs must enter through playCatalogQueue")
+            return
+        }
         Log.d(TAG, "Playing song: ${song.title}")
 
         if (!canStartPlayback("playSong")) {
@@ -5592,13 +5613,17 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             ?: return
         val accepted = entries.all { entry ->
             val item = entry.playback.toMediaItem()
-            CatalogPlaybackPolicy.allows(
+            CatalogPlaybackPolicy.allowsDeferred(
                 mediaId = item.mediaId,
                 uri = item.localConfiguration?.uri?.toString(),
-                customCacheKey = item.localConfiguration?.customCacheKey,
                 mediaType = item.localConfiguration?.mimeType,
-                trustedServerUrl = serverUrl,
-            )
+            ) || CatalogPlaybackPolicy.allows(
+                    mediaId = item.mediaId,
+                    uri = item.localConfiguration?.uri?.toString(),
+                    customCacheKey = item.localConfiguration?.customCacheKey,
+                    mediaType = item.localConfiguration?.mimeType,
+                    trustedServerUrl = serverUrl,
+                )
         }
         if (!accepted) {
             Log.w(TAG, "Rejected catalog queue because one or more entries failed policy")
@@ -5612,10 +5637,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 title = entry.nowPlaying.title,
                 artist = entry.nowPlaying.subtitle,
                 album = entry.playback.arrangementName,
-                albumId = entry.nowPlaying.arrangementId,
-                duration = 0L,
+                albumId = entry.playback.albumId.ifBlank { entry.nowPlaying.arrangementId },
+                duration = entry.playback.durationMs,
                 uri = Uri.parse(entry.playback.playbackUrl),
                 codec = entry.playback.mediaType,
+                artworkUri = entry.playback.artworkUrl
+                    ?.takeIf { it.startsWith("https://", ignoreCase = true) }
+                    ?.let(Uri::parse),
                 path = null,
             )
         }
@@ -5633,7 +5661,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 _catalogNowPlaying.value = entries[validIndex].nowPlaying
                 _currentQueue.value = Queue(displaySongs, validIndex)
                 _currentSong.value = displaySongs[validIndex]
-                _currentLyrics.value = null
+                _currentLyrics.value = entries[validIndex].nowPlaying.lyrics?.let {
+                    LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
+                }
                 _isFavorite.value = false
                 _isPlaying.value = startPlayback
                 chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore(getApplication())
@@ -5644,6 +5674,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun playQueue(songs: List<Song>, enableShuffle: Boolean? = null, startIndex: Int = 0, pinStartIndex: Boolean = false) {
+        if (songs.any { it.id.startsWith("rhythm-catalog:") }) {
+            Log.w(TAG, "Catalog songs must enter through playCatalogQueue")
+            return
+        }
         Log.d(TAG, "Playing queue with ${songs.size} songs, shuffle: $enableShuffle, startIndex: $startIndex, pinStartIndex: $pinStartIndex")
 
         _catalogQueue.value = emptyList()
@@ -6677,6 +6711,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     // New functions for playlist management
     fun createPlaylist(name: String, songs: List<Song> = emptyList(), showSnackbar: ((String) -> Unit)? = null) {
+        if (songs.any { it.id.startsWith("rhythm-catalog:") }) {
+            showSnackbar?.invoke("远程歌曲暂不写入本地歌单")
+            return
+        }
         viewModelScope.launch {
             val newPlaylist = repository.createPlaylist(name)
             var updatedPlaylist = newPlaylist
@@ -6711,6 +6749,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun addSongToPlaylist(song: Song, playlistId: String, showSnackbar: (String) -> Unit) {
+        if (song.id.startsWith("rhythm-catalog:")) {
+            showSnackbar("远程歌曲暂不写入本地歌单")
+            return
+        }
         // Check if song is filtered out (blacklisted or not whitelisted)
         val filteredSongsSet: Set<String> = filteredSongs.value.map { song: Song -> song.id }.toSet()
         val isStreaming = song.uri.toString().startsWith("http://") || 
@@ -7585,6 +7627,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      */
     private fun fetchLyricsForCurrentSong(retryCount: Int = 0) {
         val song = currentSong.value ?: return
+        if (song.id.startsWith("rhythm-catalog:")) {
+            _currentLyrics.value = _catalogNowPlaying.value?.lyrics?.let {
+                LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
+            }
+            _isLoadingLyrics.value = false
+            return
+        }
         
         // Cancel any previous lyrics fetch to prevent race conditions
         lyricsFetchJob?.cancel()
@@ -8059,6 +8108,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Add a song to the queue
      */
     fun addSongToQueue(song: Song) {
+        if (song.id.startsWith("rhythm-catalog:")) {
+            Log.w(TAG, "Catalog songs must enter through playCatalogQueue")
+            return
+        }
         Log.d(TAG, "Adding song to queue: ${song.title}")
         
         // Clear any previous error
@@ -8127,6 +8180,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Add a song to play next (right after the current song in the queue)
      */
     fun playNext(song: Song) {
+        if (song.id.startsWith("rhythm-catalog:")) {
+            Log.w(TAG, "Catalog songs must enter through playCatalogQueue")
+            return
+        }
         Log.d(TAG, "Adding song to play next: ${song.title}")
         
         // Clear any previous error

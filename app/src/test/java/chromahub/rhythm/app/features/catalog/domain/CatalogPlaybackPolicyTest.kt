@@ -179,4 +179,30 @@ class CatalogPlaybackPolicyTest {
             ),
         )
     }
+
+    @Test
+    fun acceptsOnlyMatchingDeferredRenditionIdentity() {
+        val uri = CatalogPlaybackPolicy.deferredUri(renditionId)
+        assertTrue(
+            CatalogPlaybackPolicy.allowsDeferred(
+                "rhythm-catalog:rendition:$renditionId",
+                uri,
+                "audio/mpeg",
+            )
+        )
+        assertFalse(
+            CatalogPlaybackPolicy.allowsDeferred(
+                "rhythm-catalog:rendition:33333333-3333-4333-8333-333333333333",
+                uri,
+                "audio/mpeg",
+            )
+        )
+        assertFalse(
+            CatalogPlaybackPolicy.allowsDeferred(
+                "rhythm-catalog:rendition:$renditionId",
+                "https://evil.example/song.mp3",
+                "audio/mpeg",
+            )
+        )
+    }
 }

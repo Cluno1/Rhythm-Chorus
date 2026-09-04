@@ -2,6 +2,7 @@ package chromahub.rhythm.app.features.catalog.data.remote
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class CatalogDtoMapperTest {
@@ -90,5 +91,69 @@ class CatalogDtoMapperTest {
                 ),
             )
         }
+    }
+
+    @Test
+    fun mapsSingleIhopeAlbumWithSeventyThreeSongs() {
+        val albumId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        val songs = (1..73).map { index ->
+            LibrarySongDto(
+                workId = java.util.UUID.nameUUIDFromBytes("work-$index".toByteArray()).toString(),
+                arrangementId = java.util.UUID.nameUUIDFromBytes("arrangement-$index".toByteArray()).toString(),
+                renditionId = java.util.UUID.nameUUIDFromBytes("rendition-$index".toByteArray()).toString(),
+                albumId = albumId,
+                title = "Song $index",
+                artist = null,
+                albumTitle = "ihope",
+                durationMs = index * 1_000L,
+                trackNo = index,
+                coverUrl = null,
+                lyrics = null,
+            )
+        }
+        val result = CatalogDtoMapper.libraryAlbumDetail(
+            LibraryAlbumDetailDto(
+                album = LibraryAlbumDto(albumId, "ihope", "ihope", null, null, 73),
+                songs = songs,
+            )
+        )
+        assertEquals("ihope", result.key)
+        assertEquals(73, result.songs.size)
+        assertNull(result.songs.first().artist)
+    }
+
+    @Test
+    fun rejectsAlbumDetailWithWrongSongCount() {
+        val albumId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        assertThrows(IllegalArgumentException::class.java) {
+            CatalogDtoMapper.libraryAlbumDetail(
+                LibraryAlbumDetailDto(
+                    album = LibraryAlbumDto(albumId, "ihope", "ihope", null, null, 73),
+                    songs = emptyList(),
+                )
+            )
+        }
+    }
+
+    @Test
+    fun mapsSignedMusicXmlAssetDelivery() {
+        val url = "https://music.cos.ap-guangzhou.myqcloud.com/scores/a.musicxml" +
+            "?q-sign-algorithm=sha1&q-signature=fresh"
+        val result = CatalogDtoMapper.assetDelivery(
+            AssetDeliveryDto(
+                assetId = assetId,
+                mediaType = "application/vnd.recordare.musicxml+xml",
+                byteSize = 123,
+                sha256 = hash,
+                delivery = "signed_url",
+                url = url,
+                cacheKey = "rhythm:asset:$assetId:$hash",
+                etag = "\"sha256:$hash\"",
+                supportsRange = true,
+                expiresAt = "2026-09-05T12:00:00Z",
+            )
+        )
+        assertEquals("signed_url", result.delivery)
+        assertEquals(hash, result.sha256)
     }
 }

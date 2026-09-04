@@ -45,4 +45,35 @@ class CatalogApiClientTest {
         assertEquals(302, response.code())
         assertEquals(1, server.requestCount)
     }
+
+    @Test
+    fun libraryEndpointsUseFrozenIssue12Paths() = runBlocking {
+        repeat(3) {
+            server.enqueue(MockResponse().setHeader("Content-Type", "application/json").setBody("{}"))
+        }
+        val client = CatalogApiClient(server.url("/").toString(), "top-secret")
+        client.api.librarySongs(cursor = "next", limit = 73)
+        client.api.libraryAlbums(limit = 1)
+        client.api.libraryAlbum("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
+
+        assertEquals("/v2/library/songs?cursor=next&limit=73", server.takeRequest().path)
+        assertEquals("/v2/library/albums?limit=1", server.takeRequest().path)
+        assertEquals(
+            "/v2/library/albums/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            server.takeRequest().path,
+        )
+    }
+
+    @Test
+    fun deliveredCosAssetNeverReceivesBackendBearer() = runBlocking {
+        val objectStore = MockWebServer()
+        try {
+            objectStore.enqueue(MockResponse().setBody("musicxml"))
+            val client = CatalogApiClient(server.url("/").toString(), "top-secret")
+            client.api.deliveredAsset(objectStore.url("/score.musicxml").toString())
+            assertNull(objectStore.takeRequest().headers["Authorization"])
+        } finally {
+            objectStore.close()
+        }
+    }
 }

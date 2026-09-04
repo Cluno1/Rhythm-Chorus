@@ -11,6 +11,8 @@ import chromahub.rhythm.app.features.catalog.domain.CatalogChanges
 import chromahub.rhythm.app.features.catalog.domain.CatalogConnection
 import chromahub.rhythm.app.features.catalog.domain.CatalogFailure
 import chromahub.rhythm.app.features.catalog.domain.CatalogPage
+import chromahub.rhythm.app.features.catalog.domain.CatalogLibraryAlbum
+import chromahub.rhythm.app.features.catalog.domain.CatalogLibrarySnapshot
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import chromahub.rhythm.app.features.catalog.domain.CatalogRepository
 import chromahub.rhythm.app.features.catalog.domain.PlaybackDescriptor
@@ -36,12 +38,13 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
 
     override fun cachedWorks(): List<WorkSummary> = cache.loadWorks()
     override fun cachedBundle(workId: String): WorkBundle? = cache.loadBundle(workId)
+    override fun cachedLibrary(): CatalogLibrarySnapshot? = cache.loadLibrary()
 
     override suspend fun testConnection(serverUrl: String, token: String): Result<Unit> = guarded {
         val normalized = CatalogEndpoint.normalize(serverUrl)
         val client = CatalogApiClient(normalized, token)
         requireSuccessful(client.api.health(), allowUnauthenticated = true)
-        requireSuccessful(client.api.works(limit = 1))
+        requireSuccessful(client.api.librarySongs(limit = 1))
         return@guarded Unit
     }
 
@@ -125,6 +128,59 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         descriptor.copy(relativeUrl = absoluteUrl)
     }
 
+    override suspend fun getLibrary(forceRefresh: Boolean): Result<CatalogLibrarySnapshot> = guarded {
+        val api = client().api
+        val songs = mutableListOf<chromahub.rhythm.app.features.catalog.domain.CatalogLibrarySong>()
+        var songCursor: String? = null
+        do {
+            val page = CatalogDtoMapper.librarySongs(api.librarySongs(songCursor).bodyOrThrow())
+            songs += page.first
+            songCursor = page.second
+        } while (songCursor != null)
+
+        val albums = mutableListOf<CatalogLibraryAlbum>()
+        var albumCursor: String? = null
+        do {
+            val page = CatalogDtoMapper.libraryAlbums(api.libraryAlbums(albumCursor).bodyOrThrow())
+            albums += page.first
+            albumCursor = page.second
+        } while (albumCursor != null)
+
+        require(songs.distinctBy { it.renditionId }.size == songs.size) { "library contains duplicate rendition_id" }
+        require(albums.distinctBy { it.id }.size == albums.size) { "library contains duplicate album id" }
+        require(songs.all { song -> albums.any { it.id == song.albumId } }) { "library song refers to an unknown album" }
+
+        val detailedAlbums = albums.map { summary ->
+            val detail = CatalogDtoMapper.libraryAlbumDetail(api.libraryAlbum(summary.id).bodyOrThrow())
+            require(detail.id == summary.id) { "album detail id does not match request" }
+            require(detail.key == summary.key && detail.title == summary.title) {
+                "album detail identity does not match album list"
+            }
+            cache.saveLibraryAlbum(detail)
+            detail
+        }
+        val detailSongs = detailedAlbums.flatMap { it.songs }
+        require(detailSongs.map { it.renditionId }.toSet() == songs.map { it.renditionId }.toSet()) {
+            "album details and songs list do not describe the same renditions"
+        }
+        val snapshot = CatalogLibrarySnapshot(songs, detailedAlbums)
+        cache.saveLibrary(snapshot)
+        snapshot
+    }.recoverCatching { error ->
+        if (error is CatalogFailure.Unreachable) cache.loadLibrary() ?: throw error else throw error
+    }
+
+    override suspend fun getLibraryAlbum(albumId: String, forceRefresh: Boolean): Result<CatalogLibraryAlbum> = guarded {
+        val id = validUuid(albumId)
+        if (!forceRefresh) cache.loadLibraryAlbum(id)?.let { return@guarded it }
+        CatalogDtoMapper.libraryAlbumDetail(client().api.libraryAlbum(id).bodyOrThrow()).also {
+            require(it.id == id) { "album detail id does not match request" }
+            cache.saveLibraryAlbum(it)
+        }
+    }.recoverCatching { error ->
+        if (error is CatalogFailure.Unreachable) cache.loadLibraryAlbum(albumId) ?: throw error else throw error
+    }
+
     override suspend fun downloadAsset(
         assetId: String,
         expectedSha256: String,
@@ -134,7 +190,18 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         require(expectedSha256.matches(Regex("^[0-9a-fA-F]{64}$"))) { "expected SHA-256 is invalid" }
         require(expectedSize > 0) { "expected size must be positive" }
         assetCache.read(id, expectedSha256, expectedSize)?.let { return@guarded it }
-        val bytes = client().api.asset(id).bodyOrThrow().bytes()
+        val apiClient = client()
+        val descriptor = CatalogDtoMapper.assetDelivery(apiClient.api.assetDelivery(id).bodyOrThrow())
+        require(descriptor.assetId == id) { "asset delivery id does not match request" }
+        require(descriptor.sha256.equals(expectedSha256, ignoreCase = true)) { "asset delivery SHA-256 mismatch" }
+        require(descriptor.byteSize == expectedSize) { "asset delivery size mismatch" }
+        val absoluteUrl = when (descriptor.delivery) {
+            "signed_url" -> descriptor.relativeUrl.also {
+                require(CatalogPlaybackPolicy.isSignedObjectStoreUrl(it)) { "signed asset delivery is not a trusted COS URL" }
+            }
+            else -> apiClient.resolveAssetUrl(descriptor.relativeUrl).toString()
+        }
+        val bytes = apiClient.api.deliveredAsset(absoluteUrl).bodyOrThrow().bytes()
         require(bytes.size.toLong() == expectedSize) { "asset size mismatch" }
         val actual = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
         require(actual.equals(expectedSha256, ignoreCase = true)) { "asset SHA-256 mismatch" }

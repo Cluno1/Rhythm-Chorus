@@ -12,6 +12,8 @@ import chromahub.rhythm.app.features.catalog.domain.ScoreRevision
 import chromahub.rhythm.app.features.catalog.domain.WorkBundle
 import chromahub.rhythm.app.features.catalog.domain.WorkSummary
 import chromahub.rhythm.app.features.catalog.domain.RhythmQueueEntry
+import chromahub.rhythm.app.features.catalog.domain.CatalogLibraryAlbum
+import chromahub.rhythm.app.features.catalog.domain.CatalogLibrarySong
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +25,8 @@ data class CatalogUiState(
     val configured: Boolean = false,
     val serverUrl: String = "",
     val works: List<WorkSummary> = emptyList(),
+    val songs: List<CatalogLibrarySong> = emptyList(),
+    val albums: List<CatalogLibraryAlbum> = emptyList(),
     val selectedBundle: WorkBundle? = null,
     val loading: Boolean = false,
     val refreshing: Boolean = false,
@@ -39,6 +43,8 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                 configured = it.configured,
                 serverUrl = it.serverUrl,
                 works = repository.cachedWorks(),
+                songs = repository.cachedLibrary()?.songs.orEmpty(),
+                albums = repository.cachedLibrary()?.albums.orEmpty(),
             )
         },
     )
@@ -46,7 +52,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     private var searchJob: Job? = null
 
     init {
-        if (_state.value.configured) refreshWorks()
+        if (_state.value.configured) refreshLibrary()
     }
 
     fun saveConnection(serverUrl: String, token: String) {
@@ -60,7 +66,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                         serverUrl = connection.serverUrl,
                         loading = false,
                     )
-                    refreshWorks()
+                    refreshLibrary()
                 },
                 onFailure = { _state.value = _state.value.copy(loading = false, error = message(it)) },
             )
@@ -116,6 +122,44 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    suspend fun loadWork(workId: String): Result<WorkBundle> {
+        val cached = repository.cachedBundle(workId)
+        if (cached != null) _state.value = _state.value.copy(selectedBundle = cached)
+        return repository.getWorkBundle(workId).onSuccess {
+            _state.value = _state.value.copy(selectedBundle = it, error = null)
+        }
+    }
+
+    fun refreshLibrary() {
+        viewModelScope.launch {
+            val hadItems = _state.value.songs.isNotEmpty() || _state.value.albums.isNotEmpty()
+            _state.value = _state.value.copy(
+                loading = !hadItems,
+                refreshing = hadItems,
+                error = null,
+            )
+            repository.getLibrary(forceRefresh = true).fold(
+                onSuccess = { snapshot ->
+                    _state.value = _state.value.copy(
+                        songs = snapshot.songs,
+                        albums = snapshot.albums,
+                        loading = false,
+                        refreshing = false,
+                        offlineSnapshot = snapshot.fromCache,
+                    )
+                },
+                onFailure = { error ->
+                    _state.value = _state.value.copy(
+                        loading = false,
+                        refreshing = false,
+                        offlineSnapshot = hadItems && error is CatalogFailure.Unreachable,
+                        error = message(error),
+                    )
+                },
+            )
+        }
+    }
+
     fun closeWork() {
         _state.value = _state.value.copy(selectedBundle = null, error = null)
     }
@@ -148,21 +192,21 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         if (!repository.connection().configured) return Result.success(null)
         return runCatching {
             val entries = record.entries.map { saved ->
-                val descriptor = repository.getPlayback(saved.nowPlaying.renditionId).getOrThrow()
-                require(descriptor.assetId == saved.assetId && descriptor.cacheKey == saved.cacheKey) {
-                    "已保存队列的 Asset 身份已变化"
-                }
                 RhythmQueueEntry(
-                    nowPlaying = saved.nowPlaying,
+                    nowPlaying = saved.nowPlaying.copy(assetId = null),
                     playback = CatalogPlaybackItem(
-                        renditionId = descriptor.renditionId,
-                        assetId = descriptor.assetId,
+                        renditionId = saved.nowPlaying.renditionId,
+                        assetId = null,
                         title = saved.title,
                         artist = saved.artist,
                         arrangementName = saved.arrangementName,
-                        playbackUrl = descriptor.relativeUrl,
-                        cacheKey = descriptor.cacheKey,
-                        mediaType = descriptor.mediaType,
+                        playbackUrl = chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
+                            .deferredUri(saved.nowPlaying.renditionId),
+                        cacheKey = null,
+                        mediaType = "audio/mpeg",
+                        durationMs = saved.durationMs,
+                        albumId = saved.albumId,
+                        artworkUrl = saved.artworkUrl,
                     ),
                 )
             }

@@ -202,6 +202,7 @@ fun AlbumDetailScreen(
         onComplete: (successCount: Int, failCount: Int) -> Unit
     ) -> Unit)? = null,
     isStreamingMode: Boolean = false,
+    allowSongOptions: Boolean = true,
     viewModel: MusicViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -635,8 +636,10 @@ fun AlbumDetailScreen(
                                                 useHoursFormat = useHoursFormat,
                                                 onClick = { onSongClick(song) },
                                                 onMoreClick = {
-                                                    selectedSongForOptions = song
-                                                    showSongOptionsSheet = true
+                                                    if (allowSongOptions) {
+                                                        selectedSongForOptions = song
+                                                        showSongOptionsSheet = true
+                                                    }
                                                 }
                                             )
                                         }
@@ -1110,8 +1113,10 @@ fun AlbumDetailScreen(
                                         useHoursFormat = useHoursFormat,
                                         onClick = { onSongClick(song) },
                                         onMoreClick = {
-                                            selectedSongForOptions = song
-                                            showSongOptionsSheet = true
+                                            if (allowSongOptions) {
+                                                selectedSongForOptions = song
+                                                showSongOptionsSheet = true
+                                            }
                                         }
                                     )
                                 }
@@ -1139,7 +1144,7 @@ fun AlbumDetailScreen(
         )
     }
 
-    if (showSongOptionsSheet && selectedSongForOptions != null) {
+    if (allowSongOptions && showSongOptionsSheet && selectedSongForOptions != null) {
         PlaylistSongOptionsBottomSheet(
             song = selectedSongForOptions!!,
             onDismiss = { showSongOptionsSheet = false },

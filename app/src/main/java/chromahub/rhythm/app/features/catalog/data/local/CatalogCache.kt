@@ -4,6 +4,9 @@ import android.content.Context
 import androidx.core.content.edit
 import chromahub.rhythm.app.features.catalog.domain.WorkBundle
 import chromahub.rhythm.app.features.catalog.domain.WorkSummary
+import chromahub.rhythm.app.features.catalog.domain.CatalogLibraryAlbum
+import chromahub.rhythm.app.features.catalog.domain.CatalogLibrarySnapshot
+import chromahub.rhythm.app.features.catalog.domain.CatalogLibrarySong
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -20,6 +23,24 @@ internal class CatalogCache(context: Context, private val gson: Gson = Gson()) {
         preferences.edit { etag?.let { putString(etagKey(bundle.work.id), it) } ?: remove(etagKey(bundle.work.id)) }
     }
     fun bundleEtag(workId: String): String? = preferences.getString(etagKey(workId), null)
+
+    fun loadLibrary(): CatalogLibrarySnapshot? {
+        val songs = read<List<CatalogLibrarySong>>(KEY_LIBRARY_SONGS, object : TypeToken<List<CatalogLibrarySong>>() {}.type)
+            ?: return null
+        val albums = read<List<CatalogLibraryAlbum>>(KEY_LIBRARY_ALBUMS, object : TypeToken<List<CatalogLibraryAlbum>>() {}.type)
+            ?: return null
+        return CatalogLibrarySnapshot(songs, albums, fromCache = true)
+    }
+
+    fun saveLibrary(snapshot: CatalogLibrarySnapshot) {
+        write(KEY_LIBRARY_SONGS, snapshot.songs)
+        write(KEY_LIBRARY_ALBUMS, snapshot.albums)
+    }
+
+    fun loadLibraryAlbum(albumId: String): CatalogLibraryAlbum? =
+        read(libraryAlbumKey(albumId), CatalogLibraryAlbum::class.java)
+
+    fun saveLibraryAlbum(album: CatalogLibraryAlbum) = write(libraryAlbumKey(album.id), album)
 
     fun syncCursor(): Long = preferences.getLong(KEY_SYNC_CURSOR, 0L)
     fun saveSyncCursor(cursor: Long) = preferences.edit(commit = true) { putLong(KEY_SYNC_CURSOR, cursor) }
@@ -39,10 +60,13 @@ internal class CatalogCache(context: Context, private val gson: Gson = Gson()) {
     private fun write(key: String, value: Any) = preferences.edit(commit = true) { putString(key, gson.toJson(value)) }
     private fun bundleKey(id: String) = "bundle:$id"
     private fun etagKey(id: String) = "etag:$id"
+    private fun libraryAlbumKey(id: String) = "library_album:$id"
 
     private companion object {
         const val NAME = "rhythm_catalog_cache_v1"
         const val KEY_WORKS = "works"
         const val KEY_SYNC_CURSOR = "sync_cursor"
+        const val KEY_LIBRARY_SONGS = "library_songs"
+        const val KEY_LIBRARY_ALBUMS = "library_albums"
     }
 }

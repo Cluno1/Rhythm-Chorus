@@ -17,8 +17,11 @@ data class CatalogQueueRecordEntry(
     val title: String,
     val artist: String,
     val arrangementName: String,
-    val assetId: String,
-    val cacheKey: String,
+    val assetId: String?,
+    val cacheKey: String?,
+    val durationMs: Long = 0L,
+    val albumId: String = "",
+    val artworkUrl: String? = null,
 )
 
 class CatalogQueueStore(context: Context, private val gson: Gson = Gson()) {
@@ -34,6 +37,9 @@ class CatalogQueueStore(context: Context, private val gson: Gson = Gson()) {
                     arrangementName = it.playback.arrangementName,
                     assetId = it.playback.assetId,
                     cacheKey = it.playback.cacheKey,
+                    durationMs = it.playback.durationMs,
+                    albumId = it.playback.albumId,
+                    artworkUrl = it.playback.artworkUrl,
                 )
             },
             currentIndex = currentIndex.coerceIn(entries.indices),

@@ -25,6 +25,7 @@ import android.net.Uri
 import chromahub.rhythm.app.features.streaming.di.StreamingMusicModule
 import chromahub.rhythm.app.features.catalog.data.CatalogCredentialsStore
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
+import chromahub.rhythm.app.features.catalog.data.CatalogDataSpecResolver
 import kotlinx.coroutines.runBlocking
 import androidx.media3.datasource.cache.CacheDataSource
 import chromahub.rhythm.app.infrastructure.audio.RhythmBassBoostProcessor
@@ -342,26 +343,8 @@ class RhythmPlayerEngine(
             cacheDataSourceFactory,
             object : ResolvingDataSource.Resolver {
                 override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
-                    if (
-                        CatalogPlaybackPolicy.allowsAssetRequest(
-                            dataSpec.uri.toString(),
-                            dataSpec.key,
-                            CatalogCredentialsStore(context).loadServerUrl(),
-                        )
-                    ) {
-                        // issue 11：COS presigned 直连自带签名，绝不把后端 Bearer 令牌发往对象存储。
-                        val token =
-                            if (CatalogPlaybackPolicy.isSignedObjectStoreUrl(dataSpec.uri.toString())) {
-                                null
-                            } else {
-                                CatalogCredentialsStore(context).loadToken()
-                            }
-                        if (!token.isNullOrBlank()) {
-                            return dataSpec.withAdditionalHeaders(
-                                mapOf("Authorization" to "Bearer $token"),
-                            )
-                        }
-                    }
+                    val catalogResolved = CatalogDataSpecResolver.resolve(context, dataSpec)
+                    if (catalogResolved !== dataSpec) return catalogResolved
                     if (
                         CatalogPlaybackPolicy.THIRD_PARTY_STREAMING_ENABLED &&
                         dataSpec.uri.scheme == "streaming"

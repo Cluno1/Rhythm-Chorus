@@ -7,6 +7,7 @@ import retrofit2.http.HEAD
 import retrofit2.http.Header
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Url
 import retrofit2.http.Streaming
 
 /** Second-phase API surface. Deliberately contains only GET and HEAD operations. */
@@ -20,6 +21,21 @@ internal interface CatalogApi {
         @Query("cursor") cursor: String? = null,
         @Query("limit") limit: Int = 50,
     ): Response<WorkPageDto>
+
+    @GET("v2/library/songs")
+    suspend fun librarySongs(
+        @Query("cursor") cursor: String? = null,
+        @Query("limit") limit: Int = 200,
+    ): Response<LibrarySongPageDto>
+
+    @GET("v2/library/albums")
+    suspend fun libraryAlbums(
+        @Query("cursor") cursor: String? = null,
+        @Query("limit") limit: Int = 200,
+    ): Response<LibraryAlbumPageDto>
+
+    @GET("v2/library/albums/{id}")
+    suspend fun libraryAlbum(@Path("id") albumId: String): Response<LibraryAlbumDetailDto>
 
     @GET("v2/works/{id}/bundle")
     suspend fun workBundle(
@@ -35,6 +51,13 @@ internal interface CatalogApi {
         @Path("id") renditionId: String,
         @Query("prefer") prefer: String = "stream",
     ): Response<PlaybackDto>
+
+    @GET("v2/assets/{id}/delivery")
+    suspend fun assetDelivery(@Path("id") assetId: String): Response<AssetDeliveryDto>
+
+    @Streaming
+    @GET
+    suspend fun deliveredAsset(@Url url: String): Response<ResponseBody>
 
     @Streaming
     @GET("v2/assets/{id}/content")

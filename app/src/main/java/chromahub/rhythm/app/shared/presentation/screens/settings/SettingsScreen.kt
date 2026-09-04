@@ -180,6 +180,7 @@ object SettingsRoutes {
     const val GO_SETTINGS = "go_settings"
     const val BATTERY_SAVER = "battery_saver_settings"
     const val REPLAY_GAIN = "replay_gain_settings"
+    const val CATALOG = "catalog_settings"
 }
 
 data class SettingItem(
@@ -376,6 +377,7 @@ fun SettingsScreen(
                 title = context.getString(R.string.settings_section_notifications_services),
                 items = buildList {
                     add(SettingItem(RhythmIcons.Notifications, context.getString(R.string.settings_notifications), context.getString(R.string.settings_notifications_desc), onClick = { onNavigateTo(SettingsRoutes.NOTIFICATIONS) }))
+                    add(SettingItem(MaterialSymbolIcon("cloud"), "音乐库服务器", "配置 ihope 音乐与乐谱服务", onClick = { onNavigateTo(SettingsRoutes.CATALOG) }))
                     // API Management/Integrations is available in both LOCAL and STREAMING modes
                     add(SettingItem(MaterialSymbolIcon("api"), context.getString(R.string.settings_api_management), context.getString(R.string.settings_api_management_desc), onClick = { onNavigateTo(SettingsRoutes.API_MANAGEMENT) }))
                 }
@@ -1037,6 +1039,8 @@ fun SettingsScreenWrapper(
                     }
                 }
             }
+        } else if (route == SettingsRoutes.CATALOG) {
+            navController.navigate("catalog_settings")
         } else if (route == SettingsRoutes.EQUALIZER) {
             navController.navigate(Screen.Equalizer.route)
         } else if (route == SettingsRoutes.SLEEP_TIMER) {

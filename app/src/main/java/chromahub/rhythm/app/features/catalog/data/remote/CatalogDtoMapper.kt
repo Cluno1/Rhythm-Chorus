@@ -1,8 +1,11 @@
 package chromahub.rhythm.app.features.catalog.data.remote
 
 import chromahub.rhythm.app.features.catalog.domain.Arrangement
+import chromahub.rhythm.app.features.catalog.domain.AssetDeliveryDescriptor
 import chromahub.rhythm.app.features.catalog.domain.CatalogChange
 import chromahub.rhythm.app.features.catalog.domain.CatalogChanges
+import chromahub.rhythm.app.features.catalog.domain.CatalogLibraryAlbum
+import chromahub.rhythm.app.features.catalog.domain.CatalogLibrarySong
 import chromahub.rhythm.app.features.catalog.domain.CatalogPage
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import chromahub.rhythm.app.features.catalog.domain.Part
@@ -25,6 +28,20 @@ internal object CatalogDtoMapper {
         items = dto.items.required("items").map(::work),
         nextCursor = dto.nextCursor,
     )
+
+    fun librarySongs(dto: LibrarySongPageDto): Pair<List<CatalogLibrarySong>, String?> =
+        dto.items.required("items").map(::librarySong) to dto.nextCursor
+
+    fun libraryAlbums(dto: LibraryAlbumPageDto): Pair<List<CatalogLibraryAlbum>, String?> =
+        dto.items.required("items").map(::libraryAlbum) to dto.nextCursor
+
+    fun libraryAlbumDetail(dto: LibraryAlbumDetailDto): CatalogLibraryAlbum {
+        val album = libraryAlbum(dto.album.required("album"))
+        val songs = dto.songs.required("songs").map(::librarySong)
+        require(songs.all { it.albumId == album.id }) { "album detail contains a song from another album" }
+        require(album.songCount == songs.size) { "album song_count does not match songs" }
+        return album.copy(songs = songs)
+    }
 
     fun work(dto: WorkDto): WorkSummary = WorkSummary(
         id = uuid(dto.id, "work.id"),
@@ -128,6 +145,29 @@ internal object CatalogDtoMapper {
         )
     }
 
+    fun assetDelivery(dto: AssetDeliveryDto): AssetDeliveryDescriptor {
+        val assetId = uuid(dto.assetId, "asset_delivery.asset_id")
+        val normalizedHash = hash(dto.sha256, "asset_delivery.sha256")
+        val expectedCacheKey = "rhythm:asset:$assetId:$normalizedHash"
+        require(dto.cacheKey == expectedCacheKey) { "asset_delivery.cache_key does not match asset identity" }
+        val delivery = text(dto.delivery, "asset_delivery.delivery")
+        require(delivery == "authenticated_url" || delivery == "signed_url") {
+            "asset_delivery.delivery is not supported"
+        }
+        return AssetDeliveryDescriptor(
+            assetId = assetId,
+            mediaType = text(dto.mediaType, "asset_delivery.media_type"),
+            byteSize = positiveLong(dto.byteSize, "asset_delivery.byte_size"),
+            sha256 = normalizedHash,
+            delivery = delivery,
+            relativeUrl = text(dto.url, "asset_delivery.url"),
+            cacheKey = expectedCacheKey,
+            etag = text(dto.etag, "asset_delivery.etag"),
+            supportsRange = dto.supportsRange.required("asset_delivery.supports_range"),
+            expiresAt = dto.expiresAt,
+        )
+    }
+
     fun changes(dto: ChangesDto): CatalogChanges = CatalogChanges(
         changes = dto.changes.required("changes").map {
             CatalogChange(
@@ -178,6 +218,31 @@ internal object CatalogDtoMapper {
                 mediaType = text(it.mediaType, "rendition_asset.media_type"),
             )
         },
+    )
+
+    private fun librarySong(dto: LibrarySongDto) = CatalogLibrarySong(
+        workId = uuid(dto.workId, "library_song.work_id"),
+        arrangementId = uuid(dto.arrangementId, "library_song.arrangement_id"),
+        renditionId = uuid(dto.renditionId, "library_song.rendition_id"),
+        albumId = uuid(dto.albumId, "library_song.album_id"),
+        title = text(dto.title, "library_song.title"),
+        artist = dto.artist?.trim()?.takeIf { it.isNotEmpty() },
+        albumTitle = text(dto.albumTitle, "library_song.album_title"),
+        durationMs = dto.durationMs.required("library_song.duration_ms").also {
+            require(it >= 0) { "library_song.duration_ms must not be negative" }
+        },
+        trackNo = dto.trackNo?.also { require(it > 0) { "library_song.track_no must be positive" } },
+        coverUrl = dto.coverUrl?.trim()?.takeIf { it.isNotEmpty() },
+        lyrics = dto.lyrics?.takeIf { it.isNotBlank() },
+    )
+
+    private fun libraryAlbum(dto: LibraryAlbumDto) = CatalogLibraryAlbum(
+        id = uuid(dto.id, "library_album.id"),
+        key = text(dto.key, "library_album.key"),
+        title = text(dto.title, "library_album.title"),
+        artist = dto.artist?.trim()?.takeIf { it.isNotEmpty() },
+        coverUrl = dto.coverUrl?.trim()?.takeIf { it.isNotEmpty() },
+        songCount = nonNegative(dto.songCount, "library_album.song_count"),
     )
 
     private fun uuid(value: String?, field: String): String = text(value, field).also {
