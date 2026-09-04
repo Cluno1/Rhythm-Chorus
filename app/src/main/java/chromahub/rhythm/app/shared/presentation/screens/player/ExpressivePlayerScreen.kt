@@ -313,6 +313,8 @@ fun ExpressivePlayerScreen(
     onSkipPrevious: () -> Unit,
     onSkipNext: () -> Unit,
     onToggleFavorite: () -> Unit,
+    isCatalogItem: Boolean = false,
+    onOpenScore: () -> Unit = {},
     onToggleShuffle: () -> Unit,
     onToggleRepeat: () -> Unit,
     onToggleLyrics: () -> Unit,
@@ -1146,13 +1148,13 @@ fun ExpressivePlayerScreen(
                                             icon = RhythmIcons.Player.Lyrics
                                         )
                                         RhythmButtonWeighted(
-                                            onClick = onToggleFavorite,
+                                            onClick = if (isCatalogItem) onOpenScore else onToggleFavorite,
                                             weight = 1f,
                                             isFirst = false,
                                             isLast = true,
                                             containerColor = controlsContainerColor,
                                             contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
-                                            icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true)
+                                            icon = if (isCatalogItem) MaterialSymbolIcon("score", filled = true) else if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true)
                                         )
                                     }
                                 }
@@ -1323,16 +1325,16 @@ fun ExpressivePlayerScreen(
                                         contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
                                     )
                                     RhythmDetailActionButton(
-                                        onClick = onToggleFavorite,
+                                        onClick = if (isCatalogItem) onOpenScore else onToggleFavorite,
                                         weight = 1f,
                                         height = 44.dp,
                                         isFirst = false,
                                         isLast = false,
                                         type = RhythmButtonType.Tonal,
-                                        icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
+                                        icon = if (isCatalogItem) MaterialSymbolIcon("score", filled = true) else if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
                                         iconSize = 20.dp,
                                         text = null,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_favorite),
+                                        contentDescription = if (isCatalogItem) "乐谱" else stringResource(R.string.expressiveplayerscreen_favorite),
                                         containerColor = controlsContainerColor,
                                         contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
                                     )
