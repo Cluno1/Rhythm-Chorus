@@ -2446,6 +2446,19 @@ fun SingleCardSongsContent(
     val audioQualityCache = remember { mutableMapOf<String, AudioQualityDetector.AudioQuality>() }
     
     suspend fun getAudioQuality(song: Song): AudioQualityDetector.AudioQuality {
+        if (song.id.startsWith("rhythm-catalog:")) {
+            return AudioQualityDetector.AudioQuality(
+                qualityType = AudioQualityDetector.QualityType.LOSSY_COMPRESSED,
+                isLossless = false,
+                isDolby = false,
+                isDTS = false,
+                isHiRes = false,
+                qualityLabel = "MP3",
+                qualityDescription = "Server-managed audio",
+                bitDepthEstimate = 0,
+                category = "Lossy",
+            )
+        }
         audioQualityCache[song.id]?.let { return it }
         
         return withContext(Dispatchers.IO) {

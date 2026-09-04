@@ -215,4 +215,36 @@ class CatalogPlaybackPolicyTest {
             )
         )
     }
+
+    @Test
+    fun mediaSessionAcceptsStrictDeferredItemButRejectsArbitraryUri() {
+        val deferredMediaId = "rhythm-catalog:rendition:$renditionId"
+        assertTrue(
+            CatalogPlaybackPolicy.allowsMediaSessionItem(
+                mediaId = deferredMediaId,
+                uri = CatalogPlaybackPolicy.deferredUri(renditionId),
+                customCacheKey = null,
+                mediaType = "audio/mpeg",
+                trustedServerUrl = "https://music.example",
+            )
+        )
+        assertFalse(
+            CatalogPlaybackPolicy.allowsMediaSessionItem(
+                mediaId = deferredMediaId,
+                uri = "content://media/audio/42",
+                customCacheKey = null,
+                mediaType = "audio/mpeg",
+                trustedServerUrl = "https://music.example",
+            )
+        )
+        assertFalse(
+            CatalogPlaybackPolicy.allowsMediaSessionItem(
+                mediaId = deferredMediaId,
+                uri = "rhythm-catalog://rendition/33333333-3333-4333-8333-333333333333",
+                customCacheKey = null,
+                mediaType = "audio/mpeg",
+                trustedServerUrl = "https://music.example",
+            )
+        )
+    }
 }

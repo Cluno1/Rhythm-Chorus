@@ -635,11 +635,9 @@ fun AlbumDetailScreen(
                                                 isPlaying = isPlaying,
                                                 useHoursFormat = useHoursFormat,
                                                 onClick = { onSongClick(song) },
-                                                onMoreClick = {
-                                                    if (allowSongOptions) {
+                                                onMoreClick = albumSongMoreAction(allowSongOptions) {
                                                         selectedSongForOptions = song
                                                         showSongOptionsSheet = true
-                                                    }
                                                 }
                                             )
                                         }
@@ -1114,11 +1112,9 @@ fun AlbumDetailScreen(
                                         isPlaying = isPlaying,
                                         useHoursFormat = useHoursFormat,
                                         onClick = { onSongClick(song) },
-                                        onMoreClick = {
-                                            if (allowSongOptions) {
+                                        onMoreClick = albumSongMoreAction(allowSongOptions) {
                                                 selectedSongForOptions = song
                                                 showSongOptionsSheet = true
-                                            }
                                         }
                                     )
                                 }
@@ -1412,7 +1408,7 @@ private fun AboutAlbumSection(
 private fun AlbumSongItem(
     song: Song,
     onClick: () -> Unit,
-    onMoreClick: () -> Unit,
+    onMoreClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     currentSong: Song? = null,
     isPlaying: Boolean = false,
@@ -1535,30 +1531,37 @@ private fun AlbumSongItem(
                 )
             }
 
-            // 3-dot button matching library screen style: FilledIconButton, primaryContainer, 32×44dp, pill shape
-            FilledIconButton(
-                onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                    onMoreClick()
-                },
-                modifier = Modifier
-                    .width(32.dp)
-                    .height(44.dp),
-                shape = RoundedCornerShape(50),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            ) {
-                Icon(
-                    imageVector = RhythmIcons.More,
-                    contentDescription = stringResource(R.string.content_desc_more_options),
-                    modifier = Modifier.size(22.dp)
-                )
+            // A null action is a capability boundary, not a disabled/no-op affordance.
+            if (onMoreClick != null) {
+                FilledIconButton(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        onMoreClick()
+                    },
+                    modifier = Modifier
+                        .width(32.dp)
+                        .height(44.dp),
+                    shape = RoundedCornerShape(50),
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.More,
+                        contentDescription = stringResource(R.string.content_desc_more_options),
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
         }
     }
 }
+
+internal fun albumSongMoreAction(
+    allowSongOptions: Boolean,
+    action: () -> Unit,
+): (() -> Unit)? = action.takeIf { allowSongOptions }
 
 private fun groupedAlbumItemShape(index: Int, totalCount: Int): RoundedCornerShape {
     return when {

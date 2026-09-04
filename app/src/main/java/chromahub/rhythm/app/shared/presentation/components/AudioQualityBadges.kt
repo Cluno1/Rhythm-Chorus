@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
 import android.net.Uri
 import chromahub.rhythm.app.shared.data.model.Song
+import chromahub.rhythm.app.features.catalog.domain.isCatalogLibrarySong
 import chromahub.rhythm.app.features.streaming.domain.model.StreamingSong
 import chromahub.rhythm.app.util.AudioQualityDetector
 import chromahub.rhythm.app.util.AudioFormatDetector
@@ -139,6 +140,7 @@ fun AudioQualityIcon(
     var audioQuality by remember(song.id) { mutableStateOf<AudioQualityDetector.AudioQuality?>(null) }
 
     LaunchedEffect(song.id) {
+        if (song.isCatalogLibrarySong()) return@LaunchedEffect
         withContext(Dispatchers.IO) {
             try {
                 val formatInfo = AudioFormatDetector.detectFormat(context, song.uri, song)
@@ -232,6 +234,7 @@ fun AudioQualityBadges(
     var audioQuality by remember(song.id) { mutableStateOf<AudioQualityDetector.AudioQuality?>(null) }
 
     LaunchedEffect(song.id) {
+        if (song.isCatalogLibrarySong()) return@LaunchedEffect
         withContext(Dispatchers.IO) {
             try {
                 // First try to get format info for codec detection

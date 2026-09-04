@@ -73,6 +73,21 @@ object CatalogPlaybackPolicy {
         return deferredRenditionId(uri)?.equals(mediaRenditionId, ignoreCase = true) == true
     }
 
+    /** MediaSession admission accepts only a resolved Asset identity or the strict deferred form. */
+    fun allowsMediaSessionItem(
+        mediaId: String,
+        uri: String?,
+        customCacheKey: String?,
+        mediaType: String?,
+        trustedServerUrl: String?,
+    ): Boolean = allowsDeferred(mediaId, uri, mediaType) || allows(
+        mediaId = mediaId,
+        uri = uri,
+        customCacheKey = customCacheKey,
+        mediaType = mediaType,
+        trustedServerUrl = trustedServerUrl,
+    )
+
     fun deferredUri(renditionId: String): String {
         require(Regex("^$uuid$").matches(renditionId)) { "renditionId is not a UUID" }
         return "rhythm-catalog://rendition/${renditionId.lowercase(Locale.ROOT)}"

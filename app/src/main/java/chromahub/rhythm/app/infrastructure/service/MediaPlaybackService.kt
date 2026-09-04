@@ -2480,7 +2480,7 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                     val resolved = externalUriCache[mediaItem.mediaId] ?: mediaItem
                     val local = resolved.localConfiguration
                     if (
-                        CatalogPlaybackPolicy.allows(
+                        CatalogPlaybackPolicy.allowsMediaSessionItem(
                             resolved.mediaId,
                             local?.uri?.toString(),
                             local?.customCacheKey,
