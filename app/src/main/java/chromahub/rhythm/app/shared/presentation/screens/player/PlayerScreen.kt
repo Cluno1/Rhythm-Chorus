@@ -242,26 +242,15 @@ fun PlayerScreen(
     isStreamingMode: Boolean = false,
     isCatalogItem: Boolean = false,
     onCatalogOpenWork: () -> Unit = {},
+    onCatalogOpenScore: () -> Unit = {},
     swipeToDismissEnabled: Boolean = true,
     expansionFraction: Float = 1f
 ) {
-    if (isCatalogItem) {
-        ManagedCatalogPlayer(
-            song = song,
-            isPlaying = isPlaying,
-            progress = progress,
-            queuePosition = queuePosition,
-            queueTotal = queueTotal,
-            onBack = onBack,
-            onPlayPause = onPlayPause,
-            onSkipPrevious = onSkipPrevious,
-            onSkipNext = onSkipNext,
-            onSeek = onSeek,
-            onOpenWork = onCatalogOpenWork,
-            modifier = modifier,
-        )
-        return
-    }
+    // issue 9: catalog MP3 走 Rhythm 原生播放器（Expressive/Material），不再进自研的
+    // ManagedCatalogPlayer。`song` 已是 catalog 投影的 Song，直接落入下方原生播放逻辑，
+    // 从而拿到原生 song 链体验（封面/歌词/队列）。乐谱入口后续增量：在原生播放页按
+    // catalogNowPlaying.workId 打开 alphaTab 谱页。isCatalogItem/onCatalogOpenWork/
+    // ManagedCatalogPlayer 暂保留（签名与回退兼容，编译期未使用不影响）。
     val playerThemeId by appSettings.playerThemeId.collectAsState()
     var showFullScreenLyrics by remember { mutableStateOf(false) }
 
@@ -493,6 +482,8 @@ fun PlayerScreen(
             onSkipPrevious = onSkipPrevious,
             onSkipNext = onSkipNext,
             onToggleFavorite = onToggleFavorite,
+            isCatalogItem = isCatalogItem,
+            onOpenScore = onCatalogOpenScore,
             onToggleShuffle = onToggleShuffle,
             onToggleRepeat = onToggleRepeat,
             onToggleLyrics = { showLyricsView = !showLyricsView },

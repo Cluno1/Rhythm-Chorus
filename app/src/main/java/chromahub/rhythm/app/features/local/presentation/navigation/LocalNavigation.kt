@@ -1211,6 +1211,37 @@ private fun LocalNavigationContent(
                                 }
                             }
                         },
+                        onCatalogOpenScore = {
+                            // issue 9: 播放页乐谱按钮——按当前 catalog 歌曲的 workId 打开 alphaTab 谱页。
+                            activeCatalogItem?.let { item ->
+                                val bundle = catalogState.selectedBundle
+                                val scorePair = bundle
+                                    ?.takeIf { it.work.id == item.workId }
+                                    ?.arrangements
+                                    ?.flatMap { arr -> arr.scores.map { arr to it } }
+                                    ?.firstOrNull { (_, s) ->
+                                        (s.publishedRevisionId ?: s.headRevisionId) != null
+                                    }
+                                if (bundle != null && scorePair != null) {
+                                    val (arr, score) = scorePair
+                                    val revId = (score.publishedRevisionId ?: score.headRevisionId)!!
+                                    navController.navigate(
+                                        Screen.CatalogScore.createRoute(
+                                            item.workId,
+                                            score.id,
+                                            revId,
+                                            "${bundle.work.canonicalTitle} · ${score.label}",
+                                            arr.parts.size,
+                                        )
+                                    ) { launchSingleTop = true }
+                                } else {
+                                    catalogViewModel.openWork(item.workId)
+                                    navController.navigate(
+                                        Screen.CatalogWorkDetail.createRoute(item.workId)
+                                    ) { launchSingleTop = true }
+                                }
+                            }
+                        },
                         onToggleFavorite = if (isStreamingMode) {
                             {
                                 val s = streamingCurrentSong

@@ -107,6 +107,7 @@ fun RhythmPlayerSheet(
     isStreamingMode: Boolean = false,
     isCatalogItem: Boolean = false,
     onCatalogOpenWork: () -> Unit = {},
+    onCatalogOpenScore: () -> Unit = {},
     miniPlayerBottomOffset: Dp = 8.dp
 ) {
     if (song == null) return
@@ -327,6 +328,7 @@ fun RhythmPlayerSheet(
                         isStreamingMode = isStreamingMode,
                         isCatalogItem = isCatalogItem,
                         onCatalogOpenWork = onCatalogOpenWork,
+                        onCatalogOpenScore = onCatalogOpenScore,
                         swipeToDismissEnabled = false,
                         expansionFraction = expansionFraction
                     )
