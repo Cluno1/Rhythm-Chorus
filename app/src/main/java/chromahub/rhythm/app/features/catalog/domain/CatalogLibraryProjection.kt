@@ -13,7 +13,7 @@ fun CatalogLibrarySong.toRhythmSong(): Song = Song(
     artist = artist ?: UNKNOWN_ARTIST,
     album = albumTitle,
     albumId = albumId,
-    duration = durationMs,
+    duration = durationMs ?: 0L,
     // This URI is display-only. Playback must exchange renditionId for a fresh descriptor.
     uri = Uri.parse("rhythm-catalog://rendition/$renditionId"),
     artworkUri = coverUrl?.toSafeArtworkUri(),
@@ -40,6 +40,35 @@ fun CatalogLibraryAlbum.toRhythmAlbum(): Album {
 }
 
 fun Song.isCatalogLibrarySong(): Boolean = id.startsWith(CATALOG_SONG_ID_PREFIX)
+
+data class CatalogQueueSelection(
+    val songs: List<Song>,
+    val startIndex: Int,
+)
+
+/**
+ * Safely narrows a legacy/mixed Rhythm queue to backend-managed entries. Local playback remains
+ * disabled, while a stale local row can no longer make the valid catalog portion fail as a unit.
+ */
+fun List<Song>.catalogQueueSelection(requestedStartIndex: Int): CatalogQueueSelection {
+    val indexes = catalogQueueSelectionIndexes(map(Song::id), requestedStartIndex)
+    return CatalogQueueSelection(indexes.sourceIndexes.map(::get), indexes.startIndex)
+}
+
+internal data class CatalogQueueSelectionIndexes(
+    val sourceIndexes: List<Int>,
+    val startIndex: Int,
+)
+
+internal fun catalogQueueSelectionIndexes(
+    itemIds: List<String>,
+    requestedStartIndex: Int,
+): CatalogQueueSelectionIndexes {
+    val requestedId = itemIds.getOrNull(requestedStartIndex)
+    val managedIndexes = itemIds.indices.filter { itemIds[it].startsWith(CATALOG_SONG_ID_PREFIX) }
+    val managedStart = managedIndexes.indexOfFirst { itemIds[it] == requestedId }.coerceAtLeast(0)
+    return CatalogQueueSelectionIndexes(managedIndexes, managedStart)
+}
 
 private fun String.toSafeArtworkUri(): Uri? = runCatching { Uri.parse(this) }.getOrNull()
     ?.takeIf { it.scheme.equals("https", ignoreCase = true) }

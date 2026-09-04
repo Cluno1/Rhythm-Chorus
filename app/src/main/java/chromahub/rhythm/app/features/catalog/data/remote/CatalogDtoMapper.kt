@@ -154,9 +154,13 @@ internal object CatalogDtoMapper {
         require(delivery == "authenticated_url" || delivery == "signed_url") {
             "asset_delivery.delivery is not supported"
         }
+        val mediaType = text(dto.mediaType, "asset_delivery.media_type")
+        require(CatalogPlaybackPolicy.isMusicXmlMediaType(mediaType)) {
+            "asset_delivery.media_type is not an allowed MusicXML format"
+        }
         return AssetDeliveryDescriptor(
             assetId = assetId,
-            mediaType = text(dto.mediaType, "asset_delivery.media_type"),
+            mediaType = mediaType,
             byteSize = positiveLong(dto.byteSize, "asset_delivery.byte_size"),
             sha256 = normalizedHash,
             delivery = delivery,
@@ -228,7 +232,7 @@ internal object CatalogDtoMapper {
         title = text(dto.title, "library_song.title"),
         artist = dto.artist?.trim()?.takeIf { it.isNotEmpty() },
         albumTitle = text(dto.albumTitle, "library_song.album_title"),
-        durationMs = dto.durationMs.required("library_song.duration_ms").also {
+        durationMs = dto.durationMs?.also {
             require(it >= 0) { "library_song.duration_ms must not be negative" }
         },
         trackNo = dto.trackNo?.also { require(it > 0) { "library_song.track_no must be positive" } },

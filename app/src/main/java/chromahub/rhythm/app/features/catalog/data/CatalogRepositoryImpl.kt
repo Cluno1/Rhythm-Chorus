@@ -132,18 +132,20 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         val api = client().api
         val songs = mutableListOf<chromahub.rhythm.app.features.catalog.domain.CatalogLibrarySong>()
         var songCursor: String? = null
+        val songCursorGuard = CatalogPaginationCursorGuard("library songs")
         do {
             val page = CatalogDtoMapper.librarySongs(api.librarySongs(songCursor).bodyOrThrow())
             songs += page.first
-            songCursor = page.second
+            songCursor = songCursorGuard.advance(page.second)
         } while (songCursor != null)
 
         val albums = mutableListOf<CatalogLibraryAlbum>()
         var albumCursor: String? = null
+        val albumCursorGuard = CatalogPaginationCursorGuard("library albums")
         do {
             val page = CatalogDtoMapper.libraryAlbums(api.libraryAlbums(albumCursor).bodyOrThrow())
             albums += page.first
-            albumCursor = page.second
+            albumCursor = albumCursorGuard.advance(page.second)
         } while (albumCursor != null)
 
         require(songs.distinctBy { it.renditionId }.size == songs.size) { "library contains duplicate rendition_id" }
@@ -156,7 +158,6 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
             require(detail.key == summary.key && detail.title == summary.title) {
                 "album detail identity does not match album list"
             }
-            cache.saveLibraryAlbum(detail)
             detail
         }
         val detailSongs = detailedAlbums.flatMap { it.songs }

@@ -156,4 +156,47 @@ class CatalogDtoMapperTest {
         assertEquals("signed_url", result.delivery)
         assertEquals(hash, result.sha256)
     }
+
+    @Test
+    fun acceptsNullableLibraryDurationAndRejectsNegativeDuration() {
+        val albumId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        val base = LibrarySongDto(
+            workId = workId,
+            arrangementId = arrangementId,
+            renditionId = renditionId,
+            albumId = albumId,
+            title = "Unknown duration",
+            artist = null,
+            albumTitle = "ihope",
+            durationMs = null,
+            trackNo = null,
+            coverUrl = null,
+            lyrics = null,
+        )
+
+        assertNull(CatalogDtoMapper.librarySongs(LibrarySongPageDto(listOf(base), null)).first.single().durationMs)
+        assertThrows(IllegalArgumentException::class.java) {
+            CatalogDtoMapper.librarySongs(LibrarySongPageDto(listOf(base.copy(durationMs = -1)), null))
+        }
+    }
+
+    @Test
+    fun rejectsNonMusicXmlAssetDeliveryMime() {
+        assertThrows(IllegalArgumentException::class.java) {
+            CatalogDtoMapper.assetDelivery(
+                AssetDeliveryDto(
+                    assetId = assetId,
+                    mediaType = "text/html",
+                    byteSize = 123,
+                    sha256 = hash,
+                    delivery = "authenticated_url",
+                    url = "/v2/assets/$assetId/content",
+                    cacheKey = "rhythm:asset:$assetId:$hash",
+                    etag = "etag",
+                    supportsRange = true,
+                    expiresAt = null,
+                )
+            )
+        }
+    }
 }

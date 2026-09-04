@@ -124,6 +124,7 @@ import chromahub.rhythm.app.features.local.presentation.screens.HomeScreen
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackItem
 import chromahub.rhythm.app.features.catalog.domain.RhythmNowPlayingItem
 import chromahub.rhythm.app.features.catalog.domain.RhythmQueueEntry
+import chromahub.rhythm.app.features.catalog.domain.catalogQueueSelection
 import chromahub.rhythm.app.features.catalog.domain.isCatalogLibrarySong
 import chromahub.rhythm.app.features.catalog.domain.toRhythmAlbum
 import chromahub.rhythm.app.features.catalog.domain.toRhythmSong
@@ -863,17 +864,28 @@ private fun LocalNavigationContent(
     val catalogSongByDisplayId = remember(catalogState.songs) {
         catalogState.songs.associateBy { "rhythm-catalog:rendition:${it.renditionId}" }
     }
-    val nativeSongs = remember(songs, catalogSongs) { (songs + catalogSongs).distinctBy { it.id } }
-    val nativeAlbums = remember(albums, catalogAlbums) { (albums + catalogAlbums).distinctBy { it.id } }
+    // Device MediaStore playback is a hard-disabled product surface (issue 6). Keep the original
+    // Rhythm screens, but project only backend-managed songs/albums into them so stale local state
+    // cannot create a mixed or arbitrary-URI queue.
+    val nativeSongs = catalogSongs
+    val nativeAlbums = catalogAlbums
+    LaunchedEffect(catalogState.error) {
+        catalogState.error?.let { snackbarHostState.showSnackbar(it) }
+    }
 
     val playCatalogQueue: (List<Song>, Int, Boolean) -> Unit = { requestedSongs, startIndex, shuffle ->
-        val catalogItems = requestedSongs.mapNotNull { song -> catalogSongByDisplayId[song.id] }
-        if (catalogItems.size != requestedSongs.size || catalogItems.isEmpty()) {
-            coroutineScope.launch { snackbarHostState.showSnackbar("远程歌曲队列数据不完整") }
+        val selection = requestedSongs.catalogQueueSelection(startIndex)
+        val catalogItems = selection.songs.mapNotNull { song -> catalogSongByDisplayId[song.id] }
+        if (catalogItems.isEmpty()) {
+            coroutineScope.launch { snackbarHostState.showSnackbar("本地音乐库已禁用") }
         } else {
             coroutineScope.launch {
                 val ordered = if (shuffle) catalogItems.shuffled() else catalogItems
-                val effectiveStartIndex = if (shuffle) 0 else startIndex.coerceIn(ordered.indices)
+                val effectiveStartIndex = if (shuffle) {
+                    0
+                } else {
+                    selection.startIndex.coerceIn(ordered.indices)
+                }
                 val entries = ordered.map { song ->
                     RhythmQueueEntry(
                         nowPlaying = RhythmNowPlayingItem(
@@ -895,7 +907,7 @@ private fun LocalNavigationContent(
                                 .deferredUri(song.renditionId),
                             cacheKey = null,
                             mediaType = "audio/mpeg",
-                            durationMs = song.durationMs,
+                            durationMs = song.durationMs ?: 0L,
                             albumId = song.albumId,
                             artworkUrl = song.coverUrl,
                         ),
@@ -907,7 +919,11 @@ private fun LocalNavigationContent(
         }
     }
     val playNativeSong: (Song) -> Unit = { song ->
-        if (song.isCatalogLibrarySong()) playCatalogQueue(listOf(song), 0, false) else onPlaySong(song)
+        if (song.isCatalogLibrarySong()) {
+            playCatalogQueue(listOf(song), 0, false)
+        } else {
+            coroutineScope.launch { snackbarHostState.showSnackbar("本地音乐库已禁用") }
+        }
     }
     LaunchedEffect(catalogState.configured) {
         if (catalogState.configured && viewModel.currentSong.value == null) {
@@ -1740,11 +1756,18 @@ private fun LocalNavigationContent(
                             musicViewModel = viewModel,
                             songs = nativeSongs,
                             albums = nativeAlbums,
-                            artists = artists,
-                            recentlyPlayed = recentlyPlayed,
+                            artists = emptyList(),
+                            recentlyPlayed = recentlyPlayed.filter { it.isCatalogLibrarySong() },
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             onSongClick = playNativeSong,
+                            onPlaySongs = { queue -> playCatalogQueue(queue, 0, false) },
+                            onShuffleSongs = { queue -> playCatalogQueue(queue, 0, true) },
+                            onRefreshLibrary = {
+                                viewModel.refreshLibrary(showMediaScanLoader = false)
+                                if (catalogState.configured) catalogViewModel.refreshLibrary()
+                            },
+                            additionalRefreshInProgress = catalogState.refreshing,
                             onAlbumClick = { album ->
                                 navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
                             },
@@ -3045,8 +3068,8 @@ private fun LocalNavigationContent(
                     LibraryScreen(
                         songs = if (isStreamingMode) streamingMappedSongs else nativeSongs,
                         albums = if (isStreamingMode) streamingMappedAlbums else nativeAlbums,
-                        playlists = if (isStreamingMode) streamingMappedPlaylists else playlists,
-                        artists = if (isStreamingMode) streamingMappedArtists else artists,
+                        playlists = if (isStreamingMode) streamingMappedPlaylists else emptyList(),
+                        artists = if (isStreamingMode) streamingMappedArtists else emptyList(),
                         currentSong = currentSong,
                         isPlaying = isPlaying,
                         onSongClick = { song ->
@@ -3078,10 +3101,8 @@ private fun LocalNavigationContent(
                                 navController.navigate(StreamingRoutes.album(album.id, album.title)) {
                                     launchSingleTop = true
                                 }
-                            } else if (album.songs.any { it.isCatalogLibrarySong() }) {
-                                playCatalogQueue(album.songs, 0, false)
                             } else {
-                                onPlayAlbum(album)
+                                playCatalogQueue(album.songs, 0, false)
                             }
                         },
                         onArtistClick = { artist ->
@@ -3094,37 +3115,29 @@ private fun LocalNavigationContent(
                         onAlbumShufflePlay = { album ->
                             if (isStreamingMode) {
                                 playStreamingMappedQueue(album.songs, 0, true)
-                            } else if (album.songs.any { it.isCatalogLibrarySong() }) {
-                                playCatalogQueue(album.songs, 0, true)
                             } else {
-                                onPlayAlbumShuffled(album)
+                                playCatalogQueue(album.songs, 0, true)
                             }
                         },
                         onPlayQueue = { queue ->
                             if (isStreamingMode) {
                                 playStreamingMappedQueue(queue, 0, false)
-                            } else if (queue.any { it.isCatalogLibrarySong() }) {
-                                playCatalogQueue(queue, 0, false)
                             } else {
-                                viewModel.playSongs(queue)
+                                playCatalogQueue(queue, 0, false)
                             }
                         },
                         onPlayQueueFromIndex = { queue, startIndex ->
                             if (isStreamingMode) {
                                 playStreamingMappedQueue(queue, startIndex, false)
-                            } else if (queue.any { it.isCatalogLibrarySong() }) {
-                                playCatalogQueue(queue, startIndex, false)
                             } else {
-                                viewModel.playQueue(songs = queue, enableShuffle = false, startIndex = startIndex)
+                                playCatalogQueue(queue, startIndex, false)
                             }
                         },
                         onShuffleQueue = { queue ->
                             if (isStreamingMode) {
                                 playStreamingMappedQueue(queue, 0, true)
-                            } else if (queue.any { it.isCatalogLibrarySong() }) {
-                                playCatalogQueue(queue, 0, true)
                             } else {
-                                viewModel.playShuffled(queue)
+                                playCatalogQueue(queue, 0, true)
                             }
                         },
                         onAlbumBottomSheetClick = { album ->
@@ -3161,12 +3174,12 @@ private fun LocalNavigationContent(
                         onRefreshClick = {
                             if (isStreamingMode) {
                                 streamingMusicViewModel.refreshHome()
-                            } else if (catalogState.configured) {
-                                catalogViewModel.refreshLibrary()
                             } else {
                                 viewModel.refreshLibrary(showMediaScanLoader = false)
+                                if (catalogState.configured) catalogViewModel.refreshLibrary()
                             }
                         }, // Added onRefreshClick
+                        additionalRefreshInProgress = catalogState.refreshing,
                         sortOrder = sortOrder,
                         onSkipNext = onSkipNext,
                         onAddToQueue = { song ->

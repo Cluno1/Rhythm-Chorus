@@ -164,7 +164,7 @@ data class CatalogLibrarySong(
     val title: String,
     val artist: String?,
     val albumTitle: String,
-    val durationMs: Long,
+    val durationMs: Long?,
     val trackNo: Int?,
     val coverUrl: String?,
     val lyrics: String?,

@@ -244,6 +244,10 @@ fun HomeScreen(
     currentSong: Song?,
     isPlaying: Boolean,
     onSongClick: (Song) -> Unit,
+    onPlaySongs: (List<Song>) -> Unit = {},
+    onShuffleSongs: (List<Song>) -> Unit = {},
+    onRefreshLibrary: () -> Unit = {},
+    additionalRefreshInProgress: Boolean = false,
     onAlbumClick: (Album) -> Unit,
     onArtistClick: (Artist) -> Unit,
     onPlayPause: () -> Unit,
@@ -632,6 +636,8 @@ fun HomeScreen(
                 recentlyPlayed = recentlyPlayed,
                 songs = songs,
                 onSongClick = onSongClick,
+                onPlaySongs = onPlaySongs,
+                onShuffleSongs = onShuffleSongs,
                 onAlbumClick = onAlbumClick,
                 onArtistClick = { artist: Artist ->
                     onNavigateToArtist(artist)
@@ -647,10 +653,8 @@ fun HomeScreen(
                 onNavigateToRhythmGuard = onNavigateToRhythmGuard,
                 musicViewModel = musicViewModel,
                 coroutineScope = coroutineScope,
-                isRefreshing = isLibraryRefreshing,
-                onRefresh = {
-                    musicViewModel.refreshLibrary(showMediaScanLoader = false)
-                }
+                isRefreshing = isLibraryRefreshing || additionalRefreshInProgress,
+                onRefresh = onRefreshLibrary
             )
         }
     }
@@ -897,8 +901,8 @@ private fun StreamingHomeBody(
                         ModernRecentlyPlayedSection(
                             recentlyPlayed = recentlyPlayed,
                             onSongClick = onSongClick,
-                            musicViewModel = musicViewModel,
-                            coroutineScope = coroutineScope,
+                            onPlaySongs = { playQueueFromMapped(it, 0, false) },
+                            onShuffleSongs = { playQueueFromMapped(it, 0, true) },
                             widthSizeClass = widthSizeClass,
                             heightSizeClass = heightSizeClass
                         )
@@ -1300,6 +1304,8 @@ private fun ModernScrollableContent(
     recentlyPlayed: List<Song>,
     songs: List<Song>,
     onSongClick: (Song) -> Unit,
+    onPlaySongs: (List<Song>) -> Unit,
+    onShuffleSongs: (List<Song>) -> Unit,
     onAlbumClick: (Album) -> Unit,
     onArtistClick: (Artist) -> Unit,
     onViewAllSongs: () -> Unit,
@@ -1479,8 +1485,8 @@ private fun ModernScrollableContent(
                                     ModernRecentlyPlayedSection(
                                         recentlyPlayed = recentlyPlayed.take(recentlyPlayedCount),
                                         onSongClick = onSongClick,
-                                        musicViewModel = musicViewModel,
-                                        coroutineScope = coroutineScope,
+                                        onPlaySongs = onPlaySongs,
+                                        onShuffleSongs = onShuffleSongs,
                                         widthSizeClass = widthSizeClass,
                                         heightSizeClass = heightSizeClass
                                     )
@@ -1560,23 +1566,21 @@ private fun ModernScrollableContent(
                                             title = context.getString(R.string.home_new_releases),
                                             subtitle = context.getString(R.string.home_fresh_music),
                                             onPlayAll = {
-                                                coroutineScope.launch {
-                                                    val allNewReleaseSongs = newReleases.flatMap { album ->
-                                                        musicViewModel.getMusicRepository().getSongsForAlbumLocal(album.id)
-                                                    }
-                                                    if (allNewReleaseSongs.isNotEmpty()) {
-                                                        musicViewModel.playSongs(allNewReleaseSongs)
-                                                    }
+                                                val allNewReleaseSongs = flattenDistinctHomeAlbumSongs(
+                                                    newReleases.map(Album::songs),
+                                                    Song::id,
+                                                )
+                                                if (allNewReleaseSongs.isNotEmpty()) {
+                                                    onPlaySongs(allNewReleaseSongs)
                                                 }
                                             },
                                             onShufflePlay = {
-                                                coroutineScope.launch {
-                                                    val allNewReleaseSongs = newReleases.flatMap { album ->
-                                                        musicViewModel.getMusicRepository().getSongsForAlbumLocal(album.id)
-                                                    }
-                                                    if (allNewReleaseSongs.isNotEmpty()) {
-                                                        musicViewModel.playShuffled(allNewReleaseSongs)
-                                                    }
+                                                val allNewReleaseSongs = flattenDistinctHomeAlbumSongs(
+                                                    newReleases.map(Album::songs),
+                                                    Song::id,
+                                                )
+                                                if (allNewReleaseSongs.isNotEmpty()) {
+                                                    onShuffleSongs(allNewReleaseSongs)
                                                 }
                                             }
                                         )
@@ -1663,12 +1667,12 @@ private fun ModernScrollableContent(
                                             subtitle = context.getString(R.string.home_latest_additions),
                                             onPlayAll = {
                                                 if (recentlyAddedSongs.isNotEmpty()) {
-                                                    musicViewModel.playSongs(recentlyAddedSongs)
+                                                    onPlaySongs(recentlyAddedSongs)
                                                 }
                                             },
                                             onShufflePlay = {
                                                 if (recentlyAddedSongs.isNotEmpty()) {
-                                                    musicViewModel.playShuffled(recentlyAddedSongs)
+                                                    onShuffleSongs(recentlyAddedSongs)
                                                 }
                                             }
                                         )
@@ -1789,9 +1793,7 @@ private fun ModernScrollableContent(
                                         recommendedSongs = recommendedSongs,
                                         artists = availableArtists,
                                         onSongClick = onSongClick,
-                                        onPlayClick = { songsToPlay ->
-                                            musicViewModel.playSongs(songsToPlay)
-                                        }
+                                        onPlayClick = onPlaySongs
                                     )
                                 }
                             }
@@ -1842,13 +1844,18 @@ private fun ModernScrollableContent(
     }
 }
 
+internal fun <T, K> flattenDistinctHomeAlbumSongs(
+    albumSongs: List<List<T>>,
+    identity: (T) -> K,
+): List<T> = albumSongs.flatten().distinctBy(identity)
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ModernRecentlyPlayedSection(
     recentlyPlayed: List<Song>,
     onSongClick: (Song) -> Unit,
-    musicViewModel: chromahub.rhythm.app.viewmodel.MusicViewModel,
-    coroutineScope: CoroutineScope,
+    onPlaySongs: (List<Song>) -> Unit,
+    onShuffleSongs: (List<Song>) -> Unit,
     widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
     heightSizeClass: WindowHeightSizeClass = WindowHeightSizeClass.Medium
 ) {
@@ -1858,18 +1865,10 @@ private fun ModernRecentlyPlayedSection(
             title = context.getString(R.string.home_recently_played),
             subtitle = context.getString(R.string.home_recently_played_subtitle),
             onPlayAll = {
-                coroutineScope.launch {
-                    if (recentlyPlayed.isNotEmpty()) {
-                        musicViewModel.playSongs(recentlyPlayed)
-                    }
-                }
+                if (recentlyPlayed.isNotEmpty()) onPlaySongs(recentlyPlayed)
             },
             onShufflePlay = {
-                coroutineScope.launch {
-                    if (recentlyPlayed.isNotEmpty()) {
-                        musicViewModel.playShuffled(recentlyPlayed)
-                    }
-                }
+                if (recentlyPlayed.isNotEmpty()) onShuffleSongs(recentlyPlayed)
             }
         )
 

@@ -123,9 +123,9 @@ fun MultiSelectionBottomSheet(
     favoriteSongIds: Set<String> = emptySet(),
     onDismiss: () -> Unit,
     onPlayAll: () -> Unit,
-    onAddToQueue: () -> Unit,
+    onAddToQueue: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
-    onAddToPlaylist: () -> Unit,
+    onAddToPlaylist: (() -> Unit)? = null,
     onToggleLikeAll: ((shouldLike: Boolean) -> Unit)? = null,
     onGoToAlbum: (() -> Unit)? = null,
     onGoToArtist: (() -> Unit)? = null,
@@ -200,6 +200,8 @@ fun MultiSelectionBottomSheet(
                     val gridItems = remember(
                         allAreLiked,
                         onPlayNext,
+                        onAddToQueue,
+                        onAddToPlaylist,
                         onToggleLikeAll,
                         onGoToAlbum,
                         onGoToArtist,
@@ -235,24 +237,28 @@ fun MultiSelectionBottomSheet(
                                     )
                                 )
                             }
-                            add(
-                                MultiOptionItem(
-                                    icon = RhythmIcons.Queue,
-                                    text = context.getString(R.string.action_add_to_queue),
-                                    containerColor = primaryContainer,
-                                    iconColor = onPrimaryContainer,
-                                    onClick = { onAddToQueue(); onDismiss() }
+                            if (onAddToQueue != null) {
+                                add(
+                                    MultiOptionItem(
+                                        icon = RhythmIcons.Queue,
+                                        text = context.getString(R.string.action_add_to_queue),
+                                        containerColor = primaryContainer,
+                                        iconColor = onPrimaryContainer,
+                                        onClick = { onAddToQueue(); onDismiss() }
+                                    )
                                 )
-                            )
-                            add(
-                                MultiOptionItem(
-                                    icon = RhythmIcons.AddToPlaylist,
-                                    text = context.getString(R.string.content_desc_add_to_playlist),
-                                    containerColor = primaryContainer,
-                                    iconColor = onPrimaryContainer,
-                                    onClick = { onAddToPlaylist(); onDismiss() }
+                            }
+                            if (onAddToPlaylist != null) {
+                                add(
+                                    MultiOptionItem(
+                                        icon = RhythmIcons.AddToPlaylist,
+                                        text = context.getString(R.string.content_desc_add_to_playlist),
+                                        containerColor = primaryContainer,
+                                        iconColor = onPrimaryContainer,
+                                        onClick = { onAddToPlaylist(); onDismiss() }
+                                    )
                                 )
-                            )
+                            }
                             if (onToggleLikeAll != null) {
                                 add(
                                     MultiOptionItem(

@@ -33,8 +33,15 @@ internal class CatalogCache(context: Context, private val gson: Gson = Gson()) {
     }
 
     fun saveLibrary(snapshot: CatalogLibrarySnapshot) {
-        write(KEY_LIBRARY_SONGS, snapshot.songs)
-        write(KEY_LIBRARY_ALBUMS, snapshot.albums)
+        // Songs, album summaries and detail projections describe one server snapshot. A single
+        // SharedPreferences transaction prevents readers from observing a torn refresh.
+        preferences.edit(commit = true) {
+            putString(KEY_LIBRARY_SONGS, gson.toJson(snapshot.songs))
+            putString(KEY_LIBRARY_ALBUMS, gson.toJson(snapshot.albums))
+            snapshot.albums.forEach { album ->
+                putString(libraryAlbumKey(album.id), gson.toJson(album))
+            }
+        }
     }
 
     fun loadLibraryAlbum(albumId: String): CatalogLibraryAlbum? =

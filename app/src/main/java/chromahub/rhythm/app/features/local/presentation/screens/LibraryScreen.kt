@@ -330,6 +330,7 @@ fun LibraryScreen(
     onAlbumBottomSheetClick: (Album) -> Unit = { _ -> },
     onSort: () -> Unit = {},
     onRefreshClick: () -> Unit,
+    additionalRefreshInProgress: Boolean = false,
     onAddSongToPlaylist: (Song, String) -> Unit = { _, _ -> },
     onCreatePlaylist: (String) -> Unit = { _ -> },
     sortOrder: MusicViewModel.SortOrder = MusicViewModel.SortOrder.TITLE_ASC,
@@ -864,8 +865,8 @@ fun LibraryScreen(
     val adjustedSongsBottomPadding = baseLibraryBottomPadding
 
     
-    LaunchedEffect(isLibraryRefreshing) {
-        isRefreshing = isLibraryRefreshing
+    LaunchedEffect(isLibraryRefreshing, additionalRefreshInProgress) {
+        isRefreshing = isLibraryRefreshing || additionalRefreshInProgress
     }
     
     BackHandler(enabled = isSelectionMode) {
@@ -873,6 +874,7 @@ fun LibraryScreen(
     }
     
     if (showMultiSelectionSheet && selectedSongs.isNotEmpty()) {
+        val containsCatalogSongs = selectedSongs.any { it.id.startsWith("rhythm-catalog:") }
         MultiSelectionBottomSheet(
             selectedSongs = selectedSongs,
             favoriteSongIds = favoriteSongs.toSet(),
@@ -884,42 +886,42 @@ fun LibraryScreen(
                 onPlayQueue(selectedSongs)
                 multiSelectionState.clearSelection()
             },
-            onAddToQueue = {
+            onAddToQueue = if (containsCatalogSongs) null else ({
                 selectedSongs.forEach { song -> onAddToQueue(song) }
                 multiSelectionState.clearSelection()
-            },
-            onPlayNext = if (isStreamingMode) null else {
+            }),
+            onPlayNext = if (isStreamingMode || containsCatalogSongs) null else {
                 {
                     selectedSongs.reversed().forEach { song -> musicViewModel.playNext(song) }
                     multiSelectionState.clearSelection()
                 }
             },
-            onAddToPlaylist = {
+            onAddToPlaylist = if (containsCatalogSongs) null else ({
                 songsToAddToPlaylist = selectedSongs
                 showMultiSelectionSheet = false
                 showAddToPlaylistSheet = true
-            },
-            onToggleLikeAll = if (isStreamingMode) ({ shouldLike ->
+            }),
+            onToggleLikeAll = if (containsCatalogSongs) null else if (isStreamingMode) ({ shouldLike ->
                 selectedSongs.forEach { song ->
                     val isLiked = streamingFavoriteSongIds.contains(song.id)
                     if (shouldLike != isLiked) onStreamingSetFavorite?.invoke(song, shouldLike)
                 }
-            }) else { shouldLike ->
+            }) else ({ shouldLike ->
                 selectedSongs.forEach { song ->
                     val isFavorited = favoriteSongs.contains(song.id)
                     if (shouldLike != isFavorited) {
                         musicViewModel.toggleFavorite(song)
                     }
                 }
-            },
-            onAddToBlacklist = if (isStreamingMode) null else {
+            }),
+            onAddToBlacklist = if (isStreamingMode || containsCatalogSongs) null else {
                 {
                     selectedSongs.forEach { song ->
                         if (!song.id.startsWith("rhythm-catalog:")) appSettings.addToBlacklist(song.id)
                     }
                 }
             },
-            onBatchEditTags = if (isStreamingMode) null else {
+            onBatchEditTags = if (isStreamingMode || containsCatalogSongs) null else {
                 {
                     showMultiSelectionSheet = false
                     showBatchEditSheet = true
@@ -2565,6 +2567,7 @@ fun SingleCardSongsContent(
                     AnimateIn(modifier = Modifier.animateItem()) {
                         val isSelected = selectedSongIds.contains(song.id)
                         val selectionIndex = multiSelectionState?.getSelectionIndex(song.id)
+                        val isCatalogSong = song.id.startsWith("rhythm-catalog:")
                         
                         LibrarySongItemWrapper(
                             song = song,
@@ -2580,10 +2583,10 @@ fun SingleCardSongsContent(
                                     }
                                 }
                             },
-                            onMoreClick = { onAddToPlaylist(song) },
-                            onAddToQueue = { onAddToQueue(song) },
-                            onPlayNext = { onPlayNext(song) },
-                            onToggleFavorite = onToggleFavorite?.let { fn -> { fn(song) } },
+                            onMoreClick = if (isCatalogSong) null else ({ onAddToPlaylist(song) }),
+                            onAddToQueue = if (isCatalogSong) null else ({ onAddToQueue(song) }),
+                            onPlayNext = if (isCatalogSong) null else ({ onPlayNext(song) }),
+                            onToggleFavorite = if (isCatalogSong) null else onToggleFavorite?.let { fn -> { fn(song) } },
                             isFavorite = favoriteSongs.contains(song.id),
                             onGoToArtist = { 
                                 val artist = if (groupByAlbumArtist) {
@@ -2609,8 +2612,8 @@ fun SingleCardSongsContent(
                                 album?.let { onGoToAlbum(it) }
                             },
                             onShowSongInfo = { onShowSongInfo(song) },
-                            onAddToBlacklist = onAddToBlacklist?.let { fn -> { fn(song) } },
-                            onDeleteSong = onDeleteSong?.let { fn -> { fn(song) } },
+                            onAddToBlacklist = if (isCatalogSong) null else onAddToBlacklist?.let { fn -> { fn(song) } },
+                            onDeleteSong = if (isCatalogSong) null else onDeleteSong?.let { fn -> { fn(song) } },
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             haptics = haptics,
@@ -3263,9 +3266,9 @@ fun AlbumsTab(
 fun LibrarySongItem(
     song: Song,
     onClick: () -> Unit,
-    onMoreClick: () -> Unit,
-    onAddToQueue: () -> Unit,
-    onPlayNext: () -> Unit = {},
+    onMoreClick: (() -> Unit)? = null,
+    onAddToQueue: (() -> Unit)? = null,
+    onPlayNext: (() -> Unit)? = null,
     onToggleFavorite: (() -> Unit)? = null,
     isFavorite: Boolean = false,
     onGoToArtist: () -> Unit = {},
@@ -3466,17 +3469,17 @@ fun LibrarySongItem(
                         }
                     } else {
                         RhythmSongMenuContent(
-                            song = song,
-                            onPlayNext = {
+                            song = song.takeUnless { it.id.startsWith("rhythm-catalog:") },
+                            onPlayNext = onPlayNext?.let { action -> {
                                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                 showDropdown = false
-                                onPlayNext()
-                            },
-                            onAddToQueue = {
+                                action()
+                            } },
+                            onAddToQueue = onAddToQueue?.let { action -> {
                                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                 showDropdown = false
-                                onAddToQueue()
-                            },
+                                action()
+                            } },
                             isFavorite = isFavorite,
                             onToggleFavorite = onToggleFavorite?.let { action ->
                                 {
@@ -3485,11 +3488,11 @@ fun LibrarySongItem(
                                     action()
                                 }
                             },
-                            onAddToPlaylist = {
+                            onAddToPlaylist = onMoreClick?.let { action -> {
                                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                 showDropdown = false
-                                onMoreClick()
-                            },
+                                action()
+                            } },
                             onShowSongInfo = {
                                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                 showDropdown = false
@@ -3522,9 +3525,9 @@ fun LibrarySongItem(
 fun LibrarySongItemWrapper(
     song: Song,
     onClick: () -> Unit,
-    onMoreClick: () -> Unit,
-    onAddToQueue: () -> Unit,
-    onPlayNext: () -> Unit = {},
+    onMoreClick: (() -> Unit)? = null,
+    onAddToQueue: (() -> Unit)? = null,
+    onPlayNext: (() -> Unit)? = null,
     onToggleFavorite: (() -> Unit)? = null,
     isFavorite: Boolean = false,
     onGoToArtist: () -> Unit = {},
@@ -6571,6 +6574,7 @@ fun YearGroupedSongsContent(
                     AnimateIn(modifier = Modifier.animateItem()) {
                         val isSelected = selectedSongIds.contains(song.id)
                         val selectionIndex = multiSelectionState?.getSelectionIndex(song.id)
+                        val isCatalogSong = song.id.startsWith("rhythm-catalog:")
 
                         LibrarySongItemWrapper(
                             song = song,
@@ -6586,18 +6590,18 @@ fun YearGroupedSongsContent(
                                     }
                                 }
                             },
-                            onMoreClick = { onAddToPlaylist(song) },
-                            onAddToQueue = { onAddToQueue(song) },
-                            onPlayNext = { onPlayNext(song) },
-                            onToggleFavorite = { onToggleFavorite(song) },
+                            onMoreClick = if (isCatalogSong) null else ({ onAddToPlaylist(song) }),
+                            onAddToQueue = if (isCatalogSong) null else ({ onAddToQueue(song) }),
+                            onPlayNext = if (isCatalogSong) null else ({ onPlayNext(song) }),
+                            onToggleFavorite = if (isCatalogSong) null else ({ onToggleFavorite(song) }),
                             isFavorite = favoriteSongs.contains(song.id),
                             onGoToArtist = { onGoToArtist(Artist(id = "", name = song.artist)) },
                             onGoToAlbum = {
                                 albums.findAlbumForSong(song)?.let { onGoToAlbum(it) }
                             },
                             onShowSongInfo = { onShowSongInfo(song) },
-                            onAddToBlacklist = { onAddToBlacklist(song) },
-                            onDeleteSong = { onDeleteSong(song) },
+                            onAddToBlacklist = if (isCatalogSong) null else ({ onAddToBlacklist(song) }),
+                            onDeleteSong = if (isCatalogSong) null else ({ onDeleteSong(song) }),
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             haptics = haptics,
@@ -6699,5 +6703,3 @@ fun LibraryScanProgressBanner(
         }
     }
 }
-
-

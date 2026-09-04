@@ -115,6 +115,16 @@ class CatalogPlaybackPolicyTest {
     }
 
     @Test
+    fun acceptsOnlyValidatedMusicXmlMediaTypes() {
+        assertTrue(CatalogPlaybackPolicy.isMusicXmlMediaType("application/vnd.recordare.musicxml+xml"))
+        assertTrue(CatalogPlaybackPolicy.isMusicXmlMediaType("application/vnd.recordare.musicxml+xml; charset=utf-8"))
+        assertFalse(CatalogPlaybackPolicy.isMusicXmlMediaType("application/vnd.recordare.musicxml"))
+        assertFalse(CatalogPlaybackPolicy.isMusicXmlMediaType("application/xml"))
+        assertFalse(CatalogPlaybackPolicy.isMusicXmlMediaType("text/html"))
+        assertFalse(CatalogPlaybackPolicy.isMusicXmlMediaType(null))
+    }
+
+    @Test
     fun renditionRequiresPlayableRoleAndRealAudioMime() {
         val mp3Master = RenditionAsset(
             id = "33333333-3333-4333-8333-333333333333",

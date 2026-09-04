@@ -3454,18 +3454,24 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun savePlaylists() {
-        val currentPlaylists = _playlists.value
+        val currentPlaylists = _playlists.value.map { playlist ->
+            playlist.copy(songs = playlist.songs.filterNot { it.id.startsWith("rhythm-catalog:") })
+        }
+        if (currentPlaylists != _playlists.value) _playlists.value = currentPlaylists
         viewModelScope.launch(Dispatchers.IO) {
             savePlaylistsToRoom(currentPlaylists)
         }
     }
 
     private suspend fun savePlaylistsToRoom(currentPlaylists: List<Playlist> = _playlists.value) {
+        val persistablePlaylists = currentPlaylists.map { playlist ->
+            playlist.copy(songs = playlist.songs.filterNot { it.id.startsWith("rhythm-catalog:") })
+        }
         if (!isPlaylistsLoaded) {
             Log.w(TAG, "Skipping savePlaylistsToRoom — playlists have not finished loading yet")
             return
         }
-        if (currentPlaylists.isEmpty()) {
+        if (persistablePlaylists.isEmpty()) {
             Log.w(TAG, "Skipping savePlaylistsToRoom — currentPlaylists list is empty")
             return
         }
@@ -3476,7 +3482,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 
                 roomDb.withTransaction {
                     val dbPlaylists = playlistDao.getAllPlaylists()
-                    val currentPlaylistIds = currentPlaylists.map { it.id }.toSet()
+                    val currentPlaylistIds = persistablePlaylists.map { it.id }.toSet()
                     
                     dbPlaylists.forEach { dbPlaylist ->
                         if (!currentPlaylistIds.contains(dbPlaylist.id)) {
@@ -3486,7 +3492,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         }
                     }
                     
-                    currentPlaylists.forEach { playlist ->
+                    persistablePlaylists.forEach { playlist ->
                         val entity = PlaylistEntity(
                             id = playlist.id,
                             name = playlist.name,
@@ -3534,7 +3540,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         }
                     }
                 }
-                Log.d(TAG, "Successfully saved ${currentPlaylists.size} playlists to Room")
+                Log.d(TAG, "Successfully saved ${persistablePlaylists.size} playlists to Room")
             } catch (e: Exception) {
                 Log.e(TAG, "Error saving playlists to Room", e)
             }
@@ -6807,6 +6813,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Returns a result with success count and playlist name
      */
     fun addSongsToPlaylist(songs: List<Song>, playlistId: String): Pair<Int, String> {
+        val localSongs = songs.filterNot { it.id.startsWith("rhythm-catalog:") }
         val filteredSongsSet: Set<String> = filteredSongs.value.map { song: Song -> song.id }.toSet()
         var successCount = 0
         var playlistName = ""
@@ -6817,7 +6824,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val existingSongIds = playlist.songs.map { it.id }.toSet()
                 
                 // Filter songs that are not filtered out and not already in playlist
-                val songsToAdd = songs.filter { song ->
+                val songsToAdd = localSongs.filter { song ->
                     val isStreaming = song.uri.toString().startsWith("http://") || 
                                       song.uri.toString().startsWith("https://") || 
                                       song.uri.toString().startsWith("streaming://") ||

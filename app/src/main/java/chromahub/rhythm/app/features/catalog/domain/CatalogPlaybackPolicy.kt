@@ -49,6 +49,9 @@ object CatalogPlaybackPolicy {
         "audio/x-wav",
         "audio/vnd.wave",
     )
+    private val musicXmlMediaTypes = setOf(
+        "application/vnd.recordare.musicxml+xml",
+    )
 
     fun allows(
         mediaId: String,
@@ -104,6 +107,14 @@ object CatalogPlaybackPolicy {
             ?.trim()
             ?.lowercase(Locale.ROOT)
             .let(playableMediaTypes::contains)
+
+    /** Only server-validated MusicXML assets may enter the alphaTab parser. */
+    fun isMusicXmlMediaType(mediaType: String?): Boolean =
+        mediaType
+            ?.substringBefore(';')
+            ?.trim()
+            ?.lowercase(Locale.ROOT)
+            .let(musicXmlMediaTypes::contains)
 
     fun isPlayableRenditionAsset(asset: RenditionAsset): Boolean =
         asset.role.lowercase(Locale.ROOT) in playableRoles && isPlayableMediaType(asset.mediaType)

@@ -50,6 +50,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     )
     val state: StateFlow<CatalogUiState> = _state.asStateFlow()
     private var searchJob: Job? = null
+    private var libraryRefreshJob: Job? = null
 
     init {
         if (_state.value.configured) refreshLibrary()
@@ -131,7 +132,8 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun refreshLibrary() {
-        viewModelScope.launch {
+        libraryRefreshJob?.cancel()
+        libraryRefreshJob = viewModelScope.launch {
             val hadItems = _state.value.songs.isNotEmpty() || _state.value.albums.isNotEmpty()
             _state.value = _state.value.copy(
                 loading = !hadItems,

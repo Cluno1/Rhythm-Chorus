@@ -522,7 +522,7 @@ fun AlbumDetailScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.clickable {
+                                modifier = Modifier.clickable(enabled = allowSongOptions) {
                                     val song = allDisplaySongs.firstOrNull()
                                     if (song != null) handleArtistTap(song)
                                 }
@@ -752,7 +752,7 @@ fun AlbumDetailScreen(
                             Column(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clickable {
+                                    .clickable(enabled = allowSongOptions) {
                                         val song = allDisplaySongs.firstOrNull()
                                         if (song != null) handleArtistTap(song)
                                     }
@@ -1029,37 +1029,39 @@ fun AlbumDetailScreen(
                                             )
                                         }
 
-                                        FilledTonalButton(
-                                            onClick = {
-                                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                                addToQueuePressed = true
-                                                displaySongs.forEach { onAddToQueue(it) }
-                                            },
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(48.dp)
-                                                .graphicsLayer {
-                                                    scaleX = addToQueueScale
-                                                    scaleY = addToQueueScale
+                                        if (allowSongOptions) {
+                                            FilledTonalButton(
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                                    addToQueuePressed = true
+                                                    displaySongs.forEach { onAddToQueue(it) }
                                                 },
-                                            shape = RoundedCornerShape(24.dp),
-                                            colors = ButtonDefaults.filledTonalButtonColors(
-                                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                                contentColor = MaterialTheme.colorScheme.onSurface
-                                            ),
-                                            enabled = displaySongs.isNotEmpty()
-                                        ) {
-                                            Icon(
-                                                imageVector = RhythmIcons.Queue,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(
-                                                text = stringResource(R.string.action_add_to_queue),
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(48.dp)
+                                                    .graphicsLayer {
+                                                        scaleX = addToQueueScale
+                                                        scaleY = addToQueueScale
+                                                    },
+                                                shape = RoundedCornerShape(24.dp),
+                                                colors = ButtonDefaults.filledTonalButtonColors(
+                                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                                ),
+                                                enabled = displaySongs.isNotEmpty()
+                                            ) {
+                                                Icon(
+                                                    imageVector = RhythmIcons.Queue,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = stringResource(R.string.action_add_to_queue),
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            }
                                         }
                                     }
                                 }
