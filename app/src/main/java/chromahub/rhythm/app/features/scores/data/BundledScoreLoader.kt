@@ -19,15 +19,6 @@ internal class BundledScoreLoader(
     private val assets = context.applicationContext.assets
     private val revisionStore = ScoreRevisionStore(context)
 
-    suspend fun loadAll(): Map<BundledScoreVariant, LoadedScore> = withContext(ioDispatcher) {
-        BundledScoreVariant.entries.associateWith { variant ->
-            val bytes = revisionStore.loadWorkingCopy(variant) ?: ScoreAssetReader.read {
-                assets.open(variant.assetName)
-            }
-            loadVariantNow(variant, bytes)
-        }
-    }
-
     suspend fun loadVariant(
         variant: BundledScoreVariant,
         canonicalMusicXml: ByteArray

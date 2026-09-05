@@ -79,15 +79,6 @@ import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-private sealed interface ScoreUiState {
-    data object Loading : ScoreUiState
-    data class Ready(
-        val scores: Map<BundledScoreVariant, LoadedScore>,
-        val soundFont: ByteArray
-    ) : ScoreUiState
-    data object Error : ScoreUiState
-}
-
 private enum class ScoreViewMode {
     OCR,
     MIDI,
@@ -362,107 +353,6 @@ private data class ScorePlaybackDisplayBinding(
     val onPulsePositions: (List<ScorePlaybackBeatPosition>) -> Unit,
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ScoreScreen(
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val loader = remember(context) { BundledScoreLoader(context) }
-    val miniPlayerPadding = LocalMiniPlayerPadding.current
-    var retryKey by rememberSaveable { mutableIntStateOf(0) }
-    var state by remember { mutableStateOf<ScoreUiState>(ScoreUiState.Loading) }
-    var viewMode by rememberSaveable { mutableStateOf(ScoreViewMode.OCR) }
-    var isEditing by remember { mutableStateOf(false) }
-
-    LaunchedEffect(loader, retryKey) {
-        state = ScoreUiState.Loading
-        state = runCatching {
-            ScoreUiState.Ready(
-                scores = loader.loadAll(),
-                soundFont = loader.loadSoundFont()
-            )
-        }
-            .fold(
-                onSuccess = { it },
-                onFailure = { ScoreUiState.Error }
-            )
-    }
-
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.score_viewer_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = RhythmIcons.Back,
-                            contentDescription = stringResource(R.string.score_back)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer
-                )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.surface
-    ) { contentPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding),
-            contentAlignment = Alignment.TopCenter
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .widthIn(max = 1200.dp)
-                    .padding(miniPlayerPadding),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                ScoreMetadata(
-                    viewMode = viewMode,
-                    enabled = !isEditing,
-                    onViewModeChange = { viewMode = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 16.dp)
-                )
-
-                when (val currentState = state) {
-                    ScoreUiState.Loading -> ScoreLoading(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    )
-
-                    ScoreUiState.Error -> ScoreError(
-                        onRetry = { retryKey++ },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    )
-
-                    is ScoreUiState.Ready -> ScoreReadyContent(
-                        loader = loader,
-                        scores = currentState.scores,
-                        soundFont = currentState.soundFont,
-                        viewMode = viewMode,
-                        onEditingChange = { isEditing = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    )
-                }
-            }
-        }
-    }
-}
-
 /** Read-only projection of an immutable server ScoreRevision. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -555,72 +445,6 @@ fun RemoteScoreScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun ScoreMetadata(
-    viewMode: ScoreViewMode,
-    enabled: Boolean,
-    onViewModeChange: (ScoreViewMode) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        Text(
-            text = stringResource(R.string.score_sample_title),
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-            text = stringResource(
-                R.string.score_composer_format,
-                stringResource(R.string.score_sample_composer)
-            ),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp)
-        )
-        Text(
-            text = stringResource(R.string.score_compare_subtitle),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp)
-        )
-        Row(
-            modifier = Modifier.padding(top = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            ScoreModeChip(
-                selected = viewMode == ScoreViewMode.OCR,
-                enabled = enabled,
-                onClick = { onViewModeChange(ScoreViewMode.OCR) },
-                label = stringResource(R.string.score_source_ocr)
-            )
-            ScoreModeChip(
-                selected = viewMode == ScoreViewMode.MIDI,
-                enabled = enabled,
-                onClick = { onViewModeChange(ScoreViewMode.MIDI) },
-                label = stringResource(R.string.score_source_midi)
-            )
-            ScoreModeChip(
-                selected = viewMode == ScoreViewMode.COMPARE,
-                enabled = enabled,
-                onClick = { onViewModeChange(ScoreViewMode.COMPARE) },
-                label = stringResource(R.string.score_source_compare)
-            )
-        }
-        Text(
-            text = stringResource(
-                when (viewMode) {
-                    ScoreViewMode.OCR -> R.string.score_source_ocr_description
-                    ScoreViewMode.MIDI -> R.string.score_source_midi_description
-                    ScoreViewMode.COMPARE -> R.string.score_source_compare_description
-                }
-            ),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp)
-        )
     }
 }
 

@@ -106,6 +106,7 @@ fun RhythmPlayerSheet(
     onShuffleArtistSongs: (List<Song>) -> Unit = {},
     isStreamingMode: Boolean = false,
     isCatalogItem: Boolean = false,
+    isCatalogScoreAvailable: Boolean = false,
     onCatalogOpenWork: () -> Unit = {},
     onCatalogOpenScore: () -> Unit = {},
     miniPlayerBottomOffset: Dp = 8.dp
@@ -327,6 +328,7 @@ fun RhythmPlayerSheet(
                         navController = navController,
                         isStreamingMode = isStreamingMode,
                         isCatalogItem = isCatalogItem,
+                        isCatalogScoreAvailable = isCatalogScoreAvailable,
                         onCatalogOpenWork = onCatalogOpenWork,
                         onCatalogOpenScore = onCatalogOpenScore,
                         swipeToDismissEnabled = false,

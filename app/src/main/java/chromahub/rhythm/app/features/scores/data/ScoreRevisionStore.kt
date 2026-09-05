@@ -8,11 +8,6 @@ import java.nio.file.StandardCopyOption
 internal class ScoreRevisionStore(context: Context) {
     private val root = File(context.applicationContext.filesDir, "scores/gmusic_321")
 
-    fun loadWorkingCopy(variant: BundledScoreVariant): ByteArray? = workingFile(variant)
-        .takeIf(File::isFile)
-        ?.readBytes()
-        ?.takeIf(ByteArray::isNotEmpty)
-
     fun saveWorkingCopy(variant: BundledScoreVariant, bytes: ByteArray) {
         require(bytes.isNotEmpty())
         val target = workingFile(variant)

@@ -131,7 +131,6 @@ import chromahub.rhythm.app.features.catalog.domain.toRhythmSong
 import chromahub.rhythm.app.features.catalog.presentation.CatalogServerSettingsScreen
 import chromahub.rhythm.app.features.catalog.presentation.CatalogRemoteScoreScreen
 import chromahub.rhythm.app.features.catalog.presentation.CatalogViewModel
-import chromahub.rhythm.app.features.scores.presentation.ScoreScreen
 import chromahub.rhythm.app.shared.presentation.screens.RhythmStatsScreen
 import chromahub.rhythm.app.features.local.presentation.screens.EqualizerScreen
 import chromahub.rhythm.app.shared.presentation.screens.player.PlayerScreen
@@ -234,7 +233,6 @@ sealed class Screen(val route: String) {
     }
     object Player : Screen("player")
     object Settings : Screen("settings")
-    object Score : Screen("score")
     object CatalogSettings : Screen("catalog_settings")
     object CatalogScore : Screen("catalog_score/{workId}/{scoreId}/{revisionId}?title={title}&parts={parts}") {
         fun createRoute(workId: String, scoreId: String, revisionId: String, title: String, parts: Int) =
@@ -859,6 +857,20 @@ private fun LocalNavigationContent(
     val catalogViewModel: CatalogViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     val catalogState by catalogViewModel.state.collectAsState()
     val activeCatalogItem by viewModel.catalogNowPlaying.collectAsState()
+    var activeCatalogScoreAvailable by remember(activeCatalogItem?.workId) {
+        mutableStateOf(false)
+    }
+    LaunchedEffect(activeCatalogItem?.workId) {
+        val item = activeCatalogItem ?: return@LaunchedEffect
+        val bundle = catalogState.selectedBundle
+            ?.takeIf { it.work.id == item.workId }
+            ?: catalogViewModel.loadWork(item.workId).getOrNull()
+        activeCatalogScoreAvailable = bundle?.arrangements
+            ?.asSequence()
+            ?.flatMap { it.scores.asSequence() }
+            ?.any { (it.publishedRevisionId ?: it.headRevisionId) != null }
+            ?: false
+    }
     val catalogSongs = remember(catalogState.songs) { catalogState.songs.map { it.toRhythmSong() } }
     val catalogAlbums = remember(catalogState.albums) { catalogState.albums.map { it.toRhythmAlbum() } }
     val catalogSongByDisplayId = remember(catalogState.songs) {
@@ -1268,6 +1280,7 @@ private fun LocalNavigationContent(
                         repeatMode = repeatMode,
                         isFavorite = if (isStreamingMode) streamingCurrentSong?.let { streamingLikedSongIds.contains(it.id) } ?: false else isFavorite,
                         isCatalogItem = currentSong.id.startsWith("rhythm-catalog:"),
+                        isCatalogScoreAvailable = activeCatalogScoreAvailable,
                         onCatalogOpenWork = {},
                         onCatalogOpenScore = {
                             activeCatalogItem?.let { item ->
@@ -1808,11 +1821,6 @@ private fun LocalNavigationContent(
                             onSearchClick = {
                                 navigateToTopLevel(Screen.Search.route)
                             },
-                            onScoreClick = {
-                                navController.navigate(Screen.Score.route) {
-                                    launchSingleTop = true
-                                }
-                            },
                             onSettingsClick = {
                                 // Navigate to the settings screen
                                 navigateToTopLevel(Screen.Settings.route)
@@ -1895,16 +1903,6 @@ private fun LocalNavigationContent(
                                 streamingMusicViewModel.playQueue(queue, 0, true)
                             }
                         )
-                }
-
-                composable(Screen.Score.route) {
-                    ScoreScreen(
-                        onBackClick = {
-                            if (!navController.popBackStack()) {
-                                navigateToTopLevel(Screen.Home.route)
-                            }
-                        }
-                    )
                 }
 
                 composable(Screen.CatalogSettings.route) {
