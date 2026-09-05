@@ -14,6 +14,7 @@ import android.widget.Toast
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.AudioMixerAttributes
+import android.provider.MediaStore
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -2506,7 +2507,7 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                             chromahub.rhythm.app.features.catalog.data.CatalogCredentialsStore(
                                 this@MediaPlaybackService,
                             ).loadServerUrl(),
-                        )
+                        ) || allowsDeviceMediaStoreItem(resolved)
                     ) {
                         resolved
                     } else {
@@ -2517,6 +2518,25 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
             }
             
             return Futures.immediateFuture(updatedMediaItems)
+        }
+
+        private fun allowsDeviceMediaStoreItem(mediaItem: MediaItem): Boolean {
+            val uri = mediaItem.localConfiguration?.uri ?: return false
+            if (!CatalogPlaybackPolicy.allowsDeviceMediaStoreItem(mediaItem.mediaId, uri.toString())) return false
+            return runCatching {
+                contentResolver.query(
+                    uri,
+                    arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.MIME_TYPE),
+                    null,
+                    null,
+                    null,
+                )?.use { cursor ->
+                    if (!cursor.moveToFirst()) return@use false
+                    val id = cursor.getLong(0).toString()
+                    val mimeType = cursor.getString(1).orEmpty()
+                    id == mediaItem.mediaId && mimeType.startsWith("audio/", ignoreCase = true)
+                } ?: false
+            }.getOrDefault(false)
         }
         
         override fun onGetLibraryRoot(

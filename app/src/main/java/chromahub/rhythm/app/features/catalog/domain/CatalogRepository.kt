@@ -29,5 +29,10 @@ interface CatalogRepository {
     suspend fun getLibrary(forceRefresh: Boolean = false): Result<CatalogLibrarySnapshot>
     suspend fun getLibraryAlbum(albumId: String, forceRefresh: Boolean = false): Result<CatalogLibraryAlbum>
     suspend fun downloadAsset(assetId: String, expectedSha256: String, expectedSize: Long): Result<ByteArray>
+    suspend fun cachePlaybackAndLatestScore(
+        workId: String,
+        arrangementId: String,
+        renditionId: String,
+    ): Result<Unit>
     suspend fun syncChanges(): Result<CatalogChanges>
 }

@@ -50,7 +50,6 @@ import chromahub.rhythm.app.features.local.data.repository.MusicRepository
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import chromahub.rhythm.app.features.catalog.domain.RhythmNowPlayingItem
 import chromahub.rhythm.app.features.catalog.domain.RhythmQueueEntry
-import chromahub.rhythm.app.core.ProductCapabilities
 import chromahub.rhythm.app.features.local.presentation.player.PlaybackControlStateMachine
 import chromahub.rhythm.app.features.local.presentation.player.PlaybackControlUiState
 import chromahub.rhythm.app.features.local.presentation.player.PlaybackReadiness
@@ -180,8 +179,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
         // Phase two is a private-catalog-only product. Keep the legacy ViewModel as the
         // Media3 controller adapter, but never activate its MediaStore library pipeline.
-        private val catalogOnlyProduct: Boolean
-            get() = ProductCapabilities.catalogOnly
+        private val deviceLibraryEnabled: Boolean
+            get() = CatalogPlaybackPolicy.DEVICE_LIBRARY_ENABLED
 
         private const val DEFAULT_BLUETOOTH_LYRIC_LINE = "No lyrics"
         private const val METADATA_EXTRA_ORIGINAL_TITLE = "chromahub.rhythm.app.extra.original_title"
@@ -1213,7 +1212,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         Log.d(TAG, "Initializing MusicViewModel")
-        if (!catalogOnlyProduct) startLibrarySetupCompletionMonitor()
+        if (deviceLibraryEnabled) startLibrarySetupCompletionMonitor()
         
         // Single coroutine for main initialization to ensure proper ordering
         viewModelScope.launch {
@@ -1238,7 +1237,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             ) { preferSongArtwork, losslessArtwork ->
                 Pair(preferSongArtwork, losslessArtwork)
             }.collect { newState ->
-                if (catalogOnlyProduct || !_isInitialized.value || newState == previousState) {
+                if (!deviceLibraryEnabled || !_isInitialized.value || newState == previousState) {
                     return@collect
                 }
                 
@@ -1316,7 +1315,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Unit
             }.collect {
                 // Wait for initialization to complete before refreshing
-                if (!catalogOnlyProduct && _isInitialized.value) {
+                if (deviceLibraryEnabled && _isInitialized.value) {
                     Log.d(TAG, "Blacklist/Whitelist or scan mode changed, refreshing library & playlists")
                     refreshLibrary(showMediaScanLoader = false)
                     removeBlacklistedSongsFromQueue()
@@ -1339,7 +1338,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             ) { groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters ->
                 Triple(groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters)
             }.collect { newState ->
-                if (catalogOnlyProduct || !_isInitialized.value || newState == previousState) {
+                if (!deviceLibraryEnabled || !_isInitialized.value || newState == previousState) {
                     return@collect
                 }
 
@@ -1427,7 +1426,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         val initStartTime = System.currentTimeMillis()
         
         // Step 1: Load core music data with PARALLEL loading for better performance
-        val initializationResults = if (catalogOnlyProduct) {
+        val initializationResults = if (!deviceLibraryEnabled) {
             _songs.value = emptyList()
             _albums.value = emptyList()
             _artists.value = emptyList()
@@ -1457,7 +1456,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // Step 4: Initialize from persistence (needs songs to be loaded)
-        if (!catalogOnlyProduct) {
+        if (deviceLibraryEnabled) {
             try {
                 initializeFromPersistence()
             } catch (e: Exception) {
@@ -1473,10 +1472,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         // Step 6: Wait for filteredSongs to be ready and populate playlists
-        if (!catalogOnlyProduct) populateDefaultPlaylistsSafely()
+        if (deviceLibraryEnabled) populateDefaultPlaylistsSafely()
 
         // Step 7: Initialize queue state
-        if (!catalogOnlyProduct) initializeQueueState()
+        if (deviceLibraryEnabled) initializeQueueState()
 
         // Step 8: Mark as initialized BEFORE starting background tasks
         // This allows UI to render immediately
@@ -1486,7 +1485,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         
         // Step 9: Start non-critical background tasks AFTER marking initialized
         // This defers heavy work until after UI is responsive
-        if (!catalogOnlyProduct) startBackgroundTasksDeferred()
+        if (deviceLibraryEnabled) startBackgroundTasksDeferred()
     }
     
     private data class InitializationResult(val success: Boolean, val error: String? = null)
@@ -1753,9 +1752,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         try {
             if (_catalogQueue.value.isNotEmpty()) {
                 val controller = mediaController
+                val catalogEntriesByMediaId = _catalogQueue.value.associateBy {
+                    it.playback.toMediaItem().mediaId
+                }
                 chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore(getApplication())
-                    .save(
-                        _catalogQueue.value,
+                    .saveUnified(
+                        _currentQueue.value.songs,
+                        catalogEntriesByMediaId,
                         controller?.currentMediaItemIndex?.takeIf { it >= 0 }
                             ?: _currentQueue.value.currentIndex.coerceAtLeast(0),
                         controller?.currentPosition ?: 0L,
@@ -4258,6 +4261,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     _catalogNowPlaying.value = catalogEntry?.nowPlaying
                     if (catalogEntry != null) {
+                        if (mediaController?.playWhenReady == true) {
+                            chromahub.rhythm.app.features.catalog.data.CatalogAutoCacheWorker.enqueue(
+                                getApplication(),
+                                catalogEntry.nowPlaying,
+                            )
+                        }
                         _currentLyrics.value = catalogEntry.nowPlaying.lyrics?.let {
                             LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
                         }
@@ -4328,6 +4337,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             
             // Track play/pause for accurate stats
             if (isPlaying) {
+                _catalogNowPlaying.value?.let { catalogItem ->
+                    chromahub.rhythm.app.features.catalog.data.CatalogAutoCacheWorker.enqueue(
+                        getApplication(),
+                        catalogItem,
+                    )
+                }
                 resumePlaybackTracking()
                 startProgressUpdates()
             } else {
@@ -5789,6 +5804,110 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         applyCatalogQueue(entries, startIndex, positionMs, startPlayback = false)
     }
 
+    /** Plays a queue that may freely interleave device MediaStore and managed Catalog items. */
+    fun playUnifiedQueue(
+        songs: List<Song>,
+        catalogEntries: List<RhythmQueueEntry>,
+        startIndex: Int = 0,
+        shuffle: Boolean = false,
+    ) {
+        if (catalogEntries.isEmpty()) {
+            playQueue(songs, enableShuffle = shuffle, startIndex = startIndex)
+            return
+        }
+        if (songs.isEmpty()) return
+        val validIndex = startIndex.coerceIn(songs.indices)
+        val orderedSongs = if (shuffle) songs.shuffled() else songs
+        val orderedIndex = if (shuffle) 0 else validIndex
+        applyUnifiedQueue(orderedSongs, catalogEntries, orderedIndex, 0L, startPlayback = true)
+    }
+
+    fun restoreUnifiedQueue(
+        songs: List<Song>,
+        catalogEntries: List<RhythmQueueEntry>,
+        startIndex: Int,
+        positionMs: Long,
+    ) {
+        if (_currentSong.value != null || songs.isEmpty()) return
+        applyUnifiedQueue(songs, catalogEntries, startIndex, positionMs, startPlayback = false)
+    }
+
+    private fun applyUnifiedQueue(
+        songs: List<Song>,
+        catalogEntries: List<RhythmQueueEntry>,
+        startIndex: Int,
+        positionMs: Long,
+        startPlayback: Boolean,
+    ) {
+        if (songs.isEmpty() || !canStartPlayback("playUnifiedQueue")) return
+        val serverUrl = chromahub.rhythm.app.features.catalog.data.CatalogCredentialsStore(getApplication())
+            .loadServerUrl()
+            ?: return
+        val catalogByMediaId = catalogEntries.associateBy { it.playback.toMediaItem().mediaId }
+        val accepted = songs.all { song ->
+            val catalog = catalogByMediaId[song.id]
+            if (catalog != null) {
+                val item = catalog.playback.toMediaItem()
+                CatalogPlaybackPolicy.allowsDeferred(
+                    mediaId = item.mediaId,
+                    uri = item.localConfiguration?.uri?.toString(),
+                    mediaType = item.localConfiguration?.mimeType,
+                ) || CatalogPlaybackPolicy.allows(
+                    mediaId = item.mediaId,
+                    uri = item.localConfiguration?.uri?.toString(),
+                    customCacheKey = item.localConfiguration?.customCacheKey,
+                    mediaType = item.localConfiguration?.mimeType,
+                    trustedServerUrl = serverUrl,
+                )
+            } else {
+                CatalogPlaybackPolicy.allowsDeviceMediaStoreItem(song.id, song.uri.toString())
+            }
+        }
+        if (!accepted) {
+            Log.w(TAG, "Rejected unified queue because one or more entries failed source policy")
+            return
+        }
+        val validIndex = startIndex.coerceIn(songs.indices)
+        val mediaItems = songs.map { song ->
+            catalogByMediaId[song.id]?.playback?.toMediaItem() ?: song.toMediaItem()
+        }
+        viewModelScope.launch(Dispatchers.Main) {
+            mediaController?.let { controller ->
+                controller.stop()
+                controller.clearMediaItems()
+                controller.shuffleModeEnabled = false
+                controller.addMediaItems(mediaItems)
+                playbackControlStateMachine.beginLoading(
+                    mediaId = mediaItems[validIndex].mediaId,
+                    playWhenReady = startPlayback,
+                )
+                controller.prepare()
+                controller.seekTo(validIndex, positionMs.coerceAtLeast(0L))
+                if (!canStartPlayback("playUnifiedQueue.prepare")) return@let
+                if (startPlayback) controller.play()
+                _catalogQueue.value = catalogEntries
+                _currentQueue.value = Queue(songs, validIndex)
+                _currentSong.value = songs[validIndex]
+                val activeCatalog = catalogByMediaId[songs[validIndex].id]
+                _catalogNowPlaying.value = activeCatalog?.nowPlaying
+                _currentLyrics.value = activeCatalog?.nowPlaying?.lyrics?.let {
+                    LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
+                }
+                _isFavorite.value = activeCatalog == null && _favoriteSongs.value.contains(songs[validIndex].id)
+                _isPlaying.value = startPlayback
+                chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore(getApplication())
+                    .saveUnified(songs, catalogByMediaId, validIndex, positionMs)
+                activeCatalog?.takeIf { startPlayback }?.let {
+                    chromahub.rhythm.app.features.catalog.data.CatalogAutoCacheWorker.enqueue(
+                        getApplication(),
+                        it.nowPlaying,
+                    )
+                }
+                if (startPlayback) startProgressUpdates()
+            } ?: Log.w(TAG, "MediaController unavailable for unified playback")
+        }
+    }
+
     private fun applyCatalogQueue(
         entries: List<RhythmQueueEntry>,
         startIndex: Int,
@@ -5860,6 +5979,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 _isPlaying.value = startPlayback
                 chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore(getApplication())
                     .save(entries, validIndex, positionMs)
+                if (startPlayback) {
+                    chromahub.rhythm.app.features.catalog.data.CatalogAutoCacheWorker.enqueue(
+                        getApplication(),
+                        entries[validIndex].nowPlaying,
+                    )
+                }
                 if (startPlayback) startProgressUpdates()
             } ?: Log.w(TAG, "MediaController unavailable for catalog playback")
         }
@@ -5874,6 +5999,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
         _catalogQueue.value = emptyList()
         _catalogNowPlaying.value = null
+        chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore(getApplication()).clear()
 
         if (!canStartPlayback("playQueue")) {
             return

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
 import chromahub.rhythm.app.features.catalog.di.CatalogModule
+import chromahub.rhythm.app.features.catalog.data.local.CatalogOfflineCache
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
@@ -16,16 +17,34 @@ object CatalogDataSpecResolver {
         val trustedServerUrl = credentials.loadServerUrl()
         val deferredRenditionId = CatalogPlaybackPolicy.deferredRenditionId(dataSpec.uri.toString())
         if (deferredRenditionId != null) {
+            val token = credentials.loadToken()
+            val cached = if (!trustedServerUrl.isNullOrBlank() && !token.isNullOrBlank()) {
+                val namespace = CatalogOfflineCache.namespace(trustedServerUrl, token)
+                CatalogOfflineCache(context).findAudio(namespace, deferredRenditionId)
+            } else {
+                null
+            }
+            val descriptor = runBlocking {
+                CatalogModule.repository(context).getPlayback(deferredRenditionId)
+            }.getOrElse { error ->
+                cached?.let { return cachedDataSpec(dataSpec, it) }
+                throw IOException("Unable to resolve catalog rendition", error)
+            }
+            val descriptorHash = descriptor.cacheKey.substringAfterLast(':')
+            if (
+                cached != null &&
+                cached.assetId == descriptor.assetId &&
+                cached.sha256.equals(descriptorHash, ignoreCase = true) &&
+                cached.byteSize == descriptor.byteSize
+            ) {
+                return cachedDataSpec(dataSpec, cached)
+            }
             val resolved = runBlocking {
                 CatalogDynamicDelivery.resolve(
                     renditionId = deferredRenditionId,
                     trustedServerUrl = trustedServerUrl,
-                    bearerToken = credentials.loadToken(),
-                ) { renditionId ->
-                    CatalogModule.repository(context).getPlayback(renditionId).getOrElse {
-                        throw IOException("Unable to resolve catalog rendition", it)
-                    }
-                }
+                    bearerToken = token,
+                ) { _ -> descriptor }
             }
             val headers = dataSpec.httpRequestHeaders
                 .filterKeys { !it.equals("Authorization", ignoreCase = true) } + resolved.headers
@@ -41,6 +60,15 @@ object CatalogDataSpecResolver {
         }
         return dataSpec
     }
+
+    private fun cachedDataSpec(
+        dataSpec: DataSpec,
+        cached: CatalogOfflineCache.CachedAsset,
+    ): DataSpec = dataSpec.buildUpon()
+        .setUri(cached.uri)
+        .setKey("rhythm:asset:${cached.assetId}:${cached.sha256}")
+        .setHttpRequestHeaders(emptyMap())
+        .build()
 
     private fun authorize(
         dataSpec: DataSpec,

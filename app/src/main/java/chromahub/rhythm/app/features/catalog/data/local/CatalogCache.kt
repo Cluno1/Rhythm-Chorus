@@ -7,6 +7,7 @@ import chromahub.rhythm.app.features.catalog.domain.WorkSummary
 import chromahub.rhythm.app.features.catalog.domain.CatalogLibraryAlbum
 import chromahub.rhythm.app.features.catalog.domain.CatalogLibrarySnapshot
 import chromahub.rhythm.app.features.catalog.domain.CatalogLibrarySong
+import chromahub.rhythm.app.features.catalog.domain.ScoreRevision
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -49,6 +50,11 @@ internal class CatalogCache(context: Context, private val gson: Gson = Gson()) {
 
     fun saveLibraryAlbum(album: CatalogLibraryAlbum) = write(libraryAlbumKey(album.id), album)
 
+    fun loadScoreRevision(revisionId: String): ScoreRevision? =
+        read(scoreRevisionKey(revisionId), ScoreRevision::class.java)
+
+    fun saveScoreRevision(revision: ScoreRevision) = write(scoreRevisionKey(revision.id), revision)
+
     fun syncCursor(): Long = preferences.getLong(KEY_SYNC_CURSOR, 0L)
     fun saveSyncCursor(cursor: Long) = preferences.edit(commit = true) { putLong(KEY_SYNC_CURSOR, cursor) }
 
@@ -68,6 +74,7 @@ internal class CatalogCache(context: Context, private val gson: Gson = Gson()) {
     private fun bundleKey(id: String) = "bundle:$id"
     private fun etagKey(id: String) = "etag:$id"
     private fun libraryAlbumKey(id: String) = "library_album:$id"
+    private fun scoreRevisionKey(id: String) = "score_revision:$id"
 
     private companion object {
         const val NAME = "rhythm_catalog_cache_v1"

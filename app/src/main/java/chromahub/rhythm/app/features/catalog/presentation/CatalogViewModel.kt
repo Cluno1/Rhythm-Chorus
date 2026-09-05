@@ -15,6 +15,8 @@ import chromahub.rhythm.app.features.catalog.domain.WorkSummary
 import chromahub.rhythm.app.features.catalog.domain.RhythmQueueEntry
 import chromahub.rhythm.app.features.catalog.domain.CatalogLibraryAlbum
 import chromahub.rhythm.app.features.catalog.domain.CatalogLibrarySong
+import chromahub.rhythm.app.shared.data.model.Song
+import android.net.Uri
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +35,19 @@ data class CatalogUiState(
     val refreshing: Boolean = false,
     val offlineSnapshot: Boolean = false,
     val error: String? = null,
+)
+
+data class RestoredUnifiedQueue(
+    val songs: List<Song>,
+    val catalogEntries: List<RhythmQueueEntry>,
+    val currentIndex: Int,
+    val positionMs: Long,
+)
+
+private data class RestoredQueueItem(
+    val sourceIndex: Int,
+    val song: Song,
+    val catalogEntry: RhythmQueueEntry?,
 )
 
 class CatalogViewModel(application: Application) : AndroidViewModel(application) {
@@ -177,7 +192,10 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         var next: String? = headRevisionId
         while (next != null) {
             check(seen.add(next)) { "谱面修订链出现循环" }
-            val revision = repository.getScoreRevision(next).getOrThrow()
+            val revision = repository.getScoreRevision(next).getOrElse { error ->
+                if (revisions.isNotEmpty()) return@runCatching revisions
+                throw error
+            }
             revisions += revision
             next = revision.basedOnRevisionId
         }
@@ -190,21 +208,30 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         return repository.downloadAsset(asset.assetId, asset.sha256, asset.byteSize)
     }
 
-    suspend fun restoreQueue(): Result<Triple<List<RhythmQueueEntry>, Int, Long>?> {
+    suspend fun restoreQueue(deviceSongs: List<Song> = emptyList()): Result<RestoredUnifiedQueue?> {
         val record = queueStore.load() ?: return Result.success(null)
         if (!repository.connection().configured) return Result.success(null)
         return runCatching {
-            val entries = record.entries.map { saved ->
-                RhythmQueueEntry(
-                    nowPlaying = saved.nowPlaying.copy(assetId = null),
-                    playback = CatalogPlaybackItem(
-                        renditionId = saved.nowPlaying.renditionId,
+            val deviceSongsById = deviceSongs.associateBy(Song::id)
+            if (deviceSongsById.isEmpty() && record.entries.any { it.isDevice() }) {
+                // Most commonly the runtime audio permission has not been granted yet. Keep the
+                // complete record intact and retry after MediaStore initialization.
+                return@runCatching null
+            }
+            val restored = record.entries.mapIndexedNotNull { sourceIndex, saved ->
+                if (saved.isDevice()) {
+                    saved.deviceSongId?.let(deviceSongsById::get)?.let {
+                        RestoredQueueItem(sourceIndex, it, null)
+                    }
+                } else {
+                    val nowPlaying = saved.nowPlaying ?: return@mapIndexedNotNull null
+                    val playback = CatalogPlaybackItem(
+                        renditionId = nowPlaying.renditionId,
                         assetId = null,
-                        title = saved.title,
-                        artist = saved.artist,
-                        arrangementName = saved.arrangementName,
-                        playbackUrl = chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
-                            .deferredUri(saved.nowPlaying.renditionId),
+                        title = saved.title ?: nowPlaying.title,
+                        artist = saved.artist ?: nowPlaying.subtitle,
+                        arrangementName = saved.arrangementName.orEmpty(),
+                        playbackUrl = CatalogPlaybackPolicy.deferredUri(nowPlaying.renditionId),
                         cacheKey = null,
                         mediaType = "audio/mpeg",
                         durationMs = saved.durationMs,
@@ -213,10 +240,35 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                             saved.artworkUrl,
                             repository.connection().serverUrl,
                         ),
-                    ),
-                )
+                    )
+                    val entry = RhythmQueueEntry(
+                        nowPlaying = nowPlaying.copy(assetId = null),
+                        playback = playback,
+                    )
+                    val song = Song(
+                        id = playback.toMediaItem().mediaId,
+                        title = nowPlaying.title,
+                        artist = nowPlaying.subtitle,
+                        album = playback.arrangementName,
+                        albumId = playback.albumId.ifBlank { nowPlaying.arrangementId },
+                        duration = playback.durationMs,
+                        uri = Uri.parse(playback.playbackUrl),
+                        artworkUri = playback.artworkUrl?.let(Uri::parse),
+                        codec = playback.mediaType,
+                    )
+                    RestoredQueueItem(sourceIndex, song, entry)
+                }
             }
-            Triple(entries, record.currentIndex, record.positionMs)
+            if (restored.isEmpty()) return@runCatching null
+            val currentIndex = restored.indexOfFirst { it.sourceIndex == record.currentIndex }
+                .takeIf { it >= 0 }
+                ?: restored.indexOfLast { it.sourceIndex < record.currentIndex }.coerceAtLeast(0)
+            RestoredUnifiedQueue(
+                songs = restored.map { it.song },
+                catalogEntries = restored.mapNotNull { it.catalogEntry },
+                currentIndex = currentIndex,
+                positionMs = record.positionMs,
+            )
         }
     }
 

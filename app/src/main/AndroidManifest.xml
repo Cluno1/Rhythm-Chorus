@@ -2,13 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Files are imported explicitly with SAF, then uploaded as managed v2 Assets. -->
-    <uses-permission
-        android:name="android.permission.READ_MEDIA_AUDIO"
-        tools:node="remove" />
+    <!-- Device music is read-only and never enters a Catalog upload flow. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
-        tools:node="remove" />
+        android:maxSdkVersion="32" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:node="remove" />

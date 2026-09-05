@@ -57,6 +57,30 @@ class CatalogPlaybackPolicyTest {
     }
 
     @Test
+    fun acceptsOnlyMatchingMediaStoreAudioIdentityForDeviceSongs() {
+        assertTrue(
+            CatalogPlaybackPolicy.allowsDeviceMediaStoreItem(
+                "42",
+                "content://media/external/audio/media/42",
+            ),
+        )
+        assertFalse(
+            CatalogPlaybackPolicy.allowsDeviceMediaStoreItem(
+                "41",
+                "content://media/external/audio/media/42",
+            ),
+        )
+        assertFalse(CatalogPlaybackPolicy.allowsDeviceMediaStoreItem("42", "file:///sdcard/song.mp3"))
+        assertFalse(CatalogPlaybackPolicy.allowsDeviceMediaStoreItem("42", "content://other/audio/media/42"))
+        assertFalse(
+            CatalogPlaybackPolicy.allowsDeviceMediaStoreItem(
+                "42",
+                "content://media/external/audio/media/42?redirect=https://evil.example",
+            ),
+        )
+    }
+
+    @Test
     fun rejectsMismatchedOrUnmanagedAssetIdentity() {
         val otherAsset = "33333333-3333-4333-8333-333333333333"
         assertFalse(

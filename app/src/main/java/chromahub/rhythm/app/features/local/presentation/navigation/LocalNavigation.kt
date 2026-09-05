@@ -137,7 +137,6 @@ import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackItem
 import chromahub.rhythm.app.features.catalog.domain.RhythmNowPlayingItem
 import chromahub.rhythm.app.features.catalog.domain.RhythmQueueEntry
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
-import chromahub.rhythm.app.features.catalog.domain.catalogQueueSelection
 import chromahub.rhythm.app.features.catalog.domain.isCatalogLibrarySong
 import chromahub.rhythm.app.features.catalog.domain.toRhythmAlbum
 import chromahub.rhythm.app.features.catalog.domain.toRhythmSong
@@ -900,6 +899,7 @@ private fun LocalNavigationContent(
     val haptic = LocalHapticFeedback.current
     val catalogViewModel: CatalogViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     val catalogState by catalogViewModel.state.collectAsState()
+    val localLibraryInitialized by viewModel.isInitialized.collectAsState()
     val activeCatalogItem by viewModel.catalogNowPlaying.collectAsState()
     var activeCatalogScoreAvailable by remember(activeCatalogItem?.workId) {
         mutableStateOf(false)
@@ -910,9 +910,9 @@ private fun LocalNavigationContent(
             ?.takeIf { it.work.id == item.workId }
             ?: catalogViewModel.loadWork(item.workId).getOrNull()
         activeCatalogScoreAvailable = bundle?.arrangements
-            ?.asSequence()
-            ?.flatMap { it.scores.asSequence() }
-            ?.any { (it.publishedRevisionId ?: it.headRevisionId) != null }
+            ?.firstOrNull { it.id == item.arrangementId }
+            ?.scores
+            ?.any { (it.headRevisionId ?: it.publishedRevisionId) != null }
             ?: false
     }
     val catalogSongs = remember(catalogState.songs, catalogState.serverUrl) {
@@ -924,29 +924,31 @@ private fun LocalNavigationContent(
     val catalogSongByDisplayId = remember(catalogState.songs) {
         catalogState.songs.associateBy { "rhythm-catalog:rendition:${it.renditionId}" }
     }
-    // Device MediaStore playback is a hard-disabled product surface (issue 6). Keep the original
-    // Rhythm screens, but project only backend-managed songs/albums into them so stale local state
-    // cannot create a mixed or arbitrary-URI queue.
-    val nativeSongs = catalogSongs
-    val nativeAlbums = catalogAlbums
+    val nativeSongs = remember(songs, catalogSongs) {
+        (songs + catalogSongs).distinctBy(Song::id)
+    }
+    val nativeAlbums = remember(albums, catalogAlbums) {
+        (albums + catalogAlbums).distinctBy { it.id }
+    }
     LaunchedEffect(catalogState.error) {
         catalogState.error?.let { snackbarHostState.showSnackbar(it) }
     }
 
-    val playCatalogQueue: (List<Song>, Int, Boolean) -> Unit = { requestedSongs, startIndex, shuffle ->
-        val selection = requestedSongs.catalogQueueSelection(startIndex)
-        val catalogItems = selection.songs.mapNotNull { song -> catalogSongByDisplayId[song.id] }
-        if (catalogItems.isEmpty()) {
-            coroutineScope.launch { snackbarHostState.showSnackbar("本地音乐库已禁用") }
+    val playCatalogQueue: (List<Song>, Int, Boolean) -> Unit = playQueue@{ requestedSongs, startIndex, shuffle ->
+        if (requestedSongs.isEmpty()) {
+            return@playQueue
         } else {
-            coroutineScope.launch {
-                val ordered = if (shuffle) catalogItems.shuffled() else catalogItems
-                val effectiveStartIndex = if (shuffle) {
-                    0
-                } else {
-                    selection.startIndex.coerceIn(ordered.indices)
-                }
-                val entries = ordered.map { song ->
+            val validStartIndex = startIndex.coerceIn(requestedSongs.indices)
+            val orderedSongs = if (shuffle) requestedSongs.shuffled() else requestedSongs
+            val effectiveStartIndex = if (shuffle) 0 else validStartIndex
+            val missingCatalogIdentity = orderedSongs.any {
+                it.isCatalogLibrarySong() && catalogSongByDisplayId[it.id] == null
+            }
+            if (missingCatalogIdentity) {
+                coroutineScope.launch { snackbarHostState.showSnackbar("Catalog 歌曲身份已过期，请刷新曲库") }
+            } else {
+                val entries = orderedSongs.mapNotNull { displaySong ->
+                    val song = catalogSongByDisplayId[displaySong.id] ?: return@mapNotNull null
                     RhythmQueueEntry(
                         nowPlaying = RhythmNowPlayingItem(
                             workId = song.workId,
@@ -976,23 +978,29 @@ private fun LocalNavigationContent(
                         ),
                     )
                 }
-                viewModel.playCatalogQueue(entries, effectiveStartIndex)
+                viewModel.playUnifiedQueue(
+                    songs = orderedSongs,
+                    catalogEntries = entries,
+                    startIndex = effectiveStartIndex,
+                    shuffle = false,
+                )
                 navController.navigate(Screen.Player.route) { launchSingleTop = true }
             }
         }
     }
     val playNativeSong: (Song) -> Unit = { song ->
-        if (song.isCatalogLibrarySong()) {
-            playCatalogQueue(listOf(song), 0, false)
-        } else {
-            coroutineScope.launch { snackbarHostState.showSnackbar("本地音乐库已禁用") }
-        }
+        playCatalogQueue(listOf(song), 0, false)
     }
-    LaunchedEffect(catalogState.configured) {
-        if (catalogState.configured && viewModel.currentSong.value == null) {
+    LaunchedEffect(catalogState.configured, localLibraryInitialized, songs) {
+        if (catalogState.configured && localLibraryInitialized && viewModel.currentSong.value == null) {
             kotlinx.coroutines.delay(750)
-            catalogViewModel.restoreQueue().getOrNull()?.let { restored ->
-                viewModel.restoreCatalogQueue(restored.first, restored.second, restored.third)
+            catalogViewModel.restoreQueue(songs).getOrNull()?.let { restored ->
+                viewModel.restoreUnifiedQueue(
+                    restored.songs,
+                    restored.catalogEntries,
+                    restored.currentIndex,
+                    restored.positionMs,
+                )
             }
         }
     }
@@ -1344,17 +1352,25 @@ private fun LocalNavigationContent(
                                             snackbarHostState.showSnackbar(error.message ?: "无法读取乐谱")
                                             return@launch
                                         }
-                                    val scorePair = bundle.arrangements
-                                        .flatMap { arr -> arr.scores.map { arr to it } }
-                                        .firstOrNull { (_, score) ->
-                                            (score.publishedRevisionId ?: score.headRevisionId) != null
+                                    val arrangement = bundle.arrangements
+                                        .firstOrNull { it.id == item.arrangementId }
+                                    val selectedScore = arrangement?.preferredScoreId
+                                        ?.let { preferred -> arrangement.scores.firstOrNull { it.id == preferred } }
+                                        ?.takeIf { (it.headRevisionId ?: it.publishedRevisionId) != null }
+                                        ?: arrangement?.scores?.firstOrNull {
+                                            (it.headRevisionId ?: it.publishedRevisionId) != null
                                         }
+                                    val scorePair = if (arrangement != null && selectedScore != null) {
+                                        arrangement to selectedScore
+                                    } else {
+                                        null
+                                    }
                                     if (scorePair == null) {
                                         snackbarHostState.showSnackbar("这首歌曲暂无可用乐谱")
                                         return@launch
                                     }
                                     val (arr, score) = scorePair
-                                    val revId = (score.publishedRevisionId ?: score.headRevisionId)!!
+                                    val revId = (score.headRevisionId ?: score.publishedRevisionId)!!
                                     navController.navigate(
                                         Screen.CatalogScore.createRoute(
                                             item.workId,
@@ -1948,8 +1964,8 @@ private fun LocalNavigationContent(
                             musicViewModel = viewModel,
                             songs = nativeSongs,
                             albums = nativeAlbums,
-                            artists = emptyList(),
-                            recentlyPlayed = recentlyPlayed.filter { it.isCatalogLibrarySong() },
+                            artists = artists,
+                            recentlyPlayed = recentlyPlayed,
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             onSongClick = playNativeSong,
@@ -3264,8 +3280,8 @@ private fun LocalNavigationContent(
                     LibraryScreen(
                         songs = if (isStreamingMode) streamingMappedSongs else nativeSongs,
                         albums = if (isStreamingMode) streamingMappedAlbums else nativeAlbums,
-                        playlists = if (isStreamingMode) streamingMappedPlaylists else emptyList(),
-                        artists = if (isStreamingMode) streamingMappedArtists else emptyList(),
+                        playlists = if (isStreamingMode) streamingMappedPlaylists else playlists,
+                        artists = if (isStreamingMode) streamingMappedArtists else artists,
                         currentSong = currentSong,
                         isPlaying = isPlaying,
                         onSongClick = { song ->

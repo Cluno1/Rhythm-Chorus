@@ -3,7 +3,7 @@ package chromahub.rhythm.app.features.catalog.data
 import android.content.Context
 import chromahub.rhythm.app.features.catalog.data.local.CatalogCache
 import chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore
-import chromahub.rhythm.app.features.catalog.data.local.CatalogAssetCache
+import chromahub.rhythm.app.features.catalog.data.local.CatalogOfflineCache
 import chromahub.rhythm.app.features.catalog.data.remote.CatalogApiClient
 import chromahub.rhythm.app.features.catalog.data.remote.CatalogDtoMapper
 import chromahub.rhythm.app.features.catalog.data.remote.CatalogEndpoint
@@ -23,13 +23,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 import java.io.IOException
-import java.security.MessageDigest
 
 class CatalogRepositoryImpl(context: Context) : CatalogRepository {
     private val credentials = CatalogCredentialsStore(context)
     private val cache = CatalogCache(context)
     private val queueStore = CatalogQueueStore(context)
-    private val assetCache = CatalogAssetCache(context)
+    private val offlineCache = CatalogOfflineCache(context)
 
     override fun connection(): CatalogConnection {
         val server = credentials.loadServerUrl().orEmpty()
@@ -101,7 +100,10 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         val id = validUuid(revisionId)
         CatalogDtoMapper.scoreRevision(client().api.scoreRevision(id).bodyOrThrow()).also {
             require(it.id == id) { "score revision id does not match request" }
+            cache.saveScoreRevision(it)
         }
+    }.recoverCatching { error ->
+        if (error is CatalogFailure.Unreachable) cache.loadScoreRevision(revisionId) ?: throw error else throw error
     }
 
     override suspend fun getPlayback(renditionId: String, prefer: String): Result<PlaybackDescriptor> = guarded {
@@ -186,11 +188,24 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         assetId: String,
         expectedSha256: String,
         expectedSize: Long,
+    ): Result<ByteArray> = downloadScoreAsset(
+        assetId = assetId,
+        expectedSha256 = expectedSha256,
+        expectedSize = expectedSize,
+        revisionId = null,
+    )
+
+    private suspend fun downloadScoreAsset(
+        assetId: String,
+        expectedSha256: String,
+        expectedSize: Long,
+        revisionId: String?,
     ): Result<ByteArray> = guarded {
         val id = validUuid(assetId)
         require(expectedSha256.matches(Regex("^[0-9a-fA-F]{64}$"))) { "expected SHA-256 is invalid" }
         require(expectedSize > 0) { "expected size must be positive" }
-        assetCache.read(id, expectedSha256, expectedSize)?.let { return@guarded it }
+        val namespace = cacheNamespace()
+        offlineCache.readAsset(namespace, id, expectedSha256, expectedSize)?.let { return@guarded it }
         val apiClient = client()
         val descriptor = CatalogDtoMapper.assetDelivery(apiClient.api.assetDelivery(id).bodyOrThrow())
         require(descriptor.assetId == id) { "asset delivery id does not match request" }
@@ -202,12 +217,76 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
             }
             else -> apiClient.resolveAssetUrl(descriptor.relativeUrl).toString()
         }
-        val bytes = apiClient.api.deliveredAsset(absoluteUrl).bodyOrThrow().bytes()
-        require(bytes.size.toLong() == expectedSize) { "asset size mismatch" }
-        val actual = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
-        require(actual.equals(expectedSha256, ignoreCase = true)) { "asset SHA-256 mismatch" }
-        assetCache.write(id, expectedSha256, bytes)
-        bytes
+        apiClient.api.deliveredAsset(absoluteUrl).bodyOrThrow().use { body ->
+            offlineCache.store(
+                namespace = namespace,
+                kind = CatalogOfflineCache.KIND_SCORE,
+                assetId = id,
+                sha256 = expectedSha256,
+                byteSize = expectedSize,
+                mediaType = descriptor.mediaType,
+                revisionId = revisionId,
+                input = body.byteStream(),
+            )
+        }
+        offlineCache.readAsset(namespace, id, expectedSha256, expectedSize)
+            ?: throw IOException("cached score could not be read after download")
+    }
+
+    override suspend fun cachePlaybackAndLatestScore(
+        workId: String,
+        arrangementId: String,
+        renditionId: String,
+    ): Result<Unit> = guarded {
+        val validWorkId = validUuid(workId)
+        val validArrangementId = validUuid(arrangementId)
+        val validRenditionId = validUuid(renditionId)
+        val descriptor = getPlayback(validRenditionId).getOrThrow()
+        cachePlayback(descriptor)
+
+        val bundle = getWorkBundle(validWorkId, forceRefresh = true).getOrThrow()
+        val arrangement = bundle.arrangements.firstOrNull { it.id == validArrangementId }
+            ?: throw CatalogFailure.InvalidData("播放条目对应的编曲不存在")
+        val score = arrangement.preferredScoreId
+            ?.let { preferred -> arrangement.scores.firstOrNull { it.id == preferred } }
+            ?.takeIf { it.headRevisionId != null || it.publishedRevisionId != null }
+            ?: arrangement.scores.firstOrNull { it.headRevisionId != null || it.publishedRevisionId != null }
+            ?: return@guarded Unit
+        val revisionId = score.headRevisionId ?: score.publishedRevisionId ?: return@guarded Unit
+        val revision = getScoreRevision(revisionId).getOrThrow()
+        val asset = revision.primaryMusicXml
+            ?: throw CatalogFailure.InvalidData("最新谱面修订没有 primary_musicxml")
+        downloadScoreAsset(
+            assetId = asset.assetId,
+            expectedSha256 = asset.sha256,
+            expectedSize = asset.byteSize,
+            revisionId = revision.id,
+        ).getOrThrow()
+    }
+
+    private suspend fun cachePlayback(descriptor: PlaybackDescriptor) {
+        val hash = descriptor.cacheKey.substringAfterLast(':')
+        require(hash.matches(Regex("^[0-9a-f]{64}$"))) { "playback cache key hash is invalid" }
+        val namespace = cacheNamespace()
+        if (offlineCache.findAudio(namespace, descriptor.renditionId)?.let {
+                it.assetId == descriptor.assetId &&
+                    it.sha256 == hash &&
+                    it.byteSize == descriptor.byteSize
+            } == true
+        ) return
+        val apiClient = client()
+        apiClient.api.deliveredAsset(descriptor.relativeUrl).bodyOrThrow().use { body ->
+            offlineCache.store(
+                namespace = namespace,
+                kind = CatalogOfflineCache.KIND_AUDIO,
+                assetId = descriptor.assetId,
+                sha256 = hash,
+                byteSize = descriptor.byteSize,
+                mediaType = descriptor.mediaType,
+                renditionId = descriptor.renditionId,
+                input = body.byteStream(),
+            )
+        }
     }
 
     override suspend fun syncChanges(): Result<CatalogChanges> = guarded {
@@ -231,6 +310,12 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         val server = credentials.loadServerUrl() ?: throw CatalogFailure.NotConfigured()
         val token = credentials.loadToken() ?: throw CatalogFailure.NotConfigured()
         return CatalogApiClient(server, token)
+    }
+
+    private fun cacheNamespace(): String {
+        val server = credentials.loadServerUrl() ?: throw CatalogFailure.NotConfigured()
+        val token = credentials.loadToken() ?: throw CatalogFailure.NotConfigured()
+        return CatalogOfflineCache.namespace(server, token)
     }
 
     private suspend fun <T> guarded(block: suspend () -> T): Result<T> = withContext(Dispatchers.IO) {

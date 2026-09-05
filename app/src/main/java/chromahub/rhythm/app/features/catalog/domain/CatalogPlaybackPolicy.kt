@@ -6,10 +6,10 @@ import java.util.Locale
 /**
  * Hard product boundary for the private Work catalog.
  *
- * Rhythm may play only an Asset selected through a backend Rendition playback response. Device
- * MediaStore entries, arbitrary content/file URIs, and third-party streaming URLs are rejected.
- * Offline playback remains supported by Media3's managed cache: the logical URI and cache key stay
- * the backend Asset identity even when the bytes are served from the local cache.
+ * Rhythm may play a managed Catalog Asset or a strictly identified device MediaStore audio row.
+ * Arbitrary content/file URIs and third-party streaming URLs are rejected.
+ * Offline playback keeps the logical Rendition/Asset identity even when bytes are served from the
+ * app-private 10 GiB Catalog cache.
  *
  * issue 11：新增"后端签发的 COS presigned 直连"通道——playback descriptor 的 delivery=signed_url
  * 时，URL 指向腾讯 COS 对象存储（`*.myqcloud.com`）且自带短时签名。客户端据此绕过后端代理直连
@@ -17,7 +17,7 @@ import java.util.Locale
  * 身份绑定退回 cacheKey（`rhythm:asset:{uuid}:{sha256}`），后端 Bearer 令牌绝不发往 COS。
  */
 object CatalogPlaybackPolicy {
-    const val DEVICE_LIBRARY_ENABLED = false
+    const val DEVICE_LIBRARY_ENABLED = true
     const val EXTERNAL_URI_PLAYBACK_ENABLED = false
     const val THIRD_PARTY_STREAMING_ENABLED = false
 
@@ -87,6 +87,21 @@ object CatalogPlaybackPolicy {
         mediaType = mediaType,
         trustedServerUrl = trustedServerUrl,
     )
+
+    /** Pure URI/identity gate; the playback service additionally verifies that the row exists. */
+    fun allowsDeviceMediaStoreItem(mediaId: String, uri: String?): Boolean {
+        if (!DEVICE_LIBRARY_ENABLED || !mediaId.matches(Regex("^[0-9]+$"))) return false
+        val parsed = runCatching { URI(uri) }.getOrNull() ?: return false
+        if (!parsed.scheme.equals("content", ignoreCase = true)) return false
+        if (!parsed.host.equals("media", ignoreCase = true)) return false
+        if (parsed.rawQuery != null || parsed.fragment != null || parsed.userInfo != null) return false
+        val segments = parsed.path.orEmpty().trim('/').split('/')
+        return segments.size == 4 &&
+            segments[0].isNotBlank() &&
+            segments[1] == "audio" &&
+            segments[2] == "media" &&
+            segments[3] == mediaId
+    }
 
     fun deferredUri(renditionId: String): String {
         require(Regex("^$uuid$").matches(renditionId)) { "renditionId is not a UUID" }
