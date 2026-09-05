@@ -1,6 +1,6 @@
-# Rhythm Build Instructions
+# Sonorus Build Instructions
 
-Complete guide to building Rhythm from source code. Whether you're contributing, customizing, or just curious, this guide will get you started.
+Complete guide to building Sonorus from source code. Whether you're contributing, customizing, or just curious, this guide will get you started.
 
 ---
 
@@ -40,15 +40,15 @@ Complete guide to building Rhythm from source code. Whether you're contributing,
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/cromaguy/Rhythm.git
-cd Rhythm
+git clone https://github.com/Cluno1/Sonorus.git
+cd Sonorus
 ```
 
 ### 2. Open in Android Studio
 
 1. Launch **Android Studio**
 2. Select **Open an Existing Project**
-3. Navigate to the cloned `Rhythm` folder
+3. Navigate to the cloned `Sonorus` folder
 4. Click **OK**
 
 ### 3. Sync Gradle
@@ -112,11 +112,11 @@ Check `app/build.gradle.kts`:
 
 ```kotlin
 android {
-    namespace = "chromahub.rhythm.app"
+    namespace = "io.github.cluno1.sonorus"
     compileSdk = 37
     
     defaultConfig {
-        applicationId = "chromahub.rhythm.app"
+        applicationId = "io.github.cluno1.sonorus"
         minSdk = 26          // Android 8.0
         targetSdk = 37       // Android 15
         versionCode = 544561196
@@ -143,7 +143,7 @@ android {
 
 ### Step 5: Build Variants
 
-Rhythm supports multiple build variants:
+Sonorus supports multiple build variants:
 
 #### **Debug Build** (Development)
 ```bash
@@ -152,7 +152,7 @@ Rhythm supports multiple build variants:
 ./gradlew assembleGithubDebug
 ```
 - Output: `app/build/outputs/apk/fdroid/debug/` or `app/build/outputs/apk/github/debug/`
-- Files are named `Rhythm-{versionName}-{flavorVariant}-{abi}.apk` (e.g., `Rhythm-5.4.456.1196 Beta-fdroidDebug-arm64-v8a.apk`)
+- Files are named `Sonorus-{versionName}-{flavorVariant}-{abi}.apk` (e.g., `Sonorus-5.4.456.1196 Beta-fdroidDebug-arm64-v8a.apk`)
 - Features: Debugging enabled, logs enabled
 - Signing: Debug keystore (auto-generated)
 
@@ -224,7 +224,7 @@ release {
 ```
 
 Output: Flavor-specific directory — `app/build/outputs/apk/github/release/` or `app/build/outputs/apk/fdroid/release/`
-APK naming: `Rhythm-{versionName}-{flavorVariant}-{abi}.apk`
+APK naming: `Sonorus-{versionName}-{flavorVariant}-{abi}.apk`
 
 ---
 
@@ -425,7 +425,7 @@ Download NDK via **SDK Manager** → **SDK Tools** → **NDK (Side by side)**
 
 ### Debug APK
 - **Path**: `app/build/outputs/apk/{flavor}/debug/` (e.g., `.../fdroid/debug/`)
-- **File**: `Rhythm-{versionName}-{flavor}Debug-{abi}.apk`
+- **File**: `Sonorus-{versionName}-{flavor}Debug-{abi}.apk`
 - **Size**: ~50-60 MB
 - **Signing**: Debug keystore
 - **Debuggable**: Yes
@@ -433,7 +433,7 @@ Download NDK via **SDK Manager** → **SDK Tools** → **NDK (Side by side)**
 
 ### Release APK
 - **Path**: `app/build/outputs/apk/{flavor}/release/` (e.g., `.../fdroid/release/`)
-- **File**: `Rhythm-{versionName}-{flavor}Release-{abi}.apk`
+- **File**: `Sonorus-{versionName}-{flavor}Release-{abi}.apk`
 - **Size**: ~30-40 MB (R8/ProGuard optimized)
 - **Signing**: Release keystore
 - **Debuggable**: No
@@ -535,11 +535,11 @@ rm -rf app/build
 
 ## 💬 Need Help?
 
-- **Telegram**: [Rhythm Support](https://t.me/RhythmSupport)
-- **Discord**: [Rhythm Community](https://discord.gg/XjPyUYPQYc)
-- **GitHub Issues**: [Report Build Problems](https://github.com/cromaguy/Rhythm/issues)
-- **Contributing Guide**: [https://github.com/cromaguy/Rhythm/wiki/Contributing](https://github.com/cromaguy/Rhythm/wiki/Contributing)
+- **Telegram**: [Sonorus Support](https://t.me/SonorusSupport)
+- **Discord**: [Sonorus Community](https://discord.gg/XjPyUYPQYc)
+- **GitHub Issues**: [Report Build Problems](https://github.com/Cluno1/Sonorus/issues)
+- **Contributing Guide**: [https://github.com/Cluno1/Sonorus/wiki/Contributing](https://github.com/Cluno1/Sonorus/wiki/Contributing)
 
 ---
 
-**Happy Building!** 🎉 If you encounter issues not covered here, please [open an issue](https://github.com/cromaguy/Rhythm/issues) so we can improve this guide.
+**Happy Building!** 🎉 If you encounter issues not covered here, please [open an issue](https://github.com/Cluno1/Sonorus/issues) so we can improve this guide.

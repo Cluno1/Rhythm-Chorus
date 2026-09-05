@@ -1,12 +1,12 @@
-# Rhythm Home Screen Widgets
+# Sonorus Home Screen Widgets
 
-Complete guide to setting up and customizing Rhythm's home screen widgets.
+Complete guide to setting up and customizing Sonorus's home screen widgets.
 
 ---
 
 ## 📱 Widget Types
 
-Rhythm offers three types of widgets to suit different needs:
+Sonorus offers three types of widgets to suit different needs:
 
 ### Lyrics Widget
 - **Purpose**: Display current track lyrics on your home screen
@@ -88,7 +88,7 @@ Rhythm offers three types of widgets to suit different needs:
 
 1. **Long-press** on your home screen
 2. Tap **Widgets**
-3. Scroll to find **Rhythm** widgets
+3. Scroll to find **Sonorus** widgets
 4. Choose between:
    - **Music Widget** (Glance)
    - **Cookie Widget**
@@ -102,7 +102,7 @@ Rhythm offers three types of widgets to suit different needs:
 
 1. **Long-press** on empty home screen area
 2. Tap **Widgets** in popup menu
-3. Find **Rhythm** in widget list
+3. Find **Sonorus** in widget list
 4. **Long-press and drag** widget to home screen
 5. **Drop** in desired location
 6. **Resize** using corner/edge handles
@@ -113,7 +113,7 @@ Rhythm offers three types of widgets to suit different needs:
 
 ### Glance Widget Settings
 
-Access widget settings: **Rhythm → Settings → Home & Widgets → Widget Settings**
+Access widget settings: **Sonorus → Settings → Home & Widgets → Widget Settings**
 
 #### Corner Radius
 - **Range**: 0-32dp
@@ -160,7 +160,7 @@ Widgets update automatically when:
 - **Play/Pause**: Toggle playback
 - **Skip Next**: Jump to next track
 - **Skip Previous**: Return to previous track
-- **Tap Album Art**: Open Rhythm app
+- **Tap Album Art**: Open Sonorus app
 
 #### Limitations
 - No seek bar (due to widget size constraints)
@@ -194,18 +194,18 @@ Widgets update instantly for:
 
 **Solutions:**
 1. **Disable Battery Optimization**:
-   - Settings → Apps → Rhythm → Battery
+   - Settings → Apps → Sonorus → Battery
    - Select "Unrestricted"
 
 2. **Grant Notification Permission**:
    - Required for foreground service
-   - Settings → Apps → Rhythm → Permissions → Notifications
+   - Settings → Apps → Sonorus → Permissions → Notifications
 
 3. **Remove and Re-add Widget**:
    - Long-press widget → Remove
    - Add widget again from widget menu
 
-4. **Update Rhythm**:
+4. **Update Sonorus**:
    - Check for latest version
    - Install updates from GitHub/F-Droid
 
@@ -217,7 +217,7 @@ Widgets update instantly for:
 - Widget cache corruption
 
 **Solutions:**
-1. Open Rhythm app once
+1. Open Sonorus app once
 2. Play a song
 3. Minimize app (don't force close)
 4. Widget should populate
@@ -225,7 +225,7 @@ Widgets update instantly for:
 ### Widget Controls Not Working
 
 **Checks:**
-- Ensure Rhythm has required permissions
+- Ensure Sonorus has required permissions
 - Verify app is not force-stopped
 - Check notification access is enabled
 - Restart device if issue persists
@@ -296,11 +296,11 @@ Widgets update instantly for:
 
 ## 🔗 Related Documentation
 
-- [Getting Started](https://github.com/cromaguy/Rhythm/wiki/Getting-Started)
-- [Features Overview](https://github.com/cromaguy/Rhythm/wiki/Features)
-- [Getting Started](https://github.com/cromaguy/Rhythm/wiki/Getting-Started)
-- [Troubleshooting](https://github.com/cromaguy/Rhythm/wiki/Troubleshooting)
+- [Getting Started](https://github.com/Cluno1/Sonorus/wiki/Getting-Started)
+- [Features Overview](https://github.com/Cluno1/Sonorus/wiki/Features)
+- [Getting Started](https://github.com/Cluno1/Sonorus/wiki/Getting-Started)
+- [Troubleshooting](https://github.com/Cluno1/Sonorus/wiki/Troubleshooting)
 
 ---
 
-**Need help?** Join our [Telegram Community](https://t.me/RhythmSupport) or [Discord Server](https://discord.gg/XjPyUYPQYc)!
+**Need help?** Join our [Telegram Community](https://t.me/SonorusSupport) or [Discord Server](https://discord.gg/XjPyUYPQYc)!

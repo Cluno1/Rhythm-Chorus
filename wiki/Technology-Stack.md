@@ -1,6 +1,6 @@
 # Technology Stack
 
-This document details the technical architecture and libraries used in Rhythm Music Player.
+This document details the technical architecture and libraries used in Sonorus Music Player.
 
 ## 🏗️ Core Technologies
 
@@ -189,7 +189,7 @@ org.jetbrains.kotlinx:kotlinx-coroutines-android
 
 ### StateFlow & Compose State
 
-Rhythm uses Kotlin Flow and Compose state for reactive UI updates:
+Sonorus uses Kotlin Flow and Compose state for reactive UI updates:
 
 ```kotlin
 // ViewModel observes ExoPlayer state via MediaController
@@ -268,19 +268,19 @@ interface MusicRepository {
 
 ## 📱 Audio Processing Architecture
 
-Rhythm chains audio effects through the `RhythmAudioProcessor` pipeline inside `RhythmPlayerEngine`:
+Sonorus chains audio effects through the `SonorusAudioProcessor` pipeline inside `SonorusPlayerEngine`:
 
 ```
 ┌────────────────────────────────────────────┐
-│            RhythmPlayerEngine             │
+│            SonorusPlayerEngine             │
 │   (infrastructure/service/player/)        │
 │                                            │
 │  ┌────────────────────────────────────┐   │
-│  │      RhythmAudioProcessor         │   │
+│  │      SonorusAudioProcessor         │   │
 │  │  • Replay Gain (album/track)      │   │
 │  │  • Bass Boost                     │   │
 │  │  • Virtualizer / Spatialization   │   │
-│  │  • Mono downmix (RhythmMono       │   │
+│  │  • Mono downmix (SonorusMono       │   │
 │  │    AudioProcessor)                │   │
 │  └────────────────────────────────────┘   │
 │                                            │
@@ -294,16 +294,16 @@ Rhythm chains audio effects through the `RhythmAudioProcessor` pipeline inside `
 ### Glance Widgets (Modern)
 
 ```kotlin
-class RhythmMusicWidget : GlanceAppWidget() {
+class SonorusMusicWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
-            RhythmMusicWidgetContent()
+            SonorusMusicWidgetContent()
         }
     }
 }
 
 @Composable
-fun RhythmMusicWidgetContent() {
+fun SonorusMusicWidgetContent() {
     // Observe playback data via GlanceState
     // Material 3 widget UI
     MaterialTheme {
@@ -315,16 +315,16 @@ fun RhythmMusicWidgetContent() {
 ### Background Updates
 
 ```kotlin
-class RhythmWidgetWorker(
+class SonorusWidgetWorker(
     context: Context,
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         // Update widget data from current playback state
         GlanceAppWidgetManager(context)
-            .getGlanceIds(RhythmMusicWidget::class.java)
+            .getGlanceIds(SonorusMusicWidget::class.java)
             .forEach { glanceId ->
-                RhythmMusicWidget().update(context, glanceId)
+                SonorusMusicWidget().update(context, glanceId)
             }
         return Result.success()
     }
@@ -345,11 +345,11 @@ plugins {
 }
 
 android {
-    namespace = "chromahub.rhythm.app"
+    namespace = "io.github.cluno1.sonorus"
     compileSdk = 37
     
     defaultConfig {
-        applicationId = "chromahub.rhythm.app"
+        applicationId = "io.github.cluno1.sonorus"
         minSdk = 26
         targetSdk = 37
         versionCode = 544561196
@@ -439,4 +439,4 @@ androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplaye
 
 ---
 
-**Want to contribute?** Check the [Contributing Guide](https://github.com/cromaguy/Rhythm/wiki/Contributing)! Questions? Ask in [Telegram](https://t.me/RhythmSupport) or [Discord](https://discord.gg/XjPyUYPQYc).
+**Want to contribute?** Check the [Contributing Guide](https://github.com/Cluno1/Sonorus/wiki/Contributing)! Questions? Ask in [Telegram](https://t.me/SonorusSupport) or [Discord](https://discord.gg/XjPyUYPQYc).

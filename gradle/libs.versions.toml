@@ -41,9 +41,11 @@ macrobenchmark = "1.4.1"
 profileinstaller = "1.4.1"
 uiautomator = "2.4.0"
 window = "1.5.1"
+alphaTab = "1.8.4"
 
 [libraries]
 androidx-window = { group = "androidx.window", name = "window", version.ref = "window" }
+alphatab = { group = "net.alphatab", name = "alphaTab", version.ref = "alphaTab" }
 taglib = { group = "io.github.kyant0", name = "taglib", version.ref = "taglib" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core = { group = "androidx.core", name = "core", version.ref = "core" }
@@ -71,7 +73,6 @@ androidx-media3-exoplayer-dash = { group = "androidx.media3", name = "media3-exo
 androidx-media3-exoplayer-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3" }
 androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3" }
-androidx-media3-exoplayer-midi = { group = "androidx.media3", name = "media3-exoplayer-midi", version.ref = "media3" }
 org-jellyfin-media3-ffmpeg-decoder = { group = "org.jellyfin.media3", name = "media3-ffmpeg-decoder", version = "1.9.0+1" }
 androidx-palette-ktx = { group = "androidx.palette", name = "palette-ktx", version.ref = "paletteKtx" }
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
@@ -88,6 +89,7 @@ com-squareup-retrofit2-retrofit = { group = "com.squareup.retrofit2", name = "re
 com-squareup-retrofit2-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 com-squareup-okhttp3-okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 com-squareup-okhttp3-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+com-squareup-okhttp3-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }
 com-google-code-gson-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 org-jetbrains-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 org-jetbrains-kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
@@ -114,4 +116,3 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 android-test = { id = "com.android.test", version.ref = "agp" }
 androidx-baselineprofile = { id = "androidx.baselineprofile", version.ref = "macrobenchmark" }
-

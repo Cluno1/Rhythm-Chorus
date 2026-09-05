@@ -10,26 +10,26 @@
 # ──────────────────────────────
 
 # Keep model classes used for Gson serialization in shared settings, playlists, etc.
--keep class chromahub.rhythm.app.shared.data.model.** { *; }
+-keep class io.github.cluno1.sonorus.shared.data.model.** { *; }
 
 # Keep PlaylistImportExportUtils inner data classes (PlaylistExportData, PlaylistSongEntry)
 # used for JSON playlist export/import via Gson reflection
--keep class chromahub.rhythm.app.util.PlaylistImportExportUtils$* { *; }
+-keep class io.github.cluno1.sonorus.util.PlaylistImportExportUtils$* { *; }
 
 # Keep GitHub API, Rhythm lyrics API, and other network response models
--keep class chromahub.rhythm.app.network.** { *; }
+-keep class io.github.cluno1.sonorus.network.** { *; }
 
 # Keep ColorExtractor models used for Theme parsing (Gson targets)
--keep class chromahub.rhythm.app.util.ExtractedColors { *; }
+-keep class io.github.cluno1.sonorus.util.ExtractedColors { *; }
 
 # Keep updater local state models (Gson targets)
--keep class chromahub.rhythm.app.shared.presentation.viewmodel.DownloadState { *; }
+-keep class io.github.cluno1.sonorus.shared.presentation.viewmodel.DownloadState { *; }
 
 # Keep streaming models (Gson targets)
--keep class chromahub.rhythm.app.features.streaming.domain.model.** { *; }
+-keep class io.github.cluno1.sonorus.features.streaming.domain.model.** { *; }
 
 # Keep PlaybackEvent inside PlaybackStatsRepository (nested Gson serialization target)
--keep class chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository$PlaybackEvent { *; }
+-keep class io.github.cluno1.sonorus.shared.data.repository.PlaybackStatsRepository$PlaybackEvent { *; }
 
 # Keep classes and fields annotated with @SerializedName to prevent Gson reflection issues
 -keep class * {
@@ -44,7 +44,7 @@
 # ──────────────────────────────
 
 # Keep database entities and DAOs specifically so Room can generate and link them
--keep class chromahub.rhythm.app.features.local.data.database.entity.** { *; }
+-keep class io.github.cluno1.sonorus.features.local.data.database.entity.** { *; }
 -keep class * implements androidx.room.RoomDatabase
 -keep class * extends androidx.room.RoomDatabase { *; }
 -keep @androidx.room.Dao class * { *; }

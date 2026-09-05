@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launcher picker preview for the Rhythm Music widget.
+<!-- Launcher picker preview for the Sonorus Music widget.
      Framework-safe only (android:* attributes, no app: namespace) so launchers
      can inflate it reliably and render it dark. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"

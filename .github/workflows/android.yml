@@ -23,8 +23,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run Lint
-        run: ./gradlew lint
+      - name: Verify Sonorus brand and assets
+        run: scripts/check_sonorus_brand.py && scripts/verify_brand_assets.sh
+
+      - name: Run unit tests and lint
+        run: ./gradlew testGithubDebugUnitTest lintGithubDebug
       
       - name: Upload lint results
         if: always()
@@ -57,10 +60,8 @@ jobs:
           touch ./private.properties
         fi
 
-    - name: Build with Gradle (GitHub flavor only)
-      env:
-        APPLE_MUSIC_FALLBACK_TOKEN: ${{ secrets.APPLE_MUSIC_FALLBACK_TOKEN }}
-      run: ./gradlew assembleGithubRelease assembleGithubDebug
+    - name: Build development artifact (GitHub flavor only)
+      run: ./gradlew assembleGithubDebug
 
     - name: Generate build info
       if: github.event_name == 'pull_request'
@@ -73,9 +74,8 @@ jobs:
       if: github.event_name == 'pull_request'
       uses: actions/upload-artifact@v6
       with:
-        name: rhythm-pr-${{ github.event.pull_request.number }}
+        name: sonorus-pr-${{ github.event.pull_request.number }}
         path: |
-          app/build/outputs/apk/github/release/*.apk
           app/build/outputs/apk/github/debug/*.apk
           build_info.txt
         retention-days: 14

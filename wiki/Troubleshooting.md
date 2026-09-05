@@ -1,16 +1,16 @@
 # Troubleshooting Guide
 
-This guide covers common issues and solutions for Rhythm Music Player.
+This guide covers common issues and solutions for Sonorus Music Player.
 
 ## 🔍 Quick Diagnostics
 
 Before diving into specific issues, try these general fixes:
 
 1. **Restart the app**: Close completely and reopen
-2. **Check permissions**: Settings → Apps → Rhythm → Permissions
+2. **Check permissions**: Settings → Apps → Sonorus → Permissions
 3. **Update app**: Ensure you're on the latest version
-4. **Clear cache**: Settings → Apps → Rhythm → Storage → Clear cache
-5. **Rescan media**: Rhythm Settings → Library & Media → Media Scan
+4. **Clear cache**: Settings → Apps → Sonorus → Storage → Clear cache
+5. **Rescan media**: Sonorus Settings → Library & Media → Media Scan
 
 ---
 
@@ -25,9 +25,9 @@ Before diving into specific issues, try these general fixes:
 
 **Solutions:**
 1. **Grant storage permission manually:**
-   - Android Settings → Apps → Rhythm → Permissions
+   - Android Settings → Apps → Sonorus → Permissions
    - Enable "Files and media" or "Storage"
-   - Restart Rhythm
+   - Restart Sonorus
 
 2. **Check folder access (Android 14+):**
    - You may have granted partial access
@@ -35,12 +35,12 @@ Before diving into specific issues, try these general fixes:
 
 3. **Verify music location:**
    - Ensure music is in standard locations (`/Music`, `/Download`)
-   - Check if folders are blacklisted in Rhythm settings
+   - Check if folders are blacklisted in Sonorus settings
 
 4. **Re-scan media:**
-   - Rhythm → Settings → Library & Media → Media Scan
+   - Sonorus → Settings → Library & Media → Media Scan
    - Wait for scan to complete
-   - Rhythm performs a **full scan** to reliably pick up all changes
+   - Sonorus performs a **full scan** to reliably pick up all changes
 
 ### Notification Controls Not Working
 
@@ -50,7 +50,7 @@ Before diving into specific issues, try these general fixes:
 
 **Solutions:**
 1. **Grant notification permission:**
-   - Settings → Apps → Rhythm → Permissions
+   - Settings → Apps → Sonorus → Permissions
    - Enable "Notifications"
 
 2. **Check notification settings:**
@@ -75,7 +75,7 @@ Before diving into specific issues, try these general fixes:
 
 **Solutions:**
 1. **Check audio format:**
-   - See [Audio Formats Guide](https://github.com/cromaguy/Rhythm/wiki/Audio-Formats)
+   - See [Audio Formats Guide](https://github.com/Cluno1/Sonorus/wiki/Audio-Formats)
    - Unsupported formats won't play
    - Convert to FLAC or MP3
 
@@ -89,7 +89,7 @@ Before diving into specific issues, try these general fixes:
    - Disconnect/reconnect Bluetooth
 
 4. **Clear audio cache:**
-   - Settings → Apps → Rhythm → Storage
+   - Settings → Apps → Sonorus → Storage
    - Clear cache (not data)
 
 ### Audio Stuttering/Glitches
@@ -102,7 +102,7 @@ Before diving into specific issues, try these general fixes:
 **Solutions:**
 1. **Reduce background processes:**
    - Close other apps
-   - Disable battery optimization for Rhythm
+   - Disable battery optimization for Sonorus
 
 2. **Check storage space:**
    - Ensure sufficient free space (500MB+)
@@ -132,7 +132,7 @@ Before diving into specific issues, try these general fixes:
    - Check track numbers are sequential
 
 3. **Update ExoPlayer:**
-   - Update to latest Rhythm version
+   - Update to latest Sonorus version
    - ExoPlayer improvements in newer releases
 
 ---
@@ -151,15 +151,15 @@ Before diving into specific issues, try these general fixes:
    - Embed artwork if missing
 
 2. **Enable online artwork:**
-   - Rhythm → Settings → Notifications & Services → API Management
+   - Sonorus → Settings → Notifications & Services → API Management
    - Enable "Fetch album artwork from Deezer"
 
 3. **Clear image cache:**
-   - Settings → Apps → Rhythm → Storage → Clear cache
+   - Settings → Apps → Sonorus → Storage → Clear cache
    - Rescan media library
 
 4. **Check file permissions:**
-   - Ensure Rhythm can read image files
+   - Ensure Sonorus can read image files
    - Grant `READ_MEDIA_IMAGES` permission
 
 ### Incorrect Metadata
@@ -170,7 +170,7 @@ Before diving into specific issues, try these general fixes:
 - Can't edit metadata
 
 **Solutions:**
-1. **Edit metadata in Rhythm:**
+1. **Edit metadata in Sonorus:**
    - Long-press song → Song info → Edit
    - Update title, artist, album, etc.
    - Requires storage write permission
@@ -197,7 +197,7 @@ Before diving into specific issues, try these general fixes:
 
 **Solutions:**
 1. **Grant write permission:**
-   - Android Settings → Apps → Rhythm → Permissions
+   - Android Settings → Apps → Sonorus → Permissions
    - Ensure storage write access granted
 
 2. **Check file location:**
@@ -220,7 +220,7 @@ Before diving into specific issues, try these general fixes:
 
 **Solutions:**
 1. **Enable lyrics sources:**
-   - Rhythm → Settings → Audio & Effects → Lyrics
+   - Sonorus → Settings → Audio & Effects → Lyrics
    - Enable LRCLib and embedded lyrics
 
 2. **Check internet connection:**
@@ -291,7 +291,7 @@ Before diving into specific issues, try these general fixes:
 
 **Solutions:**
 1. **Check update settings:**
-   - Rhythm → Settings → Updates & Info → Updates
+   - Sonorus → Settings → Updates & Info → Updates
    - Enable automatic update checking
 
 2. **Verify internet access:**
@@ -319,7 +319,7 @@ Before diving into specific issues, try these general fixes:
    - Re-add widget
 
 2. **Check battery optimization:**
-   - Settings → Apps → Rhythm → Battery
+   - Settings → Apps → Sonorus → Battery
    - Set to "Unrestricted" or "Not optimized"
 
 3. **Verify widget permissions:**
@@ -327,7 +327,7 @@ Before diving into specific issues, try these general fixes:
    - Grant in app permissions
 
 4. **Update WorkManager:**
-   - Update to latest Rhythm version
+   - Update to latest Sonorus version
    - Widget updates improved in recent releases
 
 ### Widget Shows Wrong Size
@@ -361,11 +361,11 @@ Before diving into specific issues, try these general fixes:
 
 **Solutions:**
 1. **Enable auto-resume:**
-   - Rhythm → Settings → Queue & Playback → Playback
+   - Sonorus → Settings → Queue & Playback → Playback
    - Enable "Resume on Device Reconnect"
 
 2. **Grant Bluetooth permission:**
-   - Settings → Apps → Rhythm → Permissions
+   - Settings → Apps → Sonorus → Permissions
    - Enable Bluetooth access
 
 3. **Check device pairing:**
@@ -389,17 +389,17 @@ Before diving into specific issues, try these general fixes:
    - Reconnect device
 
 3. **Clear audio cache:**
-   - Restart Rhythm
+   - Restart Sonorus
    - Disconnect all Bluetooth devices
    - Reconnect desired device
 
 ### USB DAC Support & Android Popups
 
 **Symptoms:**
-- USB DAC is connected but no Android USB permission dialog (e.g., "Allow Rhythm to access [USB Device]?") appears.
+- USB DAC is connected but no Android USB permission dialog (e.g., "Allow Sonorus to access [USB Device]?") appears.
 
 **Explanation & Verification:**
-1. **Silent Native Routing:** Rhythm routes audio to USB DACs natively using standard Android OS audio routing and Android 14's native `setPreferredMixerAttributes` API (App mode). Since this relies on official system-level APIs instead of custom user-space USB drivers, **no USB permission popup is expected or required.** The DAC receives high-resolution playback silently.
+1. **Silent Native Routing:** Sonorus routes audio to USB DACs natively using standard Android OS audio routing and Android 14's native `setPreferredMixerAttributes` API (App mode). Since this relies on official system-level APIs instead of custom user-space USB drivers, **no USB permission popup is expected or required.** The DAC receives high-resolution playback silently.
 2. **Verify Playback:** You can verify the DAC is active by checking your DAC's hardware LED color/indicator or ensuring "DAC / USB Audio" settings are configured under **Experimental Features** in Settings.
 
 ---
@@ -438,7 +438,7 @@ Before diving into specific issues, try these general fixes:
    - Check file size is reasonable
 
 2. **Compatible version:**
-   - Restore from backup created by similar Rhythm version
+   - Restore from backup created by similar Sonorus version
    - Major version differences may cause issues
 
 3. **Manual restore:**
@@ -458,11 +458,11 @@ If nothing else works:
    - Save settings screenshots
 
 2. **Clear app data:**
-   - Settings → Apps → Rhythm → Storage
+   - Settings → Apps → Sonorus → Storage
    - Clear cache → Clear data
 
 3. **Reinstall app:**
-   - Uninstall Rhythm completely
+   - Uninstall Sonorus completely
    - Download fresh APK
    - Install and set up again
 
@@ -473,7 +473,7 @@ If nothing else works:
 For developers or persistent issues:
 
 ```bash
-# Capture Rhythm logs
+# Capture Sonorus logs
 adb logcat | grep "chromahub.rhythm"
 
 # Save to file
@@ -483,29 +483,29 @@ adb logcat -d > rhythm_log.txt
 adb logcat *:E | grep "chromahub.rhythm"
 ```
 
-Share logs in [GitHub Issues](https://github.com/cromaguy/Rhythm/issues) for debugging.
+Share logs in [GitHub Issues](https://github.com/Cluno1/Sonorus/issues) for debugging.
 
 ---
 
 ## 🆘 Still Need Help?
 
 ### Community Support
-- **[Telegram Group](https://t.me/RhythmSupport)**: Live community help
+- **[Telegram Group](https://t.me/SonorusSupport)**: Live community help
 - **[Discord Server](https://discord.gg/XjPyUYPQYc)**: Community chat
-- **[GitHub Discussions](https://github.com/cromaguy/Rhythm/discussions)**: Q&A forum
+- **[GitHub Discussions](https://github.com/Cluno1/Sonorus/discussions)**: Q&A forum
 
 ### Bug Reports
-- **[GitHub Issues](https://github.com/cromaguy/Rhythm/issues)**: Report bugs
+- **[GitHub Issues](https://github.com/Cluno1/Sonorus/issues)**: Report bugs
 
 ### Include This Information
 When asking for help, provide:
 - Android version (e.g., Android 14)
 - Device model (e.g., Pixel 7)
-- Rhythm version (Settings → Updates & Info → About)
+- Sonorus version (Settings → Updates & Info → About)
 - Detailed description of issue
 - Steps to reproduce
 - Screenshots/logs if possible
 
 ---
 
-**Pro tip:** Check [FAQ](https://github.com/cromaguy/Rhythm/wiki/FAQ) for quick answers to common questions!
+**Pro tip:** Check [FAQ](https://github.com/Cluno1/Sonorus/wiki/FAQ) for quick answers to common questions!

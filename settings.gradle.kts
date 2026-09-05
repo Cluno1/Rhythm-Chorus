@@ -26,6 +26,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Rhythm"
+rootProject.name = "Sonorus"
 include(":app")
 include(":macrobenchmark")

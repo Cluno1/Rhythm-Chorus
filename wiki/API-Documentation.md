@@ -1,6 +1,6 @@
 # API Documentation
 
-Internal API reference for developers working with Rhythm's codebase. This covers the actual interfaces, classes, and patterns used in the project.
+Internal API reference for developers working with Sonorus's codebase. This covers the actual interfaces, classes, and patterns used in the project.
 
 > **Note:** For the exact implementation details, always refer to the source code. This document provides a high-level overview of key architecture components.
 
@@ -12,11 +12,11 @@ Internal API reference for developers working with Rhythm's codebase. This cover
 
 | Package | Purpose |
 |:---|:---|
-| `chromahub.rhythm.app.core.domain` | Domain interfaces and models |
-| `chromahub.rhythm.app.features.local` | Local playback feature |
-| `chromahub.rhythm.app.features.streaming` | Streaming playback feature |
-| `chromahub.rhythm.app.shared` | Shared utilities, themes, navigation |
-| `chromahub.rhythm.app.infrastructure` | Player engine, audio processors, service, widgets, workers, network |
+| `io.github.cluno1.sonorus.core.domain` | Domain interfaces and models |
+| `io.github.cluno1.sonorus.features.local` | Local playback feature |
+| `io.github.cluno1.sonorus.features.streaming` | Streaming playback feature |
+| `io.github.cluno1.sonorus.shared` | Shared utilities, themes, navigation |
+| `io.github.cluno1.sonorus.infrastructure` | Player engine, audio processors, service, widgets, workers, network |
 
 ---
 
@@ -24,7 +24,7 @@ Internal API reference for developers working with Rhythm's codebase. This cover
 
 ### MediaPlaybackService
 
-**File:** `infrastructure/service/player/RhythmPlayerEngine.kt`
+**File:** `infrastructure/service/player/SonorusPlayerEngine.kt`
 
 The core playback engine using Media3 ExoPlayer with a custom `DefaultRenderersFactory` that enables the FFmpeg decoder extension and chains the app's audio processors (Replay Gain, Bass Boost, Virtualizer, Mono downmix):
 
@@ -47,10 +47,10 @@ val renderersFactory = object : DefaultRenderersFactory(context) {
 
 **Service:** `infrastructure/service/MediaPlaybackService.kt` extends `MediaLibraryService` and manages:
 - `MediaLibrarySession` for external control
-- `Player` instance via `RhythmPlayerEngine`
+- `Player` instance via `SonorusPlayerEngine`
 - Media notification with playback controls
 - Audio focus handling
-- Mono audio downmix state (`RhythmMonoAudioProcessor`) toggled via the device configuration sheet
+- Mono audio downmix state (`SonorusMonoAudioProcessor`) toggled via the device configuration sheet
 
 ---
 
@@ -134,10 +134,10 @@ interface YouTubeMusicApiService {
 
 | Widget | Class |
 |:---|:---|
-| Music Player Widget | `RhythmMusicWidget : GlanceAppWidget()` |
-| Lyrics Widget | `RhythmLyricsWidget : GlanceAppWidget()` |
+| Music Player Widget | `SonorusMusicWidget : GlanceAppWidget()` |
+| Lyrics Widget | `SonorusLyricsWidget : GlanceAppWidget()` |
 
-Widget updates are managed by `RhythmWidgetWorker` (a `CoroutineWorker`) and `GlanceWidgetUpdater`.
+Widget updates are managed by `SonorusWidgetWorker` (a `CoroutineWorker`) and `GlanceWidgetUpdater`.
 
 ---
 
@@ -185,10 +185,10 @@ All flags are `true` for both `fdroid` and `github` flavors:
 
 ## 📚 Further Reading
 
-- [Architecture Guide](https://github.com/cromaguy/Rhythm/wiki/Architecture)
-- [Technology Stack](https://github.com/cromaguy/Rhythm/wiki/Technology-Stack)
-- [Contributing Guide](https://github.com/cromaguy/Rhythm/wiki/Contributing)
+- [Architecture Guide](https://github.com/Cluno1/Sonorus/wiki/Architecture)
+- [Technology Stack](https://github.com/Cluno1/Sonorus/wiki/Technology-Stack)
+- [Contributing Guide](https://github.com/Cluno1/Sonorus/wiki/Contributing)
 
 ---
 
-**Questions?** Check the [FAQ](https://github.com/cromaguy/Rhythm/wiki/FAQ) or ask in [Telegram](https://t.me/RhythmSupport) or [Discord](https://discord.gg/XjPyUYPQYc)!
+**Questions?** Check the [FAQ](https://github.com/Cluno1/Sonorus/wiki/FAQ) or ask in [Telegram](https://t.me/SonorusSupport) or [Discord](https://discord.gg/XjPyUYPQYc)!

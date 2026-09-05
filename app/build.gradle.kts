@@ -4,11 +4,6 @@
 import java.util.Properties
 import com.android.build.api.variant.FilterConfiguration
 
-val localProperties = Properties().also { props ->
-    val f = rootProject.file("local.properties")
-    if (f.exists()) props.load(f.inputStream())
-}
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -22,18 +17,18 @@ plugins {
 }
 
 android {
-    namespace = "chromahub.rhythm.app"
+    namespace = "io.github.cluno1.sonorus"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "chromahub.rhythm.app"
+        applicationId = "io.github.cluno1.sonorus"
         minSdk = 26
         targetSdk = 37
         
         val overrideVersionCode = project.findProperty("versionCodeOverride")?.toString()?.toIntOrNull()
         val overrideVersionName = project.findProperty("versionNameOverride")?.toString()
-        versionCode = overrideVersionCode ?: 554751250
-        versionName = overrideVersionName ?: "5.5.475.1250 Beta"
+        versionCode = overrideVersionCode ?: 1000000
+        versionName = overrideVersionName ?: "1.0.0"
 
         val overrideReleaseDate = project.findProperty("releaseDateOverride")?.toString()
         buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-09-03"}\"")
@@ -41,11 +36,21 @@ android {
         val isNightly = project.findProperty("nightly")?.toString() == "true"
         buildConfigField("boolean", "IS_NIGHTLY", isNightly.toString())
 
-        // Apple Music: fallback token from environment variable (GitHub secrets), local.properties, or fallback
-        val appleMusicToken = System.getenv("APPLE_MUSIC_FALLBACK_TOKEN")
-            ?: localProperties.getProperty("APPLE_MUSIC_FALLBACK_TOKEN")
-            ?: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IldlYlBsYXlLaWQifQ.eyJpc3MiOiJBTVBXZWJQbGF5IiwiaWF0IjoxNzgxMDMyODU1LCJleHAiOjE3ODQwNTY4NTUsInJvb3RfaHR0cHNfb3JpZ2luIjpbImFwcGxlLmNvbSJdfQ.fiMFcJWkfSlxKP9NVA0UW9CbItD1Rge0SISuepz203XcpU762OqdCpU9M-YkmtKkjRmaIWtjsfGgqZPrlMonpA"
-        buildConfigField("String", "APPLE_MUSIC_FALLBACK_TOKEN", "\"$appleMusicToken\"")
+        // This fork ships against the first-party Catalog API and its trusted COS assets only.
+        buildConfigField("boolean", "CATALOG_ONLY", "true")
+        // Public metadata is deliberately narrower than the disabled third-party streaming stack.
+        // It is used only to enrich files already present on the user's device.
+        buildConfigField("boolean", "DEVICE_PUBLIC_METADATA", "true")
+        buildConfigField("boolean", "FIRST_PARTY_UPDATES", "true")
+        buildConfigField("String", "GITHUB_OWNER", "\"Cluno1\"")
+        buildConfigField("String", "GITHUB_REPO", "\"Sonorus\"")
+        buildConfigField("String", "SOURCE_URL", "\"https://github.com/Cluno1/Sonorus\"")
+        buildConfigField("String", "RELEASES_URL", "\"https://github.com/Cluno1/Sonorus/releases\"")
+        buildConfigField("String", "ISSUES_URL", "\"https://github.com/Cluno1/Sonorus/issues\"")
+        buildConfigField("String", "UPSTREAM_SOURCE_URL", "\"https://github.com/cromaguy/Rhythm\"")
+
+        // The Catalog-only client never enables Apple Music; do not embed provider credentials.
+        buildConfigField("String", "APPLE_MUSIC_FALLBACK_TOKEN", "\"\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -60,50 +65,56 @@ android {
     productFlavors {
         create("fdroid") {
             dimension = "distribution"
-            applicationId = "chromahub.rhythm.app"
+            applicationId = "io.github.cluno1.sonorus"
             
             // F-Droid build: Enable all features (FOSS ethos)
-            buildConfigField("boolean", "ENABLE_YOUTUBE_MUSIC", "true")
-            buildConfigField("boolean", "ENABLE_LYRICALLY_API", "true")
-            buildConfigField("boolean", "ENABLE_DEEZER", "true")
-            buildConfigField("boolean", "ENABLE_LRCLIB", "true")
-            buildConfigField("boolean", "ENABLE_BETTERLYRICS", "true")
-            buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "true")
-            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "true")
+            buildConfigField("boolean", "ENABLE_YOUTUBE_MUSIC", "false")
+            buildConfigField("boolean", "ENABLE_LYRICALLY_API", "false")
+            buildConfigField("boolean", "ENABLE_DEEZER", "false")
+            buildConfigField("boolean", "ENABLE_LRCLIB", "false")
+            buildConfigField("boolean", "ENABLE_BETTERLYRICS", "false")
+            buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "false")
+            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "false")
             buildConfigField("String", "FLAVOR", "\"fdroid\"")
+            buildConfigField("boolean", "FIRST_PARTY_UPDATES", "false")
             
             versionNameSuffix = "-fdroid"
         }
         
         create("github") {
             dimension = "distribution"
-            applicationId = "chromahub.rhythm.app"
+            applicationId = "io.github.cluno1.sonorus"
             
             // GitHub releases: Enable all features (same as F-Droid)
-            buildConfigField("boolean", "ENABLE_YOUTUBE_MUSIC", "true")
-            buildConfigField("boolean", "ENABLE_LYRICALLY_API", "true")
-            buildConfigField("boolean", "ENABLE_DEEZER", "true")
-            buildConfigField("boolean", "ENABLE_LRCLIB", "true")
-            buildConfigField("boolean", "ENABLE_BETTERLYRICS", "true")
-            buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "true")
-            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "true")
+            buildConfigField("boolean", "ENABLE_YOUTUBE_MUSIC", "false")
+            buildConfigField("boolean", "ENABLE_LYRICALLY_API", "false")
+            buildConfigField("boolean", "ENABLE_DEEZER", "false")
+            buildConfigField("boolean", "ENABLE_LRCLIB", "false")
+            buildConfigField("boolean", "ENABLE_BETTERLYRICS", "false")
+            buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "false")
+            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "false")
             buildConfigField("String", "FLAVOR", "\"github\"")
+            buildConfigField("boolean", "FIRST_PARTY_UPDATES", "true")
             
             versionNameSuffix = "-gh"
         }
     }
 
     val signingProperties = getProperties(".config/keystore.properties")
-    val releaseSigning = if (signingProperties != null) {
-        signingConfigs.create("release") {
-            keyAlias = signingProperties.property("key_alias")
-            keyPassword = signingProperties.property("key_password")
-            storePassword = signingProperties.property("store_password")
-            storeFile = rootProject.file(signingProperties.property("store_file"))
+    val releaseSigning =
+        if (signingProperties != null) {
+            signingConfigs.create("release") {
+                keyAlias = signingProperties.property("key_alias")
+                keyPassword = signingProperties.property("key_password")
+                storePassword = signingProperties.property("store_password")
+                storeFile = rootProject.file(signingProperties.property("store_file"))
+            }
+        } else if (providers.gradleProperty("allowDebugReleaseSigning").orNull == "true") {
+            // Explicit local dry-run only. CI releases always provide the fixed Sonorus key.
+            signingConfigs.getByName("debug")
+        } else {
+            null
         }
-    } else {
-        signingConfigs.getByName("debug")
-    }
 
     defaultConfig {
     }
@@ -136,7 +147,7 @@ android {
             versionNameSuffix = "-debug"
             //isMinifyEnabled = false
             //isDebuggable = true
-            signingConfig = releaseSigning
+            signingConfig = signingConfigs.getByName("debug")
         }
         // Required by the macrobenchmark module for baseline profile generation.
         // Mirrors release (fully minified + signed) so the profile reflects production.
@@ -216,7 +227,7 @@ androidComponents {
                 ?: ""
 
             output.outputFileName.set(
-                "Rhythm-${android.defaultConfig.versionName}-${variant.name}${abiSuffix}.apk"
+                "Sonorus-${android.defaultConfig.versionName}-${variant.name}${abiSuffix}.apk"
             )
         }
     }
@@ -224,6 +235,7 @@ androidComponents {
 
 dependencies {
     implementation(libs.androidx.compose.ui.unit)
+    implementation(libs.alphatab)
     // Desugaring library
     coreLibraryDesugaring(libs.androidx.desugar.jdk.libs)
 
@@ -254,7 +266,6 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer.hls)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.session)
-    implementation(libs.androidx.media3.exoplayer.midi)
     implementation(libs.org.jellyfin.media3.ffmpeg.decoder)
     
     // Icons - Material Symbols variable font (res/font/material_symbols_outlined.ttf)
@@ -325,6 +336,7 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
+    testImplementation(libs.com.squareup.okhttp3.mockwebserver)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

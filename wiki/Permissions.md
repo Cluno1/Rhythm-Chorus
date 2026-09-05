@@ -1,10 +1,10 @@
 # Permissions Guide
 
-This guide explains all permissions requested by Rhythm Music Player, why they're needed, and how they're used.
+This guide explains all permissions requested by Sonorus Music Player, why they're needed, and how they're used.
 
 ## 🔒 Privacy First
 
-Rhythm is **100% FOSS-compliant** and respects your privacy:
+Sonorus is **100% FOSS-compliant** and respects your privacy:
 - ✅ No analytics or tracking
 - ✅ No personal data collection
 - ✅ No internet requirement for core functionality
@@ -187,7 +187,7 @@ You can grant access to only selected photos/media instead of full library acces
 
 ## 🚫 Removed Permissions
 
-Rhythm **does NOT** request these permissions (removed for privacy):
+Sonorus **does NOT** request these permissions (removed for privacy):
 
 ❌ `MANAGE_EXTERNAL_STORAGE` - Broad file access (not needed for music)
 ❌ `ACCESS_MEDIA_LOCATION` - GPS coordinates in photos (not needed)
@@ -204,13 +204,13 @@ Rhythm **does NOT** request these permissions (removed for privacy):
 ### Granting Permissions
 
 #### During First Launch
-1. Open Rhythm
+1. Open Sonorus
 2. Follow onboarding wizard
 3. Grant requested permissions when prompted
 
 #### Manual Grant (Android Settings)
 1. Open **Settings** → **Apps**
-2. Find and tap **Rhythm Music**
+2. Find and tap **Sonorus Music**
 3. Tap **Permissions**
 4. Enable required permissions
 
@@ -222,7 +222,7 @@ Rhythm **does NOT** request these permissions (removed for privacy):
 ### Revoking Permissions
 
 To revoke a permission:
-1. **Settings** → **Apps** → **Rhythm Music** → **Permissions**
+1. **Settings** → **Apps** → **Sonorus Music** → **Permissions**
 2. Tap the permission to revoke
 3. Select **Don't allow**
 
@@ -235,7 +235,7 @@ To revoke a permission:
 ### Permission Reset
 
 If permissions are messed up:
-1. **Settings** → **Apps** → **Rhythm Music**
+1. **Settings** → **Apps** → **Sonorus Music**
 2. Tap **Storage & cache** → **Clear data**
 3. Reopen app and grant permissions again
 
@@ -245,18 +245,18 @@ If permissions are messed up:
 
 ## 🔍 Permission Audit
 
-### How to Verify What Rhythm Accesses
+### How to Verify What Sonorus Accesses
 
 #### Using Android Permission Manager
 1. **Settings** → **Privacy** → **Permission manager**
 2. Tap each permission type (Files, Notifications, etc.)
-3. Find **Rhythm Music** in the list
+3. Find **Sonorus Music** in the list
 4. Verify granted permissions
 
 #### Using ADB (Advanced)
 ```bash
-# List all permissions for Rhythm
-adb shell dumpsys package chromahub.rhythm.app | grep permission
+# List all permissions for Sonorus
+adb shell dumpsys package io.github.cluno1.sonorus | grep permission
 
 # Check runtime permissions
 adb shell pm list permissions -g
@@ -284,7 +284,7 @@ Block internet access if you want offline-only:
 - **[RethinkDNS](https://rethinkdns.com/)**: DNS + Firewall
 
 ### Scoped Storage (Android 11+)
-Rhythm uses **Scoped Storage** on Android 11+:
+Sonorus uses **Scoped Storage** on Android 11+:
 - Access limited to music files only
 - No access to documents, photos, or other file types
 - Enhanced privacy and security
@@ -293,33 +293,33 @@ Rhythm uses **Scoped Storage** on Android 11+:
 
 ## ❓ FAQ
 
-### Why does Rhythm need internet access?
+### Why does Sonorus need internet access?
 For optional online features: lyrics (LRCLib), artwork (Deezer), and updates (GitHub). The app works fully offline without internet.
 
-### Can I use Rhythm without granting notifications?
+### Can I use Sonorus without granting notifications?
 Yes, but you won't see playback controls in the notification shade. Player screen still works normally.
 
-### Does Rhythm access my photos?
-No. Even though `READ_MEDIA_IMAGES` is requested (for album art embedded in music files), Rhythm only accesses images associated with audio files, not your photo gallery.
+### Does Sonorus access my photos?
+No. Even though `READ_MEDIA_IMAGES` is requested (for album art embedded in music files), Sonorus only accesses images associated with audio files, not your photo gallery.
 
 ### Why Bluetooth permissions?
 To detect when you connect Bluetooth headphones/speakers and auto-resume playback. Optional feature.
 
 ### Is my listening data sent anywhere?
-**No.** Rhythm stores all data locally on your device. Nothing is uploaded or shared.
+**No.** Sonorus stores all data locally on your device. Nothing is uploaded or shared.
 
 ### Can I audit the code?
-**Yes!** Rhythm is fully open-source: [GitHub Repository](https://github.com/cromaguy/Rhythm)
+**Yes!** Sonorus is fully open-source: [GitHub Repository](https://github.com/Cluno1/Sonorus)
 
 ---
 
 ## 🔗 Related Documentation
 
-- [Installation Guide](https://github.com/cromaguy/Rhythm/wiki/Installation-Guide)
-- [Getting Started](https://github.com/cromaguy/Rhythm/wiki/Getting-Started)
-- [Troubleshooting](https://github.com/cromaguy/Rhythm/wiki/Troubleshooting)
-- [Security Policy](https://github.com/cromaguy/Rhythm/blob/main/docs/SECURITY.md)
+- [Installation Guide](https://github.com/Cluno1/Sonorus/wiki/Installation-Guide)
+- [Getting Started](https://github.com/Cluno1/Sonorus/wiki/Getting-Started)
+- [Troubleshooting](https://github.com/Cluno1/Sonorus/wiki/Troubleshooting)
+- [Security Policy](https://github.com/Cluno1/Sonorus/blob/main/docs/SECURITY.md)
 
 ---
 
-**Still have questions?** Ask in our [Telegram Community](https://t.me/RhythmSupport) or [Discord Server](https://discord.gg/XjPyUYPQYc).
+**Still have questions?** Ask in our [Telegram Community](https://t.me/SonorusSupport) or [Discord Server](https://discord.gg/XjPyUYPQYc).

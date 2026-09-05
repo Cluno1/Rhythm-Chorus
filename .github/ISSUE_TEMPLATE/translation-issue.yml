@@ -2,13 +2,13 @@ name: Translation / Weblate Issue
 description: Report missing, incorrect, or new language translation issues
 title: "[TRANSLATION]: "
 labels: ["translation", "weblate"]
-assignees: ["cromaguy"]
+assignees: ["Cluno1"]
 body:
   - type: markdown
     attributes:
       value: |
         ## Thank you for reporting a translation or localization issue!
-        Rhythm uses Weblate to manage translations. If you've found missing or incorrect text, please let us know.
+        Sonorus uses Weblate to manage translations. If you've found missing or incorrect text, please let us know.
         
   - type: input
     id: language

@@ -1,10 +1,10 @@
-# Rhythm Architecture Guide
+# Sonorus Architecture Guide
 
-Technical documentation of Rhythm's app structure, design patterns, and architectural decisions.
+Technical documentation of Sonorus's app structure, design patterns, and architectural decisions.
 
 ## 🔄 Dual-Mode Architecture
 
-Rhythm employs a unique dual-mode architecture to support both local and streaming playback experiences while sharing core infrastructure.
+Sonorus employs a unique dual-mode architecture to support both local and streaming playback experiences while sharing core infrastructure.
 
 ### Local Mode (`features/local`)
 Focuses on device-based media using the Android `MediaStore` API. It handles local file indexing, metadata extraction from files, and local playback state.
@@ -16,7 +16,7 @@ Provides a completely separate pipeline for streaming servers. It includes its o
 Both modes leverage the `shared` and `infrastructure` layers:
 - **Shared Data**: Common domain models (Song, Album, Artist) ensure consistency.
 - **Playback Service**: A unified `MediaPlaybackService` handles the actual audio output via ExoPlayer, regardless of whether the source is local or streaming.
-- **Audio Processors**: The audio pipeline (`RhythmAudioProcessor`) chains effects such as Replay Gain, Bass Boost, Virtualizer/Spatialization, and Mono downmix (`RhythmMonoAudioProcessor`) before output.
+- **Audio Processors**: The audio pipeline (`SonorusAudioProcessor`) chains effects such as Replay Gain, Bass Boost, Virtualizer/Spatialization, and Mono downmix (`SonorusMonoAudioProcessor`) before output.
 - **Infrastructure**: Common utilities for networking, permissions, and background workers are used by both modes.
 
 
@@ -204,11 +204,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 ```kotlin
 // build.gradle.kts
 android {
-    namespace = "chromahub.rhythm.app"
+    namespace = "io.github.cluno1.sonorus"
     compileSdk = 37
     
     defaultConfig {
-        applicationId = "chromahub.rhythm.app"
+        applicationId = "io.github.cluno1.sonorus"
         minSdk = 26
         targetSdk = 37
         versionCode = 544561196
@@ -269,4 +269,4 @@ androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplaye
 
 ---
 
-**Questions?** Check [Contributing Guide](https://github.com/cromaguy/Rhythm/wiki/Contributing) or ask in [Telegram](https://t.me/RhythmSupport) or [Discord](https://discord.gg/XjPyUYPQYc)!
+**Questions?** Check [Contributing Guide](https://github.com/Cluno1/Sonorus/wiki/Contributing) or ask in [Telegram](https://t.me/SonorusSupport) or [Discord](https://discord.gg/XjPyUYPQYc)!

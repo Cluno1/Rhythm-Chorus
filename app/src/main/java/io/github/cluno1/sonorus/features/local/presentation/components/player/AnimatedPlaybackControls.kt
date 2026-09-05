@@ -1,0 +1,235 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+package io.github.cluno1.sonorus.shared.presentation.components.player
+import androidx.compose.ui.platform.LocalContext
+import io.github.cluno1.sonorus.util.HapticUtils
+import io.github.cluno1.sonorus.util.HapticType
+
+
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
+import io.github.cluno1.sonorus.shared.presentation.components.icons.MaterialSymbolIcon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import io.github.cluno1.sonorus.R
+import kotlinx.coroutines.delay
+import androidx.compose.ui.res.stringResource
+
+private enum class PlaybackButtonType { NONE, PREVIOUS, PLAY_PAUSE, NEXT }
+
+@Composable
+fun AnimatedPlaybackControls(
+    isPlayingProvider: () -> Boolean,
+    onPrevious: () -> Unit,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit,
+    modifier: Modifier = Modifier,
+    height: Dp = 90.dp,
+    baseWeight: Float = 1f,
+    expansionWeight: Float = 1.1f,
+    compressionWeight: Float = 0.65f,
+    pressAnimationSpec: AnimationSpec<Float> = spring(
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+        stiffness = Spring.StiffnessMedium
+    ),
+    releaseDelay: Long = 220L,
+    playPauseCornerPlaying: Dp = 60.dp,
+    playPauseCornerPaused: Dp = 26.dp,
+    colorOtherButtons: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+    colorPlayPause: Color = MaterialTheme.colorScheme.primary,
+    tintPlayPauseIcon: Color = MaterialTheme.colorScheme.onPrimary,
+    tintOtherIcons: Color = MaterialTheme.colorScheme.primary,
+    playPauseIconSize: Dp = 36.dp,
+    iconSize: Dp = 32.dp,
+) {
+    val isPlaying = isPlayingProvider()
+    var lastClicked by remember { mutableStateOf<PlaybackButtonType?>(null) }
+    val isPlayPauseLocked =
+        lastClicked == PlaybackButtonType.NEXT || lastClicked == PlaybackButtonType.PREVIOUS
+    var playPauseVisualState by remember { mutableStateOf(isPlaying) }
+    var pendingPlayPauseState by remember { mutableStateOf<Boolean?>(null) }
+    val context = LocalContext.current
+    val hapticFeedback = LocalHapticFeedback.current
+
+    LaunchedEffect(lastClicked) {
+        if (lastClicked != null) {
+            delay(releaseDelay)
+            lastClicked = null
+        }
+    }
+
+    LaunchedEffect(isPlaying) {
+        pendingPlayPauseState = isPlaying
+    }
+
+    LaunchedEffect(isPlayPauseLocked, pendingPlayPauseState) {
+        if (!isPlayPauseLocked) {
+            pendingPlayPauseState?.let {
+                playPauseVisualState = it
+                pendingPlayPauseState = null
+            }
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            fun weightFor(button: PlaybackButtonType): Float = when (lastClicked) {
+                button -> expansionWeight
+                null -> baseWeight
+                else -> compressionWeight
+            }
+
+            val prevWeight by animateFloatAsState(
+                targetValue = weightFor(PlaybackButtonType.PREVIOUS),
+                animationSpec = pressAnimationSpec,
+                label = "prevWeight"
+            )
+            Box(
+                modifier = Modifier
+                    .weight(prevWeight)
+                    .fillMaxHeight()
+                    .clip(CircleShape)
+                    .background(colorOtherButtons)
+                    .clickable {
+                        lastClicked = PlaybackButtonType.PREVIOUS
+                        HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                        onPrevious()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = RhythmIcons.SkipPrevious,
+                    contentDescription = stringResource(R.string.animatedplaybackcontrols_previous),
+                    tint = tintOtherIcons,
+                    modifier = Modifier.size(iconSize)
+                )
+            }
+
+            val playWeight by animateFloatAsState(
+                targetValue = weightFor(PlaybackButtonType.PLAY_PAUSE),
+                animationSpec = pressAnimationSpec,
+                label = "playWeight"
+            )
+            val playCorner by animateDpAsState(
+                targetValue = if (!playPauseVisualState) playPauseCornerPlaying else playPauseCornerPaused,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMedium
+                ),
+                label = "playCorner"
+            )
+            val playShape = RoundedCornerShape(playCorner)
+            
+            Box(
+                modifier = Modifier
+                    .weight(playWeight)
+                    .fillMaxHeight()
+                    .clip(playShape)
+                    .background(colorPlayPause)
+                    .clickable {
+                        lastClicked = PlaybackButtonType.PLAY_PAUSE
+                        HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                        onPlayPause()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                MorphingPlayPauseIcon(
+                    isPlaying = playPauseVisualState,
+                    tint = tintPlayPauseIcon,
+                    size = playPauseIconSize
+                )
+            }
+
+            val nextWeight by animateFloatAsState(
+                targetValue = weightFor(PlaybackButtonType.NEXT),
+                animationSpec = pressAnimationSpec,
+                label = "nextWeight"
+            )
+            Box(
+                modifier = Modifier
+                    .weight(nextWeight)
+                    .fillMaxHeight()
+                    .clip(CircleShape)
+                    .background(colorOtherButtons)
+                    .clickable {
+                        lastClicked = PlaybackButtonType.NEXT
+                        HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                        onNext()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = RhythmIcons.SkipNext,
+                    contentDescription = stringResource(R.string.onboarding_next),
+                    tint = tintOtherIcons,
+                    modifier = Modifier.size(iconSize)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MorphingPlayPauseIcon(
+    isPlaying: Boolean,
+    tint: Color,
+    size: Dp,
+) {
+    Crossfade(
+        targetState = isPlaying,
+        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
+        label = "playPauseCrossfade"
+    ) { playing ->
+        Icon(
+            imageVector = if (playing) RhythmIcons.Pause else RhythmIcons.Play,
+            contentDescription = if (playing) "Pause" else "Play",
+            tint = tint,
+            modifier = Modifier.size(size)
+        )
+    }
+}

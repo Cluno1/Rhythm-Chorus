@@ -1,22 +1,22 @@
 # Frequently Asked Questions (FAQ)
 
-Common questions about Rhythm Music Player.
+Common questions about Sonorus Music Player.
 
 ## 📥 Installation & Updates
 
-### Where can I download Rhythm?
+### Where can I download Sonorus?
 
 Download from:
-- **[F-Droid](https://f-droid.org/packages/chromahub.rhythm.app)** (official F-Droid repository)
-- **[GitHub Releases](https://github.com/cromaguy/Rhythm/releases/latest)** (direct APK)
-- **[IzzyOnDroid F-Droid Repo](https://apt.izzysoft.de/fdroid/index/apk/chromahub.rhythm.app)**
-- **[Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/cromaguy/Rhythm/)**
+- **[F-Droid](https://f-droid.org/packages/io.github.cluno1.sonorus)** (official F-Droid repository)
+- **[GitHub Releases](https://github.com/Cluno1/Sonorus/releases/latest)** (direct APK)
+- **[IzzyOnDroid F-Droid Repo](https://apt.izzysoft.de/fdroid/index/apk/io.github.cluno1.sonorus)**
+- **[Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/Cluno1/Sonorus/)**
 
-### Is Rhythm available on Google Play Store?
+### Is Sonorus available on Google Play Store?
 
-Rhythm is currently distributed through GitHub, F-Droid, IzzyOnDroid, and Obtainium. A Google Play Store release is under review.
+Sonorus is currently distributed through GitHub, F-Droid, IzzyOnDroid, and Obtainium. A Google Play Store release is under review.
 
-### How do I update Rhythm?
+### How do I update Sonorus?
 
 - **F-Droid**: Automatic updates through the F-Droid app
 - **Obtainium**: Automatic notifications and one-tap updates
@@ -33,7 +33,7 @@ If you get "App not installed" error:
 
 ## 🎵 Audio & Playback
 
-### What audio formats does Rhythm support?
+### What audio formats does Sonorus support?
 
 **Built-in (platform decoders):**
 - Lossless: FLAC, ALAC, WAV, PCM, AIFF
@@ -49,7 +49,7 @@ If you get "App not installed" error:
 - DTS, DTS-HD MA, DTS:X
 - DSD/DSF/DFF (requires compatible DAC)
 
-📖 **Full details:** [Audio Formats Guide](https://github.com/cromaguy/Rhythm/wiki/Audio-Formats)
+📖 **Full details:** [Audio Formats Guide](https://github.com/Cluno1/Sonorus/wiki/Audio-Formats)
 
 ### Why won't my music files play?
 
@@ -59,7 +59,7 @@ Common reasons:
 3. **Missing permissions** - Grant storage access
 4. **Wrong file location** - Ensure files are in accessible folders
 
-### Does Rhythm support gapless playback?
+### Does Sonorus support gapless playback?
 
 Yes! Gapless playback works for FLAC, MP3, AAC, and Opus formats.
 
@@ -67,23 +67,23 @@ Yes! Gapless playback works for FLAC, MP3, AAC, and Opus formats.
 
 Replay Gain normalizes the perceived loudness of your music. Choose **Album Gain** to maintain dynamic range within albums, or **Track Gain** for consistent loudness across all songs. Configure in Settings → Queue & Playback → Playback → Replay Gain.
 
-### Does Rhythm support crossfade?
+### Does Sonorus support crossfade?
 
 Yes! Crossfade smoothly blends the end of one track into the start of the next with an adjustable duration of 1–12 seconds. Configure in Settings → Queue & Playback → Playback → Crossfade.
 
 ### Can I use the equalizer?
 
-Yes! Rhythm includes:
+Yes! Sonorus includes:
 - 10-band professional equalizer
 - 6032+ AutoEQ device-optimized presets
 - Import/export custom profiles
 - Bass boost and virtualizer effects
 
-### Does Rhythm support USB DACs / bit-perfect playback?
+### Does Sonorus support USB DACs / bit-perfect playback?
 
-Yes! Rhythm supports USB DACs natively:
-- **Android 14+ (Bit-Perfect Mode):** Rhythm requests exclusive bit-perfect USB routing via the native Android `setPreferredMixerAttributes` API on supported devices when `App` routing is enabled.
-- **Why is there no USB popup?** Rhythm plays audio through the Android system's native high-resolution audio pathways rather than bypassing the OS with a custom user-space driver. Since it goes through official APIs, the DAC is connected automatically and silently without displaying a USB permission dialog.
+Yes! Sonorus supports USB DACs natively:
+- **Android 14+ (Bit-Perfect Mode):** Sonorus requests exclusive bit-perfect USB routing via the native Android `setPreferredMixerAttributes` API on supported devices when `App` routing is enabled.
+- **Why is there no USB popup?** Sonorus plays audio through the Android system's native high-resolution audio pathways rather than bypassing the OS with a custom user-space driver. Since it goes through official APIs, the DAC is connected automatically and silently without displaying a USB permission dialog.
 
 ---
 
@@ -91,7 +91,7 @@ Yes! Rhythm supports USB DACs natively:
 
 ### How do I get synchronized lyrics?
 
-Rhythm fetches lyrics from:
+Sonorus fetches lyrics from:
 1. **LRCLib** (online, community-driven)
 2. **Embedded lyrics** (from audio file metadata)
 
@@ -116,12 +116,12 @@ Yes! Use a metadata editor like Mp3tag to embed `.lrc` format lyrics into your a
 Solutions:
 1. **Embed artwork** in audio files using Mp3tag
 2. **Enable online fetch**: Settings → Notifications & Services → API Management (Deezer, YouTube Music)
-3. **Clear cache**: Settings → Apps → Rhythm → Storage → Clear cache
+3. **Clear cache**: Settings → Apps → Sonorus → Storage → Clear cache
 4. **Rescan library**: Settings → Library & Media → Media Scan
 
 ### Can I edit song metadata?
 
-Yes! Rhythm supports full metadata editing:
+Yes! Sonorus supports full metadata editing:
 - Song title, artist, album, genre
 - Track number, year
 - Album artwork
@@ -141,26 +141,26 @@ Requires storage write permission.
 
 ## 📱 Permissions & Privacy
 
-### Why does Rhythm need storage permission?
+### Why does Sonorus need storage permission?
 
-To access and play your music files. Rhythm uses scoped storage on Android 11+ for enhanced privacy.
+To access and play your music files. Sonorus uses scoped storage on Android 11+ for enhanced privacy.
 
-### Does Rhythm collect my data?
+### Does Sonorus collect my data?
 
-**No.** Rhythm is 100% FOSS and privacy-focused:
+**No.** Sonorus is 100% FOSS and privacy-focused:
 - ✅ No analytics or tracking
 - ✅ No personal data collection
 - ✅ All data stored locally
 - ✅ Internet only for optional features (lyrics, artwork)
 
-### Can I use Rhythm completely offline?
+### Can I use Sonorus completely offline?
 
 Yes! Core functionality works without internet:
 - Music playback
 - Playlists
 - Equalizer
 - Widgets
-- **Rhythm Go** downloaded streaming tracks
+- **Sonorus Go** downloaded streaming tracks
 
 Internet only needed for:
 - Online lyrics (LRCLib)
@@ -172,7 +172,7 @@ Internet only needed for:
 
 ## 📊 Features
 
-### Does Rhythm have a sleep timer?
+### Does Sonorus have a sleep timer?
 
 Yes! Access from player screen → Menu → Sleep Timer
 
@@ -186,9 +186,9 @@ Yes! Full playlist support:
 - Grid view
 - Smart sorting options
 
-### Does Rhythm support Android Auto?
+### Does Sonorus support Android Auto?
 
-Yes! Android Auto is supported in Rhythm.
+Yes! Android Auto is supported in Sonorus.
 
 ### Is there a widget?
 
@@ -212,9 +212,9 @@ Yes! Comprehensive theming:
 
 Yes! When your library exceeds a threshold, an alphabetical scroll bar appears on the right side of Songs, Albums, and Artists tabs. Drag your finger along the letters to jump to items starting with that letter.
 
-### What is Rhythm Go?
+### What is Sonorus Go?
 
-Go Mode lets you connect Rhythm to a streaming server (Subsonic, Navidrome, Jellyfin). Rhythm Go lets you download tracks from your streaming server for offline playback. Configure in Settings → Advanced → Experimental Features → Go Mode.
+Go Mode lets you connect Sonorus to a streaming server (Subsonic, Navidrome, Jellyfin). Sonorus Go lets you download tracks from your streaming server for offline playback. Configure in Settings → Advanced → Experimental Features → Go Mode.
 
 ---
 
@@ -226,25 +226,25 @@ Go Mode lets you connect Rhythm to a streaming server (Subsonic, Navidrome, Jell
 2. Clear app cache (not data)
 3. Check storage space (need 500MB+ free)
 4. Restart device
-5. If persists, report on [GitHub Issues](https://github.com/cromaguy/Rhythm/issues)
+5. If persists, report on [GitHub Issues](https://github.com/Cluno1/Sonorus/issues)
 
 ### Music library is empty after scanning?
 
-1. Grant storage permission: Settings → Apps → Rhythm → Permissions
-2. Check blacklist/whitelist: Rhythm Settings → Library & Media → Media Scan
+1. Grant storage permission: Settings → Apps → Sonorus → Permissions
+2. Check blacklist/whitelist: Sonorus Settings → Library & Media → Media Scan
 3. Verify music location (standard folders like /Music)
 4. Rescan media: Settings → Library & Media → Media Scan
 
 ### Widget not updating?
 
 1. Remove and re-add widget
-2. Disable battery optimization: Settings → Apps → Rhythm → Battery → Unrestricted
+2. Disable battery optimization: Settings → Apps → Sonorus → Battery → Unrestricted
 3. Grant notification permission
 4. Update to latest version
 
 ### Bluetooth auto-play not working?
 
-1. Enable: Rhythm Settings → Queue & Playback → Playback → Resume on Device Reconnect
+1. Enable: Sonorus Settings → Queue & Playback → Playback → Resume on Device Reconnect
 2. Grant Bluetooth permission
 3. Ensure device is properly paired
 4. Check device-specific settings
@@ -255,13 +255,13 @@ Go Mode lets you connect Rhythm to a streaming server (Subsonic, Navidrome, Jell
 
 ### What is LRCLib?
 
-LRCLib is a community-driven synced lyrics database. Rhythm fetches synchronized lyrics from it when available.
+LRCLib is a community-driven synced lyrics database. Sonorus fetches synchronized lyrics from it when available.
 
-### Does Rhythm upload my listening data?
+### Does Sonorus upload my listening data?
 
 **No.** All statistics and data remain on your device. Nothing is uploaded to servers.
 
-### Why does Rhythm need internet access?
+### Why does Sonorus need internet access?
 
 Only for optional features:
 - **LRCLib** - Synced lyrics
@@ -295,7 +295,7 @@ Always install updates over existing app (don't uninstall first).
 
 1. Backup on old device
 2. Copy backup file to new device
-3. Install Rhythm on new device
+3. Install Sonorus on new device
 4. Settings → Data & Storage → Backup & Restore → Restore from File
 
 ---
@@ -304,20 +304,20 @@ Always install updates over existing app (don't uninstall first).
 
 ### How can I contribute?
 
-- Report bugs on [GitHub Issues](https://github.com/cromaguy/Rhythm/issues)
+- Report bugs on [GitHub Issues](https://github.com/Cluno1/Sonorus/issues)
 - Suggest features
 - Submit pull requests
 - Help translate
-- Join [Telegram community](https://t.me/RhythmSupport)
+- Join [Telegram community](https://t.me/SonorusSupport)
 
-See [Contributing Guide](https://github.com/cromaguy/Rhythm/wiki/Contributing) for details.
+See [Contributing Guide](https://github.com/Cluno1/Sonorus/wiki/Contributing) for details.
 
 ### Is the source code available?
 
-Yes! Rhythm is fully open source under GPL-3.0 license:
-**[GitHub Repository](https://github.com/cromaguy/Rhythm)**
+Yes! Sonorus is fully open source under GPL-3.0 license:
+**[GitHub Repository](https://github.com/Cluno1/Sonorus)**
 
-### Can I fork and modify Rhythm?
+### Can I fork and modify Sonorus?
 
 Yes, under GPL-3.0 terms:
 - Keep it open source
@@ -332,9 +332,9 @@ Yes, under GPL-3.0 terms:
 
 **Android 8.0+ (API 26)**
 
-### Does Rhythm work on tablets?
+### Does Sonorus work on tablets?
 
-Yes! Rhythm has optimized **multi-pane layouts** for tablets:
+Yes! Sonorus has optimized **multi-pane layouts** for tablets:
 - Library on the left, content on the right
 - Optimized player, settings, and library views
 - Portrait and landscape support
@@ -342,7 +342,7 @@ Yes! Rhythm has optimized **multi-pane layouts** for tablets:
 
 ### Does it support split-screen?
 
-Yes, Rhythm works in split-screen/multi-window mode.
+Yes, Sonorus works in split-screen/multi-window mode.
 
 ---
 
@@ -350,19 +350,19 @@ Yes, Rhythm works in split-screen/multi-window mode.
 
 ### Where can I get support?
 
-- **[Telegram Community](https://t.me/RhythmSupport)** - Live help
+- **[Telegram Community](https://t.me/SonorusSupport)** - Live help
 - **[Discord Server](https://discord.gg/XjPyUYPQYc)** - Community chat
-- **[GitHub Discussions](https://github.com/cromaguy/Rhythm/discussions)** - Q&A forum
-- **[GitHub Issues](https://github.com/cromaguy/Rhythm/issues)** - Bug reports
-- **[Wiki](https://github.com/cromaguy/Rhythm/wiki)** - Documentation
+- **[GitHub Discussions](https://github.com/Cluno1/Sonorus/discussions)** - Q&A forum
+- **[GitHub Issues](https://github.com/Cluno1/Sonorus/issues)** - Bug reports
+- **[Wiki](https://github.com/Cluno1/Sonorus/wiki)** - Documentation
 
 ### How do I report a bug?
 
-1. Check if it's already reported: [GitHub Issues](https://github.com/cromaguy/Rhythm/issues)
+1. Check if it's already reported: [GitHub Issues](https://github.com/Cluno1/Sonorus/issues)
 2. If not, create new issue with:
    - Android version
    - Device model
-   - Rhythm version
+   - Sonorus version
    - Steps to reproduce
    - Screenshots if applicable
 
@@ -376,8 +376,8 @@ Currently focused on Android. Desktop version not planned at this time.
 
 ### When is the next release?
 
-Check [GitHub Releases](https://github.com/cromaguy/Rhythm/releases) for updates. Follow development on [Telegram](https://t.me/RhythmSupport).
+Check [GitHub Releases](https://github.com/Cluno1/Sonorus/releases) for updates. Follow development on [Telegram](https://t.me/SonorusSupport).
 
 ---
 
-**Question not answered?** Ask in our [Telegram Community](https://t.me/RhythmSupport)!
+**Question not answered?** Ask in our [Telegram Community](https://t.me/SonorusSupport)!
