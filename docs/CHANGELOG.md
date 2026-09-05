@@ -10,6 +10,122 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 
 
+## [5.5.473.1246 Beta] - 2026-09-01
+
+### Added
+- Customizable bottom player action buttons with reordering and quick toggles
+- Adaptive bottom sheet architecture with responsive layouts and fluid scrollbar interactions
+- TTML and Enhanced LRC (.elrc) export, editing, and file discovery support
+
+### Fixed
+- Preserve playback queue order for Play Next and Add to Queue under Shuffle Engine
+- Normalize date added and modified timestamps to milliseconds with Room DB migration
+- Suppress lyrics auto-scroll during active user gestures and touch interactions
+- Improved TTML line-level timing and Unicode script detection for romanization
+- Updated translations from Weblate
+
+## [5.4.468.1233] - 2026-08-28
+
+### Added
+- Overhauled onboarding tour with interactive setup for shape presets and artist delimiters
+- Enhanced multi-artist splitting with custom delimiter creation, presets, and protected artist names
+- Integrated multi-artist splitting into playback stats, play counts, and top artists
+- Minimum song duration filter in media scan settings to ignore short audio clips
+
+### Changed
+- Clear and user-friendly error messages when Jellyfin connection fails #561
+- Updated Material 3 design components and improved navigation stability
+
+## [5.4.466.1229] - 2026-08-27
+
+### Added
+- Docked navigation bar mode option alongside floating navigation bar
+- Ambient infinite background zoom animation toggle in Player Customization
+- On-demand Coil AudioArtworkFetcher and AudioArtworkKeyer for efficient cover art decoding
+- Lossless embedded artwork extraction and folder cover reconciliation pipeline
+- Direct audio file artwork embedding dialog for fetched covers
+
+### Changed
+- Refined synchronized lyrics background gradient in accent color mode
+- Updated translations
+
+### Fixed
+- Fix OutOfMemoryError during Room playlist transactions and Canvas ExoPlayer playback
+- Fix controller player commands permission mask in MediaPlaybackService restricting external controls
+- Fix storage write permission handling when embedding artwork from the player
+- Resolve compiler deprecations and Jetpack Compose lint warnings
+
+### Performance
+- Optimize cold startup performance for large libraries by eliminating blocking disk I/O
+- Optimize media scanning and artwork extraction with native TagLib routines and folder cover caching
+- Stabilize Discover carousel state across background metadata emissions
+
+## [5.4.465.1226] - 2026-08-27
+
+### Added
+- Docked navigation bar mode option alongside floating navigation bar
+- Ambient infinite background zoom animation toggle in Player Customization
+- On-demand Coil AudioArtworkFetcher and AudioArtworkKeyer for efficient cover art decoding
+- Lossless embedded artwork extraction and folder cover reconciliation pipeline
+- Direct audio file artwork embedding dialog for fetched covers
+
+### Changed
+- Refined synchronized lyrics background gradient in accent color mode
+- Updated translations
+
+### Fixed
+- Fix OutOfMemoryError during Room playlist transactions and Canvas ExoPlayer playback
+- Fix controller player commands permission mask in MediaPlaybackService restricting external controls
+- Fix storage write permission handling when embedding artwork from the player
+- Resolve compiler deprecations and Jetpack Compose lint warnings
+
+### Performance
+- Optimize cold startup performance for large libraries by eliminating blocking disk I/O
+- Optimize media scanning and artwork extraction with native TagLib routines and folder cover caching
+- Stabilize Discover carousel state across background metadata emissions
+
+## [5.4.462.1216] - 2026-08-23
+
+### Added
+- Enable non-blocking instant startup with asynchronous background media sync and live progress indicator
+- Support for TTML and XML lyrics with enhanced "Better Lyrics" format parsing #363
+- Foldable and posture-aware player layouts for multi-window and folding devices #529 #530
+- Mono audio downmixing with dedicated per-device toggle #531
+- Expanded support for MP4 audio containers and advanced audio codecs #535
+- Android Quick Settings tile shortcuts for active playback controls #227 #457
+- Custom artwork editing and management for artists and playlists #280 #415
+- Option to select and batch-manage songs from the folder view #492
+- Option to toggle remaining playback time on track seekbars
+- Option to disable online and custom artist images #475
+- Dedicated Album Artists tab in the library
+- Comprehensive song deletion flow with storage permission handling #179 #493 #501 #508
+- Granular audio format scan controls and extended codec filtering
+
+### Changed
+- Merge streaming mode seamlessly into shared local UI
+- Standardize bottom sheet radii and surface elevations across the app
+- Redesigned and improved Song Info dialog with rich metadata display
+- Refined Home and About screen layouts with improved artist separation
+- Drop legacy song ratings in favor of modern favorites workflow
+
+### Fixed
+- Fix app crash when opening lyrics settings in streaming mode #554
+- Fix ambient intensity slider numerical step and range display #542
+- Fix app volume not persisting across playback and session flows #551
+- Fix Dolby Atmos detection to match both `eac3-joc` and `atmos` MIME types
+- Fix metadata parsing edge-cases and improve multi-disc album grouping #521 #538
+- Fix touch event handling and responsiveness on playback speed sheet
+- Fix vertical duration text alignment in Expressive player layout
+- Fix empty state styling and active song indicators in Liked tab
+- Fix plural string formatting across localized settings
+
+### Performance
+- Harden Rhythm processor initialization and audio device routing
+- Optimize Compose duration formatting performance and clickable modifier hitboxes
+- Upgrade GitHub Actions workflows to latest Node 24 runtime
+- Bump Gradle and AndroidX dependency versions
+- Updated translations
+
 ## [5.4.457.1200 Beta] - 2026-08-11
 
 ### Added

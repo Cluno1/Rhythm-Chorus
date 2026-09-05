@@ -1,5 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 package chromahub.rhythm.app.features.local.presentation.screens
+
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -90,14 +98,8 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.draw.shadow
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.Surface
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material3.BottomSheetDefaults
@@ -144,7 +146,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -168,10 +169,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -189,11 +188,9 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -227,7 +224,6 @@ import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOpera
 import chromahub.rhythm.app.shared.presentation.components.dialogs.AppRestartDialog
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
 
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistBottomSheet
 import chromahub.rhythm.app.features.local.presentation.components.settings.LibraryTabOrderBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.BatchEditTagsSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.MultiSelectionBottomSheet
@@ -246,8 +242,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.ui.text.font.FontFamily
@@ -1895,7 +1889,10 @@ fun LibraryScreen(
                                             onShowMultiSelectionSheet = { showMultiSelectionSheet = true },
                                             onRefreshClick = onRefreshClick,
                                             bottomPadding = adjustedSongsBottomPadding,
-                                            sortOrder = sortOrder
+                                            sortOrder = sortOrder,
+                                            emptyMessage = context.getString(R.string.library_no_liked_songs),
+                                            emptySubtitle = context.getString(R.string.library_no_liked_songs_desc),
+                                            showEmptyRefresh = false
                                         )
                                     "PLAYLISTS" -> SingleCardPlaylistsContent(
                                         playlists = playlists,
@@ -2001,7 +1998,7 @@ fun LibraryScreen(
                                         onSongClick = onSongClick,
                                         listState = explorerListState,
                                         onAddToPlaylist = { song ->
-                                            selectedSong = song
+                                            songsToAddToPlaylist = listOf(song)
                                             showAddToPlaylistSheet = true
                                         },
                                         onAddToQueue = onAddToQueue,
@@ -2419,7 +2416,10 @@ fun SingleCardSongsContent(
     onRefreshClick: (() -> Unit)? = null,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     songMenuContent: (@Composable (song: Song, dismissMenu: () -> Unit) -> Unit)? = null,
-    sortOrder: MusicViewModel.SortOrder = MusicViewModel.SortOrder.TITLE_ASC
+    sortOrder: MusicViewModel.SortOrder = MusicViewModel.SortOrder.TITLE_ASC,
+    emptyMessage: String? = null,
+    emptySubtitle: String? = null,
+    showEmptyRefresh: Boolean = true
 ) {
     val context = LocalContext.current
     val appSettings = remember { AppSettings.getInstance(context) }
@@ -2547,10 +2547,10 @@ fun SingleCardSongsContent(
 
     if (preparedSongs.isEmpty()) {
         EmptyState(
-            message = context.getString(R.string.library_no_songs),
-            subtitle = context.getString(R.string.library_start_collection),
+            message = emptyMessage ?: context.getString(R.string.library_no_songs),
+            subtitle = emptySubtitle ?: context.getString(R.string.library_start_collection),
             icon = RhythmIcons.Music.Song,
-            onRefresh = onRefreshClick
+            onRefresh = if (showEmptyRefresh) onRefreshClick else null
         )
     } else {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -3303,14 +3303,31 @@ fun LibrarySongItem(
     val isCurrentSong = currentSong?.id == song.id
 
     val titleColor by animateColorAsState(
-        targetValue = if (isCurrentSong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+        targetValue = if (isCurrentSong && !isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
         animationSpec = tween(300),
         label = "titleColor"
     )
     val supportingColor by animateColorAsState(
-        targetValue = if (isCurrentSong) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (isCurrentSong && !isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.75f) else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(300),
         label = "supportingColor"
+    )
+
+    val moreButtonContainerColor by animateColorAsState(
+        targetValue = if (isCurrentSong && !isSelected)
+            MaterialTheme.colorScheme.onPrimary
+        else
+            MaterialTheme.colorScheme.primaryContainer,
+        animationSpec = tween(300),
+        label = "moreButtonContainerColor"
+    )
+    val moreButtonContentColor by animateColorAsState(
+        targetValue = if (isCurrentSong && !isSelected)
+            MaterialTheme.colorScheme.primary
+        else
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        animationSpec = tween(300),
+        label = "moreButtonContentColor"
     )
 
     val selectionScale by animateFloatAsState(
@@ -3325,7 +3342,7 @@ fun LibrarySongItem(
     val containerColorForSelection by animateColorAsState(
         targetValue = when {
             isSelected -> MaterialTheme.colorScheme.secondaryContainer
-            isCurrentSong -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
+            isCurrentSong -> MaterialTheme.colorScheme.primary
             else -> Color.Transparent
         },
         animationSpec = tween(durationMillis = 300),
@@ -3348,7 +3365,7 @@ fun LibrarySongItem(
                     fallbackShape = MaterialTheme.shapes.large
                 ),
                 modifier = Modifier.size(60.dp),
-                border = if (isCurrentSong && !isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+                border = if (isCurrentSong && !isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.onPrimary) else null
             ) {
                 M3ImageUtils.TrackImage(
                     imageUrl = song.artworkUri,
@@ -3394,7 +3411,7 @@ fun LibrarySongItem(
                         .size(20.dp)
                         .offset(x = 4.dp, y = 4.dp),
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     shadowElevation = 0.dp
                 ) {
                     Box(
@@ -3403,7 +3420,7 @@ fun LibrarySongItem(
                     ) {
                         PlayingEqIcon(
                             modifier = Modifier.size(width = 12.dp, height = 10.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            color = MaterialTheme.colorScheme.primary,
                             isPlaying = isPlaying,
                             bars = 3
                         )
@@ -3452,8 +3469,8 @@ fun LibrarySongItem(
                         .height(44.dp),
                     shape = RoundedCornerShape(50),
                     colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        containerColor = moreButtonContainerColor,
+                        contentColor = moreButtonContentColor
                     )
                 ) {
                     Icon(
@@ -3574,7 +3591,7 @@ fun LibrarySongItemWrapper(
     val containerColor by animateColorAsState(
         targetValue = when {
             isSelected -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f)
-            isCurrentSong -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
+            isCurrentSong -> MaterialTheme.colorScheme.primary
             else -> MaterialTheme.colorScheme.surfaceContainer
         },
         animationSpec = tween(300),
@@ -4861,15 +4878,17 @@ fun SingleCardArtistsContent(
     }
 
     if (showSortOptions) {
-        ModalBottomSheet(
+        RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
             onDismissRequest = { showSortOptions = false },
-            sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden),
+            sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
             dragHandle = { 
                 BottomSheetDefaults.DragHandle(
                     color = MaterialTheme.colorScheme.primary
                 )
-            }
+            },
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(

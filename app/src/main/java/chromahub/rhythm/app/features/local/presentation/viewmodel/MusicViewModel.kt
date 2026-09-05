@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.features.local.presentation.viewmodel
 
 import android.app.Activity
@@ -102,8 +107,8 @@ import com.google.gson.reflect.TypeToken
 import java.util.Calendar
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
-import chromahub.rhythm.app.shared.data.model.LyricsData // Import LyricsData
-import chromahub.rhythm.app.util.PendingWriteRequest // Import for metadata write requests
+import chromahub.rhythm.app.shared.data.model.LyricsData
+import chromahub.rhythm.app.util.PendingWriteRequest
 import chromahub.rhythm.app.util.PendingBatchWriteRequest
 import chromahub.rhythm.app.util.PendingLyricsWriteRequest
 import chromahub.rhythm.app.util.PendingDeleteRequest
@@ -114,7 +119,7 @@ import chromahub.rhythm.app.util.LyricLine
 import chromahub.rhythm.app.util.LyricsParser
 import chromahub.rhythm.app.util.ServiceStartUtils
 import chromahub.rhythm.app.utils.StatusBroadcaster
-import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository // Import for enhanced stats tracking
+import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository
 
 class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -834,7 +839,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         appSettings.artistSeparatorDelimiters
     ) { artists, filteredSongs, groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters ->
         val charDelimiters = if (artistSeparatorEnabled) {
-            artistSeparatorDelimiters.map { it.toString() }
+            chromahub.rhythm.app.util.ArtistSeparator.parseDelimiters(artistSeparatorDelimiters)
         } else {
             emptyList()
         }
@@ -942,13 +947,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val isSeeking: StateFlow<Boolean> = _isSeeking.asStateFlow()
 
     // Volume control
-    private val _volume = MutableStateFlow(0.7f)
+    private val _volume = MutableStateFlow(if (appSettings.useSystemVolume.value) 1.0f else appSettings.appVolume.value)
     val volume: StateFlow<Float> = _volume.asStateFlow()
     
     private val _isMuted = MutableStateFlow(false)
     val isMuted: StateFlow<Boolean> = _isMuted.asStateFlow()
     
-    private var _previousVolume = 0.7f
+    private var _previousVolume = if (appSettings.useSystemVolume.value) 1.0f else appSettings.appVolume.value
 
     private val _showZeroVolumePauseDialog = MutableStateFlow(false)
     val showZeroVolumePauseDialog = _showZeroVolumePauseDialog.asStateFlow()
@@ -1521,7 +1526,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             _songs.value = songs
             _albums.value = albums
             _artists.value = artists
-            _folderTree.value = repository.buildFolderTree(songs)
+            viewModelScope.launch(Dispatchers.IO) {
+                _folderTree.value = repository.buildFolderTree(songs)
+            }
             
             InitializationResult(true)
         } catch (e: Exception) {
@@ -1822,6 +1829,21 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
         
+        // Startup staleness check: If MediaStore has changes, run background differential sync
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(1200) // Allow UI transition to complete smoothly
+            try {
+                val lastScan = appSettings.lastScanTimestamp.value
+                val cachedCount = _songs.value.size
+                if (cachedCount == 0 || repository.isLibraryStale(lastScan, cachedCount)) {
+                    Log.d(TAG, "Library is empty or stale on startup (count=$cachedCount), triggering background refresh")
+                    performMediaStoreRefresh()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during startup staleness check", e)
+            }
+        }
+        
         // Register ContentObserver for automatic MediaStore updates
         // Use a full refresh instead of incremental scan to detect removed/re-added songs.
         // Cancel any pending refresh job before scheduling a new one (debounce pattern).
@@ -1970,11 +1992,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     val currentSongs = _songs.value
                     if (currentSongs.isNotEmpty()) {
                         val updatedSongs = repository.extractEmbeddedArtworkForSongs(currentSongs, losslessArtwork)
+                        repository.updateAndPersistSongs(updatedSongs)
+                        val freshAlbums = repository.loadAlbums()
+                        val freshArtists = repository.loadArtists()
                         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                             _songs.value = updatedSongs
+                            _albums.value = freshAlbums
+                            _artists.value = freshArtists
                         }
-                        // Persist the updated song snapshot so the repository cache stays aligned.
-                        repository.updateAndPersistSongs(updatedSongs)
                         appSettings.setEmbeddedArtworkExtractionLosslessStatus(losslessArtwork)
                         appSettings.setEmbeddedArtworkExtractionCompleted(true)
                         Log.d(TAG, "Background embedded art extraction complete for ${currentSongs.size} songs")
@@ -2158,6 +2183,21 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             _folderTree.value = repository.buildFolderTree(mergedSongs)
             repository.updateAndPersistSongs(mergedSongs)
             appSettings.setLastScanTimestamp(System.currentTimeMillis())
+
+            if (appSettings.defaultPlaylistsEnabled.value) {
+                try {
+                    populateRecentlyAddedPlaylist()
+                    populateMostPlayedPlaylist()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error updating default playlists after MediaStore refresh", e)
+                }
+            }
+            try {
+                refreshPlaylists(preserveMissingSongs = true)
+            } catch (e: Exception) {
+                Log.w(TAG, "Error refreshing playlists after MediaStore refresh", e)
+            }
+
             // Only invalidate the embedded artwork extraction flag when new songs have appeared.
             // Resetting it unconditionally caused extraction to re-run on every launch because the
             // MediaStore observer fires on startup, triggering this refresh and clearing the flag.
@@ -2394,8 +2434,40 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         Log.e(TAG, "Error restarting background audio metadata extraction", e)
                     } finally {
                         _isExtractingMetadata.value = false
-                }
                     }
+                }
+
+                // Trigger background embedded album art extraction for new/updated songs
+                if (appSettings.preferSongArtwork.value) {
+                    launch(Dispatchers.IO) {
+                        try {
+                            delay(1200)
+                            val currentSongs = _songs.value
+                            val losslessArtwork = appSettings.isLosslessArtworkActive.value
+                            val songsNeedingExtraction = currentSongs.count { song ->
+                                song.artworkUri == null ||
+                                !repository.isEmbeddedArtworkCacheUri(song.artworkUri) ||
+                                !repository.hasArtworkMatchingLossless(song, losslessArtwork)
+                            }
+                            if (songsNeedingExtraction > 0) {
+                                Log.d(TAG, "Starting post-refresh background embedded artwork extraction for $songsNeedingExtraction songs")
+                                val updatedSongs = repository.extractEmbeddedArtworkForSongs(currentSongs, losslessArtwork)
+                                repository.updateAndPersistSongs(updatedSongs)
+                                val freshAlbums = repository.loadAlbums()
+                                val freshArtists = repository.loadArtists()
+                                withContext(Dispatchers.Main) {
+                                    _songs.value = updatedSongs
+                                    _albums.value = freshAlbums
+                                    _artists.value = freshArtists
+                                }
+                                appSettings.setEmbeddedArtworkExtractionLosslessStatus(losslessArtwork)
+                                appSettings.setEmbeddedArtworkExtractionCompleted(true)
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error in post-refresh embedded artwork extraction", e)
+                        }
+                    }
+                }
 
                 val duration = System.currentTimeMillis() - startTime
                 appSettings.setLastScanTimestamp(System.currentTimeMillis())
@@ -2597,10 +2669,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 }
         
                 val currentSongsMap = currentSongs.associateBy { it.id }
-                val currentSongsByStableKey = currentSongs.associateBy { playlistSongStableKey(it) }
-                val currentSongsByStableKeyMed = currentSongs.associateBy { playlistSongStableKeyMed(it) }
-                val currentSongsByStableKeyLight = currentSongs.associateBy { playlistSongStableKeyLight(it) }
-                val currentSongsByStableKeyBasic = currentSongs.associateBy { playlistSongStableKeyBasic(it) }
+                val currentSongsByStableKey = lazy(LazyThreadSafetyMode.NONE) { currentSongs.associateBy { playlistSongStableKey(it) } }
+                val currentSongsByStableKeyMed = lazy(LazyThreadSafetyMode.NONE) { currentSongs.associateBy { playlistSongStableKeyMed(it) } }
+                val currentSongsByStableKeyLight = lazy(LazyThreadSafetyMode.NONE) { currentSongs.associateBy { playlistSongStableKeyLight(it) } }
+                val currentSongsByStableKeyBasic = lazy(LazyThreadSafetyMode.NONE) { currentSongs.associateBy { playlistSongStableKeyBasic(it) } }
         
                 val filteredSongsValue = filteredSongs.value
                 val filteredSongsSet: Set<String> = if (filteredSongsValue.isEmpty()) {
@@ -2714,20 +2786,20 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun resolveSongByStableKeys(
         song: Song,
-        fullMap: Map<String, Song>,
-        medMap: Map<String, Song>,
-        lightMap: Map<String, Song>,
-        basicMap: Map<String, Song>
+        fullMap: Lazy<Map<String, Song>>,
+        medMap: Lazy<Map<String, Song>>,
+        lightMap: Lazy<Map<String, Song>>,
+        basicMap: Lazy<Map<String, Song>>
     ): Song? {
         val title = song.title.trim()
         val artist = song.artist.trim()
         if (title.isEmpty()) return null
         
-        return fullMap[playlistSongStableKey(song)]
-            ?: medMap[playlistSongStableKeyMed(song)]
-            ?: lightMap[playlistSongStableKeyLight(song)]
+        return fullMap.value[playlistSongStableKey(song)]
+            ?: medMap.value[playlistSongStableKeyMed(song)]
+            ?: lightMap.value[playlistSongStableKeyLight(song)]
             ?: if (artist.isNotEmpty() && artist.lowercase() != "unknown artist") {
-                basicMap[playlistSongStableKeyBasic(song)]
+                basicMap.value[playlistSongStableKeyBasic(song)]
             } else null
     }
     
@@ -3128,6 +3200,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Log.w(TAG, "ensurePlaylistsSaved skipped because playlists are not loaded")
                 return
             }
+            savePlaylistsJob?.cancel()
             runBlocking(Dispatchers.IO) {
                 savePlaylistsToRoom(_playlists.value)
             }
@@ -3174,10 +3247,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 
                 val playlists = if (dbPlaylists.isNotEmpty()) {
                     val songMap = _songs.value.associateBy { it.id }
-                    val songStableKeyMap = _songs.value.associateBy { playlistSongStableKey(it) }
-                    val songStableKeyMedMap = _songs.value.associateBy { playlistSongStableKeyMed(it) }
-                    val songStableKeyLightMap = _songs.value.associateBy { playlistSongStableKeyLight(it) }
-                    val songStableKeyBasicMap = _songs.value.associateBy { playlistSongStableKeyBasic(it) }
+                    val songStableKeyMap = lazy(LazyThreadSafetyMode.NONE) { _songs.value.associateBy { playlistSongStableKey(it) } }
+                    val songStableKeyMedMap = lazy(LazyThreadSafetyMode.NONE) { _songs.value.associateBy { playlistSongStableKeyMed(it) } }
+                    val songStableKeyLightMap = lazy(LazyThreadSafetyMode.NONE) { _songs.value.associateBy { playlistSongStableKeyLight(it) } }
+                    val songStableKeyBasicMap = lazy(LazyThreadSafetyMode.NONE) { _songs.value.associateBy { playlistSongStableKeyBasic(it) } }
                     dbPlaylists.map { entity ->
                         val songIds = playlistDao.getSongIdsForPlaylist(entity.id)
                         val playlistSongs = songIds.map { songId ->
@@ -3465,12 +3538,16 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private var savePlaylistsJob: Job? = null
+
     private fun savePlaylists() {
         val currentPlaylists = _playlists.value.map { playlist ->
             playlist.copy(songs = playlist.songs.filterNot { it.id.startsWith("rhythm-catalog:") })
         }
         if (currentPlaylists != _playlists.value) _playlists.value = currentPlaylists
-        viewModelScope.launch(Dispatchers.IO) {
+        savePlaylistsJob?.cancel()
+        savePlaylistsJob = viewModelScope.launch(Dispatchers.IO) {
+            delay(200) // Debounce rapid consecutive mutations
             savePlaylistsToRoom(currentPlaylists)
         }
     }
@@ -3514,16 +3591,26 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         )
                         playlistDao.insertPlaylist(entity)
                         
-                        val songEntities = playlist.songs.mapIndexed { index, song ->
-                            PlaylistSongEntity(
-                                playlistId = playlist.id,
-                                songId = song.id,
-                                orderIndex = index
-                            )
+                        playlistDao.deleteSongsFromPlaylist(playlist.id)
+                        if (playlist.songs.isNotEmpty()) {
+                            val songEntities = playlist.songs.mapIndexed { index, song ->
+                                PlaylistSongEntity(
+                                    playlistId = playlist.id,
+                                    songId = song.id,
+                                    orderIndex = index
+                                )
+                            }
+                            songEntities.chunked(500).forEach { chunk ->
+                                playlistDao.insertPlaylistSongs(chunk)
+                            }
                         }
-                        playlistDao.updatePlaylistSongs(playlist.id, songEntities)
+                    }
 
-                        val dbSongEntities = playlist.songs.map { song ->
+                    // Persist distinct songs across all playlists in chunks to avoid redundant allocations
+                    val distinctDbSongEntities = currentPlaylists.asSequence()
+                        .flatMap { it.songs.asSequence() }
+                        .distinctBy { it.id }
+                        .map { song ->
                             chromahub.rhythm.app.features.local.data.database.entity.SongEntity(
                                 id = song.id,
                                 title = song.title,
@@ -3547,8 +3634,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                                 path = song.path
                             )
                         }
-                        if (dbSongEntities.isNotEmpty()) {
-                            repository.songDao.upsertAll(dbSongEntities)
+                        .toList()
+
+                    if (distinctDbSongEntities.isNotEmpty()) {
+                        distinctDbSongEntities.chunked(500).forEach { chunk ->
+                            repository.songDao.upsertAll(chunk)
                         }
                     }
                 }
@@ -3849,6 +3939,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             }
                         })")
 
+                            // Sync initial volume from controller if not using system volume
+                            if (!appSettings.useSystemVolume.value) {
+                                _volume.value = controller.volume
+                                if (controller.volume > 0f) {
+                                    _isMuted.value = false
+                                }
+                            }
+
                             // Sync playback state with controller when app is reopened
                             val isActuallyPlaying = controller.isPlaying
                             _isPlaying.value = isActuallyPlaying
@@ -4107,6 +4205,19 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
+        override fun onVolumeChanged(volume: Float) {
+            Log.d(TAG, "onVolumeChanged from controller: $volume")
+            if (!appSettings.useSystemVolume.value) {
+                if (_volume.value != volume) {
+                    _volume.value = volume
+                }
+                if (volume > 0f) {
+                    _isMuted.value = false
+                    appSettings.setAppVolume(volume)
+                }
+            }
+        }
+
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             Log.d(TAG, "Media item transition: ${mediaItem?.mediaId}, reason: $reason")
 
@@ -4272,6 +4383,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         override fun onRepeatModeChanged(repeatMode: Int) {
             Log.d(TAG, "Repeat mode changed: $repeatMode")
             _repeatMode.value = repeatMode
+        }
+
+        override fun onTimelineChanged(timeline: androidx.media3.common.Timeline, reason: Int) {
+            if (appSettings.shuffleUsesExoplayer.value && mediaController?.shuffleModeEnabled == true) {
+                syncQueueWithMediaController()
+            }
         }
     }
 
@@ -5000,24 +5117,31 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         val pref = appSettings.contextQueuePreference.value
         val maxSize = appSettings.contextQueueSize.value.coerceAtLeast(1)
 
-        // If the song appears in recently played, prefer that short recent list
-        if (_recentlyPlayed.value.any { it.id == song.id }) {
+        fun recentlyPlayedQueueOrNull(): List<Song>? {
+            if (!_recentlyPlayed.value.any { it.id == song.id }) return null
+            val startIndex = _recentlyPlayed.value.indexOfFirst { it.id == song.id }
+            if (startIndex == -1) return null
             val recentlyPlayedSongs = _recentlyPlayed.value.take(20)
-            val startIndex = recentlyPlayedSongs.indexOfFirst { it.id == song.id }
-            if (startIndex != -1) {
-                val reordered = listOf(song) + recentlyPlayedSongs.filter { it.id != song.id }
-                Log.d(TAG, "Created queue from recently played with ${reordered.size} songs")
-                return reordered.take(maxSize)
-            }
+            val reordered = listOf(song) + recentlyPlayedSongs.filter { it.id != song.id }
+            Log.d(TAG, "Created queue from recently played with ${reordered.size} songs")
+            return reordered.take(maxSize)
         }
 
-        // Album context (preserve natural ordering)
-        val albumSongs = _songs.value.filter { it.album == song.album && it.artist == song.artist }
-        if (albumSongs.size > 1) {
+        fun albumQueueOrNull(): List<Song>? {
+            val albumSongs = _songs.value.filter { it.album == song.album && it.artist == song.artist }
+            if (albumSongs.size <= 1) return null
             val sortedAlbumSongs = albumSongs.sortedWith { a, b -> compareByDiscThenTrack(a, b) }
             val reordered = listOf(song) + sortedAlbumSongs.filter { it.id != song.id }
             Log.d(TAG, "Created queue from album '${song.album}' with ${reordered.size} songs")
             return reordered.take(maxSize)
+        }
+
+        if (appSettings.respectAlbumOnPlay.value) {
+            albumQueueOrNull()?.let { return it }
+            recentlyPlayedQueueOrNull()?.let { return it }
+        } else {
+            recentlyPlayedQueueOrNull()?.let { return it }
+            albumQueueOrNull()?.let { return it }
         }
 
         // Gather candidate pools
@@ -5401,7 +5525,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 
                 // Update weekly top artists
                 val currentArtists = appSettings.weeklyTopArtists.value.toMutableMap()
-                currentArtists[song.artist] = (currentArtists[song.artist] ?: 0) + 1
+                val splitArtists = repository.splitArtistNames(song.artist).ifEmpty { listOf(song.artist.trim()) }
+                splitArtists.forEach { artistName ->
+                    if (artistName.isNotBlank() && !artistName.equals("<unknown>", ignoreCase = true)) {
+                        currentArtists[artistName] = (currentArtists[artistName] ?: 0) + 1
+                    }
+                }
                 appSettings.updateWeeklyTopArtists(currentArtists)
                 
                 // Update favorite genres
@@ -6174,10 +6303,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun seekTo(positionMs: Long) {
-        Log.d(TAG, "Seek to position: $positionMs ms")
+    fun seekTo(positionMs: Long, autoPlayIfPaused: Boolean = false) {
+        Log.d(TAG, "Seek to position: $positionMs ms (autoPlay=$autoPlayIfPaused)")
         _isSeeking.value = true
-        mediaController?.seekTo(positionMs)
+        mediaController?.let { controller ->
+            controller.seekTo(positionMs)
+            if (autoPlayIfPaused && !controller.isPlaying) {
+                controller.play()
+            }
+        }
         updateProgress() // Immediately update progress after seeking
         
         // Reset seeking state after a delay
@@ -7907,12 +8041,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     _lyricsTimeOffset.value = timeOffset
                     
                     // Determine what format to treat the lyrics as
+                    val isTtml = RhythmLyricsParser.isTtmlContent(sanitizedLyrics)
                     val isWordByWord = format == "WORD_BY_WORD" || 
                         (sanitizedLyrics.trim().startsWith("[") && 
                          (sanitizedLyrics.contains("\"timestamp\"") || sanitizedLyrics.contains("\"words\"")))
                     
                     val isSynced = format == "LINE_BY_LINE" || 
-                        (!isWordByWord && sanitizedLyrics.contains(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]")))
+                        (!isWordByWord && !isTtml && sanitizedLyrics.contains(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]")))
                     
                     // Load existing cache if exists to preserve other formats
                     val fileName = "${artist}_${title}.json".replace(Regex("[^a-zA-Z0-9._-]"), "_")
@@ -7940,7 +8075,33 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         sanitizedLyrics
                     }
                     
-                    val lyricsData = if (isWordByWord) {
+                    val lyricsData = if (isTtml) {
+                        val parsed = try {
+                            RhythmLyricsParser.parseTtmlLyrics(sanitizedLyrics)
+                        } catch (e: Exception) {
+                            emptyList()
+                        }
+                        if (parsed.isNotEmpty()) {
+                            val wordByWordJson = Gson().toJson(parsed)
+                            val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
+                            val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
+                            val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
+                            val hasWordTiming = RhythmLyricsParser.hasWordTiming(parsedWordByWordLines)
+                            LyricsData(
+                                plainLyrics = plain,
+                                syncedLyrics = lrc,
+                                wordByWordLyrics = if (hasWordTiming) wordByWordJson else null,
+                                source = "Local File",
+                                isCorrected = true
+                            )
+                        } else {
+                            LyricsData(
+                                plainLyrics = sanitizedLyrics,
+                                syncedLyrics = existingLyricsData?.syncedLyrics,
+                                wordByWordLyrics = existingLyricsData?.wordByWordLyrics
+                            )
+                        }
+                    } else if (isWordByWord) {
                         // Parse JSON to generate synced and plain versions
                         val parsed = try {
                             RhythmLyricsParser.parseWordByWordLyrics(sanitizedLyrics)
@@ -7970,16 +8131,47 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             wordByWordLyrics = sanitizedLyrics
                         )
                     } else if (isSynced) {
-                        // Generate plain text by removing LRC timestamps
-                        val generatedPlain = normalizedLyrics.lines().joinToString("\n") { line ->
-                            line.replace(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]"), "").trim()
+                        val hasWordTimestamps = chromahub.rhythm.app.util.LyricsParser.hasWordTimestamps(sanitizedLyrics)
+                        if (hasWordTimestamps) {
+                            val parsedWordByWordLines = try {
+                                RhythmLyricsParser.parseEnhancedLRCtoWordByWord(sanitizedLyrics)
+                            } catch (e: Exception) {
+                                emptyList()
+                            }
+                            if (parsedWordByWordLines.isNotEmpty()) {
+                                val wordByWordJson = Gson().toJson(parsedWordByWordLines)
+                                val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
+                                val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
+                                val hasWordTiming = RhythmLyricsParser.hasWordTiming(parsedWordByWordLines)
+                                LyricsData(
+                                    plainLyrics = plain,
+                                    syncedLyrics = lrc,
+                                    wordByWordLyrics = if (hasWordTiming) wordByWordJson else null,
+                                    source = "Local File",
+                                    isCorrected = true
+                                )
+                            } else {
+                                val generatedPlain = normalizedLyrics.lines().joinToString("\n") { line ->
+                                    line.replace(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]"), "").trim()
+                                }
+                                LyricsData(
+                                    plainLyrics = generatedPlain,
+                                    syncedLyrics = normalizedLyrics,
+                                    wordByWordLyrics = existingLyricsData?.wordByWordLyrics
+                                )
+                            }
+                        } else {
+                            // Generate plain text by removing LRC timestamps
+                            val generatedPlain = normalizedLyrics.lines().joinToString("\n") { line ->
+                                line.replace(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]"), "").trim()
+                            }
+                            
+                            LyricsData(
+                                plainLyrics = generatedPlain,
+                                syncedLyrics = normalizedLyrics,
+                                wordByWordLyrics = existingLyricsData?.wordByWordLyrics
+                            )
                         }
-                        
-                        LyricsData(
-                            plainLyrics = generatedPlain,
-                            syncedLyrics = normalizedLyrics,
-                            wordByWordLyrics = existingLyricsData?.wordByWordLyrics
-                        )
                     } else {
                         LyricsData(
                             plainLyrics = sanitizedLyrics,
@@ -8033,6 +8225,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             if (clampedVolume > 0f) {
                 _isMuted.value = false
             }
+            if (!appSettings.useSystemVolume.value && clampedVolume > 0f) {
+                appSettings.setAppVolume(clampedVolume)
+            }
             // Stop playback if volume reaches 0 and setting is enabled
             // Gate on !useSystemVolume: when system volume mode is ON, the system-volume
             // ContentObserver in MaterialPlayerScreen handles pausing and the dialog trigger.
@@ -8073,9 +8268,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * - When disabling system volume mode: restores the previously saved app volume.
      */
     fun setUseSystemVolumeMode(enable: Boolean) {
-        val prevAppVolume = _volume.value
+        val prevAppVolume = if (_volume.value > 0f) _volume.value else appSettings.appVolume.value
         appSettings.setUseSystemVolume(enable)
         if (enable) {
+            // Save current app volume before pinning to 1.0f
+            if (prevAppVolume > 0f) {
+                appSettings.setAppVolume(prevAppVolume)
+            }
             // Pin app (ExoPlayer) volume to full so system volume is sole audio knob.
             // Use the raw controller call to bypass the zero-volume dialog guard.
             mediaController?.volume = 1f
@@ -8083,8 +8282,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             _isMuted.value = false
             Log.d(TAG, "System volume mode ON — ExoPlayer volume pinned to 1.0f")
         } else {
-            // Restore a reasonable app volume (use previous, but at least 30% so no silence burst).
-            val restore = prevAppVolume.coerceAtLeast(0.3f)
+            // Restore the previously saved app volume
+            val restore = appSettings.appVolume.value.coerceIn(0.01f, 1f)
             mediaController?.volume = restore
             _volume.value = restore
             Log.d(TAG, "System volume mode OFF — ExoPlayer volume restored to $restore")
@@ -8312,6 +8511,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 if (controller.mediaItemCount != _currentQueue.value.songs.size) {
                     Log.w(TAG, "Queue size mismatch after playNext - MediaController: ${controller.mediaItemCount}, ViewModel: ${_currentQueue.value.songs.size}")
                 }
+                // Save queue to persistence
+                saveQueueToPersistence()
+
                 val toastContext = getApplication<android.app.Application>().applicationContext
                 android.widget.Toast.makeText(toastContext, toastContext.getString(R.string.playing_next_simple, song.title), android.widget.Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
@@ -8566,9 +8768,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     // Add items in batches to prevent ANR
                     val batchSize = 50
                     mediaItems.chunked(batchSize).forEach { batch ->
-                        batch.forEach { mediaItem ->
-                            controller.addMediaItem(mediaItem)
-                        }
+                        controller.addMediaItems(batch)
                         // Small delay between batches to keep UI responsive
                         if (mediaItems.size > batchSize) {
                             kotlinx.coroutines.delay(10)

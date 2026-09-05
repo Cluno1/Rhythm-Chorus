@@ -108,9 +108,9 @@ jobs:
             VERSION_NAME="5.2.421.1101 Beta"
           fi
           
-          # Git commit count for increasing version code
+          # Use base versionCode from build.gradle.kts to prevent inflating beyond future release builds
           COMMIT_COUNT=$(git rev-list --count HEAD)
-          NEW_VERSION_CODE=$((VERSION_CODE + COMMIT_COUNT))
+          NEW_VERSION_CODE=$VERSION_CODE
           
           # Extract short commit hash
           SHORT_SHA=$(git rev-parse --short HEAD)
@@ -132,9 +132,28 @@ jobs:
         if: steps.check_version.outputs.should_run == 'true'
         id: notif_changelog
         run: |
-          BASE_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
-          if [ -n "$BASE_TAG" ] && git rev-parse "$BASE_TAG" >/dev/null 2>&1; then
-            CHANGES=$(git log "$BASE_TAG"..HEAD --oneline --no-merges 2>/dev/null | sed -E 's/^[0-9a-f]+ //' | grep -viE '^Release |translation|l10n|localiz|^Minor |^Fix (warnings?|lint)|weblate|\.github|^bump ' | head -n 12)
+          # 1. Find previous nightly/release commit (starts with "Release ")
+          BASE_COMMIT=""
+          if git log -n 1 --format="%s" | grep -qE '^Release '; then
+            BASE_COMMIT=$(git log HEAD~1 --grep="^Release " -n 1 --format="%H" 2>/dev/null || true)
+          else
+            BASE_COMMIT=$(git log HEAD --grep="^Release " -n 1 --format="%H" 2>/dev/null || true)
+          fi
+
+          # 2. Fallback: previous commit modifying build.gradle.kts
+          if [ -z "$BASE_COMMIT" ]; then
+            BASE_COMMIT=$(git log HEAD~1 -n 1 --format="%H" -- app/build.gradle.kts 2>/dev/null || true)
+          fi
+
+          # 3. Fallback: most recent git tag
+          if [ -z "$BASE_COMMIT" ]; then
+            BASE_COMMIT=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          fi
+
+          echo "Calculated base commit for changelog: $BASE_COMMIT"
+
+          if [ -n "$BASE_COMMIT" ] && git rev-parse "$BASE_COMMIT" >/dev/null 2>&1; then
+            CHANGES=$(git log "$BASE_COMMIT"..HEAD --oneline --no-merges 2>/dev/null | sed -E 's/^[0-9a-f]+ //' | grep -viE '^Release |translation|l10n|localiz|^Minor |^Fix (warnings?|lint)|weblate|\.github|^bump ' | head -n 15)
           else
             CHANGES=$(git log HEAD --oneline -12 --no-merges 2>/dev/null | sed -E 's/^[0-9a-f]+ //')
           fi

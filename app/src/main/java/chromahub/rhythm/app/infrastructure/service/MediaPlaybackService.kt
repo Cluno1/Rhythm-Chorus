@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.infrastructure.service
 
 import android.app.PendingIntent
@@ -576,12 +581,20 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         
         // Initialize Rhythm audio processors early (before player creation)
         try {
-            rhythmBassBoostProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmBassBoostProcessor()
-            rhythmSpatializationProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmSpatializationProcessor()
-            rhythmMonoAudioProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmMonoAudioProcessor()
+            rhythmBassBoostProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmBassBoostProcessor().apply {
+                setEnabled(appSettings.bassBoostEnabled.value)
+                setStrength(appSettings.bassBoostStrength.value.toShort())
+            }
+            rhythmSpatializationProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmSpatializationProcessor().apply {
+                setEnabled(appSettings.virtualizerEnabled.value)
+                setStrength(appSettings.virtualizerStrength.value.toShort())
+            }
+            rhythmMonoAudioProcessor = chromahub.rhythm.app.infrastructure.audio.RhythmMonoAudioProcessor().apply {
+                setEnabled(appSettings.monoAudioEnabled.value)
+            }
             isBassBoostAvailable = true
             appSettings.setBassBoostAvailable(true)
-            Log.d(TAG, "Rhythm audio processors initialized early")
+            Log.d(TAG, "Rhythm audio processors initialized early with saved settings (mono=${appSettings.monoAudioEnabled.value}, bass=${appSettings.bassBoostEnabled.value}, spatial=${appSettings.virtualizerEnabled.value})")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize Rhythm processors", e)
             rhythmBassBoostProcessor = null
@@ -1250,6 +1263,9 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
         equalizerVolumeTransitionJob?.cancel()
         equalizerVolumeRestoreTarget = restoreVolume
 
+        // Flag internal volume adjustment so engine doesn't overwrite userVolume with ducked values
+        rhythmPlayerEngine.isInternalVolumeAdjustment = true
+
         // 1. Duck the player volume to 0.0f to completely silence any transient audio during the hardware transition
         player.volume = 0.0f
         var actualState = enabled
@@ -1296,6 +1312,7 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                 if (equalizerVolumeRestoreTarget == restoreVolume) {
                     equalizerVolumeRestoreTarget = null
                 }
+                rhythmPlayerEngine.isInternalVolumeAdjustment = false
             }
         }
 
@@ -2327,9 +2344,10 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
             }
             availableCommands.add(SessionCommand("UPDATE_ACTIVE_LYRIC", Bundle.EMPTY))
             availableCommands.add(SessionCommand("UPDATE_LYRICS_DATA", Bundle.EMPTY))
-            return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
-                .setAvailableSessionCommands(availableCommands.build())
-                .build()
+            return MediaSession.ConnectionResult.accept(
+                availableCommands.build(),
+                MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS
+            )
         }
 
         @OptIn(UnstableApi::class)
@@ -2725,6 +2743,8 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
     }
 
     // Sleep Timer functionality
+    private var sleepTimerOriginalVolume: Float? = null
+
     private fun launchTimerCoroutine(startTime: Long, durationMs: Long, fadeOut: Boolean, pauseOnly: Boolean): Job {
         return serviceScope.launch {
             val localStartTime = startTime
@@ -2742,6 +2762,8 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                     }
 
                     val originalVolume = player.volume
+                    sleepTimerOriginalVolume = originalVolume
+                    rhythmPlayerEngine.isInternalVolumeAdjustment = true
                     val fadeSteps = 100
                     val fadeInterval = 10000L / fadeSteps
 
@@ -2772,17 +2794,21 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                 }
 
                 if (localFadeOut) {
-                    player.volume = 1.0f
+                    sleepTimerOriginalVolume?.let { player.volume = it }
                 }
+                rhythmPlayerEngine.isInternalVolumeAdjustment = false
 
                 resetSleepTimer()
 
             } catch (e: CancellationException) {
                 Log.d(TAG, "Sleep timer was cancelled")
+                rhythmPlayerEngine.isInternalVolumeAdjustment = false
             } catch (e: Exception) {
                 Log.e(TAG, "Error in sleep timer", e)
+                rhythmPlayerEngine.isInternalVolumeAdjustment = false
                 resetSleepTimer()
             } finally {
+                rhythmPlayerEngine.isInternalVolumeAdjustment = false
                 broadcastSleepTimerStatus()
             }
         }
@@ -2823,6 +2849,7 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
 
         sleepTimerJob?.cancel()
         sleepTimerJob = null
+        rhythmPlayerEngine.isInternalVolumeAdjustment = false
 
         sleepTimerStartTime = now
         sleepTimerJob = launchTimerCoroutine(now, duration, fadeOut, pauseOnly)
@@ -2835,8 +2862,9 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
         sleepTimerJob = null
 
         if (fadeOutEnabled) {
-            player.volume = 1.0f
+            sleepTimerOriginalVolume?.let { player.volume = it }
         }
+        rhythmPlayerEngine.isInternalVolumeAdjustment = false
 
         resetSleepTimer()
         broadcastSleepTimerStatus()
@@ -3374,13 +3402,8 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
     
     fun setBassBoostEnabled(enabled: Boolean) {
         if (rhythmBassBoostProcessor == null) {
-            Log.w(TAG, "Attempting to enable bass boost but Rhythm processor is null. Will reinitialize.")
-            if (getPlayerAudioSessionId() != 0) {
-                initializeAudioEffects()
-            } else {
-                Log.e(TAG, "Cannot enable bass boost: invalid audio session ID")
-                return
-            }
+            Log.w(TAG, "Attempting to enable bass boost but Rhythm processor is null. Reinitializing.")
+            initializeRhythmProcessors()
         }
         
         rhythmBassBoostProcessor?.setEnabled(enabled)
@@ -3408,9 +3431,9 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
     }
     
     fun setVirtualizerEnabled(enabled: Boolean) {
-        if (rhythmSpatializationProcessor == null && getPlayerAudioSessionId() != 0) {
-            Log.w(TAG, "Rhythm spatialization processor is null, attempting reinitialization")
-            initializeAudioEffects()
+        if (rhythmSpatializationProcessor == null) {
+            Log.w(TAG, "Rhythm spatialization processor is null, reinitializing")
+            initializeRhythmProcessors()
         }
         
         rhythmSpatializationProcessor?.setEnabled(enabled)
@@ -3450,13 +3473,8 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
 
     fun setMonoAudioEnabled(enabled: Boolean) {
         if (rhythmMonoAudioProcessor == null) {
-            Log.w(TAG, "Attempting to enable mono audio but Rhythm processor is null. Will reinitialize.")
-            if (getPlayerAudioSessionId() != 0) {
-                initializeAudioEffects()
-            } else {
-                Log.e(TAG, "Cannot enable mono audio: invalid audio session ID")
-                return
-            }
+            Log.w(TAG, "Attempting to enable mono audio but Rhythm processor is null. Reinitializing.")
+            initializeRhythmProcessors()
         }
         
         rhythmMonoAudioProcessor?.setEnabled(enabled)

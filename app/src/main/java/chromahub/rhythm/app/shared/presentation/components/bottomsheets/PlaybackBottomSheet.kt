@@ -1,4 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -41,6 +47,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
@@ -126,7 +133,7 @@ fun PlaybackBottomSheet(
     val haptics = LocalHapticFeedback.current
     
     // Animation states
-    var showContent by remember { mutableStateOf(false) }
+    var showContent by remember { mutableStateOf(true) }
     
     // System volume state
     var systemVolume by remember { mutableFloatStateOf(0.5f) }
@@ -186,9 +193,6 @@ fun PlaybackBottomSheet(
 
     // Initialize system volume and monitor for changes
     LaunchedEffect(Unit) {
-        delay(100) // Reduced delay for faster appearance
-        showContent = true
-        
         // Get system volume
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
@@ -223,7 +227,11 @@ fun PlaybackBottomSheet(
         }
     }
 
-    ModalBottomSheet(
+    val lazyListState = rememberLazyListState()
+
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.WIDE_DIALOG,
+        lazyListState = lazyListState,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -232,6 +240,7 @@ fun PlaybackBottomSheet(
                 color = MaterialTheme.colorScheme.primary
             )
         },
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onBackground,
         tonalElevation = 0.dp
@@ -254,13 +263,19 @@ fun PlaybackBottomSheet(
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Scrollable content
-            LazyColumn(
+            // Scrollable content inside AdaptiveSheetScrollContainer
+            AdaptiveSheetScrollContainer(
+                lazyListState = lazyListState,
                 modifier = Modifier
-                    .fillMaxWidth(),
-                contentPadding = PaddingValues(vertical = 0.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
+                    .fillMaxWidth()
+                    .weight(1f, fill = false)
+            ) { endPadding ->
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp, end = endPadding),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
                 // Volume + Active Device (merged)
                 item {
                     AnimateIn {
@@ -385,11 +400,10 @@ fun PlaybackBottomSheet(
                         )
                     }
                 }
-                
-
             }
         }
     }
+}
 
     // Quality selection bottom sheet
     if (showQualitySheet) {
@@ -761,13 +775,12 @@ private fun PlaybackSpeedAndPitchCard(
                         chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch(
                             checked = syncEnabled,
                             onCheckedChange = {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                 onSyncChange(it)
                             }
                         )
                     },
                     onClick = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                         onSyncChange(!syncEnabled)
                     }
                 ),
@@ -843,13 +856,12 @@ private fun PlaybackQuickSettingsCard(
                     AnimatedAudioSwitch(
                         checked = useSystemVolume,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             onUseSystemVolumeChange(it)
                         }
                     )
                 },
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onUseSystemVolumeChange(!useSystemVolume)
                 }
             )
@@ -863,14 +875,13 @@ private fun PlaybackQuickSettingsCard(
                     AnimatedAudioSwitch(
                         checked = stopPlaybackOnZeroVolume,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             onStopPlaybackOnZeroVolumeChange(it)
                         }
                     )
                 },
                 scope = chromahub.rhythm.app.shared.presentation.components.SettingScope.BOTH,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onStopPlaybackOnZeroVolumeChange(!stopPlaybackOnZeroVolume)
                 }
             )
@@ -884,14 +895,13 @@ private fun PlaybackQuickSettingsCard(
                     AnimatedAudioSwitch(
                         checked = resumeOnDeviceReconnect,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             onResumeOnDeviceReconnectChange(it)
                         }
                     )
                 },
                 scope = chromahub.rhythm.app.shared.presentation.components.SettingScope.BOTH,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onResumeOnDeviceReconnectChange(!resumeOnDeviceReconnect)
                 }
             )
@@ -905,14 +915,13 @@ private fun PlaybackQuickSettingsCard(
                     AnimatedAudioSwitch(
                         checked = gaplessPlayback,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             onGaplessPlaybackChange(it)
                         }
                     )
                 },
                 scope = chromahub.rhythm.app.shared.presentation.components.SettingScope.BOTH,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onGaplessPlaybackChange(!gaplessPlayback)
                 }
             )
@@ -926,14 +935,13 @@ private fun PlaybackQuickSettingsCard(
                     AnimatedAudioSwitch(
                         checked = showPlayedQueueSongs,
                         onCheckedChange = {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                             onShowPlayedQueueSongsChange(it)
                         }
                     )
                 },
                 scope = chromahub.rhythm.app.shared.presentation.components.SettingScope.BOTH,
                 onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onShowPlayedQueueSongsChange(!showPlayedQueueSongs)
                 }
             )
@@ -956,7 +964,6 @@ private fun PlaybackQuickSettingsCard(
                         checked = if (isOffloadEnforced) false else crossfadeEnabled,
                         onCheckedChange = {
                             if (!isOffloadEnforced) {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                                 onCrossfadeEnabledChange(it)
                             }
                         },
@@ -967,7 +974,7 @@ private fun PlaybackQuickSettingsCard(
                 enabled = !isOffloadEnforced,
                 onClick = {
                     if (!isOffloadEnforced) {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                         onCrossfadeEnabledChange(!crossfadeEnabled)
                     }
                 }
@@ -990,7 +997,10 @@ private fun PlaybackQuickSettingsCard(
                             Spacer(modifier = Modifier.height(8.dp))
                             Slider(
                                 value = crossfadeDuration,
-                                onValueChange = { onCrossfadeDurationChange(it) },
+                                onValueChange = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                    onCrossfadeDurationChange(it)
+                                },
                                 valueRange = 1f..10f,
                                 steps = 8,
                                 colors = SliderDefaults.colors(
@@ -1207,7 +1217,6 @@ private fun PlaybackPitchCard(
                 chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch(
                     checked = syncEnabled,
                     onCheckedChange = {
-                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                         onSyncChange(it)
                     }
                 )
@@ -1407,7 +1416,6 @@ private fun AudioEffectsCard(
                         checked = if (isOffloadEnforced) false else equalizerEnabled,
                         onCheckedChange = {
                             if (!isOffloadEnforced) {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                                 onEqualizerEnabledChange(it)
                             }
                         },
@@ -1453,7 +1461,10 @@ private fun AudioEffectsCard(
                                     thumbColor = MaterialTheme.colorScheme.primary,
                                     activeTrackColor = MaterialTheme.colorScheme.primary,
                                     inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
+                                ),
+                                onValueChangeFinished = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                }
                             )
                         }
                     }
@@ -1463,7 +1474,6 @@ private fun AudioEffectsCard(
                         checked = if (isOffloadEnforced) false else bassBoostEnabled,
                         onCheckedChange = {
                             if (!isOffloadEnforced) {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                                 onBassBoostEnabledChange(it)
                             }
                         },
@@ -1509,7 +1519,10 @@ private fun AudioEffectsCard(
                                     thumbColor = MaterialTheme.colorScheme.primary,
                                     activeTrackColor = MaterialTheme.colorScheme.primary,
                                     inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
+                                ),
+                                onValueChangeFinished = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                }
                             )
                         }
                     }
@@ -1519,7 +1532,6 @@ private fun AudioEffectsCard(
                         checked = if (isOffloadEnforced) false else virtualizerEnabled,
                         onCheckedChange = {
                             if (!isOffloadEnforced) {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                                 onVirtualizerEnabledChange(it)
                             }
                         },
@@ -1585,11 +1597,12 @@ private fun QualitySelectionBottomSheet(
 ) {
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.WIDE_DIALOG,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary) },
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
     ) {

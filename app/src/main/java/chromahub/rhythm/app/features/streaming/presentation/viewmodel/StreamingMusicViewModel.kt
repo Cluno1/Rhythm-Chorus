@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.features.streaming.presentation.viewmodel
 
 import android.app.Application
@@ -260,7 +265,28 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
                 // Show success notification
                 notificationManager.notifyAuthenticationSuccess(getSourceTypeName(sourceTypeFromServiceId(normalizedServiceId)))
             } catch (e: Exception) {
-                _error.value = "Connection failed: ${e.message}"
+                val userMessage = when {
+                    e is java.net.ConnectException ||
+                    e is java.net.SocketTimeoutException ||
+                    (e is java.io.IOException && (e.message?.contains("connect", ignoreCase = true) == true ||
+                                                  e.message?.contains("timeout", ignoreCase = true) == true)) ||
+                    e.cause is java.net.ConnectException ||
+                    e.cause is java.net.SocketTimeoutException ->
+                        "Cannot reach server. Please check that the server address and port are correct and that the server is online and reachable from this device."
+                    e is java.net.UnknownHostException ||
+                    e.cause is java.net.UnknownHostException ->
+                        "Server not found. Please check the server URL."
+                    e is javax.net.ssl.SSLException ||
+                    e.cause is javax.net.ssl.SSLException ->
+                        "Secure connection failed. The server's certificate may not be trusted."
+                    e.message?.contains("HTTP 401", ignoreCase = true) == true ||
+                    e.message?.contains("401", ignoreCase = true) == true ->
+                        "Incorrect username or password."
+                    e.message?.contains("HTTP 4", ignoreCase = true) == true ->
+                        "Server rejected the connection (${e.message}). Check credentials and server version."
+                    else -> "Connection failed: ${e.message}"
+                }
+                _error.value = userMessage
                 notificationManager.notifyAuthenticationFailed(getSourceTypeName(_currentService.value))
             } finally {
                 _isLoading.value = false
@@ -530,7 +556,7 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
                 val resolvedArtists = if (followedArtists.isNotEmpty()) {
                     val catalogArtistsByName = catalogArtists.associateBy { it.name.lowercase() }
                     val separatorEnabled = appSettings.artistSeparatorEnabled.value
-                    val separatorDelimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
+                    val separatorDelimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
                     followedArtists
                         .flatMap { followedArtist ->
                             val splitNames = ArtistSeparator.splitArtistNames(
@@ -943,8 +969,11 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
         seekProgressHandler?.invoke(progress)
     }
 
-    fun seekTo(positionMs: Long) {
+    fun seekTo(positionMs: Long, autoPlayIfPaused: Boolean = false) {
         seekPositionHandler?.invoke(positionMs)
+        if (autoPlayIfPaused && _isPlaying.value != true) {
+            togglePlayPause()
+        }
     }
 
     /**
@@ -1292,7 +1321,7 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
         }
 
         val separatorEnabled = appSettings.artistSeparatorEnabled.value
-        val separatorDelimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { "/;,+&" }
+        val separatorDelimiters = appSettings.artistSeparatorDelimiters.value.ifBlank { AppSettings.DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
 
         return songs
             .filter { it.artist.isNotBlank() }

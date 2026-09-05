@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.util
 
 import android.content.Context
@@ -461,6 +466,55 @@ object MetadataHeuristics {
         }
 
         Log.d(TAG, "Parsing lyrics data: ${lyrics.take(200)}${if (lyrics.length > 200) "..." else ""}")
+
+        val trimmedInput = lyrics.trim()
+        val isWordByWordJson = (trimmedInput.startsWith("[") || trimmedInput.startsWith("{")) && 
+            (trimmedInput.contains("\"timestamp\"") || trimmedInput.contains("\"words\""))
+            
+        if (isWordByWordJson) {
+            try {
+                val parsed = RhythmLyricsParser.parseWordByWordLyrics(lyrics)
+                if (parsed.isNotEmpty()) {
+                    val plainText = try {
+                        RhythmLyricsParser.toPlainText(parsed)
+                    } catch (e: Exception) {
+                        null
+                    }
+                    val syncedLrc = try {
+                        RhythmLyricsParser.toLRCFormat(parsed)
+                    } catch (e: Exception) {
+                        null
+                    }
+                    Log.d(TAG, "Successfully parsed embedded word-by-word JSON lyrics")
+                    return LyricsData(plainText, syncedLrc, lyrics)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing embedded word-by-word JSON", e)
+            }
+        }
+
+        if (RhythmLyricsParser.isTtmlContent(lyrics)) {
+            try {
+                val parsedLines = RhythmLyricsParser.parseTtmlLyrics(lyrics)
+                if (parsedLines.isNotEmpty()) {
+                    val wordByWordJson = com.google.gson.Gson().toJson(parsedLines)
+                    val parsedWordByWordLines = RhythmLyricsParser.parseWordByWordLyrics(wordByWordJson)
+                    val lrc = RhythmLyricsParser.toLRCFormat(parsedWordByWordLines)
+                    val plain = RhythmLyricsParser.toPlainText(parsedWordByWordLines)
+                    val hasWordTiming = RhythmLyricsParser.hasWordTiming(parsedWordByWordLines)
+                    Log.d(TAG, "Successfully parsed embedded TTML lyrics (${parsedLines.size} lines, hasWordTiming=$hasWordTiming)")
+                    return LyricsData(
+                        plainLyrics = plain,
+                        syncedLyrics = lrc,
+                        wordByWordLyrics = if (hasWordTiming) wordByWordJson else null,
+                        source = "Embedded",
+                        isCorrected = true
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing embedded TTML lyrics", e)
+            }
+        }
 
         val cleanedLyrics = sanitizeLyricsText(lyrics)
 

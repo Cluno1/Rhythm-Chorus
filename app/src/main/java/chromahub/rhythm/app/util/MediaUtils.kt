@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.util
 
 import android.app.PendingIntent
@@ -108,6 +113,8 @@ object MediaUtils {
 
     @Volatile
     private var lastEmbeddedArtworkCleanupMs: Long = 0L
+
+    private val folderCoverCache = java.util.concurrent.ConcurrentHashMap<String, File?>()
 
     private fun applyArtworkToTag(
         context: Context,
@@ -607,17 +614,18 @@ object MediaUtils {
                     val mimeTypeIndex =
                         cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE)
                     val songIdIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-
                     filePath = cursor.getString(dataIndex) ?: ""
                     fileSize = cursor.getLong(sizeIndex)
-                    val mediaStoreDateAdded = cursor.getLong(dateAddedIndex) * 1000 // Convert to milliseconds
+                    val rawDateAdded = cursor.getLong(dateAddedIndex)
+                    val mediaStoreDateAdded = if (rawDateAdded in 1..99_999_999_999L) rawDateAdded * 1000L else rawDateAdded
+                    val normalizedSongDateAdded = if (dateAdded in 1..99_999_999_999L) dateAdded * 1000L else dateAdded
                     dateAdded = when {
-                        dateAdded > 0L && mediaStoreDateAdded > 0L -> minOf(dateAdded, mediaStoreDateAdded)
+                        normalizedSongDateAdded > 0L && mediaStoreDateAdded > 0L -> minOf(normalizedSongDateAdded, mediaStoreDateAdded)
                         mediaStoreDateAdded > 0L -> mediaStoreDateAdded
-                        else -> dateAdded
+                        else -> normalizedSongDateAdded
                     }
-                    dateModified =
-                        cursor.getLong(dateModifiedIndex) * 1000 // Convert to milliseconds
+                    val rawDateModified = cursor.getLong(dateModifiedIndex)
+                    dateModified = if (rawDateModified in 1..99_999_999_999L) rawDateModified * 1000L else rawDateModified
                     composer = cursor.getString(composerIndex) ?: ""
                     albumArtist = if (albumArtistIndex != -1) cursor.getString(albumArtistIndex) ?: "" else ""
                     year = cursor.getInt(yearIndex)
@@ -2407,113 +2415,139 @@ object MediaUtils {
         context: Context,
         songUri: Uri,
         cacheDir: File,
-        lossless: Boolean = false
+        lossless: Boolean = false,
+        filePath: String? = null
     ): Uri? {
-        val retriever = MediaMetadataRetriever()
-        try {
-            retriever.setDataSource(context, songUri)
+        getCachedEmbeddedAlbumArtUri(cacheDir, songUri, lossless, exactMatchOnly = true)?.let {
+            return it
+        }
 
-            var embeddedArt = retriever.embeddedPicture
-            var filePath: String? = null
-            if (embeddedArt == null || embeddedArt.isEmpty()) {
-                // Try jaudiotagger fallback
-                filePath = when (songUri.scheme) {
-                    "content" -> {
-                        val projection = arrayOf(MediaStore.Audio.Media.DATA)
-                        context.contentResolver.query(songUri, projection, null, null, null)
-                            ?.use { cursor ->
-                                if (cursor.moveToFirst()) {
-                                    val dataIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-                                    if (dataIndex != -1) cursor.getString(dataIndex) else null
-                                } else null
-                            }
-                    }
-                    "file" -> songUri.path
-                    else -> null
-                }
-                if (filePath != null) {
-                    try {
-                        val file = File(filePath)
-                        if (file.exists() && isSupportedByJaudiotagger(file.extension)) {
-                            val audioFile = org.jaudiotagger.audio.AudioFileIO.read(file)
-                            val tag = audioFile.tag
-                            if (tag != null) {
-                                val artwork = tag.firstArtwork
-                                if (artwork != null) {
-                                    val artworkBytes = artwork.binaryData
-                                    if (artworkBytes != null && artworkBytes.isNotEmpty()) {
-                                        embeddedArt = artworkBytes
-                                    }
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Failed to extract embedded art via jaudiotagger fallback: ${e.message}")
-                    }
-                }
-            }
-
-            // Fallback to folder cover discovery if embeddedArt is still not found
-            if (embeddedArt == null || embeddedArt.isEmpty()) {
-                if (filePath == null) {
-                    filePath = when (songUri.scheme) {
-                        "content" -> {
-                            val projection = arrayOf(MediaStore.Audio.Media.DATA)
-                            context.contentResolver.query(songUri, projection, null, null, null)
-                                ?.use { cursor ->
-                                    if (cursor.moveToFirst()) {
-                                        val dataIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-                                        if (dataIndex != -1) cursor.getString(dataIndex) else null
-                                    } else null
-                                }
-                        }
-                        "file" -> songUri.path
-                        else -> null
-                    }
-                }
-                if (filePath != null) {
-                    try {
-                        val file = File(filePath)
-                        val parentFolder = file.parentFile
-                        if (parentFolder != null && parentFolder.exists() && parentFolder.isDirectory) {
-                            val coverFile = findBestCover(parentFolder)
-                            if (coverFile != null && coverFile.exists()) {
-                                val coverBytes = coverFile.readBytes()
-                                if (coverBytes.isNotEmpty()) {
-                                    embeddedArt = coverBytes
-                                    Log.d(TAG, "Found folder cover art: ${coverFile.absolutePath}")
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Failed to find folder cover artwork: ${e.message}")
-                    }
-                }
-            }
-
-            if (embeddedArt != null && embeddedArt.isNotEmpty()) {
-                return cacheEmbeddedArtworkBytes(songUri, cacheDir, embeddedArt, lossless)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to extract embedded album art", e)
-        } finally {
-            try {
-                retriever.release()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error releasing MediaMetadataRetriever", e)
-            }
+        val embeddedArt = extractRawEmbeddedArtworkBytes(context, songUri, filePath)
+        if (embeddedArt != null && embeddedArt.isNotEmpty()) {
+            return cacheEmbeddedArtworkBytes(songUri, cacheDir, embeddedArt, lossless)
         }
         return null
+    }
+
+    /**
+     * Extracts raw embedded artwork bytes on-demand without writing loose cache files.
+     * Tries TagLib -> MediaMetadataRetriever -> jaudiotagger -> folder cover.
+     */
+    fun extractRawEmbeddedArtworkBytes(
+        context: Context,
+        songUri: Uri,
+        filePath: String? = null
+    ): ByteArray? {
+        var embeddedArt: ByteArray? = null
+
+        val resolvedFilePath = when {
+            filePath != null && filePath.isNotBlank() -> filePath
+            songUri.scheme == "file" -> songUri.path
+            songUri.scheme == "content" -> {
+                try {
+                    val projection = arrayOf(MediaStore.Audio.Media.DATA)
+                    context.contentResolver.query(songUri, projection, null, null, null)?.use { cursor ->
+                        if (cursor.moveToFirst()) {
+                            val dataIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+                            if (dataIndex != -1) cursor.getString(dataIndex) else null
+                        } else null
+                    }
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            else -> null
+        }
+
+        if (resolvedFilePath != null) {
+            try {
+                val file = File(resolvedFilePath)
+                if (file.exists() && file.canRead()) {
+                    ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                        val metadata = TagLib.getMetadata(fd.detachFd())
+                        val pictures = metadata?.pictures
+                        if (!pictures.isNullOrEmpty()) {
+                            val firstPic = pictures.firstOrNull { it.pictureType.equals("Front Cover", ignoreCase = true) } ?: pictures.first()
+                            if (firstPic.data.isNotEmpty()) {
+                                embeddedArt = firstPic.data
+                            }
+                        }
+                    }
+                }
+            } catch (_: Throwable) {
+                // TagLib fallback
+            }
+        }
+
+        if (embeddedArt == null || embeddedArt.isEmpty()) {
+            var retriever: MediaMetadataRetriever? = null
+            try {
+                retriever = MediaMetadataRetriever()
+                retriever.setDataSource(context, songUri)
+                val pic = retriever.embeddedPicture
+                if (pic != null && pic.isNotEmpty()) {
+                    embeddedArt = pic
+                }
+            } catch (_: Exception) {
+            } finally {
+                try {
+                    retriever?.release()
+                } catch (_: Exception) {}
+            }
+        }
+
+        if ((embeddedArt == null || embeddedArt.isEmpty()) && resolvedFilePath != null) {
+            try {
+                val file = File(resolvedFilePath)
+                if (file.exists() && isSupportedByJaudiotagger(file.extension)) {
+                    val audioFile = org.jaudiotagger.audio.AudioFileIO.read(file)
+                    val tag = audioFile.tag
+                    val artwork = tag?.firstArtwork
+                    val artworkBytes = artwork?.binaryData
+                    if (artworkBytes != null && artworkBytes.isNotEmpty()) {
+                        embeddedArt = artworkBytes
+                    }
+                }
+            } catch (_: Exception) {
+            }
+        }
+
+        if ((embeddedArt == null || embeddedArt.isEmpty()) && resolvedFilePath != null) {
+            try {
+                val file = File(resolvedFilePath)
+                val parentFolder = file.parentFile
+                if (parentFolder != null && parentFolder.exists() && parentFolder.isDirectory) {
+                    val coverFile = folderCoverCache.getOrPut(parentFolder.absolutePath) {
+                        findBestCover(parentFolder)
+                    }
+                    if (coverFile != null && coverFile.exists()) {
+                        val coverBytes = coverFile.readBytes()
+                        if (coverBytes.isNotEmpty()) {
+                            embeddedArt = coverBytes
+                        }
+                    }
+                }
+            } catch (_: Exception) {
+            }
+        }
+
+        return embeddedArt
     }
 
     /**
      * Looks up cached embedded album artwork for a song URI.
      * Supports both the current cache layout and legacy file names.
      */
-    fun getCachedEmbeddedAlbumArtUri(cacheDir: File, songUri: Uri, lossless: Boolean = false): Uri? {
+    fun getCachedEmbeddedAlbumArtUri(
+        cacheDir: File,
+        songUri: Uri,
+        lossless: Boolean = false,
+        exactMatchOnly: Boolean = false
+    ): Uri? {
         val songKey = buildArtworkCacheKey(songUri)
         val primaryPrefix = if (lossless) "embedded_art_lossless_$songKey" else "embedded_art_$songKey"
         val fallbackPrefix = if (lossless) "embedded_art_$songKey" else "embedded_art_lossless_$songKey"
+        val searchPrefixes = if (exactMatchOnly) listOf(primaryPrefix) else listOf(primaryPrefix, fallbackPrefix)
 
         val directoriesToSearch = mutableListOf(File(cacheDir, EMBEDDED_ARTWORK_CACHE_DIR))
         val parent = cacheDir.parentFile
@@ -2526,7 +2560,7 @@ object MediaUtils {
         for (dir in directoriesToSearch) {
             val modernCandidate = findFirstExistingArtworkFile(
                 directory = dir,
-                prefixes = listOf(primaryPrefix, fallbackPrefix),
+                prefixes = searchPrefixes,
                 extensions = extensions
             )
             if (modernCandidate != null) {
@@ -2545,10 +2579,11 @@ object MediaUtils {
         } else {
             "embedded_art_lossless_$legacyHash"
         }
+        val searchLegacyPrefixes = if (exactMatchOnly) listOf(primaryLegacyPrefix) else listOf(primaryLegacyPrefix, fallbackLegacyPrefix)
 
         val legacyCandidate = findFirstExistingArtworkFile(
             directory = cacheDir,
-            prefixes = listOf(primaryLegacyPrefix, fallbackLegacyPrefix),
+            prefixes = searchLegacyPrefixes,
             extensions = extensions
         )
         if (legacyCandidate != null) {
@@ -2582,7 +2617,7 @@ object MediaUtils {
     ): Uri? {
         if (embeddedArt.isEmpty()) return null
 
-        getCachedEmbeddedAlbumArtUri(cacheDir, songUri, lossless)?.let {
+        getCachedEmbeddedAlbumArtUri(cacheDir, songUri, lossless, exactMatchOnly = true)?.let {
             maybePruneArtworkCache(cacheDir)
             return it
         }
@@ -2863,20 +2898,12 @@ object MediaUtils {
     }
 
     /*
-     *     Copyright (C) 2025 nift4
+     * Copyright (C) 2025 nift4 (Gramophone)
+     * Modified for Rhythm by Anjishnu Nandi (cromaguy)
      *
-     *     Gramophone is free software: you can redistribute it and/or modify
-     *     it under the terms of the GNU General Public License as published by
-     *     the Free Software Foundation, either version 3 of the License, or
-     *     (at your option) any later version.
-     *
-     *     Gramophone is distributed in the hope that it will be useful,
-     *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     *     GNU General Public License for more details.
-     *
-     *     You should have received a copy of the GNU General Public License
-     *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+     * SPDX-FileCopyrightText: 2025 nift4 <https://github.com/FoedusProgramme/Gramophone>
+     * SPDX-FileCopyrightText: 2025-2026 Anjishnu Nandi <https://github.com/cromaguy>
+     * SPDX-License-Identifier: GPL-3.0-or-later
      */
     fun deleteCachedEmbeddedArtwork(cacheDir: File, songUri: Uri) {
         try {

@@ -1,6 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+
+import androidx.compose.foundation.lazy.rememberLazyListState
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -50,7 +60,10 @@ fun PlaybackSpeedAndPitchBottomSheet(
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
-    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
 
     val minVal = 0.25f
     val maxVal = 3.0f
@@ -93,43 +106,40 @@ fun PlaybackSpeedAndPitchBottomSheet(
     val topShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 8.dp)
     val bottomShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.WIDE_DIALOG,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = {
             BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
         },
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier
             .widthIn(max = 640.dp)
             .fillMaxWidth()
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+        val speedListState = rememberLazyListState()
 
-            // Scrollable area as a LazyColumn so it participates in nested scroll:
-            // swiping down on content hands the gesture to the sheet's drag-to-dismiss
-            // instead of fighting it (verticalScroll caused a bounce glitch).
-            LazyColumn(
+        Column(modifier = Modifier.fillMaxWidth()) {
+            StandardBottomSheetHeader(
+                title = stringResource(R.string.player_speed_and_pitch),
+                visible = true
+            )
+
+            AdaptiveSheetScrollContainer(
+                lazyListState = speedListState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f, fill = false)
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 16.dp)
-            ) {
-                item {
-                    Text(
-                        text = stringResource(R.string.player_speed_and_pitch),
-                        style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                item { Spacer(modifier = Modifier.height(32.dp)) }
-
-                item {
-                    val hasDefault = onSetDefaultSpeed != null
+            ) { endPadding ->
+                LazyColumn(
+                    state = speedListState,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(start = 24.dp, end = 24.dp + endPadding, top = 8.dp, bottom = 16.dp)
+                ) {
+                    item {
+                        val hasDefault = onSetDefaultSpeed != null
                     RhythmCardGroup(
                         shape = if (hasDefault) topShape else soloShape,
                         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
@@ -179,7 +189,6 @@ fun PlaybackSpeedAndPitchBottomSheet(
                             TunerAnimatedSwitch(
                                 checked = syncEnabled,
                                 onCheckedChange = { enabled ->
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                                     onSyncChange(enabled)
                                     if (enabled) selectedPitch = selectedSpeed
                                 }
@@ -301,7 +310,10 @@ fun PlaybackSpeedAndPitchBottomSheet(
                                     colors = SliderDefaults.colors(
                                         thumbColor = MaterialTheme.colorScheme.primary,
                                         activeTrackColor = MaterialTheme.colorScheme.primary
-                                    )
+                                    ),
+                                    onValueChangeFinished = {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                    }
                                 )
                             }
 
@@ -425,7 +437,10 @@ fun PlaybackSpeedAndPitchBottomSheet(
                                     colors = SliderDefaults.colors(
                                         thumbColor = MaterialTheme.colorScheme.secondary,
                                         activeTrackColor = MaterialTheme.colorScheme.secondary
-                                    )
+                                    ),
+                                    onValueChangeFinished = {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                    }
                                 )
                             }
 
@@ -487,6 +502,7 @@ fun PlaybackSpeedAndPitchBottomSheet(
 
                 item { Spacer(modifier = Modifier.height(32.dp)) }
             }
+        }
 
             // Footer buttons
             Surface(

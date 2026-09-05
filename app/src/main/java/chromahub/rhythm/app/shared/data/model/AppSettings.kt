@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.data.model
 
 import android.content.Context
@@ -168,6 +173,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_USE_SYSTEM_THEME = "use_system_theme"
         private const val KEY_DARK_MODE = "dark_mode"
         private const val KEY_AMOLED_THEME = "amoled_theme"
+        private const val KEY_FLOATING_NAVIGATION_BAR = "floating_navigation_bar"
         private const val KEY_USE_DYNAMIC_COLORS = "use_dynamic_colors"
         private const val KEY_CUSTOM_COLOR_SCHEME = "custom_color_scheme"
         private const val KEY_CUSTOM_FONT = "custom_font"
@@ -196,6 +202,10 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_CHIP_ORDER = "player_chip_order"
         private const val KEY_HIDDEN_LIBRARY_TABS = "hidden_library_tabs"
         private const val KEY_HIDDEN_PLAYER_CHIPS = "hidden_player_chips"
+        private const val KEY_EXPRESSIVE_BOTTOM_BUTTONS_NORMAL = "expressive_bottom_buttons_normal"
+        private const val KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_NORMAL = "expressive_hidden_bottom_buttons_normal"
+        private const val KEY_EXPRESSIVE_BOTTOM_BUTTONS_MERGE = "expressive_bottom_buttons_merge"
+        private const val KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_MERGE = "expressive_hidden_bottom_buttons_merge"
         private const val KEY_LYRICALLY_SOURCES_ORDER = "lyrically_sources_order"
         private const val KEY_DISABLED_LYRICALLY_SOURCES = "disabled_lyrically_sources"
         private const val KEY_GROUP_BY_ALBUM_ARTIST = "group_by_album_artist" // New setting for album artist grouping
@@ -209,6 +219,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_LAST_AUDIO_DEVICE = "last_audio_device"
         private const val KEY_AUTO_CONNECT_DEVICE = "auto_connect_device"
         private const val KEY_USE_SYSTEM_VOLUME = "use_system_volume"
+        private const val KEY_APP_VOLUME = "app_volume"
         private const val KEY_STOP_PLAYBACK_ON_ZERO_VOLUME = "stop_playback_on_zero_volume"
         private const val KEY_DISMISSED_AUTOEQ_SUGGESTIONS = "dismissed_autoeq_suggestions"
         
@@ -331,7 +342,6 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_UPDATES_ENABLED = "updates_enabled" // Master switch for updates
         private const val KEY_UPDATE_NOTIFICATIONS_ENABLED = "update_notifications_enabled" // Push-style notifications
         private const val KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED = "update_status_notifications_enabled" // Notify for no-update/error states
-        private const val KEY_USE_SMART_UPDATE_POLLING = "use_smart_update_polling" // Use ETag/conditional requests
         private const val KEY_MEDIA_SCAN_MODE = "media_scan_mode" // Mode for media scanning: "blacklist" or "whitelist"
         private const val KEY_INCLUDE_HIDDEN_WHITELISTED_MEDIA = "include_hidden_whitelisted_media"
         private const val KEY_UPDATE_CHECK_INTERVAL_HOURS = "update_check_interval_hours" // Configurable interval
@@ -402,7 +412,6 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PINNED_FOLDERS = "pinned_folders"
         
         // Playlist Playback Behavior
-        private const val KEY_PLAYLIST_CLICK_BEHAVIOR = "playlist_click_behavior" // "ask", "play_all", "play_one"
         
         // Backup and Restore
         private const val KEY_LAST_BACKUP_TIMESTAMP = "last_backup_timestamp"
@@ -443,6 +452,7 @@ class AppSettings private constructor(context: Context) {
         // Queue & Playback Behavior
         private const val KEY_SHUFFLE_USES_EXOPLAYER = "shuffle_uses_exoplayer"
         private const val KEY_AUTO_ADD_TO_QUEUE = "auto_add_to_queue"
+        private const val KEY_RESPECT_ALBUM_ON_PLAY = "respect_album_on_play"
         private const val KEY_CLEAR_QUEUE_ON_NEW_SONG = "clear_queue_on_new_song"
         private const val KEY_CONTEXT_QUEUE_PREFERENCE = "context_queue_preference" // ARTIST_FIRST | GENRE_FIRST | ARTIST_THEN_GENRE
         private const val KEY_CONTEXT_QUEUE_PERSISTENCE = "context_queue_persistence" // EPHEMERAL | PERSISTENT
@@ -544,8 +554,9 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_ALBUM_HIDE_ABOUT = "album_hide_about"
         
         // Artist Separator Settings
+        const val DEFAULT_ARTIST_SEPARATOR_DELIMITERS = ";/"
         private const val KEY_ARTIST_SEPARATOR_ENABLED = "artist_separator_enabled"
-        private const val KEY_ARTIST_SEPARATOR_DELIMITERS = "artist_separator_delimiters" // Comma-separated string of delimiters
+        private const val KEY_ARTIST_SEPARATOR_DELIMITERS = "artist_separator_delimiters" // Delimiter string or JSON array
         private const val KEY_ARTIST_SEPARATOR_CACHE_SIGNATURE = "artist_separator_cache_signature"
         
         // Player Screen Customization Settings
@@ -556,6 +567,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYER_LYRICS_OVERLAY_INTENSITY = "player_lyrics_overlay_intensity" // Float 0.0-1.0
         private const val KEY_PLAYER_AMBIENT_BACKDROP_ENABLED = "player_ambient_backdrop_enabled" // Ambient backdrop from artwork
         private const val KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY = "player_ambient_backdrop_intensity" // Float 0.0-1.0, controls container transparency
+        private const val KEY_PLAYER_AMBIENT_INFINITE_ZOOM = "player_ambient_infinite_zoom" // Boolean, continuous slow zoom on ambient backdrop
         private const val KEY_PLAYER_ACCENT_BACKGROUND_ENABLED = "player_accent_background_enabled" // Use accent color as player bg (normal mode)
         private const val KEY_PLAYER_MERGE_CONTROLS_TO_BOTTOM = "player_merge_controls_to_bottom" // Merge lyrics/favorite into centered bottom icon controls
         private const val KEY_PLAYER_GLASS_INTENSITY = "player_glass_intensity" // Float 0.0-2.0, glass effect opacity multiplier
@@ -783,6 +795,9 @@ class AppSettings private constructor(context: Context) {
     
     private val _amoledTheme = MutableStateFlow(prefs.getBoolean(KEY_AMOLED_THEME, false))
     val amoledTheme: StateFlow<Boolean> = _amoledTheme.asStateFlow()
+
+    private val _floatingNavigationBar = MutableStateFlow(prefs.getBoolean(KEY_FLOATING_NAVIGATION_BAR, true))
+    val floatingNavigationBar: StateFlow<Boolean> = _floatingNavigationBar.asStateFlow()
     
     private val _useDynamicColors = MutableStateFlow(prefs.getBoolean(KEY_USE_DYNAMIC_COLORS, true))
     val useDynamicColors: StateFlow<Boolean> = _useDynamicColors.asStateFlow()
@@ -791,9 +806,9 @@ class AppSettings private constructor(context: Context) {
     private val _artistSeparatorEnabled = MutableStateFlow(prefs.getBoolean(KEY_ARTIST_SEPARATOR_ENABLED, true))
     val artistSeparatorEnabled: StateFlow<Boolean> = _artistSeparatorEnabled.asStateFlow()
     
-    // Default delimiters: / ; , + &
+    // Default delimiters: ; /
     private val _artistSeparatorDelimiters = MutableStateFlow(
-        prefs.getString(KEY_ARTIST_SEPARATOR_DELIMITERS, "/;,+&") ?: "/;,+&"
+        prefs.getString(KEY_ARTIST_SEPARATOR_DELIMITERS, DEFAULT_ARTIST_SEPARATOR_DELIMITERS) ?: DEFAULT_ARTIST_SEPARATOR_DELIMITERS
     )
     val artistSeparatorDelimiters: StateFlow<String> = _artistSeparatorDelimiters.asStateFlow()
     
@@ -935,6 +950,57 @@ class AppSettings private constructor(context: Context) {
             ?: emptySet()
     )
     val hiddenPlayerChips: StateFlow<Set<String>> = _hiddenPlayerChips.asStateFlow()
+
+    // Expressive Player Bottom Buttons
+    val defaultExpressiveBottomButtonsNormal = listOf("DEVICE", "QUEUE", "MORE")
+    val defaultExpressiveBottomButtonsMerge = listOf("LYRICS", "FAVORITE", "DEVICE", "QUEUE", "MORE")
+    val allExpressiveBottomButtons = listOf(
+        "LYRICS", "FAVORITE", "DEVICE", "QUEUE", "MORE",
+        "SHUFFLE", "REPEAT", "EQUALIZER", "SPEED", "SLEEP_TIMER",
+        "ADD_TO_PLAYLIST", "ALBUM", "ARTIST", "SONG_INFO", "SHARE"
+    )
+
+    private val _expressiveBottomButtonsNormal = MutableStateFlow(
+        prefs.getString(KEY_EXPRESSIVE_BOTTOM_BUTTONS_NORMAL, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.distinct()
+            ?.filter { it in allExpressiveBottomButtons }
+            ?.takeIf { it.isNotEmpty() }
+            ?: defaultExpressiveBottomButtonsNormal
+    )
+    val expressiveBottomButtonsNormal: StateFlow<List<String>> = _expressiveBottomButtonsNormal.asStateFlow()
+
+    private val _expressiveHiddenBottomButtonsNormal = MutableStateFlow(
+        prefs.getString(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_NORMAL, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.filter { it in allExpressiveBottomButtons }
+            ?.toSet()
+            ?: emptySet()
+    )
+    val expressiveHiddenBottomButtonsNormal: StateFlow<Set<String>> = _expressiveHiddenBottomButtonsNormal.asStateFlow()
+
+    private val _expressiveBottomButtonsMerge = MutableStateFlow(
+        prefs.getString(KEY_EXPRESSIVE_BOTTOM_BUTTONS_MERGE, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.distinct()
+            ?.filter { it in allExpressiveBottomButtons }
+            ?.takeIf { it.isNotEmpty() }
+            ?: defaultExpressiveBottomButtonsMerge
+    )
+    val expressiveBottomButtonsMerge: StateFlow<List<String>> = _expressiveBottomButtonsMerge.asStateFlow()
+
+    private val _expressiveHiddenBottomButtonsMerge = MutableStateFlow(
+        prefs.getString(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_MERGE, null)
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.filter { it in allExpressiveBottomButtons }
+            ?.toSet()
+            ?: emptySet()
+    )
+    val expressiveHiddenBottomButtonsMerge: StateFlow<Set<String>> = _expressiveHiddenBottomButtonsMerge.asStateFlow()
     
     // Lyrically Sources Order
     val defaultLyricallySources = listOf(
@@ -1040,8 +1106,11 @@ class AppSettings private constructor(context: Context) {
     private val _autoConnectDevice = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CONNECT_DEVICE, true))
     val autoConnectDevice: StateFlow<Boolean> = _autoConnectDevice.asStateFlow()
     
-    private val _useSystemVolume = MutableStateFlow(prefs.getBoolean(KEY_USE_SYSTEM_VOLUME, false))
+    private val _useSystemVolume = MutableStateFlow(prefs.getBoolean(KEY_USE_SYSTEM_VOLUME, true))
     val useSystemVolume: StateFlow<Boolean> = _useSystemVolume.asStateFlow()
+    
+    private val _appVolume = MutableStateFlow(prefs.getFloat(KEY_APP_VOLUME, 1.0f))
+    val appVolume: StateFlow<Float> = _appVolume.asStateFlow()
     
     private val _stopPlaybackOnZeroVolume = MutableStateFlow(prefs.getBoolean(KEY_STOP_PLAYBACK_ON_ZERO_VOLUME, false))
     val stopPlaybackOnZeroVolume: StateFlow<Boolean> = _stopPlaybackOnZeroVolume.asStateFlow()
@@ -1099,6 +1168,8 @@ class AppSettings private constructor(context: Context) {
     
     private val _autoAddToQueue = MutableStateFlow(prefs.getBoolean(KEY_AUTO_ADD_TO_QUEUE, true))
     val autoAddToQueue: StateFlow<Boolean> = _autoAddToQueue.asStateFlow()
+    private val _respectAlbumOnPlay = MutableStateFlow(prefs.getBoolean(KEY_RESPECT_ALBUM_ON_PLAY, true))
+    val respectAlbumOnPlay: StateFlow<Boolean> = _respectAlbumOnPlay.asStateFlow()
     
     private val _clearQueueOnNewSong = MutableStateFlow(prefs.getBoolean(KEY_CLEAR_QUEUE_ON_NEW_SONG, false))
     val clearQueueOnNewSong: StateFlow<Boolean> = _clearQueueOnNewSong.asStateFlow()
@@ -1654,10 +1725,6 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
 
     private val _updateStatusNotificationsEnabled = MutableStateFlow(prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false))
     val updateStatusNotificationsEnabled: StateFlow<Boolean> = _updateStatusNotificationsEnabled.asStateFlow()
-    
-    private val _useSmartUpdatePolling = MutableStateFlow(ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, BuildConfig.FLAVOR != "fdroid"))
-    val useSmartUpdatePolling: StateFlow<Boolean> = _useSmartUpdatePolling.asStateFlow()
-
     // Media Scan Mode
     private val _mediaScanMode = MutableStateFlow(
         MediaScanMode.fromValue(prefs.getString(KEY_MEDIA_SCAN_MODE, "blacklist") ?: "blacklist")
@@ -1979,10 +2046,6 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
     )
     val pinnedFolders: StateFlow<List<String>> = _pinnedFolders.asStateFlow()
 
-    // Playlist Click Behavior
-    private val _playlistClickBehavior = MutableStateFlow(prefs.getString(KEY_PLAYLIST_CLICK_BEHAVIOR, "ask") ?: "ask")
-    val playlistClickBehavior: StateFlow<String> = _playlistClickBehavior.asStateFlow()
-
     // Backup and Restore Settings
     private val _lastBackupTimestamp = MutableStateFlow(safeLong(KEY_LAST_BACKUP_TIMESTAMP, 0L))
     val lastBackupTimestamp: StateFlow<Long> = _lastBackupTimestamp.asStateFlow()
@@ -2037,8 +2100,7 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
                 (
                     prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, false) ||
                         prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false)
-                    ) &&
-                prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, false)) {
+                    )) {
                 scheduleUpdateNotificationWorker()
             }
             if (prefs.getBoolean(KEY_RHYTHM_PULSE_NOTIFICATIONS_ENABLED, false)) {
@@ -2071,7 +2133,6 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
             putBoolean(KEY_UPDATES_ENABLED, false)
             putBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, false)
             putBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false)
-            putBoolean(KEY_USE_SMART_UPDATE_POLLING, false)
             remove(KEY_INITIAL_STREAMING_ROUTE)
             remove(KEY_INITIAL_SETTINGS_SUBROUTE)
             putInt(KEY_LYRICS_SOURCE_PREFERENCE, LyricsSourcePreference.LOCAL_FIRST.ordinal)
@@ -2093,7 +2154,6 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         _updatesEnabled.value = false
         _updateNotificationsEnabled.value = false
         _updateStatusNotificationsEnabled.value = false
-        _useSmartUpdatePolling.value = false
         _lyricsSourcePreference.value = LyricsSourcePreference.LOCAL_FIRST
         _onlineOnlyLyrics.value = false
         cancelUpdateNotificationWorker()
@@ -2369,6 +2429,11 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         prefs.edit { putBoolean(KEY_AMOLED_THEME, amoled) }
         _amoledTheme.value = amoled
     }
+
+    fun setFloatingNavigationBar(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_FLOATING_NAVIGATION_BAR, enabled) }
+        _floatingNavigationBar.value = enabled
+    }
     
     // Artist Separator Settings Methods
     fun setArtistSeparatorEnabled(enabled: Boolean) {
@@ -2377,7 +2442,7 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
     }
     
     fun setArtistSeparatorDelimiters(delimiters: String) {
-        val sanitized = delimiters.filterNot { it.isWhitespace() }.toSet().joinToString("")
+        val sanitized = delimiters.trim().ifEmpty { DEFAULT_ARTIST_SEPARATOR_DELIMITERS }
         prefs.edit { putString(KEY_ARTIST_SEPARATOR_DELIMITERS, sanitized) }
         _artistSeparatorDelimiters.value = sanitized
     }
@@ -2522,6 +2587,52 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         val hiddenString = sanitizedHiddenChips.joinToString(",")
         prefs.edit { putString(KEY_HIDDEN_PLAYER_CHIPS, hiddenString) }
         _hiddenPlayerChips.value = sanitizedHiddenChips
+    }
+
+    fun setExpressiveBottomButtonsNormal(order: List<String>) {
+        val sanitized = order.filter { it in allExpressiveBottomButtons }
+        val orderString = sanitized.joinToString(",")
+        prefs.edit { putString(KEY_EXPRESSIVE_BOTTOM_BUTTONS_NORMAL, orderString) }
+        _expressiveBottomButtonsNormal.value = sanitized
+    }
+
+    fun setExpressiveHiddenBottomButtonsNormal(hidden: Set<String>) {
+        val sanitized = hidden.filter { it in allExpressiveBottomButtons }.toSet()
+        val hiddenString = sanitized.joinToString(",")
+        prefs.edit { putString(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_NORMAL, hiddenString) }
+        _expressiveHiddenBottomButtonsNormal.value = sanitized
+    }
+
+    fun resetExpressiveBottomButtonsNormal() {
+        prefs.edit {
+            remove(KEY_EXPRESSIVE_BOTTOM_BUTTONS_NORMAL)
+            remove(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_NORMAL)
+        }
+        _expressiveBottomButtonsNormal.value = defaultExpressiveBottomButtonsNormal
+        _expressiveHiddenBottomButtonsNormal.value = emptySet()
+    }
+
+    fun setExpressiveBottomButtonsMerge(order: List<String>) {
+        val sanitized = order.filter { it in allExpressiveBottomButtons }
+        val orderString = sanitized.joinToString(",")
+        prefs.edit { putString(KEY_EXPRESSIVE_BOTTOM_BUTTONS_MERGE, orderString) }
+        _expressiveBottomButtonsMerge.value = sanitized
+    }
+
+    fun setExpressiveHiddenBottomButtonsMerge(hidden: Set<String>) {
+        val sanitized = hidden.filter { it in allExpressiveBottomButtons }.toSet()
+        val hiddenString = sanitized.joinToString(",")
+        prefs.edit { putString(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_MERGE, hiddenString) }
+        _expressiveHiddenBottomButtonsMerge.value = sanitized
+    }
+
+    fun resetExpressiveBottomButtonsMerge() {
+        prefs.edit {
+            remove(KEY_EXPRESSIVE_BOTTOM_BUTTONS_MERGE)
+            remove(KEY_EXPRESSIVE_HIDDEN_BOTTOM_BUTTONS_MERGE)
+        }
+        _expressiveBottomButtonsMerge.value = defaultExpressiveBottomButtonsMerge
+        _expressiveHiddenBottomButtonsMerge.value = emptySet()
     }
 
     fun setLyricallySourcesOrder(order: List<String>) {
@@ -2718,6 +2829,12 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         _useSystemVolume.value = enable
     }
     
+    fun setAppVolume(volume: Float) {
+        val clamped = volume.coerceIn(0f, 1f)
+        prefs.edit { putFloat(KEY_APP_VOLUME, clamped) }
+        _appVolume.value = clamped
+    }
+    
     fun setStopPlaybackOnZeroVolume(enable: Boolean) {
         prefs.edit { putBoolean(KEY_STOP_PLAYBACK_ON_ZERO_VOLUME, enable) }
         _stopPlaybackOnZeroVolume.value = enable
@@ -2817,6 +2934,11 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
     fun setAutoAddToQueue(autoAdd: Boolean) {
         prefs.edit { putBoolean(KEY_AUTO_ADD_TO_QUEUE, autoAdd) }
         _autoAddToQueue.value = autoAdd
+    }
+    
+    fun setRespectAlbumOnPlay(respect: Boolean) {
+        prefs.edit { putBoolean(KEY_RESPECT_ALBUM_ON_PLAY, respect) }
+        _respectAlbumOnPlay.value = respect
     }
     
     fun setClearQueueOnNewSong(clearQueue: Boolean) {
@@ -3526,19 +3648,6 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         }
     }
 
-    fun setUseSmartUpdatePolling(enable: Boolean) {
-        val accepted = enable && ProductCapabilities.inAppUpdates
-        prefs.edit { putBoolean(KEY_USE_SMART_UPDATE_POLLING, accepted) }
-        _useSmartUpdatePolling.value = accepted
-        
-        // Update WorkManager scheduling
-        if (shouldRunUpdateNotificationWorker()) {
-            scheduleUpdateNotificationWorker()
-        } else {
-            cancelUpdateNotificationWorker()
-        }
-    }
-
     fun setMediaScanMode(mode: MediaScanMode) {
         val changed = _mediaScanMode.value != mode
         prefs.edit { putString(KEY_MEDIA_SCAN_MODE, mode.value) }
@@ -4030,13 +4139,6 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         _pinnedFolders.value = emptyList()
     }
     
-    // Playlist Click Behavior Methods
-    fun setPlaylistClickBehavior(behavior: String) {
-        if (behavior in listOf("ask", "play_all", "play_one")) {
-            prefs.edit { putString(KEY_PLAYLIST_CLICK_BEHAVIOR, behavior) }
-            _playlistClickBehavior.value = behavior
-        }
-    }
     
     // Helper method to check if a song would be filtered by current whitelist rules
     fun isEffectivelyWhitelisted(songId: String, songPath: String?): Boolean {
@@ -4178,7 +4280,6 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         return ProductCapabilities.inAppUpdates &&
             _updatesEnabled.value &&
             _autoCheckForUpdates.value &&
-            _useSmartUpdatePolling.value &&
             (_updateNotificationsEnabled.value || _updateStatusNotificationsEnabled.value)
     }
 
@@ -5024,6 +5125,7 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         _useSystemTheme.value = prefs.getBoolean(KEY_USE_SYSTEM_THEME, true)
         _darkMode.value = prefs.getBoolean(KEY_DARK_MODE, true)
         _amoledTheme.value = prefs.getBoolean(KEY_AMOLED_THEME, false)
+        _floatingNavigationBar.value = prefs.getBoolean(KEY_FLOATING_NAVIGATION_BAR, true)
         _useDynamicColors.value = prefs.getBoolean(KEY_USE_DYNAMIC_COLORS, false)
         _customColorScheme.value = prefs.getString(KEY_CUSTOM_COLOR_SCHEME, "Default") ?: "Default"
         _customFont.value = prefs.getString(KEY_CUSTOM_FONT, "Geom") ?: "Geom"
@@ -5048,7 +5150,8 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         // Audio Device Settings
         _lastAudioDevice.value = prefs.getString(KEY_LAST_AUDIO_DEVICE, null)
         _autoConnectDevice.value = prefs.getBoolean(KEY_AUTO_CONNECT_DEVICE, true)
-        _useSystemVolume.value = prefs.getBoolean(KEY_USE_SYSTEM_VOLUME, false)
+        _useSystemVolume.value = prefs.getBoolean(KEY_USE_SYSTEM_VOLUME, true)
+        _appVolume.value = prefs.getFloat(KEY_APP_VOLUME, 1.0f)
         _stopPlaybackOnZeroVolume.value = prefs.getBoolean(KEY_STOP_PLAYBACK_ON_ZERO_VOLUME, false)
         
         // Cache Settings
@@ -5180,7 +5283,6 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         _updatesEnabled.value = ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_UPDATES_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _updateNotificationsEnabled.value = ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, BuildConfig.FLAVOR != "fdroid")
         _updateStatusNotificationsEnabled.value = ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false)
-        _useSmartUpdatePolling.value = ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, BuildConfig.FLAVOR != "fdroid")
         _mediaScanMode.value = MediaScanMode.fromValue(prefs.getString(KEY_MEDIA_SCAN_MODE, "blacklist") ?: "blacklist")
         _includeHiddenWhitelistedMedia.value = prefs.getBoolean(KEY_INCLUDE_HIDDEN_WHITELISTED_MEDIA, true)
         _updateCheckIntervalHours.value = prefs.getInt(KEY_UPDATE_CHECK_INTERVAL_HOURS, 6)
@@ -5285,6 +5387,7 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         _playerLyricsTransition.value = prefs.getInt(KEY_PLAYER_LYRICS_TRANSITION, 2) // 2 = Scale
         _playerAmbientBackdropEnabled.value = prefs.getBoolean(KEY_PLAYER_AMBIENT_BACKDROP_ENABLED, false)
         _playerAmbientBackdropIntensity.value = prefs.getFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, 0.85f)
+        _playerAmbientInfiniteZoom.value = prefs.getBoolean(KEY_PLAYER_AMBIENT_INFINITE_ZOOM, true)
         _playerAccentBackgroundEnabled.value = prefs.getBoolean(KEY_PLAYER_ACCENT_BACKGROUND_ENABLED, true)
         // Normalize legacy state: ambient and accent cannot both be on — ambient wins.
         if (_playerAmbientBackdropEnabled.value && _playerAccentBackgroundEnabled.value) {
@@ -5764,6 +5867,13 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
     fun setPlayerAmbientBackdropIntensity(value: Float) {
         _playerAmbientBackdropIntensity.value = value.coerceIn(0f, 1f)
         prefs.edit { putFloat(KEY_PLAYER_AMBIENT_BACKDROP_INTENSITY, _playerAmbientBackdropIntensity.value) }
+    }
+
+    private val _playerAmbientInfiniteZoom = MutableStateFlow(prefs.getBoolean(KEY_PLAYER_AMBIENT_INFINITE_ZOOM, true))
+    val playerAmbientInfiniteZoom: StateFlow<Boolean> = _playerAmbientInfiniteZoom.asStateFlow()
+    fun setPlayerAmbientInfiniteZoom(enabled: Boolean) {
+        _playerAmbientInfiniteZoom.value = enabled
+        prefs.edit { putBoolean(KEY_PLAYER_AMBIENT_INFINITE_ZOOM, enabled) }
     }
 
     private val _playerGlassIntensity = MutableStateFlow(prefs.getFloat(KEY_PLAYER_GLASS_INTENSITY, 1.0f))

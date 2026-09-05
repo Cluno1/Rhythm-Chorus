@@ -1,4 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import android.content.Intent
 import android.net.Uri
@@ -350,7 +356,11 @@ fun LicensesBottomSheet(
         )
     )
 
-    ModalBottomSheet(
+    val scrollState = rememberScrollState()
+
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+        scrollState = scrollState,
         onDismissRequest = onDismiss,
         sheetState = bottomSheetState,
         dragHandle = { 
@@ -358,48 +368,40 @@ fun LicensesBottomSheet(
                 color = MaterialTheme.colorScheme.primary
             )
         },
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Text(
-                text = context.getString(R.string.licenses_title),
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+        StandardBottomSheetHeader(
+            title = context.getString(R.string.licenses_title),
+            subtitle = context.getString(R.string.licenses_desc),
+            visible = true
+        )
 
-            Spacer(modifier = Modifier.height(6.dp))
+        AdaptiveSheetScrollContainer(
+            scrollState = scrollState,
+            modifier = Modifier.fillMaxWidth()
+        ) { endPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+                    .padding(start = 24.dp, end = 24.dp + endPadding, bottom = 24.dp)
+            ) {
+                Material3SettingsGroup(
+                    title = stringResource(R.string.settings_about_open_source_libs),
+                    items = licenseItems,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                )
 
-            Text(
-                text = context.getString(R.string.licenses_desc),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Material3SettingsGroup(
-                title = stringResource(R.string.settings_about_open_source_libs),
-                items = licenseItems,
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Material3SettingsGroup(
-                title = stringResource(R.string.licensesbottomsheet_license_notes),
-                items = licenseInfoItems,
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
+                Material3SettingsGroup(
+                    title = stringResource(R.string.licensesbottomsheet_license_notes),
+                    items = licenseInfoItems,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
+                )
+            }
         }
     }
 }

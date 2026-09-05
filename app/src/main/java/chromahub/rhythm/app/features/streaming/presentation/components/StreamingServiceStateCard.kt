@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.features.streaming.presentation.components
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
@@ -47,13 +52,13 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 fun StreamingServiceStateCard(
     title: String,
     subtitle: String,
+    modifier: Modifier = Modifier,
     icon: MaterialSymbolIcon = MaterialSymbolIcon("cloud_off", filled = true),
     iconContainerColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.45f),
     iconTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onErrorContainer,
     actionText: String? = null,
     onAction: (() -> Unit)? = null,
-    showProgressIndicator: Boolean = false,
-    modifier: Modifier = Modifier
+    showProgressIndicator: Boolean = false
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current

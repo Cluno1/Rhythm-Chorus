@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
@@ -65,6 +70,8 @@ fun NotificationsSettingsScreen(onBackClick: () -> Unit) {
     val rhythmGuardTimerNotificationsEnabled by appSettings.rhythmGuardTimerNotificationsEnabled.collectAsState()
     val rhythmPulseNotificationsEnabled by appSettings.rhythmPulseNotificationsEnabled.collectAsState()
     val rhythmPulseNotificationIntervalHours by appSettings.rhythmPulseNotificationIntervalHours.collectAsState()
+    val broadcastStatusEnabled by appSettings.broadcastStatusEnabled.collectAsState()
+    val bluetoothLyricsEnabled by appSettings.bluetoothLyricsEnabled.collectAsState()
 
     var showPulseIntervalDialog by remember { mutableStateOf(false) }
 
@@ -196,6 +203,25 @@ fun NotificationsSettingsScreen(onBackClick: () -> Unit) {
             SettingGroup(
                 title = stringResource(R.string.settings_notifications_system_group),
                 items = listOf(
+                    SettingItem(
+                        icon = MaterialSymbolIcon("wifi"),
+                        title = stringResource(R.string.broadcast_status_enabled),
+                        description = stringResource(R.string.broadcast_status_desc),
+                        toggleState = broadcastStatusEnabled,
+                        onToggleChange = { appSettings.setBroadcastStatusEnabled(it) }
+                    ),
+                    SettingItem(
+                        icon = MaterialSymbolIcon("lyrics"),
+                        title = stringResource(R.string.bluetooth_lyrics_enabled),
+                        description = stringResource(R.string.bluetooth_lyrics_desc),
+                        toggleState = bluetoothLyricsEnabled,
+                        onToggleChange = {
+                            appSettings.setBluetoothLyricsEnabled(it)
+                            if (it && !broadcastStatusEnabled) {
+                                appSettings.setBroadcastStatusEnabled(true)
+                            }
+                        }
+                    ),
                     SettingItem(
                         RhythmIcons.Settings,
                         stringResource(R.string.settings_system_notification_channels),

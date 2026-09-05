@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.util
 
 import android.content.Context
@@ -172,7 +177,7 @@ object AudioFormatDetector {
             mime.contains("vorbis", ignoreCase = true) -> "Vorbis"
             // Enhanced Dolby detection
             mime.contains("truehd", ignoreCase = true) -> "TrueHD"
-            mime.contains("atmos", ignoreCase = true) -> "Dolby Atmos"
+            mime.contains("eac3-joc", ignoreCase = true) || mime.contains("atmos", ignoreCase = true) -> "Dolby Atmos"
             mime.contains("mlp", ignoreCase = true) -> "TrueHD" // MLP is TrueHD
             mime.contains("ac4", ignoreCase = true) -> "AC-4"
             mime.contains("eac3", ignoreCase = true) || mime.contains("ec-3", ignoreCase = true) || mime.contains("eac", ignoreCase = true) -> "E-AC-3"

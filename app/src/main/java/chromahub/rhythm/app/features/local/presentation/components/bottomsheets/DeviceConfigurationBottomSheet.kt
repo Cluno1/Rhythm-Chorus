@@ -1,6 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+
+import androidx.compose.foundation.lazy.rememberLazyListState
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -117,32 +127,6 @@ fun DeviceConfigurationBottomSheet(
     val haptics = LocalHapticFeedback.current
     val context = LocalContext.current
     
-    // Animation state
-    var showContent by remember { mutableStateOf(false) }
-    
-    val contentAlpha by animateFloatAsState(
-        targetValue = if (showContent) 1f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "contentAlpha"
-    )
-    
-    val contentTranslation by animateFloatAsState(
-        targetValue = if (showContent) 0f else 30f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "contentTranslation"
-    )
-    
-    LaunchedEffect(Unit) {
-        delay(100)
-        showContent = true
-    }
-    
     // States
     val userDevicesJson by musicViewModel.appSettings.userAudioDevices.collectAsState()
     val activeDeviceId by musicViewModel.appSettings.activeAudioDeviceId.collectAsState()
@@ -188,7 +172,8 @@ fun DeviceConfigurationBottomSheet(
         }
     }
     
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = bottomSheetState,
@@ -197,49 +182,21 @@ fun DeviceConfigurationBottomSheet(
                 color = MaterialTheme.colorScheme.primary
             )
         },
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer
     ) {
+        StandardBottomSheetHeader(
+            title = stringResource(R.string.autoeq_manage),
+            subtitle = pluralStringResource(R.plurals.device_configuration_devices_configured, userDevices.size, userDevices.size),
+            visible = true
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 24.dp)
-                .graphicsLayer(alpha = contentAlpha)
         ) {
-            // Header - Placeholder Screen Style
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 0.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.autoeq_manage),
-                        style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 6.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                shape = CircleShape
-                            )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                            text = pluralStringResource(R.plurals.device_configuration_devices_configured, userDevices.size, userDevices.size),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(12.dp))
             
             Column {
                 // Description text
@@ -394,33 +351,43 @@ fun DeviceConfigurationBottomSheet(
                         }
                     }
                 } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(userDevices, key = { it.id }) { device ->
-                            DeviceCard(
-                                device = device,
-                                isActive = device.autoEQProfileName == currentAutoEQProfile && currentAutoEQProfile.isNotEmpty(),
-                                onSelect = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    musicViewModel.setActiveAudioDevice(device)
-                                },
-                                onEdit = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                    deviceToEdit = device
-                                    showAddDeviceDialog = true
-                                },
-                                onDelete = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                                    showDeleteConfirmDialog = device
-                                },
-                                onConfigureAutoEQ = {
-                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                    deviceForAutoEQ = device
-                                    showAutoEQSelector = true
-                                }
-                            )
+                    val deviceListState = rememberLazyListState()
+
+                    AdaptiveSheetScrollContainer(
+                        lazyListState = deviceListState,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = false)
+                    ) { endPadding ->
+                        LazyColumn(
+                            state = deviceListState,
+                            contentPadding = PaddingValues(end = endPadding, top = 8.dp, bottom = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(userDevices, key = { it.id }) { device ->
+                                DeviceCard(
+                                    device = device,
+                                    isActive = device.autoEQProfileName == currentAutoEQProfile && currentAutoEQProfile.isNotEmpty(),
+                                    onSelect = {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                        musicViewModel.setActiveAudioDevice(device)
+                                    },
+                                    onEdit = {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                        deviceToEdit = device
+                                        showAddDeviceDialog = true
+                                    },
+                                    onDelete = {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                        showDeleteConfirmDialog = device
+                                    },
+                                    onConfigureAutoEQ = {
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                        deviceForAutoEQ = device
+                                        showAutoEQSelector = true
+                                    }
+                                )
+                            }
                         }
                     }
                 }

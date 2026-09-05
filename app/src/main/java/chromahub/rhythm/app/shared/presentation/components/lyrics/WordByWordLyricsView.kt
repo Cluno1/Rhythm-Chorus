@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.components.lyrics
 
 import androidx.compose.animation.core.*
@@ -31,6 +36,9 @@ import chromahub.rhythm.app.util.RhythmLyricsParser
 import chromahub.rhythm.app.util.WordByWordLyricLine
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.RhythmApplication
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import kotlin.math.abs
@@ -66,24 +74,32 @@ private fun WordByWordLyricLine.timingRichnessScore(): Int {
 private suspend fun LazyListState.animateToLyricItemWithCatchUp(
     targetIndex: Int,
     scrollOffset: Int,
-    lastIndex: Int
+    lastIndex: Int,
+    noAnimation: Boolean = false
 ) {
+    if (lastIndex < 0) return
+    val safeTargetIndex = targetIndex.coerceIn(0, lastIndex)
     val currentIndex = firstVisibleItemIndex
-    val delta = abs(currentIndex - targetIndex)
+    val delta = abs(currentIndex - safeTargetIndex)
+
+    if (noAnimation) {
+        scrollToItem(index = safeTargetIndex, scrollOffset = scrollOffset)
+        return
+    }
 
     if (delta >= LARGE_SCROLL_CATCH_UP_DELTA) {
-        val prePositionIndex = if (targetIndex > currentIndex) {
-            (targetIndex - 1).coerceAtLeast(0)
+        val prePositionIndex = if (safeTargetIndex > currentIndex) {
+            (safeTargetIndex - 1).coerceAtLeast(0)
         } else {
-            (targetIndex + 1).coerceAtMost(lastIndex)
+            (safeTargetIndex + 1).coerceAtMost(lastIndex)
         }
 
-        if (prePositionIndex != targetIndex) {
+        if (prePositionIndex != safeTargetIndex) {
             scrollToItem(index = prePositionIndex, scrollOffset = scrollOffset)
         }
     }
 
-    animateScrollToItem(index = targetIndex, scrollOffset = scrollOffset)
+    animateScrollToItem(index = safeTargetIndex, scrollOffset = scrollOffset)
 }
 
 /**
@@ -164,10 +180,10 @@ fun WordByWordLyricsView(
                 val gapDuration = nextLine.lineTimestamp - line.effectiveLineEndtime()
                 val isExplicit = !line.endIsImplicit
                 val shouldAddGap = if (isExplicit) {
-                    gapDuration >= 3000L
+                    gapDuration >= 4500L
                 } else {
                     val intervalToNext = nextLine.lineTimestamp - line.lineTimestamp
-                    intervalToNext >= longGapThreshold && gapDuration >= 3000L
+                    intervalToNext >= longGapThreshold && gapDuration >= 3500L
                 }
                 if (shouldAddGap) {
                     items.add(LyricsItem.Gap(gapDuration, line.effectiveLineEndtime()))
@@ -223,22 +239,65 @@ fun WordByWordLyricsView(
         }
     }
 
+    // Track previous line for smooth transitions
+    val previousLineIndex = remember { mutableIntStateOf(-1) }
+
+    // Pause auto-scrolling when user manually scrolls
+    val isDragged by listState.interactionSource.collectIsDraggedAsState()
+    var userScrolledRecently by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isDragged) {
+        if (isDragged) {
+            userScrolledRecently = true
+        } else if (userScrolledRecently) {
+            // Wait for any active fling deceleration to complete
+            snapshotFlow { listState.isScrollInProgress }
+                .first { !it }
+            delay(3500L)
+            userScrolledRecently = false
+        }
+    }
+
+    // Reset user scroll lock and tracked line index on lyrics or song change
+    LaunchedEffect(wordByWordLyrics) {
+        previousLineIndex.intValue = -1
+        userScrolledRecently = false
+    }
+
     // Auto-scroll to current lyric line with elastic spring animation
-    LaunchedEffect(currentLineIndex) {
+    LaunchedEffect(currentLineIndex, userScrolledRecently) {
         if (currentLineIndex >= 0 && visibleLyricsLines.isNotEmpty()) {
-            // Find the corresponding item index in lyricsItems
-            val targetItemIndex = lyricsItems.indexOfFirst { item ->
-                item is LyricsItem.LyricLine && item.index == currentLineIndex
+            val isIndexChange = currentLineIndex != previousLineIndex.intValue
+            // If user explicitly jumped/seeked (jump > 1 line), override scroll lock
+            if (isIndexChange && abs(currentLineIndex - previousLineIndex.intValue) > 1) {
+                userScrolledRecently = false
             }
 
-            if (targetItemIndex >= 0) {
-                val offset = listState.layoutInfo.viewportSize.height / 3
-                listState.animateToLyricItemWithCatchUp(
-                    targetIndex = targetItemIndex,
-                    scrollOffset = -offset,
-                    lastIndex = lyricsItems.lastIndex
-                )
+            if (!userScrolledRecently) {
+                previousLineIndex.intValue = currentLineIndex
+                // Find the corresponding item index in lyricsItems
+                val targetItemIndex = lyricsItems.indexOfFirst { item ->
+                    item is LyricsItem.LyricLine && item.index == currentLineIndex
+                }
+
+                if (targetItemIndex >= 0 && lyricsItems.isNotEmpty()) {
+                    val offset = listState.layoutInfo.viewportSize.height / 3
+                    listState.animateToLyricItemWithCatchUp(
+                        targetIndex = targetItemIndex.coerceIn(0, lyricsItems.lastIndex),
+                        scrollOffset = -offset,
+                        lastIndex = lyricsItems.lastIndex,
+                        noAnimation = lyricNoAnimationVal
+                    )
+                }
             }
+        }
+    }
+
+    val handleSeek: (Long) -> Unit = remember(onSeek) {
+        { timestamp ->
+            userScrolledRecently = false
+            previousLineIndex.intValue = -1
+            onSeek?.invoke(timestamp)
         }
     }
 
@@ -277,7 +336,21 @@ fun WordByWordLyricsView(
             },
             contentPadding = PaddingValues(vertical = 30.dp)
         ) {
-            itemsIndexed(lyricsItems) { _, item ->
+            itemsIndexed(
+                items = lyricsItems,
+                key = { index, item ->
+                    when (item) {
+                        is LyricsItem.LyricLine -> "lyric_line_${item.line.lineTimestamp}_${item.index}"
+                        is LyricsItem.Gap -> "lyric_gap_${item.startTime}_${item.duration}_$index"
+                    }
+                },
+                contentType = { _, item ->
+                    when (item) {
+                        is LyricsItem.LyricLine -> "lyric_line"
+                        is LyricsItem.Gap -> "lyric_gap"
+                    }
+                }
+            ) { _, item ->
                 when (item) {
                     is LyricsItem.LyricLine -> {
                         val line = item.line
@@ -318,7 +391,7 @@ fun WordByWordLyricsView(
                             textAlignment = textAlignment,
                             showTranslation = showTranslation,
                             showRomanization = showRomanization,
-                            onSeek = onSeek,
+                            onSeek = handleSeek,
                             onTapLyricsView = onTapLyricsView,
                             lyricBold = lyricBoldVal,
                             noAnimation = lyricNoAnimationVal,
@@ -331,7 +404,7 @@ fun WordByWordLyricsView(
                         val isCurrentGap = adjustedPlaybackTime >= item.startTime &&
                             adjustedPlaybackTime < item.startTime + item.duration
                         
-                        val gapHeight = (item.duration / 1000f).coerceIn(20f, 80f)
+                        val gapPadding = (item.duration / 1000f).coerceIn(8f, 20f)
                         val iconAlpha by animateFloatAsState(
                             targetValue = if (isCurrentGap) 0.85f else 0.3f,
                             animationSpec = if (lyricNoAnimationVal) snap() else spring(
@@ -341,7 +414,7 @@ fun WordByWordLyricsView(
                             label = "gapAlpha"
                         )
                         val iconScale by animateFloatAsState(
-                            targetValue = if (isCurrentGap) 1.5f else 1f,
+                            targetValue = if (isCurrentGap) 1.3f else 1f,
                             animationSpec = if (lyricNoAnimationVal) snap() else spring<Float>(
                                 dampingRatio = Spring.DampingRatioLowBouncy,
                                 stiffness = Spring.StiffnessVeryLow
@@ -349,22 +422,15 @@ fun WordByWordLyricsView(
                             label = "iconScale"
                         )
                         
-                        Spacer(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(gapHeight.dp)
-                                .padding(horizontal = 32.dp)
-                        )
-                        
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = gapPadding.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
                                 text = "♪",
-                                style = MaterialTheme.typography.headlineMedium,
+                                style = MaterialTheme.typography.titleMedium,
                                 color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(alpha = iconAlpha),
                                 modifier = Modifier.graphicsLayer {
                                     scaleX = iconScale
@@ -373,19 +439,12 @@ fun WordByWordLyricsView(
                             )
                             Text(
                                 text = stringResource(R.string.lyrics_instrumental),
-                                style = MaterialTheme.typography.labelLarge,
+                                style = MaterialTheme.typography.labelMedium,
                                 color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(
                                     alpha = if (isCurrentGap) 0.6f else 0.25f
                                 )
                             )
                         }
-                        
-                        Spacer(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(gapHeight.dp)
-                                .padding(horizontal = 32.dp)
-                        )
                     }
                 }
             }
@@ -479,6 +538,10 @@ private fun WordByWordLyricLineItem(
         label = "translationAlpha"
     )
 
+    val isWordTimed = remember(line) {
+        RhythmLyricsParser.isLineWordTimed(line)
+    }
+
     val activeWord = if (isCurrentLine) line.words.getOrNull(activeWordIndex) else null
     val duration = remember(activeWord) {
         activeWord?.let { (it.endtime - it.timestamp).toInt() } ?: 0
@@ -486,7 +549,7 @@ private fun WordByWordLyricLineItem(
     
     val animatedProgress = remember(activeWord) { Animatable(0f) }
     LaunchedEffect(activeWord) {
-        if (duration > 0 && !noAnimation) {
+        if (duration > 0 && !noAnimation && isWordTimed) {
             animatedProgress.animateTo(
                 targetValue = 1f,
                 animationSpec = tween(durationMillis = duration, easing = LinearEasing)
@@ -500,13 +563,15 @@ private fun WordByWordLyricLineItem(
     
     val wordRanges = remember(line.words) {
         val ranges = mutableListOf<IntRange>()
-        var currentLen = 0
-        line.words.forEachIndexed { idx, word ->
-            val prefix = if (idx > 0 && !word.isPart) 1 else 0
-            val start = currentLen + prefix
-            val end = start + word.text.length
-            ranges.add(start until end)
-            currentLen = end
+        var currentPos = 0
+        line.words.forEachIndexed { index, word ->
+            if (index > 0 && !word.isPart) {
+                currentPos += 1 // Space
+            }
+            val start = currentPos
+            val end = currentPos + word.text.length
+            ranges.add(start..end)
+            currentPos = end
         }
         ranges
     }
@@ -515,15 +580,6 @@ private fun WordByWordLyricLineItem(
         line.words.forEachIndexed { wordIndex, word ->
             val isWordActive = isCurrentLine && wordIndex == activeWordIndex
             
-            val wordAlpha = when {
-                isWordActive -> 1f
-                isCurrentLine -> 0.95f
-                distanceFromCurrent == 1 -> 0.75f
-                distanceFromCurrent == 2 -> 0.60f
-                distanceFromCurrent == 3 -> 0.45f
-                else -> 0.32f
-            }
-
             val baseColor = when (line.voiceTag) {
                 "v2" -> activeColor ?: MaterialTheme.colorScheme.secondary
                 "v3" -> activeColor ?: MaterialTheme.colorScheme.tertiary
@@ -542,7 +598,7 @@ private fun WordByWordLyricLineItem(
                 val range = wordRanges.getOrNull(wordIndex)
                 val layout = textLayoutResult
                 val sweepProgress = animatedProgress.value
-                if (range != null && layout != null && !noAnimation && sweepProgress < 1f) {
+                if (isWordTimed && range != null && layout != null && !noAnimation && sweepProgress < 1f) {
                     val startChar = range.first
                     val endChar = (range.last).coerceAtMost(layout.layoutInput.text.length - 1)
                     val startRect = layout.getBoundingBox(startChar)
@@ -563,20 +619,15 @@ private fun WordByWordLyricLineItem(
                         brush = activeBrush,
                         fontWeight = if (lyricBold) FontWeight.Black else FontWeight.Bold
                     )
-                } else if (sweepProgress >= 1f) {
-                    SpanStyle(
-                        color = baseColor,
-                        fontWeight = if (lyricBold) FontWeight.Black else FontWeight.Bold
-                    )
                 } else {
                     SpanStyle(
-                        color = inactiveWordColor,
+                        color = baseColor,
                         fontWeight = if (lyricBold) FontWeight.Black else FontWeight.Bold
                     )
                 }
             } else {
                 SpanStyle(
-                    color = if (isWordPassed) baseColor else inactiveWordColor,
+                    color = if (isWordPassed || (!isWordTimed && isCurrentLine)) baseColor else inactiveWordColor,
                     fontWeight = if (isCurrentLine) {
                         if (lyricBold) FontWeight.ExtraBold else FontWeight.SemiBold
                     } else {
@@ -598,11 +649,8 @@ private fun WordByWordLyricLineItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                if (onTapLyricsView != null) {
-                    onTapLyricsView()
-                } else {
-                    onSeek?.invoke(line.lineTimestamp)
-                }
+                onSeek?.invoke(line.lineTimestamp)
+                onTapLyricsView?.invoke()
             }
             .padding(vertical = 12.dp, horizontal = 16.dp)
             .graphicsLayer {
@@ -650,7 +698,11 @@ private fun WordByWordLyricLineItem(
             )
         }
 
-        if (showRomanization && !line.romanization.isNullOrBlank()) {
+        val hasDistinctRomanization = showRomanization &&
+            !line.romanization.isNullOrBlank() &&
+            (line.translation.isNullOrBlank() || line.romanization.trim().lowercase() != line.translation.trim().lowercase())
+
+        if (hasDistinctRomanization) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = line.romanization,

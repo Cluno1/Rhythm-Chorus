@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.components.player
 
 import android.widget.Toast
@@ -96,7 +101,6 @@ fun RhythmPlayerSheet(
     isMediaLoading: Boolean = false,
     isSeeking: Boolean = false,
     onShowAlbumBottomSheet: () -> Unit = {},
-    onShowArtistBottomSheet: () -> Unit = {},
     songs: List<Song> = emptyList(),
     albums: List<Album> = emptyList(),
     artists: List<Artist> = emptyList(),
@@ -322,7 +326,6 @@ fun RhythmPlayerSheet(
                         isMediaLoading = controlIsLoading,
                         isSeeking = isSeeking,
                         onShowAlbumBottomSheet = onShowAlbumBottomSheet,
-                        onShowArtistBottomSheet = onShowArtistBottomSheet,
                         songs = songs,
                         albums = albums,
                         artists = artists,

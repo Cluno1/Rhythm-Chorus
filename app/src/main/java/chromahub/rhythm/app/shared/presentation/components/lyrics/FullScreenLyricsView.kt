@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package chromahub.rhythm.app.shared.presentation.components.lyrics
@@ -49,6 +54,9 @@ import chromahub.rhythm.app.shared.presentation.components.common.M3PlaceholderT
 import chromahub.rhythm.app.shared.presentation.components.common.rememberExpressiveShapeFor
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeTarget
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressivePlayerControlGroup
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonWeighted
+import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonSize
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -939,11 +947,42 @@ fun FullScreenLyricsView(
                                         textAlign = TextAlign.Center
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
-                                    Button(
-                                        onClick = onRetryLyrics,
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                    RhythmGroupedButton(
+                                        size = RhythmButtonSize.Small
                                     ) {
-                                        Text(stringResource(R.string.fullscreenlyricsview_retry_fetching))
+                                        RhythmButtonWeighted(
+                                            onClick = {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                onRetryLyrics()
+                                            },
+                                            weight = 1f,
+                                            isFirst = true,
+                                            isLast = false,
+                                            icon = RhythmIcons.Refresh,
+                                            text = stringResource(R.string.updates_retry)
+                                        )
+                                        RhythmButtonWeighted(
+                                            onClick = {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                onShowLyricsEditor()
+                                            },
+                                            weight = 1f,
+                                            isFirst = false,
+                                            isLast = false,
+                                            icon = RhythmIcons.Player.Lyrics,
+                                            text = stringResource(R.string.lyrics_editor_short)
+                                        )
+                                        RhythmButtonWeighted(
+                                            onClick = {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                onNavigateToLyricsSettings()
+                                            },
+                                            weight = 1f,
+                                            isFirst = false,
+                                            isLast = true,
+                                            icon = MaterialSymbolIcon("settings", filled = true),
+                                            text = stringResource(R.string.lyrics_settings_short)
+                                        )
                                     }
                                 }
                             }

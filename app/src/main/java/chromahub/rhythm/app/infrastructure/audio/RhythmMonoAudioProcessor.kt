@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.infrastructure.audio
 
 import android.util.Log
@@ -17,7 +22,9 @@ class RhythmMonoAudioProcessor : RhythmAudioProcessor() {
         private const val TAG = "RhythmMonoAudio"
     }
 
+    @Volatile
     private var parentProcessor: RhythmMonoAudioProcessor? = null
+    @Volatile
     private var enabled: Boolean = false
 
     /**

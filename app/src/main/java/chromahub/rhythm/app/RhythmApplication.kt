@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app
 
 import android.app.Application
@@ -5,6 +10,7 @@ import android.content.ComponentCallbacks2
 import android.os.Build
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.edit
 import coil.Coil
 import coil.ImageLoader
 import coil.ImageLoaderFactory
@@ -106,7 +112,7 @@ class RhythmApplication : Application(), ImageLoaderFactory {
         val lastTrimMs = trimPrefs.getLong("last_startup_trim_ms", 0L)
         val dayMs = 24L * 60 * 60 * 1000
         if (System.currentTimeMillis() - lastTrimMs >= dayMs) {
-            trimPrefs.edit().putLong("last_startup_trim_ms", System.currentTimeMillis()).apply()
+            trimPrefs.edit { putLong("last_startup_trim_ms", System.currentTimeMillis()) }
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     CacheManager.autoTrimCache(applicationContext, currentMaxCacheSize())
@@ -138,12 +144,16 @@ class RhythmApplication : Application(), ImageLoaderFactory {
     }
 
     /**
-     * Bounded Coil ImageLoader used app-wide. The factory defaults keep the disk
-     * cache at ~2% of total disk space and the memory cache at 25% of heap, which
-     * is far too large for an offline music app — bound both explicitly.
+     * Bounded Coil ImageLoader used app-wide with on-demand audio artwork decoding.
+     * The factory defaults keep the disk cache at ~2% of total disk space and the memory
+     * cache at 25% of heap, which is far too large for an offline music app — bound both explicitly.
      */
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
+            .components {
+                add(chromahub.rhythm.app.util.coil.AudioArtworkKeyer())
+                add(chromahub.rhythm.app.util.coil.AudioArtworkFetcher.Factory(applicationContext))
+            }
             .memoryCache {
                 MemoryCache.Builder(this)
                     .maxSizePercent(0.15) // 15% of app heap (default is 25%)
@@ -206,9 +216,14 @@ class RhythmApplication : Application(), ImageLoaderFactory {
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         
-        val levelName = when (level) {
-            ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> "UI_HIDDEN"
-            ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> "BACKGROUND"
+        val levelName = when {
+            level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> "UI_HIDDEN"
+            level == ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> "BACKGROUND"
+            level == 5 -> "RUNNING_MODERATE"
+            level == 10 -> "RUNNING_LOW"
+            level == 15 -> "RUNNING_CRITICAL"
+            level == 60 -> "MODERATE"
+            level == 80 -> "COMPLETE"
             else -> "UNKNOWN($level)"
         }
         
@@ -233,16 +248,13 @@ class RhythmApplication : Application(), ImageLoaderFactory {
         }
         
         // Light cleanup when the app moves to the background
-        when (level) {
-            ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN,
-            ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> {
-                Log.d(TAG, "App backgrounded - trimming caches")
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        CacheManager.autoTrimCache(applicationContext, currentMaxCacheSize())
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error during background cache trim", e)
-                    }
+        if (level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN || level == ComponentCallbacks2.TRIM_MEMORY_BACKGROUND) {
+            Log.d(TAG, "App backgrounded - trimming caches")
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    CacheManager.autoTrimCache(applicationContext, currentMaxCacheSize())
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error during background cache trim", e)
                 }
             }
         }

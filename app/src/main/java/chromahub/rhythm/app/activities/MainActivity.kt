@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.activities
 
 import android.Manifest
@@ -99,7 +104,6 @@ import androidx.compose.ui.text.font.FontWeight
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.input.pointer.pointerInput
@@ -115,7 +119,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.animation.expandVertically
@@ -123,7 +126,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import java.util.Locale
 import androidx.compose.material3.DropdownMenu
@@ -359,6 +361,25 @@ class MainActivity : AppCompatActivity() {
                                         style = MaterialTheme.typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
+
+                                    val preparingScanText = remember(scanProgress) {
+                                        when (scanProgress.stage) {
+                                            is ScanPhase.Songs -> if (scanProgress.total > 0) "Scanning media: ${scanProgress.current} / ${scanProgress.total}" else "Scanning media…"
+                                            is ScanPhase.Incremental -> if (scanProgress.total > 0) "Checking new files: ${scanProgress.current} / ${scanProgress.total}" else "Checking for new music…"
+                                            is ScanPhase.SavingDb -> "Saving database…"
+                                            is ScanPhase.Error -> "Scan error"
+                                            is ScanPhase.PermissionDenied -> "Permission required"
+                                            is ScanPhase.Complete, is ScanPhase.Idle -> null
+                                        }
+                                    }
+
+                                    if (!preparingScanText.isNullOrBlank()) {
+                                        Text(
+                                            text = preparingScanText,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -405,11 +426,29 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
 
+                        var isScanBubbleDismissedManually by remember { mutableStateOf(false) }
+
                         LaunchedEffect(scanProgress.stage) {
-                            if (scanProgress.stage is ScanPhase.Complete && showMediaScanLoader) {
-                                delay(2000)
+                            val stage = scanProgress.stage
+                            val isScanning = stage !is ScanPhase.Idle &&
+                                             stage !is ScanPhase.Complete &&
+                                             stage !is ScanPhase.Error &&
+                                             stage !is ScanPhase.PermissionDenied
+
+                            if (isScanning) {
+                                if (!isScanBubbleDismissedManually) {
+                                    showMediaScanLoader = true
+                                }
+                            } else if (stage is ScanPhase.Complete) {
+                                if (showMediaScanLoader) {
+                                    delay(2000)
+                                    showMediaScanLoader = false
+                                    appSettings.setInitialMediaScanCompleted(true)
+                                }
+                                isScanBubbleDismissedManually = false
+                            } else {
                                 showMediaScanLoader = false
-                                appSettings.setInitialMediaScanCompleted(true)
+                                isScanBubbleDismissedManually = false
                             }
                         }
 
@@ -445,17 +484,25 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
 
-                            val scanLabelText = "Scanning Music Library"
+                            val scanLabelText = remember(scanProgress.stage) {
+                                when (scanProgress.stage) {
+                                    is ScanPhase.Songs -> "Scanning Music Library"
+                                    is ScanPhase.Incremental, is ScanPhase.SavingDb -> "Updating Music Library"
+                                    is ScanPhase.Complete -> "Music Library Updated"
+                                    is ScanPhase.Error -> "Scan Error"
+                                    is ScanPhase.PermissionDenied -> "Permission Required"
+                                    else -> "Music Library"
+                                }
+                            }
 
                             val scanStatusText = remember(scanProgress) {
                                 when (scanProgress.stage) {
                                     is ScanPhase.Idle -> "Initializing..."
-                                    is ScanPhase.Songs -> "Scanning: ${scanProgress.current} of ${scanProgress.total} files..."
-                                    is ScanPhase.Incremental -> "Checking for new music: ${scanProgress.current} of ${scanProgress.total}..."
-                                    is ScanPhase.SavingDb -> "Saving database..."
-                                    is ScanPhase.Complete -> "Media scan complete!"
-                                    is ScanPhase.Error -> "Scan error"
-                                    is ScanPhase.PermissionDenied -> "Permission denied"
+                                    is ScanPhase.Songs, is ScanPhase.Incremental -> "${scanProgress.current} of ${scanProgress.total} tracks"
+                                    is ScanPhase.SavingDb -> "Saving changes..."
+                                    is ScanPhase.Complete -> "Up to date"
+                                    is ScanPhase.Error -> "Failed to scan files"
+                                    is ScanPhase.PermissionDenied -> "Storage permission required"
                                 }
                             }
 
@@ -486,6 +533,7 @@ class MainActivity : AppCompatActivity() {
                                                     coroutineScope.launch {
                                                         exitTransition = fadeOut(animationSpec = tween(200)) + slideOutVertically(targetOffsetY = { -it })
                                                         swipeOffsetY.animateTo(-500f, tween(200))
+                                                        isScanBubbleDismissedManually = true
                                                         showMediaScanLoader = false
                                                         appSettings.setInitialMediaScanCompleted(true)
                                                     }
@@ -498,6 +546,7 @@ class MainActivity : AppCompatActivity() {
                                                         }
                                                         val targetX = if (x > 0) 1000f else -1000f
                                                         swipeOffsetX.animateTo(targetX, tween(200))
+                                                        isScanBubbleDismissedManually = true
                                                         showMediaScanLoader = false
                                                         appSettings.setInitialMediaScanCompleted(true)
                                                     }

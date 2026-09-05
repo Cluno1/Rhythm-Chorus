@@ -1,6 +1,15 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.screens.player
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.IntentSenderRequest
+import androidx.core.view.WindowCompat
 import androidx.core.graphics.get
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.EaseInOut
@@ -54,6 +63,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -72,7 +82,9 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -85,7 +97,6 @@ import androidx.navigation.NavController
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ExtraControlBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
-import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.PlaybackBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.QueueBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SongInfoBottomSheet
@@ -140,8 +151,6 @@ import chromahub.rhythm.app.util.LrcUtils
 import chromahub.rhythm.app.network.CanvasArtwork
 import chromahub.rhythm.app.shared.presentation.components.player.CanvasArtworkPlayer
 import chromahub.rhythm.app.util.SemanticLyrics
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.widget.Toast
@@ -159,6 +168,11 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.EaseInOutSine
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -173,7 +187,8 @@ import androidx.core.net.toUri
 import chromahub.rhythm.app.util.windowScreenWidthDp
 import chromahub.rhythm.app.util.windowScreenHeightDp
 
-private val artworkValidationCache = java.util.concurrent.ConcurrentHashMap<android.net.Uri, Boolean>()
+internal val artworkValidationCache = java.util.concurrent.ConcurrentHashMap<android.net.Uri, Boolean>()
+internal val accentSchemeCache = java.util.concurrent.ConcurrentHashMap<String, Pair<Color, Color>>()
 
 /**
  * Decode a bitmap from a song's artwork URI.
@@ -247,7 +262,7 @@ private fun calculateInSampleSize(srcW: Int, srcH: Int, maxSize: Int): Int {
 }
 
 @Composable
-private fun rememberArtworkValidation(uri: android.net.Uri?, context: android.content.Context): Boolean? {
+internal fun rememberArtworkValidation(uri: android.net.Uri?, context: android.content.Context): Boolean? {
     if (uri == null || uri == android.net.Uri.EMPTY) return false
     val str = uri.toString().trim()
     if (str.isEmpty() || str == "null" || str == "content://media/external/audio/albumart/0") return false
@@ -321,7 +336,7 @@ fun ExpressivePlayerScreen(
     onToggleLyrics: () -> Unit,
     onSongInfoClick: () -> Unit,
     onShowAlbumBottomSheet: () -> Unit,
-    onShowArtistBottomSheet: () -> Unit,
+    onShowArtist: () -> Unit,
     onMoreClick: () -> Unit,
     onDeviceClick: () -> Unit,
     onQueueClick: () -> Unit,
@@ -336,7 +351,14 @@ fun ExpressivePlayerScreen(
     onOpenFullScreenLyrics: () -> Unit = {},
     isStreamingMode: Boolean = false,
     swipeToDismissEnabled: Boolean = true,
-    expansionFraction: Float = 1f
+    expansionFraction: Float = 1f,
+    onNavigateToLyricsSettings: (() -> Unit)? = null,
+    onPlaybackSpeed: () -> Unit = {},
+    onPlaybackPitch: () -> Unit = {},
+    onEqualizer: () -> Unit = {},
+    onSleepTimer: () -> Unit = {},
+    onAddToPlaylist: () -> Unit = {},
+    onShareFile: () -> Unit = {}
 ) {
     val artworkScale by animateFloatAsState(
         targetValue = if (isPlaying) 1.0f else 0.85f,
@@ -359,29 +381,119 @@ fun ExpressivePlayerScreen(
     val enhancedSeekingEnabled by appSettings.enhancedSeekingEnabled.collectAsState()
     val playerAmbientBackdropEnabled by appSettings.playerAmbientBackdropEnabled.collectAsState()
     val playerAmbientBackdropIntensity by appSettings.playerAmbientBackdropIntensity.collectAsState()
+    val playerAmbientInfiniteZoom by appSettings.playerAmbientInfiniteZoom.collectAsState()
     val playerAccentBackgroundEnabled by appSettings.playerAccentBackgroundEnabled.collectAsState()
     val playerMergeControlsToBottom by appSettings.playerMergeControlsToBottom.collectAsState()
     val playerShowAudioQualityBadges by appSettings.playerShowAudioQualityBadges.collectAsState()
+    val expressiveBottomButtonsNormal by appSettings.expressiveBottomButtonsNormal.collectAsState()
+    val expressiveHiddenBottomButtonsNormal by appSettings.expressiveHiddenBottomButtonsNormal.collectAsState()
+    val expressiveBottomButtonsMerge by appSettings.expressiveBottomButtonsMerge.collectAsState()
+    val expressiveHiddenBottomButtonsMerge by appSettings.expressiveHiddenBottomButtonsMerge.collectAsState()
     val playerLyricsTextSize by appSettings.playerLyricsTextSize.collectAsState()
     val showLyricsTranslation by appSettings.showLyricsTranslation.collectAsState()
     val showLyricsRomanization by appSettings.showLyricsRomanization.collectAsState()
     val playerLyricsTransition by appSettings.playerLyricsTransition.collectAsState()
     val tapLyricsToFullScreen by appSettings.tapLyricsToFullScreen.collectAsState()
+    val autoHideLyricsControls by appSettings.autoHideLyricsControls.collectAsState()
     val playerLyricsAlignment by appSettings.playerLyricsAlignment.collectAsState()
     val keepScreenOnLyrics by appSettings.keepScreenOnLyrics.collectAsState()
+    val useExactArtworkColors by appSettings.useExactArtworkColors.collectAsState()
 
     val postureState by rememberDevicePosture()
     val isFlexMode = postureState is DevicePosture.TableTop
 
-    val onTapLyricsView = if (tapLyricsToFullScreen) onOpenFullScreenLyrics else null
+    val context = LocalContext.current
+
+    // Write permission launcher for Android 11+ metadata editing (e.g. auto-fetched artwork embedding)
+    val writePermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            if (musicViewModel?.pendingBatchWriteRequest?.value != null) {
+                musicViewModel.completeBatchMetadataWriteAfterPermission(
+                    onSuccess = {
+                        Toast.makeText(context, R.string.localnavigation_metadata_saved_successfully, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                )
+            } else {
+                musicViewModel?.completeMetadataWriteAfterPermission(
+                    onSuccess = {
+                        Toast.makeText(context, R.string.expressiveplayerscreen_artwork_embedded_toast, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                )
+            }
+        } else {
+            if (musicViewModel?.pendingBatchWriteRequest?.value != null) {
+                musicViewModel.cancelPendingBatchMetadataWrite()
+            } else {
+                musicViewModel?.cancelPendingMetadataWrite()
+            }
+            Toast.makeText(context, R.string.localnavigation_permission_denied_changes_saved, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    var lyricsControlsVisible by remember { mutableStateOf(true) }
+    var lastLyricsInteractionTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+
+    fun showLyricsControls() {
+        lyricsControlsVisible = true
+        lastLyricsInteractionTime = System.currentTimeMillis()
+    }
+
+    fun toggleLyricsControls() {
+        lyricsControlsVisible = !lyricsControlsVisible
+        if (lyricsControlsVisible) {
+            lastLyricsInteractionTime = System.currentTimeMillis()
+        }
+    }
+
+    val lyricsVisible = showLyricsView && showLyrics
+    val lyricsNestedScrollConnection = remember(lyricsVisible, autoHideLyricsControls) {
+        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+            override fun onPreScroll(
+                available: androidx.compose.ui.geometry.Offset,
+                source: androidx.compose.ui.input.nestedscroll.NestedScrollSource
+            ): androidx.compose.ui.geometry.Offset {
+                if (lyricsVisible) {
+                    showLyricsControls()
+                }
+                return androidx.compose.ui.geometry.Offset.Zero
+            }
+        }
+    }
+
+    // Do not launch full screen lyrics view when on expressive player; tapping toggles/shows controls
+    val onTapLyricsView: () -> Unit = {
+        toggleLyricsControls()
+    }
     var isScrubbing by remember { mutableStateOf(false) }
     var scrubProgress by remember { mutableFloatStateOf(0f) }
     val progressValue = progress().coerceIn(0f, 1f)
     val resolvedDurationMs = musicViewModel?.duration?.collectAsState()?.value ?: 0L
     val totalTimeMs = song?.duration?.takeIf { it > 0 } ?: resolvedDurationMs.takeIf { it > 0 } ?: 0L
     val currentTimeMs = (progressValue * totalTimeMs).toLong()
-    val lyricsVisible = showLyricsView && showLyrics
     val showBuffering = isMediaLoading || isSeeking
+
+    LaunchedEffect(lyricsVisible, lyricsControlsVisible, lastLyricsInteractionTime, autoHideLyricsControls) {
+        if (lyricsVisible && autoHideLyricsControls && lyricsControlsVisible) {
+            delay(5000L) // Auto hide after 5 seconds of inactivity
+            lyricsControlsVisible = false
+        } else if (!lyricsVisible) {
+            lyricsControlsVisible = true
+        }
+    }
+
+    LaunchedEffect(expansionFraction >= 0.5f, lyricsVisible) {
+        if (expansionFraction >= 0.5f || !lyricsVisible) {
+            showLyricsControls()
+        }
+    }
 
     val debouncedSong = remember { mutableStateOf(song) }
     var previousQueuePosition by remember { mutableIntStateOf(queuePosition) }
@@ -407,7 +519,6 @@ fun ExpressivePlayerScreen(
     }
 
     val haptic = LocalHapticFeedback.current
-    val context = LocalContext.current
 
     val artworkValidation = rememberArtworkValidation(debouncedSong.value?.artworkUri, context)
     val hasValidArtwork = artworkValidation == true
@@ -422,14 +533,23 @@ fun ExpressivePlayerScreen(
     val monoFg = if (isDarkTheme) Color(0xFFFFFFFF) else Color(0xFF000000)
     val monoVariant = monoFg.copy(alpha = 0.72f)
     val useAccentBackground = !isBackdropEnabled && playerAccentBackgroundEnabled
+    val currentArtworkUri = song?.artworkUri
     val accentArtScheme = produceState<Pair<Color, Color>?>(
-        null, debouncedSong.value?.artworkUri, useAccentBackground, isDarkTheme
+        initialValue = currentArtworkUri?.let { uri -> accentSchemeCache["${uri}_${isDarkTheme}_${useExactArtworkColors}"] },
+        currentArtworkUri,
+        useAccentBackground,
+        isDarkTheme,
+        useExactArtworkColors
     ) {
-        if (!useAccentBackground) return@produceState
-        val artworkUri = debouncedSong.value?.artworkUri ?: return@produceState
-        value = withContext(Dispatchers.IO) {
+        if (!useAccentBackground || currentArtworkUri == null) return@produceState
+        val cacheKey = "${currentArtworkUri}_${isDarkTheme}_${useExactArtworkColors}"
+        accentSchemeCache[cacheKey]?.let { cached ->
+            value = cached
+            return@produceState
+        }
+        val scheme = withContext(Dispatchers.IO) {
             try {
-                val bitmap = loadArtworkBitmap(context, artworkUri, 512)
+                val bitmap = loadArtworkBitmap(context, currentArtworkUri, 128)
                 val extracted = if (bitmap != null) {
                     ColorExtractor.extractColorsFromBitmap(bitmap)
                 } else null
@@ -438,20 +558,33 @@ fun ExpressivePlayerScreen(
                 if (seedArgb == null) null
                 else {
                     val sourceHct = Hct.fromInt(seedArgb)
-                    val schemeType = if (sourceHct.chroma > 12.0) "CONTENT" else "TONAL_SPOT"
-                    val scheme = ColorExtractor.createDynamicScheme(sourceHct, schemeType, isDarkTheme)
-                    scheme.primary to scheme.onPrimary
+                    val isMonochrome = extracted?.isMonochrome == true ||
+                        sourceHct.chroma <= 8.0 ||
+                        ColorExtractor.isArgbNearGrayscale(seedArgb)
+
+                    if (isMonochrome) {
+                        val bg = if (isDarkTheme) Color(0xFF1E1E1E) else Color(0xFFE5E5E5)
+                        val fg = if (isDarkTheme) Color.White else Color.Black
+                        bg to fg
+                    } else {
+                        val schemeType = if (useExactArtworkColors) "CONTENT" else if (sourceHct.chroma > 18.0) "VIBRANT" else "TONAL_SPOT"
+                        val dynamicScheme = ColorExtractor.createDynamicScheme(sourceHct, schemeType, isDarkTheme)
+                        dynamicScheme.primary to dynamicScheme.onPrimary
+                    }
                 }
             } catch (e: Exception) {
                 null
             }
+        }
+        if (scheme != null) {
+            accentSchemeCache[cacheKey] = scheme
+            value = scheme
         }
     }
     val accentBg = accentArtScheme.value?.first ?: MaterialTheme.colorScheme.primary
     val accentFg = accentArtScheme.value?.second ?: MaterialTheme.colorScheme.onPrimary
     val accentGlass = accentFg.copy(alpha = 0.15f)
     val accentGlassStrong = accentFg.copy(alpha = 0.28f)
-    val useLightModeOnDarkBg = lyricsVisible && showDarkBg && !isDarkTheme
     val lyricsTextAlign = when (playerLyricsAlignment) {
         "START" -> TextAlign.Start; "END" -> TextAlign.End; else -> TextAlign.Center
     }
@@ -462,12 +595,13 @@ fun ExpressivePlayerScreen(
         if (shouldKeepScreenOn && activity != null) activity.window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         onDispose { activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
     }
-    // showAlbumArt: hide center artwork card only when ambient mode is active AND artwork is valid
-    // (the blurred background fills the view). For no-art songs we still need the card area so the
-    // Music Note icon renders. Derived synchronously — no LaunchedEffect delay.
-    val showAlbumArt = !(showDarkBg && hasValidArtwork)
-    val showPlayerControls = true
-    val showBottomButtons = true
+    
+    val showPlayerControls = if (lyricsVisible) {
+        !autoHideLyricsControls || lyricsControlsVisible
+    } else {
+        true
+    }
+    val showBottomButtons = showPlayerControls
 
     // Slow, smooth staggered entrance: a long linear drive so the cascade is even, with
     // per-element FastOutSlowIn motion so each piece decelerates gently into place.
@@ -523,14 +657,15 @@ fun ExpressivePlayerScreen(
     val line2TranslationY = with(LocalDensity.current) { 32.dp.toPx() * (1f - line2Fraction) }
     val line3Alpha = line3Fraction
     val line3TranslationY = with(LocalDensity.current) { 44.dp.toPx() * (1f - line3Fraction) }
+    val showAlbumArt = !(showDarkBg && hasValidArtwork)
     val line4Alpha = line4Fraction
     val line4TranslationY = with(LocalDensity.current) { 40.dp.toPx() * (1f - line4Fraction) }
     val line6Alpha = line6Fraction
     val line6TranslationY = with(LocalDensity.current) { 48.dp.toPx() * (1f - line6Fraction) }
 
-    val artworkClipShape = if (lyricsVisible) RoundedCornerShape(artworkCornerRadius) else playerArtworkShape
+    val artworkClipShape = playerArtworkShape
 
-    val needsDarkSurfaces = showDarkBg && !useLightModeOnDarkBg
+    val needsDarkSurfaces = showDarkBg
     val darkScheme = remember { darkColorScheme() }
     val darkSurfaceHigh = darkScheme.surfaceContainerHigh
     val darkSurface = darkScheme.surfaceContainer
@@ -565,11 +700,30 @@ fun ExpressivePlayerScreen(
         } else null
     }
     val artColor = artworkColor.value ?: defaultSongColor
-    // Adaptive text color over the artwork backdrop: dark art → white text, bright art →
-    // black text, so the title/artist marquee never disappears on light album covers.
-    // Threshold 0.65 accounts for the black overlay gradient darkening the area behind
-    // the text (effective backdrop luminance ≈ 70% of the raw artwork luminance).
+    // Ambient contrast handling: maintain visibility against backdrop
     val ambientTextColor = if ((artColor?.luminance() ?: 0f) > 0.65f) Color.Black else Color.White
+
+    val isPlayerActive = if (swipeToDismissEnabled) true else expansionFraction > 0.5f
+    val isStatusLight = when {
+        useAccentBackground -> accentBg.luminance() > 0.5f
+        isBackdropEnabled -> (artColor?.luminance() ?: 0f) > 0.65f
+        else -> !isDarkTheme
+    }
+
+    DisposableEffect(activity, isPlayerActive, isStatusLight, isDarkTheme) {
+        val window = activity?.window
+        val decorView = window?.decorView
+        if (window != null && decorView != null && isPlayerActive) {
+            val insetsController = WindowCompat.getInsetsController(window, decorView)
+            insetsController.isAppearanceLightStatusBars = isStatusLight
+        }
+        onDispose {
+            if (window != null && decorView != null) {
+                val insetsController = WindowCompat.getInsetsController(window, decorView)
+                insetsController.isAppearanceLightStatusBars = !isDarkTheme
+            }
+        }
+    }
 
     val ambientAlpha = if (isBackdropEnabled) playerAmbientBackdropIntensity else 1f
     val ambientPlayContainer = Color.White
@@ -588,28 +742,27 @@ fun ExpressivePlayerScreen(
             needsDarkSurfaces -> darkSurfaceHigh.copy(alpha = ambientAlpha)
             else -> monoBg
         },
-        animationSpec = tween(600), label = "controlsContainerColor"
+        animationSpec = tween(400, easing = FastOutSlowInEasing), label = "controlsContainerColor"
     )
     val outerBoxBgColor by animateColorAsState(
         targetValue = when {
             useAccentBackground -> accentBg
-            useLightModeOnDarkBg -> Color.White
             showDarkBg && hasValidArtwork -> Color.Black
             showDarkBg && !hasValidArtwork -> Color.Transparent
             else -> MaterialTheme.colorScheme.surface
         },
-        animationSpec = tween(600), label = "outerBoxBgColor"
+        animationSpec = tween(400, easing = FastOutSlowInEasing), label = "outerBoxBgColor"
     )
     val lyricsScrimColor by animateColorAsState(
         targetValue = if (useAccentBackground) accentBg else MaterialTheme.colorScheme.surface,
-        animationSpec = tween(600), label = "lyricsScrimColor"
+        animationSpec = tween(400, easing = FastOutSlowInEasing), label = "lyricsScrimColor"
     )
     val onSurfaceColor by animateColorAsState(
-        targetValue = if (useAccentBackground) accentFg else if (useLightModeOnDarkBg) Color.Black else if (isBackdropEnabled) ambientTextColor else MaterialTheme.colorScheme.onSurface,
+        targetValue = if (useAccentBackground) accentFg else if (isBackdropEnabled) ambientTextColor else MaterialTheme.colorScheme.onSurface,
         animationSpec = tween(400), label = "onSurfaceColor"
     )
     val onSurfaceVariantColor by animateColorAsState(
-        targetValue = if (useAccentBackground) accentFg.copy(alpha = 0.8f) else if (useLightModeOnDarkBg) Color.Black.copy(alpha = 0.65f) else if (isBackdropEnabled) ambientTextColor.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (useAccentBackground) accentFg.copy(alpha = 0.8f) else if (isBackdropEnabled) ambientTextColor.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(400), label = "onSurfaceVariantColor"
     )
     val surfaceContainerColor by animateColorAsState(
@@ -627,21 +780,25 @@ fun ExpressivePlayerScreen(
         animationSpec = tween(400), label = "surfaceContainerColor"
     )
     val primaryColor by animateColorAsState(
-        targetValue = if (useAccentBackground) accentFg else if (useLightModeOnDarkBg) MaterialTheme.colorScheme.primary else if (isBackdropEnabled) Color.White else MaterialTheme.colorScheme.primary,
+        targetValue = if (useAccentBackground) accentFg else if (isBackdropEnabled) Color.White else MaterialTheme.colorScheme.primary,
         animationSpec = tween(400), label = "canvasPrimaryColor"
     )
-    val clearArtworkAlpha by animateFloatAsState(
-        targetValue = if (lyricsVisible) 0f else 1f, animationSpec = tween(500), label = "clearArtworkAlpha"
-    )
-    val lyricsOverlayAlpha by animateFloatAsState(
-        targetValue = if (lyricsVisible && showDarkBg) 1f else 0f, animationSpec = tween(600), label = "lyricsOverlayAlpha"
-    )
-
-
     val isCompactWidth = windowScreenWidthDp() < 360
     val isCompactHeight = windowScreenHeightDp() < 640
     val isTablet = windowScreenWidthDp() >= 600
     val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
+    val isTabletImmersiveLyrics = isTablet && lyricsVisible && !showPlayerControls
+
+    val clearArtworkAlpha by animateFloatAsState(
+        targetValue = if (lyricsVisible && !isTabletImmersiveLyrics) 0f else 1f,
+        animationSpec = tween(500),
+        label = "clearArtworkAlpha"
+    )
+    val lyricsOverlayAlpha by animateFloatAsState(
+        targetValue = if (lyricsVisible && showDarkBg && !isTabletImmersiveLyrics) 1f else 0f,
+        animationSpec = tween(600),
+        label = "lyricsOverlayAlpha"
+    )
     val coroutineScope = rememberCoroutineScope()
     val screenHeightPx = with(LocalDensity.current) { windowScreenHeightDp().dp.toPx() }
 
@@ -707,7 +864,7 @@ fun ExpressivePlayerScreen(
     var showAutoFetchEmbedDialog by remember { mutableStateOf(false) }
     var pendingAutoFetchSong by remember { mutableStateOf<Song?>(null) }
     val autoFetchPromptedSongIds = remember { mutableStateOf<Set<String>>(emptySet()) }
-    var lastNoArtworkToastTime by remember { mutableStateOf(0L) }
+    var lastNoArtworkToastTime by remember { mutableLongStateOf(0L) }
 
     // Auto-fetch in both modes, but only after validation confirms the song has no
     // artwork (null = still checking). Each song is prompted at most once per session.
@@ -790,6 +947,7 @@ fun ExpressivePlayerScreen(
                 ) {
                     Button(
                         onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                             showAutoFetchEmbedDialog = false
                             pendingAutoFetchSong = null
                             dialogSong?.let { currentSong ->
@@ -812,6 +970,21 @@ fun ExpressivePlayerScreen(
                                     },
                                     onError = { err ->
                                         Toast.makeText(context, err, Toast.LENGTH_SHORT).show()
+                                    },
+                                    onPermissionRequired = { pendingRequest ->
+                                        try {
+                                            val intentSenderRequest = IntentSenderRequest.Builder(
+                                                pendingRequest.intentSender
+                                            ).build()
+                                            writePermissionLauncher.launch(intentSenderRequest)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.failed_to_request_permission, e.message ?: ""),
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                            musicViewModel.cancelPendingMetadataWrite()
+                                        }
                                     }
                                 )
                             }
@@ -831,6 +1004,7 @@ fun ExpressivePlayerScreen(
 
                     OutlinedButton(
                         onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM)
                             showAutoFetchEmbedDialog = false
                             pendingAutoFetchSong = null
                         },
@@ -854,7 +1028,7 @@ fun ExpressivePlayerScreen(
 
     val unifiedBackground = @Composable { modifier: Modifier ->
         val currentArtworkUri = debouncedSong.value?.artworkUri
-        val gc = if (useLightModeOnDarkBg) Color.White else Color.Black
+        val gc = Color.Black
         // Crossfade the artwork↔gradient switch to prevent the gradient from flashing
         // momentarily when skipping to a song whose artwork is not yet validated.
         AnimatedContent(
@@ -864,7 +1038,7 @@ fun ExpressivePlayerScreen(
         ) { validArtwork ->
             if (!isBackdropEnabled) {
                 // Normal (non-ambient) mode: themed surface or accent background
-                Box(modifier = modifier.fillMaxSize().background(if (useAccentBackground) accentBg else MaterialTheme.colorScheme.surface))
+                Box(modifier = modifier.fillMaxSize().background(outerBoxBgColor))
             } else if (validArtwork) {
                 // Smooth crossfade when track artwork changes (1200ms motion canvas style)
                 AnimatedContent(
@@ -878,15 +1052,14 @@ fun ExpressivePlayerScreen(
                             contentDescription = null, contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize().blur(150.dp)
                         )
-                        // Phone: vertical gradient (top to bottom, fades at ~65%)
-                        // Tablet landscape: horizontal gradient (left to right, artwork on left)
+                        val useHorizontalBackdrop = isLandscapeTablet || isTabletImmersiveLyrics
                         Box(
-                            modifier = (if (isLandscapeTablet) Modifier.fillMaxWidth(0.5f).fillMaxHeight()
+                            modifier = (if (useHorizontalBackdrop) Modifier.fillMaxWidth(0.5f).fillMaxHeight()
                                 else Modifier.fillMaxWidth().fillMaxHeight(0.58f)).alpha(clearArtworkAlpha)
                             .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
                             .drawWithContent {
                                 drawContent()
-                                val brush = if (isLandscapeTablet) Brush.horizontalGradient(
+                                val brush = if (useHorizontalBackdrop) Brush.horizontalGradient(
                                     0.00f to gc, 0.55f to gc, 0.70f to gc.copy(alpha = 0.65f),
                                     0.85f to gc.copy(alpha = 0.25f), 1.00f to Color.Transparent
                                 ) else Brush.verticalGradient(
@@ -905,10 +1078,10 @@ fun ExpressivePlayerScreen(
                             }
                         }
                         Box(modifier = Modifier.fillMaxSize().background(
-                            if (isLandscapeTablet) Brush.horizontalGradient(listOf(gc.copy(alpha = 0.03f), gc.copy(alpha = 0.35f)))
+                            if (useHorizontalBackdrop) Brush.horizontalGradient(listOf(gc.copy(alpha = 0.03f), gc.copy(alpha = 0.35f)))
                             else Brush.verticalGradient(listOf(gc.copy(alpha = 0.05f), gc.copy(alpha = 0.4f)))))
                         Box(modifier = Modifier.fillMaxSize().alpha(lyricsOverlayAlpha).background(
-                            if (isLandscapeTablet) Brush.horizontalGradient(
+                            if (useHorizontalBackdrop) Brush.horizontalGradient(
                                 colors = listOf(gc.copy(alpha = 0.65f), gc.copy(alpha = 0.50f), gc.copy(alpha = 0.72f)))
                             else Brush.verticalGradient(
                                 colors = listOf(gc.copy(alpha = 0.72f), gc.copy(alpha = 0.52f), gc.copy(alpha = 0.78f)))))
@@ -944,11 +1117,39 @@ fun ExpressivePlayerScreen(
         }
     }
 
+    val infiniteZoomTransition = rememberInfiniteTransition(label = "ambientInfiniteZoomTransition")
+    val ambientInfiniteScale by infiniteZoomTransition.animateFloat(
+        initialValue = 1.00f,
+        targetValue = 1.07f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 18000, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "ambientInfiniteScale"
+    )
+
     Box(
-        modifier = Modifier.fillMaxSize().background(outerBoxBgColor)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(outerBoxBgColor)
+            .nestedScroll(lyricsNestedScrollConnection)
+            .pointerInput(autoHideLyricsControls, lyricsVisible) {
+                if (autoHideLyricsControls && lyricsVisible) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            awaitPointerEvent(PointerEventPass.Initial)
+                            if (lyricsVisible) {
+                                showLyricsControls()
+                            }
+                        }
+                    }
+                }
+            }
     ) {
         AnimatedVisibility(visible = showBg, enter = fadeIn(tween(600)), exit = fadeOut(tween(600))) {
-            val bgZoom = 1f + 0.04f * (1f - localEntranceFraction)
+            val entranceZoom = 1f + 0.04f * (1f - localEntranceFraction)
+            val continuousZoom = if (isBackdropEnabled && playerAmbientInfiniteZoom) ambientInfiniteScale else 1f
+            val bgZoom = entranceZoom * continuousZoom
             unifiedBackground(Modifier.fillMaxSize().graphicsLayer { scaleX = bgZoom; scaleY = bgZoom })
         }
 
@@ -974,106 +1175,195 @@ fun ExpressivePlayerScreen(
                     label = "artworkTranslationX"
                 )
 
+                val artworkView = @Composable { modifier: Modifier, isSmall: Boolean ->
+                    Box(
+                        modifier = modifier,
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            Modifier
+                                .padding(horizontal = if (isCompactWidth) 12.dp else 24.dp)
+                                .fillMaxSize(if (isSmall) 0.75f else if (isTablet && !isLandscapeTablet) 0.55f else if (isCompactHeight) 0.78f else 0.88f)
+                                .aspectRatio(1f)
+                                .graphicsLayer {
+                                    scaleX = artworkScale
+                                    scaleY = artworkScale
+                                    translationX = artworkTranslationX
+                                    shape = artworkClipShape
+                                    clip = true
+                                }
+                                .pointerInput(showLyrics, lyricsVisible) {
+                                    detectTapGestures(
+                                        onDoubleTap = {
+                                            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                            onPlayPause()
+                                        },
+                                        onTap = {
+                                            if (showLyrics) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                onToggleLyrics()
+                                            }
+                                        }
+                                    )
+                                }
+                                .pointerInput(Unit) {
+                                    detectDragGestures(
+                                        onDragEnd = {
+                                            if (artworkOffsetX < -artworkSwipeThreshold) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                onSkipNext()
+                                            } else if (artworkOffsetX > artworkSwipeThreshold) {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                onSkipPrevious()
+                                            }
+                                            artworkOffsetX = 0f
+                                        },
+                                        onDragCancel = { artworkOffsetX = 0f },
+                                        onDrag = { change, dragAmount ->
+                                            change.consume()
+                                            artworkOffsetX += dragAmount.x
+                                        }
+                                    )
+                                }
+                        ) {
+                            val currentSongArt = debouncedSong.value?.artworkUri
+
+                            AnimatedContent(
+                                targetState = hasValidArtwork,
+                                transitionSpec = { fadeIn(tween(800)).togetherWith(fadeOut(tween(600))) },
+                                label = "artworkIconTransition",
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) { validArtwork ->
+                                if (validArtwork) {
+                                    M3ImageUtils.M3MediaImage(
+                                        data = currentSongArt,
+                                        contentDescription = stringResource(R.string.content_desc_album_artwork),
+                                        modifier = Modifier.fillMaxSize(),
+                                        shape = artworkClipShape,
+                                        type = M3PlaceholderType.TRACK,
+                                        name = debouncedSong.value?.title,
+                                        expressiveShape = playerArtworkShape
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = RhythmIcons.MusicNote,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(if (isSmall) 96.dp else 144.dp),
+                                            tint = when {
+                                                showDarkBg -> Color.White.copy(alpha = 0.85f)
+                                                useAccentBackground -> accentFg
+                                                else -> monoFg
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (canvasArtwork?.preferredAnimationUrl != null) {
+                                CanvasArtworkPlayer(
+                                    primaryUrl = canvasArtwork.animated,
+                                    fallbackUrl = canvasArtwork.videoUrl,
+                                    isPlaying = isPlaying,
+                                    alwaysPlay = true,
+                                    modifier = Modifier.fillMaxSize().clip(artworkClipShape)
+                                )
+                            }
+                            if (canvasLoading && canvasArtwork == null) {
+                                Box(
+                                    Modifier.align(Alignment.TopEnd).padding(10.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    M3CircularLoader(
+                                        modifier = Modifier.size(16.dp),
+                                        color = primaryColor,
+                                        strokeWidth = 2.5f
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                val lyricsView = @Composable { modifier: Modifier ->
+                    RhythmPlayerLyricsPanel(
+                        lyrics = lyrics,
+                        isLoadingLyrics = isLoadingLyrics,
+                        onlineOnlyLyrics = onlineOnlyLyrics,
+                        currentTimeMs = currentTimeMs,
+                        onLyricsSeek = onLyricsSeek,
+                        onTapLyricsView = onTapLyricsView,
+                        textSizeMultiplier = playerLyricsTextSize,
+                        onRetryLyrics = onRetryLyrics,
+                        onShowLyricsEditor = onShowLyricsEditor,
+                        onPickLyricsFile = onPickLyricsFile,
+                        showTranslation = showLyricsTranslation,
+                        showRomanization = showLyricsRomanization,
+                        textAlignment = lyricsTextAlign,
+                        textColor = onSurfaceColor,
+                        subtitleColor = onSurfaceVariantColor,
+                        activeColor = if (isBackdropEnabled) ambientTextColor else primaryColor,
+                        buttonContainerColor = if (useAccentBackground) accentFg else null,
+                        buttonContentColor = if (useAccentBackground) accentBg else null,
+                        fadeColor = if (isBackdropEnabled) null else lyricsScrimColor,
+                        onNavigateToLyricsSettings = onNavigateToLyricsSettings,
+                        modifier = modifier
+                    )
+                }
+
                 // Use fully qualified AnimatedVisibility to avoid ColumnScope receiver capture
                 val artworkContent = @Composable { modifier: Modifier ->
-                    androidx.compose.animation.AnimatedVisibility(visible = showAlbumArt || lyricsVisible,
-                        enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }, modifier = modifier) {
-                        Box(Modifier.fillMaxSize().graphicsLayer { alpha = line2Alpha; translationY = line2TranslationY; scaleX = line2Pop; scaleY = line2Pop }, contentAlignment = Alignment.Center) {
-                            AnimatedContent(targetState = lyricsVisible, transitionSpec = {
-                                val e = when (playerLyricsTransition) {
-                                    1 -> fadeIn(tween(400, easing = EaseInOut))
-                                    2 -> fadeIn(tween(350, easing = EaseInOut)) + scaleIn(tween(350, easing = EaseInOut), initialScale = 0.92f)
-                                    3 -> fadeIn(tween(350, easing = EaseInOut)) + slideInVertically(tween(350, easing = EaseInOut)) { it / 2 }
-                                    else -> fadeIn(tween(350, easing = EaseInOut)) + slideInVertically(tween(350, easing = EaseInOut)) { -it / 2 }
-                                }
-                                val x = when (playerLyricsTransition) {
-                                    1 -> fadeOut(tween(300, easing = EaseInOut))
-                                    2 -> fadeOut(tween(250, easing = EaseInOut)) + scaleOut(tween(250, easing = EaseInOut), targetScale = 0.92f)
-                                    3 -> fadeOut(tween(250, easing = EaseInOut)) + slideOutVertically(tween(250, easing = EaseInOut)) { it / 2 }
-                                    else -> fadeOut(tween(250, easing = EaseInOut)) + slideOutVertically(tween(250, easing = EaseInOut)) { -it / 2 }
-                                }
-                                e togetherWith x
-                            }, label = "lyricsViewTransition", modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { tl ->
-                                if (tl) {
-                                    RhythmPlayerLyricsPanel(lyrics = lyrics, isLoadingLyrics = isLoadingLyrics,
-                                        onlineOnlyLyrics = onlineOnlyLyrics, currentTimeMs = currentTimeMs,
-                                        onLyricsSeek = onLyricsSeek, onTapLyricsView = onTapLyricsView,
-                                        textSizeMultiplier = playerLyricsTextSize, onRetryLyrics = onRetryLyrics,
-                                        onShowLyricsEditor = onShowLyricsEditor, onPickLyricsFile = onPickLyricsFile,
-                                        showTranslation = showLyricsTranslation, showRomanization = showLyricsRomanization,
-                                        textAlignment = lyricsTextAlign, textColor = onSurfaceColor, subtitleColor = onSurfaceVariantColor,
-                                        activeColor = if (isBackdropEnabled) ambientTextColor else primaryColor,
-                                        buttonContainerColor = if (useAccentBackground) accentFg else null,
-                                        buttonContentColor = if (useAccentBackground) accentBg else null,
-                                        fadeColor = if (isBackdropEnabled) null else lyricsScrimColor,
-                                        modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(horizontal = if (isCompactWidth) 16.dp else 24.dp))
-                                } else {
-                                    Box(Modifier.padding(horizontal = if (isCompactWidth) 12.dp else 24.dp)
-                                        .fillMaxSize(if (isTablet && !isLandscapeTablet) 0.55f else if (isCompactHeight) 0.78f else 0.88f).aspectRatio(1f)
-                                        .graphicsLayer { scaleX = artworkScale; scaleY = artworkScale; translationX = artworkTranslationX; shape = artworkClipShape; clip = true }
-                                        .pointerInput(showLyrics, lyricsVisible) {
-                                            detectTapGestures(onDoubleTap = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onPlayPause() },
-                                                onTap = { if (showLyrics) { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleLyrics() } })
-                                        }
-                                        .pointerInput(Unit) {
-                                            detectDragGestures(
-                                                onDragEnd = {
-                                                    if (artworkOffsetX < -artworkSwipeThreshold) { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onSkipNext() }
-                                                    else if (artworkOffsetX > artworkSwipeThreshold) { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onSkipPrevious() }
-                                                    artworkOffsetX = 0f
-                                                }, onDragCancel = { artworkOffsetX = 0f },
-                                                onDrag = { change, dragAmount -> change.consume(); artworkOffsetX += dragAmount.x })
-                                        }) {                                        val currentSongArt = debouncedSong.value?.artworkUri
-
-                                        // Crossfade artwork ↔ music-note icon using the same
-                                        // AnimatedContent pattern as the background gradient switch,
-                                        // so the icon never snaps in/out abruptly on track change.
-                                        AnimatedContent(
-                                            targetState = hasValidArtwork,
-                                            transitionSpec = { fadeIn(tween(800)).togetherWith(fadeOut(tween(600))) },
-                                            label = "artworkIconTransition",
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center
-                                        ) { validArtwork ->
-                                            if (validArtwork) {
-                                                M3ImageUtils.M3MediaImage(
-                                                    data = currentSongArt,
-                                                    contentDescription = stringResource(R.string.content_desc_album_artwork),
-                                                    modifier = Modifier.fillMaxSize(),
-                                                    shape = artworkClipShape,
-                                                    type = M3PlaceholderType.TRACK,
-                                                    name = debouncedSong.value?.title,
-                                                    expressiveShape = playerArtworkShape
-                                                )
-                                            } else {
-                                                Box(
-                                                    modifier = Modifier.fillMaxSize(),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Icon(
-                                                        imageVector = RhythmIcons.MusicNote,
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(144.dp),
-                                                        tint = when {
-                                                            showDarkBg -> Color.White.copy(alpha = 0.85f)
-                                                            useAccentBackground -> accentFg
-                                                            else -> monoFg
-                                                        }
-                                                    )
-                                                }
-                                            }
-                                        }
-
-                                        if (canvasArtwork?.preferredAnimationUrl != null) {
-                                            CanvasArtworkPlayer(primaryUrl = canvasArtwork.animated, fallbackUrl = canvasArtwork.videoUrl, isPlaying = isPlaying, alwaysPlay = true, modifier = Modifier.fillMaxSize().clip(artworkClipShape))
-                                        }
-                                        if (canvasLoading && canvasArtwork == null) {
-                                            Box(Modifier.align(Alignment.TopEnd).padding(10.dp),
-                                                contentAlignment = Alignment.Center) {
-                                                M3CircularLoader(modifier = Modifier.size(16.dp), color = primaryColor, strokeWidth = 2.5f)
-                                            }
-                                        }
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = showAlbumArt || lyricsVisible,
+                        enter = fadeIn() + slideInVertically { it / 2 },
+                        exit = fadeOut() + slideOutVertically { it / 2 },
+                        modifier = modifier
+                    ) {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    alpha = line2Alpha
+                                    translationY = line2TranslationY
+                                    scaleX = line2Pop
+                                    scaleY = line2Pop
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            AnimatedContent(
+                                targetState = lyricsVisible,
+                                transitionSpec = {
+                                    val e = when (playerLyricsTransition) {
+                                        1 -> fadeIn(tween(400, easing = EaseInOut))
+                                        2 -> fadeIn(tween(350, easing = EaseInOut)) + scaleIn(tween(350, easing = EaseInOut), initialScale = 0.92f)
+                                        3 -> fadeIn(tween(350, easing = EaseInOut)) + slideInVertically(tween(350, easing = EaseInOut)) { it / 2 }
+                                        else -> fadeIn(tween(350, easing = EaseInOut)) + slideInVertically(tween(350, easing = EaseInOut)) { -it / 2 }
                                     }
+                                    val x = when (playerLyricsTransition) {
+                                        1 -> fadeOut(tween(300, easing = EaseInOut))
+                                        2 -> fadeOut(tween(250, easing = EaseInOut)) + scaleOut(tween(250, easing = EaseInOut), targetScale = 0.92f)
+                                        3 -> fadeOut(tween(250, easing = EaseInOut)) + slideOutVertically(tween(250, easing = EaseInOut)) { it / 2 }
+                                        else -> fadeOut(tween(250, easing = EaseInOut)) + slideOutVertically(tween(250, easing = EaseInOut)) { -it / 2 }
+                                    }
+                                    e togetherWith x
+                                },
+                                label = "lyricsViewTransition",
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) { tl ->
+                                if (tl) {
+                                    lyricsView(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .fillMaxHeight()
+                                            .padding(horizontal = if (isCompactWidth) 16.dp else 24.dp)
+                                    )
+                                } else {
+                                    artworkView(Modifier.fillMaxSize(), false)
                                 }
                             }
                         }
@@ -1121,12 +1411,12 @@ fun ExpressivePlayerScreen(
                                         Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth(),
                                             horizontalAlignment = if (playerMergeControlsToBottom) Alignment.CenterHorizontally else Alignment.Start) {
                                             AutoScrollingTextOnDemand(text = targetTitle, style = targetTextStyle.copy(color = onSurfaceColor),
-                                                gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> outerBoxBgColor },
-                                                modifier = Modifier.fillMaxWidth().clickable { onSongInfoClick() }, respectGlobalSetting = true,
+                                                gradientEdgeColor = when { showDarkBg -> Color.Black; else -> outerBoxBgColor },
+                                                modifier = Modifier.fillMaxWidth().clickable { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSongInfoClick() }, respectGlobalSetting = true,
                                                 textAlign = if (playerMergeControlsToBottom) TextAlign.Center else TextAlign.Start)
                                             AutoScrollingTextOnDemand(text = targetArtist, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium, color = onSurfaceVariantColor),
-                                                gradientEdgeColor = when { useLightModeOnDarkBg -> Color.White; showDarkBg -> Color.Black; else -> outerBoxBgColor },
-                                                modifier = Modifier.fillMaxWidth().clickable { onShowArtistBottomSheet() }, respectGlobalSetting = true,
+                                                gradientEdgeColor = when { showDarkBg -> Color.Black; else -> outerBoxBgColor },
+                                                modifier = Modifier.fillMaxWidth().clickable { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowArtist() }, respectGlobalSetting = true,
                                                 textAlign = if (playerMergeControlsToBottom) TextAlign.Center else TextAlign.Start)
                                         }
                                     }
@@ -1140,7 +1430,7 @@ fun ExpressivePlayerScreen(
                                         modifier = Modifier.widthIn(max = 100.dp)
                                     ) {
                                         RhythmButtonWeighted(
-                                            onClick = onToggleLyrics,
+                                            onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleLyrics() },
                                             weight = 1f,
                                             isFirst = true,
                                             isLast = isCatalogItem && !isCatalogScoreAvailable,
@@ -1150,7 +1440,10 @@ fun ExpressivePlayerScreen(
                                         )
                                         if (!isCatalogItem || isCatalogScoreAvailable) {
                                             RhythmButtonWeighted(
-                                                onClick = if (isCatalogItem) onOpenScore else onToggleFavorite,
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                    if (isCatalogItem) onOpenScore() else onToggleFavorite()
+                                                },
                                                 weight = 1f,
                                                 isFirst = false,
                                                 isLast = true,
@@ -1177,7 +1470,7 @@ fun ExpressivePlayerScreen(
                                         RhythmPlayButton(
                                             isPlaying = isPlaying,
                                             showBuffering = showBuffering,
-                                            onClick = onPlayPause,
+                                            onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onPlayPause() },
                                             containerColor = when {
                                                 needsDarkSurfaces -> ambientPlayContainer
                                                 useAccentBackground -> accentFg
@@ -1192,7 +1485,7 @@ fun ExpressivePlayerScreen(
                                             modifier = Modifier.weight(1f)
                                         )
                                         RhythmControlButton(
-                                            onClick = onSkipNext,
+                                            onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSkipNext() },
                                             shape = playerControlShape,
                                             containerColor = when {
                                                 needsDarkSurfaces -> ambientControlContainer
@@ -1218,7 +1511,7 @@ fun ExpressivePlayerScreen(
                                     Row(Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(if (isCompactWidth) 8.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
                                         RhythmControlButton(
-                                            onClick = onSkipPrevious,
+                                            onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSkipPrevious() },
                                             shape = playerControlShape,
                                             containerColor = when {
                                                 needsDarkSurfaces -> ambientControlContainer
@@ -1246,7 +1539,7 @@ fun ExpressivePlayerScreen(
                                             } else if (playerProgressStyle == "WAVY") {
                                                 WaveSlider(value = if (isScrubbing && enhancedSeekingEnabled) scrubProgress else progressValue,
                                                     onValueChange = { if (canSeek && enhancedSeekingEnabled) { isScrubbing = true; scrubProgress = it } else if (canSeek) onSeek(it) },
-                                                    onValueChangeFinished = { if (canSeek && enhancedSeekingEnabled && isScrubbing) { onSeek(scrubProgress); isScrubbing = false } },
+                                                    onValueChangeFinished = { if (canSeek && enhancedSeekingEnabled && isScrubbing) { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onSeek(scrubProgress); isScrubbing = false } },
                                                     modifier = Modifier.fillMaxWidth(), enabled = canSeek, isPlaying = isPlaying,
                                                     activeTrackColor = primaryColor, inactiveTrackColor = onSurfaceColor.copy(alpha = 0.2f), thumbColor = primaryColor)
                                             } else {
@@ -1258,6 +1551,7 @@ fun ExpressivePlayerScreen(
                                                         height = when (ps) { ProgressStyle.THIN -> 2.dp; ProgressStyle.THICK -> 12.dp; else -> 8.dp },
                                                         isPlaying = isPlaying, showThumb = ts != ThumbStyle.NONE, thumbStyle = ts, thumbSize = 14.dp, rotateThumbWhenPlaying = playerProgressThumbRotate, waveAmplitudeWhenPlaying = 3.dp, waveLength = 60.dp)
                                                     Slider(value = progressValue, onValueChange = { onSeek(it) }, modifier = Modifier.fillMaxWidth(), enabled = canSeek,
+                                                        onValueChangeFinished = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT) },
                                                         colors = SliderDefaults.colors(thumbColor = Color.Transparent, activeTrackColor = Color.Transparent, inactiveTrackColor = Color.Transparent))
                                                 }
                                             }
@@ -1272,7 +1566,7 @@ fun ExpressivePlayerScreen(
                                                     style = MaterialTheme.typography.labelMedium,
                                                     color = onSurfaceVariantColor,
                                                     modifier = Modifier
-                                                        .clickable { onTotalTimeClick() }
+                                                        .clickable { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onTotalTimeClick() }
                                                         .padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
                                                 )
                                             }
@@ -1307,99 +1601,330 @@ fun ExpressivePlayerScreen(
                                 location?.id == "speaker" -> RhythmIcons.SpeakerFilled
                                 else -> RhythmIcons.Location
                             }
-                            if (playerMergeControlsToBottom) {
+
+                            val defaultContentColor = when {
+                                needsDarkSurfaces -> ambientControlContent
+                                useAccentBackground -> accentFg
+                                else -> monoFg
+                            }
+
+                            val activeButtons = remember(
+                                playerMergeControlsToBottom,
+                                expressiveBottomButtonsMerge,
+                                expressiveHiddenBottomButtonsMerge,
+                                expressiveBottomButtonsNormal,
+                                expressiveHiddenBottomButtonsNormal
+                            ) {
+                                if (playerMergeControlsToBottom) {
+                                    val filtered = expressiveBottomButtonsMerge.filter { !expressiveHiddenBottomButtonsMerge.contains(it) }
+                                    if (filtered.isEmpty()) appSettings.defaultExpressiveBottomButtonsMerge else filtered
+                                } else {
+                                    val filtered = expressiveBottomButtonsNormal.filter { !expressiveHiddenBottomButtonsNormal.contains(it) }
+                                    if (filtered.isEmpty()) appSettings.defaultExpressiveBottomButtonsNormal else filtered
+                                }
+                            }
+
+                            val displayedButtons = remember(activeButtons, isCatalogItem, isCatalogScoreAvailable) {
+                                activeButtons.mapNotNull { buttonId ->
+                                    if (buttonId == "FAVORITE" && isCatalogItem) {
+                                        "SCORE".takeIf { isCatalogScoreAvailable }
+                                    } else {
+                                        buttonId
+                                    }
+                                }
+                            }
+
+                            val isCompactButtons = playerMergeControlsToBottom || displayedButtons.size > 3
+
+                            if (isCompactButtons) {
+                                val pillMaxWidth = (displayedButtons.size * 56 + 24).dp.coerceIn(200.dp, 400.dp)
                                 RhythmGroupedButton(
                                     size = RhythmButtonSize.Small,
                                     isFillMaxWidth = false,
-                                    modifier = Modifier.widthIn(max = 260.dp)
+                                    modifier = Modifier.widthIn(max = pillMaxWidth)
                                 ) {
-                                    RhythmDetailActionButton(
-                                        onClick = onToggleLyrics,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = true,
-                                        isLast = false,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = RhythmIcons.Player.Lyrics,
-                                        iconSize = 20.dp,
-                                        text = null,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_lyrics),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
-                                    if (!isCatalogItem || isCatalogScoreAvailable) {
-                                        RhythmDetailActionButton(
-                                            onClick = if (isCatalogItem) onOpenScore else onToggleFavorite,
-                                            weight = 1f,
-                                            height = 44.dp,
-                                            isFirst = false,
-                                            isLast = false,
-                                            type = RhythmButtonType.Tonal,
-                                            icon = if (isCatalogItem) MaterialSymbolIcon("score", filled = true) else if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
-                                            iconSize = 20.dp,
-                                            text = null,
-                                            contentDescription = if (isCatalogItem) "乐谱" else stringResource(R.string.expressiveplayerscreen_favorite),
-                                            containerColor = controlsContainerColor,
-                                            contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                        )
-                                    }
-                                    RhythmDetailActionButton(
-                                        onClick = onDeviceClick,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = false,
-                                        isLast = false,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = deviceIcon,
-                                        iconSize = 20.dp,
-                                        text = null,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_device),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
-                                    RhythmDetailActionButton(
-                                        onClick = onQueueClick,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = false,
-                                        isLast = false,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = RhythmIcons.Queue,
-                                        iconSize = 20.dp,
-                                        text = null,
-                                        textContent = {
-                                            if (queueTotal > 1) {
-                                                Box(
-                                                    modifier = Modifier.size(18.dp).clip(CircleShape).background(primaryColor.copy(alpha = 0.22f)),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Text(
-                                                        text = debouncedQueuePosition.coerceIn(1, queueTotal).toString(),
-                                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                                        fontSize = 9.sp,
-                                                        color = primaryColor
-                                                    )
-                                                }
+                                    displayedButtons.forEachIndexed { index, buttonId ->
+                                        val isFirst = index == 0
+                                        val isLast = index == displayedButtons.size - 1
+                                        when (buttonId) {
+                                            "LYRICS" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleLyrics() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Player.Lyrics,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_lyrics),
+                                                    containerColor = if (showLyricsView) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (showLyricsView) primaryColor else defaultContentColor
+                                                )
                                             }
-                                        },
-                                        contentDescription = stringResource(R.string.bottomsheet_queue),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
-                                    RhythmDetailActionButton(
-                                        onClick = onMoreClick,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = false,
-                                        isLast = true,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = RhythmIcons.More,
-                                        iconSize = 22.dp,
-                                        text = null,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_more),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
+                                            "FAVORITE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleFavorite() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_favorite),
+                                                    containerColor = if (isFavorite) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f) else controlsContainerColor,
+                                                    contentColor = if (isFavorite) MaterialTheme.colorScheme.error else defaultContentColor
+                                                )
+                                            }
+                                            "SCORE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onOpenScore() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = MaterialSymbolIcon("score", filled = true),
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = "乐谱",
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "DEVICE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onDeviceClick() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = deviceIcon,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_device),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "QUEUE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onQueueClick() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Queue,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    textContent = {
+                                                        if (queueTotal > 1) {
+                                                            Box(
+                                                                modifier = Modifier.size(18.dp).clip(CircleShape).background(primaryColor.copy(alpha = 0.22f)),
+                                                                contentAlignment = Alignment.Center
+                                                            ) {
+                                                                Text(
+                                                                    text = debouncedQueuePosition.coerceIn(1, queueTotal).toString(),
+                                                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                                                    fontSize = 9.sp,
+                                                                    color = primaryColor
+                                                                )
+                                                            }
+                                                        }
+                                                    },
+                                                    contentDescription = stringResource(R.string.bottomsheet_queue),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "MORE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onMoreClick() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.More,
+                                                    iconSize = 22.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_more),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SHUFFLE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleShuffle() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Player.Shuffle,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.action_shuffle),
+                                                    containerColor = if (isShuffleEnabled) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (isShuffleEnabled) primaryColor else defaultContentColor
+                                                )
+                                            }
+                                            "REPEAT" -> {
+                                                val repeatIcon = when (repeatMode) {
+                                                    2 -> RhythmIcons.Player.RepeatOne
+                                                    1 -> RhythmIcons.Player.Repeat
+                                                    else -> RhythmIcons.Player.Repeat
+                                                }
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleRepeat() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = repeatIcon,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.player_chip_repeat),
+                                                    containerColor = if (repeatMode != 0) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (repeatMode != 0) primaryColor else defaultContentColor
+                                                )
+                                            }
+                                            "EQUALIZER" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onEqualizer() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = MaterialSymbolIcon("graphic_eq", filled = true),
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.equalizer),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SPEED" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onPlaybackSpeed() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = MaterialSymbolIcon("tune", filled = true),
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.player_chip_speed),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SLEEP_TIMER" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSleepTimer() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.AccessTime,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.sleep_timer),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ADD_TO_PLAYLIST" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onAddToPlaylist() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.AddToPlaylist,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.bottomsheet_add_to_playlist),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ALBUM" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowAlbumBottomSheet() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Music.Album,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.player_chip_album),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ARTIST" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowArtist() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Music.Artist,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.player_chip_artist),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SONG_INFO" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSongInfoClick() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Info,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.action_song_info),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SHARE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShareFile() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Share,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    contentDescription = stringResource(R.string.extrasheet_share_file),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             } else {
                                 RhythmGroupedButton(
@@ -1412,60 +1937,272 @@ fun ExpressivePlayerScreen(
                                         else -> MaterialTheme.typography.titleMedium
                                     }.copy(fontWeight = FontWeight.Bold)
 
-                                    RhythmDetailActionButton(
-                                        onClick = onDeviceClick,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = true,
-                                        isLast = false,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = deviceIcon,
-                                        iconSize = 20.dp,
-                                        text = deviceName,
-                                        textStyle = deviceTextStyle,
-                                        gradientEdgeColor = when { needsDarkSurfaces -> Color.Black; useAccentBackground -> accentFg; else -> monoBg },
-                                        respectMarqueeGlobalSetting = false,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_device),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
-                                    RhythmDetailActionButton(
-                                        onClick = onQueueClick,
-                                        weight = 1f,
-                                        height = 44.dp,
-                                        isFirst = false,
-                                        isLast = false,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = RhythmIcons.Queue,
-                                        iconSize = 20.dp,
-                                        text = null,
-                                        textContent = {
-                                            val queueText = if (queueTotal > 0) stringResource(R.string.player_queue_format, debouncedQueuePosition.coerceIn(1, queueTotal), queueTotal) else stringResource(R.string.player_queue)
-                                            AnimatedDigitTickerText(
-                                                text = queueText,
-                                                style = MaterialTheme.typography.titleSmall,
-                                                color = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
-                                                fontWeight = FontWeight.Bold,
-                                                prefix = "queueCounter"
-                                            )
-                                        },
-                                        contentDescription = stringResource(R.string.bottomsheet_queue),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
-                                    RhythmDetailActionButton(
-                                        onClick = onMoreClick,
-                                        weight = 0.3f,
-                                        height = 44.dp,
-                                        isFirst = false,
-                                        isLast = true,
-                                        type = RhythmButtonType.Tonal,
-                                        icon = RhythmIcons.More,
-                                        iconSize = 22.dp,
-                                        contentDescription = stringResource(R.string.expressiveplayerscreen_more),
-                                        containerColor = controlsContainerColor,
-                                        contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg }
-                                    )
+                                    displayedButtons.forEachIndexed { index, buttonId ->
+                                        val isFirst = index == 0
+                                        val isLast = index == displayedButtons.size - 1
+                                        when (buttonId) {
+                                            "DEVICE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onDeviceClick() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = deviceIcon,
+                                                    iconSize = 20.dp,
+                                                    text = deviceName,
+                                                    textStyle = deviceTextStyle,
+                                                    gradientEdgeColor = when { needsDarkSurfaces -> Color.Black; useAccentBackground -> accentFg; else -> monoBg },
+                                                    respectMarqueeGlobalSetting = false,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_device),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "QUEUE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onQueueClick() },
+                                                    weight = 1f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Queue,
+                                                    iconSize = 20.dp,
+                                                    text = null,
+                                                    textContent = {
+                                                        val queueText = if (queueTotal > 0) stringResource(R.string.player_queue_format, debouncedQueuePosition.coerceIn(1, queueTotal), queueTotal) else stringResource(R.string.player_queue)
+                                                        AnimatedDigitTickerText(
+                                                            text = queueText,
+                                                            style = MaterialTheme.typography.titleSmall,
+                                                            color = defaultContentColor,
+                                                            fontWeight = FontWeight.Bold,
+                                                            prefix = "queueCounter"
+                                                        )
+                                                    },
+                                                    contentDescription = stringResource(R.string.bottomsheet_queue),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "MORE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onMoreClick() },
+                                                    weight = 0.35f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.More,
+                                                    iconSize = 22.dp,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_more),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "LYRICS" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleLyrics() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Player.Lyrics,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_lyrics),
+                                                    containerColor = if (showLyricsView) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (showLyricsView) primaryColor else defaultContentColor
+                                                )
+                                            }
+                                            "FAVORITE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleFavorite() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_favorite),
+                                                    containerColor = if (isFavorite) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f) else controlsContainerColor,
+                                                    contentColor = if (isFavorite) MaterialTheme.colorScheme.error else defaultContentColor
+                                                )
+                                            }
+                                            "SCORE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onOpenScore() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = MaterialSymbolIcon("score", filled = true),
+                                                    iconSize = 20.dp,
+                                                    contentDescription = "乐谱",
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SHUFFLE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleShuffle() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Player.Shuffle,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.action_shuffle),
+                                                    containerColor = if (isShuffleEnabled) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (isShuffleEnabled) primaryColor else defaultContentColor
+                                                )
+                                            }
+                                            "REPEAT" -> {
+                                                val repeatIcon = when (repeatMode) {
+                                                    2 -> RhythmIcons.Player.RepeatOne
+                                                    1 -> RhythmIcons.Player.Repeat
+                                                    else -> RhythmIcons.Player.Repeat
+                                                }
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleRepeat() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = repeatIcon,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.player_chip_repeat),
+                                                    containerColor = if (repeatMode != 0) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (repeatMode != 0) primaryColor else defaultContentColor
+                                                )
+                                            }
+                                            "EQUALIZER" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onEqualizer() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = MaterialSymbolIcon("graphic_eq", filled = true),
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.equalizer),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SPEED" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onPlaybackSpeed() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = MaterialSymbolIcon("tune", filled = true),
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.player_chip_speed),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SLEEP_TIMER" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSleepTimer() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.AccessTime,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.sleep_timer),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ADD_TO_PLAYLIST" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onAddToPlaylist() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.AddToPlaylist,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.bottomsheet_add_to_playlist),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ALBUM" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowAlbumBottomSheet() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Music.Album,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.player_chip_album),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "ARTIST" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowArtist() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Music.Artist,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.player_chip_artist),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SONG_INFO" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onSongInfoClick() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Info,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.action_song_info),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                            "SHARE" -> {
+                                                RhythmDetailActionButton(
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShareFile() },
+                                                    weight = 0.6f,
+                                                    height = 44.dp,
+                                                    isFirst = isFirst,
+                                                    isLast = isLast,
+                                                    type = RhythmButtonType.Tonal,
+                                                    icon = RhythmIcons.Share,
+                                                    iconSize = 20.dp,
+                                                    contentDescription = stringResource(R.string.extrasheet_share_file),
+                                                    containerColor = controlsContainerColor,
+                                                    contentColor = defaultContentColor
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1505,37 +2242,174 @@ fun ExpressivePlayerScreen(
                         }
                     }
                 } else if (isLandscapeTablet) {
-                    Row(Modifier.fillMaxSize().navigationBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1.1f).fillMaxHeight().padding(horizontal = 24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            Box(Modifier.fillMaxSize()) { artworkContent(Modifier.fillMaxSize()) }
+                    Row(
+                        Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            Modifier
+                                .weight(1.1f)
+                                .fillMaxHeight()
+                                .padding(horizontal = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            AnimatedContent(
+                                targetState = lyricsVisible && showPlayerControls,
+                                transitionSpec = {
+                                    if (targetState) {
+                                        (slideInHorizontally(tween(400, easing = EaseInOut)) { it } + fadeIn(tween(350, easing = EaseInOut))) togetherWith
+                                            (slideOutHorizontally(tween(350, easing = EaseInOut)) { -it } + fadeOut(tween(250, easing = EaseInOut)))
+                                    } else {
+                                        (slideInHorizontally(tween(400, easing = EaseInOut)) { -it } + fadeIn(tween(350, easing = EaseInOut))) togetherWith
+                                            (slideOutHorizontally(tween(350, easing = EaseInOut)) { it } + fadeOut(tween(250, easing = EaseInOut)))
+                                    }
+                                },
+                                label = "tabletLandscapeLeftTransition"
+                            ) { showLyricsOnLeft ->
+                                if (showLyricsOnLeft) {
+                                    lyricsView(Modifier.fillMaxSize().padding(horizontal = 24.dp))
+                                } else if (showAlbumArt) {
+                                    Box(Modifier.fillMaxSize()) {
+                                        artworkView(Modifier.fillMaxSize(), false)
+                                    }
+                                }
+                            }
                         }
-                        Column(Modifier.weight(0.9f).fillMaxHeight().padding(horizontal = 24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            Box { controlsContent() }
-                            Box { bottomButtonsContent() }
+                        Column(
+                            Modifier
+                                .weight(0.9f)
+                                .fillMaxHeight()
+                                .padding(horizontal = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            AnimatedContent(
+                                targetState = lyricsVisible && !showPlayerControls,
+                                transitionSpec = {
+                                    if (targetState) {
+                                        (slideInHorizontally(tween(400, easing = EaseInOut)) { it } + fadeIn(tween(350, easing = EaseInOut))) togetherWith
+                                            (slideOutHorizontally(tween(350, easing = EaseInOut)) { it } + fadeOut(tween(250, easing = EaseInOut)))
+                                    } else {
+                                        (slideInHorizontally(tween(350, easing = EaseInOut)) { it } + fadeIn(tween(300, easing = EaseInOut))) togetherWith
+                                            (slideOutHorizontally(tween(300, easing = EaseInOut)) { it } + fadeOut(tween(200, easing = EaseInOut)))
+                                    }
+                                },
+                                label = "tabletLandscapeRightTransition"
+                            ) { showLyricsOnRight ->
+                                if (showLyricsOnRight) {
+                                    lyricsView(Modifier.fillMaxSize().padding(horizontal = 24.dp))
+                                } else {
+                                    Column(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Box { controlsContent() }
+                                        Box { bottomButtonsContent() }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (isTablet) {
+                    AnimatedContent(
+                        targetState = lyricsVisible && !showPlayerControls,
+                        transitionSpec = {
+                            fadeIn(tween(350, easing = EaseInOut)) togetherWith fadeOut(tween(250, easing = EaseInOut))
+                        },
+                        label = "tabletPortraitLayoutTransition"
+                    ) { isImmersive ->
+                        if (isImmersive) {
+                            if (showAlbumArt) {
+                                Row(Modifier.fillMaxSize().navigationBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
+                                    Column(
+                                        Modifier.weight(0.9f).fillMaxHeight().padding(horizontal = 16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Box(Modifier.fillMaxSize()) {
+                                            artworkView(Modifier.fillMaxSize(), true)
+                                        }
+                                    }
+                                    Column(
+                                        Modifier.weight(1.1f).fillMaxHeight().padding(horizontal = 16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        lyricsView(Modifier.fillMaxSize().padding(horizontal = 16.dp))
+                                    }
+                                }
+                            } else {
+                                Box(
+                                    Modifier
+                                        .fillMaxSize()
+                                        .navigationBarsPadding()
+                                        .padding(horizontal = 32.dp, vertical = 24.dp)
+                                ) {
+                                    lyricsView(Modifier.fillMaxSize())
+                                }
+                            }
+                        } else {
+                            Column(
+                                Modifier.fillMaxSize().navigationBarsPadding(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Box(Modifier.weight(1f)) {
+                                    AnimatedContent(
+                                        targetState = lyricsVisible,
+                                        transitionSpec = {
+                                            if (targetState) {
+                                                (slideInHorizontally(tween(400, easing = EaseInOut)) { it } + fadeIn(tween(350, easing = EaseInOut))) togetherWith
+                                                    (slideOutHorizontally(tween(350, easing = EaseInOut)) { -it } + fadeOut(tween(250, easing = EaseInOut)))
+                                            } else {
+                                                (slideInHorizontally(tween(400, easing = EaseInOut)) { -it } + fadeIn(tween(350, easing = EaseInOut))) togetherWith
+                                                    (slideOutHorizontally(tween(350, easing = EaseInOut)) { it } + fadeOut(tween(250, easing = EaseInOut)))
+                                            }
+                                        },
+                                        label = "tabletPortraitTopContent"
+                                    ) { isLyrics ->
+                                        if (isLyrics) {
+                                            lyricsView(Modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 16.dp))
+                                        } else if (showAlbumArt) {
+                                            artworkView(Modifier.fillMaxSize().padding(bottom = 32.dp), false)
+                                        }
+                                    }
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 48.dp)
+                                        .padding(bottom = 24.dp)
+                                ) {
+                                    controlsContent()
+                                }
+                                Box(
+                                    modifier = Modifier.padding(horizontal = 48.dp)
+                                ) {
+                                    bottomButtonsContent()
+                                }
+                            }
                         }
                     }
                 } else {
                     Column(
                         Modifier.fillMaxSize().navigationBarsPadding(),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = if (isTablet && !isLandscapeTablet) Arrangement.Center else Arrangement.Bottom
+                        verticalArrangement = Arrangement.Bottom
                     ) {
                         Box(Modifier.weight(1f)) {
-                            artworkContent(Modifier.fillMaxSize().padding(bottom = if (isCompactHeight) 12.dp else if (isTablet && !isLandscapeTablet) 32.dp else 24.dp))
+                            artworkContent(Modifier.fillMaxSize().padding(bottom = if (isCompactHeight) 12.dp else 24.dp))
                         }
                         Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .then(if (isTablet && !isLandscapeTablet) Modifier.padding(horizontal = 48.dp).padding(bottom = 24.dp) else Modifier)
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             controlsContent()
                         }
-                        Box(
-                            modifier = Modifier
-                                .then(if (isTablet && !isLandscapeTablet) Modifier.padding(horizontal = 48.dp) else Modifier)
-                        ) {
+                        Box {
                             bottomButtonsContent()
                         }
                     }
@@ -1551,7 +2425,6 @@ fun ExpressivePlayerScreen(
                             padding = 6.dp,
                             autoHideAfterMs = 5000,
                             tint = when {
-                                useLightModeOnDarkBg -> Color.Black
                                 showDarkBg -> Color.White
                                 useAccentBackground -> accentFg
                                 else -> null
@@ -1581,6 +2454,7 @@ private fun RhythmPlayerLyricsPanel(
     textAlignment: TextAlign,
     modifier: Modifier = Modifier,
     onTapLyricsView: (() -> Unit)? = null,
+    onNavigateToLyricsSettings: (() -> Unit)? = null,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
     subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     activeColor: Color = MaterialTheme.colorScheme.primary,
@@ -1613,7 +2487,7 @@ private fun RhythmPlayerLyricsPanel(
                             size = RhythmButtonSize.Small
                         ) {
                             RhythmButtonWeighted(
-                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onRetryLyrics() },
+                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onRetryLyrics() },
                                 weight = 1f,
                                 isFirst = true,
                                 isLast = false,
@@ -1623,22 +2497,22 @@ private fun RhythmPlayerLyricsPanel(
                                 contentColor = buttonContentColor
                             )
                             RhythmButtonWeighted(
-                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onShowLyricsEditor() },
+                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onShowLyricsEditor() },
                                 weight = 1f,
                                 isFirst = false,
                                 isLast = false,
                                 icon = RhythmIcons.Player.Lyrics,
-                                text = stringResource(R.string.button_add),
+                                text = stringResource(R.string.lyrics_editor_short),
                                 containerColor = buttonContainerColor,
                                 contentColor = buttonContentColor
                             )
                             RhythmButtonWeighted(
-                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY); onPickLyricsFile() },
+                                onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onNavigateToLyricsSettings?.invoke() },
                                 weight = 1f,
                                 isFirst = false,
                                 isLast = true,
-                                icon = MaterialSymbolIcon("file_open", filled = true),
-                                text = stringResource(R.string.expressiveplayerscreen_load),
+                                icon = MaterialSymbolIcon("settings", filled = true),
+                                text = stringResource(R.string.lyrics_settings_short),
                                 containerColor = buttonContainerColor,
                                 contentColor = buttonContentColor
                             )
@@ -1718,17 +2592,17 @@ private fun RhythmPlayerLyricsPanel(
 private fun filterPlainLyricsByPreference(rawLyrics: String, showTranslation: Boolean, showRomanization: Boolean): String {
     if (rawLyrics.isBlank() || (showTranslation && showRomanization)) return rawLyrics
     val filteredLines = mutableListOf<String>()
-    var prevNonAscii = false
+    var prevNonLatin = false
     rawLyrics.lineSequence().forEach { line ->
         val t = line.trim()
         if (t.isEmpty()) { filteredLines += line; return@forEach }
         val isBracketTrans = t.startsWith("(") && t.endsWith(")") && t.length > 2
         val isBracketRoman = t.startsWith("[") && t.endsWith("]") && t.length > 2
-        val hasLetters = t.any { it.isLetterOrDigit() }
-        val isAscii = t.all { it.code <= 127 || it.isWhitespace() }
-        if ((!showTranslation && isBracketTrans) || (!showRomanization && (isBracketRoman || (hasLetters && isAscii && prevNonAscii)))) return@forEach
+        val hasLetters = t.any { it.isLetter() }
+        val isLatin = chromahub.rhythm.app.util.LyricsParser.isLatinBased(t)
+        if ((!showTranslation && isBracketTrans) || (!showRomanization && (isBracketRoman || (hasLetters && isLatin && prevNonLatin)))) return@forEach
         filteredLines += line
-        if (!isBracketTrans && !isBracketRoman) prevNonAscii = t.any { it.code > 127 }
+        if (!isBracketTrans && !isBracketRoman) prevNonLatin = chromahub.rhythm.app.util.LyricsParser.hasNonLatinScript(t)
     }
     return filteredLines.joinToString("\n")
 }

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.components.dialogs
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
@@ -54,6 +59,7 @@ fun CreatePlaylistDialog(
     onConfirmWithSong: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
+    val haptics = LocalHapticFeedback.current
     var playlistName by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
     var addSong by remember { mutableStateOf(song != null) }
@@ -106,7 +112,10 @@ fun CreatePlaylistDialog(
                     ) {
                         Checkbox(
                             checked = addSong,
-                            onCheckedChange = { addSong = it }
+                            onCheckedChange = {
+                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
+                                addSong = it
+                            }
                         )
                         
                         Text(

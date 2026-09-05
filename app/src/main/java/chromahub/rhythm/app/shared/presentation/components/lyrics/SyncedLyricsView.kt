@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.components.lyrics
 
 import androidx.compose.animation.core.*
@@ -29,6 +34,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.RhythmApplication
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlin.math.abs
 
 private sealed class SyncedLyricsItem {
@@ -45,27 +53,29 @@ private suspend fun LazyListState.animateToSyncedItemWithCatchUp(
     lastIndex: Int,
     noAnimation: Boolean = false
 ) {
+    if (lastIndex < 0) return
+    val safeTargetIndex = targetIndex.coerceIn(0, lastIndex)
     val currentIndex = firstVisibleItemIndex
-    val delta = abs(currentIndex - targetIndex)
+    val delta = abs(currentIndex - safeTargetIndex)
 
     if (noAnimation) {
-        scrollToItem(targetIndex, scrollOffset = scrollOffset)
+        scrollToItem(safeTargetIndex, scrollOffset = scrollOffset)
         return
     }
 
     if (delta >= LARGE_SCROLL_CATCH_UP_DELTA) {
-        val prePositionIndex = if (targetIndex > currentIndex) {
-            (targetIndex - 1).coerceAtLeast(0)
+        val prePositionIndex = if (safeTargetIndex > currentIndex) {
+            (safeTargetIndex - 1).coerceAtLeast(0)
         } else {
-            (targetIndex + 1).coerceAtMost(lastIndex)
+            (safeTargetIndex + 1).coerceAtMost(lastIndex)
         }
 
-        if (prePositionIndex != targetIndex) {
+        if (prePositionIndex != safeTargetIndex) {
             scrollToItem(prePositionIndex, scrollOffset = scrollOffset)
         }
     }
 
-    animateScrollToItem(targetIndex, scrollOffset = scrollOffset)
+    animateScrollToItem(safeTargetIndex, scrollOffset = scrollOffset)
 }
 
 private fun buildSyncedLyricsItems(lines: List<LyricLine>): List<SyncedLyricsItem> {
@@ -204,18 +214,59 @@ fun SyncedLyricsView(
         }
     }
 
+    // Pause auto-scrolling when user manually scrolls
+    val isDragged by listState.interactionSource.collectIsDraggedAsState()
+    var userScrolledRecently by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isDragged) {
+        if (isDragged) {
+            userScrolledRecently = true
+        } else if (userScrolledRecently) {
+            // Wait for any active fling deceleration to complete
+            snapshotFlow { listState.isScrollInProgress }
+                .first { !it }
+            delay(3500L)
+            userScrolledRecently = false
+        }
+    }
+
+    // Reset user scroll lock and tracked line index on lyrics or song change
+    LaunchedEffect(lyrics, parsedLyricsInput) {
+        previousLineIndex.intValue = -1
+        userScrolledRecently = false
+    }
+
     // Enhanced auto-scroll with spring animation
-    LaunchedEffect(currentLineIndex) {
-        if (currentLineIndex >= 0 && parsedLyrics.isNotEmpty() && currentLineIndex != previousLineIndex.intValue) {
-            previousLineIndex.intValue = currentLineIndex
-            val offset = listState.layoutInfo.viewportSize.height / 3
-            val targetItemIndex = lineToItemIndex[currentLineIndex] ?: currentLineIndex
-            listState.animateToSyncedItemWithCatchUp(
-                targetIndex = targetItemIndex,
-                scrollOffset = -offset,
-                lastIndex = lyricsItems.lastIndex,
-                noAnimation = lyricNoAnimationVal
-            )
+    LaunchedEffect(currentLineIndex, userScrolledRecently) {
+        if (currentLineIndex >= 0 && parsedLyrics.isNotEmpty()) {
+            val isIndexChange = currentLineIndex != previousLineIndex.intValue
+            // If user explicitly jumped/seeked (jump > 1 line), override scroll lock
+            if (isIndexChange && abs(currentLineIndex - previousLineIndex.intValue) > 1) {
+                userScrolledRecently = false
+            }
+
+            if (!userScrolledRecently) {
+                previousLineIndex.intValue = currentLineIndex
+                val offset = listState.layoutInfo.viewportSize.height / 3
+                val targetItemIndex = (lineToItemIndex[currentLineIndex] ?: currentLineIndex)
+                    .coerceIn(0, lyricsItems.lastIndex.coerceAtLeast(0))
+                if (lyricsItems.isNotEmpty()) {
+                    listState.animateToSyncedItemWithCatchUp(
+                        targetIndex = targetItemIndex,
+                        scrollOffset = -offset,
+                        lastIndex = lyricsItems.lastIndex,
+                        noAnimation = lyricNoAnimationVal
+                    )
+                }
+            }
+        }
+    }
+
+    val handleSeek: (Long) -> Unit = remember(onSeek) {
+        { timestamp ->
+            userScrolledRecently = false
+            previousLineIndex.intValue = -1
+            onSeek?.invoke(timestamp)
         }
     }
 
@@ -254,7 +305,21 @@ fun SyncedLyricsView(
             },
             contentPadding = PaddingValues(vertical = 30.dp)
         ) {
-            itemsIndexed(lyricsItems) { _, item ->
+            itemsIndexed(
+                items = lyricsItems,
+                key = { index, item ->
+                    when (item) {
+                        is SyncedLyricsItem.Line -> "synced_line_${item.line.timestamp}_${item.index}"
+                        is SyncedLyricsItem.Gap -> "synced_gap_${item.startTime}_${item.duration}_$index"
+                    }
+                },
+                contentType = { _, item ->
+                    when (item) {
+                        is SyncedLyricsItem.Line -> "synced_line"
+                        is SyncedLyricsItem.Gap -> "synced_gap"
+                    }
+                }
+            ) { _, item ->
                 when (item) {
                     is SyncedLyricsItem.Line -> {
                         SyncedLyricItem(
@@ -263,7 +328,7 @@ fun SyncedLyricsView(
                             currentLineIndex = currentLineIndex,
                             currentPlaybackTime = adjustedPlaybackTime,
                             parsedLyrics = parsedLyrics,
-                            onSeek = onSeek,
+                            onSeek = handleSeek,
                             showTranslation = showTranslation,
                             showRomanization = showRomanization,
                             textSizeMultiplier = textSizeMultiplier,
@@ -315,10 +380,10 @@ private fun SyncedVocalGapItem(
     val isCurrentGap = currentPlaybackTime >= item.startTime &&
         currentPlaybackTime < item.startTime + item.duration
 
-    val gapHeight = (item.duration / 1000f).coerceIn(18f, 66f)
+    val gapPadding = (item.duration / 1000f).coerceIn(8f, 20f)
 
     val iconScale by animateFloatAsState(
-        targetValue = if (isCurrentGap) 1.4f else 1f,
+        targetValue = if (isCurrentGap) 1.3f else 1f,
         animationSpec = if (noAnimation) snap() else spring(
             dampingRatio = Spring.DampingRatioLowBouncy,
             stiffness = Spring.StiffnessVeryLow
@@ -335,22 +400,15 @@ private fun SyncedVocalGapItem(
         label = "syncedGapAlpha"
     )
 
-    Spacer(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(gapHeight.dp)
-            .padding(horizontal = 28.dp)
-    )
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = gapPadding.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "♪",
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.titleMedium,
             color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(alpha = iconAlpha),
             modifier = Modifier.graphicsLayer {
                 scaleX = iconScale
@@ -359,19 +417,12 @@ private fun SyncedVocalGapItem(
         )
         Text(
             text = stringResource(R.string.lyrics_instrumental),
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.labelMedium,
             color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(
                 alpha = if (isCurrentGap) 0.6f else 0.25f
             )
         )
     }
-
-    Spacer(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(gapHeight.dp)
-            .padding(horizontal = 28.dp)
-    )
 }
 
 /**
@@ -493,11 +544,8 @@ private fun SyncedLyricItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                if (onTapLyricsView != null) {
-                    onTapLyricsView()
-                } else {
-                    onSeek?.invoke(line.timestamp)
-                }
+                onSeek?.invoke(line.timestamp)
+                onTapLyricsView?.invoke()
             }
             .padding(vertical = 14.dp, horizontal = 20.dp)
             .graphicsLayer {
@@ -540,8 +588,12 @@ private fun SyncedLyricItem(
             )
         }
         
+        val hasDistinctRomanization = showRomanization &&
+            !line.romanization.isNullOrBlank() &&
+            (line.translation.isNullOrBlank() || line.romanization.trim().lowercase() != line.translation.trim().lowercase())
+
         // Romanization text (if available and enabled)
-        if (showRomanization && !line.romanization.isNullOrBlank()) {
+        if (hasDistinctRomanization) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = line.romanization,

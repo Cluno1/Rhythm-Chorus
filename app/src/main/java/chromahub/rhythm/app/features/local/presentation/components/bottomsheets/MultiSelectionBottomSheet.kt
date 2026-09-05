@@ -1,4 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
@@ -136,7 +142,7 @@ fun MultiSelectionBottomSheet(
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val haptics = LocalHapticFeedback.current
     
-    var showContent by remember { mutableStateOf(false) }
+    var showContent by remember { mutableStateOf(true) }
     
     val allAreLiked by remember(selectedSongs, favoriteSongIds) {
         derivedStateOf {
@@ -144,12 +150,11 @@ fun MultiSelectionBottomSheet(
         }
     }
     
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(100)
-        showContent = true
-    }
-    
-    ModalBottomSheet(
+    val scrollState = rememberScrollState()
+
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+        scrollState = scrollState,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -158,6 +163,7 @@ fun MultiSelectionBottomSheet(
                 color = MaterialTheme.colorScheme.primary
             )
         },
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onBackground,
         tonalElevation = 0.dp
@@ -165,7 +171,7 @@ fun MultiSelectionBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
+                .padding(bottom = 16.dp)
         ) {
             // Header with selection info
             AnimatedVisibility(
@@ -182,12 +188,19 @@ fun MultiSelectionBottomSheet(
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it }
             ) {
-                Column(
+                AdaptiveSheetScrollContainer(
+                    scrollState = scrollState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                        .weight(1f, fill = false)
+                ) { endPadding ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 24.dp, end = 24.dp + endPadding, top = 8.dp, bottom = 8.dp)
+                            .verticalScroll(scrollState),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                     val primaryContainer = MaterialTheme.colorScheme.primaryContainer
                     val onPrimaryContainer = MaterialTheme.colorScheme.onPrimaryContainer
                     val secondaryContainer = MaterialTheme.colorScheme.secondaryContainer
@@ -388,6 +401,7 @@ fun MultiSelectionBottomSheet(
             }
         }
     }
+}
 }
 
 /**

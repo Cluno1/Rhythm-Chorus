@@ -1,6 +1,15 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 package chromahub.rhythm.app.shared.presentation.components.dialogs
+
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.StandardBottomSheetHeader
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
@@ -43,22 +52,6 @@ fun BetaProgramPopup(
         val haptic = LocalHapticFeedback.current
         val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
-        var showContent by remember { mutableStateOf(false) }
-
-        val contentAlpha by animateFloatAsState(
-            targetValue = if (showContent) 1f else 0f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            ),
-            label = "contentAlpha"
-        )
-
-        LaunchedEffect(Unit) {
-            delay(100)
-            showContent = true
-        }
-
         val betaFeatures = listOf(
             BetaFeature(
                 icon = MaterialSymbolIcon("flight_takeoff", filled = true),
@@ -77,7 +70,8 @@ fun BetaProgramPopup(
             ),
         )
 
-        ModalBottomSheet(
+        RhythmAdaptiveModalSheet(
+            adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
             modifier = Modifier
                 .widthIn(max = 640.dp)
                 .fillMaxWidth(),
@@ -91,34 +85,35 @@ fun BetaProgramPopup(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
             tonalElevation = 0.dp
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp)
-                    .graphicsLayer(alpha = contentAlpha)
-            ) {
-                StandardBottomSheetHeader(
-                    title = stringResource(R.string.beta_program),
-                    subtitle = stringResource(R.string.betaprogrampopup_youre_part_of_an),
-                    visible = showContent
-                )
+            StandardBottomSheetHeader(
+                title = stringResource(R.string.beta_program),
+                subtitle = stringResource(R.string.betaprogrampopup_youre_part_of_an),
+                visible = true
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            val scrollState = rememberScrollState()
 
-                // Beta features
+            AdaptiveSheetScrollContainer(
+                scrollState = scrollState,
+                modifier = Modifier.fillMaxWidth()
+            ) { endPadding ->
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                        .padding(start = 24.dp, end = 24.dp + endPadding, top = 8.dp, bottom = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    betaFeatures.forEach { feature ->
-                        BetaFeatureCard(feature = feature)
+                        betaFeatures.forEach { feature ->
+                            BetaFeatureCard(feature = feature)
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                // CTA Button
+            // CTA Button (Pinned at bottom)
+            Box(modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 24.dp)) {
                 Button(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)

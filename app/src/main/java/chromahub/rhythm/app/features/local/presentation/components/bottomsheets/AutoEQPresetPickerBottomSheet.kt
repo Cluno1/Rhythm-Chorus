@@ -1,4 +1,12 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -31,6 +39,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import chromahub.rhythm.app.R
 import androidx.compose.ui.res.stringResource
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.AdaptiveSheetScrollContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,17 +101,16 @@ fun AutoEQPresetPickerBottomSheet(
         result.sortedWith(compareByDescending { it.name == currentProfileName })
     }
 
-    var showContent by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        delay(80)
-        showContent = true
-    }
+    var showContent by remember { mutableStateOf(true) }
 
-    ModalBottomSheet(
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.WIDE_DIALOG,
+        lazyListState = listState,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary) },
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onBackground,
         tonalElevation = 0.dp
@@ -258,14 +266,21 @@ fun AutoEQPresetPickerBottomSheet(
                     CircularProgressIndicator()
                 }
             } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    contentPadding = PaddingValues(vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                AdaptiveSheetScrollContainer(
+                    lazyListState = listState,
+                    modifier = Modifier.fillMaxWidth()
+                ) { endPadding ->
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp + endPadding,
+                            top = 8.dp,
+                            bottom = 8.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                     item {
                         val isCurrentlyActive = currentProfileName.isNullOrBlank() || currentProfileName == "None"
                         Surface(
@@ -391,6 +406,7 @@ fun AutoEQPresetPickerBottomSheet(
             }
         }
     }
+}
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

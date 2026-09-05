@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
@@ -54,6 +59,7 @@ fun PlaybackSettingsScreen(
     val musicViewModel: MusicViewModel = viewModel()
 
     val replayGain by appSettings.replayGain.collectAsState()
+    val skipSilenceEnabled by appSettings.skipSilenceEnabled.collectAsState()
     val repeatModePersistence by appSettings.repeatModePersistence.collectAsState()
     val shuffleModePersistence by appSettings.shuffleModePersistence.collectAsState()
     val useHoursInTimeFormat by appSettings.useHoursInTimeFormat.collectAsState()
@@ -151,6 +157,22 @@ fun PlaybackSettingsScreen(
                         context.getString(R.string.settings_gapless_playback_desc),
                         toggleState = gaplessEnabled,
                         onToggleChange = { appSettings.setGaplessPlayback(it) }
+                    ),
+                    SettingItem(
+                        MaterialSymbolIcon("hearing"),
+                        context.getString(R.string.settings_skip_silence),
+                        when {
+                            isOffloadEnforced -> "Disabled under Lite Mode to conserve battery."
+                            isAudioOffloadActive && !skipSilenceEnabled -> "${context.getString(R.string.settings_skip_silence_desc)}\n(Enabling will disable hardware Audio Offload)"
+                            else -> context.getString(R.string.settings_skip_silence_desc)
+                        },
+                        toggleState = if (isOffloadEnforced || isAudioOffloadActive) false else skipSilenceEnabled,
+                        onToggleChange = {
+                            if (!isOffloadEnforced && !isAudioOffloadActive) {
+                                appSettings.setSkipSilenceEnabled(it)
+                            }
+                        },
+                        enabled = !isOffloadEnforced && !isAudioOffloadActive
                     ),
                     SettingItem(
                         RhythmIcons.Tune,
@@ -282,7 +304,10 @@ fun PlaybackSettingsScreen(
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Slider(
                                         value = crossfadeDuration,
-                                        onValueChange = { appSettings.setCrossfadeDuration(it) },
+                                        onValueChange = {
+                                            HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                                            appSettings.setCrossfadeDuration(it)
+                                        },
                                         valueRange = 0.5f..12f,
                                         steps = 22,
                                         modifier = Modifier.fillMaxWidth()
@@ -326,7 +351,6 @@ fun PlaybackSettingsScreen(
                                         TunerAnimatedSwitch(
                                             checked = item.toggleState,
                                             onCheckedChange = {
-                                                HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
                                                 item.onToggleChange?.invoke(it)
                                             }
                                         )
@@ -338,7 +362,6 @@ fun PlaybackSettingsScreen(
                                     TunerAnimatedSwitch(
                                         checked = item.toggleState,
                                         onCheckedChange = {
-                                            HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
                                             item.onToggleChange?.invoke(it)
                                         }
                                     )

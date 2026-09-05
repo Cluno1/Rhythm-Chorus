@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
@@ -84,7 +89,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -150,6 +154,7 @@ import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOpera
 import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaylistOperationResultDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.AppRestartDialog
 import chromahub.rhythm.app.shared.presentation.components.dialogs.FdroidUpdateWarningDialog
+import chromahub.rhythm.app.shared.presentation.components.dialogs.VersionCodeDowngradeWarningDialog
 import chromahub.rhythm.app.shared.presentation.components.player.PlayerChipOrderBottomSheet
 import chromahub.rhythm.app.features.local.presentation.components.settings.HomeSectionOrderBottomSheet
 import chromahub.rhythm.app.features.local.presentation.components.settings.LibraryTabOrderBottomSheet
@@ -175,7 +180,6 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     // Collect state from ViewModel and AppSettings
     val updatesEnabled by appSettings.updatesEnabled.collectAsState()
     val autoCheckForUpdates by appSettings.autoCheckForUpdates.collectAsState()
-    val useSmartUpdatePolling by appSettings.useSmartUpdatePolling.collectAsState()
     val updateChannel by appSettings.updateChannel.collectAsState()
     val updateSource by appSettings.updateSource.collectAsState()
     val updateCheckIntervalHours by appSettings.updateCheckIntervalHours.collectAsState()
@@ -189,6 +193,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     val downloadedFile by updaterViewModel.downloadedFile.collectAsState()
     val isExtracting by updaterViewModel.isExtracting.collectAsState()
     val canProceedWithMismatchedDownload by updaterViewModel.canProceedWithMismatchedDownload.collectAsState()
+    val isVersionCodeDowngrade by updaterViewModel.isVersionCodeDowngrade.collectAsState()
 
     // Simulation state variables
     var simulateEnabled by remember { mutableStateOf(false) }
@@ -243,6 +248,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     var showSourceDialog by remember { mutableStateOf(false) }
     var showIntervalDialog by remember { mutableStateOf(false) }
     var showFdroidWarningDialog by remember { mutableStateOf(false) }
+    var showDowngradeWarningDialog by remember { mutableStateOf(false) }
 
     val intervalOptions = listOf(
         1 to context.getString(R.string.settings_interval_every_hour),
@@ -254,13 +260,6 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     val updateIntervalLabel = intervalOptions.firstOrNull { (hours, _) ->
         hours == updateCheckIntervalHours
     }?.second ?: pluralStringResource(R.plurals.settings_check_interval_value, updateCheckIntervalHours, updateCheckIntervalHours)
-
-    // Check for updates when the screen is first shown and updates are enabled
-    LaunchedEffect(updatesEnabled) {
-        if (updatesEnabled) {
-            updaterViewModel.checkForUpdates(force = true)
-        }
-    }
 
     // Infinite transition for continuous animations
     val infiniteTransition = rememberInfiniteTransition(label = "update_animations")
@@ -756,6 +755,8 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                                                     simDownloadedFile = File(context.cacheDir, "simulated_update.apk")
                                                 }
                                             }
+                                        } else if (isVersionCodeDowngrade) {
+                                            showDowngradeWarningDialog = true
                                         } else {
                                             updaterViewModel.downloadUpdate()
                                         }
@@ -1095,15 +1096,6 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                         )
                         add(
                             SettingItem(
-                                MaterialSymbolIcon("cloud_sync"),
-                                context.getString(R.string.onboarding_smart_polling_title),
-                                context.getString(R.string.onboarding_smart_polling_desc),
-                                toggleState = useSmartUpdatePolling,
-                                onToggleChange = { appSettings.setUseSmartUpdatePolling(it) }
-                            )
-                        )
-                        add(
-                            SettingItem(
                                 RhythmIcons.Category,
                                 context.getString(R.string.updates_channel_title),
                                 "${updateChannel.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }} - Tap to change",
@@ -1136,51 +1128,6 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                     },
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
-            }
-
-            // 6. Informational card about smart polling
-            item {
-                AnimatedVisibility(
-                    visible = updatesEnabled && useSmartUpdatePolling,
-                    enter = fadeIn(animationSpec = tween(300)) + expandVertically(animationSpec = tween(300)),
-                    exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(animationSpec = tween(200))
-                ) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = RhythmIcons.Info,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.tertiary,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = context.getString(R.string.updates_smart_polling),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = context.getString(R.string.updates_smart_polling_desc),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
-                                )
-                            }
-                        }
-                    }
-                }
             }
 
         }
@@ -1448,6 +1395,19 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
             onDismiss = { showFdroidWarningDialog = false },
             onConfirm = {
                 appSettings.setUpdatesEnabled(true)
+            }
+        )
+    }
+
+    if (showDowngradeWarningDialog) {
+        VersionCodeDowngradeWarningDialog(
+            onDismiss = { showDowngradeWarningDialog = false },
+            onConfirm = {
+                if (activeDownloadedFile != null) {
+                    updaterViewModel.installDownloadedApk()
+                } else {
+                    updaterViewModel.downloadUpdate()
+                }
             }
         )
     }

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
@@ -83,7 +88,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -164,23 +168,27 @@ fun ExperimentalFeaturesScreen(
     onNavigateTo: (String) -> Unit = {},
     onNavigateToGoSettings: (() -> Unit)? = null
 ) {
+    LabsSettingsScreen(
+        onBackClick = onBackClick,
+        onNavigateTo = onNavigateTo,
+        onNavigateToGoSettings = onNavigateToGoSettings
+    )
+}
+
+@Composable
+fun LabsSettingsScreen(
+    onBackClick: () -> Unit,
+    onNavigateTo: (String) -> Unit = {},
+    onNavigateToGoSettings: (() -> Unit)? = null
+) {
     val context = LocalContext.current
     val appSettings = AppSettings.getInstance(context)
     val appMode by appSettings.appMode.collectAsState()
     val hapticFeedbackEnabled by appSettings.hapticFeedbackEnabled.collectAsState()
     val enableAlbumEditing by appSettings.enableAlbumEditing.collectAsState()
-    val skipSilenceEnabled by appSettings.skipSilenceEnabled.collectAsState()
-    val replayGain by appSettings.replayGain.collectAsState()
-    val isAudioOffloadActive by appSettings.isAudioOffloadActive.collectAsState()
-    val audioRoutingMode by appSettings.audioRoutingMode.collectAsState()
     val haptic = LocalHapticFeedback.current
     
-    // Third-party integrations states
-    val broadcastStatusEnabled by appSettings.broadcastStatusEnabled.collectAsState()
-    val bluetoothLyricsEnabled by appSettings.bluetoothLyricsEnabled.collectAsState()
-    
     val forcePlayerCompactMode by appSettings.forcePlayerCompactMode.collectAsState()
-    val useExperimentalPlayerUi by appSettings.useExperimentalPlayerUi.collectAsState()
     
     val updaterViewModel: AppUpdaterViewModel = viewModel()
     val latestVersion by updaterViewModel.latestVersion.collectAsState()
@@ -189,32 +197,11 @@ fun ExperimentalFeaturesScreen(
     var restartDialogMessage by remember { mutableStateOf("") }
 
     CollapsibleHeaderScreen(
-        title = context.getString(R.string.settings_experimental),
+        title = context.getString(R.string.settings_labs),
         showBackButton = true,
         onBackClick = onBackClick
     ) { modifier ->
         val settingGroups = buildList {
-            add(
-                SettingGroup(
-                    title = context.getString(R.string.settings_audio_effects),
-                    items = listOf(
-                        SettingItem(
-                            MaterialSymbolIcon("hearing"),
-                            context.getString(R.string.settings_skip_silence),
-                            if (isAudioOffloadActive) "Disabled while Audio Offload is active" else context.getString(R.string.settings_skip_silence_desc),
-                            toggleState = if (isAudioOffloadActive) false else skipSilenceEnabled,
-                            onToggleChange = {
-                                if (!isAudioOffloadActive) {
-                                    appSettings.setSkipSilenceEnabled(it)
-                                }
-                            },
-                            enabled = !isAudioOffloadActive
-                        )
-                    )
-                )
-            )
-
-
             add(
                 SettingGroup(
                     title = context.getString(R.string.settings_metadata_editing),
@@ -261,13 +248,6 @@ fun ExperimentalFeaturesScreen(
                         ))
                         add(
                         SettingItem(
-                            MaterialSymbolIcon("restart_alt"),
-                            context.getString(R.string.exp_launch_onboarding),
-                            context.getString(R.string.exp_launch_onboarding_desc),
-                            onClick = { appSettings.setOnboardingCompleted(false) }
-                        ))
-                        add(
-                        SettingItem(
                             RhythmIcons.BugReport,
                             context.getString(R.string.exp_test_crash),
                             context.getString(R.string.exp_test_crash_desc),
@@ -296,34 +276,6 @@ fun ExperimentalFeaturesScreen(
                             )
                         }
                     }
-                )
-            )
-            
-            // Third-Party Integrations group
-            add(
-                SettingGroup(
-                    title = context.getString(R.string.exp_third_party_integrations),
-                    items = listOf(
-                        SettingItem(
-                            MaterialSymbolIcon("wifi"),
-                            context.getString(R.string.broadcast_status_enabled),
-                            context.getString(R.string.broadcast_status_desc),
-                            toggleState = broadcastStatusEnabled,
-                            onToggleChange = { appSettings.setBroadcastStatusEnabled(it) }
-                        ),
-                        SettingItem(
-                            MaterialSymbolIcon("lyrics"),
-                            context.getString(R.string.bluetooth_lyrics_enabled),
-                            context.getString(R.string.bluetooth_lyrics_desc),
-                            toggleState = bluetoothLyricsEnabled,
-                            onToggleChange = {
-                                appSettings.setBluetoothLyricsEnabled(it)
-                                if (it && !broadcastStatusEnabled) {
-                                    appSettings.setBroadcastStatusEnabled(true)
-                                }
-                            }
-                        )
-                    )
                 )
             )
         }
@@ -499,7 +451,6 @@ fun DecorationToggleCard(
             TunerAnimatedSwitch(
                 checked = isEnabled,
                 onCheckedChange = {
-                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                     onToggle(it)
                 }
             )

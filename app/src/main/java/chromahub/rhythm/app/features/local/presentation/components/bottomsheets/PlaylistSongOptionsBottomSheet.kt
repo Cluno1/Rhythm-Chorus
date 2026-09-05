@@ -1,4 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.components.bottomsheets
+import chromahub.rhythm.app.shared.presentation.components.bottomsheets.SheetAdaptiveType
 
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
@@ -126,6 +132,7 @@ fun PlaylistSongOptionsBottomSheet(
     onShare: () -> Unit,
     onDeleteSong: () -> Unit,
     showRemoveFromPlaylist: Boolean = true,
+    showAddToPlaylist: Boolean = true,
     showGoToAlbum: Boolean = true,
     isStreamingMode: Boolean = false,
     haptics: HapticFeedback
@@ -134,7 +141,11 @@ fun PlaylistSongOptionsBottomSheet(
     var showContent by remember { mutableStateOf(true) }
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
-    ModalBottomSheet(
+    val scrollState = rememberScrollState()
+
+    RhythmAdaptiveModalSheet(
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+        scrollState = scrollState,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -143,6 +154,7 @@ fun PlaylistSongOptionsBottomSheet(
                 color = MaterialTheme.colorScheme.primary
             )
         },
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onBackground,
         tonalElevation = 0.dp
@@ -150,9 +162,8 @@ fun PlaylistSongOptionsBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
+                .padding(bottom = 16.dp)
         ) {
-            // Header with song info card
             AnimatedVisibility(
                 visible = showContent,
                 enter = fadeIn() + slideInVertically { it },
@@ -242,18 +253,24 @@ fun PlaylistSongOptionsBottomSheet(
                 }
             }
             
-            // Actions section with grouped grid layout
             AnimatedVisibility(
                 visible = showContent,
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it }
             ) {
-                Column(
+                AdaptiveSheetScrollContainer(
+                    scrollState = scrollState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                        .weight(1f, fill = false)
+                ) { endPadding ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 24.dp, end = 24.dp + endPadding, top = 8.dp, bottom = 8.dp)
+                            .verticalScroll(scrollState),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                     val primaryContainer = MaterialTheme.colorScheme.primaryContainer
                     val onPrimaryContainer = MaterialTheme.colorScheme.onPrimaryContainer
                     val secondaryContainer = MaterialTheme.colorScheme.secondaryContainer
@@ -261,7 +278,7 @@ fun PlaylistSongOptionsBottomSheet(
                     val errorContainer = MaterialTheme.colorScheme.errorContainer
                     val errorColor = MaterialTheme.colorScheme.error
 
-                    val gridItems = remember(showGoToAlbum, showRemoveFromPlaylist, primaryContainer, onPrimaryContainer, secondaryContainer, onSecondaryContainer, errorContainer, errorColor) {
+                    val gridItems = remember(showGoToAlbum, showRemoveFromPlaylist, showAddToPlaylist, primaryContainer, onPrimaryContainer, secondaryContainer, onSecondaryContainer, errorContainer, errorColor) {
                         buildList {
                             add(
                                 OptionItem(
@@ -281,15 +298,17 @@ fun PlaylistSongOptionsBottomSheet(
                                     onClick = onAddToQueue
                                 )
                             )
-                            add(
-                                OptionItem(
-                                    icon = RhythmIcons.AddToPlaylist,
-                                    text = context.getString(R.string.content_desc_add_to_playlist),
-                                    containerColor = primaryContainer,
-                                    iconColor = onPrimaryContainer,
-                                    onClick = onAddToPlaylist
+                            if (showAddToPlaylist) {
+                                add(
+                                    OptionItem(
+                                        icon = RhythmIcons.AddToPlaylist,
+                                        text = context.getString(R.string.content_desc_add_to_playlist),
+                                        containerColor = primaryContainer,
+                                        iconColor = onPrimaryContainer,
+                                        onClick = onAddToPlaylist
+                                    )
                                 )
-                            )
+                            }
                             if (showGoToAlbum) {
                                 add(
                                     OptionItem(
@@ -426,6 +445,7 @@ fun PlaylistSongOptionsBottomSheet(
             }
         }
     }
+}
 }
 
 @Composable

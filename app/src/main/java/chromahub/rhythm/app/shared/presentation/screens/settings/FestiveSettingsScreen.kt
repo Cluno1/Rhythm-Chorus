@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package chromahub.rhythm.app.shared.presentation.screens.settings
 
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
@@ -83,7 +88,6 @@ fun FestiveSettingsScreen(
                             description = context.getString(R.string.festive_enabled_desc),
                             checked = festiveEnabled,
                             onCheckedChange = { 
-                                HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.HEAVY)
                                 appSettings.setFestiveThemeEnabled(it) 
                             }
                         )
@@ -99,10 +103,9 @@ fun FestiveSettingsScreen(
                                 title = stringResource(R.string.theme_auto_detect),
                                 description = context.getString(R.string.festive_auto_detect_desc),
                                 checked = festiveAutoDetect,
-                                onCheckedChange = { 
-                                    HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.HEAVY)
-                                    appSettings.setFestiveThemeAutoDetect(it) 
-                                }
+                            onCheckedChange = { 
+                                appSettings.setFestiveThemeAutoDetect(it) 
+                            }
                             )
                         }
                     }
@@ -207,7 +210,10 @@ fun FestiveSettingsScreen(
                                     appSettings.setFestiveThemeIntensity(it) 
                                 },
                                 valueRange = 0.1f..1f,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                onValueChangeFinished = {
+                                    HapticUtils.performHapticFeedback(context, hapticFeedback, HapticType.LIGHT)
+                                }
                             )
                             
                             Spacer(modifier = Modifier.height(8.dp))

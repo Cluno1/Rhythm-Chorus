@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import java.util.Properties
 import com.android.build.api.variant.FilterConfiguration
 
@@ -29,11 +32,11 @@ android {
         
         val overrideVersionCode = project.findProperty("versionCodeOverride")?.toString()?.toIntOrNull()
         val overrideVersionName = project.findProperty("versionNameOverride")?.toString()
-        versionCode = overrideVersionCode ?: 544571200
-        versionName = overrideVersionName ?: "5.4.457.1200 Beta"
+        versionCode = overrideVersionCode ?: 554751250
+        versionName = overrideVersionName ?: "5.5.475.1250 Beta"
 
         val overrideReleaseDate = project.findProperty("releaseDateOverride")?.toString()
-        buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-08-11"}\"")
+        buildConfigField("String", "RELEASE_DATE", "\"${overrideReleaseDate ?: "2026-09-03"}\"")
 
         val isNightly = project.findProperty("nightly")?.toString() == "true"
         buildConfigField("boolean", "IS_NIGHTLY", isNightly.toString())

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 Anjishnu Nandi <https://github.com/cromaguy>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package chromahub.rhythm.app.shared.presentation.screens.settings
@@ -84,7 +89,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -153,8 +157,8 @@ import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerSettingRow
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerSettingCard
-import chromahub.rhythm.app.shared.presentation.screens.settings.SettingItem
 import chromahub.rhythm.app.shared.presentation.screens.settings.SettingGroup
+import chromahub.rhythm.app.shared.data.model.AppSettings
 import androidx.core.net.toUri
 
 
@@ -167,6 +171,7 @@ fun AboutScreen(
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val appUpdaterViewModel: AppUpdaterViewModel = rememberAppUpdaterViewModel()
+    val appSettings = remember { AppSettings.getInstance(context) }
     var showLicensesSheet by remember { mutableStateOf(false) }
 
     val openUrl: (String) -> Unit = { url ->
@@ -303,7 +308,9 @@ fun AboutScreen(
                     detailCards.chunked(2).forEachIndexed { rowIndex, rowCards ->
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Max)
                         ) {
                             rowCards.forEachIndexed { colIndex, card ->
                                 ProjectDetailCard(
@@ -312,7 +319,9 @@ fun AboutScreen(
                                     value = card.value,
                                     shape = getDetailCardShape(rowIndex * 2 + colIndex, detailCards.size),
                                     onClick = { copyToClipboard(card.label, card.value) },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
                                 )
                             }
                         }
@@ -531,6 +540,19 @@ fun AboutScreen(
                             title = stringResource(R.string.cd_telegram_support),
                             description = "t.me/RhythmSupport",
                             onClick = { openUrl("https://t.me/RhythmSupport") }
+                        )
+                    ))
+                    add(
+                    toMaterial3SettingsItem(
+                        context = context,
+                        hapticFeedback = haptics,
+                        item = SettingItem(
+                            icon = MaterialSymbolIcon("restart_alt", filled = true),
+                            title = stringResource(R.string.about_replay_tour),
+                            description = stringResource(R.string.about_replay_tour_desc),
+                            onClick = {
+                                appSettings.setOnboardingCompleted(false)
+                            }
                         )
                     ))
                 }
@@ -967,19 +989,19 @@ private fun ProjectDetailCard(
     label: String,
     value: String,
     onClick: () -> Unit,
-    shape: RoundedCornerShape = RoundedCornerShape(20.dp),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    shape: RoundedCornerShape = RoundedCornerShape(20.dp)
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     Card(
         modifier = modifier,
         shape = shape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .clickable {
                     HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                     onClick()
