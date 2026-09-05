@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launcher picker preview for the Rhythm Stats widget.
+<!-- Launcher picker preview for the Sonorus Stats widget.
      Mirrors the widget design: cookie background, sunny music note + total
      listening time + "listening", gem (circle) badge with crown + longest streak.
      Framework-safe only (android:* attributes, no app: namespace). -->

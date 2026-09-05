@@ -1,182 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rhythm Music Player - Privacy Policy</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        h1, h2, h3 {
-            color: #1976D2;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .last-updated {
-            color: #666;
-            font-size: 14px;
-            font-style: italic;
-        }
-        ul {
-            padding-left: 25px;
-        }
-        li {
-            margin-bottom: 8px;
-        }
-        .highlight {
-            background: #E3F2FD;
-            padding: 15px;
-            border-left: 4px solid #1976D2;
-            margin: 15px 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sonorus Privacy Policy</title>
+  <style>
+    body { font-family: sans-serif; line-height: 1.6; margin: 0; background: #f6f7fa; color: #172033; }
+    main { max-width: 800px; margin: auto; padding: 24px; }
+    section { background: white; border-radius: 16px; padding: 20px; margin: 14px 0; }
+    a { color: #244b87; }
+  </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Privacy Policy for Rhythm Music Player</h1>
-        <p class="last-updated">Last Updated: January 19, 2026</p>
-        
-        <div class="highlight">
-            <strong>Privacy-First Approach:</strong> Rhythm is designed with your privacy in mind. We do not collect, store, or share any personal information from our users.
-        </div>
+<body><main>
+  <h1>Sonorus Privacy Policy</h1>
+  <p>Last updated: September 5, 2026</p>
 
-        <h2>1. Introduction</h2>
-        <p>
-            Rhythm Music Player ("we," "our," or "the app") is a free, open-source music player for Android. 
-            This Privacy Policy explains how the app handles data when you use it.
-        </p>
+  <section><h2>Overview</h2>
+    <p>Sonorus is an open-source Android music player maintained independently by Cluno1. It does not include advertising, analytics, or third-party crash reporting.</p>
+  </section>
 
-        <h2>2. Information We Do NOT Collect</h2>
-        <p>Rhythm does not collect or transmit any of the following:</p>
-        <ul>
-            <li>Personal information (name, email, phone number, etc.)</li>
-            <li>Device identifiers (IMEI, Android ID, advertising ID)</li>
-            <li>Location data</li>
-            <li>Usage analytics or crash reports</li>
-            <li>Listening history or playback statistics</li>
-            <li>Contact information</li>
-            <li>Any other personally identifiable information</li>
-        </ul>
+  <section><h2>Data on your device</h2>
+    <p>Sonorus stores settings, playlists, listening history, local-library metadata, artwork, lyrics, scores, and downloaded Catalog media in app storage. Device audio is read for playback and library indexing; Sonorus does not upload device music.</p>
+  </section>
 
-        <h2>3. Data Stored Locally on Your Device</h2>
-        <p>All app data is stored locally on your device and never transmitted to external servers:</p>
-        <ul>
-            <li><strong>Music Library:</strong> The app scans your device's local music files to create a playable library</li>
-            <li><strong>Playback Statistics:</strong> Play counts, last played times, and favorites are stored locally</li>
-            <li><strong>App Settings:</strong> Your preferences (theme, equalizer settings, etc.) are saved locally</li>
-            <li><strong>Playlists:</strong> Custom playlists you create are stored only on your device</li>
-            <li><strong>Downloaded Artwork:</strong> Album covers and artist images fetched from online sources are cached locally</li>
-        </ul>
+  <section><h2>Catalog connection</h2>
+    <p>If you configure the private Catalog, Sonorus sends the server the user/device registration identifiers, a device public key, signed request metadata, and requests needed to list or download authorized Catalog content. The device private key remains non-exportable in Android Keystore. Catalog media may be downloaded from the configured object-storage provider.</p>
+  </section>
 
-        <h2>4. Internet Access and Third-Party Services</h2>
-        <p>
-            Rhythm may use internet connectivity for optional features. These features are disabled by default and require your explicit opt-in:
-        </p>
+  <section><h2>Updates and external links</h2>
+    <p>When update checks are enabled, Sonorus contacts the GitHub API and Release download hosts for <a href="https://github.com/Cluno1/Sonorus">Cluno1/Sonorus</a>. GitHub receives ordinary network information such as your IP address and request headers. Links opened from About are handled by your browser.</p>
+  </section>
 
-        <h3>4.1 Optional Online Features (User Configurable)</h3>
-        <ul>
-            <li><strong>Deezer API:</strong> To fetch album artwork and artist images (if enabled in settings)</li>
-            <li><strong>LRCLib:</strong> To download synchronized lyrics for songs (if enabled in settings)</li>
-            <li><strong>Spotify Search API:</strong> For enhanced metadata search (requires user-provided credentials)</li>
-        </ul>
+  <section><h2>Permissions</h2>
+    <ul>
+      <li>Audio/media read access: index and play music selected on the device.</li>
+      <li>Internet/network state: Catalog, object storage, and first-party updates.</li>
+      <li>Foreground service, notifications, wake lock, and audio settings: background playback and controls.</li>
+      <li>Install packages: hand a downloaded Sonorus APK to Android's system installer after explicit user action.</li>
+    </ul>
+    <p>Sonorus does not request write-storage or all-files-access permission.</p>
+  </section>
 
-        <h3>4.2 Data Sent to Third-Party Services</h3>
-        <p>When you enable online features, the following minimal data may be sent:</p>
-        <ul>
-            <li><strong>Song Metadata:</strong> Artist name, song title, album name (for artwork/lyrics lookup)</li>
-            <li><strong>API Requests:</strong> Standard HTTP requests to retrieve images or lyrics</li>
-        </ul>
-        <p>
-            <strong>Important:</strong> No personal information is included in these requests. The data is only used to enhance your music listening experience.
-        </p>
+  <section><h2>Control and deletion</h2>
+    <p>You can clear caches and app data in Sonorus or Android settings. Removing a Catalog registration locally does not necessarily delete the server-side user/device record; contact the Catalog administrator for server-side deletion.</p>
+  </section>
 
-        <h3>4.3 Third-Party Privacy Policies</h3>
-        <p>When you use optional online features, the following third-party services may be contacted:</p>
-        <ul>
-            <li><strong>Deezer:</strong> <a href="https://www.deezer.com/legal/privacy">Deezer Privacy Policy</a></li>
-            <li><strong>LRCLib:</strong> Open-source lyrics service with no tracking</li>
-            <li><strong>Spotify:</strong> <a href="https://www.spotify.com/privacy">Spotify Privacy Policy</a> (only if you configure your own API credentials)</li>
-        </ul>
-
-        <h2>5. Permissions Used by the App</h2>
-        <p>Rhythm requests the following Android permissions:</p>
-        <ul>
-            <li><strong>READ_MEDIA_AUDIO / READ_EXTERNAL_STORAGE:</strong> To access and play your local music files</li>
-            <li><strong>WRITE_EXTERNAL_STORAGE:</strong> To save downloaded artwork and playlists (Android 9 and below)</li>
-            <li><strong>INTERNET:</strong> For optional online features (artwork, lyrics)</li>
-            <li><strong>FOREGROUND_SERVICE:</strong> To play music in the background</li>
-            <li><strong>POST_NOTIFICATIONS:</strong> To display playback notifications (Android 13+)</li>
-            <li><strong>WAKE_LOCK:</strong> To keep music playing when screen is off</li>
-        </ul>
-        <p>All permissions are used solely for app functionality and not for data collection.</p>
-
-        <h2>6. Children's Privacy</h2>
-        <p>
-            Rhythm does not knowingly collect information from children under 13. The app does not require any account creation or personal information.
-        </p>
-
-        <h2>7. Data Security</h2>
-        <p>
-            Since all data is stored locally on your device, the security of your data depends on your device's security settings. 
-            We recommend keeping your device updated and using lock screen protection.
-        </p>
-
-        <h2>8. Open Source and Transparency</h2>
-        <p>
-            Rhythm is fully open-source under the GPL v3 license. You can review the entire source code at:
-            <br>
-            <a href="https://github.com/cromaguy/Rhythm">https://github.com/cromaguy/Rhythm</a>
-        </p>
-
-        <h2>9. Changes to This Privacy Policy</h2>
-        <p>
-            We may update this Privacy Policy from time to time. Changes will be posted in the app and on our GitHub repository. 
-            Continued use of the app after changes constitutes acceptance of the updated policy.
-        </p>
-
-        <h2>10. Your Rights</h2>
-        <p>Since Rhythm does not collect any personal data, there is no data to:</p>
-        <ul>
-            <li>Request access to</li>
-            <li>Request deletion of</li>
-            <li>Request correction of</li>
-            <li>Export or transfer</li>
-        </ul>
-        <p>All your data remains under your control on your device.</p>
-
-        <h2>11. Contact Us</h2>
-        <p>If you have questions about this Privacy Policy or the app, you can contact us:</p>
-        <ul>
-            <li><strong>GitHub:</strong> <a href="https://github.com/cromaguy/Rhythm/issues">Open an issue</a></li>
-            <li><strong>Telegram:</strong> <a href="https://t.me/RhythmSupport">@RhythmSupport</a></li>
-        </ul>
-
-        <h2>12. Compliance</h2>
-        <p>This app complies with:</p>
-        <ul>
-            <li>Google Play Store Developer Program Policies</li>
-            <li>GDPR (General Data Protection Regulation)</li>
-            <li>CCPA (California Consumer Privacy Act)</li>
-            <li>COPPA (Children's Online Privacy Protection Act)</li>
-        </ul>
-
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
-        
-        <p style="text-align: center; color: #666; font-size: 14px;">
-            <strong>Made with ❤️ by Team ChromaHub</strong><br>
-            Rhythm Music Player is free and open-source software.
-        </p>
-    </div>
-</body>
+  <section><h2>Open source and contact</h2>
+    <p>Source is available under GNU GPL v3 or later at <a href="https://github.com/Cluno1/Sonorus">Cluno1/Sonorus</a>. Report privacy questions through <a href="https://github.com/Cluno1/Sonorus/issues">GitHub Issues</a>.</p>
+    <p>Sonorus is an independent, unofficial derivative of <a href="https://github.com/cromaguy/Rhythm">Rhythm</a> and is not affiliated with or endorsed by the upstream authors or Team ChromaHub.</p>
+  </section>
+</main></body>
 </html>

@@ -1,6 +1,6 @@
-# Rhythm Features Overview
+# Sonorus Features Overview
 
-Complete guide to all features and capabilities in Rhythm Music Player.
+Complete guide to all features and capabilities in Sonorus Music Player.
 
 ---
 ## 🎵 Audio Playback
@@ -152,26 +152,26 @@ The Songs tab includes dynamic quality filter chips that appear only when matchi
 - **Cross-Platform**: Compatible with other players
 
 ---
-## 🛡️ Hearing Safety (Rhythm Guard)
+## 🛡️ Hearing Safety (Sonorus Guard)
 
-Rhythm includes a dedicated safety system to protect your hearing:
+Sonorus includes a dedicated safety system to protect your hearing:
 - **Age-Aware Defaults**: Automatic volume capping based on user age.
 - **Manual Protection**: User-configurable volume limits to prevent hearing damage.
 - **Safety Alerts**: Notifications when volume levels exceed safe thresholds.
 ---
 ## 🌐 Go Mode (Streaming)
 
-Beyond local playback, Rhythm supports a complete streaming ecosystem through **Go Mode**:
+Beyond local playback, Sonorus supports a complete streaming ecosystem through **Go Mode**:
 - **Dual-Mode Architecture**: Seamlessly switch between Local and Go (streaming) modes from onboarding or Settings.
 - **Server Integration**: Connect to external streaming servers (Subsonic, Navidrome, Jellyfin).
 - **Shared UI**: Streaming browsing and playback reuse the same library and player screens as local mode.
 - **Nearby Server Discovery**: Automatically discover Subsonic-compatible servers on your local network — no manual address entry needed.
-- **Rhythm Go Downloads**: Download tracks from your streaming server for offline playback. Perfect for commuting, flights, or areas with limited connectivity. Configure in Settings → Advanced → Experimental Features → Go Mode.
+- **Sonorus Go Downloads**: Download tracks from your streaming server for offline playback. Perfect for commuting, flights, or areas with limited connectivity. Configure in Settings → Advanced → Experimental Features → Go Mode.
 ---
 ## 📊 Playback Statistics
 
 
-### Rhythm Stats 2.0
+### Sonorus Stats 2.0
 - **Overview**: Total play count, listening time, top genres
 - **Songs**: Most played tracks
 - **Albums**: Most played albums
@@ -376,9 +376,9 @@ Beyond local playback, Rhythm supports a complete streaming ecosystem through **
 ---
 
 **Want more details?** Check out:
-- [Getting Started Guide](https://github.com/cromaguy/Rhythm/wiki/Getting-Started)
-- [Audio Formats](https://github.com/cromaguy/Rhythm/wiki/Audio-Formats)
-- [Technology Stack](https://github.com/cromaguy/Rhythm/wiki/Technology-Stack)
-- [FAQ](https://github.com/cromaguy/Rhythm/wiki/FAQ)
+- [Getting Started Guide](https://github.com/Cluno1/Sonorus/wiki/Getting-Started)
+- [Audio Formats](https://github.com/Cluno1/Sonorus/wiki/Audio-Formats)
+- [Technology Stack](https://github.com/Cluno1/Sonorus/wiki/Technology-Stack)
+- [FAQ](https://github.com/Cluno1/Sonorus/wiki/FAQ)
 
-**Have questions?** Join our [Telegram Community](https://t.me/RhythmSupport)!
+**Have questions?** Join our [Telegram Community](https://t.me/SonorusSupport)!

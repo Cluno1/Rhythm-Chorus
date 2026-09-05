@@ -95,7 +95,7 @@
         
 
 
-        <!-- Rhythm Music Widget (Modern Glance with Material 3) -->
+        <!-- Sonorus Music Widget (Modern Glance with Material 3) -->
         <receiver
             android:name=".infrastructure.widget.glance.RhythmWidgetReceiver"
             android:exported="true"
@@ -113,7 +113,7 @@
         <receiver
             android:name=".infrastructure.widget.glance.RhythmLyricsWidgetReceiver"
             android:exported="true"
-            android:label="Rhythm Lyrics"
+            android:label="@string/widget_lyrics_name"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -123,11 +123,11 @@
                 android:resource="@xml/lyric_widget" />
         </receiver>
 
-        <!-- Rhythm Cookie Widget -->
+        <!-- Sonorus Cookie Widget -->
         <receiver
             android:name=".infrastructure.widget.glance.RhythmCookieWidgetReceiver"
             android:exported="true"
-            android:label="Rhythm Cookie"
+            android:label="@string/widget_cookie_name"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -137,11 +137,11 @@
                 android:resource="@xml/rhythm_cookie_widget_info" />
         </receiver>
 
-        <!-- Rhythm Stats Widget -->
+        <!-- Sonorus Stats Widget -->
         <receiver
             android:name=".infrastructure.widget.glance.RhythmStatsWidgetReceiver"
             android:exported="true"
-            android:label="Rhythm Stats"
+            android:label="@string/widget_stats_name"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -231,46 +231,7 @@
             android:theme="@android:style/Theme.DeviceDefault.Dialog.NoActionBar"
             android:launchMode="singleTask"
             android:excludeFromRecents="false"
-            android:configChanges="orientation|screenSize|keyboardHidden">
-            
-            <!-- Handle VIEW intents for audio files -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="content" />
-                <data android:scheme="file" />
-                <data android:mimeType="audio/*" />
-            </intent-filter>
-            
-            <!-- Handle specific audio file types -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="content" />
-                <data android:scheme="file" />
-                <data android:mimeType="audio/mpeg" />
-                <data android:mimeType="audio/mp3" />
-                <data android:mimeType="audio/x-mp3" />
-                <data android:mimeType="audio/mp4" />
-                <data android:mimeType="video/mp4" />
-                <data android:mimeType="audio/m4a" />
-                <data android:mimeType="audio/aac" />
-                <data android:mimeType="audio/x-aac" />
-                <data android:mimeType="audio/ogg" />
-                <data android:mimeType="audio/flac" />
-                <data android:mimeType="audio/wav" />
-                <data android:mimeType="audio/eac3" />
-                <data android:mimeType="audio/mhm1" />
-                <data android:mimeType="video/x-matroska" />
-                <data android:mimeType="video/mkv" />
-                <data android:mimeType="audio/x-matroska" />
-                <data android:mimeType="audio/mka" />
-                <data android:mimeType="audio/x-mka" />
-                <data android:mimeType="application/x-matroska" />
-            </intent-filter>
-        </activity>
+            android:configChanges="orientation|screenSize|keyboardHidden" />
 
         <!-- Support per-app language switcher persistence on pre-Android 13 devices -->
         <service
@@ -285,7 +246,7 @@
                 android:value="true" />
         </service>
 
-        <!-- Rhythm Quick Settings Tile Service -->
+        <!-- Sonorus Quick Settings Tile Service -->
         <service
             android:name=".infrastructure.service.RhythmTileService"
             android:label="@string/app_name"

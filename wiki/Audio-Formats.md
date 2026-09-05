@@ -1,6 +1,6 @@
 # Audio Format Support
 
-Rhythm uses **Media3 ExoPlayer 1.11.0 + FFmpeg Decoder** (Jellyfin media3-ffmpeg-decoder) for professional-grade audio playback. This page details supported formats, technical limitations, and recommendations.
+Sonorus uses **Media3 ExoPlayer 1.11.0 + FFmpeg Decoder** (Jellyfin media3-ffmpeg-decoder) for professional-grade audio playback. This page details supported formats, technical limitations, and recommendations.
 
 ---
 
@@ -58,7 +58,7 @@ These require hardware support and may not work on all devices:
 ### Checking Device Compatibility
 
 To check if your device supports Dolby/DTS:
-1. Try playing a test file in Rhythm
+1. Try playing a test file in Sonorus
 2. If it plays, your device has the necessary decoder
 3. If it fails, convert to a supported format (see below)
 
@@ -66,7 +66,7 @@ To check if your device supports Dolby/DTS:
 
 ## 📊 Audio Quality Detection
 
-Rhythm automatically detects and displays quality badges in the player, and provides **quality-based library filters** in the Songs tab:
+Sonorus automatically detects and displays quality badges in the player, and provides **quality-based library filters** in the Songs tab:
 
 ### Quality Badges
 
@@ -124,10 +124,10 @@ Some containers can hold multiple codecs:
 - `.ogg` can contain: Vorbis, Opus, FLAC
 - `.mp4` can contain: AAC, AC-3, video tracks
 
-Rhythm identifies the **actual codec** inside, not just the container.
+Sonorus identifies the **actual codec** inside, not just the container.
 
 ### MP4 / Matroska Audio (.mp4/.mkv/.mka)
-Rhythm scans and plays audio streams embedded in MP4 and Matroska containers (including `.mka` audio-only files). During media scan, `video/mp4`, `video/x-matroska`, and `application/x-matroska` MIME types are indexed alongside regular audio files. Files extracted from these containers are identified by their **actual codec** (AAC, ALAC, AC-3, E-AC-3, DTS, etc.), not just the container extension.
+Sonorus scans and plays audio streams embedded in MP4 and Matroska containers (including `.mka` audio-only files). During media scan, `video/mp4`, `video/x-matroska`, and `application/x-matroska` MIME types are indexed alongside regular audio files. Files extracted from these containers are identified by their **actual codec** (AAC, ALAC, AC-3, E-AC-3, DTS, etc.), not just the container extension.
 
 > ⚠️ **Note:** MP4/MKV containers may be excluded from the default library if the **Allowed Formats** setting (`Settings → Library & Media → Media Scan → Allowed Formats`) is configured to filter them out — toggle the `mp4`/`mkv` formats there to include or exclude them.
 
@@ -254,7 +254,7 @@ done
 ### Metadata Not Showing
 - **Re-tag files**: Use MP3Tag or Picard to fix metadata
 - **Rescan library**: Settings → Library & Media → Media Scan
-- **Check file permissions**: Ensure Rhythm has read access
+- **Check file permissions**: Ensure Sonorus has read access
 
 ---
 
@@ -277,4 +277,4 @@ done
 
 ---
 
-**Questions?** Ask in our [Telegram Community](https://t.me/RhythmSupport), [Discord Server](https://discord.gg/XjPyUYPQYc), or check the [FAQ](https://github.com/cromaguy/Rhythm/wiki/FAQ).
+**Questions?** Ask in our [Telegram Community](https://t.me/SonorusSupport), [Discord Server](https://discord.gg/XjPyUYPQYc), or check the [FAQ](https://github.com/Cluno1/Sonorus/wiki/FAQ).

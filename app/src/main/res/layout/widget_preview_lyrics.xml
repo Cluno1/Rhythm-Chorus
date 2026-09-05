@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launcher picker preview for the Rhythm Lyrics widget.
+<!-- Launcher picker preview for the Sonorus Lyrics widget.
      Framework-safe only (android:* attributes, no app: namespace, no compound
      drawables) so launchers can inflate it reliably and render it dark. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"

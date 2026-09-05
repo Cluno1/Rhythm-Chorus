@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Rhythm</string>
+    <string name="app_name">Sonorus</string>
     <string name="home">Avaleht</string>
     <string name="library">Muusikakogu</string>
     <string name="search">Otsi</string>
-    <string name="media3_notification_channel_name">Hetkel esitamisel Rhythm\'is</string>
+    <string name="media3_notification_channel_name">Hetkel esitamisel Sonorus\'is</string>
     <string name="media3_notification_channel_description">Esiplaanil olevad taasesituse juhtnupud, kerimine ja kaanepildid</string>
-    <string name="widget_name_glance">Rhythm\'i Muusika</string>
+    <string name="widget_name_glance">Sonorus\'i Muusika</string>
     <string name="unknown_artist">Tundmatu esitaja</string>
     <string name="play_pause">Esita/Peata esitus</string>
     <string name="settings_widget">Vidin</string>
@@ -100,7 +100,7 @@
     <string name="settings_notifications">Teavitused</string>
     <string name="settings_notifications_updates_group">Rakenduse uuendused</string>
     <string name="settings_rhythm_pulse_interval">Soovituste kuvamise välp</string>
-    <string name="settings_rhythm_pulse_interval_dialog_title">Rhythm\'i soovituste kuvamise välp</string>
+    <string name="settings_rhythm_pulse_interval_dialog_title">Sonorus\'i soovituste kuvamise välp</string>
     <string name="settings_queue">Esitusjärjekord</string>
     <string name="settings_queue_desc">Esitusjärjekorra reeglid, automaatne segamine ja loomine</string>
     <string name="settings_queue_title">Esitusjärjekorra seadistused</string>
@@ -132,10 +132,10 @@
     <string name="settings_my_playlists">Minu esitusloendid</string>
     <string name="settings_no_custom_playlists">Sinu koostatud esitusloendeid pole</string>
     <string name="notification_updater_downloading">Laadin uuendust alla: %1$d%%</string>
-    <string name="notification_updater_title">Rhythmi tarkvarauuendus</string>
+    <string name="notification_updater_title">Sonorusi tarkvarauuendus</string>
     <string name="notification_updater_download_complete">Uuendus on paigalduseks valmis. Jätkamiseks klõpsa.</string>
     <string name="notification_updater_available_title">Uuendus on saadaval</string>
-    <string name="notification_updater_available_text">Saadaval on Rhythmi uus versioon.</string>
+    <string name="notification_updater_available_text">Saadaval on Sonorusi uus versioon.</string>
     <string name="dialog_delete">Kustuta</string>
     <string name="dialog_cancel">Tühista</string>
     <string name="action_switch">Vaheta</string>

@@ -1,11 +1,11 @@
 <resources>
-    <string name="app_name">Rhythm</string>
+    <string name="app_name">Sonorus</string>
 <string name="home">Home</string>
     <string name="library">Library</string>
     <string name="search">Search</string>
-<string name="media3_notification_channel_name">Rhythm Now Playing</string>
+<string name="media3_notification_channel_name">Sonorus Now Playing</string>
     <string name="media3_notification_channel_description">Foreground playback controls, seek actions, and album artwork</string>    <string name="widget_description_glance">See what\'s playing and control your music from your home screen — play, pause, skip, and more.</string>
-    <string name="widget_name_glance">Rhythm Music</string>
+    <string name="widget_name_glance">Sonorus Music</string>
     <string name="unknown_artist">Unknown artist</string>
     <string name="play_pause">Play/Pause</string>
 <string name="settings_widget">Widget</string>
@@ -21,12 +21,12 @@
 <string name="settings_notifications">Notifications</string>
     <string name="settings_notifications_library_group">Library &amp; Sync</string>
     <string name="settings_notifications_updates_group">App Updates</string>
-    <string name="settings_notifications_rhythm_guard_group">Rhythm Guard Safety</string>
+    <string name="settings_notifications_rhythm_guard_group">Sonorus Guard Safety</string>
     <string name="settings_notifications_rhythm_pulse_group">Listening Highlights &amp; Tips</string>
     <string name="settings_notifications_system_group">System Controls</string>
     <string name="settings_library_operations_notifications">Library Operations &amp; Backups</string>
     <string name="settings_library_operations_notifications_desc">Show progress notifications for media indexing and playlist export/import</string>
-    <string name="settings_update_notifications_merged_desc">Get alerts when new Rhythm updates are ready to install</string>
+    <string name="settings_update_notifications_merged_desc">Get alerts when new Sonorus updates are ready to install</string>
     <string name="settings_rhythm_guard_alert_notifications">Hearing Safety Warnings</string>
     <string name="settings_rhythm_guard_alert_notifications_desc">Show instant alerts when volume or sound exposure exceeds safe thresholds</string>
     <string name="settings_rhythm_guard_timer_notifications">Listening Break Assistant</string>
@@ -38,7 +38,7 @@
     <string name="settings_system_notification_channels">Android Notification Settings</string>
     <string name="settings_system_notification_channels_desc">Configure OS notification channels, sound, vibration, and lock screen behavior</string>
     <string name="settings_notification_permission_title">Notification Permission Required</string>
-    <string name="settings_notification_permission_desc">Enable notification permissions so Rhythm can display media controls and background task updates.</string>
+    <string name="settings_notification_permission_desc">Enable notification permissions so Sonorus can display media controls and background task updates.</string>
     <string name="settings_notification_permission_grant">Enable Notifications</string>
 
 <string name="settings_queue">Queue</string>
@@ -124,7 +124,7 @@
 <string name="operation_exporting_playlists">Backing up your custom playlists…</string>
     <string name="operation_exporting_playlists_location">Backing up playlists to storage…</string>
     <string name="operation_importing_playlist">Importing playlist file…</string>
-    <string name="notification_operations_channel_name">Rhythm Library Sync</string>
+    <string name="notification_operations_channel_name">Sonorus Library Sync</string>
     <string name="notification_operations_channel_desc">Progress notifications for library scanning, indexing, and playlist backups</string>
     <string name="notification_media_scan_title">Library Scan &amp; Indexing</string>
     <string name="notification_media_scan_stage_songs">Scanning storage for audio files…</string>
@@ -154,19 +154,19 @@
         <item quantity="other">Successfully imported \"%1$s\" (%2$d tracks).</item>
     </plurals>
     <string name="notification_playlist_import_failed">Playlist import failed. Verify the file format.</string>
-    <string name="notification_updater_channel_name">Rhythm System Updates</string>
+    <string name="notification_updater_channel_name">Sonorus System Updates</string>
     <string name="notification_updater_channel_desc">Download progress and release alerts for app updates</string>
-    <string name="notification_updater_title">Rhythm Software Update</string>
+    <string name="notification_updater_title">Sonorus Software Update</string>
     <string name="notification_updater_downloading">Downloading update: %1$d%%</string>
     <string name="notification_updater_download_complete">Update ready to install. Tap to proceed.</string>
     <string name="notification_updater_available_title">New Update Available</string>
-    <string name="notification_updater_available_text">A new version of Rhythm is available.</string>
-    <string name="notification_sleep_timer_channel_name">Rhythm Sleep Assistant</string>
+    <string name="notification_updater_available_text">A new version of Sonorus is available.</string>
+    <string name="notification_sleep_timer_channel_name">Sonorus Sleep Assistant</string>
     <string name="notification_sleep_timer_channel_desc">Countdowns and status alerts for active sleep timers</string>
     <string name="notification_sleep_timer_title">Sleep Timer Active</string>
     <string name="notification_sleep_timer_pause_in">Pausing playback in %1$s</string>
     <string name="notification_sleep_timer_stop_in">Stopping playback in %1$s</string>
-<string name="notification_streaming_channel_name">Rhythm Cloud Services</string>
+<string name="notification_streaming_channel_name">Sonorus Cloud Services</string>
     <string name="notification_streaming_channel_desc">Connection status and sync progress for online music services</string>
 <string name="notification_streaming_auth_title">Cloud Service Connected</string>
     <string name="notification_streaming_auth_connected">%1$s connected. Library syncing in background.</string>
@@ -304,7 +304,7 @@
     <string name="settings_about_architecture_value">ARM64 &amp; ARM32</string>
     <string name="settings_about_credits">Developer</string>
     <string name="settings_about_team_desc">Passionate developers creating innovative experiences</string>
-    <string name="settings_about_team_chromahub">Team ChromaHub</string>
+    <string name="settings_about_team_chromahub">Cluno1</string>
     <string name="settings_about_community">Community</string>
     <string name="about_community_group_maintainers">Package Maintainers</string>
     <string name="about_community_group_collaborators">Collaborators &amp; Contributors</string>
@@ -318,7 +318,7 @@
     <string name="settings_about_report_bug">Report Bug or Suggest Feature</string>
 
 <string name="status_disabled">Disabled</string>
-<string name="home_title">Rhythm</string>
+<string name="home_title">Sonorus</string>
     <string name="home_settings_cd">Settings</string>
     <string name="home_no_featured_albums">No Featured Albums</string>
     <string name="home_no_featured_albums_desc">Add some albums to your library to see featured content</string>
@@ -359,7 +359,7 @@
     <string name="home_recommended_subtitle">Based on your listening history</string>
     <string name="home_no_recommendations">No Recommendations</string>
     <string name="home_no_recommendations_desc">Listen to some music to get personalized recommendations</string>
-<string name="home_listening_stats">Your Rhythm Stats</string>
+<string name="home_listening_stats">Your Sonorus Stats</string>
 
 <string name="home_recently_played">Recently Played</string>
     <string name="home_recently_played_subtitle">Continue your musical journey</string>
@@ -422,10 +422,10 @@
     <string name="sort_title">Title</string>
     <string name="sort_artist">Artist</string>
 <string name="storage_permission_required">Storage Permission Required</string>
-    <string name="storage_permission_desc">To browse your music files and explore your device\'s storage, Rhythm needs permission to access your files and media.</string>
+    <string name="storage_permission_desc">To browse your music files and explore your device\'s storage, Sonorus needs permission to access your files and media.</string>
     <string name="storage_permission_audio_only">This allows access only to audio files and folders containing music.</string>
     <string name="local_library_disabled_title">Local music library disabled</string>
-    <string name="local_library_disabled_desc">Rhythm only plays managed audio from your private work catalog. The work list and rendition picker are being connected to the server.</string>
+    <string name="local_library_disabled_desc">Sonorus only plays managed audio from your private work catalog. The work list and rendition picker are being connected to the server.</string>
 <string name="player_loading_lyrics">Loading lyrics…</string>
     <string name="player_queue">Queue</string>
     <string name="player_speed_label">Speed</string>
@@ -440,10 +440,10 @@
     <string name="search_recent_searches">Recent Searches</string>
     <string name="search_browse_by_genre">Browse by Genre</string>
 <string name="ui_dismiss">Dismiss</string>
-<string name="common_rhythm">Rhythm</string>
+<string name="common_rhythm">Sonorus</string>
     <string name="common_home">Home</string>
     <string name="common_library">Library</string>
-<string name="splash_tagline">Your Music, Your Rhythm</string>
+<string name="splash_tagline">Your Music, Your Sound</string>
     <string name="splash_loading">Preparing your music library…</string>
     <string name="splash_loading_streaming">Preparing your streaming setup…</string>
     <string name="splash_ready">Ready to groove!</string>
@@ -474,7 +474,7 @@
     <string name="updates_channel_beta_desc">Receive pre-releases and release candidates.</string>
     <string name="updates_channel_nightly_desc">Receive bleeding-edge nightly builds compiled from the main branch.</string>
     <string name="onboarding_welcome_to">Welcome to</string>
-    <string name="onboarding_welcome_subtitle">Your Music, Your Rhythm</string>
+    <string name="onboarding_welcome_subtitle">Your Music, Your Sound</string>
     <string name="onboarding_get_started">Get Started</string>
     <string name="onboarding_android13_notice">Android 13+ Notice</string>
     <string name="onboarding_android13_desc">On newer Android versions, you\'ll see multiple permission requests. Please grant access to audio files and notifications for the best experience.</string>
@@ -508,22 +508,22 @@
     <string name="onboarding_library_2">Create and manage playlists directly from the Library screen</string>
     <string name="onboarding_library_3">Advanced display and sorting options available in Settings > Library Settings</string>
     <string name="onboarding_library_4">Default playlists (Recently Added, Most Played) can be toggled in Settings > Playlists</string>
-    <string name="onboarding_theme_title">Make Rhythm Yours</string>
-    <string name="onboarding_theme_desc">Personalize Rhythm\'s appearance to match your style. Pick where colors come from, choose a color scheme, or switch the font.</string>    <string name="onboarding_more_tuner">More Customization in Settings</string>
+    <string name="onboarding_theme_title">Make Sonorus Yours</string>
+    <string name="onboarding_theme_desc">Personalize Sonorus\'s appearance to match your style. Pick where colors come from, choose a color scheme, or switch the font.</string>    <string name="onboarding_more_tuner">More Customization in Settings</string>
     <string name="onboarding_tuner_1">Custom color schemes and album art color extraction</string>
     <string name="onboarding_tuner_2">Font customization and typography settings</string>
     <string name="onboarding_tuner_3">Advanced theme options available in Settings > Theme Customization</string>
     <string name="onboarding_rhythm_guard_title">Protect Your Hearing</string>
-    <string name="onboarding_rhythm_guard_desc">Set up Rhythm Guard to keep your listening safer with age-aware defaults and manual protection controls.</string>
-    <string name="onboarding_rhythm_guard_mode_title">Rhythm Guard Mode</string>
-    <string name="onboarding_rhythm_guard_age_hint">Age profile helps Rhythm Guard recommend safer listening limits.</string>
+    <string name="onboarding_rhythm_guard_desc">Set up Sonorus Guard to keep your listening safer with age-aware defaults and manual protection controls.</string>
+    <string name="onboarding_rhythm_guard_mode_title">Sonorus Guard Mode</string>
+    <string name="onboarding_rhythm_guard_age_hint">Age profile helps Sonorus Guard recommend safer listening limits.</string>
     <string name="onboarding_rhythm_guard_tip_1">Auto mode applies safer defaults with minimal setup.</string>
     <string name="onboarding_rhythm_guard_tip_2">You can tune alerts and break reminders later in Settings.</string>
     <string name="onboarding_rhythm_guard_tip_3">Manual mode gives you full control over warnings and thresholds.</string>
     <string name="onboarding_full_tour_prompt_title">Continue Full Setup Tour?</string>
     <string name="onboarding_full_tour_prompt_desc">Core setup is done. Continue for advanced customization, or finish now and explore the rest later from Settings.</string>
     <string name="onboarding_full_tour_prompt_tip_1">Full tour includes playback, theme, gesture, and media scan options.</string>
-    <string name="onboarding_full_tour_prompt_tip_2">You can reopen Rhythm Tour anytime from About.</string>
+    <string name="onboarding_full_tour_prompt_tip_2">You can reopen Sonorus Tour anytime from About.</string>
     <string name="onboarding_full_tour_prompt_tip_3">Nothing here is permanent. All choices can be changed later.</string>
     <string name="onboarding_continue_full_tour">Continue Full Tour</string>
     <string name="onboarding_finish_now">Finish Setup Now</string>
@@ -554,7 +554,7 @@
     <string name="onboarding_media_scan_configure_in_tuner">Configure scanning in Settings > Media Scan</string>
     
     <string name="onboarding_complete_title">You\'re All Set!</string>
-    <string name="onboarding_complete_desc">Rhythm is ready to play! Your music library is being scanned in the background. Here\'s what\'s configured:</string>
+    <string name="onboarding_complete_desc">Sonorus is ready to play! Your music library is being scanned in the background. Here\'s what\'s configured:</string>
     <string name="onboarding_whats_next">What\'s Next?</string>
     <string name="onboarding_next_browse">Browse your songs, albums, and artists</string>
     <string name="onboarding_next_create">Create your first playlist</string>
@@ -575,8 +575,8 @@
     <string name="onboarding_grant_permissions">Grant Permissions</string>
     <string name="onboarding_permissions_granted_desc">All necessary permissions have been granted. You are ready to proceed!</string>
     <string name="onboarding_redirect_settings_desc">To grant the required permissions, please navigate to the app settings on your device.</string>
-    <string name="onboarding_rationale_desc">Rhythm requires certain permissions to function correctly. Please grant them to continue.</string>
-    <string name="onboarding_permissions_required_desc">To fully utilize Rhythm\'s features, we need your permission to access certain device capabilities.</string>
+    <string name="onboarding_rationale_desc">Sonorus requires certain permissions to function correctly. Please grant them to continue.</string>
+    <string name="onboarding_permissions_required_desc">To fully utilize Sonorus\'s features, we need your permission to access certain device capabilities.</string>
     <string name="onboarding_permission_music_title">Music Library Access</string>
     <string name="onboarding_permission_music_desc">Read your local music files and display them in the app</string>
     <string name="onboarding_permission_bluetooth_title">Bluetooth Connectivity</string>
@@ -586,11 +586,11 @@
 <string name="onboarding_permission_tips">Permission Tips</string>
     <string name="onboarding_permission_tip_1">Grant all permissions for the best experience</string>
     <string name="onboarding_permission_tip_2">You can change permissions later in Settings</string>
-    <string name="onboarding_permission_tip_3">Rhythm respects your privacy and data</string>
+    <string name="onboarding_permission_tip_3">Sonorus respects your privacy and data</string>
 <string name="onboarding_default_screen_title">Default Landing Screen</string>
-    <string name="onboarding_default_screen_desc">Choose which screen opens when you launch Rhythm</string>
+    <string name="onboarding_default_screen_desc">Choose which screen opens when you launch Sonorus</string>
     <string name="onboarding_system_volume_title">System Volume Control</string>
-    <string name="onboarding_system_volume_desc">Allow your device\'s physical volume buttons to control Rhythm\'s playback volume.</string>
+    <string name="onboarding_system_volume_desc">Allow your device\'s physical volume buttons to control Sonorus\'s playback volume.</string>
     <string name="onboarding_auto_queue_title">Auto Add to Queue</string>
     <string name="onboarding_auto_queue_desc">Automatically create a contextual queue from the album/artist when playing a song.</string>
     <string name="onboarding_show_lyrics_title">Show Lyrics</string>
@@ -599,7 +599,7 @@
     <string name="onboarding_lyrics_source_desc">Choose which lyrics source to try first (with automatic fallback to others)</string>
 
     <string name="onboarding_player_theme_title">Playback &amp; Mini Player Themes</string>
-    <string name="onboarding_player_theme_desc">Personalize playback and the mini player. Pick the clean Rhythm design or the vibrant Expressive design, then fine-tune controls, layout, and progress styling.</string>
+    <string name="onboarding_player_theme_desc">Personalize playback and the mini player. Pick the clean Sonorus design or the vibrant Expressive design, then fine-tune controls, layout, and progress styling.</string>
 <string name="onboarding_update_check_failed">Update Check Failed</string>
     <string name="onboarding_ready_to_install">Ready to Install</string>
     <string name="onboarding_downloading_update">Downloading Update</string>
@@ -610,7 +610,7 @@
     <string name="onboarding_enable_updates_title">Enable Updates</string>
     <string name="onboarding_enable_updates_desc">Allow the app to check for and download updates</string>
     <string name="onboarding_periodic_check_title">Periodic Check</string>
-    <string name="onboarding_periodic_check_desc">Check for updates from Rhythm\'s GitHub repo automatically</string>
+    <string name="onboarding_periodic_check_desc">Check for updates from Sonorus\'s GitHub repo automatically</string>
     <string name="onboarding_update_notifications_title">Update Notifications</string>
     <string name="onboarding_update_notifications_desc">Get notified when new versions are available</string>
     <string name="onboarding_smart_polling_title">Smart Polling</string>
@@ -634,7 +634,7 @@
     <string name="onboarding_dismiss">Dismiss</string>
     <string name="onboarding_retry">Retry</string>
 <string name="onboarding_notifications_title">Playback Notifications</string>
-    <string name="onboarding_notifications_desc">Control how Rhythm displays music playback in your notification shade. Choose between custom styled notifications or the standard system media controls.</string>
+    <string name="onboarding_notifications_desc">Control how Sonorus displays music playback in your notification shade. Choose between custom styled notifications or the standard system media controls.</string>
     <string name="onboarding_notifications_info_title">Notification Features</string>
     <string name="onboarding_notification_tip_1">See current track info at a glance</string>
     <string name="onboarding_notification_tip_2">Control playback with quick actions</string>
@@ -655,7 +655,7 @@
     <string name="onboarding_gesture_tip_1">Swipe gestures work in both directions</string>
     <string name="onboarding_gesture_tip_2">Quick swipes respond faster than slow ones</string>
 <string name="onboarding_widgets_title">Launcher Widgets</string>
-    <string name="onboarding_widgets_desc">Add the Rhythm Cookie and Stats widgets to your launcher for music control at a glance. Pick what the cookie\'s corners do and which stats the widget shows.</string>
+    <string name="onboarding_widgets_desc">Add the Sonorus Cookie and Stats widgets to your launcher for music control at a glance. Pick what the cookie\'s corners do and which stats the widget shows.</string>
     <string name="onboarding_widget_artist">Show Artist Name</string>
     <string name="onboarding_widget_artist_desc">Display the current artist in the widget</string>
     <string name="onboarding_widget_album">Show Album Name</string>
@@ -672,7 +672,7 @@
     <string name="onboarding_integration_wikipedia_desc">Fetch album details and descriptions for About section</string>
     <string name="onboarding_integrations_info_title">Privacy Note</string>
     <string name="onboarding_integrations_info_desc">These features send limited data (song titles, artists) to external services. Your personal data and music files stay on your device. You can enable or disable these at any time in Settings.</string>
-<string name="onboarding_stats_title">Rhythm Stats</string>
+<string name="onboarding_stats_title">Sonorus Stats</string>
     <string name="onboarding_stats_desc">Discover insights about your music habits. Track your listening time, most played songs, favorite artists, and more with beautiful visualizations.</string>
     <string name="onboarding_stats_show_home">Show Stats on Home</string>
     <string name="onboarding_stats_show_home_desc">Display a listening stats widget on your home screen</string>
@@ -696,9 +696,9 @@
     <string name="settings_tip_gestures_swipe">Swipe up on mini player to open full player, then swipe down to dismiss when done.</string>
     <string name="settings_tip_gestures_artwork">Swipe artwork to switch tracks and double tap album art for quick play or pause.</string>
     <string name="settings_tip_media_scan">Use media scan to hide unwanted files from your library</string>
-    <string name="settings_tip_rhythm_guard_off">Protect your hearing by enabling Rhythm Guard</string>
-    <string name="settings_tip_rhythm_guard_auto">Rhythm Guard automatically manages safe listening limits</string>
-    <string name="settings_tip_rhythm_guard_manual">You are manually controlling Rhythm Guard limits</string>
+    <string name="settings_tip_rhythm_guard_off">Protect your hearing by enabling Sonorus Guard</string>
+    <string name="settings_tip_rhythm_guard_auto">Sonorus Guard automatically manages safe listening limits</string>
+    <string name="settings_tip_rhythm_guard_manual">You are manually controlling Sonorus Guard limits</string>
     <string name="settings_default_screen">Default Landing Screen</string>
     <string name="settings_default_screen_desc">Choose your starting screen</string>
     <string name="settings_home_desc">Discover new music and recommendations</string>
@@ -760,7 +760,7 @@
     <string name="lyrics_editor_short">Editor</string>
     <string name="lyrics_settings_short">Settings</string>
 <string name="song_info_title">Song Information</string>
-    <string name="rhythm_stats">Rhythm Stats</string>
+    <string name="rhythm_stats">Sonorus Stats</string>
     <string name="file_info">File Info</string>
 <string name="add_to_playlists">Add to Playlists</string>
     <string name="playlist_create_new">Create New Playlist</string>
@@ -773,7 +773,7 @@
     <string name="backup_restore_tap_placeholder">Restore from files or clipboard with one tap</string>
     <string name="backup_local_storage_placeholder">Backups stored locally on your device for privacy</string>
     <string name="library_reorder_tabs">Reorder tabs to customize your library experience</string>
-    <string name="external_services_desc">Toggle which online services Rhythm uses for lyrics, artist images, and animated album art. Disable the ones you don\'t need to reduce data usage.</string>
+    <string name="external_services_desc">Toggle which online services Sonorus uses for lyrics, artist images, and animated album art. Disable the ones you don\'t need to reduce data usage.</string>
     <string name="lyrics_source_priority_title">Lyrics Source Priority</string>
     <string name="queue_action_title">Adding a song</string>
     <string name="queue_action_choose">What should happen to the current queue?</string>
@@ -788,7 +788,7 @@
 <string name="updates_disabled_message">App updates have been disabled in settings</string>
     <string name="updates_auto_disabled">Automatic update checking is disabled. You can still check manually.</string>
     <string name="updates_up_to_date_message">You are up to date!</string>
-    <string name="updates_check_frequency">How often should Rhythm check for updates?</string>
+    <string name="updates_check_frequency">How often should Sonorus check for updates?</string>
     <string name="updates_experimental_coming">More experimental features coming soon in future updates</string>
     <string name="settings_interval_every_48_hours">Every 48 hours</string>
     <string name="settings_interval_every_72_hours">Every 72 hours</string>
@@ -899,7 +899,7 @@
     <string name="settings_labs_desc">Experimental &amp; developer features</string>
     <string name="settings_experimental_features">Labs</string>
     <string name="settings_experimental_features_desc">Experimental &amp; developer features</string>
-    <string name="settings_select_option">Rhythm Settings</string>
+    <string name="settings_select_option">Sonorus Settings</string>
 <string name="playlist_no_songs_available">No Songs Available</string>
     <string name="playlist_all_in_playlist">All songs are already in this playlist.</string>
     <string name="playlist_name_field">Playlist name</string>
@@ -914,7 +914,7 @@
     <string name="updates_enable_auto_check">Auto-check</string>
     <string name="updates_channel_title">Update Channel</string>
     <string name="updates_source_title">Update Source</string>
-    <string name="updates_source_desc">Choose which release family Rhythm should use for OTA updates.</string>
+    <string name="updates_source_desc">Choose which release family Sonorus should use for OTA updates.</string>
     <string name="updates_source_installed">Match Installed Build</string>
     <string name="updates_source_installed_label">Installed Build</string>
     <string name="updates_source_github_label">GitHub Builds</string>
@@ -955,7 +955,7 @@
     <string name="cd_reorder_chips">Reorder chips</string>
     <string name="cd_search">Search</string>
     <string name="cd_view_all">View all</string>
-    <string name="cd_rhythm_splash">Rhythm</string>
+    <string name="cd_rhythm_splash">Sonorus</string>
     <string name="cd_remove_from_playlist">Remove from playlist</string>
     <string name="cd_change_language">Change Language</string>
     <string name="cd_open_settings">Open</string>
@@ -1006,25 +1006,25 @@
     <string name="bottomsheet_irreversible">Irreversible Changes</string>
     <string name="bottomsheet_proceed">Proceed</string>
 
-<string name="service_app_updates">Rhythm Updater</string>
-    <string name="service_update_status">Rhythm Updater Status</string>
-    <string name="service_rhythm_pulse">Rhythm Tips</string>
-    <string name="service_rhythm_guard_alerts">Rhythm Guard Alerts</string>
-    <string name="service_rhythm_guard_timers">Rhythm Guard Timers</string>
-    <string name="service_rhythm_music">Rhythm Music</string>
+<string name="service_app_updates">Sonorus Updater</string>
+    <string name="service_update_status">Sonorus Updater Status</string>
+    <string name="service_rhythm_pulse">Sonorus Tips</string>
+    <string name="service_rhythm_guard_alerts">Sonorus Guard Alerts</string>
+    <string name="service_rhythm_guard_timers">Sonorus Guard Timers</string>
+    <string name="service_rhythm_music">Sonorus Music</string>
     <string name="service_update_status_desc">Status results for background update checks</string>
-    <string name="service_rhythm_pulse_desc">Friendly listening reminders and tips from Rhythm</string>
-    <string name="service_rhythm_guard_alerts_desc">Safety alerts from Rhythm Guard</string>
-    <string name="service_rhythm_guard_timers_desc">Rhythm Guard break and timeout reminders</string>
-    <string name="service_starting">Rhythm is starting.</string>
-    <string name="service_loading_settings">Rhythm is loading your settings.</string>
-    <string name="service_setup_components">Rhythm is preparing core components.</string>
-    <string name="service_initializing_player">Rhythm is preparing playback.</string>
-    <string name="service_creating_controls">Rhythm is creating playback controls.</string>
-    <string name="service_setup_media_session">Rhythm is preparing the media session.</string>
-    <string name="service_initializing_controller">Rhythm is connecting the media controller.</string>
-    <string name="service_ready">Rhythm is ready.</string>
-    <string name="service_init_failed">Rhythm could not start. Please reopen the app.</string>
+    <string name="service_rhythm_pulse_desc">Friendly listening reminders and tips from Sonorus</string>
+    <string name="service_rhythm_guard_alerts_desc">Safety alerts from Sonorus Guard</string>
+    <string name="service_rhythm_guard_timers_desc">Sonorus Guard break and timeout reminders</string>
+    <string name="service_starting">Sonorus is starting.</string>
+    <string name="service_loading_settings">Sonorus is loading your settings.</string>
+    <string name="service_setup_components">Sonorus is preparing core components.</string>
+    <string name="service_initializing_player">Sonorus is preparing playback.</string>
+    <string name="service_creating_controls">Sonorus is creating playback controls.</string>
+    <string name="service_setup_media_session">Sonorus is preparing the media session.</string>
+    <string name="service_initializing_controller">Sonorus is connecting the media controller.</string>
+    <string name="service_ready">Sonorus is ready.</string>
+    <string name="service_init_failed">Sonorus could not start. Please reopen the app.</string>
 <string name="crash_bug_report">Bug Report</string>
     <string name="crash_restart_app">Restart App</string>
 
@@ -1059,12 +1059,12 @@
     <string name="settings_artist_artwork_source_api_only_desc">Fetch artist artwork exclusively from online Deezer API</string>
     <string name="settings_artist_artwork_source_disabled">Disabled</string>
     <string name="settings_artist_artwork_source_disabled_desc">Do not fetch or load images for artists</string>
-    <string name="settings_rhythm_stats">Rhythm Stats</string>
+    <string name="settings_rhythm_stats">Sonorus Stats</string>
     <string name="settings_rhythm_stats_desc">Listening time, top tracks and trends</string>
-    <string name="settings_rhythm_guard">Rhythm Guard</string>
-    <string name="settings_rhythm_guard_list_desc">Listening health guardrails powered by Rhythm Stats</string>
+    <string name="settings_rhythm_guard">Sonorus Guard</string>
+    <string name="settings_rhythm_guard_list_desc">Listening health guardrails powered by Sonorus Stats</string>
     <string name="settings_rhythm_guard_mode_title">Protection Mode</string>
-    <string name="settings_rhythm_guard_mode_desc">Choose how Rhythm Guard manages listening health</string>
+    <string name="settings_rhythm_guard_mode_desc">Choose how Sonorus Guard manages listening health</string>
     <string name="settings_rhythm_guard_mode_auto">Auto</string>
     <string name="settings_rhythm_guard_mode_manual">Manual</string>
     <string name="settings_rhythm_guard_age_label">Age Profile: %1$d</string>
@@ -1081,10 +1081,10 @@
     <string name="settings_rhythm_guard_manual_warning_toggle">Show Safety Warnings</string>
     <string name="settings_rhythm_guard_manual_warning_toggle_desc">Warn when live volume or manual toggles may be risky</string>
     <string name="settings_rhythm_guard_manual_threshold_title">High-Volume Warning Threshold: %1$d%%</string>
-    <string name="settings_rhythm_guard_manual_threshold_desc">Set when Rhythm Guard should warn about potentially harmful volume.</string>
+    <string name="settings_rhythm_guard_manual_threshold_desc">Set when Sonorus Guard should warn about potentially harmful volume.</string>
     <string name="settings_rhythm_guard_device_controls_title">Output Controls</string>
     <string name="settings_rhythm_guard_device_controls_speaker_limit_title">Apply Volume Limits On Phone Speaker</string>
-    <string name="settings_rhythm_guard_device_controls_speaker_limit_desc">When off, Rhythm Guard skips volume clamping and volume warnings on built-in speaker output.</string>
+    <string name="settings_rhythm_guard_device_controls_speaker_limit_desc">When off, Sonorus Guard skips volume clamping and volume warnings on built-in speaker output.</string>
     <string name="settings_rhythm_guard_alert_controls_title">Listening Alert Controls</string>
     <string name="settings_rhythm_guard_alert_threshold_title">Exposure Alert Threshold: %1$s</string>
     <string name="settings_rhythm_guard_alert_threshold_policy_default">Policy Default</string>
@@ -1094,7 +1094,7 @@
     <string name="settings_rhythm_guard_warning_title">Listening Safety Warning</string>
     <string name="settings_rhythm_guard_warning_high_volume">Current volume is above your warning threshold (%1$d%%). Consider reducing volume.</string>
     <string name="settings_rhythm_guard_warning_daily_exposure">You reached %1$s today, above the suggested %2$s. Consider taking a listening break.</string>
-    <string name="settings_rhythm_guard_warning_dialog_title">Rhythm Guard Protection Alert</string>
+    <string name="settings_rhythm_guard_warning_dialog_title">Sonorus Guard Protection Alert</string>
     <string name="settings_rhythm_guard_warning_dialog_volume_message">System media volume is %1$d%% in real time, above your current protection limit of %2$d%%. Lower volume to reduce hearing risk.</string>
     <string name="settings_rhythm_guard_risk_level_label">Risk severity: %1$s</string>
     <string name="settings_rhythm_guard_risk_action_label">Recommended action: %1$s</string>
@@ -1117,8 +1117,8 @@
     <string name="settings_rhythm_guard_break_dialog_picker_extend_title">Choose break length</string>
     <string name="settings_rhythm_guard_break_dialog_picker_delay_title">Choose delay length</string>
     <string name="settings_rhythm_guard_first_break_dialog_title">About Listening Breaks</string>
-    <string name="settings_rhythm_guard_first_break_dialog_message">Rhythm Guard schedules listening breaks to protect your hearing when daily exposure limits are reached. A break pauses playback and locks controls to ensure your ears get proper rest.\n\nFor this first break, you can choose to turn off Rhythm Guard. However, during subsequent breaks, you will not be able to disable Rhythm Guard until the break time ends. You can always turn it off or adjust settings outside of active breaks.</string>
-    <string name="settings_rhythm_guard_first_break_dialog_turn_off">Turn Off Rhythm Guard</string>
+    <string name="settings_rhythm_guard_first_break_dialog_message">Sonorus Guard schedules listening breaks to protect your hearing when daily exposure limits are reached. A break pauses playback and locks controls to ensure your ears get proper rest.\n\nFor this first break, you can choose to turn off Sonorus Guard. However, during subsequent breaks, you will not be able to disable Sonorus Guard until the break time ends. You can always turn it off or adjust settings outside of active breaks.</string>
+    <string name="settings_rhythm_guard_first_break_dialog_turn_off">Turn Off Sonorus Guard</string>
     <string name="settings_rhythm_guard_first_break_dialog_start">Start Break</string>
     <string name="settings_rhythm_guard_locked_during_break">Locked during listening break</string>
 
@@ -1130,8 +1130,8 @@
     <string name="settings_rhythm_guard_start_countdown_value">Starts in %1$s</string>
     <string name="settings_rhythm_guard_snapshot_widget_above_limit">Above recommended limit</string>
     <string name="settings_rhythm_guard_snapshot_widget_within_limit">Within recommended limit</string>
-    <string name="settings_rhythm_guard_state_active">Rhythm Guard is Active</string>
-    <string name="settings_rhythm_guard_state_inactive">Rhythm Guard is Inactive</string>
+    <string name="settings_rhythm_guard_state_active">Sonorus Guard is Active</string>
+    <string name="settings_rhythm_guard_state_inactive">Sonorus Guard is Inactive</string>
     <string name="settings_rhythm_guard_state_timeout_active">Listening timeout in progress</string>
     <string name="settings_rhythm_guard_state_cooldown_active">Grace period active</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">Break ends in %1$s</string>
@@ -1146,8 +1146,8 @@
     <string name="settings_rhythm_guard_hero_exposure_of">of %1$s</string>
     <string name="settings_rhythm_guard_hero_volume_limit">limit %1$s</string>
     <string name="settings_rhythm_guard_timeout_activity_title">Listening Timeout Active</string>
-    <string name="settings_rhythm_guard_timeout_activity_default_reason">Plot twist: your ears started a union and called for a snack break. Rhythm Guard paused playback so everyone can cool down.</string>
-    <string name="settings_rhythm_guard_timeout_activity_comic_desc">Plot twist: your ears started a union and called for a snack break. Rhythm Guard paused playback so everyone can cool down.</string>
+    <string name="settings_rhythm_guard_timeout_activity_default_reason">Plot twist: your ears started a union and called for a snack break. Sonorus Guard paused playback so everyone can cool down.</string>
+    <string name="settings_rhythm_guard_timeout_activity_comic_desc">Plot twist: your ears started a union and called for a snack break. Sonorus Guard paused playback so everyone can cool down.</string>
     <string name="settings_rhythm_guard_timeout_activity_extend">Extend break (+%1$d min)</string>
     <string name="settings_rhythm_guard_timeout_activity_exit">Close Timeout Screen</string>
     <string name="settings_rhythm_guard_timeout_activity_close_app">Close App</string>
@@ -1158,22 +1158,22 @@
     <string name="settings_rhythm_guard_alert_threshold_search_title">Exposure Alert Threshold</string>
     <string name="settings_rhythm_guard_alert_threshold_search_desc">Set how much daily listening triggers a safety alert</string>
     <string name="settings_rhythm_guard_warning_timeout_search_title">Alert Cooldown</string>
-    <string name="settings_rhythm_guard_warning_timeout_search_desc">Set the cooldown between repeated Rhythm Guard alerts</string>
+    <string name="settings_rhythm_guard_warning_timeout_search_desc">Set the cooldown between repeated Sonorus Guard alerts</string>
     <string name="settings_rhythm_guard_post_timeout_cooldown_search_title">Post-Timeout Cooldown</string>
     <string name="settings_rhythm_guard_post_timeout_cooldown_search_desc">Set cooldown after a timeout ends before another exposure timeout can trigger</string>
     <string name="settings_rhythm_guard_protection_presets_search_title">Protection Presets</string>
     <string name="settings_rhythm_guard_protection_presets_search_desc">Apply Gentle, Balanced, or Strict guardrail bundles in one tap</string>
     <string name="settings_rhythm_guard_break_resume_search_title">Default Break Resume</string>
     <string name="settings_rhythm_guard_break_resume_search_desc">Set how long scheduled listening breaks last by default</string>
-    <string name="settings_rhythm_guard_enable_search_title">Rhythm Guard Power</string>
-    <string name="settings_rhythm_guard_enable_search_desc">Enable or disable Rhythm Guard protections</string>
-    <string name="settings_rhythm_guard_notification_alert_title">Rhythm Guard Safety Alert</string>
-    <string name="settings_rhythm_guard_notification_timer_active_title">Rhythm Guard Timeout Active</string>
+    <string name="settings_rhythm_guard_enable_search_title">Sonorus Guard Power</string>
+    <string name="settings_rhythm_guard_enable_search_desc">Enable or disable Sonorus Guard protections</string>
+    <string name="settings_rhythm_guard_notification_alert_title">Sonorus Guard Safety Alert</string>
+    <string name="settings_rhythm_guard_notification_timer_active_title">Sonorus Guard Timeout Active</string>
     <string name="settings_rhythm_guard_notification_timer_active_text">Playback resumes in %1$s.</string>
-    <string name="settings_rhythm_guard_notification_timer_scheduled_title">Rhythm Guard Break Scheduled</string>
+    <string name="settings_rhythm_guard_notification_timer_scheduled_title">Sonorus Guard Break Scheduled</string>
     <string name="settings_rhythm_guard_notification_timer_scheduled_text">A listening break starts in %1$s.</string>
     <string name="settings_rhythm_guard_notification_tap_open">Tap to view timeout details.</string>
-<string name="stats_title">Rhythm Stats</string>
+<string name="stats_title">Sonorus Stats</string>
     <string name="stats_today">Today</string>
     <string name="stats_this_week">This Week</string>
     <string name="stats_this_month">This Month</string>
@@ -1188,7 +1188,7 @@
     <string name="home_top_artists_subtitle">Your favorite musicians</string>
 <string name="cd_reorder_home_sections">Reorder home sections</string>
     <string name="cd_remove">Remove</string>
-    <string name="cd_rhythm_logo">Rhythm Logo</string>
+    <string name="cd_sonorus_logo">Sonorus Logo</string>
     <string name="cd_telegram_support">Telegram Support</string>
 <string name="artists_title">Artists</string>
     <string name="artist_multi_parsing">Multi-Artist Parsing</string>
@@ -1339,7 +1339,7 @@
     <string name="settings_snowflake_display_area">Snowflake Display Area</string>
     <string name="settings_snowflake_size">Snowflake Size</string>
     <string name="settings_toggle_decoration_elements">Toggle individual decoration elements by position</string>
-    <string name="settings_multi_artist_parsing_info">When enabled, Rhythm splits artist tags containing multiple names — like “Artist A/Artist B” — into separate artists. Choose which delimiters to split on: slash, comma, semicolon, plus, or ampersand.\n\nUse a backslash (\\) to keep a delimiter character as part of an artist name.</string>
+    <string name="settings_multi_artist_parsing_info">When enabled, Sonorus splits artist tags containing multiple names — like “Artist A/Artist B” — into separate artists. Choose which delimiters to split on: slash, comma, semicolon, plus, or ampersand.\n\nUse a backslash (\\) to keep a delimiter character as part of an artist name.</string>
 <string name="settings_cache_size_2gb">2 GB</string>
     <string name="settings_cache_size_64mb">64 MB</string>
 <string name="ui_close">Close</string>
@@ -1416,7 +1416,7 @@
     <string name="settings_cache_info_3">Cached data is rebuilt automatically as you use the app</string>
     <string name="settings_cache_info_4">Auto-trim keeps the cache within your chosen size limit</string>
 <string name="updates_status_error">Error</string>
-    <string name="updates_rhythm_logo_cd">Rhythm Logo</string>
+    <string name="updates_sonorus_logo_cd">Sonorus Logo</string>
     <string name="updates_version_prefix">V %1$s</string>
     <string name="updates_released_prefix">Released: %1$s</string>
     <string name="updates_unknown_error">Unknown error occurred</string>
@@ -1433,7 +1433,7 @@
     <string name="settings_interval_every_12_hours">Every 12 hours</string>
     <string name="settings_interval_once_a_day">Once a day</string>
     <string name="settings_interval_once_a_week">Once a week</string>
-<string name="streaming_integration_title">Rhythm Go</string>
+<string name="streaming_integration_title">Sonorus Go</string>
     <string name="streaming_integration_services">Integration Services</string>
     <string name="streaming_integration_services_empty">No services connected yet</string>
     <string name="streaming_settings_title">Settings</string>
@@ -1441,7 +1441,7 @@
     <string name="streaming_settings_group_actions">Actions</string>
     <string name="streaming_settings_preferred_service">Preferred Service</string>
     <string name="streaming_settings_quality">Streaming Quality</string>
-    <string name="streaming_settings_service_sheet_desc">Choose which connected service Rhythm Go should prioritize by default.</string>
+    <string name="streaming_settings_service_sheet_desc">Choose which connected service Sonorus Go should prioritize by default.</string>
     <string name="streaming_settings_quality_sheet_desc">Select your preferred audio quality for streaming playback.</string>
     <string name="streaming_quality_low">Low</string>
     <string name="streaming_quality_normal">Normal</string>
@@ -1451,7 +1451,7 @@
     <string name="streaming_quality_normal_desc">Balanced quality and data usage (~160 kbps).</string>
     <string name="streaming_quality_high_desc">High quality audio (~320 kbps).</string>
     <string name="streaming_quality_lossless_desc">Best quality where supported (FLAC/ALAC).</string>
-    <string name="streaming_settings_group_wellbeing">Rhythm Insights</string>
+    <string name="streaming_settings_group_wellbeing">Sonorus Insights</string>
     <string name="streaming_open_full_settings">Open Full Settings</string>
     <string name="streaming_open_full_settings_desc">Open app-wide settings shared across modes</string>
     <string name="streaming_switch_to_local_mode">Switch to Local Mode</string>
@@ -1477,7 +1477,7 @@
     <string name="streaming_service_setup_password">Password</string>
     <string name="streaming_service_setup_password_hint">Enter your account password</string>
     <string name="streaming_service_setup_remember_password">Remember password on this device</string>
-    <string name="streaming_service_setup_remember_password_desc">Store credentials locally so Rhythm can reconnect automatically later.</string>
+    <string name="streaming_service_setup_remember_password_desc">Store credentials locally so Sonorus can reconnect automatically later.</string>
     <string name="streaming_service_setup_connecting">Connecting…</string>
     <string name="streaming_service_setup_disconnecting">Disconnecting…</string>
     <string name="streaming_service_setup_action_hint">Fill in the required fields to connect this service.</string>
@@ -1666,8 +1666,8 @@
     <string name="settings_exp_codec_monitoring_desc">Log audio codec and format info for debugging</string>
     <string name="settings_exp_audio_device_logging">Audio Device Logging</string>
     <string name="settings_exp_audio_device_logging_desc">Log audio device changes (Bluetooth, headphones, etc.)</string>
-    <string name="settings_exp_launch_onboarding">Launch Rhythm Tour</string>
-    <string name="settings_exp_launch_onboarding_desc">Reset and relaunch the Rhythm Tour experience</string>
+    <string name="settings_exp_launch_onboarding">Launch Sonorus Tour</string>
+    <string name="settings_exp_launch_onboarding_desc">Reset and relaunch the Sonorus Tour experience</string>
     <string name="settings_exp_test_crash">Test Crash</string>
     <string name="settings_exp_test_crash_desc">Forcibly crash the app to test crash handling and reporting</string>
     <string name="settings_broadcast_status_enabled">Enable Status Broadcasting</string>
@@ -1675,7 +1675,7 @@
     <string name="settings_bluetooth_lyrics_enabled">Notification Lyrics</string>
     <string name="settings_bluetooth_lyrics_enabled_desc">Send synced lyric lines as track metadata to Bluetooth devices, wearables, and notification listeners</string>
     <string name="exp_go_mode">Go Mode</string>
-    <string name="exp_go_mode_desc">Switch to Rhythm Go streaming mode</string>
+    <string name="exp_go_mode_desc">Switch to Sonorus Go streaming mode</string>
 <string name="settings_home_section_order">Section Order</string>
     <string name="settings_home_section_order_desc">Reorder home sections</string>
     <string name="settings_home_greeting_search">Show Greeting</string>
@@ -1686,13 +1686,13 @@
     <string name="settings_home_discover_carousel_desc">Show discover carousel</string>
     <string name="settings_home_carousel_auto_scroll">Carousel Auto Scroll</string>
     <string name="settings_home_carousel_auto_scroll_desc">Auto-scroll carousel</string>
-<string name="settings_notifications_rhythm_guard_alerts">Rhythm Guard Safety Alerts</string>
+<string name="settings_notifications_rhythm_guard_alerts">Sonorus Guard Safety Alerts</string>
     <string name="settings_notifications_rhythm_guard_alerts_desc">Notify when listening risk warnings are triggered</string>
-    <string name="settings_notifications_rhythm_guard_timers">Rhythm Guard Break Timers</string>
+    <string name="settings_notifications_rhythm_guard_timers">Sonorus Guard Break Timers</string>
     <string name="settings_notifications_rhythm_guard_timers_desc">Notify for scheduled breaks and timeout countdowns</string>
-    <string name="settings_notifications_rhythm_pulse">Rhythm Tips</string>
+    <string name="settings_notifications_rhythm_pulse">Sonorus Tips</string>
     <string name="settings_notifications_rhythm_pulse_desc">Friendly reminders and listening tips.</string>
-    <string name="settings_notifications_rhythm_pulse_interval">Rhythm Tips Interval</string>
+    <string name="settings_notifications_rhythm_pulse_interval">Sonorus Tips Interval</string>
     <string name="settings_notifications_rhythm_pulse_interval_desc">How often tips notifications are delivered</string>
 <string name="settings_expressive_shapes_enabled">Expressive Shapes</string>
     <string name="settings_expressive_shapes_enabled_search_desc">Custom UI shapes</string>
@@ -1773,7 +1773,7 @@
     <string name="settings_miniplayer_tablet_layout">Tablet Layout on Phone</string>
     <string name="settings_miniplayer_tablet_layout_desc">Use tablet-style miniplayer on phones</string>
 <string name="settings_scanning">Scanning</string>
-<string name="search_settings_hint">Search Rhythm Settings…</string>
+<string name="search_settings_hint">Search Sonorus Settings…</string>
     <string name="clear_search">Clear search</string>
     <string name="no_results_found">No results found</string>
     <string name="try_different_search">Try a different search term</string>
@@ -1785,8 +1785,8 @@
     <string name="exp_developer_debugging">Developer &amp; Debugging</string>
     <string name="exp_track_error_checker">Track Error Checker</string>
     <string name="exp_track_error_checker_desc">Intercept corrupted or unreadable audio tracks to prevent infinite loading and auto-skip loops</string>
-    <string name="exp_launch_onboarding">Launch Rhythm Tour</string>
-    <string name="exp_launch_onboarding_desc">Reset and relaunch the Rhythm Tour experience</string>
+    <string name="exp_launch_onboarding">Launch Sonorus Tour</string>
+    <string name="exp_launch_onboarding_desc">Reset and relaunch the Sonorus Tour experience</string>
     <string name="exp_test_crash">Test Crash</string>
     <string name="exp_test_crash_desc">Forcibly crash the app to test crash handling and reporting</string>
     <string name="exp_force_player_compact_mode">Force Player Compact Mode</string>
@@ -1818,14 +1818,14 @@
     <string name="theme_font_invalid">Invalid font file format</string>
     <string name="ui_apply">Apply</string>
 
-    <string name="crashactivity_uh_oh_looks_like">Uh oh! Looks like Rhythm hit a sour note!</string>
+    <string name="crashactivity_uh_oh_looks_like">Uh oh! Looks like Sonorus hit a sour note!</string>
     <string name="crashactivity_dont_fret_our_app">Don\'t fret! Our app just had a little \'oopsie\'. Please share the crash details below – it\'s like a secret message for our developers to fix things! Then, let\'s try that again, shall we?</string>
     <string name="crashactivity_secret_crash_scrolls">Secret Crash Scrolls</string>
     <string name="crashactivity_share">Share</string>
     <string name="externalplaybackactivity_unable_to_open_audio">Unable to open audio file</string>
     <string name="externalplaybackactivity_unsupported_or_unreadable_audio">Unsupported or unreadable audio file</string>
     <string name="externalplaybackactivity_failed_to_play_audio">Failed to play audio file</string>
-    <string name="externalplaybackactivity_open_rhythm">Open Rhythm</string>
+    <string name="externalplaybackactivity_open_rhythm">Open Sonorus</string>
     <string name="mainactivity_error_opening_file">Error opening file</string>
     <string name="mainactivity_unsupported_file_format">Unsupported file format</string>
     <string name="mainactivity_failed_to_initialize_media">Failed to initialize media player</string>
@@ -1900,7 +1900,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">Choose Your Playback Mode</string>
     <string name="onboardingscreen_local_offline_player">Local Offline Player</string>
     <string name="onboardingscreen_play_audio_files_stored">Play audio files stored directly on your device. Supports advanced local directory scanning, statistics, and theme matching.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO! (Streaming)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Sonorus GO! (Streaming)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Connect to Jellyfin, Subsonic, or Navidrome servers to stream your entire library on the go, with caching support for offline listening.</string>
     <string name="onboardingscreen_playback_mode_tips">Playback Mode Tips</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Switch easily anytime in Settings &gt; Integration.</string>
@@ -1942,7 +1942,7 @@
     <string name="rhythmwidgetpreview_str_12_vertical_widget">1×2 Vertical Widget</string>
     <string name="rhythmwidgetpreview_str_32_medium_widget">3×2 Medium Widget</string>
     <string name="rhythmmusicwidget_album_art_placeholder">Album Art Placeholder</string>
-    <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance Widget Previews</string>
+    <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Sonorus Glance Widget Previews</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 Compact Widget</string>
     <string name="rhythmwidgetpreview_str_21_horizontal_strip">2×1 Horizontal Strip</string>
     <string name="rhythmwidgetpreview_str_22_small_widget">2×2 Small Widget</string>
@@ -1989,7 +1989,7 @@
     <string name="betaprogrampopup_early_access">Early Access</string>
     <string name="betaprogrampopup_shape_the_future">Shape the Future</string>
     <string name="betaprogrampopup_direct_feedback">Direct Feedback</string>
-    <string name="betaprogrampopup_youre_part_of_an">You\'re part of an exclusive group helping shape the future of Rhythm music player</string>
+    <string name="betaprogrampopup_youre_part_of_an">You\'re part of an exclusive group helping shape the future of Sonorus music player</string>
     <string name="betaprogrampopup_start_exploring">Start Exploring</string>
     <string name="switchmodedialog_switch_play">Switch &amp; Play</string>
     <string name="fullscreenlyricsview_cover_artwork">Cover Artwork</string>
@@ -2060,7 +2060,7 @@
     <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• Embedded lyrics are stored in your audio files
 </string>
     <string name="miniplayercustomizationsettingsscreen_miniplayer_theme">MiniPlayer Theme</string>
-    <string name="miniplayercustomizationsettingsscreen_choose_between_rhythm_default">Choose between Rhythm Default or Expressive theme</string>
+    <string name="miniplayercustomizationsettingsscreen_choose_between_rhythm_default">Choose between Sonorus Default or Expressive theme</string>
     <string name="miniplayercustomizationsettingsscreen_integrated_directly_into_the">Integrated directly into the MiniPlayer background</string>
     <string name="performancesettingsscreen_performance">Lite Mode</string>
     <string name="performancesettingsscreen_disable_haptics">Disable Haptics</string>
@@ -2077,7 +2077,7 @@
     <string name="rhythmguardsettingsscreen_none">None</string>
     <string name="rhythmguardsettingsscreen_general_settings">General Settings</string>
     <string name="rhythmguardsettingsscreen_library_data">Library Data</string>
-    <string name="rhythmguardsettingsscreen_stats_rhythm_guard">Stats &amp; Rhythm Guard</string>
+    <string name="rhythmguardsettingsscreen_stats_rhythm_guard">Stats &amp; Sonorus Guard</string>
     <string name="settingsscreen_audio_offload">Audio Offload</string>
     <string name="settingsscreen_personalization">Personalization</string>
     <string name="settingsscreen_library_focus">Library Focus</string>
@@ -2172,7 +2172,7 @@
     <string name="pulse_heavy">Heavy listening</string>
     <string name="pulse_marathon">Marathon mode</string>
 <string name="settings_tip_theme_desc_1">Refresh your music player with lively AMOLED black and beautiful pastel colors.</string>
-    <string name="settings_tip_theme_desc_2">Make Rhythm truly yours by matching the app\'s accent to your system.</string>
+    <string name="settings_tip_theme_desc_2">Make Sonorus truly yours by matching the app\'s accent to your system.</string>
     <string name="settings_tip_media_scan_desc_1">Avoid unwanted audio clips. Explicitly define which folders we should scan for music.</string>
     <string name="settings_tip_media_scan_desc_2">Keep voice notes and ringtones away from your playlists using focus folders.</string>
     <string name="settings_tip_sleep_timer_desc_1">Drift off to sleep while your music is playing. We\'ll automatically pause it.</string>
@@ -2181,7 +2181,7 @@
     <string name="settings_tip_equalizer_desc_2">Tune the sound to your headphones securely with our advanced audio effects.</string>
     <string name="settings_tip_backup_active_desc_1">Auto backup is active. Verify your backup sections so restores stay clean.</string>
     <string name="settings_tip_backup_active_desc_2">Protection enabled: schedule looks good. Run a manual backup before big edits.</string>
-    <string name="settings_tip_backup_inactive_desc_1">Auto backup is off. Enable it to protect playlists and Rhythm Guard stats.</string>
+    <string name="settings_tip_backup_inactive_desc_1">Auto backup is off. Enable it to protect playlists and Sonorus Guard stats.</string>
     <string name="settings_tip_backup_inactive_desc_2">No safety net yet. Turn on backups to avoid losing your setup.</string>
     <string name="settings_tip_updates_active_desc_1">Updates are enabled. Keep them on for fixes and performance improvements.</string>
     <string name="settings_tip_updates_active_desc_2">You are set to receive updates. Check channel preferences for stability vs freshness.</string>
@@ -2223,7 +2223,7 @@
     <string name="font_inter_desc">Clean and modern sans-serif font, highly readable</string>
     <string name="font_jetbrains_desc">Monospace font perfect for technical content</string>
     <string name="font_quicksand_desc">Rounded font with a softer, friendlier appearance</string>
-<string name="color_scheme_default_title">Rhythm Default</string>
+<string name="color_scheme_default_title">Sonorus Default</string>
     <string name="color_scheme_default_desc">Material 3 baseline purple with rosy pink accents</string>
     <string name="color_scheme_warm_title">Warm Sunset</string>
     <string name="color_scheme_warm_desc">Cozy orange and red tones for a warm atmosphere</string>
@@ -2257,7 +2257,7 @@
     <string name="lyrics_settings_embedded_first">Embedded First</string>
     <string name="lyrics_settings_embedded_first_desc">Prefer lyrics embedded in audio files, fallback to online APIs</string>
     <string name="lyrics_settings_online_first">Online First</string>
-    <string name="lyrics_settings_online_first_desc">Prefer online APIs (Rhythm word-by-word, LRCLib), fallback to embedded</string>
+    <string name="lyrics_settings_online_first_desc">Prefer online APIs (Sonorus word-by-word, LRCLib), fallback to embedded</string>
     <string name="lyrics_settings_local_first">Local First</string>
     <string name="lyrics_settings_local_first_desc">Prefer local .lrc files, then embedded lyrics, then online APIs</string>
     <string name="lyrics_settings_lyrically_first">Lyrically First</string>
@@ -2304,7 +2304,7 @@
     <string name="device_configuration_custom_preset">Custom Preset</string>
     <string name="device_configuration_custom">Custom</string>
     <string name="device_configuration_active_profile_label">Active Profile: %1$s</string>
-    <string name="device_configuration_share_subject">Rhythm EQ Profile: %1$s</string>
+    <string name="device_configuration_share_subject">Sonorus EQ Profile: %1$s</string>
     <string name="device_configuration_share_title">Share EQ Profile</string>
     <string name="device_configuration_edit_device">Edit Device</string>
     <string name="device_configuration_add_device">Add Device</string>
@@ -2355,9 +2355,9 @@
         <item quantity="one">Export %1$d playlist to:</item>
         <item quantity="other">Export %1$d playlists to:</item>
     </plurals>
-<string name="dialog_switch_to_go">Switch to Rhythm Go?</string>
+<string name="dialog_switch_to_go">Switch to Sonorus Go?</string>
     <string name="dialog_switch_to_local">Switch to Local?</string>
-    <string name="dialog_switch_to_go_desc">This item belongs to Rhythm Go. Switch to Streaming Mode now to stream and play it?</string>
+    <string name="dialog_switch_to_go_desc">This item belongs to Sonorus Go. Switch to Streaming Mode now to stream and play it?</string>
     <string name="dialog_switch_to_local_desc">This item belongs to your Local Library. Switch to Local Mode now to play your offline tracks?</string>
 
 <string name="eq_preset_flat">Flat</string>
@@ -2528,7 +2528,7 @@
     <string name="carousel_style_hero_desc">1 side peek album</string>
 
     <!-- Widget preview sample text (launcher picker previews only, not user-facing copy) -->
-    <string name="widget_preview_brand" translatable="false">Rhythm</string>
+    <string name="widget_preview_brand" translatable="false">Sonorus</string>
     <string name="widget_preview_title" translatable="false">Midnight Drive</string>
     <string name="widget_preview_subtitle" translatable="false">Neon Waves</string>
     <string name="widget_preview_lyric_active" translatable="false">Forever running through the night</string>
@@ -2536,7 +2536,7 @@
     <string name="widget_preview_stats_time" translatable="false">12h 30m</string>
     <string name="widget_preview_stats_label" translatable="false">listening</string>
     <string name="widget_preview_stats_streak" translatable="false">30</string>
-<string name="theme_rhythm">Rhythm</string>
+<string name="theme_rhythm">Sonorus</string>
     <string name="theme_expressive">Expressive</string>
     <string name="settings_managed_by_expressive_shapes">Managed by Expressive Shapes</string>
 <string name="shape_target_album_art">Album Artwork</string>
@@ -2579,7 +2579,7 @@
     <string name="backup_restore_section_collection">Collection</string>
     <string name="backup_restore_section_collection_desc">Playlists, favorites, blacklist/whitelist, pinned folders.</string>
     <string name="backup_restore_section_insight">Insight</string>
-    <string name="backup_restore_section_insight_desc">Play counts, daily stats, genres, and Rhythm Guard configuration.</string>
+    <string name="backup_restore_section_insight_desc">Play counts, daily stats, genres, and Sonorus Guard configuration.</string>
     <string name="backup_restore_status_included">Included</string>
     <string name="backup_restore_status_excluded">Excluded</string>
     <plurals name="backup_restore_sections_enabled">
@@ -2799,7 +2799,7 @@
     <string name="settings_search_api_ytmusic_desc">Fallback for artist images and album artwork</string>
     <string name="widget_cookie_description">A cookie-shaped mini player showing your album art with play, previous, and next buttons.</string>
     <string name="widget_stats_description">See how many days in a row you\'ve listened to music — plus your best streak ever.</string>
-    <string name="widget_cookie_section_title">Rhythm Cookie Widget</string>
+    <string name="widget_cookie_section_title">Sonorus Cookie Widget</string>
     <string name="widget_cookie_bottom_left">Bottom Left Action</string>
     <string name="widget_cookie_bottom_right">Bottom Right Action</string>
     <string name="widget_cookie_action_skip">Skip Track</string>
@@ -2813,7 +2813,7 @@
     <string name="widget_cookie_action_favorite_desc">Toggles the current song favorite state</string>
     <string name="widget_cookie_action_none">None</string>
     <string name="widget_cookie_action_none_desc">Hides this corner button</string>
-    <string name="widget_stats_section_title">Rhythm Stats Widget</string>
+    <string name="widget_stats_section_title">Sonorus Stats Widget</string>
     <string name="widget_stats_time_range">Listening Time Range</string>
     <string name="widget_stats_range_all_time">All Time</string>
     <string name="widget_stats_range_all_time_desc">Total listening time since you started</string>
@@ -2840,15 +2840,15 @@
     <string name="cd_cancel_selection">Cancel selection</string>
     <string name="cd_more_actions">More actions</string>
     <string name="cd_select_songs">Select songs</string>
-    <string name="rhythmcookiewidget_rhythm_logo">Rhythm Logo</string>
+    <string name="rhythmcookiewidget_sonorus_logo">Sonorus Logo</string>
     <string name="rhythmlyricswidget_no_lyrics_available">No lyrics available</string>
-    <string name="rhythmlyricswidget_tagline">Your Music, Your Rhythm</string>
-    <string name="rhythmlyricswidget_open_to_play">Open Rhythm to play some music</string>
+    <string name="rhythmlyricswidget_tagline">Your Music, Your Sound</string>
+    <string name="rhythmlyricswidget_open_to_play">Open Sonorus to play some music</string>
     <string name="rhythmstatswidget_listening">listening</string>
     <string name="rhythmwidgetpreview_lyrics_widget">Lyrics Widget</string>
     <string name="rhythmwidgetpreview_lyrics_3x2">Lyrics Widget — 3×2</string>
     <string name="rhythmwidgetpreview_lyrics_4x3">Lyrics Widget — 4×3</string>
-    <string name="rhythmwidgetpreview_cookie_widget">Rhythm Cookie Widget</string>
+    <string name="rhythmwidgetpreview_cookie_widget">Sonorus Cookie Widget</string>
     <string name="rhythmwidgetpreview_cookie_2x2">Cookie Widget — 2×2</string>
     <string name="rhythmwidgetpreview_cookie_resized_wide">Cookie Widget — resized wide</string>
     <!-- Player theme presets -->
@@ -2874,9 +2874,9 @@
     <string name="tile_playing_format">Playing: %1$s</string>
     <string name="tile_paused_format">Paused: %1$s</string>
     <!-- Settings & dialogs -->
-    <string name="backup_clip_label">Rhythm Backup</string>
-    <string name="crashlog_clip_label">Rhythm Crash Log</string>
-    <string name="rhythmguardsettingsscreen_status">Rhythm Guard Status</string>
+    <string name="backup_clip_label">Sonorus Backup</string>
+    <string name="crashlog_clip_label">Sonorus Crash Log</string>
+    <string name="rhythmguardsettingsscreen_status">Sonorus Guard Status</string>
     <string name="betaprogrampopup_early_access_desc">Try new features before official release</string>
     <string name="betaprogrampopup_shape_the_future_desc">Your feedback directly influences development</string>
     <string name="betaprogrampopup_direct_feedback_desc">Communicate directly with the development team</string>
@@ -2889,7 +2889,7 @@
     <string name="search_view_all_count_format">See all %1$d songs</string>
     <!-- Onboarding -->
     <string name="onboarding_step_counter">Step %1$d of %2$d</string>
-    <string name="onboarding_configure_desc">Configure Rhythm as a local offline music player for audio files stored on your device, or connect to your self-hosted streaming services.</string>
+    <string name="onboarding_configure_desc">Configure Sonorus as a local offline music player for audio files stored on your device, or connect to your self-hosted streaming services.</string>
     <string name="onboarding_connected_to_format">Connected to %1$s as %2$s</string>
     <!-- Final sweep: remaining hardcoded strings -->
     <string name="mainactivity_preparing">Preparing&#8230;</string>
@@ -3044,7 +3044,7 @@
     <string name="action_undo">Undo</string>
     <string name="settings_catalog_server">Music Library Server</string>
     <string name="settings_catalog_server_desc">Connect to the ihope music and score service</string>
-    <string name="catalog_enrollment_intro">Enter a one-time invitation code to create a non-exportable device key in Android Keystore. Rhythm will then sign requests automatically, with no credentials to enter again.</string>
+    <string name="catalog_enrollment_intro">Enter a one-time invitation code to create a non-exportable device key in Android Keystore. Sonorus will then sign requests automatically, with no credentials to enter again.</string>
     <string name="catalog_server_address">Server address</string>
     <string name="catalog_one_time_invite">One-time invitation code</string>
     <string name="catalog_enroll_this_device">Register this device</string>
@@ -3062,4 +3062,18 @@
     <string name="catalog_replace_existing_device_desc">Use after changing phones or reinstalling. The old device is disabled when the new device registers.</string>
     <string name="catalog_generate_invite">Generate one-time invitation</string>
     <string name="catalog_invite_code_value">Invitation code: %1$s</string>
+    <string name="sonorus_about_group">Sonorus and open source</string>
+    <string name="sonorus_maintainer_title">Maintained independently by Cluno1</string>
+    <string name="sonorus_upstream_title">Upstream Rhythm project</string>
+    <string name="sonorus_upstream_statement">Sonorus is an independent, unofficial derivative of Rhythm. It is not affiliated with or endorsed by Rhythm\'s authors or Team ChromaHub.</string>
+    <string name="sonorus_license_title">GNU GPL v3 or later</string>
+    <string name="sonorus_license_summary">View the complete license included in this app</string>
+    <string name="sonorus_source_code">Source code</string>
+    <string name="sonorus_releases">Sonorus releases</string>
+    <string name="licenses_desc_alphatab">Music notation rendering and playback engine</string>
+    <string name="widget_lyrics_name">Sonorus Lyrics</string>
+    <string name="widget_cookie_name">Sonorus Cookie</string>
+    <string name="widget_stats_name">Sonorus Stats</string>
+    <string name="sonorus_close">Close</string>
+    <string name="sonorus_update_source_desc">Stable releases from Cluno1/Sonorus</string>
 </resources>

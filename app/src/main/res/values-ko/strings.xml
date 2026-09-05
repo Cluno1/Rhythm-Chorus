@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Rhythm</string>
+    <string name="app_name">Sonorus</string>
     <!-- Common Labels -->
     <string name="home">홈</string>
     <string name="library">도서관</string>
     <string name="search">검색</string>
     <!-- Media3 notification configuration -->
-    <string name="media3_notification_channel_name">Rhythm 음악</string>
+    <string name="media3_notification_channel_name">Sonorus 음악</string>
     <string name="media3_notification_channel_description">미디어 재생 컨트롤</string>
     <!-- Widget strings -->
-    <string name="widget_description_glance">Rhythm 음악 - 9개의 반응형 레이아웃, Material 3개의 디자인 및 실시간 상태 업데이트로 재생 제어</string>
-    <string name="widget_name_glance">Rhythm 음악</string>
+    <string name="widget_description_glance">Sonorus 음악 - 9개의 반응형 레이아웃, Material 3개의 디자인 및 실시간 상태 업데이트로 재생 제어</string>
+    <string name="widget_name_glance">Sonorus 음악</string>
     <string name="unknown_artist">아티스트 미상</string>
     <string name="play_pause">재생/일시 정지</string>
     <!-- Widget Settings -->
@@ -25,17 +25,17 @@
     <!-- Settings - Notifications -->
     <string name="settings_notifications">알림</string>
     <string name="settings_notifications_updates_group">앱 업데이트</string>
-    <string name="settings_notifications_rhythm_guard_group">Rhythm 경비병</string>
-    <string name="settings_notifications_rhythm_pulse_group">Rhythm 팁</string>
+    <string name="settings_notifications_rhythm_guard_group">Sonorus 경비병</string>
+    <string name="settings_notifications_rhythm_pulse_group">Sonorus 팁</string>
     <string name="settings_update_notifications_merged_desc">새 버전 및 백그라운드 업데이트 확인 결과에 대한 알림 받기</string>
     <string name="settings_rhythm_guard_alert_notifications">안전 경고 알림</string>
-    <string name="settings_rhythm_guard_alert_notifications_desc">Rhythm Guard가 위험한 볼륨 또는 노출을 감지하면 알림 표시</string>
+    <string name="settings_rhythm_guard_alert_notifications_desc">Sonorus Guard가 위험한 볼륨 또는 노출을 감지하면 알림 표시</string>
     <string name="settings_rhythm_guard_timer_notifications">휴식 시간 알림</string>
     <string name="settings_rhythm_guard_timer_notifications_desc">예정된 휴식 시간 및 활성 시간 초과 카운트다운에 대한 알림 표시</string>
-    <string name="settings_rhythm_pulse_notifications">Rhythm 팁 알림</string>
+    <string name="settings_rhythm_pulse_notifications">Sonorus 팁 알림</string>
     <string name="settings_rhythm_pulse_notifications_desc">친절한 알림과 청취 팁을 받아보세요.</string>
     <string name="settings_rhythm_pulse_interval">팁 간격</string>
-    <string name="settings_rhythm_pulse_interval_dialog_title">Rhythm 팁 간격</string>
+    <string name="settings_rhythm_pulse_interval_dialog_title">Sonorus 팁 간격</string>
     <!-- Settings - Queue & Playback -->
     <!-- Settings - Queue -->
     <string name="settings_queue">대기열</string>
@@ -113,18 +113,18 @@
     <string name="operation_exporting_playlists">사용자 정의 재생 목록을 백업하는 중…</string>
     <string name="operation_exporting_playlists_location">재생목록을 저장소에 백업하는 중…</string>
     <string name="operation_importing_playlist">재생목록 파일을 가져오는 중…</string>
-    <string name="notification_operations_channel_name">Rhythm 라이브러리</string>
+    <string name="notification_operations_channel_name">Sonorus 라이브러리</string>
     <string name="notification_operations_channel_desc">라이브러리 검색 및 재생 목록 작업의 진행 상황 및 결과</string>
-    <string name="notification_media_scan_title">Rhythm 라이브러리 스캔</string>
+    <string name="notification_media_scan_title">Sonorus 라이브러리 스캔</string>
     <string name="notification_media_scan_stage_songs">오디오 트랙을 위한 장치 저장소 검색 중…</string>
     <string name="notification_media_scan_stage_saving">오디오 트랙 데이터베이스 최적화 및 저장…</string>
     <string name="notification_media_scan_stage_finishing">오디오 인덱싱을 완료하는 중…</string>
     <string name="notification_media_scan_complete_pending_setup">오디오 스캔 완료, 백그라운드 작업 초기화 중…</string>
     <string name="notification_media_scan_cancelled">라이브러리 스캔이 취소되었습니다.</string>
     <string name="notification_media_scan_failed">라이브러리 스캔에 실패했습니다. 저장소 권한을 확인하고 다시 시도하세요.</string>
-    <string name="notification_playlist_export_title">Rhythm 라이브러리 내보내기</string>
-    <string name="notification_playlist_import_title">Rhythm 라이브러리 가져오기</string>
-    <string name="notification_library_setup_title">Rhythm 라이브러리 설정</string>
+    <string name="notification_playlist_export_title">Sonorus 라이브러리 내보내기</string>
+    <string name="notification_playlist_import_title">Sonorus 라이브러리 가져오기</string>
+    <string name="notification_library_setup_title">Sonorus 라이브러리 설정</string>
     <plurals name="notification_library_setup_complete_summary">
         <item quantity="other">라이브러리가 최적화되어 준비되었습니다: %1$d 트랙, %2$d 앨범, %3$d 아티스트</item>
     </plurals>
@@ -140,20 +140,20 @@
         <item quantity="other">%2$d 노래가 포함된 \"%1$s\"을(를) 성공적으로 가져왔습니다.</item>
     </plurals>
     <string name="notification_playlist_import_failed">재생목록 가져오기에 실패했습니다. 파일 형식을 확인해 주세요.</string>
-    <string name="notification_updater_channel_name">Rhythm 업데이터</string>
+    <string name="notification_updater_channel_name">Sonorus 업데이터</string>
     <string name="notification_updater_channel_desc">앱 업데이트 다운로드 상태</string>
-    <string name="notification_updater_title">Rhythm 업데이터</string>
+    <string name="notification_updater_title">Sonorus 업데이터</string>
     <string name="notification_updater_downloading">⬇ 다운로드 중: %1$d%%</string>
     <string name="notification_updater_download_complete">✓ 설치 준비가 완료되었습니다. 업데이트하려면 탭하세요.</string>
     <string name="notification_updater_available_title">업데이트 가능!</string>
-    <string name="notification_updater_available_text">🆕 Rhythm의 새 버전이 출시되었습니다.</string>
-    <string name="notification_sleep_timer_channel_name">Rhythm 수면 타이머</string>
+    <string name="notification_updater_available_text">🆕 Sonorus의 새 버전이 출시되었습니다.</string>
+    <string name="notification_sleep_timer_channel_name">Sonorus 수면 타이머</string>
     <string name="notification_sleep_timer_channel_desc">취침 타이머 작업의 카운트다운 및 상태</string>
-    <string name="notification_sleep_timer_title">Rhythm 수면 타이머</string>
+    <string name="notification_sleep_timer_title">Sonorus 수면 타이머</string>
     <string name="notification_sleep_timer_pause_in">⏸ %1$s에서 일시중지 중</string>
     <string name="notification_sleep_timer_stop_in">⏹ %1$s에 정차 중</string>
     <!-- Streaming Notifications -->
-    <string name="notification_streaming_channel_name">Rhythm Go</string>
+    <string name="notification_streaming_channel_name">Sonorus Go</string>
     <string name="notification_streaming_channel_desc">스트리밍 서비스 상태 및 동기화 업데이트</string>
     <!-- Streaming Authentication -->
     <string name="notification_streaming_auth_title">스트리밍 연결됨</string>
@@ -278,7 +278,7 @@
     <string name="settings_about_architecture_value">ARM64 &amp; ARM32</string>
     <string name="settings_about_credits">개발자</string>
     <string name="settings_about_team_desc">혁신적인 경험을 창조하는 열정적인 개발자</string>
-    <string name="settings_about_team_chromahub">팀 ChromaHub</string>
+    <string name="settings_about_team_chromahub">팀 Sonorus</string>
     <string name="settings_about_community">커뮤니티</string>
     <string name="about_community_group_maintainers">패키지 관리자</string>
     <string name="about_community_group_collaborators">공동작업자 및 기여자</string>
@@ -295,7 +295,7 @@
     <!-- Status Labels -->
     <string name="status_disabled">비활성화됨</string>
     <!-- HomeScreen -->
-    <string name="home_title">Rhythm</string>
+    <string name="home_title">Sonorus</string>
     <string name="home_settings_cd">설정</string>
     <string name="home_no_featured_albums">추천 앨범 없음</string>
     <string name="home_no_featured_albums_desc">추천 콘텐츠를 보려면 라이브러리에 앨범을 추가하세요.</string>
@@ -344,7 +344,7 @@
     <string name="home_no_recommendations">권장 사항 없음</string>
     <string name="home_no_recommendations_desc">음악을 듣고 맞춤 추천을 받으세요.</string>
     <!-- Listening Stats -->
-    <string name="home_listening_stats">귀하의 Rhythm 통계</string>
+    <string name="home_listening_stats">귀하의 Sonorus 통계</string>
     <!-- Mood & Moments -->
     
     <!-- Recently Played -->
@@ -410,7 +410,7 @@
     <string name="sort_artist">아티스트</string>
     <!-- Storage Permission -->
     <string name="storage_permission_required">저장 권한이 필요합니다</string>
-    <string name="storage_permission_desc">음악 파일을 탐색하고 기기의 저장 공간을 탐색하려면 Rhythm에 파일 및 미디어에 액세스할 수 있는 권한이 필요합니다.</string>
+    <string name="storage_permission_desc">음악 파일을 탐색하고 기기의 저장 공간을 탐색하려면 Sonorus에 파일 및 미디어에 액세스할 수 있는 권한이 필요합니다.</string>
     <string name="storage_permission_audio_only">이를 통해 음악이 포함된 오디오 파일 및 폴더에만 액세스할 수 있습니다.</string>
     <!-- PlayerScreen -->
     <string name="player_loading_lyrics">가사 불러오는 중…</string>
@@ -425,11 +425,11 @@
     <!-- Common UI -->
     <string name="ui_dismiss">닫기</string>
     <!-- Common Terms -->
-    <string name="common_rhythm">Rhythm</string>
+    <string name="common_rhythm">Sonorus</string>
     <string name="common_home">홈</string>
     <string name="common_library">도서관</string>
     <!-- Splash/Loading -->
-    <string name="splash_tagline">당신의 음악, 당신의 Rhythm</string>
+    <string name="splash_tagline">당신의 음악, 당신의 Sonorus</string>
     <string name="splash_loading">음악 라이브러리 준비 중…</string>
     <string name="splash_loading_streaming">스트리밍 설정 준비 중…</string>
     <string name="splash_ready">그루브 준비 완료!</string>
@@ -461,7 +461,7 @@
     <string name="updates_channel_desc">따를 업데이트 채널을 선택하세요:</string>
     <!-- Onboarding -->
     <string name="onboarding_welcome_to">에 오신 것을 환영합니다</string>
-    <string name="onboarding_welcome_subtitle">당신의 음악, 당신의 Rhythm</string>
+    <string name="onboarding_welcome_subtitle">당신의 음악, 당신의 Sonorus</string>
     <string name="onboarding_get_started">시작하기</string>
     <string name="onboarding_android13_notice">Android 13세 이상 공지</string>
     <string name="onboarding_android13_desc">최신 Android 버전에서는 여러 권한 요청이 표시됩니다. 최상의 경험을 위해 오디오 파일 및 알림에 대한 액세스 권한을 부여해 주세요.</string>
@@ -495,23 +495,23 @@
     <string name="onboarding_library_2">라이브러리 화면에서 직접 재생 목록 생성 및 관리</string>
     <string name="onboarding_library_3">설정 &gt; 라이브러리 설정에서 고급 표시 및 정렬 옵션을 사용할 수 있습니다.</string>
     <string name="onboarding_library_4">기본 재생 목록(최근 추가, 최다 재생)은 설정 &gt; 재생 목록에서 전환할 수 있습니다.</string>
-    <string name="onboarding_theme_title">Rhythm을(를) 당신의 것으로 만드세요</string>
-    <string name="onboarding_theme_desc">귀하의 스타일에 맞게 Rhythm의 외모를 맞춤화하세요. 시스템 테마, 글꼴 또는 Material 동적 색상(Android 12+)을 선택하세요.</string>
+    <string name="onboarding_theme_title">Sonorus을(를) 당신의 것으로 만드세요</string>
+    <string name="onboarding_theme_desc">귀하의 스타일에 맞게 Sonorus의 외모를 맞춤화하세요. 시스템 테마, 글꼴 또는 Material 동적 색상(Android 12+)을 선택하세요.</string>
     <string name="onboarding_more_tuner">설정의 추가 사용자 정의</string>
     <string name="onboarding_tuner_1">사용자 정의 색 구성표 및 앨범 아트 색상 추출</string>
     <string name="onboarding_tuner_2">글꼴 사용자 정의 및 타이포그래피 설정</string>
     <string name="onboarding_tuner_3">설정 &gt; 테마 사용자 정의에서 고급 테마 옵션을 사용할 수 있습니다.</string>
     <string name="onboarding_rhythm_guard_title">청력을 보호하세요</string>
-    <string name="onboarding_rhythm_guard_desc">연령 인식 기본값과 수동 보호 제어를 통해 청취를 더욱 안전하게 유지하려면 Rhythm Guard를 설정하세요.</string>
-    <string name="onboarding_rhythm_guard_mode_title">Rhythm 가드 모드</string>
-    <string name="onboarding_rhythm_guard_age_hint">연령 프로필은 Rhythm Guard가 보다 안전한 청취 제한을 권장하는 데 도움이 됩니다.</string>
+    <string name="onboarding_rhythm_guard_desc">연령 인식 기본값과 수동 보호 제어를 통해 청취를 더욱 안전하게 유지하려면 Sonorus Guard를 설정하세요.</string>
+    <string name="onboarding_rhythm_guard_mode_title">Sonorus 가드 모드</string>
+    <string name="onboarding_rhythm_guard_age_hint">연령 프로필은 Sonorus Guard가 보다 안전한 청취 제한을 권장하는 데 도움이 됩니다.</string>
     <string name="onboarding_rhythm_guard_tip_1">자동 모드는 최소한의 설정으로 더 안전한 기본값을 적용합니다.</string>
     <string name="onboarding_rhythm_guard_tip_2">나중에 설정에서 알림을 조정하고 미리 알림을 중단할 수 있습니다.</string>
     <string name="onboarding_rhythm_guard_tip_3">수동 모드에서는 경고 및 임계값을 완벽하게 제어할 수 있습니다.</string>
     <string name="onboarding_full_tour_prompt_title">전체 설정 둘러보기를 계속하시겠습니까?</string>
     <string name="onboarding_full_tour_prompt_desc">코어 설정이 완료되었습니다. 계속해서 고급 사용자 정의를 진행하거나, 지금 완료하고 나중에 설정에서 나머지 부분을 살펴보세요.</string>
     <string name="onboarding_full_tour_prompt_tip_1">전체 둘러보기에는 재생, 테마, 제스처 및 미디어 검색 옵션이 포함됩니다.</string>
-    <string name="onboarding_full_tour_prompt_tip_2">설정 &gt; 개발자 및 디버깅에서 언제든지 Rhythm 투어를 다시 열 수 있습니다.</string>
+    <string name="onboarding_full_tour_prompt_tip_2">설정 &gt; 개발자 및 디버깅에서 언제든지 Sonorus 투어를 다시 열 수 있습니다.</string>
     <string name="onboarding_full_tour_prompt_tip_3">여기에는 영구적인 것이 없습니다. 모든 선택 사항은 나중에 변경할 수 있습니다.</string>
     <string name="onboarding_continue_full_tour">전체 둘러보기 계속</string>
     <string name="onboarding_finish_now">지금 설정 완료</string>
@@ -523,7 +523,7 @@
     <string name="onboarding_media_scan_whitelist">화이트리스트 모드: 선택한 폴더의 노래만 표시</string>
     <string name="onboarding_media_scan_configure_in_tuner">설정 &gt; 미디어 스캔에서 스캔 구성</string>
     <string name="onboarding_complete_title">모든 준비가 완료되었습니다!</string>
-    <string name="onboarding_complete_desc">Rhythm이(가) 플레이할 준비가 되었습니다! 음악 라이브러리가 백그라운드에서 검색되고 있습니다. 구성된 내용은 다음과 같습니다.</string>
+    <string name="onboarding_complete_desc">Sonorus이(가) 플레이할 준비가 되었습니다! 음악 라이브러리가 백그라운드에서 검색되고 있습니다. 구성된 내용은 다음과 같습니다.</string>
     <string name="onboarding_whats_next">다음은 무엇입니까?</string>
     <string name="onboarding_next_browse">노래, 앨범, 아티스트 찾아보기</string>
     <string name="onboarding_next_create">첫 번째 재생목록 만들기</string>
@@ -546,8 +546,8 @@
     <string name="onboarding_grant_permissions">권한 부여</string>
     <string name="onboarding_permissions_granted_desc">필요한 모든 권한이 부여되었습니다. 계속할 준비가 되었습니다!</string>
     <string name="onboarding_redirect_settings_desc">필요한 권한을 부여하려면 기기의 앱 설정으로 이동하세요.</string>
-    <string name="onboarding_rationale_desc">Rhythm이 올바르게 작동하려면 특정 권한이 필요합니다. 계속하려면 권한을 부여해 주세요.</string>
-    <string name="onboarding_permissions_required_desc">Rhythm의 기능을 완전히 활용하려면 특정 장치 기능에 액세스할 수 있는 권한이 필요합니다.</string>
+    <string name="onboarding_rationale_desc">Sonorus이 올바르게 작동하려면 특정 권한이 필요합니다. 계속하려면 권한을 부여해 주세요.</string>
+    <string name="onboarding_permissions_required_desc">Sonorus의 기능을 완전히 활용하려면 특정 장치 기능에 액세스할 수 있는 권한이 필요합니다.</string>
     <string name="onboarding_permission_music_title">음악 라이브러리 액세스</string>
     <string name="onboarding_permission_music_desc">로컬 음악 파일을 읽고 앱에 표시</string>
     <string name="onboarding_permission_bluetooth_title">블루투스 연결</string>
@@ -558,12 +558,12 @@
     <string name="onboarding_permission_tips">권한 팁</string>
     <string name="onboarding_permission_tip_1">최상의 경험을 위해 모든 권한을 부여하세요</string>
     <string name="onboarding_permission_tip_2">나중에 설정에서 권한을 변경할 수 있습니다</string>
-    <string name="onboarding_permission_tip_3">Rhythm은 귀하의 개인 정보와 데이터를 존중합니다</string>
+    <string name="onboarding_permission_tip_3">Sonorus은 귀하의 개인 정보와 데이터를 존중합니다</string>
     <!-- Onboarding Audio &amp; Playback -->
     <string name="onboarding_default_screen_title">기본 랜딩 화면</string>
-    <string name="onboarding_default_screen_desc">Rhythm을 시작할 때 열리는 화면을 선택하세요</string>
+    <string name="onboarding_default_screen_desc">Sonorus을 시작할 때 열리는 화면을 선택하세요</string>
     <string name="onboarding_system_volume_title">시스템 볼륨 조절</string>
-    <string name="onboarding_system_volume_desc">기기의 물리적 볼륨 버튼으로 Rhythm의 재생 볼륨을 제어할 수 있습니다.</string>
+    <string name="onboarding_system_volume_desc">기기의 물리적 볼륨 버튼으로 Sonorus의 재생 볼륨을 제어할 수 있습니다.</string>
     <string name="onboarding_auto_queue_title">대기열에 자동 추가</string>
     <string name="onboarding_auto_queue_desc">노래 재생 시 앨범/아티스트에서 상황별 대기열을 자동으로 생성합니다.</string>
     <string name="onboarding_show_lyrics_title">가사보기</string>
@@ -574,7 +574,7 @@
     
     <!-- Onboarding Theming -->
     <string name="onboarding_player_theme_title">재생 및 미니 플레이어 테마</string>
-    <string name="onboarding_player_theme_desc">재생 인터페이스를 개인화하십시오. 깨끗하고 현대적인 Rhythm 디자인과 생동감 있고 유동적인 표현 디자인 사이를 전환하세요.</string>
+    <string name="onboarding_player_theme_desc">재생 인터페이스를 개인화하십시오. 깨끗하고 현대적인 Sonorus 디자인과 생동감 있고 유동적인 표현 디자인 사이를 전환하세요.</string>
     <!-- Onboarding Updater -->
     <string name="onboarding_update_check_failed">업데이트 확인 실패</string>
     <string name="onboarding_ready_to_install">설치 준비 완료</string>
@@ -586,7 +586,7 @@
     <string name="onboarding_enable_updates_title">업데이트 활성화</string>
     <string name="onboarding_enable_updates_desc">앱이 업데이트를 확인하고 다운로드하도록 허용합니다.</string>
     <string name="onboarding_periodic_check_title">정기점검</string>
-    <string name="onboarding_periodic_check_desc">Rhythm의 GitHub 저장소에서 자동으로 업데이트 확인</string>
+    <string name="onboarding_periodic_check_desc">Sonorus의 GitHub 저장소에서 자동으로 업데이트 확인</string>
     <string name="onboarding_update_notifications_title">업데이트 알림</string>
     <string name="onboarding_update_notifications_desc">새 버전이 출시되면 알림을 받습니다.</string>
     <string name="onboarding_smart_polling_title">스마트 폴링</string>
@@ -615,7 +615,7 @@
     <string name="onboarding_retry">재시도</string>
     <!-- Onboarding: Notifications Step -->
     <string name="onboarding_notifications_title">재생 알림</string>
-    <string name="onboarding_notifications_desc">Rhythm이 알림 창에 음악 재생을 표시하는 방법을 제어합니다. 사용자 정의 스타일 알림 또는 표준 시스템 미디어 컨트롤 중에서 선택하세요.</string>
+    <string name="onboarding_notifications_desc">Sonorus이 알림 창에 음악 재생을 표시하는 방법을 제어합니다. 사용자 정의 스타일 알림 또는 표준 시스템 미디어 컨트롤 중에서 선택하세요.</string>
     <string name="onboarding_notifications_info_title">알림 기능</string>
     <string name="onboarding_notification_tip_1">현재 트랙 정보를 한눈에 확인</string>
     <string name="onboarding_notification_tip_2">빠른 동작으로 재생 제어</string>
@@ -638,7 +638,7 @@
     <string name="onboarding_gesture_tip_2">빠른 스와이프는 느린 스와이프보다 빠르게 반응합니다.</string>
     <!-- Onboarding: Widgets Step -->
     <string name="onboarding_widgets_title">런처 위젯</string>
-    <string name="onboarding_widgets_desc">빠른 음악 제어를 위해 실행기에 Rhythm 위젯을 추가하세요. 표시되는 정보와 위젯 모양을 사용자 정의합니다.</string>
+    <string name="onboarding_widgets_desc">빠른 음악 제어를 위해 실행기에 Sonorus 위젯을 추가하세요. 표시되는 정보와 위젯 모양을 사용자 정의합니다.</string>
     <string name="onboarding_widget_artist">아티스트 이름 표시</string>
     <string name="onboarding_widget_artist_desc">위젯에 현재 아티스트 표시</string>
     <string name="onboarding_widget_album">앨범 이름 표시</string>
@@ -653,8 +653,8 @@
     <string name="onboarding_integration_ytmusic">YouTube Music</string>
     <string name="onboarding_integrations_info_title">개인 정보 보호 참고 사항</string>
     <string name="onboarding_integrations_info_desc">이러한 기능은 제한된 데이터(노래 제목, 아티스트)를 외부 서비스로 전송합니다. 개인 데이터와 음악 파일은 장치에 그대로 유지됩니다. 언제든지 설정에서 이를 활성화하거나 비활성화할 수 있습니다.</string>
-    <!-- Onboarding: Rhythm Stats Step -->
-    <string name="onboarding_stats_title">Rhythm 통계</string>
+    <!-- Onboarding: Sonorus Stats Step -->
+    <string name="onboarding_stats_title">Sonorus 통계</string>
     <string name="onboarding_stats_desc">당신의 음악 습관에 대한 통찰력을 발견하세요. 아름다운 시각화를 통해 청취 시간, 가장 많이 재생한 노래, 좋아하는 아티스트 등을 추적하세요.</string>
     <string name="onboarding_stats_show_home">홈에 통계 표시</string>
     <string name="onboarding_stats_show_home_desc">홈 화면에 청취 통계 위젯 표시</string>
@@ -681,9 +681,9 @@
     <string name="settings_tip_gestures_swipe">미니 플레이어를 위로 스와이프하여 전체 플레이어를 열고, 완료되면 아래로 스와이프하여 닫습니다.</string>
     <string name="settings_tip_gestures_artwork">아트워크를 스와이프하여 트랙을 전환하고 앨범 아트를 두 번 탭하여 빠르게 재생하거나 일시 중지하세요.</string>
     <string name="settings_tip_media_scan">미디어 스캔을 사용하여 라이브러리에서 원치 않는 파일 숨기기</string>
-    <string name="settings_tip_rhythm_guard_off">Rhythm 가드를 활성화하여 청력을 보호하세요</string>
-    <string name="settings_tip_rhythm_guard_auto">Rhythm Guard는 안전 청취 제한을 자동으로 관리합니다.</string>
-    <string name="settings_tip_rhythm_guard_manual">Rhythm 가드 제한을 수동으로 제어하고 있습니다.</string>
+    <string name="settings_tip_rhythm_guard_off">Sonorus 가드를 활성화하여 청력을 보호하세요</string>
+    <string name="settings_tip_rhythm_guard_auto">Sonorus Guard는 안전 청취 제한을 자동으로 관리합니다.</string>
+    <string name="settings_tip_rhythm_guard_manual">Sonorus 가드 제한을 수동으로 제어하고 있습니다.</string>
     <string name="settings_default_screen">기본 랜딩 화면</string>
     <string name="settings_default_screen_desc">시작 화면을 선택하세요</string>
     <string name="settings_home_desc">새로운 음악과 추천을 찾아보세요</string>
@@ -754,7 +754,7 @@
     <string name="lyrics_editor_title">가사 편집기</string>
     <!-- Components: Song Info -->
     <string name="song_info_title">곡 정보</string>
-    <string name="rhythm_stats">Rhythm 통계</string>
+    <string name="rhythm_stats">Sonorus 통계</string>
     <string name="file_info">파일정보</string>
     <!-- Components: Add to Playlist -->
     <string name="add_to_playlists">재생 목록에 추가</string>
@@ -786,7 +786,7 @@
     <string name="updates_disabled_message">설정에서 앱 업데이트가 비활성화되었습니다.</string>
     <string name="updates_auto_disabled">자동 업데이트 확인이 비활성화됩니다. 수동으로 확인할 수도 있습니다.</string>
     <string name="updates_up_to_date_message">최신 상태입니다!</string>
-    <string name="updates_check_frequency">Rhythm은(는) 얼마나 자주 업데이트를 확인해야 합니까?</string>
+    <string name="updates_check_frequency">Sonorus은(는) 얼마나 자주 업데이트를 확인해야 합니까?</string>
     <string name="updates_experimental_coming">향후 업데이트에서 더 많은 실험적 기능이 곧 제공될 예정입니다.</string>
     <string name="settings_interval_every_48_hours">48시간마다</string>
     <string name="settings_interval_every_72_hours">72시간마다</string>
@@ -912,7 +912,7 @@
     <string name="settings_crash_log_history_desc">충돌 보고서</string>
     <string name="settings_experimental_features">실험적 특징</string>
     <string name="settings_experimental_features_desc">최첨단 기능</string>
-    <string name="settings_select_option">Rhythm 설정</string>
+    <string name="settings_select_option">Sonorus 설정</string>
     <!-- Playlist Actions -->
     <string name="playlist_no_songs_available">사용 가능한 노래 없음</string>
     <string name="playlist_all_in_playlist">모든 노래가 이미 이 재생 목록에 있습니다.</string>
@@ -933,7 +933,7 @@
     <string name="updates_enable_auto_check">자동 확인</string>
     <string name="updates_channel_title">업데이트 채널</string>
     <string name="updates_source_title">업데이트 소스</string>
-    <string name="updates_source_desc">OTA 업데이트에 사용해야 하는 릴리스 제품군 Rhythm을 선택합니다.</string>
+    <string name="updates_source_desc">OTA 업데이트에 사용해야 하는 릴리스 제품군 Sonorus을 선택합니다.</string>
     <string name="updates_source_installed">설치된 빌드 일치</string>
     <string name="updates_source_installed_label">설치된 빌드</string>
     <string name="updates_source_github_label">GitHub 빌드</string>
@@ -982,7 +982,7 @@
     <string name="cd_reorder_chips">칩 재주문</string>
     <string name="cd_search">검색</string>
     <string name="cd_view_all">모두 보기</string>
-    <string name="cd_rhythm_splash">Rhythm</string>
+    <string name="cd_rhythm_splash">Sonorus</string>
     <string name="cd_remove_from_playlist">재생 목록에서 제거</string>
     <string name="cd_change_language">언어 변경</string>
     <string name="cd_open_settings">오픈</string>
@@ -1057,25 +1057,25 @@
     <!-- Fallback Metadata -->
     
     <!-- Service Notifications -->
-    <string name="service_app_updates">Rhythm 업데이터</string>
-    <string name="service_update_status">Rhythm 업데이터 상태</string>
-    <string name="service_rhythm_pulse">Rhythm 팁</string>
-    <string name="service_rhythm_guard_alerts">Rhythm 경비 경보</string>
-    <string name="service_rhythm_guard_timers">Rhythm 가드 타이머</string>
-    <string name="service_rhythm_music">Rhythm 음악</string>
+    <string name="service_app_updates">Sonorus 업데이터</string>
+    <string name="service_update_status">Sonorus 업데이터 상태</string>
+    <string name="service_rhythm_pulse">Sonorus 팁</string>
+    <string name="service_rhythm_guard_alerts">Sonorus 경비 경보</string>
+    <string name="service_rhythm_guard_timers">Sonorus 가드 타이머</string>
+    <string name="service_rhythm_music">Sonorus 음악</string>
     <string name="service_update_status_desc">백그라운드 업데이트 확인 상태 결과</string>
-    <string name="service_rhythm_pulse_desc">Rhythm의 친절한 청취 알림 및 팁</string>
-    <string name="service_rhythm_guard_alerts_desc">Rhythm 경비병의 안전 경고</string>
-    <string name="service_rhythm_guard_timers_desc">Rhythm 가드 브레이크 및 타임아웃 알림</string>
-    <string name="service_starting">Rhythm이(가) 시작 중입니다.</string>
-    <string name="service_loading_settings">Rhythm이(가) 설정을 로드하는 중입니다.</string>
-    <string name="service_setup_components">Rhythm은(는) 핵심 구성요소를 준비 중입니다.</string>
-    <string name="service_initializing_player">Rhythm이(가) 재생을 준비 중입니다.</string>
-    <string name="service_creating_controls">Rhythm이(가) 재생 컨트롤을 생성 중입니다.</string>
-    <string name="service_setup_media_session">Rhythm이(가) 미디어 세션을 준비 중입니다.</string>
-    <string name="service_initializing_controller">Rhythm이(가) 미디어 컨트롤러를 연결하고 있습니다.</string>
-    <string name="service_ready">Rhythm이(가) 준비되었습니다.</string>
-    <string name="service_init_failed">Rhythm을(를) 시작할 수 없습니다. 앱을 다시 열어주세요.</string>
+    <string name="service_rhythm_pulse_desc">Sonorus의 친절한 청취 알림 및 팁</string>
+    <string name="service_rhythm_guard_alerts_desc">Sonorus 경비병의 안전 경고</string>
+    <string name="service_rhythm_guard_timers_desc">Sonorus 가드 브레이크 및 타임아웃 알림</string>
+    <string name="service_starting">Sonorus이(가) 시작 중입니다.</string>
+    <string name="service_loading_settings">Sonorus이(가) 설정을 로드하는 중입니다.</string>
+    <string name="service_setup_components">Sonorus은(는) 핵심 구성요소를 준비 중입니다.</string>
+    <string name="service_initializing_player">Sonorus이(가) 재생을 준비 중입니다.</string>
+    <string name="service_creating_controls">Sonorus이(가) 재생 컨트롤을 생성 중입니다.</string>
+    <string name="service_setup_media_session">Sonorus이(가) 미디어 세션을 준비 중입니다.</string>
+    <string name="service_initializing_controller">Sonorus이(가) 미디어 컨트롤러를 연결하고 있습니다.</string>
+    <string name="service_ready">Sonorus이(가) 준비되었습니다.</string>
+    <string name="service_init_failed">Sonorus을(를) 시작할 수 없습니다. 앱을 다시 열어주세요.</string>
     <!-- Crash Activity -->
     <string name="crash_bug_report">버그 신고</string>
     <string name="crash_restart_app">앱 다시 시작</string>
@@ -1106,12 +1106,12 @@
     <string name="settings_artwork_cache_size">작품 캐시 크기</string>
     <string name="settings_artist_parsing">아티스트</string>
     <string name="settings_artist_parsing_desc">구분선, 디스플레이</string>
-    <string name="settings_rhythm_stats">Rhythm 통계</string>
+    <string name="settings_rhythm_stats">Sonorus 통계</string>
     <string name="settings_rhythm_stats_desc">청취 시간, 인기 트랙 및 트렌드</string>
-    <string name="settings_rhythm_guard">Rhythm 경비병</string>
-    <string name="settings_rhythm_guard_list_desc">Rhythm 통계로 구동되는 듣기 건강 가드레일</string>
+    <string name="settings_rhythm_guard">Sonorus 경비병</string>
+    <string name="settings_rhythm_guard_list_desc">Sonorus 통계로 구동되는 듣기 건강 가드레일</string>
     <string name="settings_rhythm_guard_mode_title">보호 모드</string>
-    <string name="settings_rhythm_guard_mode_desc">Rhythm Guard가 청취 상태를 관리하는 방법을 선택하세요</string>
+    <string name="settings_rhythm_guard_mode_desc">Sonorus Guard가 청취 상태를 관리하는 방법을 선택하세요</string>
     <string name="settings_rhythm_guard_mode_auto">자동</string>
     <string name="settings_rhythm_guard_mode_manual">매뉴얼</string>
     <string name="settings_rhythm_guard_age_label">연령 프로필: %1$d</string>
@@ -1127,10 +1127,10 @@
     <string name="settings_rhythm_guard_manual_warning_toggle">안전 경고 표시</string>
     <string name="settings_rhythm_guard_manual_warning_toggle_desc">실시간 볼륨 또는 수동 전환이 위험할 수 있는 경우 경고</string>
     <string name="settings_rhythm_guard_manual_threshold_title">대용량 경고 임계값: %1$d%%</string>
-    <string name="settings_rhythm_guard_manual_threshold_desc">Rhythm Guard가 잠재적으로 유해한 볼륨에 대해 경고해야 하는 경우를 설정합니다.</string>
+    <string name="settings_rhythm_guard_manual_threshold_desc">Sonorus Guard가 잠재적으로 유해한 볼륨에 대해 경고해야 하는 경우를 설정합니다.</string>
     <string name="settings_rhythm_guard_device_controls_title">출력 제어</string>
     <string name="settings_rhythm_guard_device_controls_speaker_limit_title">전화 스피커에 볼륨 제한 적용</string>
-    <string name="settings_rhythm_guard_device_controls_speaker_limit_desc">꺼져 있으면 Rhythm Guard가 내장 스피커 출력의 볼륨 클램핑 및 볼륨 경고를 건너뜁니다.</string>
+    <string name="settings_rhythm_guard_device_controls_speaker_limit_desc">꺼져 있으면 Sonorus Guard가 내장 스피커 출력의 볼륨 클램핑 및 볼륨 경고를 건너뜁니다.</string>
     <string name="settings_rhythm_guard_alert_controls_title">청취 경고 제어</string>
     <string name="settings_rhythm_guard_alert_threshold_title">노출 경고 임계값: %1$s</string>
     <string name="settings_rhythm_guard_alert_threshold_policy_default">정책 기본값</string>
@@ -1140,7 +1140,7 @@
     <string name="settings_rhythm_guard_warning_title">안전 경고 듣기</string>
     <string name="settings_rhythm_guard_warning_high_volume">현재 볼륨이 경고 임계값(%1$d%%)을 초과합니다. 볼륨을 줄이는 것을 고려해보세요.</string>
     <string name="settings_rhythm_guard_warning_daily_exposure">귀하는 오늘 제안된 %2$s보다 높은 %1$s에 도달했습니다. 잠시 휴식을 취해보세요.</string>
-    <string name="settings_rhythm_guard_warning_dialog_title">Rhythm 가드 보호 경고</string>
+    <string name="settings_rhythm_guard_warning_dialog_title">Sonorus 가드 보호 경고</string>
     <string name="settings_rhythm_guard_warning_dialog_volume_message">시스템 미디어 볼륨은 실시간으로 %1$d%%이며, 현재 보호 제한인 %2$d%%를 초과합니다. 청력 위험을 줄이려면 볼륨을 낮추십시오.</string>
     <string name="settings_rhythm_guard_risk_level_label">위험 심각도: %1$s</string>
     <string name="settings_rhythm_guard_risk_action_label">권장 조치: %1$s</string>
@@ -1170,8 +1170,8 @@
     <string name="settings_rhythm_guard_start_countdown_value">%1$s에 시작됩니다</string>
     <string name="settings_rhythm_guard_snapshot_widget_above_limit">권장 한도 초과</string>
     <string name="settings_rhythm_guard_snapshot_widget_within_limit">권장 한도 이내</string>
-    <string name="settings_rhythm_guard_state_active">Rhythm 가드가 활성 상태입니다.</string>
-    <string name="settings_rhythm_guard_state_inactive">Rhythm 가드가 비활성 상태입니다.</string>
+    <string name="settings_rhythm_guard_state_active">Sonorus 가드가 활성 상태입니다.</string>
+    <string name="settings_rhythm_guard_state_inactive">Sonorus 가드가 비활성 상태입니다.</string>
     <string name="settings_rhythm_guard_state_timeout_active">청취 시간 초과 진행 중</string>
     <string name="settings_rhythm_guard_state_cooldown_active">유예 기간 활성화</string>
     <string name="settings_rhythm_guard_state_timeout_remaining">휴식 시간은 %1$s에 끝납니다.</string>
@@ -1183,8 +1183,8 @@
     <string name="settings_rhythm_guard_protection_preset_strict">엄격하다</string>
     <string name="settings_rhythm_guard_protection_preset_custom">커스텀</string>
     <string name="settings_rhythm_guard_timeout_activity_title">청취 시간 초과 활성화</string>
-    <string name="settings_rhythm_guard_timeout_activity_default_reason">줄거리 반전: 당신의 귀가 결합을 시작하고 간식 시간을 요구했습니다. Rhythm 가드가 재생을 일시중지하여 모든 사람이 긴장을 풀 수 있도록 했습니다.</string>
-    <string name="settings_rhythm_guard_timeout_activity_comic_desc">줄거리 반전: 당신의 귀가 뭉치기 시작했고 간식 시간을 요구했습니다. Rhythm 가드가 재생을 일시중지하여 모든 사람이 긴장을 풀 수 있도록 했습니다.</string>
+    <string name="settings_rhythm_guard_timeout_activity_default_reason">줄거리 반전: 당신의 귀가 결합을 시작하고 간식 시간을 요구했습니다. Sonorus 가드가 재생을 일시중지하여 모든 사람이 긴장을 풀 수 있도록 했습니다.</string>
+    <string name="settings_rhythm_guard_timeout_activity_comic_desc">줄거리 반전: 당신의 귀가 뭉치기 시작했고 간식 시간을 요구했습니다. Sonorus 가드가 재생을 일시중지하여 모든 사람이 긴장을 풀 수 있도록 했습니다.</string>
     <string name="settings_rhythm_guard_timeout_activity_extend">휴식 시간 연장(+%1$d분)</string>
     <string name="settings_rhythm_guard_timeout_activity_exit">타임아웃 화면 닫기</string>
     <string name="settings_rhythm_guard_timeout_activity_close_app">앱 닫기</string>
@@ -1195,23 +1195,23 @@
     <string name="settings_rhythm_guard_alert_threshold_search_title">노출 경고 임계값</string>
     <string name="settings_rhythm_guard_alert_threshold_search_desc">매일 청취하면 안전 경고가 트리거되는 정도를 설정합니다.</string>
     <string name="settings_rhythm_guard_warning_timeout_search_title">경고 쿨다운</string>
-    <string name="settings_rhythm_guard_warning_timeout_search_desc">반복되는 Rhythm 가드 경고 사이의 쿨타임을 설정합니다.</string>
+    <string name="settings_rhythm_guard_warning_timeout_search_desc">반복되는 Sonorus 가드 경고 사이의 쿨타임을 설정합니다.</string>
     <string name="settings_rhythm_guard_post_timeout_cooldown_search_title">타임아웃 후 쿨다운</string>
     <string name="settings_rhythm_guard_post_timeout_cooldown_search_desc">다른 노출 시간 초과가 트리거되기 전에 시간 초과가 끝난 후 쿨다운을 설정합니다.</string>
     <string name="settings_rhythm_guard_protection_presets_search_title">보호 사전 설정</string>
     <string name="settings_rhythm_guard_protection_presets_search_desc">한 번의 탭으로 온화한, 균형 잡힌 또는 엄격한 가드레일 번들 적용</string>
     <string name="settings_rhythm_guard_break_resume_search_title">기본 휴식 재개</string>
     <string name="settings_rhythm_guard_break_resume_search_desc">기본적으로 예정된 청취 휴식 시간이 얼마나 지속되는지 설정</string>
-    <string name="settings_rhythm_guard_enable_search_title">Rhythm 가드 파워</string>
-    <string name="settings_rhythm_guard_enable_search_desc">Rhythm 가드 보호 활성화 또는 비활성화</string>
-    <string name="settings_rhythm_guard_notification_alert_title">Rhythm 경비병 안전 경고</string>
-    <string name="settings_rhythm_guard_notification_timer_active_title">Rhythm 가드 시간 초과 활성</string>
+    <string name="settings_rhythm_guard_enable_search_title">Sonorus 가드 파워</string>
+    <string name="settings_rhythm_guard_enable_search_desc">Sonorus 가드 보호 활성화 또는 비활성화</string>
+    <string name="settings_rhythm_guard_notification_alert_title">Sonorus 경비병 안전 경고</string>
+    <string name="settings_rhythm_guard_notification_timer_active_title">Sonorus 가드 시간 초과 활성</string>
     <string name="settings_rhythm_guard_notification_timer_active_text">%1$s에서 재생이 재개됩니다.</string>
-    <string name="settings_rhythm_guard_notification_timer_scheduled_title">Rhythm 가드 깨기 예정</string>
+    <string name="settings_rhythm_guard_notification_timer_scheduled_title">Sonorus 가드 깨기 예정</string>
     <string name="settings_rhythm_guard_notification_timer_scheduled_text">청취 중단은 %1$s에서 시작됩니다.</string>
     <string name="settings_rhythm_guard_notification_tap_open">시간 초과 세부 정보를 보려면 탭하세요.</string>
-    <!-- Rhythm Stats Screen -->
-    <string name="stats_title">Rhythm 통계</string>
+    <!-- Sonorus Stats Screen -->
+    <string name="stats_title">Sonorus 통계</string>
     <string name="stats_today">오늘</string>
     <string name="stats_this_week">이번 주</string>
     <string name="stats_this_month">이번 달</string>
@@ -1235,7 +1235,7 @@
     <!-- Content Descriptions (additional) -->
     <string name="cd_reorder_home_sections">홈 섹션 재정렬</string>
     <string name="cd_remove">제거</string>
-    <string name="cd_rhythm_logo">Rhythm 로고</string>
+    <string name="cd_sonorus_logo">Sonorus 로고</string>
     <string name="cd_telegram_support">텔레그램 지원</string>
     <!-- Queue &amp; Playlist Dialogs -->
     <!-- Artist Settings -->
@@ -1410,7 +1410,7 @@
     <string name="settings_snowflake_display_area">눈송이 표시 영역</string>
     <string name="settings_snowflake_size">눈송이 크기</string>
     <string name="settings_toggle_decoration_elements">위치별로 개별 장식 요소를 전환합니다.</string>
-    <string name="settings_multi_artist_parsing_info">활성화되면 Rhythm는 여러 아티스트가 포함된 아티스트 태그를 자동으로 분할합니다. 이는 yt-dlp 또는 \'/\'와 같은 구분 기호를 사용하여 아티스트를 구분하는 기타 도구로 다운로드한 노래에 유용합니다.\n\n백슬래시(\\)를 사용하여 구분 기호를 이스케이프할 수 있습니다.</string>
+    <string name="settings_multi_artist_parsing_info">활성화되면 Sonorus는 여러 아티스트가 포함된 아티스트 태그를 자동으로 분할합니다. 이는 yt-dlp 또는 \'/\'와 같은 구분 기호를 사용하여 아티스트를 구분하는 기타 도구로 다운로드한 노래에 유용합니다.\n\n백슬래시(\\)를 사용하여 구분 기호를 이스케이프할 수 있습니다.</string>
     <!-- Format Strings with Placeholders -->
     <string name="settings_cache_size_2gb">2GB</string>
     <string name="settings_cache_size_64mb">64MB</string>
@@ -1490,7 +1490,7 @@
     <string name="settings_cache_info_4">자동 지우기는 최적의 성능을 유지하는 데 도움이 됩니다.</string>
     <!-- Updates Settings -->
     <string name="updates_status_error">오류</string>
-    <string name="updates_rhythm_logo_cd">Rhythm 로고</string>
+    <string name="updates_sonorus_logo_cd">Sonorus 로고</string>
     <string name="updates_version_prefix">브이%1$s</string>
     <string name="updates_released_prefix">출시됨: %1$s</string>
     <string name="updates_unknown_error">알 수 없는 오류가 발생했습니다.</string>
@@ -1507,7 +1507,7 @@
     <string name="settings_interval_once_a_day">하루에 한 번</string>
     <string name="settings_interval_once_a_week">일주일에 한 번</string>
     <!-- Experimental Features -->
-    <string name="streaming_integration_title">Rhythm Go</string>
+    <string name="streaming_integration_title">Sonorus Go</string>
     <string name="streaming_integration_services">통합 서비스</string>
     <string name="streaming_integration_services_empty">아직 연결된 서비스가 없습니다.</string>
     <string name="streaming_settings_title">설정</string>
@@ -1515,7 +1515,7 @@
     <string name="streaming_settings_group_actions">액션</string>
     <string name="streaming_settings_preferred_service">우선 서비스</string>
     <string name="streaming_settings_quality">스트리밍 품질</string>
-    <string name="streaming_settings_service_sheet_desc">기본적으로 우선순위를 두어야 할 연결된 서비스 Rhythm Go를 선택하세요.</string>
+    <string name="streaming_settings_service_sheet_desc">기본적으로 우선순위를 두어야 할 연결된 서비스 Sonorus Go를 선택하세요.</string>
     <string name="streaming_settings_quality_sheet_desc">스트리밍 재생을 위해 선호하는 오디오 품질을 선택하세요.</string>
     <string name="streaming_quality_low">낮음</string>
     <string name="streaming_quality_normal">보통</string>
@@ -1525,7 +1525,7 @@
     <string name="streaming_quality_normal_desc">균형 잡힌 품질과 데이터 사용량(~160kbps).</string>
     <string name="streaming_quality_high_desc">고품질 오디오(~320kbps).</string>
     <string name="streaming_quality_lossless_desc">지원되는 경우 최고의 품질(FLAC/ALAC).</string>
-    <string name="streaming_settings_group_wellbeing">Rhythm 통찰력</string>
+    <string name="streaming_settings_group_wellbeing">Sonorus 통찰력</string>
     <string name="streaming_open_full_settings">전체 설정 열기</string>
     <string name="streaming_open_full_settings_desc">모드 간에 공유되는 앱 전체 설정 열기</string>
     <string name="streaming_switch_to_local_mode">로컬 모드로 전환</string>
@@ -1550,7 +1550,7 @@
     <string name="streaming_service_setup_password">비밀번호</string>
     <string name="streaming_service_setup_password_hint">계정 비밀번호를 입력하세요</string>
     <string name="streaming_service_setup_remember_password">이 장치에 비밀번호를 기억하세요</string>
-    <string name="streaming_service_setup_remember_password_desc">자격 증명을 로컬에 저장하면 Rhythm이 나중에 자동으로 다시 연결할 수 있습니다.</string>
+    <string name="streaming_service_setup_remember_password_desc">자격 증명을 로컬에 저장하면 Sonorus이 나중에 자동으로 다시 연결할 수 있습니다.</string>
     <string name="streaming_service_setup_connecting">연결 중…</string>
     <string name="streaming_service_setup_disconnecting">연결을 끊는 중…</string>
     <string name="streaming_service_setup_action_hint">이 서비스를 연결하려면 필수 필드를 입력하세요.</string>
@@ -1750,8 +1750,8 @@
     <string name="settings_exp_codec_monitoring_desc">오디오 정보 기록</string>
     <string name="settings_exp_audio_device_logging">오디오 장치 로깅</string>
     <string name="settings_exp_audio_device_logging_desc">로그 장치 변경</string>
-    <string name="settings_exp_launch_onboarding">Rhythm 투어 시작</string>
-    <string name="settings_exp_launch_onboarding_desc">Rhythm 투어 다시 시작</string>
+    <string name="settings_exp_launch_onboarding">Sonorus 투어 시작</string>
+    <string name="settings_exp_launch_onboarding_desc">Sonorus 투어 다시 시작</string>
     <string name="settings_exp_test_crash">테스트 충돌</string>
     <string name="settings_exp_test_crash_desc">강제 앱 충돌</string>
     <string name="settings_broadcast_status_enabled">상태 방송 활성화</string>
@@ -1759,7 +1759,7 @@
     <string name="settings_bluetooth_lyrics_enabled">블루투스 가사 모드</string>
     <string name="settings_bluetooth_lyrics_enabled_desc">Bluetooth 메타데이터를 통해 현재 가사 대사 방송</string>
     <string name="exp_go_mode">Go Mode</string>
-    <string name="exp_go_mode_desc">Rhythm Go streaming mode로 전환</string>
+    <string name="exp_go_mode_desc">Sonorus Go streaming mode로 전환</string>
     <!-- Home Screen Search Strings -->
     <string name="settings_home_section_order">섹션 순서</string>
     <string name="settings_home_section_order_desc">홈 섹션 재정렬</string>
@@ -1772,13 +1772,13 @@
     <string name="settings_home_carousel_auto_scroll">캐러셀 자동 스크롤</string>
     <string name="settings_home_carousel_auto_scroll_desc">자동 스크롤 캐러셀</string>
     <!-- Notifications Search Strings -->
-    <string name="settings_notifications_rhythm_guard_alerts">Rhythm 경비병 안전 경고</string>
+    <string name="settings_notifications_rhythm_guard_alerts">Sonorus 경비병 안전 경고</string>
     <string name="settings_notifications_rhythm_guard_alerts_desc">청취 위험 경고가 트리거되면 알림</string>
-    <string name="settings_notifications_rhythm_guard_timers">Rhythm 가드 브레이크 타이머</string>
+    <string name="settings_notifications_rhythm_guard_timers">Sonorus 가드 브레이크 타이머</string>
     <string name="settings_notifications_rhythm_guard_timers_desc">예정된 휴식 시간 및 타임아웃 카운트다운 알림</string>
-    <string name="settings_notifications_rhythm_pulse">Rhythm 팁</string>
+    <string name="settings_notifications_rhythm_pulse">Sonorus 팁</string>
     <string name="settings_notifications_rhythm_pulse_desc">친절한 알림 및 듣기 팁.</string>
-    <string name="settings_notifications_rhythm_pulse_interval">Rhythm 팁 간격</string>
+    <string name="settings_notifications_rhythm_pulse_interval">Sonorus 팁 간격</string>
     <string name="settings_notifications_rhythm_pulse_interval_desc">팁 알림이 전달되는 빈도</string>
     <!-- Expressive Shapes Search Strings -->
     <string name="settings_expressive_shapes_enabled">표현적인 모양</string>
@@ -1862,7 +1862,7 @@
     <!-- Library Screen scanning overlay -->
     <string name="settings_scanning">스캐닝</string>
     <!-- Settings Search -->
-    <string name="search_settings_hint">Rhythm 설정 검색…</string>
+    <string name="search_settings_hint">Sonorus 설정 검색…</string>
     <string name="clear_search">검색 지우기</string>
     <string name="no_results_found">검색결과가 없습니다</string>
     <string name="try_different_search">다른 검색어를 사용해 보세요</string>
@@ -1873,8 +1873,8 @@
     <string name="exp_codec_monitoring">코덱 모니터링</string>
     <string name="exp_codec_monitoring_desc">디버깅을 위한 오디오 코덱 및 형식 정보 기록</string>
     <string name="exp_developer_debugging">개발자 및 디버깅</string>
-    <string name="exp_launch_onboarding">Rhythm 투어 시작</string>
-    <string name="exp_launch_onboarding_desc">Rhythm 투어 경험 재설정 및 다시 시작</string>
+    <string name="exp_launch_onboarding">Sonorus 투어 시작</string>
+    <string name="exp_launch_onboarding_desc">Sonorus 투어 경험 재설정 및 다시 시작</string>
     <string name="exp_test_crash">테스트 충돌</string>
     <string name="exp_test_crash_desc">충돌 처리 및 보고를 테스트하기 위해 앱을 강제로 충돌시킵니다.</string>
     <string name="exp_force_player_compact_mode">강제 플레이어 컴팩트 모드</string>
@@ -1906,14 +1906,14 @@
     <string name="theme_font_imported">글꼴을 성공적으로 가져왔습니다.</string>
     <string name="theme_font_invalid">잘못된 글꼴 파일 형식</string>
     <string name="ui_apply">적용</string>
-    <string name="crashactivity_uh_oh_looks_like">어어! Rhythm이(가) 기분 나쁜 소식을 들은 것 같습니다!</string>
+    <string name="crashactivity_uh_oh_looks_like">어어! Sonorus이(가) 기분 나쁜 소식을 들은 것 같습니다!</string>
     <string name="crashactivity_dont_fret_our_app">걱정하지 마세요! 우리 앱에는 약간의 \'죄송합니다\'가 있었습니다. 아래에 충돌 세부 정보를 공유해 주세요. 이는 개발자가 문제를 해결하라는 비밀 메시지와 같습니다! 그럼, 다시 한번 시도해 볼까요?</string>
     <string name="crashactivity_secret_crash_scrolls">비밀 크래시 스크롤</string>
     <string name="crashactivity_share">공유</string>
     <string name="externalplaybackactivity_unable_to_open_audio">오디오 파일을 열 수 없습니다</string>
     <string name="externalplaybackactivity_unsupported_or_unreadable_audio">지원되지 않거나 읽을 수 없는 오디오 파일</string>
     <string name="externalplaybackactivity_failed_to_play_audio">오디오 파일 재생에 실패했습니다.</string>
-    <string name="externalplaybackactivity_open_rhythm">Rhythm 열기</string>
+    <string name="externalplaybackactivity_open_rhythm">Sonorus 열기</string>
     <string name="mainactivity_error_opening_file">파일 열기 오류</string>
     <string name="mainactivity_unsupported_file_format">지원되지 않는 파일 형식</string>
     <string name="mainactivity_failed_to_initialize_media">미디어 플레이어 초기화에 실패했습니다.</string>
@@ -1980,7 +1980,7 @@
     <string name="onboardingscreen_choose_your_playback_mode">재생 모드 선택</string>
     <string name="onboardingscreen_local_offline_player">로컬 오프라인 플레이어</string>
     <string name="onboardingscreen_play_audio_files_stored">장치에 직접 저장된 오디오 파일을 재생합니다. 고급 로컬 디렉터리 검색, 통계 및 테마 일치를 지원합니다.</string>
-    <string name="onboardingscreen_rhythm_go_streaming">Rhythm GO!(스트리밍)</string>
+    <string name="onboardingscreen_rhythm_go_streaming">Sonorus GO!(스트리밍)</string>
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Jellyfin, Subsonic 또는 Navidrome 서버에 연결하여 오프라인 청취를 위한 캐싱 지원을 통해 이동 중에도 전체 라이브러리를 스트리밍할 수 있습니다.</string>
     <string name="onboardingscreen_playback_mode_tips">재생 모드 팁</string>
     <string name="onboardingscreen_switch_easily_anytime_in">설정 &gt; 통합에서 언제든지 쉽게 전환하세요.</string>
@@ -2020,7 +2020,7 @@
     <string name="streamingmusicviewmodel_failed_to_play_next">다음 재생 실패: URL을 확인할 수 없습니다.</string>
     <string name="streamingmusicviewmodel_failed_to_add_to">대기열에 추가하지 못했습니다. URL을 확인할 수 없습니다.</string>
     <string name="rhythmmusicwidget_album_art_placeholder">앨범 아트 자리 표시자</string>
-    <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Rhythm Glance 위젯 미리보기</string>
+    <string name="rhythmwidgetpreview_rhythm_glance_widget_previews">Sonorus Glance 위젯 미리보기</string>
     <string name="rhythmwidgetpreview_str_11_compact_widget">1×1 컴팩트 위젯</string>
     <string name="rhythmwidgetpreview_str_21_horizontal_strip">2×1 수평 스트립</string>
     <string name="rhythmwidgetpreview_str_22_small_widget">2×2 작은 위젯</string>
@@ -2067,7 +2067,7 @@
     <string name="betaprogrampopup_early_access">앞서 해보기</string>
     <string name="betaprogrampopup_shape_the_future">미래를 만들어 보세요</string>
     <string name="betaprogrampopup_direct_feedback">직접적인 피드백</string>
-    <string name="betaprogrampopup_youre_part_of_an">귀하는 Rhythm 뮤직 플레이어의 미래를 형성하는 데 도움을 주는 독점 그룹의 일원입니다</string>
+    <string name="betaprogrampopup_youre_part_of_an">귀하는 Sonorus 뮤직 플레이어의 미래를 형성하는 데 도움을 주는 독점 그룹의 일원입니다</string>
     <string name="betaprogrampopup_start_exploring">탐색 시작</string>
     <string name="switchmodedialog_switch_play">스위치 앤 플레이</string>
     <string name="fullscreenlyricsview_cover_artwork">표지 삽화</string>
@@ -2135,7 +2135,7 @@
     <string name="lyricssourcesettingsscreen_retry_using_fallbacks">폴백을 사용하여 재시도</string>
     <string name="lyricssourcesettingsscreen_embedded_lyrics_are_stored">• Embedded lyrics are stored in your audio files</string>
     <string name="miniplayercustomizationsettingsscreen_miniplayer_theme">미니플레이어 테마</string>
-    <string name="miniplayercustomizationsettingsscreen_choose_between_rhythm_default">Rhythm 기본 테마 또는 표현 테마 중에서 선택하세요</string>
+    <string name="miniplayercustomizationsettingsscreen_choose_between_rhythm_default">Sonorus 기본 테마 또는 표현 테마 중에서 선택하세요</string>
     <string name="miniplayercustomizationsettingsscreen_integrated_directly_into_the">MiniPlayer 배경에 직접 통합됨</string>
     <string name="performancesettingsscreen_performance">라이트 모드</string>
     <string name="performancesettingsscreen_disable_haptics">햅틱 비활성화</string>
@@ -2152,7 +2152,7 @@
     <string name="rhythmguardsettingsscreen_none">없음</string>
     <string name="rhythmguardsettingsscreen_general_settings">일반 설정</string>
     <string name="rhythmguardsettingsscreen_library_data">라이브러리 데이터</string>
-    <string name="rhythmguardsettingsscreen_stats_rhythm_guard">통계 및 Rhythm 가드</string>
+    <string name="rhythmguardsettingsscreen_stats_rhythm_guard">통계 및 Sonorus 가드</string>
     <string name="settingsscreen_audio_offload">오디오 오프로드</string>
     <string name="settingsscreen_personalization">개인화</string>
     <string name="settingsscreen_library_focus">라이브러리 포커스</string>
@@ -2248,7 +2248,7 @@
     <string name="pulse_marathon">마라톤 모드</string>
     <!-- Settings Tips Details -->
     <string name="settings_tip_theme_desc_1">생동감 넘치는 AMOLED 블랙과 아름다운 파스텔 컬러로 뮤직 플레이어를 새롭게 바꿔보세요.</string>
-    <string name="settings_tip_theme_desc_2">앱의 악센트를 귀하의 시스템과 일치시켜 Rhythm을(를) 진정으로 귀하의 것으로 만드십시오.</string>
+    <string name="settings_tip_theme_desc_2">앱의 악센트를 귀하의 시스템과 일치시켜 Sonorus을(를) 진정으로 귀하의 것으로 만드십시오.</string>
     <string name="settings_tip_media_scan_desc_1">원치 않는 오디오 클립을 피하세요. 음악을 검색해야 하는 폴더를 명시적으로 정의합니다.</string>
     <string name="settings_tip_media_scan_desc_2">포커스 폴더를 사용하여 재생 목록에서 음성 메모와 벨소리를 멀리하세요.</string>
     <string name="settings_tip_sleep_timer_desc_1">음악이 재생되는 동안 잠에 들어보세요. 자동으로 일시중지됩니다.</string>
@@ -2257,7 +2257,7 @@
     <string name="settings_tip_equalizer_desc_2">고급 오디오 효과를 사용하여 헤드폰의 사운드를 안전하게 조정하세요.</string>
     <string name="settings_tip_backup_active_desc_1">자동 백업이 활성화되었습니다. 복원이 깔끔하게 유지되도록 백업 섹션을 확인하세요.</string>
     <string name="settings_tip_backup_active_desc_2">보호 활성화됨: 일정이 양호해 보입니다. 큰 편집을 하기 전에 수동 백업을 실행하십시오.</string>
-    <string name="settings_tip_backup_inactive_desc_1">자동 백업이 꺼져 있습니다. 재생 목록과 Rhythm 가드 통계를 보호하려면 활성화하세요.</string>
+    <string name="settings_tip_backup_inactive_desc_1">자동 백업이 꺼져 있습니다. 재생 목록과 Sonorus 가드 통계를 보호하려면 활성화하세요.</string>
     <string name="settings_tip_backup_inactive_desc_2">아직 안전망은 없습니다. 설정이 손실되지 않도록 백업을 켜세요.</string>
     <string name="settings_tip_updates_active_desc_1">업데이트가 활성화되었습니다. 수정 및 성능 개선을 위해 계속 사용하세요.</string>
     <string name="settings_tip_updates_active_desc_2">업데이트를 받도록 설정되었습니다. 안정성과 신선도에 대한 채널 기본 설정을 확인하세요.</string>
@@ -2302,7 +2302,7 @@
     <string name="font_jetbrains_desc">기술적인 내용에 적합한 고정 폭 글꼴</string>
     <string name="font_quicksand_desc">좀 더 부드럽고 친숙한 모양의 둥근 글꼴</string>
     <!-- Predefined Color Schemes -->
-    <string name="color_scheme_default_title">Rhythm 기본값</string>
+    <string name="color_scheme_default_title">Sonorus 기본값</string>
     <string name="color_scheme_default_desc">Material 장미빛 핑크색 액센트가 있는 기본 보라색 3개</string>
     <string name="color_scheme_warm_title">따뜻한 일몰</string>
     <string name="color_scheme_warm_desc">포근한 오렌지와 레드 톤으로 따뜻한 분위기를 연출</string>
@@ -2337,7 +2337,7 @@
     <string name="lyrics_settings_embedded_first">임베디드 우선</string>
     <string name="lyrics_settings_embedded_first_desc">오디오 파일에 포함된 가사를 선호하고 온라인 API로 대체</string>
     <string name="lyrics_settings_online_first">온라인 우선</string>
-    <string name="lyrics_settings_online_first_desc">온라인 API(Rhythm 단어별, LRCLib)를 선호하고 임베디드 API로 대체</string>
+    <string name="lyrics_settings_online_first_desc">온라인 API(Sonorus 단어별, LRCLib)를 선호하고 임베디드 API로 대체</string>
     <string name="lyrics_settings_local_first">로컬 우선</string>
     <string name="lyrics_settings_local_first_desc">로컬 .lrc 파일을 선호하고 가사가 포함된 다음 온라인 API를 선호합니다.</string>
     <string name="lyrics_settings_lyrically_first">Lyrically First</string>
@@ -2363,7 +2363,7 @@
     <string name="lyrics_settings_disable_animations_desc">가사 보기에서 전환 및 애니메이션 비활성화</string>
     <string name="lyrics_settings_word_by_word_translation">자동 단어 동기화</string>
     <string name="lyrics_settings_word_by_word_translation_desc">기간을 비례적으로 분배하여 라인 동기화된 가사에 대한 단어 수준 타이밍을 자동 생성합니다.</string>
-    <string name="lyrics_settings_info_bullets">추가 동기화 세부정보:\n• 온라인 API는 고품질 동기화 가사 제공\n• Rhythm은 단어별 동기화 제공\n• LRCLib는 무료 라인별 동기화 제공</string>
+    <string name="lyrics_settings_info_bullets">추가 동기화 세부정보:\n• 온라인 API는 고품질 동기화 가사 제공\n• Sonorus은 단어별 동기화 제공\n• LRCLib는 무료 라인별 동기화 제공</string>
     <!-- AutoEQ Preset Picker additions -->
     <string name="autoeqpresetpickerbottomsheet_search_presets">사전 설정 검색…</string>
     <string name="autoeqpresetpickerbottomsheet_disable">없음 / AutoEQ 비활성화</string>
@@ -2384,7 +2384,7 @@
     <string name="device_configuration_custom_preset">사용자 정의 프리셋</string>
     <string name="device_configuration_custom">커스텀</string>
     <string name="device_configuration_active_profile_label">활성 프로필: %1$s</string>
-    <string name="device_configuration_share_subject">Rhythm EQ 프로필: %1$s</string>
+    <string name="device_configuration_share_subject">Sonorus EQ 프로필: %1$s</string>
     <string name="device_configuration_share_title">EQ 프로필 공유</string>
     <string name="device_configuration_edit_device">장치 편집</string>
     <string name="device_configuration_add_device">장치 추가</string>
@@ -2436,9 +2436,9 @@
         <item quantity="other">%1$d 재생 목록을 다음으로 내보냅니다.</item>
     </plurals>
     <!-- Mode dialog strings -->
-    <string name="dialog_switch_to_go">Switch to Rhythm Go?</string>
+    <string name="dialog_switch_to_go">Switch to Sonorus Go?</string>
     <string name="dialog_switch_to_local">로컬로 전환하시겠습니까?</string>
-    <string name="dialog_switch_to_go_desc">This item belongs to Rhythm Go. 지금 스트리밍 모드로 전환하여 스트리밍하고 재생하시겠습니까?</string>
+    <string name="dialog_switch_to_go_desc">This item belongs to Sonorus Go. 지금 스트리밍 모드로 전환하여 스트리밍하고 재생하시겠습니까?</string>
     <string name="dialog_switch_to_local_desc">이 항목은 귀하의 지역 도서관에 속합니다. 오프라인 트랙을 재생하려면 지금 로컬 모드로 전환하시겠습니까?</string>
     <!-- Section order content descriptions -->
 
@@ -2615,7 +2615,7 @@
     <string name="carousel_style_hero">영웅</string>
     <string name="carousel_style_hero_desc">사이드 픽 앨범 1장</string>
     <!-- Theme names -->
-    <string name="theme_rhythm">Rhythm</string>
+    <string name="theme_rhythm">Sonorus</string>
     <string name="theme_expressive">표현력이 풍부하다</string>
     <string name="settings_managed_by_expressive_shapes">표현적인 모양으로 관리</string>
     <!-- Shape targets -->
@@ -2661,7 +2661,7 @@
     <string name="backup_restore_section_collection">컬렉션</string>
     <string name="backup_restore_section_collection_desc">재생 목록, 즐겨찾기, 블랙리스트/화이트리스트, 고정된 폴더.</string>
     <string name="backup_restore_section_insight">통찰력</string>
-    <string name="backup_restore_section_insight_desc">플레이 횟수, 일일 통계, 장르 및 Rhythm 가드 구성.</string>
+    <string name="backup_restore_section_insight_desc">플레이 횟수, 일일 통계, 장르 및 Sonorus 가드 구성.</string>
     <string name="backup_restore_status_included">포함됨</string>
     <string name="backup_restore_status_excluded">제외됨</string>
     <plurals name="backup_restore_sections_enabled">
@@ -2681,7 +2681,7 @@
     <string name="library_bottom_bar_select_songs">노래 선택</string>
     <string name="library_bottom_bar_more_actions">추가 작업</string>
     <string name="library_play_selected">재생 (%1$d)</string>
-    <!-- Rhythm Guard Comic Status Subtitles -->
+    <!-- Sonorus Guard Comic Status Subtitles -->
     <!-- Player, Bottomsheet, and Popup translations -->
     <string name="unknown_track">알 수 없는 트랙</string>
     <string name="unknown_song">알 수 없는 노래</string>

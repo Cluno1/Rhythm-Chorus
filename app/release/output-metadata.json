@@ -4,16 +4,16 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "chromahub.rhythm.app",
-  "variantName": "release",
+  "applicationId": "io.github.cluno1.sonorus",
+  "variantName": "githubRelease",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 1080153,
-      "versionName": "1.8.100.4",
-      "outputFile": "app-release.apk"
+      "versionCode": 1000000,
+      "versionName": "1.0.0-gh",
+      "outputFile": "Sonorus-1.0.0-githubRelease.apk"
     }
   ],
   "elementType": "File",

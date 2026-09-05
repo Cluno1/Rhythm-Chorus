@@ -1,8 +1,8 @@
 name: Feature Request
-description: Propose a new feature, enhancement, or request an improvement in Rhythm
+description: Propose a new feature, enhancement, or request an improvement in Sonorus
 title: "[FEATURE]: "
 labels: ["feature request"]
-assignees: ["cromaguy"]
+assignees: ["Cluno1"]
 body:
   - type: textarea
     id: summary
@@ -16,7 +16,7 @@ body:
     id: area
     attributes:
       label: Feature Area / Category
-      description: Which part of Rhythm does this feature request relate to?
+      description: Which part of Sonorus does this feature request relate to?
       options:
         - Playback Engine & Formats
         - User Interface & Themes (Aesthetics)
