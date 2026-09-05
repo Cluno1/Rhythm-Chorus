@@ -318,7 +318,7 @@ private fun CatalogAdminInviteScreen(
                         Text(stringResource(R.string.catalog_generate_invite))
                     }
                 }
-                state.error?.let {
+                state.adminError?.let {
                     Text(
                         it,
                         color = MaterialTheme.colorScheme.error,

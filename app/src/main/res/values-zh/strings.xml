@@ -2796,6 +2796,7 @@
     <string name="catalog_admin_http_notice">账号和密码只用于本次请求，不会保存到手机。HTTP 网络可见这些内容，这是当前部署已接受的风险。</string>
     <string name="catalog_admin_username">管理员账号</string>
     <string name="catalog_admin_password">管理员密码</string>
+    <string name="catalog_admin_invalid_credentials">管理员账号或密码错误</string>
     <string name="catalog_user_id">用户 ID（唯一）</string>
     <string name="catalog_user_display_name">用户显示名（可选）</string>
     <string name="catalog_replace_existing_device">替换已有设备</string>

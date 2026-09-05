@@ -2788,6 +2788,7 @@
     <string name="catalog_admin_http_notice">帳號和密碼只用於本次請求，不會儲存到手機。HTTP 網路可看到這些內容，這是目前部署已接受的風險。</string>
     <string name="catalog_admin_username">管理員帳號</string>
     <string name="catalog_admin_password">管理員密碼</string>
+    <string name="catalog_admin_invalid_credentials">管理員帳號或密碼錯誤</string>
     <string name="catalog_user_id">使用者 ID（唯一）</string>
     <string name="catalog_user_display_name">使用者顯示名稱（選填）</string>
     <string name="catalog_replace_existing_device">取代已有裝置</string>

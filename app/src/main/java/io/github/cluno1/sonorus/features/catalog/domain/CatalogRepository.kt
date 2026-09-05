@@ -3,6 +3,7 @@ package io.github.cluno1.sonorus.features.catalog.domain
 sealed class CatalogFailure(message: String, cause: Throwable? = null) : Exception(message, cause) {
     class NotConfigured : CatalogFailure("私有作品库尚未配置")
     class InvalidCredentials : CatalogFailure("私有作品库凭据已失效")
+    class AdminInvalidCredentials : CatalogFailure("Administrator username or password is incorrect")
     class Forbidden : CatalogFailure("当前凭据无权访问此内容")
     class Unreachable(cause: Throwable? = null) : CatalogFailure("无法连接私有作品库", cause)
     class Server(val statusCode: Int) : CatalogFailure("服务器暂时不可用（$statusCode）")

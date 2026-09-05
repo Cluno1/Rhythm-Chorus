@@ -3,6 +3,7 @@ package io.github.cluno1.sonorus.features.catalog.presentation
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.features.catalog.di.CatalogModule
 import io.github.cluno1.sonorus.features.catalog.data.local.CatalogQueueStore
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackItem
@@ -38,6 +39,7 @@ data class CatalogUiState(
     val offlineSnapshot: Boolean = false,
     val issuedInvite: CatalogIssuedInvite? = null,
     val error: String? = null,
+    val adminError: String? = null,
 )
 
 data class RestoredUnifiedQueue(
@@ -104,7 +106,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         replaceExistingDevice: Boolean,
     ) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(loading = true, issuedInvite = null, error = null)
+            _state.value = _state.value.copy(loading = true, issuedInvite = null, adminError = null)
             repository.issueInvite(
                 serverUrl,
                 username,
@@ -114,9 +116,18 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                 replaceExistingDevice,
             ).fold(
                 onSuccess = { invite ->
-                    _state.value = _state.value.copy(loading = false, issuedInvite = invite)
+                    _state.value = _state.value.copy(
+                        loading = false,
+                        issuedInvite = invite,
+                        adminError = null,
+                    )
                 },
-                onFailure = { _state.value = _state.value.copy(loading = false, error = message(it)) },
+                onFailure = {
+                    _state.value = _state.value.copy(
+                        loading = false,
+                        adminError = message(it),
+                    )
+                },
             )
         }
     }
@@ -128,7 +139,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun clearInviteUiState() {
-        _state.value = _state.value.copy(issuedInvite = null, error = null)
+        _state.value = _state.value.copy(issuedInvite = null, adminError = null)
     }
 
     fun refreshWorks(query: String? = null) {
@@ -307,5 +318,9 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    private fun message(error: Throwable): String = error.message ?: "发生未知错误"
+    private fun message(error: Throwable): String = when (error) {
+        is CatalogFailure.AdminInvalidCredentials -> getApplication<Application>()
+            .getString(R.string.catalog_admin_invalid_credentials)
+        else -> error.message ?: "发生未知错误"
+    }
 }

@@ -184,7 +184,9 @@ internal class CatalogDeviceAuthClient(
         displayName: String?,
         replaceExistingDevice: Boolean,
     ): CatalogIssuedInvite {
-        val session = api.adminSession(AdminSessionRequest(username.trim(), password)).bodyOrThrow()
+        val session = api.adminSession(
+            AdminSessionRequest(username.trim(), password),
+        ).adminBodyOrThrow()
         return api.createInvite(
             "Bearer ${session.accessToken}",
             InviteRequest(
@@ -192,7 +194,7 @@ internal class CatalogDeviceAuthClient(
                 displayName?.trim()?.takeIf { it.isNotEmpty() },
                 replaceExistingDevice,
             ),
-        ).bodyOrThrow().toIssuedInvite()
+        ).adminBodyOrThrow().toIssuedInvite()
     }
 
     @Synchronized
@@ -278,6 +280,11 @@ internal class CatalogDeviceAuthClient(
             }
         }
         return body() ?: throw IOException("服务器返回空响应")
+    }
+
+    private fun <T> Response<T>.adminBodyOrThrow(): T {
+        if (code() == 401) throw CatalogFailure.AdminInvalidCredentials()
+        return bodyOrThrow()
     }
 
     private fun baseHttpClient(): OkHttpClient = OkHttpClient.Builder()

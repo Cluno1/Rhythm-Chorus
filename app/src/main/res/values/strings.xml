@@ -3056,6 +3056,7 @@
     <string name="catalog_admin_http_notice">The username and password are used only for this request and are not saved on the phone. They are visible on the HTTP network; this is an accepted risk of the current deployment.</string>
     <string name="catalog_admin_username">Administrator username</string>
     <string name="catalog_admin_password">Administrator password</string>
+    <string name="catalog_admin_invalid_credentials">Administrator username or password is incorrect</string>
     <string name="catalog_user_id">User ID (unique)</string>
     <string name="catalog_user_display_name">Display name (optional)</string>
     <string name="catalog_replace_existing_device">Replace existing device</string>
