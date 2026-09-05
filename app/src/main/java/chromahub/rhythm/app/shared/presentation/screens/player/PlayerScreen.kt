@@ -1031,8 +1031,13 @@ fun PlayerScreen(
                 musicViewModel.saveEditedLyrics(editedLyrics, timeOffset, format)
             },
             onRefresh = {
-                musicViewModel.clearLyricsCacheAndRefetch()
+                musicViewModel.searchAndApplyBestDeviceLyrics()
             },
+            onOnlineRematch = { musicViewModel.searchAndApplyBestDeviceLyrics() },
+            onChooseOtherVersion = { musicViewModel.loadDeviceLyricsCandidates() },
+            deviceLyricsCandidates = musicViewModel.deviceLyricsCandidates.collectAsState().value,
+            onSelectDeviceLyricsCandidate = { musicViewModel.selectDeviceLyricsCandidate(it) },
+            onRestoreLocal = { musicViewModel.restoreCurrentDeviceLyrics() },
             onEmbedInFile = { editedLyrics ->
                 musicViewModel.embedLyricsInFile(
                     lyrics = editedLyrics,

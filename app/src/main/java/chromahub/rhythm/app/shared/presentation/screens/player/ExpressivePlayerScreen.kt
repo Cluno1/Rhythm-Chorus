@@ -105,6 +105,7 @@ import chromahub.rhythm.app.shared.presentation.components.dialogs.PlaybackSpeed
 import chromahub.rhythm.app.shared.presentation.components.player.SleepTimerBottomSheetNew
 import chromahub.rhythm.app.shared.presentation.components.lyrics.LyricsEditorBottomSheet
 import chromahub.rhythm.app.shared.presentation.components.lyrics.SyncedLyricsView
+import chromahub.rhythm.app.shared.presentation.components.lyrics.localizedLyricsSourceLabel
 import chromahub.rhythm.app.shared.presentation.components.lyrics.WordByWordLyricsView
 import chromahub.rhythm.app.shared.presentation.components.player.formatDuration
 import chromahub.rhythm.app.features.local.presentation.navigation.Screen
@@ -2590,7 +2591,7 @@ private fun RhythmPlayerLyricsPanel(
                                 color = textColor, textAlign = textAlignment, modifier = Modifier.fillMaxWidth())
                             if (!lyrics.source.isNullOrBlank()) {
                                 Spacer(Modifier.height(24.dp))
-                                Text(stringResource(R.string.lyrics_source_attribution, lyrics.source), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Normal, letterSpacing = 0.5.sp),
+                                Text(stringResource(R.string.lyrics_source_attribution, localizedLyricsSourceLabel(lyrics.source)), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Normal, letterSpacing = 0.5.sp),
                                     color = subtitleColor.copy(alpha = 0.6f), textAlign = textAlignment, modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp))
                             }
                         }

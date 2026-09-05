@@ -454,7 +454,7 @@ fun WordByWordLyricsView(
                 item {
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = stringResource(R.string.lyrics_source_attribution, lyricsSource),
+                        text = stringResource(R.string.lyrics_source_attribution, localizedLyricsSourceLabel(lyricsSource)),
                         style = MaterialTheme.typography.labelSmall,
                         color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(alpha = 0.5f),
                         textAlign = TextAlign.Center,

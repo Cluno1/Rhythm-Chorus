@@ -310,6 +310,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_LYRICALLY_API_ENABLED = "lyrically_api_enabled"
         private const val KEY_WIKIPEDIA_API_ENABLED = "wikipedia_api_enabled"
         private const val KEY_AUTO_FETCH_ARTWORK = "auto_fetch_artwork"
+        private const val KEY_DEVICE_PUBLIC_METADATA_ENABLED = "device_public_metadata_enabled"
         private const val KEY_ARTIST_ARTWORK_SOURCE = "artist_artwork_source"
         private const val KEY_APPLE_CANVAS_ENABLED = "apple_canvas_enabled"
         private const val KEY_APPLE_CANVAS_NETWORK_MODE = "apple_canvas_network_mode"
@@ -1581,8 +1582,10 @@ class AppSettings private constructor(context: Context) {
     private val _wikipediaApiEnabled = MutableStateFlow(!ProductCapabilities.catalogOnly && prefs.getBoolean(KEY_WIKIPEDIA_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val wikipediaApiEnabled: StateFlow<Boolean> = _wikipediaApiEnabled.asStateFlow()
     
-    private val _autoFetchArtwork = MutableStateFlow(!ProductCapabilities.catalogOnly && prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true))
+    private val _autoFetchArtwork = MutableStateFlow((ProductCapabilities.thirdPartyMusicServices || ProductCapabilities.devicePublicMetadata) && prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true))
     val autoFetchArtwork: StateFlow<Boolean> = _autoFetchArtwork.asStateFlow()
+    private val _devicePublicMetadataEnabled = MutableStateFlow(ProductCapabilities.devicePublicMetadata && prefs.getBoolean(KEY_DEVICE_PUBLIC_METADATA_ENABLED, true))
+    val devicePublicMetadataEnabled: StateFlow<Boolean> = _devicePublicMetadataEnabled.asStateFlow()
 
     private val _artistArtworkSource = MutableStateFlow(
         ArtistArtworkSource.fromName(prefs.getString(KEY_ARTIST_ARTWORK_SOURCE, ArtistArtworkSource.PREFER_LOCAL_THEN_API.name))
@@ -2125,7 +2128,9 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
             putBoolean(KEY_SPOTIFY_API_ENABLED, false)
             putBoolean(KEY_LYRICALLY_API_ENABLED, false)
             putBoolean(KEY_WIKIPEDIA_API_ENABLED, false)
-            putBoolean(KEY_AUTO_FETCH_ARTWORK, false)
+            if (!ProductCapabilities.devicePublicMetadata) {
+                putBoolean(KEY_AUTO_FETCH_ARTWORK, false)
+            }
             putBoolean(KEY_APPLE_CANVAS_ENABLED, false)
             putBoolean(KEY_STREAMING_NOTIFICATIONS_ENABLED, false)
             putString(KEY_ARTIST_ARTWORK_SOURCE, ArtistArtworkSource.LOCAL_ONLY.name)
@@ -2146,7 +2151,7 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         _spotifyApiEnabled.value = false
         _lyricallyApiEnabled.value = false
         _wikipediaApiEnabled.value = false
-        _autoFetchArtwork.value = false
+        _autoFetchArtwork.value = ProductCapabilities.devicePublicMetadata && prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true)
         _appleCanvasEnabled.value = false
         _streamingNotificationsEnabled.value = false
         _artistArtworkSource.value = ArtistArtworkSource.LOCAL_ONLY
@@ -3496,10 +3501,16 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
     }
     
     fun setAutoFetchArtwork(enabled: Boolean) {
-        val accepted = enabled && ProductCapabilities.thirdPartyMusicServices
+        val accepted = enabled && (ProductCapabilities.thirdPartyMusicServices || ProductCapabilities.devicePublicMetadata)
         prefs.edit { putBoolean(KEY_AUTO_FETCH_ARTWORK, accepted) }
         _autoFetchArtwork.value = accepted
         updateDerivedSettings()
+    }
+
+    fun setDevicePublicMetadataEnabled(enabled: Boolean) {
+        val accepted = enabled && ProductCapabilities.devicePublicMetadata
+        prefs.edit { putBoolean(KEY_DEVICE_PUBLIC_METADATA_ENABLED, accepted) }
+        _devicePublicMetadataEnabled.value = accepted
     }
     
     fun setSpotifyClientId(clientId: String) {
@@ -5268,7 +5279,8 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
             ?.filter { it.isNotBlank() && it in defaultLyricallySources }
             ?.toSet()
             ?: defaultDisabledLyricallySources
-        _autoFetchArtwork.value = ProductCapabilities.thirdPartyMusicServices && prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true)
+        _autoFetchArtwork.value = (ProductCapabilities.thirdPartyMusicServices || ProductCapabilities.devicePublicMetadata) && prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true)
+        _devicePublicMetadataEnabled.value = ProductCapabilities.devicePublicMetadata && prefs.getBoolean(KEY_DEVICE_PUBLIC_METADATA_ENABLED, true)
         _spotifyClientId.value = prefs.getString(KEY_SPOTIFY_CLIENT_ID, "") ?: ""
         _spotifyClientSecret.value = prefs.getString(KEY_SPOTIFY_CLIENT_SECRET, "") ?: ""
 

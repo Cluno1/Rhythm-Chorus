@@ -15,18 +15,21 @@ import chromahub.rhythm.app.features.local.data.database.dao.ArtistDao
 import chromahub.rhythm.app.features.local.data.database.dao.PlaylistDao
 import chromahub.rhythm.app.features.local.data.database.dao.SongArtistDao
 import chromahub.rhythm.app.features.local.data.database.dao.SongDao
+import chromahub.rhythm.app.features.local.data.database.dao.DeviceMetadataDao
 import chromahub.rhythm.app.features.local.data.database.entity.ArtistEntity
 import chromahub.rhythm.app.features.local.data.database.entity.PlaylistEntity
 import chromahub.rhythm.app.features.local.data.database.entity.PlaylistSongEntity
 import chromahub.rhythm.app.features.local.data.database.entity.SongArtistEntity
 import chromahub.rhythm.app.features.local.data.database.entity.SongEntity
+import chromahub.rhythm.app.features.local.data.database.entity.DeviceMetadataEntity
 
-@Database(entities = [SongEntity::class, ArtistEntity::class, SongArtistEntity::class, PlaylistEntity::class, PlaylistSongEntity::class], version = 9, exportSchema = false)
+@Database(entities = [SongEntity::class, ArtistEntity::class, SongArtistEntity::class, PlaylistEntity::class, PlaylistSongEntity::class, DeviceMetadataEntity::class], version = 10, exportSchema = false)
 abstract class RhythmDatabase : RoomDatabase() {
     abstract fun songDao(): SongDao
     abstract fun artistDao(): ArtistDao
     abstract fun songArtistDao(): SongArtistDao
     abstract fun playlistDao(): PlaylistDao
+    abstract fun deviceMetadataDao(): DeviceMetadataDao
 
     companion object {
         @Volatile
@@ -128,6 +131,24 @@ abstract class RhythmDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `device_metadata` (
+                        `stableId` TEXT NOT NULL, `songId` TEXT NOT NULL, `contentUri` TEXT NOT NULL,
+                        `fingerprint` TEXT NOT NULL, `titleSource` TEXT NOT NULL, `artistSource` TEXT NOT NULL,
+                        `albumSource` TEXT NOT NULL, `lyricsSource` TEXT, `lyricsProvider` TEXT,
+                        `lyricsExternalId` TEXT, `lyricsConfidence` REAL, `lyricsPlain` TEXT,
+                        `lyricsSynced` TEXT, `lyricsCachePath` TEXT, `lyricsPinned` INTEGER NOT NULL, `artworkSource` TEXT,
+                        `artworkProvider` TEXT, `artworkExternalId` TEXT, `artworkConfidence` REAL,
+                        `artworkCachePath` TEXT, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`stableId`)
+                    )
+                """.trimIndent())
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_device_metadata_songId` ON `device_metadata` (`songId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_device_metadata_fingerprint` ON `device_metadata` (`fingerprint`)")
+            }
+        }
+
         fun getInstance(context: Context): RhythmDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -135,7 +156,7 @@ abstract class RhythmDatabase : RoomDatabase() {
                     RhythmDatabase::class.java,
                     "rhythm_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                     .build()
                     .also { INSTANCE = it }
             }

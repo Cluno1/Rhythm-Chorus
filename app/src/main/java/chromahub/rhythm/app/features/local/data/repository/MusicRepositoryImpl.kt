@@ -102,6 +102,10 @@ import chromahub.rhythm.app.features.local.data.database.entity.ArtistEntity
 import chromahub.rhythm.app.features.local.data.database.entity.SongEntity
 import chromahub.rhythm.app.features.local.data.database.entity.toEntity
 import chromahub.rhythm.app.features.local.data.database.entity.SongArtistEntity
+import chromahub.rhythm.app.features.local.data.device.DeviceLyricsCandidate
+import chromahub.rhythm.app.features.local.data.device.DeviceMetadataRepository
+import chromahub.rhythm.app.features.local.data.device.DeviceMetadataMatcher
+import chromahub.rhythm.app.features.local.data.device.DeviceMetadataPolicy
 import androidx.core.content.edit
 import androidx.core.net.toUri
 
@@ -665,6 +669,7 @@ class MusicRepository(context: Context) {
     private val rhythmLyricsApiService = NetworkClient.rhythmLyricsApiService
     private val itunesSearchApiService = NetworkClient.itunesSearchApiService
     private val genericHttpClient = NetworkClient.genericHttpClient
+    private val deviceMetadataRepository by lazy { DeviceMetadataRepository(context) }
     
     // Note: API services can be null if disabled via BuildConfig
 
@@ -4494,8 +4499,14 @@ class MusicRepository(context: Context) {
         songId: String? = null,
         songUri: Uri? = null,
         sourcePreference: LyricsSourcePreference = LyricsSourcePreference.API_FIRST,
-        forceRefresh: Boolean = false
+        forceRefresh: Boolean = false,
+        forceOnline: Boolean = false
     ): LyricsData? = withContext(Dispatchers.IO) {
+        val deviceSong = songId?.let { songDao.getSongById(it)?.toSong() }
+            ?.takeIf { it.uri.scheme == "content" || it.uri.scheme == "file" }
+        if (deviceSong != null) {
+            return@withContext fetchDeviceLyrics(deviceSong, forceRefresh, forceOnline)
+        }
         val appSettings = AppSettings.getInstance(context)
         val songSpecificPreference = songId?.let { appSettings.getSongLyricsPreference(it) }
         val finalSourcePreference = when (songSpecificPreference) {
@@ -4608,6 +4619,107 @@ class MusicRepository(context: Context) {
         Log.d(TAG, "No lyrics found from any source for: $artist - $title")
         return@withContext LyricsData("No lyrics found for this song", null, null)
     }
+
+    /** DEVICE contract: embedded > sibling SAF/file > fingerprinted app cache > LRCLIB. */
+    private suspend fun fetchDeviceLyrics(song: Song, forceRefresh: Boolean, forceOnline: Boolean): LyricsData? {
+        val cacheKey = DeviceMetadataPolicy.cacheKey(song.id, song.artist, song.title)
+
+        if (!forceRefresh && !forceOnline) {
+            deviceMetadataRepository.pinnedLyrics(song)?.let {
+                lyricsCache[cacheKey] = it
+                return it
+            }
+        }
+
+        if (!forceOnline) {
+            getEmbeddedLyrics(song.uri)?.takeIf(LyricsData::hasLyrics)?.let { value ->
+                val result = value.copy(source = "DEVICE_EMBEDDED")
+                deviceMetadataRepository.saveLyrics(song, result, null, null, 1.0)
+                lyricsCache[cacheKey] = result
+                return result
+            }
+            findLrcFileForSong(song.artist, song.title, song.id, song.uri)?.takeIf(LyricsData::hasLyrics)?.let { value ->
+                val result = value.copy(source = "DEVICE_SIBLING")
+                deviceMetadataRepository.saveLyrics(song, result, null, null, 1.0)
+                lyricsCache[cacheKey] = result
+                return result
+            }
+            findSafSiblingLyrics(song)?.let { value ->
+                deviceMetadataRepository.saveLyrics(song, value, null, null, 1.0)
+                lyricsCache[cacheKey] = value
+                return value
+            }
+            deviceMetadataRepository.cachedLyrics(song)?.let { value ->
+                lyricsCache[cacheKey] = value
+                return value
+            }
+        }
+
+        if (isNetworkAvailable()) {
+            val candidates = deviceMetadataRepository.searchLyrics(song)
+            val candidate = candidates.firstOrNull()?.takeIf {
+                DeviceMetadataMatcher.isAutomaticMatch(
+                    it.confidence,
+                    candidates.getOrNull(1)?.confidence,
+                    DeviceMetadataRepository.MIN_AUTO_CONFIDENCE
+                )
+            }
+            if (candidate != null) {
+                val result = deviceMetadataRepository.applyLyrics(song, candidate)
+                lyricsCache[cacheKey] = result
+                return result
+            }
+        }
+        return LyricsData("No lyrics found for this song", null, source = "DEVICE")
+    }
+
+    private fun findSafSiblingLyrics(song: Song): LyricsData? {
+        val file = deviceMetadataRepository.folders.findSibling(
+            song.uri, setOf("lrc", "elrc", "ttml", "srt", "xml", "txt")
+        ) ?: return null
+        return runCatching {
+            val text = context.contentResolver.openInputStream(file.uri)?.bufferedReader()?.use { it.readText() } ?: return null
+            parseLocalLyricsFile(text, file.name.substringAfterLast('.', ""))?.copy(source = "DEVICE_SAF_SIBLING")
+        }.getOrNull()
+    }
+
+    suspend fun searchDeviceLyricsCandidates(song: Song): List<DeviceLyricsCandidate> =
+        deviceMetadataRepository.searchLyrics(song)
+
+    suspend fun applyDeviceLyricsCandidate(song: Song, candidate: DeviceLyricsCandidate): LyricsData {
+        clearLyricsCacheForSong(song)
+        val result = deviceMetadataRepository.applyLyrics(song, candidate, userSelected = true)
+        lyricsCache["${song.id}:${song.artist}:${song.title}".lowercase()] = result
+        return result
+    }
+
+    suspend fun clearLyricsCacheForSong(song: Song) {
+        val legacyPrefix = "${song.artist}:${song.title}".lowercase()
+        synchronized(lyricsCache) {
+            lyricsCache.keys.filter { DeviceMetadataPolicy.belongsToSong(it, song.id) || it.startsWith(legacyPrefix) }.forEach(lyricsCache::remove)
+        }
+        deviceMetadataRepository.clearLyrics(song)
+        val legacyName = "${song.artist}_${song.title}.json".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+        File(context.filesDir, "lyrics/$legacyName").delete()
+    }
+
+    suspend fun restoreDeviceLocalLyrics(song: Song): LyricsData? {
+        clearLyricsCacheForSong(song)
+        val result = getEmbeddedLyrics(song.uri)?.takeIf(LyricsData::hasLyrics)?.copy(source = "DEVICE_EMBEDDED")
+            ?: findLrcFileForSong(song.artist, song.title, song.id, song.uri)?.copy(source = "DEVICE_SIBLING")
+            ?: findSafSiblingLyrics(song)
+        if (result != null) {
+            deviceMetadataRepository.saveLyrics(song, result, null, null, 1.0)
+            lyricsCache["${song.id}:${song.artist}:${song.title}".lowercase()] = result
+        }
+        return result
+    }
+
+    fun addDeviceMetadataFolder(uri: Uri) = deviceMetadataRepository.folders.add(uri)
+    fun clearDeviceMetadataFolders() = deviceMetadataRepository.folders.clear()
+    fun deviceMetadataFolderCount(): Int = deviceMetadataRepository.folders.roots().size
+    suspend fun clearAllDeviceMetadataCache() = deviceMetadataRepository.clearAllCachedMetadata()
+    suspend fun restoreDeviceLocalArtwork(song: Song): Uri? = deviceMetadataRepository.restoreLocalArtwork(song)
 
     private fun canonicalizeForMatch(str: String): String {
         val normalized = java.text.Normalizer.normalize(str.lowercase(), java.text.Normalizer.Form.NFD)
@@ -5806,6 +5918,12 @@ class MusicRepository(context: Context) {
 
             var fetchedUri: Uri? = null
 
+            if (NetworkClient.isDevicePublicMetadataEnabled() &&
+                !song.id.startsWith("rhythm-catalog:") &&
+                (song.uri.scheme == "content" || song.uri.scheme == "file")) {
+                fetchedUri = deviceMetadataRepository.findOrFetchArtwork(song)
+            }
+
             // 1. Try Deezer search first (Deezer returns high resolution album/track artwork)
             if (NetworkClient.isDeezerApiEnabled() && deezerApiService != null) {
                 try {
@@ -6369,6 +6487,14 @@ class MusicRepository(context: Context) {
         } catch (e: Exception) {
             Log.e(TAG, "Error clearing lyrics cache", e)
         }
+    }
+
+    suspend fun clearAllLyricsCaches() = withContext(Dispatchers.IO) {
+        clearLyricsCache()
+        File(context.filesDir, "device_metadata").listFiles()
+            ?.filter { it.name.startsWith("lyrics-") && it.extension == "json" }
+            ?.forEach(File::delete)
+        roomDb.deviceMetadataDao().clearAllLyrics()
     }
     
     /**

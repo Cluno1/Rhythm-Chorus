@@ -47,6 +47,7 @@ import chromahub.rhythm.app.shared.data.model.LyricsSourcePreference
 import chromahub.rhythm.app.shared.data.model.MediaScanMode
 import chromahub.rhythm.app.shared.data.model.ScanPhase
 import chromahub.rhythm.app.features.local.data.repository.MusicRepository
+import chromahub.rhythm.app.features.local.data.device.DeviceLyricsCandidate
 import chromahub.rhythm.app.features.catalog.domain.CATALOG_SONG_ID_PREFIX
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import chromahub.rhythm.app.features.catalog.domain.RhythmNowPlayingItem
@@ -301,6 +302,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     // Lyrics
     private val _currentLyrics = MutableStateFlow<LyricsData?>(null)
     val currentLyrics: StateFlow<LyricsData?> = _currentLyrics.asStateFlow()
+    private val _deviceLyricsCandidates = MutableStateFlow<List<DeviceLyricsCandidate>>(emptyList())
+    val deviceLyricsCandidates: StateFlow<List<DeviceLyricsCandidate>> = _deviceLyricsCandidates.asStateFlow()
+    private var deviceLyricsCandidateIndex = -1
+    private var deviceLyricsCandidatesSongId: String? = null
 
     private val _isLoadingLyrics = MutableStateFlow(false)
     val isLoadingLyrics: StateFlow<Boolean> = _isLoadingLyrics.asStateFlow()
@@ -1883,13 +1888,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val context = getApplication<Application>()
                 val hasMissingArtists = _artists.value.any { it.artworkUri == null }
                 val hasMissingAlbums = _albums.value.any { it.artworkUri == null }
-                val hasMissingSongs = _songs.value.any { it.artworkUri == null }
+                val hasMissingSongs = _songs.value.any { it.artworkUri == null } ||
+                    (chromahub.rhythm.app.core.ProductCapabilities.devicePublicMetadata && _songs.value.isNotEmpty())
                 
                 val artistSource1 = appSettings.artistArtworkSource.value
                 val shouldFetchArtists = hasMissingArtists &&
                     artistSource1 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
                     (artistSource1 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
-                val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && (appSettings.ytMusicApiEnabled.value || appSettings.deezerApiEnabled.value)
+                val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value &&
+                    (chromahub.rhythm.app.core.ProductCapabilities.devicePublicMetadata || appSettings.ytMusicApiEnabled.value || appSettings.deezerApiEnabled.value)
 
                 if (shouldFetchArtists || shouldFetchAlbumsAndSongs) {
                     _isFetchingArtwork.value = true
@@ -2054,13 +2061,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val context = getApplication<Application>()
                 val hasMissingArtists = _artists.value.any { it.artworkUri == null }
                 val hasMissingAlbums = _albums.value.any { it.artworkUri == null }
-                val hasMissingSongs = _songs.value.any { it.artworkUri == null }
+                val hasMissingSongs = _songs.value.any { it.artworkUri == null } ||
+                    (chromahub.rhythm.app.core.ProductCapabilities.devicePublicMetadata && _songs.value.isNotEmpty())
                 
                 val artistSource2 = appSettings.artistArtworkSource.value
                 val shouldFetchArtists = hasMissingArtists &&
                     artistSource2 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.DISABLED &&
                     (artistSource2 != chromahub.rhythm.app.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
-                val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && (appSettings.ytMusicApiEnabled.value || appSettings.deezerApiEnabled.value)
+                val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value &&
+                    (chromahub.rhythm.app.core.ProductCapabilities.devicePublicMetadata || appSettings.ytMusicApiEnabled.value || appSettings.deezerApiEnabled.value)
 
                 if (shouldFetchArtists || shouldFetchAlbumsAndSongs) {
                     _isFetchingArtwork.value = true
@@ -7988,6 +7997,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      */
     private fun fetchLyricsForCurrentSong(retryCount: Int = 0) {
         val song = currentSong.value ?: return
+        if (deviceLyricsCandidatesSongId != song.id) {
+            _deviceLyricsCandidates.value = emptyList()
+            deviceLyricsCandidatesSongId = null
+            deviceLyricsCandidateIndex = -1
+        }
         if (song.id.startsWith("rhythm-catalog:")) {
             _currentLyrics.value = _catalogNowPlaying.value?.lyrics?.let {
                 LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
@@ -8098,9 +8112,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     val artist = song.artist
                     val title = song.title
                     
-                    // Clear lyrics cache (both memory and disk)
-                    repository.clearLyricsCache()
-                    Log.d(TAG, "Cleared lyrics cache for: $title by $artist")
+                    // Settings-level action intentionally clears every lyrics cache.
+                    repository.clearAllLyricsCaches()
+                    Log.d(TAG, "Cleared all lyrics caches before refetching: $title by $artist")
                     
                     // Clear in-memory lyrics
                     _currentLyrics.value = null
@@ -8109,14 +8123,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     _lyricsTimeOffset.value = 0
                     
                     // Refetch from sources with force refresh
-                    val songUri = ("content://media/external/audio/media/${song.id}").toUri()
                     val lyrics = repository.fetchLyrics(
                         artist = artist,
                         title = title,
                         songId = song.id,
-                        songUri = songUri,
+                        songUri = song.uri,
                         sourcePreference = appSettings.lyricsSourcePreference.value,
-                        forceRefresh = true // Force bypass cache
+                        forceRefresh = true,
+                        forceOnline = false
                     )
                     
                     withContext(Dispatchers.Main) {
@@ -8129,6 +8143,84 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             } catch (e: Exception) {
                 Log.e(TAG, "Error clearing lyrics cache", e)
             }
+        }
+    }
+
+    fun searchAndApplyBestDeviceLyrics() {
+        val song = _currentSong.value?.takeUnless { it.id.startsWith("rhythm-catalog:") } ?: return
+        viewModelScope.launch {
+            _isLoadingLyrics.value = true
+            repository.clearLyricsCacheForSong(song)
+            if (_currentSong.value?.id != song.id) {
+                _isLoadingLyrics.value = false
+                return@launch
+            }
+            _currentLyrics.value = null
+            _deviceLyricsCandidates.value = emptyList()
+            deviceLyricsCandidatesSongId = null
+            val candidates = repository.searchDeviceLyricsCandidates(song)
+            if (_currentSong.value?.id != song.id) {
+                _isLoadingLyrics.value = false
+                return@launch
+            }
+            _deviceLyricsCandidates.value = candidates
+            deviceLyricsCandidatesSongId = song.id
+            val automatic = candidates.firstOrNull()?.takeIf {
+                chromahub.rhythm.app.features.local.data.device.DeviceMetadataMatcher.isAutomaticMatch(
+                    it.confidence,
+                    candidates.getOrNull(1)?.confidence,
+                    chromahub.rhythm.app.features.local.data.device.DeviceMetadataRepository.MIN_AUTO_CONFIDENCE
+                )
+            }
+            deviceLyricsCandidateIndex = automatic?.let(candidates::indexOf) ?: -1
+            automatic?.let {
+                val selected = repository.applyDeviceLyricsCandidate(song, it)
+                if (_currentSong.value?.id == song.id) _currentLyrics.value = selected
+            }
+            _isLoadingLyrics.value = false
+        }
+    }
+
+    fun loadDeviceLyricsCandidates() {
+        val song = _currentSong.value?.takeUnless { it.id.startsWith("rhythm-catalog:") } ?: return
+        viewModelScope.launch {
+            _isLoadingLyrics.value = true
+            _deviceLyricsCandidates.value = emptyList()
+            deviceLyricsCandidatesSongId = null
+            val candidates = repository.searchDeviceLyricsCandidates(song)
+            if (_currentSong.value?.id == song.id) {
+                _deviceLyricsCandidates.value = candidates
+                deviceLyricsCandidatesSongId = song.id
+            }
+            _isLoadingLyrics.value = false
+        }
+    }
+
+    fun selectDeviceLyricsCandidate(candidate: DeviceLyricsCandidate) {
+        val song = _currentSong.value?.takeUnless { it.id.startsWith("rhythm-catalog:") } ?: return
+        if (deviceLyricsCandidatesSongId != song.id || candidate !in _deviceLyricsCandidates.value) return
+        viewModelScope.launch {
+            val selected = repository.applyDeviceLyricsCandidate(song, candidate)
+            if (_currentSong.value?.id != song.id) return@launch
+            _currentLyrics.value = selected
+            deviceLyricsCandidateIndex = _deviceLyricsCandidates.value.indexOf(candidate)
+        }
+    }
+
+    fun restoreCurrentDeviceLyrics() {
+        val song = _currentSong.value?.takeUnless { it.id.startsWith("rhythm-catalog:") } ?: return
+        viewModelScope.launch {
+            _isLoadingLyrics.value = true
+            _deviceLyricsCandidates.value = emptyList()
+            deviceLyricsCandidatesSongId = null
+            deviceLyricsCandidateIndex = -1
+            val restored = repository.restoreDeviceLocalLyrics(song)
+            val restoredArtwork = repository.restoreDeviceLocalArtwork(song)
+            if (_currentSong.value?.id == song.id) {
+                _currentLyrics.value = restored
+                updateCurrentSongMetadata(song.copy(artworkUri = restoredArtwork))
+            }
+            _isLoadingLyrics.value = false
         }
     }
 

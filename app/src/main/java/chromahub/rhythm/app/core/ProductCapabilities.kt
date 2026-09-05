@@ -12,4 +12,7 @@ object ProductCapabilities {
 
     val inAppUpdates: Boolean
         get() = !catalogOnly
+
+    val devicePublicMetadata: Boolean
+        get() = BuildConfig.DEVICE_PUBLIC_METADATA
 }
