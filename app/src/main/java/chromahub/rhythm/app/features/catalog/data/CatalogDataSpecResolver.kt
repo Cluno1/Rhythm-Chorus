@@ -25,28 +25,24 @@ object CatalogDataSpecResolver {
             } else {
                 null
             }
-            val descriptor = runBlocking {
-                CatalogModule.repository(context).getPlayback(deferredRenditionId)
-            }.getOrElse { error ->
-                cached?.let { return cachedDataSpec(dataSpec, it) }
-                throw IOException("Unable to resolve catalog rendition", error)
-            }
-            val descriptorHash = descriptor.cacheKey.substringAfterLast(':')
-            if (
-                cached != null &&
-                cached.assetId == descriptor.assetId &&
-                cached.sha256.equals(descriptorHash, ignoreCase = true) &&
-                cached.byteSize == descriptor.byteSize
-            ) {
-                return cachedDataSpec(dataSpec, cached)
-            }
-            val resolved = runBlocking {
-                CatalogDynamicDelivery.resolve(
+            val decision = runBlocking {
+                CatalogOpenResolver.resolve(
                     renditionId = deferredRenditionId,
                     trustedServerUrl = trustedServerUrl,
                     bearerToken = token,
-                ) { _ -> descriptor }
+                    cached = cached?.let {
+                        CatalogCachedAudioIdentity(it.assetId, it.sha256, it.byteSize)
+                    },
+                ) { renditionId -> CatalogModule.repository(context).getPlayback(renditionId) }
             }
+            when (decision) {
+                CatalogOpenDecision.UseCachedAudio -> return cached?.let { cachedDataSpec(dataSpec, it) }
+                    ?: throw IOException("Catalog cache decision did not contain cached audio")
+                is CatalogOpenDecision.Unavailable ->
+                    throw IOException("Unable to resolve catalog rendition", decision.cause)
+                is CatalogOpenDecision.UseRemote -> Unit
+            }
+            val resolved = decision.request
             val deviceHeaders = if (
                 !CatalogPlaybackPolicy.isSignedObjectStoreUrl(resolved.url) &&
                 credentials.loadDevice() != null &&
@@ -56,11 +52,11 @@ object CatalogDataSpecResolver {
             } else {
                 emptyMap()
             }
-            val headers = dataSpec.httpRequestHeaders
-                .filterKeys { key ->
-                    !key.equals("Authorization", ignoreCase = true) &&
-                        !key.startsWith("X-Rhythm-", ignoreCase = true)
-                } + resolved.headers + deviceHeaders
+            val headers = CatalogOpenResolver.mergeHeaders(
+                original = dataSpec.httpRequestHeaders,
+                resolved = resolved.headers,
+                deviceProof = deviceHeaders,
+            )
             return dataSpec.buildUpon()
                 .setUri(resolved.url)
                 .setKey(resolved.cacheKey)
