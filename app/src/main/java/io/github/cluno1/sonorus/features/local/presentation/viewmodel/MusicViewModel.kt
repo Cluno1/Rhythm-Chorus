@@ -48,6 +48,7 @@ import io.github.cluno1.sonorus.shared.data.model.MediaScanMode
 import io.github.cluno1.sonorus.shared.data.model.ScanPhase
 import io.github.cluno1.sonorus.features.local.data.repository.MusicRepository
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.CATALOG_SONG_ID_PREFIX
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmNowPlayingItem
@@ -3708,11 +3709,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             
             if (fetchAlbumsAndSongs) {
                 Log.d(TAG, "Fetching album artwork from internet")
-                val context = getApplication<Application>()
-                
                 // Only fetch for a subset of albums to avoid overwhelming the API
                 // Check for albums with genuinely missing or unreadable cover art URIs
-                val albumsToUpdate = _albums.value.filter { it.artworkUri == null }.take(10)
+                val albumsToUpdate = _albums.value.filter { album ->
+                    album.artworkUri == null && album.songs.any {
+                        DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme)
+                    }
+                }.take(10)
                 
                 Log.d(TAG, "Found ${albumsToUpdate.size} albums that genuinely need artwork out of ${_albums.value.size} total albums")
                 if (albumsToUpdate.isNotEmpty()) {
@@ -3733,13 +3736,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         val str = uri.toString().trim()
                         if (str.isEmpty() || str == "null" || str == "content://media/external/audio/albumart/0") true
                         else if (str.startsWith("http://") || str.startsWith("https://")) false
-                        else {
-                            try {
-                                context.contentResolver.openInputStream(uri)?.use { stream ->
-                                    stream.available() <= 0 && stream.read() == -1
-                                } ?: true
-                            } catch (_: Exception) { true }
-                        }
+                        else !repository.isArtworkReadable(uri)
                     }
                 }.take(40)
                 if (songsToUpdate.isNotEmpty()) {
@@ -3766,18 +3763,21 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * updates the song in memory & repository, and invokes onResult callback with success & artwork Uri string.
      */
     fun autoFetchArtworkForSong(song: Song, onResult: (Boolean, String?) -> Unit) {
+        if (!DeviceMetadataPolicy.isEligible(song.id, song.uri.scheme)) {
+            return
+        }
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _isFetchingArtwork.value = true
                 val updated = repository.fetchTrackArtwork(listOf(song))
                 val resultSong = updated.firstOrNull()
                 if (resultSong?.artworkUri != null && resultSong.artworkUri != song.artworkUri) {
-                    val currentList = _songs.value.toMutableList()
-                    val idx = currentList.indexOfFirst { it.id == song.id }
-                    if (idx != -1) {
-                        currentList[idx] = resultSong
-                        _songs.value = currentList
-                        repository.updateAndPersistSongs(currentList)
+                    val currentList = _songs.value.map { if (it.id == song.id) resultSong else it }
+                    val projected = repository.projectDeviceArtwork(currentList)
+                    if (projected.any { it.id == song.id }) {
+                        _songs.value = projected
+                        repository.updateAndPersistSongs(projected)
+                        _albums.value = repository.loadAlbums()
                     }
                     withContext(Dispatchers.Main) {
                         onResult(true, resultSong.artworkUri.toString())
@@ -3826,6 +3826,19 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val album = _albums.value.find { it.id == albumId } ?: return@launch
             try {
+                val deviceSong = album.songs.firstOrNull {
+                    DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme)
+                }
+                if (deviceSong != null) {
+                    val artwork = repository.rematchDeviceAlbumArtwork(deviceSong)
+                    if (artwork != null) {
+                        val projected = repository.projectDeviceArtwork(_songs.value)
+                        _songs.value = projected
+                        repository.updateAndPersistSongs(projected)
+                        _albums.value = repository.loadAlbums()
+                    }
+                    return@launch
+                }
                 val updatedAlbums = repository.fetchAlbumArtwork(listOf<Album>(album))
                 if (updatedAlbums.isNotEmpty()) {
                     val updatedAlbum = updatedAlbums.first()
@@ -8218,7 +8231,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             val restoredArtwork = repository.restoreDeviceLocalArtwork(song)
             if (_currentSong.value?.id == song.id) {
                 _currentLyrics.value = restored
-                updateCurrentSongMetadata(song.copy(artworkUri = restoredArtwork))
+                val restoredSongs = _songs.value.map {
+                    if (it.id == song.id) song.copy(artworkUri = restoredArtwork) else it
+                }
+                val projected = repository.projectDeviceArtwork(restoredSongs)
+                _songs.value = projected
+                _currentSong.value = projected.firstOrNull { it.id == song.id } ?: song.copy(artworkUri = restoredArtwork)
+                repository.updateAndPersistSongs(projected)
+                _albums.value = repository.loadAlbums()
             }
             _isLoadingLyrics.value = false
         }

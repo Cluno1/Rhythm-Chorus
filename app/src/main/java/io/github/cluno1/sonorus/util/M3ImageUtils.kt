@@ -53,7 +53,8 @@ object M3ImageUtils {
         shape: Shape? = null,
         type: M3PlaceholderType = M3PlaceholderType.GENERAL,
         name: String? = null,
-        expressiveShape: Shape? = null
+        expressiveShape: Shape? = null,
+        onError: (() -> Unit)? = null
     ) {
         val context = LocalContext.current
         
@@ -81,6 +82,7 @@ object M3ImageUtils {
                         showPlaceholder = state is AsyncImagePainter.State.Loading || 
                                          state is AsyncImagePainter.State.Error ||
                                          state is AsyncImagePainter.State.Empty
+                        if (state is AsyncImagePainter.State.Error) onError?.invoke()
                     }
                 )
             }

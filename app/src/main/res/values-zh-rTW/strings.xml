@@ -2804,7 +2804,7 @@
     <string name="catalog_invite_share_text">Sonorus 使用者 %1$s 的一次性邀請碼\n邀請碼：%2$s\n到期時間：%3$s\n伺服器：%4$s</string>
     <string name="settings_device_metadata_group">本機音樂中繼資料</string>
     <string name="settings_device_public_metadata">公共中繼資料查詢</string>
-    <string name="settings_device_public_metadata_privacy">需要補全時僅向 LRCLIB 和 Deezer 傳送標題、歌手、專輯和時長，音訊檔案絕不會離開本機。</string>
+    <string name="settings_device_public_metadata_privacy">需要補全時僅向 LRCLIB、MusicBrainz 和 Deezer 傳送標題、歌手、專輯和時長；Cover Art Archive 只接收配對後的發行版 ID。音訊檔案絕不會離開本機。</string>
     <string name="settings_device_metadata_add_folder">授權音樂資料夾</string>
     <string name="settings_device_metadata_add_folder_desc">用於唯讀查找同目錄歌詞和封面，已授權 %1$d 個資料夾。</string>
     <string name="settings_device_metadata_clear_folders">清除資料夾授權</string>

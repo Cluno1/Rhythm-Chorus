@@ -117,6 +117,8 @@ import io.github.cluno1.sonorus.shared.data.model.LyricsData
 import io.github.cluno1.sonorus.shared.data.model.PlaybackLocation
 import io.github.cluno1.sonorus.shared.data.model.Playlist
 import io.github.cluno1.sonorus.shared.data.model.Song
+import io.github.cluno1.sonorus.features.local.data.device.ArtworkUriValidator
+import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 import io.github.cluno1.sonorus.shared.presentation.components.common.AnimatedDigitTickerText
 import io.github.cluno1.sonorus.shared.presentation.components.common.AutoScrollingTextOnDemand
 import io.github.cluno1.sonorus.shared.presentation.components.common.ButtonGroupStyle
@@ -277,21 +279,7 @@ internal fun rememberArtworkValidation(uri: android.net.Uri?, context: android.c
     val isValidState = remember(uri) { mutableStateOf<Boolean?>(null) }
 
     LaunchedEffect(uri) {
-        val valid = withContext(Dispatchers.IO) {
-            try {
-                // Use inJustDecodeBounds — the fastest way to confirm an image
-                // exists at the URI without decoding any pixels.
-                val opts = android.graphics.BitmapFactory.Options().apply {
-                    inJustDecodeBounds = true
-                }
-                context.contentResolver.openInputStream(uri)?.use { stream ->
-                    android.graphics.BitmapFactory.decodeStream(stream, null, opts)
-                }
-                opts.outWidth > 0 && opts.outHeight > 0
-            } catch (_: Exception) {
-                false
-            }
-        }
+        val valid = withContext(Dispatchers.IO) { ArtworkUriValidator(context).isReadable(uri) }
         artworkValidationCache[uri] = valid
         isValidState.value = valid
     }
@@ -860,6 +848,7 @@ fun ExpressivePlayerScreen(
     } else { modifier }
 
     val autoFetchArtwork by appSettings.autoFetchArtwork.collectAsState()
+    val devicePublicMetadataEnabled by appSettings.devicePublicMetadataEnabled.collectAsState()
     var isAutoFetchingMissingArtwork by remember { mutableStateOf(false) }
     var fetchedAutoArtworkUriStr by remember { mutableStateOf<String?>(null) }
     var showAutoFetchEmbedDialog by remember { mutableStateOf(false) }
@@ -869,10 +858,12 @@ fun ExpressivePlayerScreen(
 
     // Auto-fetch in both modes, but only after validation confirms the song has no
     // artwork (null = still checking). Each song is prompted at most once per session.
-    LaunchedEffect(debouncedSong.value?.id, autoFetchArtwork, artworkValidation) {
+    LaunchedEffect(debouncedSong.value?.id, autoFetchArtwork, devicePublicMetadataEnabled, artworkValidation) {
         val currentSong = debouncedSong.value
         val alreadyPrompted = currentSong != null && currentSong.id in autoFetchPromptedSongIds.value
-        if (autoFetchArtwork && currentSong != null && artworkValidation == false && !isAutoFetchingMissingArtwork && !alreadyPrompted) {
+        val canAutoFetchDeviceArtwork = currentSong != null &&
+            DeviceMetadataPolicy.isEligible(currentSong.id, currentSong.uri.scheme)
+        if (autoFetchArtwork && canAutoFetchDeviceArtwork && artworkValidation == false && !isAutoFetchingMissingArtwork && !alreadyPrompted) {
             autoFetchPromptedSongIds.value = autoFetchPromptedSongIds.value + currentSong.id
             isAutoFetchingMissingArtwork = true
             musicViewModel?.autoFetchArtworkForSong(currentSong) { success, uriStr ->
@@ -894,7 +885,7 @@ fun ExpressivePlayerScreen(
                         fetchedAutoArtworkUriStr = uriStr
                         showAutoFetchEmbedDialog = true
                     }
-                } else {
+                } else if (devicePublicMetadataEnabled) {
                     val now = android.os.SystemClock.elapsedRealtime()
                     if (now - lastNoArtworkToastTime > 5000) {
                         lastNoArtworkToastTime = now
@@ -1244,7 +1235,8 @@ fun ExpressivePlayerScreen(
                                         shape = artworkClipShape,
                                         type = M3PlaceholderType.TRACK,
                                         name = debouncedSong.value?.title,
-                                        expressiveShape = playerArtworkShape
+                                        expressiveShape = playerArtworkShape,
+                                        onError = { currentSongArt?.let { artworkValidationCache[it] = false } }
                                     )
                                 } else {
                                     Box(

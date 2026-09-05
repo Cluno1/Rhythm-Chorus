@@ -154,6 +154,7 @@ import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.shared.data.model.PlaybackLocation
 import io.github.cluno1.sonorus.shared.data.model.Playlist
 import io.github.cluno1.sonorus.shared.data.model.Song
+import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 import io.github.cluno1.sonorus.network.CanvasArtwork
 import io.github.cluno1.sonorus.shared.presentation.components.player.CanvasArtworkPlayer
 import io.github.cluno1.sonorus.shared.presentation.components.common.WaveSlider
@@ -623,6 +624,7 @@ fun MaterialPlayerScreen(
     }
 
     val autoFetchArtwork by appSettings.autoFetchArtwork.collectAsState()
+    val devicePublicMetadataEnabled by appSettings.devicePublicMetadataEnabled.collectAsState()
     val artworkValidation = rememberArtworkValidation(song?.artworkUri, context)
     var isAutoFetchingMissingArtwork by remember { mutableStateOf(false) }
     var fetchedAutoArtworkUriStr by remember { mutableStateOf<String?>(null) }
@@ -633,10 +635,12 @@ fun MaterialPlayerScreen(
 
     // Auto-fetch in both modes, but only after validation confirms the song has no
     // artwork (null = still checking). Each song is prompted at most once per session.
-    LaunchedEffect(song?.id, autoFetchArtwork, artworkValidation) {
+    LaunchedEffect(song?.id, autoFetchArtwork, devicePublicMetadataEnabled, artworkValidation) {
         val currentSong = song
         val alreadyPrompted = currentSong != null && currentSong.id in autoFetchPromptedSongIds.value
-        if (autoFetchArtwork && currentSong != null && artworkValidation == false && !isAutoFetchingMissingArtwork && !alreadyPrompted) {
+        val canAutoFetchDeviceArtwork = currentSong != null &&
+            DeviceMetadataPolicy.isEligible(currentSong.id, currentSong.uri.scheme)
+        if (autoFetchArtwork && canAutoFetchDeviceArtwork && artworkValidation == false && !isAutoFetchingMissingArtwork && !alreadyPrompted) {
             autoFetchPromptedSongIds.value = autoFetchPromptedSongIds.value + currentSong.id
             isAutoFetchingMissingArtwork = true
             musicViewModel.autoFetchArtworkForSong(currentSong) { success, uriStr ->
@@ -658,7 +662,7 @@ fun MaterialPlayerScreen(
                         fetchedAutoArtworkUriStr = uriStr
                         showAutoFetchEmbedDialog = true
                     }
-                } else {
+                } else if (devicePublicMetadataEnabled) {
                     val now = android.os.SystemClock.elapsedRealtime()
                     if (now - lastNoArtworkToastTime > 5000) {
                         lastNoArtworkToastTime = now
@@ -1719,7 +1723,10 @@ fun MaterialPlayerScreen(
                                                 contentDescription = stringResource(R.string.album_artwork_description, song.title),
                                                 contentScale = ContentScale.Crop,
                                                 onSuccess = { imageLoaded = true },
-                                                onError = { imageLoaded = true },
+                                                onError = {
+                                                    imageLoaded = true
+                                                    artworkValidationCache[song.artworkUri] = false
+                                                },
                                                 modifier = Modifier
                                                     .fillMaxSize()
                                                     .clip(playerArtworkShape)

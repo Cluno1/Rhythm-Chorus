@@ -40,4 +40,17 @@ class DeviceMetadataPolicyTest {
         assertTrue(DeviceMetadataPolicy.isImageContentType("image/jpeg; charset=binary"))
         assertFalse(DeviceMetadataPolicy.isImageContentType("text/html"))
     }
+
+    @Test fun `cover art archive redirects stay on explicit image hosts`() {
+        assertEquals(
+            "https://coverartarchive.org/release/abc/front-500",
+            DeviceMetadataPolicy.safeCoverArtUrl("https://coverartarchive.org/release/abc/front-500")
+        )
+        assertEquals(
+            "https://archive.org/download/mbid/cover.jpg",
+            DeviceMetadataPolicy.safeCoverArtUrl("https://archive.org/download/mbid/cover.jpg")
+        )
+        assertNull(DeviceMetadataPolicy.safeCoverArtUrl("http://coverartarchive.org/release/abc/front"))
+        assertNull(DeviceMetadataPolicy.safeCoverArtUrl("https://coverartarchive.org.example.com/cover.jpg"))
+    }
 }
