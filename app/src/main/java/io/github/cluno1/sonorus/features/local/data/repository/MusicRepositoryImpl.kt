@@ -106,6 +106,7 @@ import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRepository
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataMatcher
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
+import io.github.cluno1.sonorus.features.local.data.device.ArtworkUriValidator
 import androidx.core.content.edit
 import androidx.core.net.toUri
 
@@ -256,6 +257,10 @@ class MusicRepository(context: Context) {
             Log.d(TAG, "Skipping Room save because the song snapshot is unchanged")
             return
         }
+        // Make album/search projections observe the new shared DEVICE artwork immediately;
+        // disk persistence remains asynchronous.
+        cachedSongs = songs
+        cacheTimestamp = System.currentTimeMillis()
         repositoryScope.launch {
             saveSongsToRoom(songs, clearArtistCache = false, previousSongs = previousSongs) // Don't clear artist cache for metadata updates
         }
@@ -569,8 +574,9 @@ class MusicRepository(context: Context) {
                 }
             }
             val songsWithMetadata = songs.count { it.bitrate != null && it.sampleRate != null && it.channels != null && it.codec != null }
-            Log.d(TAG, "Loaded ${songs.size} songs from Room database (${songsWithMetadata} with metadata)")
-            songs
+            val projectedSongs = deviceMetadataRepository.projectArtwork(songs)
+            Log.d(TAG, "Loaded ${projectedSongs.size} songs from Room database (${songsWithMetadata} with metadata)")
+            projectedSongs
         } catch (e: Exception) {
             Log.e(TAG, "Failed to load songs from Room database", e)
             null
@@ -670,6 +676,7 @@ class MusicRepository(context: Context) {
     private val itunesSearchApiService = NetworkClient.itunesSearchApiService
     private val genericHttpClient = NetworkClient.genericHttpClient
     private val deviceMetadataRepository by lazy { DeviceMetadataRepository(context) }
+    private val artworkUriValidator by lazy { ArtworkUriValidator(context) }
     
     // Note: API services can be null if disabled via BuildConfig
 
@@ -912,9 +919,10 @@ class MusicRepository(context: Context) {
             allowedFormats = allowedFormats,
             minimumDuration = minimumDuration
         )
-        cachedSongs = scanned
+        val projected = deviceMetadataRepository.projectArtwork(scanned)
+        cachedSongs = projected
         cacheTimestamp = System.currentTimeMillis()
-        return@withContext scanned
+        return@withContext projected
     }
 
     suspend fun performIncrementalScan(
@@ -933,9 +941,10 @@ class MusicRepository(context: Context) {
             allowedFormats = allowedFormats,
             minimumDuration = minimumDuration
         )
-        cachedSongs = songs
+        val projected = deviceMetadataRepository.projectArtwork(songs)
+        cachedSongs = projected
         cacheTimestamp = System.currentTimeMillis()
-        return@withContext songs
+        return@withContext projected
     }
 
     
@@ -5646,24 +5655,22 @@ class MusicRepository(context: Context) {
         val updatedAlbums = mutableListOf<Album>()
 
         for (album in albums) {
+            if (album.songs.isNotEmpty() && album.songs.none { DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme) }) {
+                updatedAlbums.add(album)
+                continue
+            }
             // Check if the album has a content:// URI and if it actually exists
             if (album.artworkUri != null) {
                 if (album.artworkUri.toString()
                         .startsWith("content://media/external/audio/albumart")
                 ) {
                     // Try to open the input stream to check if the artwork exists
-                    var artworkExists = false
-                    try {
-                        context.contentResolver.openInputStream(album.artworkUri)?.use {
-                            artworkExists = true
-                        }
-                    } catch (e: Exception) {
+                    val artworkExists = artworkUriValidator.isReadable(album.artworkUri)
+                    if (!artworkExists) {
                         Log.d(
                             TAG,
-                            "Album artwork URI exists but can't be accessed for ${album.title}: ${album.artworkUri}",
-                            e
+                            "Album artwork URI exists but can't be accessed for ${album.title}: ${album.artworkUri}"
                         )
-                        artworkExists = false
                     }
 
                     if (artworkExists) {
@@ -5908,6 +5915,10 @@ class MusicRepository(context: Context) {
         val updatedSongs = mutableListOf<Song>()
 
         for (song in songs) {
+            if (!DeviceMetadataPolicy.isEligible(song.id, song.uri.scheme)) {
+                updatedSongs.add(song)
+                continue
+            }
             val cacheKey = "${song.artist}:${song.title}"
             
             // Skip songs with empty or "Unknown" title
@@ -5916,53 +5927,7 @@ class MusicRepository(context: Context) {
                 continue
             }
 
-            var fetchedUri: Uri? = null
-
-            if (NetworkClient.isDevicePublicMetadataEnabled() &&
-                !song.id.startsWith("rhythm-catalog:") &&
-                (song.uri.scheme == "content" || song.uri.scheme == "file")) {
-                fetchedUri = deviceMetadataRepository.findOrFetchArtwork(song)
-            }
-
-            // 1. Try Deezer search first (Deezer returns high resolution album/track artwork)
-            if (NetworkClient.isDeezerApiEnabled() && deezerApiService != null) {
-                try {
-                    val query = if (song.artist.isNotBlank() && !song.artist.equals("Unknown", ignoreCase = true)) {
-                        "${song.title} ${song.artist}"
-                    } else song.title
-                    val response = deezerApiService.searchAlbums(query)
-                    val bestMatch = findBestAlbumMatch(response.data, song.album.ifBlank { song.title }, song.artist)
-                    val imgUrl = bestMatch?.coverXl ?: bestMatch?.coverBig ?: bestMatch?.coverMedium ?: response.data.firstOrNull()?.coverXl ?: response.data.firstOrNull()?.coverBig
-                    if (!imgUrl.isNullOrEmpty() && imgUrl.startsWith("http")) {
-                        fetchedUri = imgUrl.toUri()
-                        Log.d(TAG, "Found Deezer artwork for track: ${song.title}, URL: $imgUrl")
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "Deezer track search failed for ${song.title}: ${e.message}")
-                }
-            }
-
-            // 2. YTMusic fallback if Deezer didn't return an image
-            if (fetchedUri == null && NetworkClient.isYTMusicApiEnabled() && ytmusicApiService != null) {
-                try {
-                    val query = "${song.title} ${song.artist}".trim()
-                    val searchRequest = YTMusicSearchRequest(
-                        context = YTMusicContext(YTMusicClient()),
-                        query = query,
-                        params = "EgWKAQIIAWoKEAoQAxAEEAkQBQ%3D%3D"
-                    )
-                    val searchResponse = ytmusicApiService.search(request = searchRequest)
-                    if (searchResponse.isSuccessful) {
-                        val imageUrl = searchResponse.body()?.extractAlbumImageUrl()
-                        if (!imageUrl.isNullOrEmpty()) {
-                            fetchedUri = imageUrl.toUri()
-                            Log.d(TAG, "Found YTMusic track image for ${song.title}: $imageUrl")
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "YTMusic track search failed for ${song.title}: ${e.message}")
-                }
-            }
+            val fetchedUri = deviceMetadataRepository.findOrFetchArtwork(song)
 
             if (fetchedUri != null) {
                 albumImageCache[cacheKey] = fetchedUri
@@ -5973,6 +5938,14 @@ class MusicRepository(context: Context) {
         }
         updatedSongs
     }
+
+    suspend fun projectDeviceArtwork(songs: List<Song>): List<Song> =
+        deviceMetadataRepository.projectArtwork(songs)
+
+    suspend fun rematchDeviceAlbumArtwork(song: Song): Uri? =
+        deviceMetadataRepository.findOrFetchArtwork(song, forceOnline = true)
+
+    fun isArtworkReadable(uri: Uri?): Boolean = artworkUriValidator.isReadable(uri)
 
     suspend fun getSongsForArtist(artistId: String): List<Song> = withContext(Dispatchers.IO) {
         val allSongs = loadSongs() // Ensure songs are loaded once

@@ -34,6 +34,7 @@ object NetworkClient {
     private const val SPOTIFY_API_BASE_URL = "https://api.spotify.com/v1/"
     private const val LYRICALLY_BASE_URL = "https://lyrics.paxsenix.org/"
     private const val ITUNES_BASE_URL = "https://itunes.apple.com/"
+    private const val MUSICBRAINZ_BASE_URL = "https://musicbrainz.org/"
     
     // Connection timeouts
     private const val CONNECT_TIMEOUT = 30L
@@ -140,6 +141,33 @@ object NetworkClient {
             Log.e(TAG, "Error in deezer headers interceptor: ${e.message}")
             throw e
         }
+    }
+
+    private fun musicBrainzHeadersInterceptor() = Interceptor { chain ->
+        val request = chain.request().newBuilder()
+            .header("User-Agent", "Sonorus/${BuildConfig.VERSION_NAME} (https://github.com/Cluno1/Sonorus)")
+            .header("Accept", "application/json")
+            .build()
+        chain.proceed(request)
+    }
+
+    private val musicBrainzHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .addInterceptor(musicBrainzHeadersInterceptor())
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
+            .connectionPool(connectionPool)
+            .build()
+    }
+
+    private val musicBrainzRetrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(MUSICBRAINZ_BASE_URL)
+            .client(musicBrainzHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
     }
     
     private val deezerHttpClient: OkHttpClient by lazy {
@@ -282,6 +310,28 @@ object NetworkClient {
     
     val lrclibApiService: LRCLibApiService? by lazy {
         if (BuildConfig.ENABLE_LRCLIB || BuildConfig.DEVICE_PUBLIC_METADATA) lrclibRetrofit.create(LRCLibApiService::class.java) else null
+    }
+
+    val musicBrainzApiService: MusicBrainzApiService? by lazy {
+        if (BuildConfig.DEVICE_PUBLIC_METADATA) musicBrainzRetrofit.create(MusicBrainzApiService::class.java) else null
+    }
+
+    val coverArtHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                chain.proceed(
+                    chain.request().newBuilder()
+                        .header("User-Agent", "Sonorus/${BuildConfig.VERSION_NAME} (https://github.com/Cluno1/Sonorus)")
+                        .header("Accept", "image/*")
+                        .build()
+                )
+            }
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
+            .connectionPool(connectionPool)
+            .build()
     }
     
     val betterLyricsApiService: BetterLyricsApiService? by lazy {

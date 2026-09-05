@@ -16,20 +16,24 @@ import io.github.cluno1.sonorus.features.local.data.database.dao.PlaylistDao
 import io.github.cluno1.sonorus.features.local.data.database.dao.SongArtistDao
 import io.github.cluno1.sonorus.features.local.data.database.dao.SongDao
 import io.github.cluno1.sonorus.features.local.data.database.dao.DeviceMetadataDao
+import io.github.cluno1.sonorus.features.local.data.database.dao.DeviceAlbumMetadataDao
 import io.github.cluno1.sonorus.features.local.data.database.entity.ArtistEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.PlaylistEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.PlaylistSongEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.SongArtistEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.SongEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.DeviceMetadataEntity
+import io.github.cluno1.sonorus.features.local.data.database.entity.DeviceAlbumMetadataEntity
+import io.github.cluno1.sonorus.features.local.data.database.entity.DeviceSongAlbumEntity
 
-@Database(entities = [SongEntity::class, ArtistEntity::class, SongArtistEntity::class, PlaylistEntity::class, PlaylistSongEntity::class, DeviceMetadataEntity::class], version = 10, exportSchema = false)
+@Database(entities = [SongEntity::class, ArtistEntity::class, SongArtistEntity::class, PlaylistEntity::class, PlaylistSongEntity::class, DeviceMetadataEntity::class, DeviceAlbumMetadataEntity::class, DeviceSongAlbumEntity::class], version = 11, exportSchema = false)
 abstract class RhythmDatabase : RoomDatabase() {
     abstract fun songDao(): SongDao
     abstract fun artistDao(): ArtistDao
     abstract fun songArtistDao(): SongArtistDao
     abstract fun playlistDao(): PlaylistDao
     abstract fun deviceMetadataDao(): DeviceMetadataDao
+    abstract fun deviceAlbumMetadataDao(): DeviceAlbumMetadataDao
 
     companion object {
         @Volatile
@@ -149,6 +153,58 @@ abstract class RhythmDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `device_album_metadata` (
+                        `albumKey` TEXT NOT NULL, `localTitle` TEXT NOT NULL, `localArtist` TEXT NOT NULL,
+                        `provider` TEXT, `externalReleaseId` TEXT, `externalReleaseGroupId` TEXT,
+                        `confidence` REAL, `pinned` INTEGER NOT NULL, `artworkSource` TEXT,
+                        `artworkCachePath` TEXT, `artworkSha256` TEXT, `mediaType` TEXT, `byteSize` INTEGER,
+                        `matchedAt` INTEGER, `updatedAt` INTEGER NOT NULL, `negativeUntil` INTEGER NOT NULL,
+                        PRIMARY KEY(`albumKey`)
+                    )
+                """.trimIndent())
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `device_song_album` (
+                        `songStableId` TEXT NOT NULL, `albumKey` TEXT NOT NULL,
+                        PRIMARY KEY(`songStableId`)
+                    )
+                """.trimIndent())
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_device_song_album_albumKey` ON `device_song_album` (`albumKey`)")
+
+                // Preserve v10 public/folder covers as one album record. Legacy fallback keys
+                // deliberately remain DEVICE-only and are reconciled on the next media scan.
+                db.execSQL("""
+                    INSERT OR IGNORE INTO `device_album_metadata` (
+                        `albumKey`, `localTitle`, `localArtist`, `provider`, `externalReleaseId`,
+                        `externalReleaseGroupId`, `confidence`, `pinned`, `artworkSource`,
+                        `artworkCachePath`, `artworkSha256`, `mediaType`, `byteSize`, `matchedAt`,
+                        `updatedAt`, `negativeUntil`
+                    )
+                    SELECT
+                        CASE WHEN s.albumId IS NOT NULL AND s.albumId != '' AND s.albumId != '0' AND s.albumId != '-1'
+                            THEN 'mediastore:external:' || s.albumId ELSE 'legacy:' || dm.stableId END,
+                        COALESCE(s.album, ''), COALESCE(NULLIF(s.albumArtist, ''), s.artist, ''),
+                        dm.artworkProvider, dm.artworkExternalId, NULL, dm.artworkConfidence, 0,
+                        dm.artworkSource, dm.artworkCachePath, NULL, NULL, NULL,
+                        CASE WHEN dm.artworkProvider IS NOT NULL THEN dm.updatedAt ELSE NULL END,
+                        dm.updatedAt, 0
+                    FROM device_metadata dm LEFT JOIN songs s ON s.id = dm.songId
+                    WHERE dm.artworkCachePath IS NOT NULL
+                    ORDER BY CASE dm.artworkSource WHEN 'USER_SELECTED' THEN 4 WHEN 'EMBEDDED' THEN 3 WHEN 'SIBLING' THEN 2 ELSE 1 END DESC,
+                             dm.updatedAt DESC
+                """.trimIndent())
+                db.execSQL("""
+                    INSERT OR REPLACE INTO `device_song_album` (`songStableId`, `albumKey`)
+                    SELECT dm.stableId,
+                        CASE WHEN s.albumId IS NOT NULL AND s.albumId != '' AND s.albumId != '0' AND s.albumId != '-1'
+                            THEN 'mediastore:external:' || s.albumId ELSE 'legacy:' || dm.stableId END
+                    FROM device_metadata dm LEFT JOIN songs s ON s.id = dm.songId
+                """.trimIndent())
+            }
+        }
+
         fun getInstance(context: Context): RhythmDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -156,7 +212,7 @@ abstract class RhythmDatabase : RoomDatabase() {
                     RhythmDatabase::class.java,
                     "rhythm_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                     .build()
                     .also { INSTANCE = it }
             }

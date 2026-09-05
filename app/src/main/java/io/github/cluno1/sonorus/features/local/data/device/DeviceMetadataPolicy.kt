@@ -36,5 +36,14 @@ object DeviceMetadataPolicy {
         promoted.takeIf { uri.scheme == "https" && uri.userInfo == null && (host == "dzcdn.net" || host.endsWith(".dzcdn.net")) }
     }.getOrNull()
 
+    fun safeCoverArtUrl(raw: String): String? = runCatching {
+        val uri = URI(raw)
+        val host = uri.host?.lowercase() ?: return null
+        raw.takeIf {
+            uri.scheme == "https" && uri.userInfo == null &&
+                (host == "coverartarchive.org" || host == "archive.org" || host.endsWith(".archive.org"))
+        }
+    }.getOrNull()
+
     fun isImageContentType(value: String?): Boolean = value.orEmpty().substringBefore(';').trim().lowercase().startsWith("image/")
 }
