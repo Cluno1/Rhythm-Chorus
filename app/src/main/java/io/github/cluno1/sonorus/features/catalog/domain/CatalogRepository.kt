@@ -37,6 +37,7 @@ interface CatalogRepository {
     suspend fun getPlayback(renditionId: String, prefer: String = "stream"): Result<PlaybackDescriptor>
     suspend fun getLibrary(forceRefresh: Boolean = false): Result<CatalogLibrarySnapshot>
     suspend fun getLibraryAlbum(albumId: String, forceRefresh: Boolean = false): Result<CatalogLibraryAlbum>
+    suspend fun downloadArtwork(assetId: String): Result<CatalogArtwork>
     suspend fun downloadAsset(assetId: String, expectedSha256: String, expectedSize: Long): Result<ByteArray>
     suspend fun cachePlaybackAndLatestScore(
         workId: String,

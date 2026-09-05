@@ -174,6 +174,7 @@ data class CatalogLibrarySong(
     val trackNo: Int?,
     val coverUrl: String?,
     val lyrics: String?,
+    val coverAssetId: String? = null,
 )
 
 /** A server-owned album/release. Work remains hidden from the native browsing surface. */
@@ -185,6 +186,14 @@ data class CatalogLibraryAlbum(
     val coverUrl: String?,
     val songCount: Int,
     val songs: List<CatalogLibrarySong> = emptyList(),
+    val coverAssetId: String? = null,
+)
+
+data class CatalogArtwork(
+    val assetId: String,
+    val mediaType: String,
+    val sha256: String,
+    val bytes: ByteArray,
 )
 
 data class CatalogLibrarySnapshot(

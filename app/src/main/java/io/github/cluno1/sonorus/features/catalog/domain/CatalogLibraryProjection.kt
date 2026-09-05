@@ -16,7 +16,7 @@ fun CatalogLibrarySong.toRhythmSong(trustedServerUrl: String? = null): Song = So
     duration = durationMs ?: 0L,
     // This URI is display-only. Playback must exchange renditionId for a fresh descriptor.
     uri = Uri.parse("rhythm-catalog://rendition/$renditionId"),
-    artworkUri = coverUrl.toSafeArtworkUri(trustedServerUrl),
+    artworkUri = stableArtworkUri(trustedServerUrl),
     trackNumber = trackNo ?: 0,
     albumArtist = artist ?: UNKNOWN_ARTIST,
     codec = "audio/mpeg",
@@ -32,7 +32,7 @@ fun CatalogLibraryAlbum.toRhythmAlbum(trustedServerUrl: String? = null): Album {
         id = id,
         title = title,
         artist = artist ?: UNKNOWN_ARTIST,
-        artworkUri = coverUrl.toSafeArtworkUri(trustedServerUrl),
+        artworkUri = stableArtworkUri(trustedServerUrl),
         songs = projectedSongs,
         numberOfSongs = songCount,
         dateModified = 0L,
@@ -80,3 +80,11 @@ internal fun catalogQueueSelectionIndexes(
 private fun String?.toSafeArtworkUri(trustedServerUrl: String?): Uri? =
     CatalogPlaybackPolicy.resolveAutomaticArtworkUrl(this, trustedServerUrl)
         ?.let(Uri::parse)
+
+private fun CatalogLibrarySong.stableArtworkUri(trustedServerUrl: String?): Uri? =
+    coverAssetId?.let(CatalogArtworkPolicy::uri)?.let(Uri::parse)
+        ?: coverUrl.toSafeArtworkUri(trustedServerUrl)
+
+private fun CatalogLibraryAlbum.stableArtworkUri(trustedServerUrl: String?): Uri? =
+    coverAssetId?.let(CatalogArtworkPolicy::uri)?.let(Uri::parse)
+        ?: coverUrl.toSafeArtworkUri(trustedServerUrl)

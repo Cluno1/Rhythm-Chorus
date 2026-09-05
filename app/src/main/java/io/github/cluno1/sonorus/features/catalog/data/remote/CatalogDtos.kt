@@ -34,6 +34,7 @@ internal data class LibrarySongDto(
     @SerializedName("track_no") val trackNo: Int?,
     @SerializedName("cover_url") val coverUrl: String?,
     val lyrics: String?,
+    @SerializedName("cover_asset_id") val coverAssetId: String? = null,
 )
 
 internal data class LibraryAlbumDto(
@@ -43,6 +44,7 @@ internal data class LibraryAlbumDto(
     val artist: String?,
     @SerializedName("cover_url") val coverUrl: String?,
     @SerializedName("song_count") val songCount: Int?,
+    @SerializedName("cover_asset_id") val coverAssetId: String? = null,
 )
 
 internal data class WorkAliasDto(val namespace: String?, @SerializedName("external_id") val externalId: String?)

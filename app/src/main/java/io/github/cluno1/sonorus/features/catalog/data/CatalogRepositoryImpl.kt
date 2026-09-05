@@ -9,6 +9,7 @@ import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogDeviceAuthCl
 import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogDtoMapper
 import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogEndpoint
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogChanges
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogArtwork
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogConnection
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogFailure
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
@@ -25,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 import java.io.IOException
+import java.security.MessageDigest
 
 class CatalogRepositoryImpl(context: Context) : CatalogRepository {
     private val credentials = CatalogCredentialsStore(context)
@@ -197,6 +199,35 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         }
     }.recoverCatching { error ->
         if (error is CatalogFailure.Unreachable) cache.loadLibraryAlbum(albumId) ?: throw error else throw error
+    }
+
+    override suspend fun downloadArtwork(assetId: String): Result<CatalogArtwork> = guarded {
+        val id = validUuid(assetId)
+        val apiClient = client()
+        val descriptor = CatalogDtoMapper.artworkDelivery(
+            apiClient.api.assetDelivery(id).bodyOrThrow(),
+        )
+        require(descriptor.assetId == id) { "artwork delivery id does not match request" }
+        val absoluteUrl = when (descriptor.delivery) {
+            "signed_url" -> descriptor.relativeUrl.also {
+                require(CatalogPlaybackPolicy.isSignedObjectStoreUrl(it)) {
+                    "signed artwork delivery is not a trusted COS URL"
+                }
+            }
+            else -> apiClient.resolveAssetUrl(descriptor.relativeUrl).toString()
+        }
+        val bytes = apiClient.api.deliveredAsset(absoluteUrl).bodyOrThrow().use { it.bytes() }
+        require(bytes.size.toLong() == descriptor.byteSize) { "artwork byte size mismatch" }
+        val actualHash = MessageDigest.getInstance("SHA-256")
+            .digest(bytes)
+            .joinToString("") { "%02x".format(it) }
+        require(actualHash == descriptor.sha256) { "artwork SHA-256 mismatch" }
+        CatalogArtwork(
+            assetId = descriptor.assetId,
+            mediaType = descriptor.mediaType,
+            sha256 = descriptor.sha256,
+            bytes = bytes,
+        )
     }
 
     override suspend fun downloadAsset(

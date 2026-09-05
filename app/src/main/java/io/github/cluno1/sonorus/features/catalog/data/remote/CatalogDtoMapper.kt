@@ -145,7 +145,21 @@ internal object CatalogDtoMapper {
         )
     }
 
-    fun assetDelivery(dto: AssetDeliveryDto): AssetDeliveryDescriptor {
+    fun assetDelivery(dto: AssetDeliveryDto): AssetDeliveryDescriptor =
+        delivery(dto).also {
+            require(CatalogPlaybackPolicy.isMusicXmlMediaType(it.mediaType)) {
+                "asset_delivery.media_type is not an allowed MusicXML format"
+            }
+        }
+
+    fun artworkDelivery(dto: AssetDeliveryDto): AssetDeliveryDescriptor =
+        delivery(dto).also {
+            require(it.mediaType.substringBefore(';').trim().startsWith("image/")) {
+                "asset_delivery.media_type is not an image"
+            }
+        }
+
+    private fun delivery(dto: AssetDeliveryDto): AssetDeliveryDescriptor {
         val assetId = uuid(dto.assetId, "asset_delivery.asset_id")
         val normalizedHash = hash(dto.sha256, "asset_delivery.sha256")
         val expectedCacheKey = "rhythm:asset:$assetId:$normalizedHash"
@@ -155,9 +169,6 @@ internal object CatalogDtoMapper {
             "asset_delivery.delivery is not supported"
         }
         val mediaType = text(dto.mediaType, "asset_delivery.media_type")
-        require(CatalogPlaybackPolicy.isMusicXmlMediaType(mediaType)) {
-            "asset_delivery.media_type is not an allowed MusicXML format"
-        }
         return AssetDeliveryDescriptor(
             assetId = assetId,
             mediaType = mediaType,
@@ -238,6 +249,7 @@ internal object CatalogDtoMapper {
         trackNo = dto.trackNo?.also { require(it > 0) { "library_song.track_no must be positive" } },
         coverUrl = dto.coverUrl?.trim()?.takeIf { it.isNotEmpty() },
         lyrics = dto.lyrics?.takeIf { it.isNotBlank() },
+        coverAssetId = optionalUuid(dto.coverAssetId, "library_song.cover_asset_id"),
     )
 
     private fun libraryAlbum(dto: LibraryAlbumDto) = CatalogLibraryAlbum(
@@ -247,6 +259,7 @@ internal object CatalogDtoMapper {
         artist = dto.artist?.trim()?.takeIf { it.isNotEmpty() },
         coverUrl = dto.coverUrl?.trim()?.takeIf { it.isNotEmpty() },
         songCount = nonNegative(dto.songCount, "library_album.song_count"),
+        coverAssetId = optionalUuid(dto.coverAssetId, "library_album.cover_asset_id"),
     )
 
     private fun uuid(value: String?, field: String): String = text(value, field).also {

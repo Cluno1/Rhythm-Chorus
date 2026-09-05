@@ -151,6 +151,8 @@ class RhythmApplication : Application(), ImageLoaderFactory {
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
             .components {
+                add(io.github.cluno1.sonorus.util.coil.CatalogArtworkKeyer())
+                add(io.github.cluno1.sonorus.util.coil.CatalogArtworkFetcher.Factory(applicationContext))
                 add(io.github.cluno1.sonorus.util.coil.AudioArtworkKeyer())
                 add(io.github.cluno1.sonorus.util.coil.AudioArtworkFetcher.Factory(applicationContext))
             }
