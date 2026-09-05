@@ -2146,7 +2146,8 @@ private fun LocalNavigationContent(
                 composable(Screen.CatalogSettings.route) {
                     CatalogServerSettingsScreen(
                         state = catalogState,
-                        onSave = catalogViewModel::saveConnection,
+                        onEnroll = catalogViewModel::enrollDevice,
+                        onIssueInvite = catalogViewModel::issueInvite,
                         onClear = catalogViewModel::clearConnection,
                         onBack = {
                             if (!navController.popBackStack()) navigateToTopLevel(Screen.Home.route)

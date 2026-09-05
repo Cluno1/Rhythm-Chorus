@@ -34,6 +34,7 @@ data class CatalogUiState(
     val loading: Boolean = false,
     val refreshing: Boolean = false,
     val offlineSnapshot: Boolean = false,
+    val issuedInvite: String? = null,
     val error: String? = null,
 )
 
@@ -72,10 +73,10 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         if (_state.value.configured) refreshLibrary()
     }
 
-    fun saveConnection(serverUrl: String, token: String) {
+    fun enrollDevice(serverUrl: String, inviteCode: String) {
         viewModelScope.launch {
             _state.value = _state.value.copy(loading = true, error = null)
-            repository.saveConnection(serverUrl, token).fold(
+            repository.enrollDevice(serverUrl, inviteCode).fold(
                 onSuccess = {
                     val connection = repository.connection()
                     _state.value = _state.value.copy(
@@ -84,6 +85,32 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                         loading = false,
                     )
                     refreshLibrary()
+                },
+                onFailure = { _state.value = _state.value.copy(loading = false, error = message(it)) },
+            )
+        }
+    }
+
+    fun issueInvite(
+        serverUrl: String,
+        username: String,
+        password: String,
+        userId: String,
+        displayName: String,
+        replaceExistingDevice: Boolean,
+    ) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(loading = true, issuedInvite = null, error = null)
+            repository.issueInvite(
+                serverUrl,
+                username,
+                password,
+                userId,
+                displayName,
+                replaceExistingDevice,
+            ).fold(
+                onSuccess = { invite ->
+                    _state.value = _state.value.copy(loading = false, issuedInvite = invite)
                 },
                 onFailure = { _state.value = _state.value.copy(loading = false, error = message(it)) },
             )

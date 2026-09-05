@@ -5,6 +5,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
 import chromahub.rhythm.app.features.catalog.di.CatalogModule
 import chromahub.rhythm.app.features.catalog.data.local.CatalogOfflineCache
+import chromahub.rhythm.app.features.catalog.data.remote.CatalogDeviceAuthClient
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
@@ -46,8 +47,20 @@ object CatalogDataSpecResolver {
                     bearerToken = token,
                 ) { _ -> descriptor }
             }
+            val deviceHeaders = if (
+                !CatalogPlaybackPolicy.isSignedObjectStoreUrl(resolved.url) &&
+                credentials.loadDevice() != null &&
+                !trustedServerUrl.isNullOrBlank()
+            ) {
+                CatalogDeviceAuthClient(trustedServerUrl, credentials).proofForGet(resolved.url)
+            } else {
+                emptyMap()
+            }
             val headers = dataSpec.httpRequestHeaders
-                .filterKeys { !it.equals("Authorization", ignoreCase = true) } + resolved.headers
+                .filterKeys { key ->
+                    !key.equals("Authorization", ignoreCase = true) &&
+                        !key.startsWith("X-Rhythm-", ignoreCase = true)
+                } + resolved.headers + deviceHeaders
             return dataSpec.buildUpon()
                 .setUri(resolved.url)
                 .setKey(resolved.cacheKey)
@@ -79,7 +92,15 @@ object CatalogDataSpecResolver {
             .filterKeys { !it.equals("Authorization", ignoreCase = true) }
             .toMutableMap()
         if (!CatalogPlaybackPolicy.isSignedObjectStoreUrl(resolvedUrl)) {
-            credentials.loadToken()?.takeIf { it.isNotBlank() }?.let { headers["Authorization"] = "Bearer $it" }
+            val device = credentials.loadDevice()
+            if (device != null) {
+                CatalogDeviceAuthClient(device.serverUrl, credentials)
+                    .proofForGet(resolvedUrl)
+                    .forEach(headers::put)
+            } else {
+                credentials.loadToken()?.takeIf { it.isNotBlank() }
+                    ?.let { headers["Authorization"] = "Bearer $it" }
+            }
         }
         return dataSpec.withRequestHeaders(headers)
     }

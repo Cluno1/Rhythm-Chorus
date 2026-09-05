@@ -1,5 +1,6 @@
 package chromahub.rhythm.app.features.catalog.data.remote
 
+import chromahub.rhythm.app.features.catalog.data.CatalogCredentialsStore
 import com.google.gson.GsonBuilder
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -11,10 +12,22 @@ import java.util.concurrent.TimeUnit
 
 internal class CatalogApiClient(
     serverUrl: String,
-    token: String,
+    legacyToken: String?,
+    credentials: CatalogCredentialsStore?,
 ) {
     private val origin = (CatalogEndpoint.normalize(serverUrl) + "/").toHttpUrl()
-    private val auth = token.trim().also { require(it.isNotEmpty()) }
+    private val legacyAuth = legacyToken?.trim()?.also { require(it.isNotEmpty()) }
+    private val deviceAuth = credentials?.loadDevice()?.let {
+        CatalogDeviceAuthClient(serverUrl, credentials)
+    }
+
+    constructor(serverUrl: String, token: String) : this(serverUrl, token, null)
+
+    constructor(serverUrl: String, credentials: CatalogCredentialsStore) : this(
+        serverUrl,
+        credentials.loadToken().takeIf { credentials.loadDevice() == null },
+        credentials,
+    )
 
     val api: CatalogApi = Retrofit.Builder()
         .baseUrl(origin)
@@ -28,7 +41,11 @@ internal class CatalogApiClient(
                     val request = chain.request()
                     val builder = request.newBuilder()
                     if (request.url.encodedPath != "/healthz" && CatalogEndpoint.sameOrigin(request.url, origin)) {
-                        builder.header("Authorization", "Bearer $auth")
+                        if (deviceAuth != null) {
+                            deviceAuth.proof(request).forEach(builder::header)
+                        } else {
+                            builder.header("Authorization", "Bearer ${requireNotNull(legacyAuth)}")
+                        }
                     }
                     chain.proceed(builder.build())
                 })

@@ -5,6 +5,7 @@ import chromahub.rhythm.app.features.catalog.data.local.CatalogCache
 import chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore
 import chromahub.rhythm.app.features.catalog.data.local.CatalogOfflineCache
 import chromahub.rhythm.app.features.catalog.data.remote.CatalogApiClient
+import chromahub.rhythm.app.features.catalog.data.remote.CatalogDeviceAuthClient
 import chromahub.rhythm.app.features.catalog.data.remote.CatalogDtoMapper
 import chromahub.rhythm.app.features.catalog.data.remote.CatalogEndpoint
 import chromahub.rhythm.app.features.catalog.domain.CatalogChanges
@@ -32,34 +33,45 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
 
     override fun connection(): CatalogConnection {
         val server = credentials.loadServerUrl().orEmpty()
-        return CatalogConnection(server, server.isNotEmpty() && !credentials.loadToken().isNullOrEmpty())
+        return CatalogConnection(
+            server,
+            server.isNotEmpty() &&
+                (credentials.loadDevice() != null || !credentials.loadToken().isNullOrEmpty()),
+        )
     }
 
     override fun cachedWorks(): List<WorkSummary> = cache.loadWorks()
     override fun cachedBundle(workId: String): WorkBundle? = cache.loadBundle(workId)
     override fun cachedLibrary(): CatalogLibrarySnapshot? = cache.loadLibrary()
 
-    override suspend fun testConnection(serverUrl: String, token: String): Result<Unit> = guarded {
+    override suspend fun enrollDevice(serverUrl: String, inviteCode: String): Result<Unit> = guarded {
         val normalized = CatalogEndpoint.normalize(serverUrl)
-        val client = CatalogApiClient(normalized, token)
-        requireSuccessful(client.api.health(), allowUnauthenticated = true)
-        requireSuccessful(client.api.librarySongs(limit = 1))
-        return@guarded Unit
-    }
-
-    override suspend fun saveConnection(serverUrl: String, token: String): Result<Unit> {
-        val normalized = runCatching { CatalogEndpoint.normalize(serverUrl) }
-            .getOrElse { return Result.failure(CatalogFailure.InvalidData(it.message ?: "服务器地址无效", it)) }
-        val tested = testConnection(normalized, token)
-        if (tested.isFailure) return tested
         val oldUrl = credentials.loadServerUrl()
-        val oldToken = credentials.loadToken()
-        if (oldUrl != null && (oldUrl != normalized || oldToken != token.trim())) {
+        val oldIdentity = credentials.loadDeviceId() ?: credentials.loadToken()
+        CatalogDeviceAuthClient(normalized, credentials).enroll(inviteCode)
+        val newIdentity = credentials.loadDeviceId()
+        if (oldUrl != null && (oldUrl != normalized || oldIdentity != newIdentity)) {
             cache.clearSession()
             queueStore.clear()
         }
-        credentials.save(normalized, token)
-        return Result.success(Unit)
+    }
+
+    override suspend fun issueInvite(
+        serverUrl: String,
+        username: String,
+        password: String,
+        userId: String,
+        displayName: String?,
+        replaceExistingDevice: Boolean,
+    ): Result<String> = guarded {
+        val normalized = CatalogEndpoint.normalize(serverUrl)
+        CatalogDeviceAuthClient(normalized, credentials).issueInvite(
+            username,
+            password,
+            userId,
+            displayName,
+            replaceExistingDevice,
+        )
     }
 
     override fun clearConnection() {
@@ -308,14 +320,17 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
 
     private fun client(): CatalogApiClient {
         val server = credentials.loadServerUrl() ?: throw CatalogFailure.NotConfigured()
-        val token = credentials.loadToken() ?: throw CatalogFailure.NotConfigured()
-        return CatalogApiClient(server, token)
+        if (credentials.loadDevice() == null && credentials.loadToken() == null) {
+            throw CatalogFailure.NotConfigured()
+        }
+        return CatalogApiClient(server, credentials)
     }
 
     private fun cacheNamespace(): String {
         val server = credentials.loadServerUrl() ?: throw CatalogFailure.NotConfigured()
-        val token = credentials.loadToken() ?: throw CatalogFailure.NotConfigured()
-        return CatalogOfflineCache.namespace(server, token)
+        val identity = credentials.loadDeviceId() ?: credentials.loadToken()
+            ?: throw CatalogFailure.NotConfigured()
+        return CatalogOfflineCache.namespace(server, identity)
     }
 
     private suspend fun <T> guarded(block: suspend () -> T): Result<T> = withContext(Dispatchers.IO) {

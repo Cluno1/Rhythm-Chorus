@@ -19,8 +19,15 @@ interface CatalogRepository {
     fun cachedWorks(): List<WorkSummary>
     fun cachedBundle(workId: String): WorkBundle?
     fun cachedLibrary(): CatalogLibrarySnapshot?
-    suspend fun testConnection(serverUrl: String, token: String): Result<Unit>
-    suspend fun saveConnection(serverUrl: String, token: String): Result<Unit>
+    suspend fun enrollDevice(serverUrl: String, inviteCode: String): Result<Unit>
+    suspend fun issueInvite(
+        serverUrl: String,
+        username: String,
+        password: String,
+        userId: String,
+        displayName: String? = null,
+        replaceExistingDevice: Boolean = false,
+    ): Result<String>
     fun clearConnection()
     suspend fun listWorks(query: String? = null, cursor: String? = null, limit: Int = 50): Result<CatalogPage>
     suspend fun getWorkBundle(workId: String, forceRefresh: Boolean = false): Result<WorkBundle>
