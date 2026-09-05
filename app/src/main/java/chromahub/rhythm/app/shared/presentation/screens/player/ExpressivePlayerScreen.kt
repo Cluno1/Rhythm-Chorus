@@ -1427,29 +1427,50 @@ fun ExpressivePlayerScreen(
                                     RhythmGroupedButton(
                                         size = RhythmButtonSize.Small,
                                         isFillMaxWidth = false,
-                                        modifier = Modifier.widthIn(max = 100.dp)
+                                        modifier = Modifier.widthIn(
+                                            max = if (isCatalogItem && isCatalogScoreAvailable) 150.dp else 100.dp
+                                        )
                                     ) {
                                         RhythmButtonWeighted(
                                             onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleLyrics() },
                                             weight = 1f,
                                             isFirst = true,
-                                            isLast = isCatalogItem && !isCatalogScoreAvailable,
+                                            isLast = false,
                                             containerColor = controlsContainerColor,
                                             contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
-                                            icon = RhythmIcons.Player.Lyrics
+                                            icon = RhythmIcons.Player.Lyrics,
+                                            contentDescription = stringResource(R.string.expressiveplayerscreen_lyrics)
                                         )
-                                        if (!isCatalogItem || isCatalogScoreAvailable) {
+                                        RhythmButtonWeighted(
+                                            onClick = {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                                onToggleFavorite()
+                                            },
+                                            weight = 1f,
+                                            isFirst = false,
+                                            isLast = !(isCatalogItem && isCatalogScoreAvailable),
+                                            containerColor = if (isFavorite) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                            contentColor = if (isFavorite) primaryColor else when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
+                                            selected = isFavorite,
+                                            icon = if (isFavorite) RhythmIcons.Actions.Favorite else RhythmIcons.Actions.FavoriteOutlined,
+                                            contentDescription = stringResource(
+                                                if (isFavorite) R.string.player_favorite_remove_description
+                                                else R.string.player_favorite_add_description
+                                            )
+                                        )
+                                        if (isCatalogItem && isCatalogScoreAvailable) {
                                             RhythmButtonWeighted(
                                                 onClick = {
                                                     HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                                    if (isCatalogItem) onOpenScore() else onToggleFavorite()
+                                                    onOpenScore()
                                                 },
                                                 weight = 1f,
                                                 isFirst = false,
                                                 isLast = true,
                                                 containerColor = controlsContainerColor,
                                                 contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
-                                                icon = if (isCatalogItem) MaterialSymbolIcon("score", filled = true) else if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true)
+                                                icon = MaterialSymbolIcon("score", filled = true),
+                                                contentDescription = "乐谱"
                                             )
                                         }
                                     }
@@ -1625,13 +1646,14 @@ fun ExpressivePlayerScreen(
                             }
 
                             val displayedButtons = remember(activeButtons, isCatalogItem, isCatalogScoreAvailable) {
-                                activeButtons.mapNotNull { buttonId ->
-                                    if (buttonId == "FAVORITE" && isCatalogItem) {
-                                        "SCORE".takeIf { isCatalogScoreAvailable }
-                                    } else {
-                                        buttonId
+                                buildList {
+                                    activeButtons.forEach { buttonId ->
+                                        add(buttonId)
+                                        if (buttonId == "FAVORITE" && isCatalogItem && isCatalogScoreAvailable) {
+                                            add("SCORE")
+                                        }
                                     }
-                                }
+                                }.distinct()
                             }
 
                             val isCompactButtons = playerMergeControlsToBottom || displayedButtons.size > 3
@@ -1671,12 +1693,15 @@ fun ExpressivePlayerScreen(
                                                     isFirst = isFirst,
                                                     isLast = isLast,
                                                     type = RhythmButtonType.Tonal,
-                                                    icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
+                                                    icon = if (isFavorite) RhythmIcons.Actions.Favorite else RhythmIcons.Actions.FavoriteOutlined,
                                                     iconSize = 20.dp,
                                                     text = null,
-                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_favorite),
-                                                    containerColor = if (isFavorite) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f) else controlsContainerColor,
-                                                    contentColor = if (isFavorite) MaterialTheme.colorScheme.error else defaultContentColor
+                                                    contentDescription = stringResource(
+                                                        if (isFavorite) R.string.player_favorite_remove_description
+                                                        else R.string.player_favorite_add_description
+                                                    ),
+                                                    containerColor = if (isFavorite) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (isFavorite) primaryColor else defaultContentColor
                                                 )
                                             }
                                             "SCORE" -> {
@@ -2024,11 +2049,14 @@ fun ExpressivePlayerScreen(
                                                     isFirst = isFirst,
                                                     isLast = isLast,
                                                     type = RhythmButtonType.Tonal,
-                                                    icon = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
+                                                    icon = if (isFavorite) RhythmIcons.Actions.Favorite else RhythmIcons.Actions.FavoriteOutlined,
                                                     iconSize = 20.dp,
-                                                    contentDescription = stringResource(R.string.expressiveplayerscreen_favorite),
-                                                    containerColor = if (isFavorite) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f) else controlsContainerColor,
-                                                    contentColor = if (isFavorite) MaterialTheme.colorScheme.error else defaultContentColor
+                                                    contentDescription = stringResource(
+                                                        if (isFavorite) R.string.player_favorite_remove_description
+                                                        else R.string.player_favorite_add_description
+                                                    ),
+                                                    containerColor = if (isFavorite) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
+                                                    contentColor = if (isFavorite) primaryColor else defaultContentColor
                                                 )
                                             }
                                             "SCORE" -> {

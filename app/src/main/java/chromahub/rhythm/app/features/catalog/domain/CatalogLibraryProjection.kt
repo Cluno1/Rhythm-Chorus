@@ -41,6 +41,13 @@ fun CatalogLibraryAlbum.toRhythmAlbum(trustedServerUrl: String? = null): Album {
 
 fun Song.isCatalogLibrarySong(): Boolean = id.startsWith(CATALOG_SONG_ID_PREFIX)
 
+/** Drops an optional playback Asset suffix so favorites keep rendition identity only. */
+fun String.toStableCatalogSongId(): String {
+    if (!startsWith(CATALOG_SONG_ID_PREFIX)) return this
+    val renditionId = removePrefix(CATALOG_SONG_ID_PREFIX).substringBefore(":asset:")
+    return "$CATALOG_SONG_ID_PREFIX$renditionId"
+}
+
 data class CatalogQueueSelection(
     val songs: List<Song>,
     val startIndex: Int,

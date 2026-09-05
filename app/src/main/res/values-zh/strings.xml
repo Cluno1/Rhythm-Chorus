@@ -2777,4 +2777,9 @@
     <string name="score_edit_map_error">没有找到该音符在 MusicXML 中的位置。</string>
     <string name="widget_tip_resize_settings">长按小部件可调整大小或打开设置</string>
     <string name="widget_tip_cookie_corners">选择小部件底部角落的功能来跳过、随机播放、重复播放、收藏或隐藏它们</string>
+    <string name="player_favorite_add_description">加入已点赞</string>
+    <string name="player_favorite_remove_description">已点赞，点按移除</string>
+    <string name="player_favorite_added_message">已加入「Liked」</string>
+    <string name="player_favorite_removed_message">已从「Liked」移除</string>
+    <string name="action_undo">撤销</string>
 </resources>

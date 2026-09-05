@@ -47,9 +47,11 @@ import chromahub.rhythm.app.shared.data.model.LyricsSourcePreference
 import chromahub.rhythm.app.shared.data.model.MediaScanMode
 import chromahub.rhythm.app.shared.data.model.ScanPhase
 import chromahub.rhythm.app.features.local.data.repository.MusicRepository
+import chromahub.rhythm.app.features.catalog.domain.CATALOG_SONG_ID_PREFIX
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import chromahub.rhythm.app.features.catalog.domain.RhythmNowPlayingItem
 import chromahub.rhythm.app.features.catalog.domain.RhythmQueueEntry
+import chromahub.rhythm.app.features.catalog.domain.toStableCatalogSongId
 import chromahub.rhythm.app.features.local.presentation.player.PlaybackControlStateMachine
 import chromahub.rhythm.app.features.local.presentation.player.PlaybackControlUiState
 import chromahub.rhythm.app.features.local.presentation.player.PlaybackReadiness
@@ -453,7 +455,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     
                     // Update current song favorite status if needed
                     currentSong.value?.let { song ->
-                        val newIsFavorite = newFavorites.contains(song.id)
+                        val newIsFavorite = newFavorites.contains(song.id.toStableCatalogSongId())
                         if (_isFavorite.value != newIsFavorite) {
                             _isFavorite.value = newIsFavorite
                             Log.d(TAG, "Updated current song favorite status to: $newIsFavorite")
@@ -494,10 +496,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             _playlists.value = _playlists.value.map { playlist ->
                 if (playlist.id == "1") {
                     // 1. Keep existing songs that are still favorites (preserves custom order)
-                    val existingSongsToKeep = playlist.songs.filter { it.id in favoriteIds }
+                    val existingSongsToKeep = playlist.songs.filter {
+                        it.id.toStableCatalogSongId() in favoriteIds
+                    }
                     
                     // 2. Find any new favorites that are NOT in the playlist yet
-                    val existingIds = existingSongsToKeep.map { it.id }.toSet()
+                    val existingIds = existingSongsToKeep.map { it.id.toStableCatalogSongId() }.toSet()
                     val newFavoriteIds = finalFavoriteIds.filter { !existingIds.contains(it) }
                     
                     // 3. Find the Song objects for these new favorites from _songs list OR room DB
@@ -4284,7 +4288,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     
                     // Update favorite status
-                    _isFavorite.value = _favoriteSongs.value.contains(song.id)
+                    _isFavorite.value = _favoriteSongs.value.contains(song.id.toStableCatalogSongId())
                     
                     // Update queue position - comprehensive logic from both listeners.
                     // Resolve the position against the controller's actual playback order
@@ -5893,7 +5897,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 _currentLyrics.value = activeCatalog?.nowPlaying?.lyrics?.let {
                     LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
                 }
-                _isFavorite.value = activeCatalog == null && _favoriteSongs.value.contains(songs[validIndex].id)
+                _isFavorite.value = _favoriteSongs.value.contains(
+                    songs[validIndex].id.toStableCatalogSongId()
+                )
                 _isPlaying.value = startPlayback
                 chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore(getApplication())
                     .saveUnified(songs, catalogByMediaId, validIndex, positionMs)
@@ -5975,7 +5981,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 _currentLyrics.value = entries[validIndex].nowPlaying.lyrics?.let {
                     LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
                 }
-                _isFavorite.value = false
+                _isFavorite.value = _favoriteSongs.value.contains(
+                    displaySongs[validIndex].id.toStableCatalogSongId()
+                )
                 _isPlaying.value = startPlayback
                 chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore(getApplication())
                     .save(entries, validIndex, positionMs)
@@ -6808,11 +6816,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Toggle favorite status for a specific song
      */
     fun toggleFavorite(song: Song) {
-        if (song.id.startsWith("rhythm-catalog:")) {
-            Log.w(TAG, "Ignoring favorite mutation for catalog playback item")
-            return
-        }
-        val songId = song.id
+        val favoriteSong = song.toFavoriteSnapshot()
+        val songId = favoriteSong.id
         val currentFavorites = _favoriteSongs.value.toMutableSet()
         
         if (currentFavorites.contains(songId)) {
@@ -6820,14 +6825,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             currentFavorites.remove(songId)
             
             // Update _isFavorite only if this is the current song
-            if (_currentSong.value?.id == songId) {
+            if (_currentSong.value?.id?.toStableCatalogSongId() == songId) {
                 _isFavorite.value = false
             }
             
             // Remove from Favorites playlist
             _playlists.value = _playlists.value.map { playlist ->
                 if (playlist.id == "1") {
-                    playlist.copy(songs = playlist.songs.filter { it.id != song.id })
+                    playlist.copy(
+                        songs = playlist.songs.filter {
+                            it.id.toStableCatalogSongId() != songId
+                        }
+                    )
                 } else {
                     playlist
                 }
@@ -6838,14 +6847,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             currentFavorites.add(songId)
             
             // Update _isFavorite only if this is the current song
-            if (_currentSong.value?.id == songId) {
+            if (_currentSong.value?.id?.toStableCatalogSongId() == songId) {
                 _isFavorite.value = true
             }
             
             // Add to Favorites playlist
             _playlists.value = _playlists.value.map { playlist ->
                 if (playlist.id == "1") {
-                    playlist.copy(songs = playlist.songs + song)
+                    playlist.copy(songs = playlist.songs + favoriteSong)
                 } else {
                     playlist
                 }
@@ -6860,7 +6869,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         notifyMediaServiceFavoriteChange()
         
         // Update widget with new favorite state after a brief delay to ensure state is saved
-        if (_currentSong.value?.id == songId) {
+        if (_currentSong.value?.id?.toStableCatalogSongId() == songId) {
             viewModelScope.launch {
                 delay(100) // Brief delay to ensure state is saved
                 val isFavorite = currentFavorites.contains(songId)
@@ -6874,6 +6883,21 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 )
             }
         }
+    }
+
+    /**
+     * Catalog favorites persist only their stable rendition identity. Playback URLs are short-lived
+     * descriptors and must be resolved again when the user plays the item from Liked.
+     */
+    private fun Song.toFavoriteSnapshot(): Song {
+        val stableId = id.toStableCatalogSongId()
+        if (!stableId.startsWith(CATALOG_SONG_ID_PREFIX)) return this
+        val renditionId = stableId.removePrefix(CATALOG_SONG_ID_PREFIX)
+        return copy(
+            id = stableId,
+            uri = Uri.parse(CatalogPlaybackPolicy.deferredUri(renditionId)),
+            path = null,
+        )
     }
     
     private fun notifyMediaServiceFavoriteChange() {

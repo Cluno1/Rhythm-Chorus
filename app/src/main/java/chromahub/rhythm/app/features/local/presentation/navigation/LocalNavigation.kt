@@ -1295,6 +1295,11 @@ private fun LocalNavigationContent(
                 val showPlayerSheet = currentSong != null && (showMiniPlayer || currentRoute == Screen.Player.route)
                 if (showPlayerSheet) {
                     val bottomBarHeightPx = with(LocalDensity.current) { MusicDimensions.bottomNavigationHeight.roundToPx() }
+                    val playerIsFavorite = if (isStreamingMode) {
+                        streamingCurrentSong?.let { streamingLikedSongIds.contains(it.id) } ?: false
+                    } else {
+                        isFavorite
+                    }
                     RhythmPlayerSheet(
                         isExpanded = currentRoute == Screen.Player.route,
                         onExpand = {
@@ -1339,7 +1344,7 @@ private fun LocalNavigationContent(
                         },
                         isShuffleEnabled = isShuffleEnabled,
                         repeatMode = repeatMode,
-                        isFavorite = if (isStreamingMode) streamingCurrentSong?.let { streamingLikedSongIds.contains(it.id) } ?: false else isFavorite,
+                        isFavorite = playerIsFavorite,
                         isCatalogItem = currentSong.id.startsWith("rhythm-catalog:"),
                         isCatalogScoreAvailable = activeCatalogScoreAvailable,
                         onCatalogOpenWork = {},
@@ -1390,9 +1395,46 @@ private fun LocalNavigationContent(
                                     val isLiked = streamingLikedSongIds.contains(s.id)
                                     if (isLiked) streamingMusicViewModel.unlikeSong(s)
                                     else streamingMusicViewModel.likeSong(s)
+                                    coroutineScope.launch {
+                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                        val result = snackbarHostState.showSnackbar(
+                                            message = context.getString(
+                                                if (isLiked) R.string.player_favorite_removed_message
+                                                else R.string.player_favorite_added_message
+                                            ),
+                                            actionLabel = context.getString(R.string.action_undo),
+                                            duration = androidx.compose.material3.SnackbarDuration.Short,
+                                        )
+                                        if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                                            if (isLiked) streamingMusicViewModel.likeSong(s)
+                                            else streamingMusicViewModel.unlikeSong(s)
+                                        }
+                                    }
                                 }
                             }
-                        } else onToggleFavorite,
+                        } else {
+                            {
+                                val targetSong = currentSong
+                                val wasFavorite = playerIsFavorite
+                                onToggleFavorite()
+                                if (targetSong != null) {
+                                    coroutineScope.launch {
+                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                        val result = snackbarHostState.showSnackbar(
+                                            message = context.getString(
+                                                if (wasFavorite) R.string.player_favorite_removed_message
+                                                else R.string.player_favorite_added_message
+                                            ),
+                                            actionLabel = context.getString(R.string.action_undo),
+                                            duration = androidx.compose.material3.SnackbarDuration.Short,
+                                        )
+                                        if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                                            viewModel.toggleFavorite(targetSong)
+                                        }
+                                    }
+                                }
+                            }
+                        },
                         onToggleShuffle = onToggleShuffle,
                         onToggleRepeat = onToggleRepeat,
                         onAddToPlaylist = {
@@ -1488,6 +1530,7 @@ private fun LocalNavigationContent(
                         appSettings = appSettings,
                         musicViewModel = viewModel,
                         navController = navController,
+                        snackbarHostState = snackbarHostState,
                         miniPlayerBottomOffset = miniPlayerBottomOffset
                     )
                 }
@@ -4020,9 +4063,9 @@ private fun LocalNavigationContent(
                             if (catalogAlbum == null) viewModel.playNext(song)
                         },
                         onToggleFavorite = { song ->
-                            if (catalogAlbum == null) viewModel.toggleFavorite(song)
+                            viewModel.toggleFavorite(song)
                         },
-                        favoriteSongs = if (catalogAlbum == null) favoriteSongs else emptySet(),
+                        favoriteSongs = favoriteSongs,
                         onShowSongInfo = { song ->
                             if (catalogAlbum == null) {
                                 selectedSongForInfo = song

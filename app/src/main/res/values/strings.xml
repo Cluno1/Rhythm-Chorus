@@ -3037,4 +3037,9 @@
     <string name="expressive_button_artist_desc">Go to artist details</string>
     <string name="expressive_button_song_info_desc">View and edit song metadata</string>
     <string name="expressive_button_share_desc">Share audio file</string>
+    <string name="player_favorite_add_description">Add to Liked</string>
+    <string name="player_favorite_remove_description">Liked, tap to remove</string>
+    <string name="player_favorite_added_message">Added to Liked</string>
+    <string name="player_favorite_removed_message">Removed from Liked</string>
+    <string name="action_undo">Undo</string>
 </resources>

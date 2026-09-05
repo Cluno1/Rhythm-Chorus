@@ -50,6 +50,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -62,6 +63,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.util.HapticUtils
@@ -97,6 +100,7 @@ import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.R
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.zIndex
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import chromahub.rhythm.app.network.AppleMusicCanvasProvider
@@ -248,7 +252,8 @@ fun PlayerScreen(
     onCatalogOpenWork: () -> Unit = {},
     onCatalogOpenScore: () -> Unit = {},
     swipeToDismissEnabled: Boolean = true,
-    expansionFraction: Float = 1f
+    expansionFraction: Float = 1f,
+    snackbarHostState: SnackbarHostState? = null,
 ) {
     // issue 9: catalog MP3 走 Rhythm 原生播放器（Expressive/Material），不再进自研的
     // ManagedCatalogPlayer。`song` 已是 catalog 投影的 Song，直接落入下方原生播放逻辑，
@@ -1048,6 +1053,17 @@ fun PlayerScreen(
                     }
                 )
             }
+        )
+    }
+
+    snackbarHostState?.let { hostState ->
+        SnackbarHost(
+            hostState = hostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 72.dp)
+                .zIndex(20f),
         )
     }
 }

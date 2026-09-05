@@ -2916,7 +2916,7 @@ fun MaterialPlayerScreen(
                                         when (chipId) {
                                             "FAVORITE" -> {
                                                 val containerColor by animateColorAsState(
-                                                    targetValue = if (isFavorite) Color.Red.copy(alpha = 0.9f) else MaterialTheme.colorScheme.surfaceVariant,
+                                                    targetValue = if (isFavorite) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
                                                     animationSpec = spring(
                                                         dampingRatio = Spring.DampingRatioMediumBouncy,
                                                         stiffness = Spring.StiffnessLow
@@ -2924,7 +2924,7 @@ fun MaterialPlayerScreen(
                                                     label = "favoriteChipContainerColor"
                                                 )
                                                 val labelColor by animateColorAsState(
-                                                    targetValue = if (isFavorite) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    targetValue = if (isFavorite) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     animationSpec = spring(
                                                         dampingRatio = Spring.DampingRatioMediumBouncy,
                                                         stiffness = Spring.StiffnessLow
@@ -2932,7 +2932,7 @@ fun MaterialPlayerScreen(
                                                     label = "favoriteChipLabelColor"
                                                 )
                                                 val iconColor by animateColorAsState(
-                                                    targetValue = if (isFavorite) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    targetValue = if (isFavorite) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     animationSpec = spring(
                                                         dampingRatio = Spring.DampingRatioMediumBouncy,
                                                         stiffness = Spring.StiffnessLow
@@ -2968,8 +2968,11 @@ fun MaterialPlayerScreen(
                                                     },
                                                     leadingIcon = {
                                                         Icon(
-                                                            imageVector = if (isFavorite) MaterialSymbolIcon("thumb_down", filled = true) else MaterialSymbolIcon("thumb_up", filled = true),
-                                                            contentDescription = stringResource(R.string.cd_toggle_favorite),
+                                                            imageVector = if (isFavorite) RhythmIcons.Actions.Favorite else RhythmIcons.Actions.FavoriteOutlined,
+                                                            contentDescription = stringResource(
+                                                                if (isFavorite) R.string.player_favorite_remove_description
+                                                                else R.string.player_favorite_add_description
+                                                            ),
                                                             modifier = Modifier.size(if (isExtraSmallWidth) 14.dp else 16.dp)
                                                         )
                                                     },

@@ -27,4 +27,17 @@ class CatalogLibraryProjectionTest {
         assertEquals(emptyList<Int>(), selection.sourceIndexes)
         assertEquals(0, selection.startIndex)
     }
+
+    @Test
+    fun catalogFavoriteIdentityDropsTemporaryAssetSuffix() {
+        val renditionId = "11111111-1111-4111-8111-111111111111"
+        val playbackId = "${CATALOG_SONG_ID_PREFIX}$renditionId:asset:temporary-asset"
+
+        assertEquals("${CATALOG_SONG_ID_PREFIX}$renditionId", playbackId.toStableCatalogSongId())
+    }
+
+    @Test
+    fun deviceFavoriteIdentityIsUnchanged() {
+        assertEquals("42", "42".toStableCatalogSongId())
+    }
 }

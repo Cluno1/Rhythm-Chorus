@@ -2769,4 +2769,9 @@
     <string name="exp_track_error_checker">曲目故障檢查器</string>
     <string name="exp_track_error_checker_desc">攔截損壞或無法讀取的曲目，以避免無限載入和自動跳過循環</string>
     <string name="unknown_album_name">未知專輯</string>
+    <string name="player_favorite_add_description">加入已按讚</string>
+    <string name="player_favorite_remove_description">已按讚，點按移除</string>
+    <string name="player_favorite_added_message">已加入「Liked」</string>
+    <string name="player_favorite_removed_message">已從「Liked」移除</string>
+    <string name="action_undo">復原</string>
 </resources>

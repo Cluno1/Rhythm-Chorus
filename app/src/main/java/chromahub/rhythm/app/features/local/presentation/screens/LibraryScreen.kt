@@ -2599,7 +2599,7 @@ fun SingleCardSongsContent(
                             onMoreClick = if (isCatalogSong) null else ({ onAddToPlaylist(song) }),
                             onAddToQueue = if (isCatalogSong) null else ({ onAddToQueue(song) }),
                             onPlayNext = if (isCatalogSong) null else ({ onPlayNext(song) }),
-                            onToggleFavorite = if (isCatalogSong) null else onToggleFavorite?.let { fn -> { fn(song) } },
+                            onToggleFavorite = onToggleFavorite?.let { fn -> { fn(song) } },
                             isFavorite = favoriteSongs.contains(song.id),
                             onGoToArtist = { 
                                 val artist = if (groupByAlbumArtist) {
@@ -6625,7 +6625,7 @@ fun YearGroupedSongsContent(
                             onMoreClick = if (isCatalogSong) null else ({ onAddToPlaylist(song) }),
                             onAddToQueue = if (isCatalogSong) null else ({ onAddToQueue(song) }),
                             onPlayNext = if (isCatalogSong) null else ({ onPlayNext(song) }),
-                            onToggleFavorite = if (isCatalogSong) null else ({ onToggleFavorite(song) }),
+                            onToggleFavorite = { onToggleFavorite(song) },
                             isFavorite = favoriteSongs.contains(song.id),
                             onGoToArtist = { onGoToArtist(Artist(id = "", name = song.artist)) },
                             onGoToAlbum = {
