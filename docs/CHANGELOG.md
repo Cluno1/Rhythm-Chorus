@@ -1,6 +1,8 @@
 # Changelog
 
-All notable changes to Rhythm will be documented in this file.
+All notable Sonorus changes will be documented in this file.
+
+Entries before the first Sonorus release are preserved upstream Rhythm history; they are not presented as Sonorus releases.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- 
+- Independent Sonorus application identity, branding, artwork, About attribution, and first-party GitHub update channel.
 
 ## [5.5.473.1246 Beta] - 2026-09-01
 
@@ -415,4 +417,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added ability to share tracks from all song overflow menus
 * Fixed: all playlists missing in latest beta build  #437
 * Updated dependencies
-

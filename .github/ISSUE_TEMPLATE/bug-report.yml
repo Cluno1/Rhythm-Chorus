@@ -1,8 +1,8 @@
 name: Bug Report
-description: Report a bug or issue you encountered in Rhythm
+description: Report a bug or issue you encountered in Sonorus
 title: "[BUG]: "
 labels: ["bug"]
-assignees: ["cromaguy"]
+assignees: ["Cluno1"]
 body:
   - type: markdown
     attributes:
@@ -141,8 +141,6 @@ body:
       label: Installation Source
       options:
         - GitHub Releases
-        - F-Droid
-        - IzzyOnDroid
         - Manual Build (Source Code)
         - Other
     validations:
@@ -154,7 +152,7 @@ body:
       label: Logs / Stack Traces
       description: |
         If the app crashed, please paste the logs here. 
-        Note: Rhythm shows a Crash Screen with log output and saves crash logs to the `Rhythm/Crashes` directory on your device.
+        Note: Sonorus shows a Crash Screen with log output and saves crash logs to the `Sonorus/Crashes` directory on your device.
       render: shell
 
   - type: textarea

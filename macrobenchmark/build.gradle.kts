@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "chromahub.rhythm.app.macrobenchmark"
+    namespace = "io.github.cluno1.sonorus.macrobenchmark"
     compileSdk = 37
 
     compileOptions {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launcher picker preview for the Rhythm Cookie widget.
+<!-- Launcher picker preview for the Sonorus Cookie widget.
      Framework-safe only (android:* attributes, no app: namespace). The cookie
      art is a white vector tinted with android:tint so launchers render it dark. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -16,7 +16,7 @@
         android:src="@drawable/widget_preview_cookie"
         android:tint="@color/widget_preview_surface" />
 
-    <!-- Rhythm app logo mark (notification icon) -->
+    <!-- Sonorus app logo mark (notification icon) -->
     <ImageView
         android:importantForAccessibility="no"
         android:layout_width="64dp"

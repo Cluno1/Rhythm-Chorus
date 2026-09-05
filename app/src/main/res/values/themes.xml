@@ -5,7 +5,7 @@
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
         <!-- launcher_bg adapts to the app theme (white in light, dark in night) -->
         <item name="windowSplashScreenBackground">@color/launcher_bg</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/rhythm_logo</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/sonorus_logo</item>
         <item name="windowSplashScreenAnimationDuration">10</item>
         <item name="postSplashScreenTheme">@style/Theme.Rhythm</item>
     </style>

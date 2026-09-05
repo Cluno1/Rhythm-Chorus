@@ -1,6 +1,6 @@
-# Contributing to Rhythm
+# Contributing to Sonorus
 
-Thank you for your interest in contributing to Rhythm Music Player! This guide will help you get started.
+Thank you for your interest in contributing to Sonorus Music Player! This guide will help you get started.
 
 ---
 
@@ -11,17 +11,17 @@ Thank you for your interest in contributing to Rhythm Music Player! This guide w
 Found a bug? Help us fix it!
 
 **Before Reporting:**
-- Check [existing issues](https://github.com/cromaguy/Rhythm/issues) to avoid duplicates
+- Check [existing issues](https://github.com/Cluno1/Sonorus/issues) to avoid duplicates
 - Try the latest version to see if it's already fixed
 - Gather information about your device and app version
 
 **How to Report:**
-1. Go to [GitHub Issues](https://github.com/cromaguy/Rhythm/issues/new)
+1. Go to [GitHub Issues](https://github.com/Cluno1/Sonorus/issues/new)
 2. Choose "Bug Report" template
 3. Fill in all required information:
    - Android version (e.g., Android 14)
    - Device model (e.g., Pixel 7)
-    - Rhythm version (e.g., v5.4.456.1196 Beta)
+    - Sonorus version (e.g., v5.4.456.1196 Beta)
    - Steps to reproduce
    - Expected vs actual behavior
    - Screenshots/logs if applicable
@@ -31,12 +31,12 @@ Found a bug? Help us fix it!
 Have an idea? We'd love to hear it!
 
 **Before Suggesting:**
-- Check [existing feature requests](https://github.com/cromaguy/Rhythm/issues?q=is%3Aissue+label%3Aenhancement)
-- Search [Discussions](https://github.com/cromaguy/Rhythm/discussions) for similar ideas
-- Consider if it aligns with Rhythm's philosophy (privacy, FOSS, simplicity)
+- Check [existing feature requests](https://github.com/Cluno1/Sonorus/issues?q=is%3Aissue+label%3Aenhancement)
+- Search [Discussions](https://github.com/Cluno1/Sonorus/discussions) for similar ideas
+- Consider if it aligns with Sonorus's philosophy (privacy, FOSS, simplicity)
 
 **How to Suggest:**
-1. Open a [new issue](https://github.com/cromaguy/Rhythm/issues/new) with "Feature Request" label
+1. Open a [new issue](https://github.com/Cluno1/Sonorus/issues/new) with "Feature Request" label
 2. Describe:
    - What feature you want
    - Why it's useful
@@ -73,7 +73,7 @@ Ready to code? Here's how to start!
 - Test coverage
 
 **Before Coding:**
-1. Check [open issues](https://github.com/cromaguy/Rhythm/issues) for tasks
+1. Check [open issues](https://github.com/Cluno1/Sonorus/issues) for tasks
 2. Comment on issue to claim it
 3. Discuss implementation approach if needed
 4. Fork the repository
@@ -93,14 +93,14 @@ Ready to code? Here's how to start!
 ### Clone Repository
 
 ```bash
-git clone https://github.com/cromaguy/Rhythm.git
-cd Rhythm
+git clone https://github.com/Cluno1/Sonorus.git
+cd Sonorus
 ```
 
 ### Build Project
 
 1. Open Android Studio
-2. Select **File → Open** and choose Rhythm folder
+2. Select **File → Open** and choose Sonorus folder
 3. Wait for Gradle sync to complete
 4. Click **Build → Make Project** (or Ctrl+F9)
 
@@ -267,7 +267,7 @@ git push origin feature/your-feature-name
 
 ### 4. Open Pull Request
 
-1. Go to [Rhythm repository](https://github.com/cromaguy/Rhythm)
+1. Go to [Sonorus repository](https://github.com/Cluno1/Sonorus)
 2. Click **Pull Requests → New Pull Request**
 3. Select your fork and branch
 4. Fill in PR template:
@@ -395,13 +395,13 @@ Before submitting PR, verify:
 ## 🤔 Questions?
 
 **Get Help:**
-- [Telegram Community](https://t.me/RhythmSupport) - Live chat
+- [Telegram Community](https://t.me/SonorusSupport) - Live chat
 - [Discord Server](https://discord.gg/XjPyUYPQYc) - Community chat
-- [GitHub Discussions](https://github.com/cromaguy/Rhythm/discussions) - Q&A
-- [GitHub Issues](https://github.com/cromaguy/Rhythm/issues) - Specific issues
+- [GitHub Discussions](https://github.com/Cluno1/Sonorus/discussions) - Q&A
+- [GitHub Issues](https://github.com/Cluno1/Sonorus/issues) - Specific issues
 
 **Be Respectful:**
-- Follow [Code of Conduct](https://github.com/cromaguy/Rhythm/blob/main/docs/CODE_OF_CONDUCT.md)
+- Follow [Code of Conduct](https://github.com/Cluno1/Sonorus/blob/main/docs/CODE_OF_CONDUCT.md)
 - Be patient with responses
 - Help others when you can
 - Respect maintainers' decisions
@@ -411,28 +411,28 @@ Before submitting PR, verify:
 ## 🏆 Recognition
 
 Contributors are recognized in:
-- [README.md](https://github.com/cromaguy/Rhythm#contributors) Credits section
-- [CHANGELOG.md](https://github.com/cromaguy/Rhythm/blob/main/docs/CHANGELOG.md) for each release
-- GitHub [Contributors page](https://github.com/cromaguy/Rhythm/graphs/contributors)
+- [README.md](https://github.com/Cluno1/Sonorus#contributors) Credits section
+- [CHANGELOG.md](https://github.com/Cluno1/Sonorus/blob/main/docs/CHANGELOG.md) for each release
+- GitHub [Contributors page](https://github.com/Cluno1/Sonorus/graphs/contributors)
 - App's "About" section (major contributors)
 
 ---
 
 ## 📄 License
 
-By contributing, you agree that your contributions will be licensed under the [GPL-3.0 License](https://github.com/cromaguy/Rhythm/blob/main/docs/LICENSE).
+By contributing, you agree that your contributions will be licensed under the [GPL-3.0 License](https://github.com/Cluno1/Sonorus/blob/main/docs/LICENSE).
 
 ---
 
-**Thank you for contributing to Rhythm! 🎵**
+**Thank you for contributing to Sonorus! 🎵**
 
-Your contributions help make Rhythm better for everyone. Whether it's code, documentation, translations, or bug reports, every contribution matters!
+Your contributions help make Sonorus better for everyone. Whether it's code, documentation, translations, or bug reports, every contribution matters!
 
 ---
 
 **Quick Links:**
-- [GitHub Repository](https://github.com/cromaguy/Rhythm)
-- [Issue Tracker](https://github.com/cromaguy/Rhythm/issues)
-- [Discussions](https://github.com/cromaguy/Rhythm/discussions)
-- [Code of Conduct](https://github.com/cromaguy/Rhythm/blob/main/docs/CODE_OF_CONDUCT.md)
-- [Wiki Home](https://github.com/cromaguy/Rhythm/wiki)
+- [GitHub Repository](https://github.com/Cluno1/Sonorus)
+- [Issue Tracker](https://github.com/Cluno1/Sonorus/issues)
+- [Discussions](https://github.com/Cluno1/Sonorus/discussions)
+- [Code of Conduct](https://github.com/Cluno1/Sonorus/blob/main/docs/CODE_OF_CONDUCT.md)
+- [Wiki Home](https://github.com/Cluno1/Sonorus/wiki)
