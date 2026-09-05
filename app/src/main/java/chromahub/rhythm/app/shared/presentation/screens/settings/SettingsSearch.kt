@@ -785,6 +785,28 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             parentScreen = context.getString(R.string.settings_section_notifications_services)
         ))
         add(SearchableSettingItem(
+            id = "catalog_server",
+            title = context.getString(R.string.settings_catalog_server),
+            description = context.getString(R.string.settings_catalog_server_desc),
+            keywords = listOf(
+                "music",
+                "library",
+                "server",
+                "catalog",
+                "ihope",
+                "invite",
+                "invitation",
+                "device",
+                "registration",
+                "音乐库",
+                "服务器",
+                "邀请码",
+            ),
+            icon = MaterialSymbolIcon("cloud"),
+            route = SettingsRoutes.CATALOG,
+            parentScreen = context.getString(R.string.settings_section_notifications_services),
+        ))
+        add(SearchableSettingItem(
             id = "api_management",
             title = context.getString(R.string.settings_api_management),
             description = context.getString(R.string.settings_api_management_desc),
@@ -2738,4 +2760,3 @@ fun SettingsSearchResults(
         }
     }
 }
-
